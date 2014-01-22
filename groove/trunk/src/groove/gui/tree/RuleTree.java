@@ -93,11 +93,9 @@ public class RuleTree extends AbstractResourceTree {
         setEnabled(false);
         setToggleClickCount(0);
         setCellRenderer(new DisplayTreeCellRenderer(this));
-        getSelectionModel().setSelectionMode(
-            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // set icons
-        DefaultTreeCellRenderer renderer =
-            (DefaultTreeCellRenderer) this.cellRenderer;
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) this.cellRenderer;
         renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
         this.topDirectoryNode = new DisplayTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
@@ -146,8 +144,7 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         suspendListeners();
         boolean renewSelection = false;
         if (changes.contains(GRAMMAR)) {
@@ -201,8 +198,7 @@ public class RuleTree extends AbstractResourceTree {
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<ActionEntry>> priorityEntry : priorityMap.entrySet()) {
             int priority = priorityEntry.getKey();
-            Map<String,FolderTreeNode> dirNodeMap =
-                new HashMap<String,FolderTreeNode>();
+            Map<String,FolderTreeNode> dirNodeMap = new HashMap<String,FolderTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -211,14 +207,12 @@ public class RuleTree extends AbstractResourceTree {
                 dirNodeMap.clear();
             }
             // collect entries for all actions
-            Map<String,RuleEntry> ruleEntryMap =
-                new HashMap<String,RuleEntry>();
+            Map<String,RuleEntry> ruleEntryMap = new HashMap<String,RuleEntry>();
             List<RecipeEntry> recipes = new ArrayList<RecipeEntry>();
             for (ActionEntry action : priorityEntry.getValue()) {
                 if (action instanceof RecipeEntry) {
                     recipes.add((RecipeEntry) action);
-                    this.recipeMap.put(action.getName(),
-                        ((RecipeEntry) action).getRecipe());
+                    this.recipeMap.put(action.getName(), ((RecipeEntry) action).getRecipe());
                 } else {
                     ruleEntryMap.put(action.getName(), (RuleEntry) action);
                 }
@@ -230,8 +224,7 @@ public class RuleTree extends AbstractResourceTree {
                 // recursively add parent directory nodes as required
                 DisplayTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
-                DisplayTreeNode recipeNode =
-                    createActionNode(recipe, expandedPaths, selectedPaths);
+                DisplayTreeNode recipeNode = createActionNode(recipe, expandedPaths, selectedPaths);
                 parentNode.insertSorted(recipeNode);
                 Set<Rule> subrules = recipe.getRecipe().getRules();
                 if (subrules != null) {
@@ -240,8 +233,7 @@ public class RuleTree extends AbstractResourceTree {
                         RuleEntry srEntry = ruleEntryMap.get(srName);
                         if (srEntry != null) {
                             DisplayTreeNode srNode =
-                                createActionNode(srEntry, expandedPaths,
-                                    selectedPaths);
+                                createActionNode(srEntry, expandedPaths, selectedPaths);
                             recipeNode.insertSorted(srNode);
                         }
                         subruleNames.add(srName);
@@ -270,10 +262,9 @@ public class RuleTree extends AbstractResourceTree {
         setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     }
 
-    private DisplayTreeNode createActionNode(ActionEntry action,
-            List<TreePath> expandedPaths, List<TreePath> selectedPaths) {
-        Collection<String> selection =
-            getSimulatorModel().getSelectSet(ResourceKind.RULE);
+    private DisplayTreeNode createActionNode(ActionEntry action, List<TreePath> expandedPaths,
+            List<TreePath> selectedPaths) {
+        Collection<String> selection = getSimulatorModel().getSelectSet(ResourceKind.RULE);
         String name = action.getName();
         // create the rule node and register it
         DisplayTreeNode node = action.createTreeNode();
@@ -306,8 +297,7 @@ public class RuleTree extends AbstractResourceTree {
                 for (Rule subrule : subrules) {
                     if (subrule.getPriority() == priority) {
                         String ruleName = subrule.getFullName();
-                        recipes.add(new RuleEntry(
-                            grammar.getRuleModel(ruleName)));
+                        recipes.add(new RuleEntry(grammar.getRuleModel(ruleName)));
                         subRuleNames.add(ruleName);
                     }
                 }
@@ -338,6 +328,7 @@ public class RuleTree extends AbstractResourceTree {
             if (showAnchorsOptionItem != null) {
                 // listen to the option controlling the rule anchor display
                 showAnchorsOptionItem.addItemListener(new ItemListener() {
+                    @Override
                     public void itemStateChanged(ItemEvent e) {
                         suspendListeners();
                         refresh(getSimulatorModel().getState());
@@ -363,8 +354,7 @@ public class RuleTree extends AbstractResourceTree {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
                 DisplayTreeNode grandParentNode =
-                    addParentNode(topNode, dirNodeMap,
-                        QualName.getParent(parentName));
+                    addParentNode(topNode, dirNodeMap, QualName.getParent(parentName));
                 // make the parent node and register it
                 result = new FolderTreeNode(QualName.getLastName(parentName));
                 grandParentNode.insertSorted(result);
@@ -379,8 +369,7 @@ public class RuleTree extends AbstractResourceTree {
      * Simulator.
      */
     private void refresh(GraphState state) {
-        SortedSet<MatchResult> matches =
-            new TreeSet<MatchResult>(MatchResult.COMPARATOR);
+        SortedSet<MatchResult> matches = new TreeSet<MatchResult>(MatchResult.COMPARATOR);
         if (state != null) {
             for (RuleTransition trans : state.getRuleTransitions()) {
                 matches.add(trans.getKey());
@@ -398,8 +387,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param match the match result to be selected
      */
     private void selectMatch(RuleModel rule, MatchResult match) {
-        List<DefaultMutableTreeNode> treeNodes =
-            new ArrayList<DefaultMutableTreeNode>();
+        List<DefaultMutableTreeNode> treeNodes = new ArrayList<DefaultMutableTreeNode>();
         if (match != null) {
             MatchTreeNode node = this.matchNodeMap.get(match);
             if (node != null) {
@@ -420,8 +408,7 @@ public class RuleTree extends AbstractResourceTree {
      * Refreshes the match nodes, based on a given match result set.
      * @param matches the set of matches used to create {@link MatchTreeNode}s
      */
-    private void refreshMatches(GraphState state,
-            Collection<? extends MatchResult> matches) {
+    private void refreshMatches(GraphState state, Collection<? extends MatchResult> matches) {
         // remove current matches
         for (MatchTreeNode matchNode : this.matchNodeMap.values()) {
             this.ruleDirectory.removeNodeFromParent(matchNode);
@@ -436,8 +423,7 @@ public class RuleTree extends AbstractResourceTree {
         Set<Duo<String>> triedPairs = new HashSet<Duo<String>>();
         for (CtrlTransition t : triedTransitions) {
             String ruleName = t.getRule().getFullName();
-            String recipeName =
-                t.hasRecipe() ? t.getRecipe().getFullName() : null;
+            String recipeName = t.hasRecipe() ? t.getRecipe().getFullName() : null;
             triedPairs.add(Duo.newDuo(ruleName, recipeName));
         }
         Collection<RuleTreeNode> treeNodes = new ArrayList<RuleTreeNode>();
@@ -447,10 +433,8 @@ public class RuleTree extends AbstractResourceTree {
             for (RuleTreeNode n : nodes) {
                 String ruleName = n.getName();
                 Recipe ruleRecipe = getRecipe(n);
-                String recipeName =
-                    ruleRecipe == null ? null : ruleRecipe.getFullName();
-                boolean tried =
-                    triedPairs.contains(Duo.newDuo(ruleName, recipeName));
+                String recipeName = ruleRecipe == null ? null : ruleRecipe.getFullName();
+                boolean tried = triedPairs.contains(Duo.newDuo(ruleName, recipeName));
                 n.setTried(tried);
             }
         }
@@ -473,12 +457,9 @@ public class RuleTree extends AbstractResourceTree {
                 if (recipe == null || recipe.equals(getRecipe(ruleNode))) {
                     int nrOfMatches = ruleNode.getChildCount();
                     MatchTreeNode matchNode =
-                        new MatchTreeNode(getSimulatorModel(), state, match,
-                            nrOfMatches + 1,
-                            getSimulator().getOptions().isSelected(
-                                Options.SHOW_ANCHORS_OPTION));
-                    this.ruleDirectory.insertNodeInto(matchNode, ruleNode,
-                        nrOfMatches);
+                        new MatchTreeNode(getSimulatorModel(), state, match, nrOfMatches + 1,
+                            getSimulator().getOptions().isSelected(Options.SHOW_ANCHORS_OPTION));
+                    this.ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
                     expandPath(new TreePath(ruleNode.getPath()));
                     this.matchNodeMap.put(match, matchNode);
                 }
@@ -497,23 +478,20 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     @Override
-    public String convertValueToText(Object value, boolean selected,
-            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    public String convertValueToText(Object value, boolean selected, boolean expanded,
+            boolean leaf, int row, boolean hasFocus) {
         String result;
         if (value instanceof DisplayTreeNode) {
             result = ((DisplayTreeNode) value).getText();
         } else {
-            result =
-                super.convertValueToText(value, selected, expanded, leaf, row,
-                    hasFocus);
+            result = super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
         return result;
     }
 
     /** Convenience method to retrieve the control display. */
     private final ControlDisplay getControlDisplay() {
-        return (ControlDisplay) getSimulator().getDisplaysPanel().getDisplay(
-            DisplayKind.CONTROL);
+        return (ControlDisplay) getSimulator().getDisplaysPanel().getDisplay(DisplayKind.CONTROL);
     }
 
     /**
@@ -576,13 +554,10 @@ public class RuleTree extends AbstractResourceTree {
 
         @Override
         public RuleTreeNode createTreeNode() {
-            RuleTreeNode result =
-                new RuleTreeNode(getParentDisplay(), getName());
-            Collection<RuleTreeNode> nodes =
-                RuleTree.this.ruleNodeMap.get(getName());
+            RuleTreeNode result = new RuleTreeNode(getParentDisplay(), getName());
+            Collection<RuleTreeNode> nodes = RuleTree.this.ruleNodeMap.get(getName());
             if (nodes == null) {
-                RuleTree.this.ruleNodeMap.put(getName(), nodes =
-                    new ArrayList<RuleTreeNode>());
+                RuleTree.this.ruleNodeMap.put(getName(), nodes = new ArrayList<RuleTreeNode>());
             }
             nodes.add(result);
             return result;
@@ -668,10 +643,8 @@ public class RuleTree extends AbstractResourceTree {
                         Recipe recipe = RuleTree.this.recipeMap.get(name);
                         getSimulatorModel().doSelectSet(ResourceKind.RULE,
                             Collections.<String>emptySet());
-                        getSimulatorModel().doSelect(ResourceKind.CONTROL,
-                            recipe.getControlName());
-                        TextTab controlTab =
-                            (TextTab) getControlDisplay().getSelectedTab();
+                        getSimulatorModel().doSelect(ResourceKind.CONTROL, recipe.getControlName());
+                        TextTab controlTab = (TextTab) getControlDisplay().getSelectedTab();
                         controlTab.select(recipe.getStartLine(), 0);
                         done = true;
                         break;
@@ -693,8 +666,7 @@ public class RuleTree extends AbstractResourceTree {
         public void mousePressed(MouseEvent evt) {
             TreePath path = getPathForLocation(evt.getX(), evt.getY());
             if (path != null) {
-                if (evt.getButton() == MouseEvent.BUTTON3
-                    && !isRowSelected(getRowForPath(path))) {
+                if (evt.getButton() == MouseEvent.BUTTON3 && !isRowSelected(getRowForPath(path))) {
                     setSelectionPath(path);
                 }
                 DisplayKind toDisplay = null;
@@ -742,14 +714,11 @@ public class RuleTree extends AbstractResourceTree {
 
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
-                TreePath selectedPath =
-                    getPathForLocation(evt.getX(), evt.getY());
+                TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
                 TreeNode selectedNode =
-                    selectedPath == null ? null
-                            : (TreeNode) selectedPath.getLastPathComponent();
+                    selectedPath == null ? null : (TreeNode) selectedPath.getLastPathComponent();
                 RuleTree.this.requestFocus();
-                createPopupMenu(selectedNode).show(evt.getComponent(),
-                    evt.getX(), evt.getY());
+                createPopupMenu(selectedNode).show(evt.getComponent(), evt.getX(), evt.getY());
             }
         }
     }

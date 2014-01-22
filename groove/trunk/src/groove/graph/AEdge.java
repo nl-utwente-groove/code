@@ -45,6 +45,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
         assert label() != null;
     }
 
+    @Override
     public N source() {
         return this.source;
     }
@@ -54,6 +55,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
      */
     protected final N source;
 
+    @Override
     public N target() {
         return this.target;
     }
@@ -61,6 +63,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
     /** The target node of this edge. */
     protected final N target;
 
+    @Override
     public L label() {
         return this.label;
     }
@@ -141,8 +144,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
         if (this == obj) {
             return true;
         }
-        return isTypeEqual(obj) && isEndEqual((Edge) obj)
-            && isLabelEqual((Edge) obj);
+        return isTypeEqual(obj) && isEndEqual((Edge) obj) && isLabelEqual((Edge) obj);
     }
 
     // -------------------- Object and related methods --------------------
@@ -151,8 +153,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
      * Improves the testing for end point equality.
      */
     protected boolean isEndEqual(Edge other) {
-        return (this.source.equals(other.source()))
-            && this.target.equals(other.target());
+        return (this.source.equals(other.source())) && this.target.equals(other.target());
     }
 
     /**

@@ -37,9 +37,8 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Creates a delta store based on explicitly given added and removed sets.
      * The sets are copied.
      */
-    protected DefaultDeltaApplier(HostNodeSet addedNodeSet,
-            HostNodeSet removedNodeSet, HostEdgeSet addedEdgeSet,
-            HostEdgeSet removedEdgeSet) {
+    protected DefaultDeltaApplier(HostNodeSet addedNodeSet, HostNodeSet removedNodeSet,
+            HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet) {
         this.addedNodeSet = createNodeSet(addedNodeSet);
         this.removedNodeSet = createNodeSet(removedNodeSet);
         this.addedEdgeSet = createEdgeSet(addedEdgeSet);
@@ -50,20 +49,18 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Creates a delta store based on explicitly given added and removed sets. A
      * further parameter controls if the sets are copied or shared.
      */
-    protected DefaultDeltaApplier(HostNodeSet addedNodeSet,
-            HostNodeSet removedNodeSet, HostEdgeSet addedEdgeSet,
-            HostEdgeSet removedEdgeSet, boolean share) {
+    protected DefaultDeltaApplier(HostNodeSet addedNodeSet, HostNodeSet removedNodeSet,
+            HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet, boolean share) {
         this.addedNodeSet = share ? addedNodeSet : createNodeSet(addedNodeSet);
-        this.removedNodeSet =
-            share ? removedNodeSet : createNodeSet(removedNodeSet);
+        this.removedNodeSet = share ? removedNodeSet : createNodeSet(removedNodeSet);
         this.addedEdgeSet = share ? addedEdgeSet : createEdgeSet(addedEdgeSet);
-        this.removedEdgeSet =
-            share ? removedEdgeSet : createEdgeSet(removedEdgeSet);
+        this.removedEdgeSet = share ? removedEdgeSet : createEdgeSet(removedEdgeSet);
     }
 
     /**
      * Processes the delta based on the cached information.
      */
+    @Override
     public void applyDelta(DeltaTarget target, int mode) {
         // process the added and removed sets
         if (mode != EDGES_ONLY) {
@@ -87,6 +84,7 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
         }
     }
 
+    @Override
     public void applyDelta(DeltaTarget target) {
         applyDelta(target, ALL_ELEMENTS);
     }
@@ -125,8 +123,8 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * are copied or shared.
      */
     public DeltaStore invert(boolean share) {
-        return new DeltaStore(this.removedNodeSet, this.addedNodeSet,
-            this.removedEdgeSet, this.addedEdgeSet, share);
+        return new DeltaStore(this.removedNodeSet, this.addedNodeSet, this.removedEdgeSet,
+            this.addedEdgeSet, share);
     }
 
     /**
@@ -170,16 +168,16 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
     /**
      * Callback factory method for creating a new delta set.
      */
-    protected <E extends HostElement> DeltaSet<E> createDeltaSet(Set<E> lower,
-            Set<E> added, Set<E> removed) {
+    protected <E extends HostElement> DeltaSet<E> createDeltaSet(Set<E> lower, Set<E> added,
+            Set<E> removed) {
         return new DeltaSet<E>(lower, added, removed);
     }
 
     /**
      * Callback factory method for creating a new stacked set.
      */
-    protected <E extends HostElement> StackedSet<E> createStackedSet(
-            Set<? extends E> lower, Set<E> added, Set<E> removed) {
+    protected <E extends HostElement> StackedSet<E> createStackedSet(Set<? extends E> lower,
+            Set<E> added, Set<E> removed) {
         return new StackedSet<E>(lower, added, removed);
     }
 

@@ -29,27 +29,35 @@ import java.util.Set;
  */
 public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     /* Specialises the return type. */
+    @Override
     Set<? extends N> nodeSet();
 
     /* Specialises the return type. */
+    @Override
     Set<? extends E> edgeSet();
 
     /* Specialises the return type. */
+    @Override
     Set<? extends E> edgeSet(Node node);
 
     /* Specialises the return type. */
+    @Override
     Set<? extends E> inEdgeSet(Node node);
 
     /* Specialises the return type. */
+    @Override
     Set<? extends E> outEdgeSet(Node node);
 
     /* Specialises the return type. */
+    @Override
     Set<? extends E> edgeSet(Label label);
 
     /* Specialises the return type. */
+    @Override
     GGraph<N,E> clone();
 
     /* Specialises the return type. */
+    @Override
     GGraph<N,E> newGraph(String name);
 
     /** 
@@ -224,5 +232,6 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     boolean removeNodeSet(Collection<? extends N> nodeSet);
 
     /* Specialises the return type. */
+    @Override
     ElementFactory<N,E> getFactory();
 }

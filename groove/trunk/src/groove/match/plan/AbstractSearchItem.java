@@ -39,6 +39,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
+    @Override
     public Collection<? extends RuleNode> bindsNodes() {
         return Collections.emptySet();
     }
@@ -46,6 +47,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
+    @Override
     public Collection<LabelVar> bindsVars() {
         return Collections.emptySet();
     }
@@ -53,6 +55,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
+    @Override
     public Collection<? extends RuleEdge> bindsEdges() {
         return Collections.emptySet();
     }
@@ -60,6 +63,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
+    @Override
     public Collection<RuleNode> needsNodes() {
         return Collections.emptySet();
     }
@@ -67,6 +71,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
+    @Override
     public Collection<LabelVar> needsVars() {
         return Collections.emptySet();
     }
@@ -84,6 +89,7 @@ abstract class AbstractSearchItem implements SearchItem {
      * If this implementation returns {@code 0}, the type of the parameter
      * is guaranteed to coincide with the type of this item.
      */
+    @Override
     public int compareTo(SearchItem other) {
         int result = getClass().getName().compareTo(other.getClass().getName());
         if (result == 0) {
@@ -126,6 +132,7 @@ abstract class AbstractSearchItem implements SearchItem {
         this.relevant = relevant;
     }
 
+    @Override
     final public boolean isRelevant() {
         return this.relevant;
     }
@@ -187,12 +194,14 @@ abstract class AbstractSearchItem implements SearchItem {
          * <code>false</code>, and resets to <code>true</code> upon
          * invocation of {@link #reset()}.
          */
+        @Override
         public boolean next() {
             this.found = !this.found;
             return this.found;
         }
 
         /** This implementation returns <code>true</code>. */
+        @Override
         public boolean isSingular() {
             return true;
         }
@@ -202,22 +211,24 @@ abstract class AbstractSearchItem implements SearchItem {
             return false;
         }
 
+        @Override
         public boolean isRelevant() {
             return AbstractSearchItem.this.isRelevant();
         }
 
+        @Override
         public void repeat() {
             reset();
         }
 
+        @Override
         public void reset() {
             this.found = false;
         }
 
         @Override
         public String toString() {
-            return String.format("%s: %s", AbstractSearchItem.this.toString(),
-                this.found);
+            return String.format("%s: %s", AbstractSearchItem.this.toString(), this.found);
         }
 
         /**
@@ -267,6 +278,7 @@ abstract class AbstractSearchItem implements SearchItem {
         /**
          * Always returns <code>true</code>.
          */
+        @Override
         final public boolean isSingular() {
             return true;
         }
@@ -276,6 +288,7 @@ abstract class AbstractSearchItem implements SearchItem {
             return this.state == State.EMPTY;
         }
 
+        @Override
         final public boolean next() {
             State nextState = null;
             switch (this.state) {
@@ -312,6 +325,7 @@ abstract class AbstractSearchItem implements SearchItem {
             this.state = this.state.getRepeat();
         }
 
+        @Override
         final public void reset() {
             if (this.state.isWritten()) {
                 erase();
@@ -360,6 +374,7 @@ abstract class AbstractSearchItem implements SearchItem {
         }
 
         /** This implementation returns <code>false</code>. */
+        @Override
         final public boolean isSingular() {
             return false;
         }
@@ -375,6 +390,7 @@ abstract class AbstractSearchItem implements SearchItem {
          * until one is found for which {@link #write(Object)} is satisfied.
          * Calls {@link #reset()} if no such image is found.
          */
+        @Override
         final public boolean next() {
             State nextState;
             switch (this.state) {

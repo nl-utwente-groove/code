@@ -64,6 +64,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
      * additions.
      */
+    @Override
     public synchronized void addUpdate(GTS gts, GraphState state) {
         if (this.listening) {
             prepareInsert();
@@ -79,6 +80,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
      * additions.
      */
+    @Override
     public synchronized void addUpdate(GTS gts, GraphTransition transition) {
         if (this.listening) {
             prepareInsert();

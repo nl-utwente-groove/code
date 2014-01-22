@@ -47,6 +47,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> {
                     /**
                      * Delegates the method to the inner entry.
                      */
+                    @Override
                     public T getKey() {
                         return innerEntry.getKey();
                     }
@@ -54,6 +55,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> {
                     /**
                      * Transforms the value of the inner entry.
                      */
+                    @Override
                     public V getValue() {
                         return TransformMap.this.toOuter(innerEntry.getValue());
                     }
@@ -62,6 +64,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> {
                      * Transforms the new value using {@link #toInner(Object)},
                      * and the return value using {@link #toOuter(Entry)}.
                      */
+                    @Override
                     public V setValue(V value) {
                         return TransformMap.this.toOuter(innerEntry.setValue(TransformMap.this.toInner(value)));
                     }

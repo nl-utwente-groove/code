@@ -55,6 +55,7 @@ public class ProgressBarDialog extends JDialog {
             @Override
             public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         setVisible(true);
                         // cancel the timer because it may otherwise go on running,
@@ -80,6 +81,7 @@ public class ProgressBarDialog extends JDialog {
             this.activation = null;
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setVisible(false);
             }
@@ -121,8 +123,7 @@ public class ProgressBarDialog extends JDialog {
 
     private Box getPanel() {
         Box result = Box.createVerticalBox();
-        result.setBorder(new EmptyBorder(BORDER_WIDTH, BORDER_WIDTH,
-            BORDER_WIDTH, BORDER_WIDTH));
+        result.setBorder(new EmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH));
         result.add(getLabel());
         result.add(Box.createVerticalGlue());
         result.add(getBar());

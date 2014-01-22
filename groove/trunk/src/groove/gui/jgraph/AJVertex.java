@@ -123,8 +123,8 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
         if (edge.getRole() != BINARY) {
             return true;
         }
-        return getJGraph().isShowLoopsAsNodeLabels()
-            && edge.source() == edge.target() && edge.source() == getNode();
+        return getJGraph().isShowLoopsAsNodeLabels() && edge.source() == edge.target()
+            && edge.source() == getNode();
     }
 
     @Override
@@ -149,6 +149,7 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
+    @Override
     public Label getKey(Edge edge) {
         return edge.label();
     }
@@ -183,13 +184,14 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
 
     @Override
     public String toString() {
-        return String.format("%s %d with labels %s",
-            getClass().getSimpleName(), getNumber(), getKeys());
+        return String.format("%s %d with labels %s", getClass().getSimpleName(), getNumber(),
+            getKeys());
     }
 
     /**
      * Returns the tool tip text for this vertex.
      */
+    @Override
     public String getToolTipText() {
         return HTMLConverter.HTML_TAG.on(getNodeDescription()).toString();
     }

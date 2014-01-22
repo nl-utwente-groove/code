@@ -41,6 +41,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         this.mode = mode;
     }
 
+    @Override
     public boolean addEdge(HostEdge elem) {
         if (getMode() == NODES_ONLY) {
             return false;
@@ -49,6 +50,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         }
     }
 
+    @Override
     public boolean addNode(HostNode elem) {
         if (getMode() == EDGES_ONLY) {
             return false;
@@ -57,6 +59,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         }
     }
 
+    @Override
     public boolean removeEdge(HostEdge elem) {
         if (getMode() == NODES_ONLY) {
             return false;
@@ -65,6 +68,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         }
     }
 
+    @Override
     public boolean removeNode(HostNode elem) {
         if (getMode() == EDGES_ONLY) {
             return false;

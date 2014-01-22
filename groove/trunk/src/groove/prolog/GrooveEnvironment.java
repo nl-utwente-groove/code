@@ -112,8 +112,7 @@ public class GrooveEnvironment extends Environment {
      * Loads all predicates defined in a given class.
      * Returns a map from loaded predicates to tool tip texts. 
      */
-    private Map<CompoundTermTag,String> ensureLoaded(
-            Class<? extends GroovePredicates> source) {
+    private Map<CompoundTermTag,String> ensureLoaded(Class<? extends GroovePredicates> source) {
         Map<CompoundTermTag,String> result = null;
         try {
             GroovePredicates instance = source.newInstance();
@@ -124,13 +123,11 @@ public class GrooveEnvironment extends Environment {
             // retrieve the tool tip map
             result = instance.getToolTipMap();
         } catch (InstantiationException e) {
-            throw new IllegalArgumentException(String.format(
-                "Can't load predicate class %s: %s", source.getSimpleName(),
-                e.getMessage()));
+            throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
+                source.getSimpleName(), e.getMessage()));
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(String.format(
-                "Can't load predicate class %s: %s", source.getSimpleName(),
-                e.getMessage()));
+            throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
+                source.getSimpleName(), e.getMessage()));
         }
         return result;
     }
@@ -138,47 +135,43 @@ public class GrooveEnvironment extends Environment {
     /**
      * Loads a single method definition, and tests the definition.
      */
-    private void ensureLoaded(Class<? extends GroovePredicates> source,
-            CompoundTermTag tag, String definition) {
+    private void ensureLoaded(Class<? extends GroovePredicates> source, CompoundTermTag tag,
+            String definition) {
         DefinitionListener listener = new DefinitionListener();
         getModule().addPredicateListener(listener);
-        new PrologTextLoader(getPrologTextLoaderState(), new StringReader(
-            definition));
+        new PrologTextLoader(getPrologTextLoaderState(), new StringReader(definition));
         getModule().removePredicateListener(listener);
         Set<CompoundTermTag> predicates = listener.getPredicates();
         if (!predicates.contains(tag)) {
             throw new IllegalArgumentException(String.format(
-                "%s#%s_%d does not define predicate %s", source.getName(),
-                tag.functor, tag.arity, tag));
+                "%s#%s_%d does not define predicate %s", source.getName(), tag.functor, tag.arity,
+                tag));
         }
         predicates.remove(tag);
         if (!predicates.isEmpty()) {
             throw new IllegalArgumentException(String.format(
-                "%s#%s_%d defines additional predicates %s", source.getName(),
-                tag.functor, tag.arity, predicates));
+                "%s#%s_%d defines additional predicates %s", source.getName(), tag.functor,
+                tag.arity, predicates));
         }
         // tests if the predicate relies on a non-existent or inappropriate class
-        String className =
-            getModule().getDefinedPredicate(tag).getJavaClassName();
+        String className = getModule().getDefinedPredicate(tag).getJavaClassName();
         if (className != null) {
             try {
                 Class<?> builtInClass = Class.forName(className);
                 if (!PrologCode.class.isAssignableFrom(builtInClass)) {
                     throw new IllegalArgumentException(String.format(
-                        "%s#%s_%d builds in class %s that does not subtype %s",
-                        source.getName(), tag.functor, tag.arity, className,
-                        PrologCode.class.getName()));
+                        "%s#%s_%d builds in class %s that does not subtype %s", source.getName(),
+                        tag.functor, tag.arity, className, PrologCode.class.getName()));
                 }
                 if (builtInClass.getAnnotation(Deprecated.class) != null) {
                     throw new IllegalArgumentException(String.format(
-                        "%s#%s_%d builds in deprecated class %s",
-                        source.getName(), tag.functor, tag.arity, className,
-                        PrologCode.class.getName()));
+                        "%s#%s_%d builds in deprecated class %s", source.getName(), tag.functor,
+                        tag.arity, className, PrologCode.class.getName()));
                 }
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException(String.format(
-                    "%s#%s_%d builds in non-existing class %s",
-                    source.getName(), tag.functor, tag.arity, className));
+                    "%s#%s_%d builds in non-existing class %s", source.getName(), tag.functor,
+                    tag.arity, className));
             }
         }
     }
@@ -201,8 +194,7 @@ public class GrooveEnvironment extends Environment {
         this.userTags.addAll(listener.getPredicates());
         FormatErrorSet errors = new FormatErrorSet();
         for (PrologTextLoaderError error : loaderState.getErrors()) {
-            errors.add("%s", error.getMessage(), error.getLine(),
-                error.getColumn());
+            errors.add("%s", error.getMessage(), error.getLine(), error.getColumn());
         }
         errors.throwException();
     }
@@ -265,8 +257,7 @@ public class GrooveEnvironment extends Environment {
      * Mapping from Groove built-in predicates to 
      * corresponding tool tip text.
      */
-    private final Map<CompoundTermTag,String> toolTipMap =
-        new HashMap<CompoundTermTag,String>();
+    private final Map<CompoundTermTag,String> toolTipMap = new HashMap<CompoundTermTag,String>();
 
     /**
      * The current groove state
@@ -277,23 +268,21 @@ public class GrooveEnvironment extends Environment {
      * Generic error to throw when the groove environment is missing
      */
     public static void invalidEnvironment() throws PrologException {
-        throw new PrologException(new CompoundTerm(PrologException.errorTag,
-            new CompoundTerm(CompoundTermTag.get("system_error", 1),
-                GrooveEnvironment.NO_GROOVE_ENV, PrologException.errorAtom),
-            PrologException.errorAtom), null);
+        throw new PrologException(new CompoundTerm(PrologException.errorTag, new CompoundTerm(
+            CompoundTermTag.get("system_error", 1), GrooveEnvironment.NO_GROOVE_ENV,
+            PrologException.errorAtom), PrologException.errorAtom), null);
     }
 
     /**
      * Atom term "no_groove_environment"
      */
-    public final static AtomTerm NO_GROOVE_ENV =
-        AtomTerm.get("no_groove_environment");
+    public final static AtomTerm NO_GROOVE_ENV = AtomTerm.get("no_groove_environment");
 
     /** Classes of predefined Groove predicates. */
     @SuppressWarnings("unchecked")
     public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
-        AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class,
-        RulePredicates.class, TransPredicates.class, TypePredicates.class};
+        AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class, RulePredicates.class,
+        TransPredicates.class, TypePredicates.class};
 
     /** 
      * Flag that causes all Prolog functor names to be printed on stdout.
@@ -312,6 +301,7 @@ public class GrooveEnvironment extends Environment {
     private static class TagSet extends TreeSet<CompoundTermTag> {
         public TagSet() {
             super(new Comparator<CompoundTermTag>() {
+                @Override
                 public int compare(CompoundTermTag o1, CompoundTermTag o2) {
                     int rc = o1.functor.value.compareTo(o2.functor.value);
                     if (rc == 0) {
@@ -335,7 +325,6 @@ public class GrooveEnvironment extends Environment {
             return this.predicates;
         }
 
-        private Set<CompoundTermTag> predicates =
-            new HashSet<CompoundTermTag>();
+        private Set<CompoundTermTag> predicates = new HashSet<CompoundTermTag>();
     }
 }

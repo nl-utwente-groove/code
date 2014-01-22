@@ -37,6 +37,7 @@ import org.jgraph.graph.VertexView;
  * @version $Revision $
  */
 final class LoopRouting implements Routing {
+    @Override
     public int getPreferredLineStyle(EdgeView edge) {
         if (edge.isLoop()) {
             return GraphConstants.STYLE_SPLINE;
@@ -45,13 +46,13 @@ final class LoopRouting implements Routing {
         }
     }
 
+    @Override
     public List<?> route(GraphLayoutCache cache, EdgeView edgeView) {
         List<Point2D> result = null;
         if (isRoutable(edgeView)) {
             JEdge<?> jEdge = (JEdge<?>) edgeView.getCell();
             // find out the source bounds
-            VertexView sourceView =
-                (VertexView) edgeView.getSource().getParentView();
+            VertexView sourceView = (VertexView) edgeView.getSource().getParentView();
             // first refresh the source view, otherwise the view bounds
             // might be out of date
             sourceView.refresh(cache, cache, true);
@@ -62,8 +63,7 @@ final class LoopRouting implements Routing {
             Point2D midPoint = edgeView.getPoint(1);
             if (startPoint.equals(midPoint) || sourceBounds.contains(midPoint)) {
                 // modify end point so it lies outside node bounds
-                midPoint.setLocation(
-                    sourceBounds.getMaxX() + DEFAULT_LOOP_SIZE, midPoint.getY());
+                midPoint.setLocation(sourceBounds.getMaxX() + DEFAULT_LOOP_SIZE, midPoint.getY());
             }
             Point2D endPoint = edgeView.getPoint(edgeView.getPointCount() - 1);
             result = new ArrayList<Point2D>(3);

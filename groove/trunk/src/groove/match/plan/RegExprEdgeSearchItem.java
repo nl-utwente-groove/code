@@ -52,8 +52,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.neededVars.removeAll(this.boundVars);
     }
 
-    final public Record createRecord(
-            groove.match.plan.PlanSearchStrategy.Search search) {
+    @Override
+    final public Record createRecord(Search search) {
         if (isSingular(search)) {
             return createSingularRecord(search);
         } else {
@@ -151,10 +151,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     }
 
     boolean isSingular(Search search) {
-        boolean sourceSingular =
-            this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
-        boolean targetSingular =
-            this.targetFound || search.getNodeSeed(this.targetIx) != null;
+        boolean sourceSingular = this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
+        boolean targetSingular = this.targetFound || search.getNodeSeed(this.targetIx) != null;
         return sourceSingular && targetSingular;
     }
 
@@ -163,14 +161,13 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     }
 
     MultipleRecord<RegAut.Result> createMultipleRecord(Search search) {
-        return new RegExprEdgeMultipleRecord(search, this.sourceIx,
-            this.targetIx, this.sourceFound, this.targetFound);
+        return new RegExprEdgeMultipleRecord(search, this.sourceIx, this.targetIx,
+            this.sourceFound, this.targetFound);
     }
 
     @Override
     public String toString() {
-        return String.format("Find %s--%s->%s", this.source, this.edgeExpr,
-            this.target);
+        return String.format("Find %s--%s->%s", this.source, this.edgeExpr, this.target);
     }
 
     private final RuleEdge edge;
@@ -224,17 +221,14 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeSingularRecord(Search search) {
             super(search);
-            assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
-                needsVars());
+            assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(needsVars());
         }
 
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch =
-                this.search.getNodeSeed(RegExprEdgeSearchItem.this.sourceIx);
-            this.targetPreMatch =
-                this.search.getNodeSeed(RegExprEdgeSearchItem.this.targetIx);
+            this.sourcePreMatch = this.search.getNodeSeed(RegExprEdgeSearchItem.this.sourceIx);
+            this.targetPreMatch = this.search.getNodeSeed(RegExprEdgeSearchItem.this.targetIx);
         }
 
         @Override
@@ -267,22 +261,19 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         private Set<RegAut.Result> computeRelation(Valuation valuation) {
             HostNode sourceFind = this.sourcePreMatch;
             if (sourceFind == null && RegExprEdgeSearchItem.this.sourceFound) {
-                sourceFind =
-                    this.search.getNode(RegExprEdgeSearchItem.this.sourceIx);
+                sourceFind = this.search.getNode(RegExprEdgeSearchItem.this.sourceIx);
             }
             HostNode targetFind = this.targetPreMatch;
             if (targetFind == null && RegExprEdgeSearchItem.this.targetFound) {
-                targetFind =
-                    this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
+                targetFind = this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
             }
-            return RegExprEdgeSearchItem.this.labelAutomaton.getMatches(
-                this.host, sourceFind, targetFind, valuation);
+            return RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host, sourceFind,
+                targetFind, valuation);
         }
 
         @Override
         public String toString() {
-            return RegExprEdgeSearchItem.this.toString() + ": "
-                + this.state.isWritten();
+            return RegExprEdgeSearchItem.this.toString() + ": " + this.state.isWritten();
         }
 
         /** Pre-matched source image, if any. */
@@ -291,11 +282,10 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         private HostNode targetPreMatch;
     }
 
-    private class RegExprEdgeMultipleRecord extends
-            MultipleRecord<RegAut.Result> {
+    private class RegExprEdgeMultipleRecord extends MultipleRecord<RegAut.Result> {
         /** Constructs a new record, for a given matcher. */
-        RegExprEdgeMultipleRecord(Search search, int sourceIx, int targetIx,
-                boolean sourceFound, boolean targetFound) {
+        RegExprEdgeMultipleRecord(Search search, int sourceIx, int targetIx, boolean sourceFound,
+                boolean targetFound) {
             super(search);
             this.sourceIx = sourceIx;
             this.targetIx = targetIx;
@@ -336,8 +326,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 valuation.put(var, image);
             }
             Set<RegAut.Result> matches =
-                RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host,
-                    this.sourceFind, this.targetFind, valuation);
+                RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host, this.sourceFind,
+                    this.targetFind, valuation);
             this.imageIter = matches.iterator();
         }
 
@@ -389,8 +379,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return RegExprEdgeSearchItem.this.toString() + " = ["
-                + this.sourceFind + ", " + this.targetFind + "]";
+            return RegExprEdgeSearchItem.this.toString() + " = [" + this.sourceFind + ", "
+                + this.targetFind + "]";
         }
 
         /** The index of the source in the search. */

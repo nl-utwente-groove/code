@@ -48,8 +48,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     /** Constructs a new dialog, for a given graph. */
-    private GraphPreviewDialog(Simulator simulator, GrammarModel grammar,
-            G graph) {
+    private GraphPreviewDialog(Simulator simulator, GrammarModel grammar, G graph) {
         super(simulator == null ? null : simulator.getFrame());
         this.simulator = simulator;
         this.grammar = grammar;
@@ -76,6 +75,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
             // make any dialog in which this panel is embedded resizable
             // taken from https://blogs.oracle.com/scblog/entry/tip_making_joptionpane_dialog_resizable
             this.contentPanel.addHierarchyListener(new HierarchyListener() {
+                @Override
                 public void hierarchyChanged(HierarchyEvent e) {
                     Window window =
                         SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
@@ -119,8 +119,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                 shownGraph = GraphConverter.toAspect(this.graph);
                 DisplayKind kind =
                     DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-                AspectJGraph aspectJGraph =
-                    new AspectJGraph(this.simulator, kind, false);
+                AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
                 if (this.simulator == null) {
                     aspectJGraph.setGrammar(this.grammar);
                 }
@@ -191,14 +190,13 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     /** Creates a panel showing a preview of a given graph. */
-    static public GraphPreviewPanel createPanel(GrammarModel grammar,
-            Graph graph) {
+    static public GraphPreviewPanel createPanel(GrammarModel grammar, Graph graph) {
         return new GraphPreviewDialog<Graph>(grammar, graph).getContent();
     }
 
     private static Simulator globalSimulator;
-    private static Map<GraphRole,Set<String>> recentPreviews =
-        new EnumMap<GraphRole,Set<String>>(GraphRole.class);
+    private static Map<GraphRole,Set<String>> recentPreviews = new EnumMap<GraphRole,Set<String>>(
+        GraphRole.class);
     static {
         for (GraphRole role : GraphRole.values()) {
             recentPreviews.put(role, new HashSet<String>());

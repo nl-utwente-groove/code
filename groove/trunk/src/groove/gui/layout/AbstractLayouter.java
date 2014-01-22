@@ -81,8 +81,8 @@ abstract public class AbstractLayouter implements Layouter {
 
         @Override
         public String toString() {
-            return "VertexLayoutable[x=" + getX() + ",y=" + getY() + ",width="
-                + getWidth() + ",height=" + getHeight() + "]";
+            return "VertexLayoutable[x=" + getX() + ",y=" + getY() + ",width=" + getWidth()
+                + ",height=" + getHeight() + "]";
         }
 
         /** The internally stored bounds of this layoutable. */
@@ -111,6 +111,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Returns the name stored for this action.
      */
+    @Override
     public String getName() {
         return this.name;
     }
@@ -135,8 +136,7 @@ abstract public class AbstractLayouter implements Layouter {
             if (cellView instanceof JVertexView) {
                 JVertex<?> jVertex = ((JVertexView) cellView).getCell();
                 if (!jVertex.isGrayedOut()) {
-                    LayoutNode layoutable =
-                        new LayoutNode((VertexView) cellView);
+                    LayoutNode layoutable = new LayoutNode((VertexView) cellView);
                     this.layoutMap.put(jVertex, layoutable);
                     if (!jVertex.isLayoutable()) {
                         this.immovableSet.add(layoutable);
@@ -152,8 +152,7 @@ abstract public class AbstractLayouter implements Layouter {
      * the node bounds and edge points.
      */
     protected void finish() {
-        final Map<JCell<?>,AttributeMap> change =
-            new HashMap<JCell<?>,AttributeMap>();
+        final Map<JCell<?>,AttributeMap> change = new HashMap<JCell<?>,AttributeMap>();
         CellView[] cellViews = this.jGraph.getGraphLayoutCache().getRoots();
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
@@ -162,8 +161,7 @@ abstract public class AbstractLayouter implements Layouter {
                 if (view instanceof VertexView) {
                     // store the bounds back into the model
                     Rectangle2D bounds = ((VertexView) view).getCachedBounds();
-                    visuals.setNodePos(new Point2D.Double(bounds.getCenterX(),
-                        bounds.getCenterY()));
+                    visuals.setNodePos(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
                     ((JVertex<?>) cell).setLayoutable(false);
                 }
                 change.put(cell, visuals.getAttributes());
@@ -171,6 +169,7 @@ abstract public class AbstractLayouter implements Layouter {
         }
         // do the following in the event dispatch thread
         Runnable edit = new Runnable() {
+            @Override
             public void run() {
                 if (change.size() != 0) {
                     AbstractLayouter.this.jmodel.edit(change, null, null, null);

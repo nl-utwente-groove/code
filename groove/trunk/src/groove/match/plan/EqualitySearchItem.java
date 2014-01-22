@@ -55,8 +55,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
         this.boundEdges = Collections.singleton(edge);
     }
 
-    public EqualityRecord createRecord(
-            groove.match.plan.PlanSearchStrategy.Search matcher) {
+    @Override
+    public EqualityRecord createRecord(groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new EqualityRecord(matcher);
     }
 
@@ -76,8 +76,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Test %s and %s for %s", this.node1, this.node2,
-            this.equals ? "equality" : "inequality");
+        return String.format("Test %s and %s for %s", this.node1, this.node2, this.equals
+                ? "equality" : "inequality");
     }
 
     /**
@@ -131,6 +131,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
         return true;
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         this.node1Ix = strategy.getNodeIx(this.node1);
         this.node2Ix = strategy.getNodeIx(this.node2);
@@ -166,11 +167,9 @@ public class EqualitySearchItem extends AbstractSearchItem {
         EqualityRecord(Search search) {
             super(search);
             assert search.getNode(EqualitySearchItem.this.node1Ix) != null : String.format(
-                "Merge embargo node %s not yet matched",
-                EqualitySearchItem.this.node1);
+                "Merge embargo node %s not yet matched", EqualitySearchItem.this.node1);
             assert search.getNode(EqualitySearchItem.this.node2Ix) != null : String.format(
-                "Merge embargo node %s not yet matched",
-                EqualitySearchItem.this.node2);
+                "Merge embargo node %s not yet matched", EqualitySearchItem.this.node2);
         }
 
         @Override

@@ -32,6 +32,7 @@ class IdentityTransitionStub extends AbstractRuleTransitionStub {
     }
 
     /** This type of transition stub involves no non-trivial symmetry. */
+    @Override
     public boolean isSymmetry() {
         return false;
     }

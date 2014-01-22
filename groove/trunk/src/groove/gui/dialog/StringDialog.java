@@ -104,8 +104,7 @@ abstract public class StringDialog {
         this.dialog.setResizable(true);
         this.dialog.setVisible(true);
         if (this.title != null) {
-            String[] storedValues =
-                new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
+            String[] storedValues = new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
             for (int i = 0; i < storedValues.length; i++) {
                 storedValues[i] = this.history.get(i);
             }
@@ -135,8 +134,8 @@ abstract public class StringDialog {
             main.add(createSyntaxPanel(), BorderLayout.EAST);
         }
         JOptionPane panel =
-            new JOptionPane(main, JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.OK_CANCEL_OPTION, null, buttons);
+            new JOptionPane(main, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null,
+                buttons);
         JDialog result = panel.createDialog(frame, this.title);
         result.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         result.addWindowListener(this.closeListener);
@@ -166,8 +165,7 @@ abstract public class StringDialog {
                 }
             }
 
-            private final ToolTipManager manager =
-                ToolTipManager.sharedInstance();
+            private final ToolTipManager manager = ToolTipManager.sharedInstance();
             private final int standardDelay = this.manager.getDismissDelay();
         });
         return new JScrollPane(list);
@@ -180,8 +178,7 @@ abstract public class StringDialog {
             this.choiceBox.setPrototypeDisplayValue("The longest value we want to display completely");
             this.choiceBox.setModel(createModel());
             this.choiceBox.setEditable(true);
-            JTextField editor =
-                (JTextField) this.choiceBox.getEditor().getEditorComponent();
+            JTextField editor = (JTextField) this.choiceBox.getEditor().getEditorComponent();
             editor.addActionListener(this.closeListener);
             editor.getDocument().addDocumentListener(this.changeListener);
         }
@@ -433,8 +430,8 @@ abstract public class StringDialog {
                 this.filterText = filterText;
                 this.selectedItem = null;
                 for (ListDataListener l : this.listeners) {
-                    l.contentsChanged(new ListDataEvent(this,
-                        ListDataEvent.CONTENTS_CHANGED, 0, getSize()));
+                    l.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0,
+                        getSize()));
                 }
                 getChoiceBox().hidePopup();
                 if (getSize() > 0 && filterText.length() > 0) {
@@ -469,8 +466,7 @@ abstract public class StringDialog {
         /** The actual model. */
         private final List<String> contents = new ArrayList<String>();
         /** The listeners for this model. */
-        private final List<ListDataListener> listeners =
-            new ArrayList<ListDataListener>();
+        private final List<ListDataListener> listeners = new ArrayList<ListDataListener>();
         /**
          * The currently selected item. Note that there is no connection
          * between this and the model.
@@ -505,10 +501,10 @@ abstract public class StringDialog {
      * is set (possibly to null).
      */
     private class CloseListener extends WindowAdapter implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             boolean ok = false;
-            if (e.getSource() == getOkButton()
-                || e.getSource() instanceof JTextField) {
+            if (e.getSource() == getOkButton() || e.getSource() instanceof JTextField) {
                 ok = setResult(getEditor().getText());
             } else if (e.getSource() == getCancelButton()) {
                 ok = setResult(null);
@@ -533,11 +529,10 @@ abstract public class StringDialog {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
             Component result =
-                super.getListCellRendererComponent(list, value, index,
-                    isSelected, cellHasFocus);
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {
                 setToolTipText(this.tipMap.get(value));
             }

@@ -62,8 +62,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     }
 
     /** Shows a given file as a graph in an optionally modal dialog. */
-    public void show(File file, boolean modal) throws IOException,
-        FormatException {
+    public void show(File file, boolean modal) throws IOException, FormatException {
         GraphIO<?> io = null;
         for (FileType type : FileType.getType(file)) {
             if (type.hasGraphIO() && type.getGraphIO().canLoad()) {
@@ -88,11 +87,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     /** Shows a given graph in an optionally modal dialog. */
     private void show(final Graph graph, GrammarModel grammar, boolean modal) {
-        GraphPreviewPanel panel =
-            GraphPreviewDialog.createPanel(grammar, graph);
+        GraphPreviewPanel panel = GraphPreviewDialog.createPanel(grammar, graph);
         panel.add(new NodeIdsButton(panel), BorderLayout.NORTH);
-        JOptionPane optionPane =
-            new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
+        JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
         JDialog dialog = optionPane.createDialog(graph.getName());
         dialog.setModal(modal);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -115,8 +112,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     }
 
     /** The location of the file to be viewer. */
-    @Argument(
-            metaVar = "input",
+    @Argument(metaVar = "input",
             usage = "Graph file to be viewed. Its extension is used to guess its format and type",
             required = true, handler = ExistingFileHandler.class)
     private File inFile;
@@ -171,10 +167,10 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     private class NodeIdsButton extends JButton {
         NodeIdsButton(GraphPreviewPanel panel) {
-            this.nodeIdsItem =
-                panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
+            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
             setText();
             addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     NodeIdsButton.this.nodeIdsItem.setSelected(!NodeIdsButton.this.nodeIdsItem.isSelected());
                     setText();

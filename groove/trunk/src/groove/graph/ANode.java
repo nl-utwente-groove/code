@@ -111,6 +111,7 @@ abstract public class ANode implements Node, Cloneable {
      * Returns the number of this node.
      * @return the {@link #nodeNr}-value
      */
+    @Override
     public int getNumber() {
         return this.nodeNr;
     }

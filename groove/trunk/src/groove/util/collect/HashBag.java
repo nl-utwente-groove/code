@@ -29,8 +29,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
-        Bag<T> {
+public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /** Constructs an empty bag. */
     public HashBag() {
         // empty
@@ -49,6 +48,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
     @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
+            @Override
             public boolean hasNext() {
                 if (this.count == 0) {
                     return this.entryIter.hasNext();
@@ -57,6 +57,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
                 }
             }
 
+            @Override
             public T next() {
                 if (this.count == 0) {
                     nextEntry();
@@ -66,6 +67,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
                 return this.entry.getKey();
             }
 
+            @Override
             public void remove() {
                 if (this.removed) {
                     throw new IllegalStateException();
@@ -108,6 +110,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      * positive multiplicity.
      * @return the set of elements occurring in this bag
      */
+    @Override
     public Set<T> elementSet() {
         return this.bag.keySet();
     }
@@ -116,6 +119,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      * Returns the multiplicity of a given element in this bag.
      * @ensure <tt>result >= 0</tt>
      */
+    @Override
     public int multiplicity(Object elem) {
         Multiplicity mult = this.bag.get(elem);
         if (mult == null) {
@@ -129,6 +133,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      * Returns a mapping from keys to (positive) multiplicities.
      * @ensure <tt>result.keysSet().equals(elementSet())</tt>
      */
+    @Override
     public Map<T,? extends Multiplicity> multiplicityMap() {
         return Collections.unmodifiableMap(this.bag);
     }
@@ -163,10 +168,12 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      *         was removed
      * @see #remove(Object)
      */
+    @Override
     public boolean removeWasLast(Object elem) {
         return removeGetCount(elem) == 0;
     }
 
+    @Override
     public boolean minus(Collection<?> c) {
         boolean result = false;
         for (Object element : c) {
@@ -207,8 +214,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof HashBag<?>
-            && ((HashBag<?>) obj).bag.equals(this.bag);
+        return obj instanceof HashBag<?> && ((HashBag<?>) obj).bag.equals(this.bag);
     }
 
     /**
@@ -235,6 +241,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      *         instance; <tt>-1</tt> if
      *         <tt>elem did not occur in the first place</tt>
      */
+    @Override
     @SuppressWarnings("unchecked")
     public int removeGetCount(Object elem) {
         MyMultiplicity mult = this.bag.remove(elem);
@@ -287,8 +294,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
      * Models the multiplicity of an element in a bag. The multiplicity value is
      * initially 1, and never becomes zero.
      */
-    protected class MyMultiplicity implements Multiplicity, Cloneable,
-            Comparable<Object> {
+    protected class MyMultiplicity implements Multiplicity, Cloneable, Comparable<Object> {
         /**
          * Constructs a fresh multiplicity, with initial value 1.
          * @ensure <tt>getValue() == 1</tt>
@@ -303,6 +309,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
          * @return The multiplicity value
          * @ensure <tt>result > 0</tt>
          */
+        @Override
         public int getValue() {
             assert this.value >= 0;
             return this.value;
@@ -343,6 +350,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
             }
         }
 
+        @Override
         public int compareTo(Object o) {
             return hashCode() - o.hashCode();
         }

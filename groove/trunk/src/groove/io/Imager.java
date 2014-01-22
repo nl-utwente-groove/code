@@ -115,8 +115,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (gui) {
             if (args.length > 0) {
                 throw new IllegalArgumentException(
-                    "GUI-based imager is not compatible with arguments"
-                        + Arrays.toString(args));
+                    "GUI-based imager is not compatible with arguments" + Arrays.toString(args));
             }
             setVerbosity(Verbosity.HIGH);
             this.imagerFrame = new ImagerFrame();
@@ -162,12 +161,11 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
         File grammarFile = getGrammarFile(inFile);
         if (grammarFile == null) {
-            throw new IOException("Input file " + inFile
-                + " is not part of a grammar");
+            throw new IOException("Input file " + inFile + " is not part of a grammar");
         }
         if (inFile.isDirectory() && !outFile.isDirectory()) {
-            throw new IOException("Can't image files in directory " + inFile
-                + " to single file " + outFile);
+            throw new IOException("Can't image files in directory " + inFile + " to single file "
+                + outFile);
         }
         try {
             GrammarModel grammar = GrammarModel.newInstance(grammarFile, false);
@@ -185,8 +183,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @param outFile the intended output file. If {@code inFile} is a directory,
      * then {@code outFile} is guaranteed to be a directory as well.
      */
-    private void makeImage(GrammarModel grammar, File inFile, File outFile)
-        throws IOException {
+    private void makeImage(GrammarModel grammar, File inFile, File outFile) throws IOException {
         // if the given input-file is a directory, call this method recursively
         // for each file it contains but ensure:
         // --> output-file exists or can be created
@@ -198,17 +195,14 @@ public class Imager extends GrooveCmdLineTool<Object> {
                     boolean process = element.isDirectory();
                     if (!process) {
                         Pair<ResourceKind,QualName> resource = parse(element);
-                        process =
-                            resource != null && resource.one().isGraphBased();
+                        process = resource != null && resource.one().isGraphBased();
                     }
                     if (process) {
-                        makeImage(grammar, element,
-                            new File(outFile, element.getName()));
+                        makeImage(grammar, element, new File(outFile, element.getName()));
                     }
                 }
             } else {
-                throw new IOException("Output directory " + outFile
-                    + " cannot be created");
+                throw new IOException("Output directory " + outFile + " cannot be created");
             }
         }
         // or the input-file is an ordinary Groove-file (state or rule)
@@ -218,8 +212,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         else {
             Pair<ResourceKind,QualName> resource = parse(inFile);
             if (resource == null) {
-                throw new IOException("Input file " + inFile
-                    + " is not a graph resource");
+                throw new IOException("Input file " + inFile + " is not a graph resource");
             }
             // Determine output file folder and filename
             String outFileName;
@@ -230,10 +223,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
             } else {
                 outParent = outFile.getParentFile();
                 outFileName = outFile.getName();
-                if (outParent != null && !outParent.exists()
-                    && !outParent.mkdir()) {
-                    throw new IOException("Output directory " + outParent
-                        + " cannot be created");
+                if (outParent != null && !outParent.exists() && !outParent.mkdir()) {
+                    throw new IOException("Output directory " + outParent + " cannot be created");
                 }
             }
             // Determine output file format
@@ -247,10 +238,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
-                (GraphBasedModel<?>) grammar.getResource(resource.one(),
-                    resource.two().toString());
-            Exportable exportable =
-                toExportable(resourceModel, exporter.getFormatKind());
+                (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two().toString());
+            Exportable exportable = toExportable(resourceModel, exporter.getFormatKind());
             try {
                 exporter.doExport(exportable, outFile, fileType);
             } catch (PortException e1) {
@@ -260,8 +249,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
     }
 
     /** Converts a resource model to an exportable object of the right kind. */
-    private Exportable toExportable(GraphBasedModel<?> resourceModel,
-            Porter.Kind outFormat) {
+    private Exportable toExportable(GraphBasedModel<?> resourceModel, Porter.Kind outFormat) {
         Exportable result;
         AspectGraph aspectGraph = resourceModel.getSource();
         // find out what we have to export
@@ -271,10 +259,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
             break;
         case JGRAPH:
             Options options = new Options();
-            options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
-                isEditorView());
-            options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
-                isEditorView());
+            options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
+            options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind =
                 DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
@@ -287,8 +273,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             // affect the final size of the exported figure, hence
             // it can be considered harmless... ;P
             Dimension oldPrefSize = jGraph.getPreferredSize();
-            Dimension newPrefSize =
-                new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
+            Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
             result = new Exportable(jGraph);
             break;
@@ -340,14 +325,12 @@ public class Imager extends GrooveCmdLineTool<Object> {
     private final ImagerFrame imagerFrame;
 
     /** The location of the file to be imaged. */
-    @Argument(metaVar = "input", usage = "Input file or directory",
-            required = true, handler = ExistingFileHandler.class)
+    @Argument(metaVar = "input", usage = "Input file or directory", required = true,
+            handler = ExistingFileHandler.class)
     private File inFile;
 
     /** The  optional location of the output file to be imaged. */
-    @Argument(
-            metaVar = "output",
-            index = 1,
+    @Argument(metaVar = "output", index = 1,
             usage = "Output file name; if omitted, the input file name is used. "
                 + "In the absence of the '-f' option, the "
                 + "extension of <output> is taken to specify the output format",
@@ -467,8 +450,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
     /** Option handler for output format extension. */
     public static class FormatHandler extends OneArgumentOptionHandler<String> {
         /** Required constructor. */
-        public FormatHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super String> setter) {
+        public FormatHandler(CmdLineParser parser, OptionDef option, Setter<? super String> setter) {
             super(parser, option, setter);
         }
 
@@ -476,8 +458,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         protected String parse(String argument) throws CmdLineException {
             // first check if parameter is a valid format name
             if (!getFormatMap().containsKey(argument)) {
-                throw new CmdLineException(this.owner, "Unknown format: "
-                    + argument);
+                throw new CmdLineException(this.owner, "Unknown format: " + argument);
             }
             return argument;
         }
@@ -537,8 +518,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 error = e.getMessage();
             }
             if (error != null) {
-                JOptionPane.showMessageDialog(this, error, "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -569,8 +549,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
          * @param buttonRow the buttons to be displayed at the bottom of the
          *        pane
          */
-        protected JOptionPane createOptionPane(JPanel messagePane,
-                JButton[] buttonRow) {
+        protected JOptionPane createOptionPane(JPanel messagePane, JButton[] buttonRow) {
             return new JOptionPane(messagePane, JOptionPane.PLAIN_MESSAGE,
                 JOptionPane.DEFAULT_OPTION, null, buttonRow);
         }
@@ -582,6 +561,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             // make format chooser panel
             this.formatBox.setSelectedIndex(1);
             this.formatBox.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     setOutFormatExt((String) ImagerFrame.this.formatBox.getSelectedItem());
                 }
@@ -655,8 +635,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             JScrollPane logPane = new JScrollPane(this.logArea);
             logPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
             central.add(logPane, constraint);
-            return createOptionPane(central, new JButton[] {this.imageButton,
-                this.closeButton});
+            return createOptionPane(central, new JButton[] {this.imageButton, this.closeButton});
         }
 
         /**
@@ -665,16 +644,15 @@ public class Imager extends GrooveCmdLineTool<Object> {
          */
         protected Action createBrowseAction(final JTextField fileField) {
             return new AbstractAction(BROWSE_LABEL) {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     handleBrowseAction(fileField);
                     // set the out dir to the in file if it is not explciitly
                     // enabled
                     if (evt.getSource() == ImagerFrame.this.inFileBrowseButton
                         && !ImagerFrame.this.outFileEnabler.isSelected()) {
-                        File file =
-                            new File(ImagerFrame.this.inFileField.getText());
-                        File dir =
-                            file.isDirectory() ? file : file.getParentFile();
+                        File file = new File(ImagerFrame.this.inFileField.getText());
+                        File dir = file.isDirectory() ? file : file.getParentFile();
                         ImagerFrame.this.outFileField.setText(dir.getPath());
                     }
                 }
@@ -695,16 +673,19 @@ public class Imager extends GrooveCmdLineTool<Object> {
         protected void initActions() {
             setDefaultCloseOperation(EXIT_ON_CLOSE);
             Action closeAction = new AbstractAction(Options.CLOSE_ACTION_NAME) {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     System.exit(0);
                 }
             };
             Action imageAction = new AbstractAction(Options.IMAGE_ACTION_NAME) {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     handleImageAction();
                 }
             };
             ItemListener enableItemListener = new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent evt) {
                     ImagerFrame.this.outFileField.setEditable(ImagerFrame.this.outFileEnabler.isSelected());
                     ImagerFrame.this.outFileBrowseButton.setEnabled(ImagerFrame.this.outFileEnabler.isSelected());
@@ -731,25 +712,21 @@ public class Imager extends GrooveCmdLineTool<Object> {
         final JButton outFileBrowseButton = new JButton(BROWSE_LABEL);
 
         /** Button to start the imaging. */
-        private final JButton imageButton = new JButton(
-            Options.IMAGE_ACTION_NAME);
+        private final JButton imageButton = new JButton(Options.IMAGE_ACTION_NAME);
 
         /** Button to close the imager. */
-        private final JButton closeButton = new JButton(
-            Options.CLOSE_ACTION_NAME);
+        private final JButton closeButton = new JButton(Options.CLOSE_ACTION_NAME);
 
         /** Checkbox to enable the out file. */
         final JCheckBox outFileEnabler = new JCheckBox();
 
         /** File chooser for the browse actions. */
-        final JFileChooser browseChooser =
-            GrooveFileChooser.getInstance(acceptedTypes);
+        final JFileChooser browseChooser = GrooveFileChooser.getInstance(acceptedTypes);
 
         /** File chooser for the browse actions. */
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox formatBox = new JComboBox(
-            Imager.getFormatMap().keySet().toArray());
+        final JComboBox formatBox = new JComboBox(Imager.getFormatMap().keySet().toArray());
     }
 }

@@ -79,6 +79,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
         // iterator over the added set followed by a filtered iterator over
         // the lower set. Presumably it is more efficient this way?
         return new Iterator<T>() {
+            @Override
             public void remove() {
                 this.iter.remove();
                 if (!this.added.remove(this.latestNext)) {
@@ -86,10 +87,12 @@ public class DeltaSet<T> extends AbstractSet<T> {
                 }
             }
 
+            @Override
             public boolean hasNext() {
                 return this.iter.hasNext();
             }
 
+            @Override
             public T next() {
                 if (hasNext()) {
                     this.latestNext = this.iter.next();
@@ -128,8 +131,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
         boolean result = this.lower.add(o);
         if (result && !this.removed.remove(o)) {
             boolean inner = this.added.add(o);
-            assert inner : "Added element " + o + " already in added set"
-                + this.added;
+            assert inner : "Added element " + o + " already in added set" + this.added;
         }
         return result;
     }
@@ -165,8 +167,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
         if (result && !this.added.remove(o)) {
             @SuppressWarnings("unchecked")
             boolean inner = this.removed.add((T) o);
-            assert inner : "Removed element " + o + " already in removed set"
-                + this.removed;
+            assert inner : "Removed element " + o + " already in removed set" + this.removed;
         }
         return result;
     }

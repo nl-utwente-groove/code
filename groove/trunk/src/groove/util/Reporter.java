@@ -156,20 +156,16 @@ public class Reporter {
         int maxTopCount = 1, maxNestedCount = 1;
         long maxTotTime = 1, maxAvgTime = 1;
         for (Reporter subreporter : this.subreporters.values()) {
-            this.methodNameLength =
-                Math.max(subreporter.getName().length(), this.methodNameLength);
+            this.methodNameLength = Math.max(subreporter.getName().length(), this.methodNameLength);
             maxTopCount = Math.max(subreporter.topCount, maxTopCount);
             maxNestedCount =
-                Math.max(subreporter.nestedCount - subreporter.topCount,
-                    maxNestedCount);
+                Math.max(subreporter.nestedCount - subreporter.topCount, maxNestedCount);
             maxTotTime = Math.max(subreporter.duration, maxTotTime);
             long avgDuration = 0;
             if (TIME_TOP_ONLY) {
-                avgDuration =
-                    (1000 * subreporter.duration) / subreporter.topCount;
+                avgDuration = (1000 * subreporter.duration) / subreporter.topCount;
             } else if (subreporter.nestedCount > 0) {
-                avgDuration =
-                    (1000 * subreporter.duration) / subreporter.nestedCount;
+                avgDuration = (1000 * subreporter.duration) / subreporter.nestedCount;
             }
             maxAvgTime = Math.max(avgDuration, maxAvgTime);
         }
@@ -187,43 +183,32 @@ public class Reporter {
      * <li> Numbers of calls of various methods
      * </ul>
      */
-    private void myReport(PrintWriter out, int methodNameLength,
-            int topCountLength, int nestedCountLength, int totTimeLength,
-            int avgTimeLength) {
+    private void myReport(PrintWriter out, int methodNameLength, int topCountLength,
+            int nestedCountLength, int totTimeLength, int avgTimeLength) {
         out.println("Reporting " + this.type);
         for (Reporter subreporter : this.subreporters.values()) {
-            out.print(INDENT
-                + Groove.pad(subreporter.getName(), methodNameLength, false)
-                + " ");
+            out.print(INDENT + Groove.pad(subreporter.getName(), methodNameLength, false) + " ");
             out.print(TOP_COUNT_FIELD + "="
-                + Groove.pad("" + subreporter.topCount, topCountLength, false)
-                + " ");
+                + Groove.pad("" + subreporter.topCount, topCountLength, false) + " ");
             out.print(NESTED_COUNT_FIELD
                 + "="
-                + Groove.pad(""
-                    + (subreporter.nestedCount - subreporter.topCount),
+                + Groove.pad("" + (subreporter.nestedCount - subreporter.topCount),
                     nestedCountLength, false) + " ");
             if (TIME_METHODS) {
-                out.print(TOT_TIME_FIELD
-                    + "="
-                    + Groove.pad("" + subreporter.duration, totTimeLength,
-                        false) + " ");
+                out.print(TOT_TIME_FIELD + "="
+                    + Groove.pad("" + subreporter.duration, totTimeLength, false) + " ");
                 long avgDuration;
                 if (subreporter.duration > 0) {
                     if (TIME_TOP_ONLY) {
-                        avgDuration =
-                            (1000 * subreporter.duration)
-                                / subreporter.topCount;
+                        avgDuration = (1000 * subreporter.duration) / subreporter.topCount;
                     } else {
-                        avgDuration =
-                            (1000 * subreporter.duration)
-                                / subreporter.nestedCount;
+                        avgDuration = (1000 * subreporter.duration) / subreporter.nestedCount;
                     }
                 } else {
                     avgDuration = 0;
                 }
-                out.print(AVG_TIME_FIELD + "="
-                    + Groove.pad("" + avgDuration, avgTimeLength, false) + " ");
+                out.print(AVG_TIME_FIELD + "=" + Groove.pad("" + avgDuration, avgTimeLength, false)
+                    + " ");
             }
             out.println();
         }
@@ -284,16 +269,12 @@ public class Reporter {
             int classNameLength = 0;
             for (Reporter reporter : getAllReporters()) {
                 reporter.calculateFieldWidths();
-                methodNameLength =
-                    Math.max(reporter.methodNameLength, methodNameLength);
-                topCountLength =
-                    Math.max(reporter.topCountLength, topCountLength);
-                nestedCountLength =
-                    Math.max(reporter.nestedCountLength, nestedCountLength);
+                methodNameLength = Math.max(reporter.methodNameLength, methodNameLength);
+                topCountLength = Math.max(reporter.topCountLength, topCountLength);
+                nestedCountLength = Math.max(reporter.nestedCountLength, nestedCountLength);
                 totTimeLength = Math.max(reporter.totTimeLength, totTimeLength);
                 avgTimeLength = Math.max(reporter.avgTimeLength, avgTimeLength);
-                classNameLength =
-                    Math.max(reporter.type.toString().length(), classNameLength);
+                classNameLength = Math.max(reporter.type.toString().length(), classNameLength);
             }
             // print the report title
             String title = "Method call reporting: " + new java.util.Date();
@@ -306,24 +287,22 @@ public class Reporter {
             out.println();
             // print the method reports from the individual reporters
             for (Reporter reporter : getAllReporters()) {
-                reporter.myReport(out, methodNameLength, topCountLength,
-                    nestedCountLength, totTimeLength, avgTimeLength);
+                reporter.myReport(out, methodNameLength, topCountLength, nestedCountLength,
+                    totTimeLength, avgTimeLength);
                 out.println();
             }
             // print the total amounts of time measured by the reporters
             out.println("Total measured time spent in");
             for (Reporter reporter : getAllReporters()) {
-                out.println(INDENT
-                    + Groove.pad(reporter.type.toString(), classNameLength,
-                        false) + ": " + reporter.totalTime + " ms");
+                out.println(INDENT + Groove.pad(reporter.type.toString(), classNameLength, false)
+                    + ": " + reporter.totalTime + " ms");
             }
             out.println();
 
             // print the time spent inside the reporters, i.e., the time spent
             // reporting
             if (TIME_METHODS) {
-                out.println("Time spent collection information: "
-                    + getReportTime() + " ms");
+                out.println("Time spent collection information: " + getReportTime() + " ms");
             }
             out.flush();
         } else {
@@ -378,8 +357,9 @@ public class Reporter {
     static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
     static private final boolean REPORT = true;
     /** Sorted map of all registered reporters */
-    static private Map<Class<?>,Reporter> reporters =
-        new TreeMap<Class<?>,Reporter>(new Comparator<Class<?>>() {
+    static private Map<Class<?>,Reporter> reporters = new TreeMap<Class<?>,Reporter>(
+        new Comparator<Class<?>>() {
+            @Override
             public int compare(Class<?> o1, Class<?> o2) {
                 return o1.getName().compareTo(o2.getName());
             }

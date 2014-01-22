@@ -80,14 +80,11 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
     private static final String CANCEL_COMMAND = "Cancel";
 
     private static final String RESULT_TOOLTIP = "<HTML>"
-        + "Exploration can be interrupted between atomic steps of the "
-        + "strategy.<BR> "
-        + "The size of the atomic steps depends on the chosen "
-        + "strategy.<BR> "
+        + "Exploration can be interrupted between atomic steps of the " + "strategy.<BR> "
+        + "The size of the atomic steps depends on the chosen " + "strategy.<BR> "
         + "The interruption condition is determined by the indicated "
         + "number of times that the acceptor succeeds." + "</HTML>";
-    private static final String START_TOOLTIP =
-        "Restart with the customized exploration";
+    private static final String START_TOOLTIP = "Restart with the customized exploration";
     private static final String DEFAULT_TOOLTIP =
         "Set the currently selected exploration as the default for this grammar";
     private static final String EXPLORE_TOOLTIP =
@@ -124,8 +121,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
         // Override DismissDelay of the ToolTipManager.
         // Old value will be reset when the dialog is closed.
-        this.oldDismissDelay =
-            ToolTipManager.sharedInstance().getDismissDelay();
+        this.oldDismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
         ToolTipManager.sharedInstance().setDismissDelay(1000000000);
 
         // Remember the simulator.
@@ -150,23 +146,19 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         // Create the strategy editor.
-        StrategyEnumerator strategyEnumerator =
-            StrategyEnumerator.instance();
+        StrategyEnumerator strategyEnumerator = StrategyEnumerator.instance();
         strategyEnumerator.setMask(StrategyValue.DIALOG_STRATEGIES);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
-        Serialized defaultStrategy =
-            getSimulatorModel().getExploration().getStrategy();
+        Serialized defaultStrategy = getSimulatorModel().getExploration().getStrategy();
 
         // Create the acceptor editor.
-        AcceptorEnumerator acceptorEnumerator =
-            AcceptorEnumerator.instance();
+        AcceptorEnumerator acceptorEnumerator = AcceptorEnumerator.instance();
         Set<AcceptorValue> acceptorMask =
             new HashSet<AcceptorValue>(EnumSet.allOf(AcceptorValue.class));
         acceptorMask.remove(AcceptorValue.CYCLE);
         acceptorEnumerator.setMask(acceptorMask);
         this.acceptorEditor = acceptorEnumerator.createEditor(getGrammar());
-        Serialized defaultAcceptor =
-            getSimulatorModel().getExploration().getAcceptor();
+        Serialized defaultAcceptor = getSimulatorModel().getExploration().getAcceptor();
 
         // Initialize the editors with the stored default.
         this.strategyEditor.setCurrentValue(defaultStrategy);
@@ -234,8 +226,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      * by parsing an (invalid) exploration.
      */
     private void showError(FormatException exc) {
-        new ErrorDialog(this.simulator.getFrame(),
-            "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
+        new ErrorDialog(this.simulator.getFrame(), "<HTML><B>Invalid exploration.</B><BR> "
+            + exc.getMessage(), exc).setVisible(true);
     }
 
     /** Returns an exploration created on the basis of the current settings in this dialog.
@@ -275,6 +267,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      */
     private ActionListener createCloseListener() {
         return new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 closeDialog();
             }
@@ -286,6 +279,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      */
     private ActionListener createExploreListener() {
         return new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 doExploration();
             }
@@ -297,8 +291,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      */
     private ResultPanel createResultPanel() {
         this.resultPanel =
-            new ResultPanel(RESULT_TOOLTIP,
-                getSimulatorModel().getExploration().getNrResults());
+            new ResultPanel(RESULT_TOOLTIP, getSimulatorModel().getExploration().getNrResults());
         return this.resultPanel;
     }
 
@@ -468,8 +461,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
          */
         protected void setEnabled(String toolTipText, Exploration exploration) {
             GrammarModel grammar = getGrammar();
-            boolean enabled =
-                exploration != null && grammar != null && !grammar.hasErrors();
+            boolean enabled = exploration != null && grammar != null && !grammar.hasErrors();
             StringBuilder toolTip = new StringBuilder(toolTipText);
             if (enabled) {
                 try {
@@ -505,8 +497,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
             this.checkboxes = new JRadioButton[3];
             this.checkboxes[0] = new JRadioButton("Infinite (don't interrupt)");
-            this.checkboxes[1] =
-                new JRadioButton("1 (interrupt as soon as acceptor succeeds)");
+            this.checkboxes[1] = new JRadioButton("1 (interrupt as soon as acceptor succeeds)");
             this.checkboxes[2] = new JRadioButton("Custom: ");
             for (int i = 0; i < 3; i++) {
                 this.checkboxes[i].addActionListener(this);
@@ -527,8 +518,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             this.customNumber.setEnabled(initialValue >= 2);
 
             JLabel leadingLabel =
-                new JLabel("<HTML><FONT color="
-                    + ExplorationDialog.HEADER_COLOR
+                new JLabel("<HTML><FONT color=" + ExplorationDialog.HEADER_COLOR
                     + "><B>Interrupt exploration when the following number "
                     + "of accepted results have been found: </HTML>");
             leadingLabel.setToolTipText(tooltip);

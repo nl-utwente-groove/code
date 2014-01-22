@@ -91,6 +91,7 @@ public class ZoomMenu extends JMenu {
      * is displayed, to center the view on this graph, in a given scroll pane.
      */
     protected final Action zoomToFitAction = new AbstractAction("Zoom to fit") {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Component component = ZoomMenu.this.jgraph.getParent();
             while (component != null && !(component instanceof JViewport)) {
@@ -101,8 +102,8 @@ public class ZoomMenu extends JMenu {
                 Rectangle2D graphBounds = ZoomMenu.this.jgraph.getGraphBounds();
                 Dimension viewportBounds = viewport.getExtentSize();
                 double scale =
-                    Math.min(viewportBounds.width / graphBounds.getWidth(),
-                        viewportBounds.height / graphBounds.getHeight());
+                    Math.min(viewportBounds.width / graphBounds.getWidth(), viewportBounds.height
+                        / graphBounds.getHeight());
                 ZoomMenu.this.jgraph.setScale(Math.min(scale, 1.0));
                 ZoomMenu.this.jgraph.scrollRectToVisible(graphBounds.getBounds());
                 setActionsEnabled();
@@ -112,6 +113,7 @@ public class ZoomMenu extends JMenu {
 
     /** Action for zooming in, i.e., enlarging the figure. */
     protected final Action zoomInAction = new AbstractAction("Zoom in") {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             ZoomMenu.this.jgraph.changeScale(1);
             setActionsEnabled();
@@ -120,6 +122,7 @@ public class ZoomMenu extends JMenu {
 
     /** Action for zooming out, i.e., making the figure smaller. */
     protected final Action zoomOutAction = new AbstractAction("Zoom out") {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             ZoomMenu.this.jgraph.changeScale(-1);
             setActionsEnabled();
@@ -128,6 +131,7 @@ public class ZoomMenu extends JMenu {
 
     /** Action for resetting the zoom factor to the original (1.0). */
     protected final Action resetZoomAction = new AbstractAction("Reset zoom") {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             ZoomMenu.this.jgraph.setScale(1.0);
             setActionsEnabled();

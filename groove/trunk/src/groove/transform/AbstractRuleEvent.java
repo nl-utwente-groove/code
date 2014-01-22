@@ -109,8 +109,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
             try {
                 result = String.format(formatString, args.toArray());
             } catch (MissingFormatArgumentException e) {
-                throw new FormatException("Error in rule output string: %s",
-                    e.getMessage());
+                throw new FormatException("Error in rule output string: %s", e.getMessage());
             }
         }
         return result;
@@ -124,14 +123,17 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
      */
     abstract HostNode[] getArguments(HostNode[] addedNodes);
 
+    @Override
     public R getAction() {
         return getRule();
     }
 
+    @Override
     public R getRule() {
         return this.rule;
     }
 
+    @Override
     public RuleApplication newApplication(HostGraph source) {
         return new RuleApplication(this, source);
     }
@@ -147,8 +149,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
      */
     @Override
     public int hashCode() {
-        return getReuse() == EVENT ? System.identityHashCode(this)
-                : eventHashCode();
+        return getReuse() == EVENT ? System.identityHashCode(this) : eventHashCode();
     }
 
     /**
@@ -233,6 +234,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         return new HostEdgeSet(capacity);
     }
 
+    @Override
     final public Proof getMatch(final HostGraph source) {
         assert isCorrectFor(source);
         // visitor that selects a proof that corresponds to this event
@@ -245,9 +247,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
                 return !hasResult();
             }
         };
-        Proof result =
-            getRule().getEventMatcher().traverse(source, getAnchorMap(),
-                matchVisitor);
+        Proof result = getRule().getEventMatcher().traverse(source, getAnchorMap(), matchVisitor);
         return result;
     }
 
@@ -260,19 +260,15 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     private boolean isCorrectFor(HostGraph host) {
         RuleToHostMap anchorMap = getAnchorMap();
         boolean correct = true;
-        Iterator<? extends HostEdge> edgeImageIter =
-            anchorMap.edgeMap().values().iterator();
+        Iterator<? extends HostEdge> edgeImageIter = anchorMap.edgeMap().values().iterator();
         while (correct && edgeImageIter.hasNext()) {
             correct = host.containsEdge(edgeImageIter.next());
         }
         if (correct) {
-            Iterator<? extends HostNode> nodeImageIter =
-                anchorMap.nodeMap().values().iterator();
+            Iterator<? extends HostNode> nodeImageIter = anchorMap.nodeMap().values().iterator();
             while (correct && nodeImageIter.hasNext()) {
                 HostNode nodeImage = nodeImageIter.next();
-                correct =
-                    nodeImage instanceof ValueNode
-                        || host.containsNode(nodeImage);
+                correct = nodeImage instanceof ValueNode || host.containsNode(nodeImage);
             }
         }
         return correct;

@@ -54,13 +54,11 @@ public class PropertiesTable extends JTable {
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
      */
-    public PropertiesTable(Map<String,? extends PropertyKey> defaultKeys,
-            boolean editable) {
+    public PropertiesTable(Map<String,? extends PropertyKey> defaultKeys, boolean editable) {
         this.editable = editable;
         this.defaultKeys = defaultKeys;
         this.properties =
-            new TreeMap<String,String>(new ListComparator<String>(
-                this.defaultKeys.keySet()));
+            new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
         final TableModel model = getTableModel();
         setModel(model);
         setIntercellSpacing(new Dimension(2, -2));
@@ -153,6 +151,7 @@ public class PropertiesTable extends JTable {
         if (this.tableModel == null) {
             this.tableModel = new TableModel();
             this.tableModel.addTableModelListener(new TableModelListener() {
+                @Override
                 public void tableChanged(TableModelEvent e) {
                     setChanged(true);
                 }
@@ -266,8 +265,7 @@ public class PropertiesTable extends JTable {
             } else {
                 if (showContinueDialog(editedValue)) {
                     getComponent().setSelectionStart(0);
-                    getComponent().setSelectionEnd(
-                        getComponent().getText().length());
+                    getComponent().setSelectionEnd(getComponent().getText().length());
                     result = false;
                 } else {
                     super.cancelCellEditing();
@@ -303,8 +301,8 @@ public class PropertiesTable extends JTable {
          */
         private boolean showContinueDialog(String value) {
             int response =
-                JOptionPane.showConfirmDialog(PropertiesTable.this,
-                    getContinueQuestion(value), null, JOptionPane.YES_NO_OPTION);
+                JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
+                    null, JOptionPane.YES_NO_OPTION);
             return response == JOptionPane.YES_OPTION;
         }
 
@@ -314,25 +312,21 @@ public class PropertiesTable extends JTable {
             if (this.editingValueForKey == null) {
                 // editing a key
                 if (PropertiesTable.this.properties.containsKey(value)) {
-                    result.append(String.format(
-                        "Property key '%s' already exists", value));
+                    result.append(String.format("Property key '%s' already exists", value));
                 } else {
-                    result.append(String.format(
-                        "Property key '%s' is not a valid identifier.", value));
+                    result.append(String.format("Property key '%s' is not a valid identifier.",
+                        value));
                 }
             } else {
                 // editing a value
-                Property<String> test =
-                    getDefaultKeys().get(this.editingValueForKey).getFormat();
-                String description =
-                    test == null ? null : test.getDescription();
+                Property<String> test = getDefaultKeys().get(this.editingValueForKey).getFormat();
+                String description = test == null ? null : test.getDescription();
                 if (description == null) {
-                    result.append(String.format(
-                        "Incorrect value '%s' for key '%s'.",
+                    result.append(String.format("Incorrect value '%s' for key '%s'.",
                         this.editingValueForKey));
                 } else {
-                    result.append(String.format("Key '%s' expects %s.",
-                        this.editingValueForKey, description));
+                    result.append(String.format("Key '%s' expects %s.", this.editingValueForKey,
+                        description));
                 }
             }
             result.append(" Continue?");
@@ -368,15 +362,13 @@ public class PropertiesTable extends JTable {
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column) {
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
             // determine tool tip
             String tip = null;
             String text = (String) value;
             if (getDefaultKeys() != null && row < table.getRowCount()) {
-                String keyword =
-                    (String) table.getValueAt(row, PROPERTY_COLUMN);
+                String keyword = (String) table.getValueAt(row, PROPERTY_COLUMN);
                 if (keyword != null && getDefaultKeys().containsKey(keyword)) {
                     PropertyKey key = getDefaultKeys().get(keyword);
                     Property<String> format = key.getFormat();
@@ -396,8 +388,8 @@ public class PropertiesTable extends JTable {
                 }
             }
             setToolTipText(tip);
-            return super.getTableCellRendererComponent(table, text, isSelected,
-                hasFocus, row, column);
+            return super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row,
+                column);
         }
 
     }
@@ -411,10 +403,12 @@ public class PropertiesTable extends JTable {
             // empty
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public int getRowCount() {
             int size = aliasProperties().size();
             return isEditable() ? size + 1 : size;
@@ -429,6 +423,7 @@ public class PropertiesTable extends JTable {
             }
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (rowIndex == aliasProperties().size()) {
                 return "";
@@ -449,10 +444,8 @@ public class PropertiesTable extends JTable {
                 if (rowIndex >= aliasProperties().size()) {
                     return false;
                 } else {
-                    PropertyKey key =
-                        getDefaultKeys().get(getPropertyKey(rowIndex));
-                    Property<String> property =
-                        key == null ? null : key.getFormat();
+                    PropertyKey key = getDefaultKeys().get(getPropertyKey(rowIndex));
+                    Property<String> property = key == null ? null : key.getFormat();
                     return property == null || property.isEditable();
                 }
             }
@@ -475,8 +468,7 @@ public class PropertiesTable extends JTable {
                 }
             } else {
                 // key changed
-                String value =
-                    aliasProperties().remove(getPropertyKey(rowIndex));
+                String value = aliasProperties().remove(getPropertyKey(rowIndex));
                 if (aValue instanceof String && ((String) aValue).length() > 0) {
                     aliasProperties().put((String) aValue, value);
                 }
@@ -511,8 +503,7 @@ public class PropertiesTable extends JTable {
          * of the property map.
          */
         private void initPropertyKeys() {
-            this.propertyKeyList =
-                new ArrayList<String>(aliasProperties().keySet());
+            this.propertyKeyList = new ArrayList<String>(aliasProperties().keySet());
         }
 
         /** Retrieves a property key by index. */

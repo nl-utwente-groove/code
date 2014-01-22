@@ -78,8 +78,7 @@ public class ReteNetwork {
     private final HashMap<TypeNode,DefaultNodeChecker> defaultNodeCheckers =
         new HashMap<TypeNode,DefaultNodeChecker>();
 
-    private final HashMap<Rule,ProductionNode> productionNodes =
-        new HashMap<Rule,ProductionNode>();
+    private final HashMap<Rule,ProductionNode> productionNodes = new HashMap<Rule,ProductionNode>();
 
     private final HashMap<Condition,ConditionChecker> conditionCheckerNodes =
         new HashMap<Condition,ConditionChecker>();
@@ -93,8 +92,7 @@ public class ReteNetwork {
     private final HashMap<Condition,QuantifierCountChecker> quantifierCountCheckerNodes =
         new HashMap<Condition,QuantifierCountChecker>();
 
-    private final PathCheckerFactory pathCheckerFactory =
-        new PathCheckerFactory(this);
+    private final PathCheckerFactory pathCheckerFactory = new PathCheckerFactory(this);
 
     private ReteState state;
 
@@ -116,8 +114,7 @@ public class ReteNetwork {
      * @param enableInjectivity determines if this RETE network should perform 
      *        injective matching.
      */
-    public ReteNetwork(ReteSearchEngine engine, Grammar g,
-            boolean enableInjectivity) {
+    public ReteNetwork(ReteSearchEngine engine, Grammar g, boolean enableInjectivity) {
         this.grammarName = g.getName();
         this.typeGraph = g.getTypeGraph();
         this.injective = enableInjectivity;
@@ -147,8 +144,7 @@ public class ReteNetwork {
      *  
      * @param condition The condition to processed and added to the RETE network.
      */
-    private void addConditionToNetwork(Condition condition,
-            ConditionChecker parent) {
+    private void addConditionToNetwork(Condition condition, ConditionChecker parent) {
         ConditionChecker result = null;
 
         /**
@@ -160,8 +156,7 @@ public class ReteNetwork {
         Set<RuleEdge> emptyAndNegativePathEdges = new TreeHashSet<RuleEdge>();
         Set<OperatorNode> operatorNodes = new TreeHashSet<OperatorNode>();
         mapQuantifierCountNodes(openList, condition);
-        mapEdgesAndNodes(openList, condition.getPattern(),
-            emptyAndNegativePathEdges, operatorNodes);
+        mapEdgesAndNodes(openList, condition.getPattern(), emptyAndNegativePathEdges, operatorNodes);
 
         if (openList.size() > 0) {
             //generate subgraph-checkers
@@ -179,8 +174,7 @@ public class ReteNetwork {
             //in the open list (disconnected islands in the lhs of this rule)
             //that can no longer be merged with other connected 
             //checkers in the open list
-            HashSet<ReteStaticMapping> isolatedComponents =
-                new HashSet<ReteStaticMapping>();
+            HashSet<ReteStaticMapping> isolatedComponents = new HashSet<ReteStaticMapping>();
             while (((openList.size() > 1) && (isolatedComponents.size() < openList.size()))
                 || !operatorNodes.isEmpty()) {
 
@@ -194,12 +188,11 @@ public class ReteNetwork {
                             if (suc instanceof SubgraphCheckerNode) {
                                 ReteNetworkNode other =
                                     ((SubgraphCheckerNode<?,?>) suc).getOtherAntecedent(m.getNNode());
-                                ReteStaticMapping otherM =
-                                    openList.getFirstMappingFor(other, m);
+                                ReteStaticMapping otherM = openList.getFirstMappingFor(other, m);
                                 if ((otherM != null)
                                     && !toBeDeleted.containsNNode(other)
-                                    && ((SubgraphCheckerNode<?,?>) suc).checksValidSubgraph(
-                                        m, otherM)) {
+                                    && ((SubgraphCheckerNode<?,?>) suc).checksValidSubgraph(m,
+                                        otherM)) {
                                     toBeDeleted.add(m);
                                     toBeDeleted.add(otherM);
                                     ReteStaticMapping sucMapping =
@@ -238,12 +231,10 @@ public class ReteNetwork {
                      * put a reference to the new n-node on open-list;
                      */
                     ReteStaticMapping m1 =
-                        pickTheNextLargestCheckerNode(openList,
-                            isolatedComponents);
+                        pickTheNextLargestCheckerNode(openList, isolatedComponents);
 
                     ReteStaticMapping m2 =
-                        (m1 != null) ? pickCheckerNodeConnectedTo(openList, m1)
-                                : null;
+                        (m1 != null) ? pickCheckerNodeConnectedTo(openList, m1) : null;
 
                     if (m2 != null) {
                         if ((m1.getNNode() instanceof QuantifierCountChecker)
@@ -257,9 +248,8 @@ public class ReteNetwork {
                         @SuppressWarnings("rawtypes")
                         SubgraphCheckerNode sgc =
                             (m2.getNNode() instanceof QuantifierCountChecker)
-                                    ? new QuantifierCountSubgraphChecker(this,
-                                        m1, m2) : new SubgraphCheckerNode(this,
-                                        m1, m2);
+                                    ? new QuantifierCountSubgraphChecker(this, m1, m2)
+                                    : new SubgraphCheckerNode(this, m1, m2);
 
                         ReteStaticMapping newCombinedMapping =
                             ReteStaticMapping.combine(m1, m2, sgc);
@@ -274,23 +264,20 @@ public class ReteNetwork {
                         List<ReteStaticMapping> argumentSources =
                             new ArrayList<ReteStaticMapping>();
                         OperatorNode opNode =
-                            pickOneOperatorNode(openList, operatorNodes,
-                                argumentSources);
+                            pickOneOperatorNode(openList, operatorNodes, argumentSources);
                         ReteStaticMapping inputAntecedent = null;
                         assert argumentSources.size() > 0;
                         if (argumentSources.size() == 1) {
                             inputAntecedent = argumentSources.get(0);
                         } else {
-                            inputAntecedent =
-                                createDisjointJoin(argumentSources);
+                            inputAntecedent = createDisjointJoin(argumentSources);
                         }
                         toBeDeleted.addAll(argumentSources);
                         DataOperatorChecker operatorNode =
-                            new DataOperatorChecker(this, inputAntecedent,
-                                opNode);
+                            new DataOperatorChecker(this, inputAntecedent, opNode);
                         ReteStaticMapping opCheckerMapping =
-                            ReteStaticMapping.mapDataOperatorNode(operatorNode,
-                                opNode, inputAntecedent);
+                            ReteStaticMapping.mapDataOperatorNode(operatorNode, opNode,
+                                inputAntecedent);
                         openList.add(opCheckerMapping);
                         assert opNode != null;
                         operatorNodes.remove(opNode);
@@ -313,8 +300,7 @@ public class ReteNetwork {
              */
             if (openList.size() >= 1) {
                 if (openList.size() > 1) {
-                    ReteStaticMapping disjointMerge =
-                        createDisjointJoin(openList);
+                    ReteStaticMapping disjointMerge = createDisjointJoin(openList);
                     openList.clear();
                     openList.add(disjointMerge);
                 }
@@ -323,16 +309,11 @@ public class ReteNetwork {
                         emptyAndNegativePathEdges, false);
                 }
                 if (parent == null) {
-                    result =
-                        new ProductionNode(this, condition.getRule(),
-                            openList.get(0));
-                    this.productionNodes.put(condition.getRule(),
-                        (ProductionNode) result);
+                    result = new ProductionNode(this, condition.getRule(), openList.get(0));
+                    this.productionNodes.put(condition.getRule(), (ProductionNode) result);
                     this.conditionCheckerNodes.put(condition, result);
                 } else {
-                    result =
-                        new ConditionChecker(this, condition, parent,
-                            openList.get(0));
+                    result = new ConditionChecker(this, condition, parent, openList.get(0));
                     this.conditionCheckerNodes.put(condition, result);
                 }
             }
@@ -343,8 +324,7 @@ public class ReteNetwork {
             //an empty match set. They do not have any antecedents.            
             if (parent == null) {
                 result = new ProductionNode(this, condition.getRule(), null);
-                this.productionNodes.put(condition.getRule(),
-                    (ProductionNode) result);
+                this.productionNodes.put(condition.getRule(), (ProductionNode) result);
                 this.conditionCheckerNodes.put(condition, result);
             } else {
                 result = new ConditionChecker(this, condition, parent, null);
@@ -352,8 +332,7 @@ public class ReteNetwork {
             }
         }
         if (condition.getCountNode() != null) {
-            QuantifierCountChecker qcc =
-                this.getQuantifierCountCheckerFor(condition);
+            QuantifierCountChecker qcc = this.getQuantifierCountCheckerFor(condition);
             assert qcc != null;
             qcc.setUniversalQuantifierChecker(result);
             result.setCountCheckerNode(qcc);
@@ -368,8 +347,7 @@ public class ReteNetwork {
                     positiveSubConditions.add(c);
                 }
             }
-            processNacs(openList.size() > 0 ? openList.get(0) : null, nacs,
-                result);
+            processNacs(openList.size() > 0 ? openList.get(0) : null, nacs, result);
             for (Condition c : positiveSubConditions) {
                 addConditionToNetwork(c, result);
             }
@@ -387,11 +365,9 @@ public class ReteNetwork {
     private void mapQuantifierCountNodes(StaticMap openList, Condition condition) {
         for (Condition c : condition.getSubConditions()) {
             if ((c.getOp() == Op.FORALL) && (c.getCountNode() != null)) {
-                QuantifierCountChecker qcc =
-                    new QuantifierCountChecker(this, c);
+                QuantifierCountChecker qcc = new QuantifierCountChecker(this, c);
                 this.quantifierCountCheckerNodes.put(c, qcc);
-                ReteStaticMapping sm =
-                    new ReteStaticMapping(qcc, qcc.getPattern());
+                ReteStaticMapping sm = new ReteStaticMapping(qcc, qcc.getPattern());
                 openList.add(sm);
             }
         }
@@ -405,19 +381,18 @@ public class ReteNetwork {
      * @return The static mapping of the n-node created to join the
      *         given antecedents. 
      */
-    private ReteStaticMapping createDisjointJoin(
-            List<ReteStaticMapping> antecedents) {
+    private ReteStaticMapping createDisjointJoin(List<ReteStaticMapping> antecedents) {
         ReteStaticMapping disjointMerge = null;
 
         //Make a copy so that we could sort the list
-        List<ReteStaticMapping> scratchList =
-            new ArrayList<ReteStaticMapping>(antecedents);
+        List<ReteStaticMapping> scratchList = new ArrayList<ReteStaticMapping>(antecedents);
 
         //we sort the antecedents in descending order of size
         //so that during the merging of the matches
         //the hash code calculation of the composite
         //match would be faster.
         Collections.sort(scratchList, new Comparator<ReteStaticMapping>() {
+            @Override
             public int compare(ReteStaticMapping m1, ReteStaticMapping m2) {
                 return m2.getNNode().size() - m1.getNNode().size();
             }
@@ -428,18 +403,14 @@ public class ReteNetwork {
         if (scratchList.size() == 2) {
             @SuppressWarnings("rawtypes")
             SubgraphCheckerNode sgc =
-                new SubgraphCheckerNode(this, scratchList.get(0),
-                    scratchList.get(1));
-            disjointMerge =
-                ReteStaticMapping.combine(scratchList.get(0),
-                    scratchList.get(1), sgc);
+                new SubgraphCheckerNode(this, scratchList.get(0), scratchList.get(1));
+            disjointMerge = ReteStaticMapping.combine(scratchList.get(0), scratchList.get(1), sgc);
         } else {
             //if there are more then combine them with special
             //subgraph-checker that is capable of merging several disjoint
             //subgraphs.
 
-            DisconnectedSubgraphChecker dsc =
-                new DisconnectedSubgraphChecker(this, scratchList);
+            DisconnectedSubgraphChecker dsc = new DisconnectedSubgraphChecker(this, scratchList);
 
             disjointMerge = ReteStaticMapping.combine(scratchList, dsc);
         }
@@ -473,8 +444,7 @@ public class ReteNetwork {
      * have their arguments on the open list 
      * otherwise it will definitely return some operator node.
      */
-    private OperatorNode pickOneOperatorNode(StaticMap openList,
-            Set<OperatorNode> operatorNodes,
+    private OperatorNode pickOneOperatorNode(StaticMap openList, Set<OperatorNode> operatorNodes,
             List<ReteStaticMapping> argumentSources) {
         OperatorNode result = null;
 
@@ -482,8 +452,7 @@ public class ReteNetwork {
             new HashMap<OperatorNode,List<ReteStaticMapping>>();
         for (OperatorNode node : operatorNodes) {
             boolean allArgumentsFound = true;
-            List<ReteStaticMapping> argumentComponents =
-                new ArrayList<ReteStaticMapping>();
+            List<ReteStaticMapping> argumentComponents = new ArrayList<ReteStaticMapping>();
             for (VariableNode vn : node.getArguments()) {
                 boolean found = false;
                 for (ReteStaticMapping component : openList) {
@@ -504,19 +473,16 @@ public class ReteNetwork {
                 candidates.put(node, argumentComponents);
             }
         }
-        OperatorNode[] resultCandidates =
-            new OperatorNode[candidates.keySet().size()];
+        OperatorNode[] resultCandidates = new OperatorNode[candidates.keySet().size()];
         candidates.keySet().toArray(resultCandidates);
         Arrays.sort(resultCandidates, new Comparator<OperatorNode>() {
 
             @Override
             public int compare(OperatorNode arg0, OperatorNode arg1) {
-                int result =
-                    candidates.get(arg0).size() - candidates.get(arg1).size();
+                int result = candidates.get(arg0).size() - candidates.get(arg1).size();
                 if (result == 0) {
                     result =
-                        getTotalSize(candidates.get(arg0))
-                            - getTotalSize(candidates.get(arg1));
+                        getTotalSize(candidates.get(arg0)) - getTotalSize(candidates.get(arg1));
                 }
                 return 0;
             }
@@ -536,27 +502,25 @@ public class ReteNetwork {
         return result;
     }
 
-    private void addEmptyWordAcceptingAndNegativePathCheckers(
-            StaticMap openList, Set<RuleEdge> emptyPathEdges, boolean keepPrefix) {
+    private void addEmptyWordAcceptingAndNegativePathCheckers(StaticMap openList,
+            Set<RuleEdge> emptyPathEdges, boolean keepPrefix) {
         assert openList.size() == 1;
         for (RuleEdge e : emptyPathEdges) {
             RegExpr exp = e.label().getMatchExpr();
             ReteStaticMapping m1 = openList.get(0);
             AbstractPathChecker pc =
                 this.pathCheckerFactory.getPathCheckerFor(
-                    (exp.isNeg()) ? exp.getNegOperand() : exp, exp.isEmpty()
-                        || e.source() == e.target());
-            ReteStaticMapping m2 =
-                new ReteStaticMapping(pc, new RuleElement[] {e});
+                    (exp.isNeg()) ? exp.getNegOperand() : exp,
+                    exp.isEmpty() || e.source() == e.target());
+            ReteStaticMapping m2 = new ReteStaticMapping(pc, new RuleElement[] {e});
             if (exp.isNeg()) {
                 NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
-                    new NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(
-                        this, m1, m2, keepPrefix);
+                    new NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(this, m1,
+                        m2, keepPrefix);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
             } else {
                 SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
-                    new SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(
-                        this, m1, m2, keepPrefix);
+                    new SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(this, m1, m2, keepPrefix);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
             }
             openList.set(0, m1);
@@ -572,14 +536,12 @@ public class ReteNetwork {
      * @return A collection of edges of the given condition. 
      */
     protected Collection<RuleEdge> getEdgeCollection(Condition c) {
-        List<RuleEdge> result =
-            new ArrayList<RuleEdge>(c.getPattern().edgeSet());
+        List<RuleEdge> result = new ArrayList<RuleEdge>(c.getPattern().edgeSet());
         Collections.sort(result, EdgeComparator.instance());
         return result;
     }
 
-    private RuleNode translate(RuleFactory factory,
-            RuleGraphMorphism translationMap, RuleNode node) {
+    private RuleNode translate(RuleFactory factory, RuleGraphMorphism translationMap, RuleNode node) {
         RuleNode result = node;
         if (translationMap != null) {
             result = translationMap.getNode(node);
@@ -590,8 +552,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private RuleEdge translate(RuleFactory factory,
-            RuleGraphMorphism translationMap, RuleEdge edge) {
+    private RuleEdge translate(RuleFactory factory, RuleGraphMorphism translationMap, RuleEdge edge) {
         RuleEdge result = edge;
         if (translationMap != null) {
             RuleNode n1 = translate(factory, translationMap, edge.source());
@@ -626,8 +587,7 @@ public class ReteNetwork {
      *                      statically mapping them and putting them on the open-list.                      
      */
     private void mapEdgesAndNodes(StaticMap openList, RuleGraph ruleGraph,
-            Set<RuleEdge> emptyAndNegativePathEdges,
-            Set<OperatorNode> operatorNodes) {
+            Set<RuleEdge> emptyAndNegativePathEdges, Set<OperatorNode> operatorNodes) {
 
         Collection<RuleNode> mappedLHSNodes = new HashSet<RuleNode>();
         Collection<RuleEdge> edgeSet = ruleGraph.edgeSet();
@@ -651,15 +611,13 @@ public class ReteNetwork {
                     edgeChecker = new EdgeCheckerNode(this, e);
                     this.root.addSuccessor(edgeChecker);
                 }
-                mapping =
-                    new ReteStaticMapping(edgeChecker, new RuleElement[] {e});
+                mapping = new ReteStaticMapping(edgeChecker, new RuleElement[] {e});
             } else if (!e.label().getMatchExpr().isAcceptsEmptyWord()
                 && !e.label().getMatchExpr().isNeg()) {
                 AbstractPathChecker pathChecker =
-                    this.pathCheckerFactory.getPathCheckerFor(
-                        e.label().getMatchExpr(), e.source() == e.target());
-                mapping =
-                    new ReteStaticMapping(pathChecker, new RuleElement[] {e});
+                    this.pathCheckerFactory.getPathCheckerFor(e.label().getMatchExpr(),
+                        e.source() == e.target());
+                mapping = new ReteStaticMapping(pathChecker, new RuleElement[] {e});
             } else {
                 emptyAndNegativePathEdges.add(e);
             }
@@ -679,11 +637,9 @@ public class ReteNetwork {
         //will be represented by a separate static mapping in the open list.
         //This part is a deviation from the standard algorithm spec.        
         for (RuleNode n : nodeSet) {
-            if (!mappedLHSNodes.contains(n)
-                && !this.quantifierCountCheckerNodes.containsKey(n)) {
+            if (!mappedLHSNodes.contains(n) && !this.quantifierCountCheckerNodes.containsKey(n)) {
                 NodeChecker nc = findNodeCheckerForNode(n);
-                ReteStaticMapping mapping =
-                    new ReteStaticMapping(nc, new RuleElement[] {n});
+                ReteStaticMapping mapping = new ReteStaticMapping(nc, new RuleElement[] {n});
                 openList.add(mapping);
             }
         }
@@ -697,8 +653,7 @@ public class ReteNetwork {
      * @return The mapping from the nodes of the <code>source</code>
      *         to the newly made/numbered nodes. 
      */
-    private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source,
-            Condition positiveRule) {
+    private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source, Condition positiveRule) {
         RuleFactory rfact = positiveRule.getFactory();
         RuleGraphMorphism result = rfact.createMorphism();
         int maxNodeNr = 0;
@@ -712,8 +667,7 @@ public class ReteNetwork {
 
             if (n instanceof VariableNode) {
                 VariableNode vn = (VariableNode) n;
-                result.nodeMap().put(n,
-                    rfact.createVariableNode(maxNodeNr++, vn.getTerm()));
+                result.nodeMap().put(n, rfact.createVariableNode(maxNodeNr++, vn.getTerm()));
 
             } else {
                 DefaultRuleNode dn = (DefaultRuleNode) n;
@@ -781,8 +735,8 @@ public class ReteNetwork {
      * @param positiveConditionChecker This is the condition-checker for the positive
      *        condition that has negative sub-conditions.
      */
-    private void processNacs(ReteStaticMapping lastSubgraphMapping,
-            Set<Condition> nacs, ConditionChecker positiveConditionChecker) {
+    private void processNacs(ReteStaticMapping lastSubgraphMapping, Set<Condition> nacs,
+            ConditionChecker positiveConditionChecker) {
 
         assert (lastSubgraphMapping == null)
             || (positiveConditionChecker.getAntecedents().get(0).equals(lastSubgraphMapping.getNNode()));
@@ -802,25 +756,21 @@ public class ReteNetwork {
                     positiveConditionChecker.getCondition());
             RuleGraph newNacGraph =
                 copyAndRenumberNodes(nac.getPattern(),
-                    positiveConditionChecker.getCondition().getFactory(),
-                    nodeRenumberingMapping);
+                    positiveConditionChecker.getCondition().getFactory(), nodeRenumberingMapping);
             RuleGraphMorphism newRootMap =
                 copyRootMap(nac.getRoot().nodeSet(), nodeRenumberingMapping);
 
             ReteStaticMapping m1 =
-                duplicateAndTranslateMapping(
-                    positiveConditionChecker.getCondition().getFactory(),
+                duplicateAndTranslateMapping(positiveConditionChecker.getCondition().getFactory(),
                     lastSubgraphMapping, newRootMap);
             if (m1 != null) {
                 byPassList.add(m1);
                 openList.add(m1);
             }
 
-            Set<RuleEdge> emptyAcceptingAndNegativeEdges =
-                new TreeHashSet<RuleEdge>();
+            Set<RuleEdge> emptyAcceptingAndNegativeEdges = new TreeHashSet<RuleEdge>();
             Set<OperatorNode> operatorNode = new TreeHashSet<OperatorNode>();
-            mapEdgesAndNodes(openList, newNacGraph,
-                emptyAcceptingAndNegativeEdges, operatorNode);
+            mapEdgesAndNodes(openList, newNacGraph, emptyAcceptingAndNegativeEdges, operatorNode);
             if (m1 == null) {
                 m1 = openList.get(0);
                 byPassList.add(m1);
@@ -831,8 +781,7 @@ public class ReteNetwork {
                 if (m2 == null) {
                     m2 = pickTheNextLargestCheckerNode(openList, byPassList);
                 }
-                SubgraphCheckerNode<?,?> sg =
-                    SubgraphCheckerNode.create(this, m1, m2, true);
+                SubgraphCheckerNode<?,?> sg = SubgraphCheckerNode.create(this, m1, m2, true);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
                 openList.set(0, m1);
                 if (!byPassList.isEmpty()) {
@@ -848,8 +797,7 @@ public class ReteNetwork {
             }
 
             CompositeConditionChecker result =
-                new CompositeConditionChecker(this, nac,
-                    positiveConditionChecker, openList.get(0));
+                new CompositeConditionChecker(this, nac, positiveConditionChecker, openList.get(0));
             this.compositeConditionCheckerNodes.add(result);
         }
     }
@@ -862,13 +810,9 @@ public class ReteNetwork {
             RuleElement[] newElements = new RuleElement[oldElements.length];
             for (int i = 0; i < newElements.length; i++) {
                 if (oldElements[i] instanceof RuleEdge) {
-                    newElements[i] =
-                        translate(factory, translationMap,
-                            (RuleEdge) oldElements[i]);
+                    newElements[i] = translate(factory, translationMap, (RuleEdge) oldElements[i]);
                 } else {
-                    newElements[i] =
-                        translate(factory, translationMap,
-                            (RuleNode) oldElements[i]);
+                    newElements[i] = translate(factory, translationMap, (RuleNode) oldElements[i]);
                 }
             }
             result = new ReteStaticMapping(source.getNNode(), newElements);
@@ -907,8 +851,7 @@ public class ReteNetwork {
         assert openList.size() > 0;
         ReteStaticMapping result = null;
         for (int i = 0; i < openList.size(); i++) {
-            if ((result == null)
-                || (result.getNNode().size() < openList.get(i).getNNode().size())) {
+            if ((result == null) || (result.getNNode().size() < openList.get(i).getNNode().size())) {
                 if (!bypassThese.contains(openList.get(i))) {
                     result = openList.get(i);
                 }
@@ -917,8 +860,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private ReteStaticMapping pickCheckerNodeConnectedTo(StaticMap openList,
-            ReteStaticMapping g1) {
+    private ReteStaticMapping pickCheckerNodeConnectedTo(StaticMap openList, ReteStaticMapping g1) {
         ReteStaticMapping result = null;
         for (ReteStaticMapping m : openList) {
             if ((m != g1) && isOkToJoin(g1, m)) {
@@ -1102,10 +1044,8 @@ public class ReteNetwork {
 
     /** Creates and returns a graph showing the structure of this RETE network. */
     public PlainGraph toPlainGraph() {
-        PlainGraph graph =
-            new PlainGraph(this.grammarName + "-rete", GraphRole.RETE);
-        Map<ReteNetworkNode,PlainNode> map =
-            new HashMap<ReteNetworkNode,PlainNode>();
+        PlainGraph graph = new PlainGraph(this.grammarName + "-rete", GraphRole.RETE);
+        Map<ReteNetworkNode,PlainNode> map = new HashMap<ReteNetworkNode,PlainNode>();
         PlainNode rootNode = graph.addNode();
         map.put(this.getRoot(), rootNode);
         graph.addEdge(rootNode, "ROOT", rootNode);
@@ -1116,8 +1056,7 @@ public class ReteNetwork {
         return graph;
     }
 
-    private void addQuantifierCountCheckers(PlainGraph graph,
-            Map<ReteNetworkNode,PlainNode> map) {
+    private void addQuantifierCountCheckers(PlainGraph graph, Map<ReteNetworkNode,PlainNode> map) {
         for (ConditionChecker cc : this.getConditonCheckerNodes()) {
             QuantifierCountChecker qcc = cc.getCountCheckerNode();
             if (qcc != null) {
@@ -1134,8 +1073,7 @@ public class ReteNetwork {
         }
     }
 
-    private void addEmptyConditions(PlainGraph graph,
-            Map<ReteNetworkNode,PlainNode> map) {
+    private void addEmptyConditions(PlainGraph graph, Map<ReteNetworkNode,PlainNode> map) {
         for (ConditionChecker cc : this.getConditonCheckerNodes()) {
             if (cc.isEmpty()) {
                 PlainNode conditionCheckerNode = graph.addNode();
@@ -1148,8 +1086,7 @@ public class ReteNetwork {
         }
     }
 
-    private void addSubConditionEdges(PlainGraph graph,
-            Map<ReteNetworkNode,PlainNode> map) {
+    private void addSubConditionEdges(PlainGraph graph, Map<ReteNetworkNode,PlainNode> map) {
         for (ConditionChecker cc : this.getConditonCheckerNodes()) {
             ConditionChecker parent = cc.getParent();
             if (parent != null) {
@@ -1167,16 +1104,15 @@ public class ReteNetwork {
         }
     }
 
-    private void addChildren(PlainGraph graph,
-            Map<ReteNetworkNode,PlainNode> map, ReteNetworkNode nnode) {
+    private void addChildren(PlainGraph graph, Map<ReteNetworkNode,PlainNode> map,
+            ReteNetworkNode nnode) {
         PlainNode jNode = map.get(nnode);
         boolean navigate;
         if (jNode != null) {
             ReteNetworkNode previous = null;
             int repeatCounter = 0;
             for (ReteNetworkNode childNNode : nnode.getSuccessors()) {
-                repeatCounter =
-                    (previous == childNNode) ? repeatCounter + 1 : 0;
+                repeatCounter = (previous == childNNode) ? repeatCounter + 1 : 0;
                 navigate = false;
                 PlainNode childJNode = map.get(childNNode);
                 if (childJNode == null) {
@@ -1190,8 +1126,7 @@ public class ReteNetwork {
                 }
 
                 if (childNNode instanceof SubgraphCheckerNode) {
-                    if (childNNode.getAntecedents().get(0) != childNNode.getAntecedents().get(
-                        1)) {
+                    if (childNNode.getAntecedents().get(0) != childNNode.getAntecedents().get(1)) {
                         if (nnode == childNNode.getAntecedents().get(0)) {
                             graph.addEdge(jNode, "left", childJNode);
                         } else {
@@ -1201,8 +1136,7 @@ public class ReteNetwork {
                         graph.addEdge(jNode, "left", childJNode);
                         graph.addEdge(jNode, "right", childJNode);
                     }
-                } else if ((childNNode instanceof ConditionChecker)
-                    && (repeatCounter > 0)) {
+                } else if ((childNNode instanceof ConditionChecker) && (repeatCounter > 0)) {
                     graph.addEdge(jNode, "receive_" + repeatCounter, childJNode);
                 } else {
                     graph.addEdge(jNode, "receive", childJNode);
@@ -1225,22 +1159,16 @@ public class ReteNetwork {
             result.add(PlainEdge.createEdge(source,
                 ((DefaultNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof ValueNodeChecker) {
-            result.add(PlainEdge.createEdge(
-                source,
-                String.format(
-                    "Value Node Checker - %s ",
-                    ((VariableNode) ((ValueNodeChecker) nnode).getNode()).getConstant()),
-                source));
+            result.add(PlainEdge.createEdge(source, String.format("Value Node Checker - %s ",
+                ((VariableNode) ((ValueNodeChecker) nnode).getNode()).getConstant()), source));
             result.add(PlainEdge.createEdge(source, ":"
                 + ((ValueNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof QuantifierCountChecker) {
-            result.add(PlainEdge.createEdge(source,
-                String.format("- Quantifier Count Checker "), source));
+            result.add(PlainEdge.createEdge(source, String.format("- Quantifier Count Checker "),
+                source));
             for (int i = 0; i < ((QuantifierCountChecker) nnode).getPattern().length; i++) {
-                RuleElement e =
-                    ((QuantifierCountChecker) nnode).getPattern()[i];
-                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " "
-                    + e.toString(), source));
+                RuleElement e = ((QuantifierCountChecker) nnode).getPattern()[i];
+                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
             }
 
         } else if (nnode instanceof EdgeCheckerNode) {
@@ -1253,27 +1181,22 @@ public class ReteNetwork {
                 result.add(PlainEdge.createEdge(source, s, source));
             }
         } else if (nnode instanceof DisconnectedSubgraphChecker) {
-            result.add(PlainEdge.createEdge(source,
-                "DisconnectedSubgraphChecker", source));
+            result.add(PlainEdge.createEdge(source, "DisconnectedSubgraphChecker", source));
         } else if (nnode instanceof ProductionNode) {
             result.add(PlainEdge.createEdge(source, "- Production Node "
-                + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
-                source));
+                + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"), source));
             result.add(PlainEdge.createEdge(source, "-"
                 + ((ProductionNode) nnode).getCondition().getName(), source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " "
-                    + e.toString(), source));
+                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(PlainEdge.createEdge(source, "- Condition Checker "
-                + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
-                source));
+                + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"), source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " "
-                    + e.toString(), source));
+                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
             }
         } else {
             String[] lines = nnode.toString().split("\n");
@@ -1299,8 +1222,7 @@ public class ReteNetwork {
         try {
             Groove.saveGraph(graph, file);
         } catch (IOException exc) {
-            throw new RuntimeException(String.format(
-                "Error while saving graph to '%s'", file), exc);
+            throw new RuntimeException(String.format("Error while saving graph to '%s'", file), exc);
         }
     }
 
@@ -1378,16 +1300,14 @@ public class ReteNetwork {
         // inside the <code>elements</code> array and the integer at index  1
         // is -1 for node element, 0 for the source of edge elements and 1
         // for the target of edge elements.
-        private HashMap<RuleNode,LookupEntry> nodeLookupMap =
-            new HashMap<RuleNode,LookupEntry>();
+        private HashMap<RuleNode,LookupEntry> nodeLookupMap = new HashMap<RuleNode,LookupEntry>();
 
         /**
          * 
          * @param reteNode The RETE n-node that is to be mapped to some rule's LHS element 
          * @param mappedTo the LHS elements the <code>reteNode</code> parameter is to be mapped to.
          */
-        public ReteStaticMapping(ReteNetworkNode reteNode,
-                RuleElement[] mappedTo) {
+        public ReteStaticMapping(ReteNetworkNode reteNode, RuleElement[] mappedTo) {
             this.nNode = reteNode;
             this.elements = mappedTo;
             for (int i = 0; i < this.elements.length; i++) {
@@ -1398,18 +1318,16 @@ public class ReteNetwork {
                     this.nodeLookupMap.put(n2, new LookupEntry(i, Role.TARGET));
                 } else {
                     assert (this.elements[i] instanceof RuleNode);
-                    this.nodeLookupMap.put((RuleNode) this.elements[i],
-                        new LookupEntry(i, Role.NODE));
+                    this.nodeLookupMap.put((RuleNode) this.elements[i], new LookupEntry(i,
+                        Role.NODE));
                 }
             }
             assert reteNode.getPattern().length == mappedTo.length;
         }
 
-        public static ReteStaticMapping mapDataOperatorNode(
-                DataOperatorChecker doc, OperatorNode opEdge,
-                ReteStaticMapping antecedentMapping) {
-            assert antecedentMapping.getNNode().equals(
-                doc.getAntecedents().get(0));
+        public static ReteStaticMapping mapDataOperatorNode(DataOperatorChecker doc,
+                OperatorNode opEdge, ReteStaticMapping antecedentMapping) {
+            assert antecedentMapping.getNNode().equals(doc.getAntecedents().get(0));
 
             RuleElement[] mapto = new RuleElement[doc.getPattern().length];
             for (int i = 0; i < antecedentMapping.getElements().length; i++) {
@@ -1425,22 +1343,18 @@ public class ReteNetwork {
             assert oneMap.getNNode().getSuccessors().contains(suc)
                 && otherMap.getNNode().getSuccessors().contains(suc);
             ReteStaticMapping left =
-                suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap
-                        : otherMap;
+                suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap : otherMap;
             ReteStaticMapping right = (left == oneMap) ? otherMap : oneMap;
             RuleElement[] combinedElements =
-                new RuleElement[left.getElements().length
-                    + right.getElements().length];
+                new RuleElement[left.getElements().length + right.getElements().length];
             int i = 0;
             for (; i < left.getElements().length; i++) {
                 combinedElements[i] = left.getElements()[i];
             }
             for (; i < combinedElements.length; i++) {
-                combinedElements[i] =
-                    right.getElements()[i - left.getElements().length];
+                combinedElements[i] = right.getElements()[i - left.getElements().length];
             }
-            ReteStaticMapping result =
-                new ReteStaticMapping(suc, combinedElements);
+            ReteStaticMapping result = new ReteStaticMapping(suc, combinedElements);
             return result;
         }
 
@@ -1455,36 +1369,29 @@ public class ReteNetwork {
                 }
             }
 
-            RuleElement[] combinedElements =
-                new RuleElement[tempElementsList.size()];
+            RuleElement[] combinedElements = new RuleElement[tempElementsList.size()];
             combinedElements = tempElementsList.toArray(combinedElements);
 
-            ReteStaticMapping result =
-                new ReteStaticMapping(suc, combinedElements);
+            ReteStaticMapping result = new ReteStaticMapping(suc, combinedElements);
             return result;
         }
 
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
-                ReteStaticMapping otherMap,
-                NegativeFilterSubgraphCheckerNode<?,?> suc) {
+                ReteStaticMapping otherMap, NegativeFilterSubgraphCheckerNode<?,?> suc) {
 
             ReteStaticMapping left =
-                suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap
-                        : otherMap;
-            RuleElement[] combinedElements =
-                new RuleElement[left.getElements().length];
+                suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap : otherMap;
+            RuleElement[] combinedElements = new RuleElement[left.getElements().length];
             int i = 0;
             for (; i < left.getElements().length; i++) {
                 combinedElements[i] = left.getElements()[i];
             }
 
-            ReteStaticMapping result =
-                new ReteStaticMapping(suc, combinedElements);
+            ReteStaticMapping result = new ReteStaticMapping(suc, combinedElements);
             return result;
         }
 
-        public static boolean properlyOverlap(ReteStaticMapping one,
-                ReteStaticMapping theOther) {
+        public static boolean properlyOverlap(ReteStaticMapping one, ReteStaticMapping theOther) {
             boolean result = false;
             Set<RuleNode> nodes1 = new TreeHashSet<RuleNode>();
             nodes1.addAll(one.getLhsNodes());
@@ -1546,11 +1453,10 @@ public class ReteNetwork {
         @Override
         public String toString() {
             StringBuilder res =
-                new StringBuilder(String.format("%s \n lhs-elements:\n",
-                    this.getNNode().toString()));
+                new StringBuilder(
+                    String.format("%s \n lhs-elements:\n", this.getNNode().toString()));
             for (int i = 0; i < this.getElements().length; i++) {
-                res.append(String.format("%d %s \n", i,
-                    this.getElements()[i].toString()));
+                res.append(String.format("%d %s \n", i, this.getElements()[i].toString()));
             }
             res.append("------------\n");
             return res.toString();
@@ -1616,10 +1522,8 @@ public class ReteNetwork {
 
         private ReteNetwork owner;
         private HostGraph hostGraph;
-        private Set<ReteStateSubscriber> subscribers =
-            new HashSet<ReteStateSubscriber>();
-        private Set<ReteStateSubscriber> updateSubscribers =
-            new HashSet<ReteStateSubscriber>();
+        private Set<ReteStateSubscriber> subscribers = new HashSet<ReteStateSubscriber>();
+        private Set<ReteStateSubscriber> updateSubscribers = new HashSet<ReteStateSubscriber>();
         private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
 
         protected ReteState(ReteNetwork owner) {

@@ -128,6 +128,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         return getNode().equals(((NodeTypeSearchItem) obj).getNode());
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         this.nodeFound = strategy.isNodeFound(this.node);
         this.nodeIx = strategy.getNodeIx(this.node);
@@ -148,8 +149,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         return this.type.hashCode();
     }
 
-    final public Record createRecord(
-            groove.match.plan.PlanSearchStrategy.Search search) {
+    @Override
+    final public Record createRecord(groove.match.plan.PlanSearchStrategy.Search search) {
         if (this.nodeFound) {
             return createSingularRecord(search);
         } else {
@@ -211,10 +212,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         boolean find() {
             boolean result = false;
             this.imageType = computeImage().getType();
-            result =
-                NodeTypeSearchItem.this.matchingTypes.contains(this.imageType);
-            for (int vi = 0; result
-                && vi < NodeTypeSearchItem.this.varFound.length; vi++) {
+            result = NodeTypeSearchItem.this.matchingTypes.contains(this.imageType);
+            for (int vi = 0; result && vi < NodeTypeSearchItem.this.varFound.length; vi++) {
                 int varIx = NodeTypeSearchItem.this.varIxs[vi];
                 if (NodeTypeSearchItem.this.varFound[vi]) {
                     result = this.search.getVar(varIx) == this.imageType;
@@ -238,12 +237,9 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         final boolean write() {
             boolean result = true;
-            for (int vi = 0; result
-                && vi < NodeTypeSearchItem.this.varFound.length; vi++) {
+            for (int vi = 0; result && vi < NodeTypeSearchItem.this.varFound.length; vi++) {
                 if (!NodeTypeSearchItem.this.varFound[vi]) {
-                    result =
-                        this.search.putVar(NodeTypeSearchItem.this.varIxs[vi],
-                            this.imageType);
+                    result = this.search.putVar(NodeTypeSearchItem.this.varIxs[vi], this.imageType);
                 }
             }
             if (!result) {
@@ -257,8 +253,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          * end node images.
          */
         private HostNode computeImage() {
-            return this.nodeSeed == null ? this.search.getNode(this.nodeIx)
-                    : this.nodeSeed;
+            return this.nodeSeed == null ? this.search.getNode(this.nodeIx) : this.nodeSeed;
         }
 
         @Override
@@ -287,8 +282,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         NodeTypeMultipleRecord(Search search, int sourceIx) {
             super(search);
             this.sourceIx = sourceIx;
-            this.varFind =
-                new TypeElement[NodeTypeSearchItem.this.varIxs.length];
+            this.varFind = new TypeElement[NodeTypeSearchItem.this.varIxs.length];
         }
 
         @Override
@@ -327,8 +321,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                 // roll back the variable assignment
                 for (vi--; vi >= 0; vi--) {
                     if (this.varFind[vi] == null) {
-                        this.search.putVar(NodeTypeSearchItem.this.varIxs[vi],
-                            null);
+                        this.search.putVar(NodeTypeSearchItem.this.varIxs[vi], null);
                     }
                 }
             }

@@ -55,9 +55,8 @@ public class JVertexLayout implements JCellLayout {
     static public JVertexLayout newInstance(VisualMap visuals) {
         Dimension2D size = visuals.getNodeSize();
         Point2D pos = visuals.getNodePos();
-        return new JVertexLayout(new Rectangle2D.Double(pos.getX()
-            - size.getWidth() / 2, pos.getY() - size.getHeight() / 2,
-            size.getWidth(), size.getHeight()));
+        return new JVertexLayout(new Rectangle2D.Double(pos.getX() - size.getWidth() / 2,
+            pos.getY() - size.getHeight() / 2, size.getWidth(), size.getHeight()));
     }
 
     /**
@@ -68,8 +67,7 @@ public class JVertexLayout implements JCellLayout {
      *         node location
      */
     static public boolean isDefaultNodeLocation(double x, double y) {
-        return defaultNodeLocation.getX() == x
-            && defaultNodeLocation.getY() == y;
+        return defaultNodeLocation.getX() == x && defaultNodeLocation.getY() == y;
     }
 
     /**
@@ -89,11 +87,11 @@ public class JVertexLayout implements JCellLayout {
     }
 
     /** Converts the layout information into a visual map. */
+    @Override
     public VisualMap toVisuals() {
         VisualMap result = new VisualMap();
         if (this.bounds != null) {
-            result.setNodePos(new Point2D.Double(this.bounds.getCenterX(),
-                this.bounds.getCenterY()));
+            result.setNodePos(new Point2D.Double(this.bounds.getCenterX(), this.bounds.getCenterY()));
         }
         return result;
     }
@@ -103,6 +101,7 @@ public class JVertexLayout implements JCellLayout {
      * <tt>jgraph</tt>. The attribute map contains the stored bounds.
      * @return an attribute map with layout information
      */
+    @Override
     public AttributeMap toJAttr() {
         AttributeMap result = new AttributeMap();
         if (this.bounds != null) {
@@ -114,9 +113,9 @@ public class JVertexLayout implements JCellLayout {
     /**
      * Node information is default if the location is the origin <tt>(0,0)</tt>.
      */
+    @Override
     public boolean isDefault() {
-        return JVertexLayout.isDefaultNodeLocation(getBounds().getX(),
-            getBounds().getY());
+        return JVertexLayout.isDefaultNodeLocation(getBounds().getX(), getBounds().getY());
     }
 
     /**

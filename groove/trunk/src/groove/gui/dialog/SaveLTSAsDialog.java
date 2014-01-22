@@ -96,8 +96,7 @@ public class SaveLTSAsDialog {
     public boolean showDialog(Simulator simulator) {
         this.simulator = simulator;
         this.getContentPane().setVisible(true);
-        this.dialog =
-            getContentPane().createDialog(simulator.getFrame(), createTitle());
+        this.dialog = getContentPane().createDialog(simulator.getFrame(), createTitle());
         this.dialog.setVisible(true);
         return (getContentPane().getValue() == getOkButton());
     }
@@ -142,10 +141,8 @@ public class SaveLTSAsDialog {
         ltsPanel.setLayout(new BoxLayout(ltsPanel, BoxLayout.X_AXIS));
         JLabel ltsLabel = new JLabel("LTS filename pattern: ");
         ltsLabel.setPreferredSize(PREF_LEFT);
-        ltsLabel.setToolTipText(String.format(
-            "LTS file name: "
-                + "'%s' is replaced by the grammar ID, extension determines file format",
-            PLACEHOLDER));
+        ltsLabel.setToolTipText(String.format("LTS file name: "
+            + "'%s' is replaced by the grammar ID, extension determines file format", PLACEHOLDER));
         ltsPanel.add(ltsLabel);
         ltsPanel.add(getLTSPatternField());
         ltsPanel.add(Box.createHorizontalStrut(PREF_RIGHT.width));
@@ -154,10 +151,8 @@ public class SaveLTSAsDialog {
         statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.X_AXIS));
         JLabel stateLabel = new JLabel("State filename pattern: ");
         stateLabel.setPreferredSize(PREF_LEFT);
-        stateLabel.setToolTipText(String.format(
-            "Pattern for state file names: "
-                + "'%s' is replaced by the state number, extension determines file format",
-            PLACEHOLDER));
+        stateLabel.setToolTipText(String.format("Pattern for state file names: "
+            + "'%s' is replaced by the state number, extension determines file format", PLACEHOLDER));
         statePanel.add(stateLabel);
         statePanel.add(getStatePatternField());
         statePanel.add(Box.createHorizontalStrut(PREF_RIGHT.width));
@@ -171,8 +166,7 @@ public class SaveLTSAsDialog {
         mainPanel.add(filePanel);
 
         JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-        labelPanel.setBorder(new TitledBorder(new EtchedBorder(),
-            "Label options"));
+        labelPanel.setBorder(new TitledBorder(new EtchedBorder(), "Label options"));
         labelPanel.add(createFlagPanel(Flag.START));
         labelPanel.add(createFlagPanel(Flag.FINAL));
         labelPanel.add(createFlagPanel(Flag.RESULT));
@@ -232,12 +226,10 @@ public class SaveLTSAsDialog {
      */
     private JTextField getDirField() {
         if (this.dirField == null) {
-            final JTextField result =
-                this.dirField = new JTextField(this.currentDirectory);
+            final JTextField result = this.dirField = new JTextField(this.currentDirectory);
             result.setColumns(20);
             result.getDocument().addDocumentListener(
-                new DirectoryFieldListener(result,
-                    "Destination must be a valid directory"));
+                new DirectoryFieldListener(result, "Destination must be a valid directory"));
         }
         return this.dirField;
     }
@@ -250,11 +242,9 @@ public class SaveLTSAsDialog {
      */
     private JTextField getLTSPatternField() {
         if (this.ltsPatternField == null) {
-            final JTextField result =
-                this.ltsPatternField = new JTextField(PLACEHOLDER + ".gxl");
+            final JTextField result = this.ltsPatternField = new JTextField(PLACEHOLDER + ".gxl");
             result.getDocument().addDocumentListener(
-                new EmptyFieldListener(result,
-                    "LTS name pattern should not be empty"));
+                new EmptyFieldListener(result, "LTS name pattern should not be empty"));
         }
         return this.ltsPatternField;
     }
@@ -268,8 +258,7 @@ public class SaveLTSAsDialog {
     private JTextField getStatePatternField() {
         if (this.statePatternField == null) {
             final JTextField result =
-                this.statePatternField =
-                    new JTextField("s" + PLACEHOLDER + ".gst");
+                this.statePatternField = new JTextField("s" + PLACEHOLDER + ".gst");
             result.getDocument().addDocumentListener(
                 new PlaceholderFieldListener(result, String.format(
                     "State name pattern should contain '%s'", PLACEHOLDER)));
@@ -315,8 +304,7 @@ public class SaveLTSAsDialog {
             default:
                 assert false;
             }
-            JRadioButton button =
-                new JRadioButton(text, mode == StateExport.NONE);
+            JRadioButton button = new JRadioButton(text, mode == StateExport.NONE);
             result.put(mode, button);
             group.add(button);
         }
@@ -354,8 +342,7 @@ public class SaveLTSAsDialog {
                 tip =
                     String.format(
                         "If ticked, transient states will be included and optionally labelled, "
-                            + "with '%s' replaced by the transient depth",
-                        PLACEHOLDER);
+                            + "with '%s' replaced by the transient depth", PLACEHOLDER);
                 break;
             case OPEN:
                 text = "Mark open states with:";
@@ -377,6 +364,7 @@ public class SaveLTSAsDialog {
             checkBox.setToolTipText(tip);
             final JTextField textField = getFlagTextField(flag);
             checkBox.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     textField.setEnabled(checkBox.isSelected());
                     textField.setEditable(checkBox.isSelected());
@@ -406,14 +394,13 @@ public class SaveLTSAsDialog {
             case OPEN:
             case RESULT:
             case START:
-                String message =
-                    flag.getDescription() + " label must be non-empty";
+                String message = flag.getDescription() + " label must be non-empty";
                 listener = new EmptyFieldListener(textField, message);
                 break;
             case NUMBER:
                 message =
-                    String.format("%s label must contain placeholde '%s'",
-                        flag.getDescription(), PLACEHOLDER);
+                    String.format("%s label must contain placeholde '%s'", flag.getDescription(),
+                        PLACEHOLDER);
                 listener = new PlaceholderFieldListener(textField, message);
                 break;
             case TRANSIENT:
@@ -449,8 +436,7 @@ public class SaveLTSAsDialog {
         getOkButton().setEnabled(this.errors.isEmpty());
     }
 
-    private Map<JComponent,String> errors =
-        new LinkedHashMap<JComponent,String>();
+    private Map<JComponent,String> errors = new LinkedHashMap<JComponent,String>();
 
     private JLabel getErrorLabel() {
         if (this.errorLabel == null) {
@@ -518,8 +504,7 @@ public class SaveLTSAsDialog {
 
     /** Returns the LTS labelling specification. */
     public LTSLabels getLTSLabels() {
-        EnumMap<Flag,String> flags =
-            new EnumMap<LTSLabels.Flag,String>(Flag.class);
+        EnumMap<Flag,String> flags = new EnumMap<LTSLabels.Flag,String>(Flag.class);
         for (Flag flag : Flag.values()) {
             if (getFlagCheckBox(flag).isSelected()) {
                 flags.put(flag, getFlagTextField(flag).getText());
@@ -562,10 +547,10 @@ public class SaveLTSAsDialog {
     }
 
     class BrowseButtonListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             JFileChooser chooser = GrooveFileChooser.getInstance();
-            int result =
-                chooser.showOpenDialog(SaveLTSAsDialog.this.simulator.getFrame());
+            int result = chooser.showOpenDialog(SaveLTSAsDialog.this.simulator.getFrame());
             // now load, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 SaveLTSAsDialog.this.dirField.setText(chooser.getSelectedFile().getAbsolutePath());
@@ -597,14 +582,17 @@ public class SaveLTSAsDialog {
             this.message = message;
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             checkError();
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             checkError();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             // do nothing
         }
@@ -633,13 +621,13 @@ public class SaveLTSAsDialog {
             // empty
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Object value = e.getSource();
             getContentPane().setValue(value);
             getContentPane().setVisible(false);
             // ExportDialog.this.dialog.setVisible(false);
-            ToolTipManager.sharedInstance().registerComponent(
-                SaveLTSAsDialog.this.pane);
+            ToolTipManager.sharedInstance().registerComponent(SaveLTSAsDialog.this.pane);
 
         }
     }

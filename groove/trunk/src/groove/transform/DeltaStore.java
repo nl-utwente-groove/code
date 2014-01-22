@@ -62,27 +62,29 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
         basis.applyDelta(this);
     }
 
+    @Override
     public boolean addEdge(HostEdge elem) {
         if (!getRemovedEdgeSet().remove(elem)) {
-            assert !getAddedEdgeSet().contains(elem) : "Added edge set "
-                + getAddedEdgeSet() + " already contains " + elem;
+            assert !getAddedEdgeSet().contains(elem) : "Added edge set " + getAddedEdgeSet()
+                + " already contains " + elem;
             return getAddedEdgeSet().add(elem);
         } else {
             return true;
         }
     }
 
+    @Override
     public boolean addNode(HostNode elem) {
         if (!getRemovedNodeSet().remove(elem)) {
             boolean added = getAddedNodeSet().add(elem);
-            assert added : "Added node set " + getAddedNodeSet()
-                + " already contains " + elem;
+            assert added : "Added node set " + getAddedNodeSet() + " already contains " + elem;
             return added;
         } else {
             return true;
         }
     }
 
+    @Override
     public boolean removeEdge(HostEdge elem) {
         if (!getAddedEdgeSet().remove(elem)) {
             // assert !removedEdgeSet.contains(elem) : "Removed edge set "
@@ -93,6 +95,7 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
         }
     }
 
+    @Override
     public boolean removeNode(HostNode elem) {
         if (!getAddedNodeSet().remove(elem)) {
             // assert !removedNodeSet.contains(elem) : "Removed node set "

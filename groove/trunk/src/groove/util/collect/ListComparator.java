@@ -26,6 +26,7 @@ public class ListComparator<T extends Comparable<T>> implements Comparator<T> {
      * First compares the objects as to their position in the known objects,
      * then in their natural order.
      */
+    @Override
     public int compare(T o1, T o2) {
         Integer index1Value = this.knownKeyIndexMap.get(o1);
         int index1 = index1Value == null ? Integer.MAX_VALUE : index1Value;

@@ -61,8 +61,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         }
     }
 
-    public OperatorNodeRecord createRecord(
-            groove.match.plan.PlanSearchStrategy.Search matcher) {
+    @Override
+    public OperatorNodeRecord createRecord(groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new OperatorNodeRecord(matcher);
     }
 
@@ -85,8 +85,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Compute %s%s-->%s", this.operation.toString(),
-            this.arguments, this.target);
+        return String.format("Compute %s%s-->%s", this.operation.toString(), this.arguments,
+            this.target);
     }
 
     /**
@@ -102,8 +102,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         }
         OperatorNode hisNode = ((OperatorNodeSearchItem) item).getNode();
         List<VariableNode> hisArguments = hisNode.getArguments();
-        result =
-            this.operation.getName().compareTo(hisNode.getOperator().getName());
+        result = this.operation.getName().compareTo(hisNode.getOperator().getName());
         if (result != 0) {
             return result;
         }
@@ -151,6 +150,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         return this.node;
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         this.targetFound = strategy.isNodeFound(this.target);
         this.targetIx = strategy.getNodeIx(this.target);
@@ -198,8 +198,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return String.format("%s = %s",
-                OperatorNodeSearchItem.this.toString(),
+            return String.format("%s = %s", OperatorNodeSearchItem.this.toString(),
                 this.search.getNode(OperatorNodeSearchItem.this.targetIx));
         }
 
@@ -207,8 +206,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         public void initialise(HostGraph host) {
             super.initialise(host);
             this.factory = host.getFactory();
-            this.targetPreMatch =
-                this.search.getNodeSeed(OperatorNodeSearchItem.this.targetIx);
+            this.targetPreMatch = this.search.getNodeSeed(OperatorNodeSearchItem.this.targetIx);
         }
 
         @Override
@@ -219,19 +217,16 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 result = false;
             } else if (OperatorNodeSearchItem.this.value != null) {
                 result = OperatorNodeSearchItem.this.value.equals(outcome);
-            } else if (OperatorNodeSearchItem.this.targetFound
-                || this.targetPreMatch != null) {
+            } else if (OperatorNodeSearchItem.this.targetFound || this.targetPreMatch != null) {
                 HostNode targetFind = this.targetPreMatch;
                 if (targetFind == null) {
-                    targetFind =
-                        this.search.getNode(OperatorNodeSearchItem.this.targetIx);
+                    targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
                 }
                 result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage =
                     this.factory.createNode(
-                        OperatorNodeSearchItem.this.operation.getResultAlgebra(),
-                        outcome);
+                        OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);
                 this.image = targetImage;
                 result = write();
             }
@@ -248,8 +243,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         @Override
         boolean write() {
             return this.image == null
-                || this.search.putNode(OperatorNodeSearchItem.this.targetIx,
-                    this.image);
+                || this.search.putNode(OperatorNodeSearchItem.this.targetIx, this.image);
         }
 
         /**
@@ -260,8 +254,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          *         arguments was bound to a non-value.
          */
         private Object calculateResult() throws IllegalArgumentException {
-            Object[] operands =
-                new Object[OperatorNodeSearchItem.this.arguments.size()];
+            Object[] operands = new Object[OperatorNodeSearchItem.this.arguments.size()];
             for (int i = 0; i < OperatorNodeSearchItem.this.arguments.size(); i++) {
                 HostNode operandImage =
                     this.search.getNode(OperatorNodeSearchItem.this.argumentIxs[i]);
@@ -278,8 +271,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                     OperatorNodeSearchItem.this.operation.apply(Arrays.asList(operands));
                 if (PRINT) {
                     System.out.printf("Applying %s to %s yields %s%n",
-                        OperatorNodeSearchItem.this.operation,
-                        Arrays.asList(operands), result);
+                        OperatorNodeSearchItem.this.operation, Arrays.asList(operands), result);
                 }
                 return result;
             } catch (IllegalArgumentException exc) {

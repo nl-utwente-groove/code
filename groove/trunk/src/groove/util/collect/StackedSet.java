@@ -90,6 +90,7 @@ public class StackedSet<T> extends AbstractSet<T> {
         // iterator over the added set followed by a filtered iterator over
         // the lower set. Presumably it is more efficient this way?
         return new Iterator<T>() {
+            @Override
             public void remove() {
                 if (this.lowerLatest == null) {
                     this.addedIter.remove();
@@ -98,6 +99,7 @@ public class StackedSet<T> extends AbstractSet<T> {
                 }
             }
 
+            @Override
             public boolean hasNext() {
                 // as long as we're still in the added set, proceed
                 if (this.lowerLatest == null && this.addedIter.hasNext()) {
@@ -118,6 +120,7 @@ public class StackedSet<T> extends AbstractSet<T> {
                 }
             }
 
+            @Override
             public T next() {
                 if (hasNext()) {
                     if (this.lowerNext != null) {
@@ -140,14 +143,12 @@ public class StackedSet<T> extends AbstractSet<T> {
              * The current inner iterator; i.e., the latest element returned by
              * <tt>nextIterator()</tt>
              */
-            private final Iterator<T> addedIter =
-                StackedSet.this.added.iterator();
+            private final Iterator<T> addedIter = StackedSet.this.added.iterator();
 
             /**
              * Iterator over the lower set.
              */
-            private final Iterator<? extends T> lowerIter =
-                StackedSet.this.lower.iterator();
+            private final Iterator<? extends T> lowerIter = StackedSet.this.lower.iterator();
 
             /**
              * Next element to be retrieved from the lower set. Guaranteed not
@@ -190,8 +191,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      */
     @Override
     public boolean contains(Object o) {
-        return this.added.contains(o)
-            || (this.lower.contains(o) && !this.removed.contains(o));
+        return this.added.contains(o) || (this.lower.contains(o) && !this.removed.contains(o));
     }
 
     /**
