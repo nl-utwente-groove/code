@@ -28,7 +28,6 @@ import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.util.Groove;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -195,57 +194,6 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
 
     private final boolean success;
 
-    /** Returns the mapping of output variables to argument positions of this call. */
-    public Map<CtrlVar,Integer> getOutVars() {
-        if (this.outVars == null) {
-            if (hasBase()) {
-                this.outVars = getBase().getOutVars();
-            } else {
-                initVars();
-            }
-        }
-        return this.outVars;
-    }
-
-    /** Returns the mapping of input variables to argument positions of this call. */
-    public Map<CtrlVar,Integer> getInVars() {
-        if (this.inVars == null) {
-            if (hasBase()) {
-                this.inVars = getBase().getInVars();
-            } else {
-                initVars();
-            }
-        }
-        return this.inVars;
-    }
-
-    /** Initialises the input and output variables of this call. */
-    private void initVars() {
-        assert !isVerdict();
-        Map<CtrlVar,Integer> outVars = new HashMap<CtrlVar,Integer>();
-        Map<CtrlVar,Integer> inVars = new HashMap<CtrlVar,Integer>();
-        if (getArgs() != null && !getArgs().isEmpty()) {
-            int size = getArgs().size();
-            for (int i = 0; i < size; i++) {
-                CtrlPar arg = getArgs().get(i);
-                if (arg instanceof CtrlPar.Var) {
-                    CtrlVar var = ((CtrlPar.Var) arg).getVar();
-                    if (arg.isInOnly()) {
-                        inVars.put(var, i);
-                    } else {
-                        assert arg.isOutOnly();
-                        outVars.put(var, i);
-                    }
-                }
-            }
-        }
-        this.outVars = outVars;
-        this.inVars = inVars;
-    }
-
-    private Map<CtrlVar,Integer> inVars;
-    private Map<CtrlVar,Integer> outVars;
-
     /** 
      * Returns a list of assignment sources for the variables in the target location.
      * For each variable, the source is either a variable of
@@ -284,7 +232,7 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
 
     private AssignSource computeAssignSource(CtrlVar var) {
         AssignSource result;
-        Map<CtrlVar,Integer> outVars = getOutVars();
+        Map<CtrlVar,Integer> outVars = getCall().getOutVars();
         if (outVars.containsKey(var)) {
             int index = outVars.get(var);
             result = AssignSource.arg(index);
@@ -306,13 +254,9 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
         result = prime * result + getKind().hashCode();
         // don't call isSuccess here to escape kind test
         result = prime * result + (this.success ? 1231 : 1237);
-        result =
-            prime * result + ((this.call == null) ? 0 : this.call.hashCode());
-        result =
-            prime * result + ((this.base == null) ? 0 : this.base.hashCode());
-        result =
-            prime * result
-                + ((this.onFinish == null) ? 0 : this.onFinish.hashCode());
+        result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
+        result = prime * result + ((this.base == null) ? 0 : this.base.hashCode());
+        result = prime * result + ((this.onFinish == null) ? 0 : this.onFinish.hashCode());
         return result;
     }
 
@@ -423,8 +367,7 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
         public String getName(boolean upper) {
             StringBuilder result = new StringBuilder(this.name);
             if (upper) {
-                result.replace(0, 1,
-                    "" + Character.toUpperCase(this.name.charAt(0)));
+                result.replace(0, 1, "" + Character.toUpperCase(this.name.charAt(0)));
             }
             return result.toString();
         }

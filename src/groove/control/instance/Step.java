@@ -84,6 +84,11 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
         return getCallStack().size() - source().getCallStack().size();
     }
 
+    /** Tests if this transition changes the control state or any of the bound variables. */
+    public boolean isModifying() {
+        return source() != target() || getCall().hasOutVars();
+    }
+
     /** Returns the actions associated with this step. */
     public List<StepAction> getPreActions() {
         if (this.preActions == null) {
@@ -190,24 +195,25 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
      * Computes the variable assignment for the location where control returns 
      * after a template call, from the variables in the final state of the 
      * template and the source state of the call.
-     * @param call the template call
+     * @param swit the template call
      */
-    private Map<CtrlVar,AssignSource> exit(Switch call) {
-        assert call.getKind().isProcedure();
+    private Map<CtrlVar,AssignSource> exit(Switch swit) {
+        assert swit.getKind().isProcedure();
         Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
-        List<CtrlPar.Var> sig = call.getUnit().getSignature();
-        Map<CtrlVar,Integer> callerVars = call.source().getVarIxMap();
+        List<CtrlPar.Var> sig = swit.getUnit().getSignature();
+        Map<CtrlVar,Integer> callerVars = swit.source().getVarIxMap();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         Map<CtrlVar,Integer> finalVars =
-            ((Procedure) call.getUnit()).getTemplate().getFinal().getVarIxMap();
-        for (CtrlVar var : call.target().getVars()) {
-            Integer ix = call.getOutVars().get(var);
+            ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
+        for (CtrlVar var : swit.target().getVars()) {
+            Integer ix = outVars.get(var);
             AssignSource rhs;
             if (ix == null) {
                 // the value comes from the caller
                 rhs = AssignSource.caller(callerVars.get(var));
             } else {
                 // the value comes from an output parameter of the call
-                ix = call.getOutVars().get(var);
+                ix = outVars.get(var);
                 assert ix != null;
                 // find the corresponding formal parameter
                 CtrlVar par = sig.get(ix).getVar();
@@ -228,8 +234,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
         assert !swit.getKind().isProcedure();
         Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
         Map<CtrlVar,Integer> sourceVars = swit.source().getVarIxMap();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         for (CtrlVar var : swit.target().getVars()) {
-            Integer ix = swit.getOutVars().get(var);
+            Integer ix = outVars.get(var);
             AssignSource rhs;
             if (ix == null) {
                 // the value comes from the source
