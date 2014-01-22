@@ -195,8 +195,8 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
             }
             state.addVars(vars);
         }
-        for (Switch trans : edgeSet()) {
-            trans.source().addVars(trans.getInVars().keySet());
+        for (Switch swit : edgeSet()) {
+            swit.source().addVars(swit.getCall().getInVars().keySet());
         }
         Map<Location,Set<Switch>> inMap = getInEdgeMap();
         Queue<Switch> queue = new LinkedList<Switch>(edgeSet());
@@ -206,7 +206,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
             CtrlVarSet sourceVars = new CtrlVarSet(source.getVars());
             boolean modified = false;
             for (CtrlVar targetVar : next.target().getVars()) {
-                if (!next.getOutVars().containsKey(targetVar)) {
+                if (!next.getCall().getOutVars().containsKey(targetVar)) {
                     modified |= sourceVars.add(targetVar);
                 }
             }

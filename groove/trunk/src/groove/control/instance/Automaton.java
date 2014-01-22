@@ -105,12 +105,7 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
 
     /** Constructs the initial, top-level frame for a given control location. */
     Frame newFrame(Location loc) {
-        return newFrame(loc.getFirstStage());
-    }
-
-    /** Constructs the initial, top-level frame for a given control stage. */
-    Frame newFrame(Stage stage) {
-        Frame result = new Frame(this, stage, new CallStack(), null, null, null);
+        Frame result = new Frame(this, loc.getFirstStage(), new CallStack(), null, null, null);
         return canonical(result);
     }
 

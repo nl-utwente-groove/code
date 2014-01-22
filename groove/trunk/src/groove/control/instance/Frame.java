@@ -331,6 +331,13 @@ public class Frame extends ANode implements Position<Frame> {
 
     @Override
     public String toString() {
+        return toString(false) + "\n" + getIdString();
+    }
+
+    /** Implements the functionality of {@link #toString()}.
+     * @param nested if {@code true}, the string will be nested in another {@link #toString()} call.
+     */
+    private String toString(boolean nested) {
         String result = null;
         switch (getType()) {
         case DEAD:
@@ -346,23 +353,39 @@ public class Frame extends ANode implements Position<Frame> {
             assert false;
         }
         if (getNext() != null) {
-            String nextString = getNext().toString();
-            if (getNext().getNext() != null) {
-                nextString = "(" + nextString + ")";
-            }
-            String alsoString = getAlso().toString();
-            if (getAlso().getNext() != null) {
-                alsoString = "(" + alsoString + ")";
-            }
-            String elseString = getElse().toString();
-            if (getElse().getNext() != null) {
-                elseString = "(" + elseString + ")";
-            }
+            String nextString = getNext().toString(true);
+            String alsoString = getAlso().toString(true);
+            String elseString = getElse().toString(true);
             result = result + "?" + nextString + "&" + alsoString + ":" + elseString;
         }
         if (this == getAut().getStart()) {
             result = "S::" + result;
         }
+        if (nested && getNext() != null) {
+            result = "(" + result + ")";
+        }
         return result;
+    }
+
+    /** Returns the concatenation of the call stack locations. */
+    public String getIdString() {
+        StringBuilder result = new StringBuilder("loc:");
+        String callerName = null;
+        for (Switch swit : getCallStack()) {
+            if (callerName != null) {
+                result.append('/');
+                result.append(callerName);
+                result.append('.');
+            }
+            result.append(swit.source().getNumber());
+            callerName = swit.getCall().getUnit().getLastName();
+        }
+        if (callerName != null) {
+            result.append('/');
+            result.append(callerName);
+            result.append('.');
+        }
+        result.append(getLocation().getNumber());
+        return result.toString();
     }
 }
