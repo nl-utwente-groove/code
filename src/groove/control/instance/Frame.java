@@ -89,6 +89,33 @@ public class Frame extends ANode implements Position<Frame> {
 
     private final Frame nextFrame;
 
+    /** 
+     * Sets the prime frame of this frame.
+     * The prime frame is the one from which this one was derived through
+     * a sequence of verdict transitions.
+     */
+    public void setPrime(Frame prime) {
+        assert prime != null;
+        assert this.primeFrame == null || this.primeFrame == prime;
+        this.primeFrame = prime;
+    }
+
+    /** 
+     * Returns the prime frame of this frame.
+     * The prime frame is the one from which this one was derived through
+     * a sequence of verdict transitions.
+     */
+    public Frame getPrime() {
+        return this.primeFrame;
+    }
+
+    /** Indicates if this frame is its own prime. */
+    public boolean isPrime() {
+        return getPrime() == this;
+    }
+
+    private Frame primeFrame;
+
     /** Returns the also-branch of this frame, if it is not a top-level frame. */
     public Frame getAlso() {
         return this.alsoFrame;
@@ -190,9 +217,9 @@ public class Frame extends ANode implements Position<Frame> {
                 swit = proc.getTemplate().getStart().getFirstStage().getAttempt();
             }
         } while (isProcedure);
-        Frame onSuccess = getAut().addFrame(alsoF);
-        Frame onFailure = getAut().addFrame(elseF);
-        Frame onFinish = getAut().addFrame(nextF);
+        Frame onSuccess = getAut().addFrame(alsoF, getPrime());
+        Frame onFailure = getAut().addFrame(elseF, getPrime());
+        Frame onFinish = getAut().addFrame(nextF, null);
         return new Step(this, swit, stack, onFinish, onSuccess, onFailure);
     }
 
@@ -233,18 +260,22 @@ public class Frame extends ANode implements Position<Frame> {
         return true;
     }
 
-    /** Returns the normalised version of this frame. */
-    public Frame normalise() {
+    /** Returns the normalised version of this frame. 
+     * @param prime the prime frame for the normalised frame; if {@code null}, the new frame
+     * is to be its own prime
+     */
+    public Frame normalise(Frame prime) {
         Frame result = null;
         if (getNext() == null || getStage().isTrial()) {
-            result = this;
+            // clone the frame and set the prime
+            result = getAut().newFrame(this, prime);
         } else {
             switch (getStage().getType()) {
             case DEAD:
-                result = getElse().normalise();
+                result = getElse().normalise(prime);
                 break;
             case FINAL:
-                result = getNext().or(getAlso()).normalise();
+                result = getNext().or(getAlso()).normalise(prime);
                 break;
             default:
                 assert false;
@@ -297,6 +328,7 @@ public class Frame extends ANode implements Position<Frame> {
         int result = System.identityHashCode(this.alsoFrame);
         result = prime * result + System.identityHashCode(this.elseFrame);
         result = prime * result + System.identityHashCode(this.nextFrame);
+        result = prime * result + (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
         result = prime * result + this.callStack.hashCode();
         result = prime * result + this.stage.hashCode();
         return result;
@@ -318,6 +350,9 @@ public class Frame extends ANode implements Position<Frame> {
             return false;
         }
         if (this.nextFrame != other.nextFrame) {
+            return false;
+        }
+        if (this.primeFrame != other.primeFrame && this.isPrime() != other.isPrime()) {
             return false;
         }
         if (!this.stage.equals(other.stage)) {
