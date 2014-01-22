@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * While-do term.
  * @author Arend Rensink
@@ -53,49 +52,22 @@ public class WhileTerm extends Term {
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            for (Derivation attempt : arg0().getAttempt()) {
-                result.add(attempt.newAttempt(attempt.target().seq(arg1()).seq(
-                    this)));
+            DerivationList ders0 = arg0().getAttempt();
+            for (Derivation deriv : ders0) {
+                result.add(deriv.newAttempt(deriv.onFinish().seq(arg1()).seq(this)));
             }
+            result.setSuccess(ders0.onSuccess().seq(arg1()).seq(this));
+            result.setFailure(ders0.onFailure().ifOnly(arg1().seq(this)));
             break;
         case FINAL:
             if (arg1().isTrial()) {
                 result = createAttempt();
-                for (Derivation attempt : arg1().getAttempt()) {
-                    result.add(attempt.newAttempt(attempt.target().seq(this)));
+                DerivationList ders1 = arg1().getAttempt();
+                for (Derivation deriv : ders1) {
+                    result.add(deriv.newAttempt(deriv.onFinish().seq(this)));
                 }
-            }
-            break;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        switch (arg0().getType()) {
-        case TRIAL:
-            result = arg0().onSuccess().seq(arg1()).seq(this);
-            break;
-        case FINAL:
-            if (arg1().isTrial()) {
-                result = arg1().onSuccess().seq(this);
-            }
-            break;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        switch (arg0().getType()) {
-        case TRIAL:
-            result = arg0().onFailure().ifOnly(arg1().seq(this));
-            break;
-        case FINAL:
-            if (arg1().isTrial()) {
-                result = arg1().onFailure().seq(this);
+                result.setSuccess(ders1.onSuccess().seq(this));
+                result.setFailure(ders1.onFailure().seq(this));
             }
             break;
         }

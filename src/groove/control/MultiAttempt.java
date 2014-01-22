@@ -21,10 +21,12 @@ import java.util.ArrayList;
 /**
  * Attempt specialisation consisting of a list of other attempts,
  * to be tried successively in the given order.
+ * <P> the position type for which this is an attempt
+ * <A> the list of attempts of which this consists
  * @author Arend Rensink
  * @version $Revision $
  */
-public class MultiAttempt<P extends Position<P>,A extends SingleAttempt<P>>
-        extends ArrayList<A> implements Attempt<P> {
+public abstract class MultiAttempt<P extends Position<P>,A> extends
+        ArrayList<A> implements Attempt<P> {
     // empty
 }

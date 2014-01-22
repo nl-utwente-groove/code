@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * Kleene-starred term.
  * @author Arend Rensink
@@ -36,27 +35,12 @@ public class StarTerm extends Term {
         DerivationList result = null;
         if (arg0().isTrial()) {
             result = createAttempt();
-            for (Derivation attempt : arg0().getAttempt()) {
-                result.add(attempt.newAttempt(attempt.target().seq(this)));
+            DerivationList ders = arg0().getAttempt();
+            for (Derivation deriv : ders) {
+                result.add(deriv.newAttempt(deriv.onFinish().seq(this)));
             }
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        if (arg0().isTrial()) {
-            result = arg0().onSuccess().seq(this).or(epsilon());
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        if (arg0().isTrial()) {
-            result = arg0().onFailure().seq(this).or(epsilon());
+            result.setSuccess(ders.onSuccess().seq(this).or(epsilon()));
+            result.setFailure(ders.onFailure().seq(this).or(epsilon()));
         }
         return result;
     }

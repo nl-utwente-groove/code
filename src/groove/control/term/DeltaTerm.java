@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * Deadlock.
  * @author Arend Rensink
@@ -33,16 +32,6 @@ public class DeltaTerm extends Term {
 
     @Override
     protected DerivationList computeAttempt() {
-        return createAttempt();
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        return null;
-    }
-
-    @Override
-    protected Term computeFailure() {
         return null;
     }
 

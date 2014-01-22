@@ -22,6 +22,7 @@ import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
 import groove.control.term.CallTerm;
 import groove.control.term.Derivation;
+import groove.control.term.DerivationList;
 import groove.control.term.Term;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -108,8 +109,7 @@ public class Program implements Fixable {
     public Template getTemplate() {
         assert isFixed();
         if (this.template == null && hasBody()) {
-            this.template =
-                TemplateBuilder.instance().build(getName(), getTerm());
+            this.template = TemplateBuilder.instance().build(getName(), getTerm());
         }
         return this.template;
     }
@@ -120,8 +120,7 @@ public class Program implements Fixable {
     public void addProc(Procedure proc) {
         assert !isFixed();
         Procedure oldProc = this.procs.put(proc.getFullName(), proc);
-        assert oldProc == null : String.format("Procedure %s already defined",
-            proc.getFullName());
+        assert oldProc == null : String.format("Procedure %s already defined", proc.getFullName());
     }
 
     /** Returns an unmodifiable view on the map from names to procedures
@@ -153,8 +152,7 @@ public class Program implements Fixable {
         assert !isFixed();
         this.names.addAll(other.names);
         if (this.term != null && other.hasBody()) {
-            throw new IllegalArgumentException(
-                "Both programs have a main template");
+            throw new IllegalArgumentException("Both programs have a main template");
         }
         if (this.term == null) {
             this.term = other.term;
@@ -190,8 +188,8 @@ public class Program implements Fixable {
             }
             if (!this.procs.containsKey(unit.getFullName())) {
                 throw new IllegalStateException(String.format(
-                    "'%s' called from '%s' is not defined in this program",
-                    unit.getFullName(), template.getName()));
+                    "'%s' called from '%s' is not defined in this program", unit.getFullName(),
+                    template.getName()));
             }
         }
     }
@@ -226,8 +224,7 @@ public class Program implements Fixable {
                 for (Map.Entry<String,Set<String>> callerEntry : calls.entrySet()) {
                     String caller = callerEntry.getKey();
                     Set<String> callees = callerEntry.getValue();
-                    if (callees.contains(callee)
-                        && callees.addAll(childCallees)) {
+                    if (callees.contains(callee) && callees.addAll(childCallees)) {
                         // caller got a new callee
                         newChanged.add(caller);
                     }
@@ -305,11 +302,12 @@ public class Program implements Fixable {
             assert false;
         }
         if (term.isTrial()) {
-            for (Derivation edge : term.getAttempt()) {
+            DerivationList derivList = term.getAttempt();
+            for (Derivation edge : derivList) {
                 result.add(edge.getCall());
             }
-            result.addAll(getInitCalls(term.onSuccess()));
-            result.addAll(getInitCalls(term.onFailure()));
+            result.addAll(getInitCalls(derivList.onSuccess()));
+            result.addAll(getInitCalls(derivList.onFailure()));
         }
         return result;
     }
@@ -352,8 +350,7 @@ public class Program implements Fixable {
      * Computes the termination map.
      */
     private Map<Procedure,Finality> computeFinalityMap() {
-        Map<Procedure,Finality> result =
-            new HashMap<Procedure,Program.Finality>();
+        Map<Procedure,Finality> result = new HashMap<Procedure,Program.Finality>();
         for (Procedure proc : this.procs.values()) {
             result.put(proc, new Finality(false, false));
         }
@@ -496,34 +493,29 @@ public class Program implements Fixable {
 
     /** Computes if a final location is reachable from all locations in a given template,
      * given that a certain set of procedure calls is known to terminate */
-    public boolean willTerminate(Template template,
-            Set<Procedure> terminationSet) {
-        boolean result = template.hasFinal();
-        if (result) {
-            Set<Location> terminating = new HashSet<Location>();
-            terminating.add(template.getFinal());
-            Map<Location,Set<Switch>> inMap = template.getInEdgeMap();
-            Queue<Location> queue = new LinkedList<Location>();
-            queue.add(template.getFinal());
-            while (!queue.isEmpty()) {
-                Location next = queue.poll();
-                for (Switch edge : inMap.get(next)) {
-                    if (!edge.getKind().isCallable()) {
-                        continue;
-                    }
-                    Callable unit = edge.getCall().getUnit();
-                    if (!(unit instanceof Rule)
-                        && !terminationSet.contains(unit)) {
-                        continue;
-                    }
-                    if (terminating.add(edge.source())) {
-                        queue.add(edge.source());
-                    }
+    public boolean willTerminate(Template template, Set<Procedure> terminationSet) {
+        Location finalLoc = template.getFinal();
+        Set<Location> terminating = new HashSet<Location>();
+        terminating.add(finalLoc);
+        Map<Location,Set<Switch>> inMap = template.getInEdgeMap();
+        Queue<Location> queue = new LinkedList<Location>();
+        queue.add(finalLoc);
+        while (!queue.isEmpty()) {
+            Location next = queue.poll();
+            for (Switch edge : inMap.get(next)) {
+                if (!edge.getKind().isCallable()) {
+                    continue;
+                }
+                Callable unit = edge.getCall().getUnit();
+                if (!(unit instanceof Rule) && !terminationSet.contains(unit)) {
+                    continue;
+                }
+                if (terminating.add(edge.source())) {
+                    queue.add(edge.source());
                 }
             }
-            result = terminating.size() == template.nodeCount();
         }
-        return result;
+        return terminating.size() == template.nodeCount();
     }
 
     @Override
@@ -538,21 +530,18 @@ public class Program implements Fixable {
             for (Procedure proc : this.procs.values()) {
                 String name = proc.getFullName();
                 if (getRecursion().contains(name)) {
-                    errors.add("%s %s has unguarded recursion",
-                        proc.getKind().getName(true), name);
+                    errors.add("%s %s has unguarded recursion", proc.getKind().getName(true), name);
                 }
                 Term body = proc.getTerm();
                 if (body.isFinal()) {
-                    errors.add("%s %s is empty", proc.getKind().getName(true),
-                        name);
+                    errors.add("%s %s is empty", proc.getKind().getName(true), name);
                 }
                 if (proc instanceof Recipe && mayFinalise(proc)) {
-                    errors.add("%s %s may immediately terminate",
-                        proc.getKind().getName(true), name);
+                    errors.add("%s %s may immediately terminate", proc.getKind().getName(true),
+                        name);
                 }
                 if (proc instanceof Recipe && !willTerminate(proc)) {
-                    errors.add("%s %s may fail to terminate",
-                        proc.getKind().getName(true), name);
+                    errors.add("%s %s may fail to terminate", proc.getKind().getName(true), name);
                 }
             }
             errors.throwException();
@@ -566,8 +555,7 @@ public class Program implements Fixable {
 
     public void testFixed(boolean fixed) {
         if (fixed != this.fixed) {
-            throw new IllegalStateException(String.format(
-                "Expected fixed = %b", fixed));
+            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
         }
     }
 

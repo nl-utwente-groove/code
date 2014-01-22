@@ -44,17 +44,9 @@ public class CallTerm extends Term {
     protected DerivationList computeAttempt() {
         DerivationList result = createAttempt();
         result.add(new Derivation(this.call, epsilon()));
+        result.setSuccess(delta());
+        result.setFailure(delta());
         return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        return delta();
-    }
-
-    @Override
-    protected Term computeFailure() {
-        return delta();
     }
 
     @Override

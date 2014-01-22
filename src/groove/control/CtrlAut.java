@@ -38,7 +38,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * This class implements a control automaton graph.
@@ -239,7 +238,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        for (CtrlState state : new TreeSet<CtrlState>(nodeSet())) {
+        for (CtrlState state : nodeSet()) {
             result.append(String.format("State %s, variables %s%n", state,
                 state.getBoundVars()));
             result.append(state.getSchedule().toString());

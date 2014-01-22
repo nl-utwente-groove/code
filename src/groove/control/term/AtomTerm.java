@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * Atomic block.
  * @author Arend Rensink
@@ -35,29 +34,14 @@ public class AtomTerm extends Term {
     protected DerivationList computeAttempt() {
         DerivationList result = null;
         if (arg0().isTrial()) {
+            DerivationList ders = arg0().getAttempt();
             result = createAttempt();
-            for (Derivation attempt : arg0().getAttempt()) {
-                result.add(attempt.newAttempt(attempt.target().transit()));
+            for (Derivation deriv : ders) {
+                result.add(deriv.newAttempt(deriv.onFinish().transit()));
             }
+            result.setSuccess(ders.onSuccess().atom());
+            result.setFailure(ders.onFailure().atom());
             return result;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        if (arg0().isTrial()) {
-            result = arg0().onSuccess().atom();
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        if (arg0().isTrial()) {
-            result = arg0().onFailure().atom();
         }
         return result;
     }

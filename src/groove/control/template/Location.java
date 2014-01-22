@@ -18,7 +18,7 @@ package groove.control.template;
 
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
-import groove.control.template.Switch.Kind;
+import groove.control.Position;
 import groove.graph.ANode;
 import groove.util.Duo;
 import groove.util.Fixable;
@@ -36,7 +36,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Location extends ANode implements TemplatePosition, Fixable {
+public class Location extends ANode implements Position<Location>, Comparable<Location>, Fixable {
     /**
      * Constructs a numbered location for a given automaton.
      */
@@ -45,7 +45,6 @@ public class Location extends ANode implements TemplatePosition, Fixable {
         this.template = template;
         this.depth = depth;
         this.switches = new LinkedHashSet<Switch>();
-        this.outCalls = new MultiSwitch();
     }
 
     /**
@@ -92,7 +91,7 @@ public class Location extends ANode implements TemplatePosition, Fixable {
     }
 
     public boolean isDead() {
-        return false;
+        return getType() == Type.DEAD;
     }
 
     public boolean isTrial() {
@@ -108,18 +107,18 @@ public class Location extends ANode implements TemplatePosition, Fixable {
         assert edge.source() == this;
         assert !isFixed();
         this.switches.add(edge);
-        if (edge.getKind() == Kind.VERDICT) {
-            assert !this.isFinal();
-            if (edge.isSuccess()) {
-                assert this.success == null;
-                this.success = edge.target();
-            } else {
-                assert this.failure == null;
-                this.failure = edge.target();
-            }
-        } else {
-            this.outCalls.add(edge);
-        }
+        //        if (edge.isVerdict()) {
+        //            assert !this.isFinal();
+        //            if (edge.isSuccess()) {
+        //                assert this.success == null;
+        //                this.success = edge.target();
+        //            } else {
+        //                assert this.failure == null;
+        //                this.failure = edge.target();
+        //            }
+        //        } else {
+        //            this.attempt.add(edge);
+        //        }
     }
 
     /**
@@ -131,6 +130,9 @@ public class Location extends ANode implements TemplatePosition, Fixable {
         return this.switches;
     }
 
+    /** The set of all outgoing edges. */
+    private final Set<Switch> switches;
+
     /**
      * Returns the list of outgoing call edges of this location.
      * Should only be invoked after the location is fixed.
@@ -138,46 +140,46 @@ public class Location extends ANode implements TemplatePosition, Fixable {
     @Override
     public MultiSwitch getAttempt() {
         assert isFixed();
-        return this.outCalls;
+        if (this.attempt == null) {
+            this.attempt = computeAttempt();
+        }
+        return this.attempt;
     }
 
-    /** The set of all outgoing edges. */
-    private final Set<Switch> switches;
+    private MultiSwitch computeAttempt() {
+        assert isFixed();
+        List<Switch> switches = new ArrayList<Switch>();
+        Location onSuccess = null;
+        Location onFailure = null;
+        for (Switch edge : getSwitches()) {
+            if (edge.isVerdict()) {
+                if (edge.isSuccess()) {
+                    onSuccess = edge.target();
+                } else {
+                    onFailure = edge.target();
+                }
+            } else {
+                switches.add(edge);
+            }
+        }
+        if (onSuccess == null) {
+            onSuccess = getTemplate().getDead(getDepth());
+        }
+        if (onFailure == null) {
+            onFailure = getTemplate().getDead(getDepth());
+        }
+        MultiSwitch result = new MultiSwitch(this, onSuccess, onFailure);
+        result.addAll(switches);
+        return result;
+    }
 
     /** The set of outgoing call edges. */
-    private final MultiSwitch outCalls;
+    private MultiSwitch attempt;
 
-    /** Sets the failure verdict to {@link Deadlock}. */
-    void setDeadFailure() {
-        assert !isFixed();
-        assert this.failure == null;
-        this.failure = Deadlock.instance(getDepth());
-    }
-
-    @Override
-    public TemplatePosition onFailure() {
-        assert isFixed();
-        return this.failure;
-    }
-
-    private TemplatePosition failure;
-
-    /** Sets the success verdict to {@link Deadlock}. */
-    void setDeadSuccess() {
-        assert !isFixed();
-        assert this.failure == null;
-        this.success = Deadlock.instance(getDepth());
-    }
-
-    @Override
-    public TemplatePosition onSuccess() {
-        assert isFixed();
-        return this.success;
-    }
-
-    private TemplatePosition success;
-
-    @Override
+    /**
+     * Returns the first stage of this position,
+     * with stage number {@code 0} and success status {@code false}.
+     */
     public Stage getFirstStage() {
         return getStage(0, false);
     }
@@ -187,20 +189,21 @@ public class Location extends ANode implements TemplatePosition, Fixable {
      * stage number and success status.
      */
     public Stage getStage(int nr, boolean success) {
-        if (this.indices == null) {
-            List<Duo<Stage>> indices = new ArrayList<Duo<Stage>>();
-            for (nr = 0; nr < getAttempt().size(); nr++) {
-                Stage succIx = new Stage(this, nr, true);
-                Stage failIx = new Stage(this, nr, false);
-                indices.add(Duo.newDuo(succIx, failIx));
+        if (this.stages == null) {
+            List<Duo<Stage>> stages = new ArrayList<Duo<Stage>>();
+            int size = isTrial() ? getAttempt().size() : 1;
+            for (int i = 0; i < size; i++) {
+                Stage succIx = new Stage(this, i, true);
+                Stage failIx = new Stage(this, i, false);
+                stages.add(Duo.newDuo(succIx, failIx));
             }
-            this.indices = indices;
+            this.stages = stages;
         }
-        Duo<Stage> indexPair = this.indices.get(nr);
+        Duo<Stage> indexPair = this.stages.get(nr);
         return success ? indexPair.one() : indexPair.two();
     }
 
-    private List<Duo<Stage>> indices;
+    private List<Duo<Stage>> stages;
 
     /**
      * Returns the list of control variables in this location,
@@ -258,16 +261,23 @@ public class Location extends ANode implements TemplatePosition, Fixable {
     @Override
     public String toString() {
         String result = super.toString();
+        boolean brackets = false;
         if (isStart()) {
-            result = result + ", start";
+            result = result + "(start";
+            brackets = true;
         }
-        if (this.type == Type.FINAL) {
-            result = result + ", final";
+        if (isFinal()) {
+            result = result + (brackets ? "," : "(");
+            result = result + "final";
+            brackets = true;
         }
         if (this.depth > 0) {
-            result = result + ", depth=" + this.depth;
+            result = result + (brackets ? "," : "(");
+            result = result + "depth=" + this.depth;
+            brackets = true;
         }
-        return result;
+
+        return result + (brackets ? ")" : "");
     }
 
     @Override
@@ -288,14 +298,14 @@ public class Location extends ANode implements TemplatePosition, Fixable {
 
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format(
-                "Control state should %sbe fixed", fixed ? "" : "not "));
+            throw new IllegalStateException(String.format("Control state should %sbe fixed", fixed
+                    ? "" : "not "));
         }
     }
 
     private boolean fixed;
 
-    public int compareTo(TemplatePosition o) {
+    public int compareTo(Location o) {
         return getNumber() - o.getNumber();
     }
 }

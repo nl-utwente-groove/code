@@ -159,36 +159,10 @@ abstract public class Term implements Position<Term> {
         return new DerivationList();
     }
 
-    /** Returns the success transition for this symbolic location. */
-    public final Term onSuccess() {
-        if (this.success == null) {
-            this.success = computeSuccess();
-        }
-        return this.success;
-    }
-
-    private Term success;
-
-    /** Computes the success transition for this symbolic location. */
-    abstract protected Term computeSuccess();
-
-    /** Returns the failure transition for this symbolic location. */
-    public final Term onFailure() {
-        if (this.failure == null) {
-            this.failure = computeFailure();
-        }
-        return this.failure;
-    }
-
-    private Term failure;
-
-    /** Computes the failure transition for this symbolic location. */
-    abstract protected Term computeFailure();
-
     /** Indicates if the failure verdicts transitively lead to a final term. */
     public final boolean willSucceed() {
         if (isTrial()) {
-            return onFailure().willSucceed();
+            return getAttempt().onFailure().willSucceed();
         } else {
             return isFinal();
         }
@@ -258,13 +232,12 @@ abstract public class Term implements Position<Term> {
             result = result + ", final";
             break;
         case TRIAL:
-            for (Derivation edge : getAttempt()) {
-                result =
-                    result + "\n  --" + edge.getCall() + "--> "
-                        + edge.target().toString();
+            DerivationList attempt = getAttempt();
+            for (Derivation deriv : attempt) {
+                result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
             }
-            result = result + "\nSuccess: " + onSuccess().toString();
-            result = result + "\nFailure: " + onFailure().toString();
+            result = result + "\nSuccess: " + attempt.onSuccess().toString();
+            result = result + "\nFailure: " + attempt.onFailure().toString();
         }
         return result;
     }
@@ -430,16 +403,6 @@ abstract public class Term implements Position<Term> {
             }
 
             @Override
-            protected Term computeSuccess() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            protected Term computeFailure() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
             protected int computeDepth() {
                 throw new UnsupportedOperationException();
             }
@@ -458,7 +421,7 @@ abstract public class Term implements Position<Term> {
     static List<Derivation> makeTransit(List<Derivation> edges) {
         List<Derivation> result = new ArrayList<Derivation>();
         for (Derivation edge : edges) {
-            result.add(edge.newAttempt(edge.target().transit()));
+            result.add(edge.newAttempt(edge.onFinish().transit()));
         }
         return result;
     }

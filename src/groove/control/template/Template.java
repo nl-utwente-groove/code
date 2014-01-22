@@ -21,23 +21,34 @@ import groove.control.Callable;
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
 import groove.control.Function;
+import groove.control.Position.Type;
 import groove.control.Procedure;
 import groove.grammar.Action;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
 /**
- * Control automaton.
+ * Control automaton template.
+ * A template is either the main template of a control automaton,
+ * or the body of a procedure (its owner).
+ * Templates are graphs, with {@link Location}s as nodes and
+ * {@link Switch}es as edges. The switches are used to represent both
+ * call attempts and success/failure verdicts; however, since the graphs are
+ * intended only for visualisation, some nodes and edges are suppressed.
+ * This is especially true for verdict edges to dead locations, as well
+ * as for the (unique) final state if it is unreachable. 
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -98,15 +109,10 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
 
     private final Location start;
 
-    /** Indicates if this template has a final location. 
-     * Should only be called after the automaton is fixed.
-     */
-    public boolean hasFinal() {
-        return getFinal() != null;
-    }
-
     /**
-     * Returns the set of final location of this automaton.
+     * Returns the final location of this automaton.
+     * The final location always exist, but may fail to be a node
+     * of the template.
      * Should only be called after the automaton is fixed.
      */
     public Location getFinal() {
@@ -128,6 +134,10 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
             if (loc.isFinal()) {
                 result = loc;
             }
+        }
+        if (result == null) {
+            result = new Location(this, -1, 0);
+            result.setType(Type.FINAL);
         }
         return result;
     }
@@ -207,28 +217,6 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         }
     }
 
-    /** Computes if a final location is reachable from all locations in this template. */
-    public boolean willTerminate() {
-        boolean result = hasFinal();
-        if (result) {
-            Set<Location> terminating = new HashSet<Location>();
-            terminating.add(getFinal());
-            Map<Location,Set<Switch>> inMap = getInEdgeMap();
-            Queue<Location> queue = new LinkedList<Location>();
-            queue.add(getFinal());
-            while (!queue.isEmpty()) {
-                Location next = queue.poll();
-                for (Switch edge : inMap.get(next)) {
-                    if (terminating.add(edge.source())) {
-                        queue.add(edge.source());
-                    }
-                }
-            }
-            result = terminating.size() == nodeCount();
-        }
-        return result;
-    }
-
     /** Returns a mapping from locations to sets of incoming edges. */
     public Map<Location,Set<Switch>> getInEdgeMap() {
         if (this.inEdgeMap == null) {
@@ -250,6 +238,21 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         }
         return result;
     }
+
+    /**
+     * Returns a deadlocked location at a certain transient depth, which
+     * is not added to the nodes of the graph.
+     */
+    public Location getDead(int depth) {
+        for (int i = this.dead.size(); i <= depth; i++) {
+            Location result = new Location(this, -2 - depth, depth);
+            result.setType(Type.DEAD);
+            this.dead.add(result);
+        }
+        return this.dead.get(depth);
+    }
+
+    private final List<Location> dead = new ArrayList<Location>();
 
     /** Returns a copy of this automaton for a given enclosing procedure. */
     public Template clone(Procedure parent) {

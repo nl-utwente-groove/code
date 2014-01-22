@@ -18,15 +18,10 @@ package groove.control.instance;
 
 import groove.control.Position;
 import groove.control.Procedure;
+import groove.control.template.Location;
 import groove.control.template.Stage;
-import groove.control.template.StageSwitch;
 import groove.control.template.Switch;
-import groove.control.template.TemplatePosition;
 import groove.graph.ANode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
 
 /**
  * Run-time composed control location.
@@ -35,33 +30,35 @@ import java.util.Stack;
  */
 public class Frame extends ANode implements Position<Frame> {
     /**
-     * Nested frame instantiating a given control location.
-     * @param parent successor frame after this terminates 
-     * @param alsoFrame next frame to attempt if the call of this one succeeds
-     * @param elseFrame next frame to attempt if the call of this one fails
+     * Possibly nested frame instantiating a given control stage.
+     * @param callStack switch from which the template of this frame was called
+     * @param nextFrame successor frame after this stage terminates; one level higher up
+     * in the call hierarchy
+     * @param alsoFrame next frame if the attempt of this one succeeds; may be {@code null}
+     * @param elseFrame next frame if the attempt of this one fails; may be {@code null}
      */
-    private Frame(Instance ctrl, Stage slot, Frame parent, Frame alsoFrame,
+    Frame(Automaton ctrl, Stage stage, CallStack callStack, Frame nextFrame, Frame alsoFrame,
             Frame elseFrame) {
-        super(ctrl.nodeCount());
-        assert (!slot.isFinal() && !slot.isDead()) || parent == null;
-        this.ctrl = ctrl;
-        this.stage = slot;
-        this.nextFrame = parent;
+        super(ctrl.getNextFrameNr());
+        this.aut = ctrl;
+        this.stage = stage;
+        this.callStack = new CallStack(callStack);
+        this.nextFrame = nextFrame;
         this.alsoFrame = alsoFrame;
         this.elseFrame = elseFrame;
-        this.depth = (parent == null ? 0 : parent.getDepth()) + slot.getDepth();
+        this.depth = (nextFrame == null ? 0 : nextFrame.getDepth()) + stage.getDepth();
     }
 
-    /** Returns the containing control instance. */
-    public Instance getCtrl() {
-        return this.ctrl;
+    /** Returns the containing control automaton. */
+    public Automaton getAut() {
+        return this.aut;
     }
 
-    private final Instance ctrl;
+    private final Automaton aut;
 
-    /** Returns the control position that this frame instantiates. */
-    public TemplatePosition getPosition() {
-        return getStage().getPosition();
+    /** Returns the control location that this frame instantiates. */
+    public Location getLocation() {
+        return getStage().getLocation();
     }
 
     /** Returns the control stage that this frame instantiates. */
@@ -71,23 +68,23 @@ public class Frame extends ANode implements Position<Frame> {
 
     private final Stage stage;
 
+    /** Indicates that this is a nested frame. */
+    public boolean isNested() {
+        return !getCallStack().isEmpty();
+    }
+
+    /** Returns the switch from which the current template was called. */
+    public CallStack getCallStack() {
+        return this.callStack;
+    }
+
+    private final CallStack callStack;
+
     /** 
      * Returns the (possibly {@code null}) parent frame.
      */
     public Frame getNext() {
         return this.nextFrame;
-    }
-
-    /** 
-     * Returns the ancestor frame according to a given generation.
-     */
-    public Frame getAncestor(int generation) {
-        assert generation >= 0 && generation <= getDepth();
-        if (generation == 0) {
-            return this;
-        } else {
-            return this.nextFrame.getAncestor(generation - 1);
-        }
     }
 
     private final Frame nextFrame;
@@ -109,12 +106,41 @@ public class Frame extends ANode implements Position<Frame> {
     /** 
      * Returns the (possibly {@code null}) switch of the instantiated stage.
      */
-    public StageSwitch getSwitch() {
+    public Switch getSwitch() {
         return getStage().getAttempt();
     }
 
     public Type getType() {
-        return getStage().getType();
+        // we want this to work also for non-normal frames
+        if (getNext() == null) {
+            return getStage().getType();
+        } else {
+            switch (getStage().getType()) {
+            case DEAD:
+                return getElse().getType();
+            case TRIAL:
+                return Type.TRIAL;
+            case FINAL:
+                switch (getNext().getType()) {
+                case DEAD:
+                    return getAlso().getType();
+                case FINAL:
+                    if (getAlso().isDead()) {
+                        return Type.FINAL;
+                    } else {
+                        return getAlso().getType();
+                    }
+                case TRIAL:
+                    return Type.TRIAL;
+                default:
+                    assert false;
+                    return null;
+                }
+            default:
+                assert false;
+                return null;
+            }
+        }
     }
 
     public boolean isDead() {
@@ -132,51 +158,42 @@ public class Frame extends ANode implements Position<Frame> {
     public Step getAttempt() {
         if (this.attempt == null) {
             this.attempt = computeAttempt();
+            getAut().addEdge(this.attempt);
+            getAut().addEdge(Step.newStep(this.attempt, true));
+            getAut().addEdge(Step.newStep(this.attempt, false));
         }
         return this.attempt;
     }
 
-    private Step computeAttempt() {
-        StageSwitch sswit = getStage().getAttempt();
-        List<StageSwitch> entered = new ArrayList<StageSwitch>();
-        // depth of the call stack
-        Stack<StageSwitch> stack = getCallStack();
-        while (sswit.getCall().getUnit() instanceof Procedure) {
-            Procedure proc = (Procedure) sswit.getCall().getUnit();
-            entered.add(sswit);
-            stack.add(sswit);
-            sswit =
-                proc.getTemplate().getStart().getStage(0, false).getAttempt();
-        }
-        Switch call = sswit.getSwitch();
-        List<StageSwitch> exited = new ArrayList<StageSwitch>();
-        while (sswit.target().isFinal() && !stack.isEmpty()) {
-            sswit = stack.pop();
-            exited.add(sswit);
-        }
-        Frame target =
-            getCtrl().addFrame(sswit.target(), this.nextFrame, this.alsoFrame,
-                this.elseFrame);
-        // add frames for the entered calls that were not also exited
-        for (int i = 0; i < entered.size() - exited.size(); i++) {
-            sswit = entered.get(i);
-            target =
-                getCtrl().addFrame(sswit.target(), target, this.alsoFrame,
-                    this.elseFrame);
-        }
-        return new Step(call, this, target, entered, exited);
-    }
-
     private Step attempt;
 
-    public Frame onFailure() {
-        return getCtrl().addFrame(this.stage.onFailure(), this.nextFrame,
-            this.alsoFrame, this.elseFrame);
-    }
-
-    public Frame onSuccess() {
-        return getCtrl().addFrame(this.stage.onSuccess(), this.nextFrame,
-            this.alsoFrame, this.alsoFrame);
+    /** Computes the attempt of this frame. */
+    private Step computeAttempt() {
+        // recursively build the next/also/else frames
+        Frame nextF = getNext();
+        Frame alsoF = getAlso();
+        Frame elseF = getElse();
+        // construct the call stack
+        CallStack stack = new CallStack(getCallStack());
+        Switch swit = getStage().getAttempt();
+        boolean isProcedure;
+        do {
+            // the order of the next assignments is important
+            // otherwise they will interfere
+            elseF = getAut().newFrame(swit.onFailure(), stack, nextF, alsoF, elseF);
+            alsoF = getAut().newFrame(swit.onSuccess(), stack, nextF, alsoF, alsoF);
+            nextF = getAut().newFrame(swit.onFinish(), stack, nextF, null, null);
+            isProcedure = swit.getKind().isProcedure();
+            if (isProcedure) {
+                stack.add(swit);
+                Procedure proc = (Procedure) swit.getCall().getUnit();
+                swit = proc.getTemplate().getStart().getFirstStage().getAttempt();
+            }
+        } while (isProcedure);
+        Frame onSuccess = getAut().addFrame(alsoF);
+        Frame onFailure = getAut().addFrame(elseF);
+        Frame onFinish = getAut().addFrame(nextF);
+        return new Step(this, swit, stack, onFinish, onSuccess, onFailure);
     }
 
     public int getDepth() {
@@ -185,17 +202,86 @@ public class Frame extends ANode implements Position<Frame> {
 
     private final int depth;
 
-    /** Returns the call stack for this frame. */
-    public Stack<StageSwitch> getCallStack() {
-        Stack<StageSwitch> result = new Stack<StageSwitch>();
-        Stack<Frame> inverseCallerStack = new Stack<Frame>();
-        Frame caller = getNext();
-        while (caller != null) {
-            inverseCallerStack.push(caller);
-            caller = caller.getNext();
+    /** Tests if this is a normal frame.
+     * A frame is normal if the next/also/else frames are simultaneously either
+     * {@code null} or non-{@code null}; in the latter case, moreover, the stage
+     * is a trial stage.
+     * Only normal frames should ever be constructed.
+     * @throws IllegalStateException if the frame is not normal
+     */
+    boolean testNormal() throws IllegalStateException {
+        String message = null;
+        if (getNext() == null) {
+            if (getAlso() != null) {
+                message = "next is null but also is not";
+            } else if (getElse() != null) {
+                message = "next is null but else is not";
+            }
+        } else {
+            if (getAlso() == null) {
+                message = "also is null but next is not";
+            } else if (getElse() == null) {
+                message = "else is null but next is not";
+            } else if (!getStage().isTrial()) {
+                message = "nested location " + getStage().getLocation() + " is not a trial";
+            }
         }
-        while (!inverseCallerStack.isEmpty()) {
-            result.push(inverseCallerStack.pop().getSwitch());
+        if (message != null) {
+            throw new IllegalStateException(String.format("Frame %s is not normal: %s", this,
+                message));
+        }
+        return true;
+    }
+
+    /** Returns the normalised version of this frame. */
+    public Frame normalise() {
+        Frame result = null;
+        if (getNext() == null || getStage().isTrial()) {
+            result = this;
+        } else {
+            switch (getStage().getType()) {
+            case DEAD:
+                result = getElse().normalise();
+                break;
+            case FINAL:
+                result = getNext().or(getAlso()).normalise();
+                break;
+            default:
+                assert false;
+            }
+        }
+        result.testNormal();
+        return result;
+    }
+
+    /** Constructs the disjunction of this frame and another. */
+    public Frame or(Frame other) {
+        assert other != null;
+        assert getDepth() == other.getDepth();
+        Frame result;
+        switch (getType()) {
+        case DEAD:
+            result = other;
+            break;
+        case FINAL:
+            if (other.isTrial()) {
+                result = other.or(this);
+            } else {
+                result = this;
+            }
+            break;
+        case TRIAL:
+            if (getNext() == null) {
+                result = getAut().newFrame(getStage(), getCallStack(), null, other, other);
+            } else {
+                result =
+                    getAut().newFrame(getStage(), getCallStack(), getNext(), getAlso().or(other),
+                        getElse().or(other));
+            }
+            break;
+        default:
+            assert false;
+            result = null;
         }
         return result;
     }
@@ -208,10 +294,10 @@ public class Frame extends ANode implements Position<Frame> {
     @Override
     protected int computeHashCode() {
         final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + System.identityHashCode(this.alsoFrame);
+        int result = System.identityHashCode(this.alsoFrame);
         result = prime * result + System.identityHashCode(this.elseFrame);
         result = prime * result + System.identityHashCode(this.nextFrame);
+        result = prime * result + this.callStack.hashCode();
         result = prime * result + this.stage.hashCode();
         return result;
     }
@@ -237,30 +323,45 @@ public class Frame extends ANode implements Position<Frame> {
         if (!this.stage.equals(other.stage)) {
             return false;
         }
+        if (!this.callStack.equals(other.callStack)) {
+            return false;
+        }
         return true;
     }
 
-    /** Constructs the initial frame for a control instance. */
-    public static Frame newInstance(Instance ctrl) {
-        Stage firstStage = ctrl.getTemplate().getStart().getFirstStage();
-        return new Frame(ctrl, firstStage, null, null, null);
-    }
-
-    /** 
-     * Constructs a new frame.
-     * Makes sure final and deadlock frames are only created for top-level locations.
-     */
-    public static Frame newInstance(Instance ctrl, Stage stage,
-            Frame nextFrame, Frame alsoFrame, Frame elseFrame) {
-        Frame result;
-        if (stage.isDead() && elseFrame != null) {
-            result = elseFrame;
-        } else if (stage.isFinal() && nextFrame != null) {
-            result =
-                new Frame(ctrl, nextFrame.getStage(), nextFrame.getNext(),
-                    alsoFrame, alsoFrame);
-        } else {
-            result = new Frame(ctrl, stage, nextFrame, alsoFrame, elseFrame);
+    @Override
+    public String toString() {
+        String result = null;
+        switch (getType()) {
+        case DEAD:
+            result = "D" + (getDepth() > 0 ? "" + getDepth() : "");
+            break;
+        case FINAL:
+            result = "E";
+            break;
+        case TRIAL:
+            result = getSwitch().getCall().toString();
+            break;
+        default:
+            assert false;
+        }
+        if (getNext() != null) {
+            String nextString = getNext().toString();
+            if (getNext().getNext() != null) {
+                nextString = "(" + nextString + ")";
+            }
+            String alsoString = getAlso().toString();
+            if (getAlso().getNext() != null) {
+                alsoString = "(" + alsoString + ")";
+            }
+            String elseString = getElse().toString();
+            if (getElse().getNext() != null) {
+                elseString = "(" + elseString + ")";
+            }
+            result = result + "?" + nextString + "&" + alsoString + ":" + elseString;
+        }
+        if (this == getAut().getStart()) {
+            result = "S::" + result;
         }
         return result;
     }

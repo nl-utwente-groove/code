@@ -134,6 +134,15 @@ public class ProgramBuildTest {
         assertEquals(
             call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out)).seq(
                 call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
+        //
+        build(
+            "r",
+            "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
+        //
+        buildWrong("out", "function f(node p) { oNode(p); }");
+        build("out", "function f(node p) { oNode(out p); }");
+        buildWrong("out", "function f(out int p) { a | bInt(p); }");
+        build("out", "function f(out node p) { oNode(out p) | bNode(out p); }");
     }
 
     @Test

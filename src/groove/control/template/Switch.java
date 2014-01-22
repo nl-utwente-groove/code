@@ -21,7 +21,7 @@ import groove.control.Call;
 import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlVar;
-import groove.control.SingleAttempt;
+import groove.control.SoloAttempt;
 import groove.grammar.Action;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
@@ -37,8 +37,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabelEdge<Location> implements
-        SingleAttempt<Location> {
+public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
     /** Constructs a verdict switch.
      * @param source source location of the switch
      * @param target target location of the switch
@@ -46,6 +45,10 @@ public class Switch extends ALabelEdge<Location> implements
      */
     public Switch(Location source, Location target, boolean success) {
         super(source, target);
+        this.base = null;
+        this.onFinish = null;
+        this.onSuccess = null;
+        this.onFailure = null;
         this.kind = Kind.VERDICT;
         this.success = success;
         this.call = null;
@@ -59,11 +62,63 @@ public class Switch extends ALabelEdge<Location> implements
      */
     public Switch(Location source, Location target, Call call) {
         super(source, target);
-        Callable unit = call.getUnit();
-        this.kind = unit.getKind();
+        this.base = null;
+        this.onFinish = null;
+        this.onSuccess = null;
+        this.onFailure = null;
+        this.kind = call.getUnit().getKind();
         this.call = call;
         this.success = false;
     }
+
+    /**
+     * Constructs a derived call switch used as a solo-attempt.
+     * @param base base switch from which this one is derived
+     * @param onFinish next stage after the switch call has finished
+     * @param onSuccess alternate stage if the switch call succeeds
+     * @param onFailure alternate stage if the switch call fails
+     */
+    public Switch(Switch base, Stage onFinish, Stage onSuccess, Stage onFailure) {
+        super(base.source(), onFinish.getLocation());
+        this.base = base;
+        this.onFinish = onFinish;
+        this.onSuccess = onSuccess;
+        this.onFailure = onFailure;
+        this.kind = base.getKind();
+        this.call = base.getCall();
+        this.success = false;
+    }
+
+    public Stage onFinish() {
+        return this.onFinish;
+    }
+
+    private final Stage onFinish;
+
+    public Stage onSuccess() {
+        return this.onSuccess;
+    }
+
+    private final Stage onSuccess;
+
+    public Stage onFailure() {
+        return this.onFailure;
+    }
+
+    private final Stage onFailure;
+
+    /** Indicates that this is a derived switch, used as a {@link SoloAttempt}. */
+    public boolean hasBase() {
+        return getBase() != null;
+    }
+
+    /** If non-{@code null}, this switch is used as a {@link SoloAttempt}
+     * derived from the returned base switch. */
+    public Switch getBase() {
+        return this.base;
+    }
+
+    private final Switch base;
 
     /**
      * Convenience method testing if this is a verdict switch.
@@ -143,7 +198,11 @@ public class Switch extends ALabelEdge<Location> implements
     /** Returns the mapping of output variables to argument positions of this call. */
     public Map<CtrlVar,Integer> getOutVars() {
         if (this.outVars == null) {
-            initVars();
+            if (hasBase()) {
+                this.outVars = getBase().getOutVars();
+            } else {
+                initVars();
+            }
         }
         return this.outVars;
     }
@@ -151,7 +210,11 @@ public class Switch extends ALabelEdge<Location> implements
     /** Returns the mapping of input variables to argument positions of this call. */
     public Map<CtrlVar,Integer> getInVars() {
         if (this.inVars == null) {
-            initVars();
+            if (hasBase()) {
+                this.inVars = getBase().getInVars();
+            } else {
+                initVars();
+            }
         }
         return this.inVars;
     }
@@ -190,7 +253,11 @@ public class Switch extends ALabelEdge<Location> implements
      */
     public AssignSource[] getAssignment() {
         if (this.assignment == null) {
-            this.assignment = computeAssignment();
+            if (hasBase()) {
+                this.assignment = getBase().getAssignment();
+            } else {
+                this.assignment = computeAssignment();
+            }
         }
         return this.assignment;
     }
@@ -241,6 +308,11 @@ public class Switch extends ALabelEdge<Location> implements
         result = prime * result + (this.success ? 1231 : 1237);
         result =
             prime * result + ((this.call == null) ? 0 : this.call.hashCode());
+        result =
+            prime * result + ((this.base == null) ? 0 : this.base.hashCode());
+        result =
+            prime * result
+                + ((this.onFinish == null) ? 0 : this.onFinish.hashCode());
         return result;
     }
 
@@ -258,7 +330,15 @@ public class Switch extends ALabelEdge<Location> implements
         if (getKind() != other.getKind()) {
             return false;
         }
-        if (getKind() == Kind.VERDICT) {
+        if (hasBase()) {
+            if (!other.hasBase()) {
+                return false;
+            }
+            if (!getBase().equals(other.getBase())) {
+                return false;
+            }
+        }
+        if (isVerdict()) {
             if (isSuccess() != other.isSuccess()) {
                 return false;
             }
@@ -267,6 +347,13 @@ public class Switch extends ALabelEdge<Location> implements
                 return false;
             }
             if (!getName().equals(other.getName())) {
+                return false;
+            }
+            if (onFinish() == null) {
+                if (other.onFinish() != null) {
+                    return false;
+                }
+            } else if (!onFinish().equals(other.onFinish())) {
                 return false;
             }
         }

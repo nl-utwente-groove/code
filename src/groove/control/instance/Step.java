@@ -19,12 +19,12 @@ package groove.control.instance;
 import groove.control.AssignSource;
 import groove.control.Call;
 import groove.control.CtrlPar;
-import groove.control.CtrlVar;
-import groove.control.Procedure;
-import groove.control.SingleAttempt;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
-import groove.control.template.StageSwitch;
+import groove.control.CtrlVar;
+import groove.control.Procedure;
+import groove.control.SoloAttempt;
+import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.graph.AEdge;
@@ -39,66 +39,122 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
+public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
     /**
-     * Instantiates a given control edge, from a source to a target frame.
-     * @param entered the control call that are entered in this step
-     * @param exited the control calls that are entered in this step
+     * Constructs a step from the given parameters.
      */
-    public Step(Switch edge, Frame source, Frame target,
-            List<StageSwitch> entered, List<StageSwitch> exited) {
-        super(source, edge, target);
-        assert target.getDepth() == source.getDepth() + entered.size()
-            - exited.size();
-        this.entered = entered;
-        this.exited = exited;
+    public Step(Frame source, Switch edge, CallStack callStack, Frame onFinish, Frame onSuccess,
+            Frame onFailure) {
+        super(source, edge, onFinish);
+        assert onFinish.testNormal();
+        assert onSuccess.testNormal();
+        assert onFailure.testNormal();
+        this.callStack = new CallStack(callStack);
+        this.onFailure = onFailure;
+        this.onSuccess = onSuccess;
     }
 
     public Call getCall() {
         return label().getCall();
     }
 
-    private List<StageSwitch> getEntered() {
-        return this.entered;
+    public Frame onFinish() {
+        return target();
     }
 
-    private List<StageSwitch> getExited() {
-        return this.exited;
+    public Frame onSuccess() {
+        return this.onSuccess;
     }
 
-    /** List of initiated procedure calls in this step (from bottom to top 
-     * in call stack order). */
-    private List<StageSwitch> entered;
-    /** List of exited procedure calls in this step (from top to bottom
-     * in call stack order). */
-    private List<StageSwitch> exited;
+    public Frame onFailure() {
+        return this.onFailure;
+    }
+
+    /** Returns the call stack for this step. */
+    public List<Switch> getCallStack() {
+        return this.callStack;
+    }
+
+    private final Frame onSuccess;
+    private final Frame onFailure;
+    private final CallStack callStack;
 
     /** Returns the number of levels by which the call stack depth changes. */
     public int getCallDepth() {
-        return getEntered().size() - getExited().size();
+        return getCallStack().size() - source().getCallStack().size();
     }
 
     /** Returns the actions associated with this step. */
-    public List<StepAction> getActions() {
-        if (this.actions == null) {
-            this.actions = computeActions();
+    public List<StepAction> getPreActions() {
+        if (this.preActions == null) {
+            this.preActions = computePreActions();
         }
-        return this.actions;
+        return this.preActions;
     }
 
-    private List<StepAction> actions;
+    private List<StepAction> preActions;
 
-    private List<StepAction> computeActions() {
+    /** Returns the actions associated with this step. */
+    public List<StepAction> getFinishActions() {
+        if (this.finishActions == null) {
+            this.finishActions = computeFinishActions();
+        }
+        return this.finishActions;
+    }
+
+    private List<StepAction> finishActions;
+
+    /** Returns the actions associated with this step. */
+    public List<StepAction> getFailureActions() {
+        if (this.failureActions == null) {
+            this.failureActions = computeVerdictActions(onFailure());
+        }
+        return this.failureActions;
+    }
+
+    private List<StepAction> failureActions;
+
+    /** Returns the actions associated with this step. */
+    public List<StepAction> getSuccessActions() {
+        if (this.successActions == null) {
+            this.successActions = computeVerdictActions(onSuccess());
+        }
+        return this.successActions;
+    }
+
+    private List<StepAction> successActions;
+
+    private List<StepAction> computePreActions() {
         List<StepAction> result = new ArrayList<StepAction>();
         // add pop actions for every successive call on the
         // stack of entered calls
-        for (StageSwitch sswit : getEntered()) {
-            result.add(StepAction.push(enter(sswit.getSwitch())));
+        for (int i = source().getCallStack().size(); i < getCallStack().size(); i++) {
+            Switch swit = getCallStack().get(i);
+            result.add(StepAction.push(enter(swit)));
         }
+        return result;
+    }
+
+    private List<StepAction> computeFinishActions() {
+        List<StepAction> result = new ArrayList<StepAction>();
         result.add(StepAction.modify(rule(label())));
+        result.addAll(computePostActions(onFinish()));
+        return result;
+    }
+
+    private List<StepAction> computeVerdictActions(Frame target) {
+        List<StepAction> result = new ArrayList<StepAction>();
+        result.add(StepAction.modify(verdict(source().getLocation(), target.getLocation())));
+        result.addAll(computePostActions(target));
+        return result;
+    }
+
+    private List<StepAction> computePostActions(Frame target) {
+        List<StepAction> result = new ArrayList<StepAction>();
         // add pop actions for the calls that are finished
-        for (StageSwitch sswit : getExited()) {
-            result.add(StepAction.pop(exit(sswit.getSwitch())));
+        for (int i = getCallStack().size() - 1; i >= target.getCallStack().size(); i--) {
+            Switch swit = getCallStack().get(i);
+            result.add(StepAction.pop(exit(swit)));
         }
         return result;
     }
@@ -110,8 +166,7 @@ public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
      */
     private Map<CtrlVar,AssignSource> enter(Switch call) {
         assert call.getKind().isProcedure();
-        Map<CtrlVar,AssignSource> result =
-            new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
         Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> sig = ((Procedure) call.getUnit()).getInPars();
         for (CtrlVar var : call.target().getVars()) {
@@ -139,8 +194,7 @@ public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
      */
     private Map<CtrlVar,AssignSource> exit(Switch call) {
         assert call.getKind().isProcedure();
-        Map<CtrlVar,AssignSource> result =
-            new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
         List<CtrlPar.Var> sig = call.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> finalVars =
@@ -170,13 +224,12 @@ public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
      * a rule call, using the variables of the source location
      * combined with the output parameters of the call.
      */
-    private Map<CtrlVar,AssignSource> rule(Switch call) {
-        assert !call.getKind().isProcedure();
-        Map<CtrlVar,AssignSource> result =
-            new LinkedHashMap<CtrlVar,AssignSource>();
-        Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();
-        for (CtrlVar var : call.target().getVars()) {
-            Integer ix = call.getOutVars().get(var);
+    private Map<CtrlVar,AssignSource> rule(Switch swit) {
+        assert !swit.getKind().isProcedure();
+        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,Integer> sourceVars = swit.source().getVarIxMap();
+        for (CtrlVar var : swit.target().getVars()) {
+            Integer ix = swit.getOutVars().get(var);
             AssignSource rhs;
             if (ix == null) {
                 // the value comes from the source
@@ -185,6 +238,21 @@ public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
             } else {
                 rhs = AssignSource.arg(ix);
             }
+            result.put(var, rhs);
+        }
+        return result;
+    }
+
+    /** Computes the variable assignment for the target location of
+     * a verdict, using the variables of the source location.
+     */
+    private Map<CtrlVar,AssignSource> verdict(Location source, Location target) {
+        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,Integer> sourceVars = source.getVarIxMap();
+        for (CtrlVar var : target.getVars()) {
+            // the value comes from the source
+            int ix = sourceVars.get(var);
+            AssignSource rhs = AssignSource.var(ix);
             result.put(var, rhs);
         }
         return result;
@@ -211,7 +279,7 @@ public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
         List<? extends CtrlPar> args = label().getArgs();
         int size = args == null ? 0 : args.size();
         AssignSource[] result = new AssignSource[size];
-        Map<CtrlVar,Integer> sourceVars = source().getPosition().getVarIxMap();
+        Map<CtrlVar,Integer> sourceVars = source().getLocation().getVarIxMap();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = args.get(i);
             if (arg instanceof CtrlPar.Var) {
@@ -230,5 +298,13 @@ public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
             }
         }
         return result;
+    }
+
+    /** Constructs an artificial step reflecting a verdict of a base step. */
+    static Step newStep(Step base, boolean success) {
+        Frame source = base.source();
+        Frame target = success ? base.onSuccess() : base.onFailure();
+        Switch swit = new Switch(source.getLocation(), target.getLocation(), success);
+        return new Step(source, swit, new CallStack(), target, base.onSuccess(), base.onFailure());
     }
 }
