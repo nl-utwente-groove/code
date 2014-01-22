@@ -63,10 +63,9 @@ public class CtrlHelper {
         this.packageName = packageTree.getText();
         String parentName = this.namespace.getParentName();
         if (!parentName.equals(this.packageName)) {
-            emitErrorMessage(
-                packageTree,
-                "Package declaration '%s' does not equal program location '%s'",
-                this.packageName, parentName);
+            emitErrorMessage(packageTree,
+                "Package declaration '%s' does not equal program location '%s'", this.packageName,
+                parentName);
         }
     }
 
@@ -104,8 +103,7 @@ public class CtrlHelper {
      */
     @SuppressWarnings("unchecked")
     void startBranch() {
-        this.initVarScopes.push(new Set[] {new HashSet<String>(this.initVars),
-            null});
+        this.initVarScopes.push(new Set[] {new HashSet<String>(this.initVars), null});
     }
 
     /**
@@ -231,13 +229,13 @@ public class CtrlHelper {
             String controlName = this.namespace.getControlName();
             if (unitTree.getType() == CtrlParser.FUNCTION) {
                 // it's a function
-                this.namespace.addFunction(fullName, priority, parList,
-                    controlName, unitTree.getLine());
+                this.namespace.addFunction(fullName, priority, parList, controlName,
+                    unitTree.getLine());
                 result = true;
             } else {
                 // it's a recipe
-                this.namespace.addRecipe(fullName, priority, parList,
-                    controlName, unitTree.getLine());
+                this.namespace.addRecipe(fullName, priority, parList, controlName,
+                    unitTree.getLine());
             }
             result = true;
         }
@@ -259,8 +257,7 @@ public class CtrlHelper {
             result.add(CtrlPar.var(name, type, !out));
         }
         if (this.namespace.isCheckDependencies() && !result.isEmpty()) {
-            emitErrorMessage(parListTree,
-                "Parameters are not supported in this version.");
+            emitErrorMessage(parListTree, "Parameters are not supported in this version.");
         }
         return result;
     }
@@ -288,8 +285,7 @@ public class CtrlHelper {
         assert this.procName != null;
         for (String outPar : this.symbolTable.getOutPars()) {
             if (!this.initVars.contains(outPar)) {
-                emitErrorMessage(bodyTree,
-                    "Output parameter %s may fail to be initialised", outPar);
+                emitErrorMessage(bodyTree, "Output parameter %s may fail to be initialised", outPar);
             }
         }
         closeScope();
@@ -311,8 +307,7 @@ public class CtrlHelper {
     boolean declarePar(CtrlTree nameTree, CtrlTree typeTree, CtrlTree out) {
         boolean result = true;
         String name = toLocalName(nameTree.getText());
-        if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType(),
-            out != null)) {
+        if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType(), out != null)) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
         } else if (out == null) {
@@ -337,8 +332,7 @@ public class CtrlHelper {
         String name = importTree.getText();
         String actualName = this.namespace.getParentName();
         if (!name.equals(actualName)) {
-            emitErrorMessage(importTree, "Package %s should be %s", name,
-                actualName);
+            emitErrorMessage(importTree, "Package %s should be %s", name, actualName);
         }
     }
 
@@ -346,8 +340,7 @@ public class CtrlHelper {
     void checkImport(CtrlTree importTree) {
         String name = importTree.getText();
         if (!this.namespace.hasCallable(name)) {
-            emitErrorMessage(importTree, "Imported name '%s' does not exist",
-                name);
+            emitErrorMessage(importTree, "Imported name '%s' does not exist", name);
         }
     }
 
@@ -369,8 +362,7 @@ public class CtrlHelper {
             result = new CtrlVar(name, type);
             nameTree.setCtrlVar(result);
             if (checkInit && !this.initVars.contains(name)) {
-                emitErrorMessage(nameTree,
-                    "Variable %s may not have been initialised", name);
+                emitErrorMessage(nameTree, "Variable %s may not have been initialised", name);
             } else {
                 this.initVars.add(name);
             }
@@ -381,8 +373,7 @@ public class CtrlHelper {
     CtrlPar checkVarArg(CtrlTree argTree) {
         CtrlPar result = null;
         int childCount = argTree.getChildCount();
-        assert argTree.getType() == CtrlChecker.ARG && childCount > 0
-            && childCount <= 2;
+        assert argTree.getType() == CtrlChecker.ARG && childCount > 0 && childCount <= 2;
         boolean isOutArg = childCount == 2;
         CtrlVar var = checkVar(argTree.getChild(childCount - 1), !isOutArg);
         if (var != null) {
@@ -393,19 +384,16 @@ public class CtrlHelper {
     }
 
     CtrlPar checkDontCareArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG
-            && argTree.getChildCount() == 1;
+        assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
         CtrlPar result = new CtrlPar.Wild();
         argTree.setCtrlPar(result);
         return result;
     }
 
     CtrlPar checkConstArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG
-            && argTree.getChildCount() == 1;
+        assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
         try {
-            Expression constant =
-                Expression.parse(argTree.getChild(0).getText());
+            Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getAlgebraFamily();
             CtrlPar result =
                 new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
@@ -461,19 +449,16 @@ public class CtrlHelper {
         if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
-        Set<String> anyNames =
-            new HashSet<String>(this.namespace.getTopNames());
+        Set<String> anyNames = new HashSet<String>(this.namespace.getTopNames());
         anyNames.removeAll(this.namespace.getUsedNames());
         checkGroupCall(anyTree, anyNames);
     }
 
     void checkOther(CtrlTree otherTree) {
         if (this.procKind == Kind.RECIPE) {
-            emitErrorMessage(otherTree,
-                "'other' may not be used within a recipe");
+            emitErrorMessage(otherTree, "'other' may not be used within a recipe");
         }
-        Set<String> unusedRules =
-            new HashSet<String>(this.namespace.getTopNames());
+        Set<String> unusedRules = new HashSet<String>(this.namespace.getTopNames());
         unusedRules.removeAll(this.namespace.getUsedNames());
         checkGroupCall(otherTree, unusedRules);
     }
@@ -504,8 +489,7 @@ public class CtrlHelper {
                 if (!result) {
                     String message = "%s %s%s not applicable without arguments";
                     String ruleSig = toTypeString(sig);
-                    emitErrorMessage(callTree, message, unitKind.getName(true),
-                        name, ruleSig);
+                    emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig);
                 }
             } else {
                 result = args.size() == sig.size();
@@ -516,12 +500,11 @@ public class CtrlHelper {
                     String message = "%s %s%s not applicable for arguments %s";
                     String callSig = toTypeString(args);
                     String ruleSig = toTypeString(sig);
-                    emitErrorMessage(callTree, message, unitKind.getName(true),
-                        name, ruleSig, callSig);
+                    emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig,
+                        callSig);
                 }
             }
-            if (unitKind.isProcedure() && this.procName == null
-                && !this.namespace.isResolved(name)) {
+            if (unitKind.isProcedure() && this.procName == null && !this.namespace.isResolved(name)) {
                 result = false;
                 emitErrorMessage(callTree, "%s %s has not yet been resolved",
                     unitKind.getName(true), name);
@@ -531,8 +514,7 @@ public class CtrlHelper {
     }
 
     void checkEOF(CtrlTree EOFToken) {
-        if (this.packageName.isEmpty()
-            && !this.namespace.getParentName().isEmpty()) {
+        if (this.packageName.isEmpty() && !this.namespace.getParentName().isEmpty()) {
             emitErrorMessage(EOFToken, "Missing package declaration",
                 this.namespace.getControlName());
         }
@@ -557,18 +539,17 @@ public class CtrlHelper {
 
     /** Reorders the functions according to their dependencies. */
     void reorderFunctions(CtrlTree functionsTree) {
-        assert functionsTree.getType() == CtrlChecker.FUNCTIONS;
+        assert functionsTree.getType() == CtrlChecker.FUNCTIONS
+            || functionsTree.getType() == CtrlChecker.RECIPES;
         int functionsCount = functionsTree.getChildCount();
         Map<String,CtrlTree> functionMap = new LinkedHashMap<String,CtrlTree>();
         for (int i = 0; i < functionsCount; i++) {
             CtrlTree function = functionsTree.getChild(i);
             functionMap.put(qualify(function.getChild(0).getText()), function);
         }
-        List<String> resolution =
-            this.namespace.resolveFunctions(functionMap.keySet());
+        List<String> resolution = this.namespace.resolveFunctions(functionMap.keySet());
         if (resolution == null) {
-            emitErrorMessage(functionsTree,
-                "Can't resolve functions due to forward dependencies");
+            emitErrorMessage(functionsTree, "Can't resolve functions due to forward dependencies");
         } else {
             int i = 0;
             for (String name : resolution) {
@@ -584,8 +565,8 @@ public class CtrlHelper {
      */
     private void addDependency(CtrlTree marker, String from, String to) {
         if (!this.namespace.addDependency(from, to)) {
-            emitErrorMessage(marker,
-                "Function %s calling %s causes a circular dependency", from, to);
+            emitErrorMessage(marker, "Function %s calling %s causes a circular dependency", from,
+                to);
         }
     }
 
@@ -618,15 +599,13 @@ public class CtrlHelper {
         boolean result = true;
         for (CtrlState state : aut.nodeSet()) {
             if (state.isTransient()) {
-                emitErrorMessage(actionTree,
-                    "Recipe '%s' contains a nested recipe call to '%s'", name,
-                    state.getRecipe());
+                emitErrorMessage(actionTree, "Recipe '%s' contains a nested recipe call to '%s'",
+                    name, state.getRecipe());
             }
         }
         for (CtrlTransition omegaTrans : aut.getOmegas()) {
             if (omegaTrans.source() == aut.getStart()) {
-                emitErrorMessage(actionTree, "Recipe '%s' has empty behaviour",
-                    name);
+                emitErrorMessage(actionTree, "Recipe '%s' has empty behaviour", name);
                 result = false;
                 break;
             }
@@ -635,8 +614,7 @@ public class CtrlHelper {
             emitErrorMessage(actionTree, "Recipe '%s' does not terminate", name);
             result = false;
         } else if (!aut.isEndDeterministic()) {
-            emitErrorMessage(actionTree,
-                "Recipe '%s' does not terminate deterministically", name);
+            emitErrorMessage(actionTree, "Recipe '%s' does not terminate deterministically", name);
             result = false;
         }
         return result;
@@ -658,8 +636,7 @@ public class CtrlHelper {
      * initialised at the start of the branch, the second is the set of
      * variables initialised in each case of the branch.
      */
-    private final Stack<Set<String>[]> initVarScopes =
-        new Stack<Set<String>[]>();
+    private final Stack<Set<String>[]> initVarScopes = new Stack<Set<String>[]>();
 
     /** Name of the module in which all declared names should be placed. */
     private String packageName = "";

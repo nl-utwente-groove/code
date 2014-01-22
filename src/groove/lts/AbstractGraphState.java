@@ -420,7 +420,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public void setActualFrame(Frame actualFrame) {
         assert actualFrame != null;
-        assert actualFrame.getPrime() == getFrame();
+        assert this.actualFrame == null || actualFrame.getPrime() == this.actualFrame.getPrime();
         this.actualFrame = actualFrame;
     }
 
