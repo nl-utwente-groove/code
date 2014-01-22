@@ -53,17 +53,22 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
 
     /** Returns the start frame of the automaton. */
     public Frame getStart() {
-        return addFrame(newFrame(getTemplate().getStart()));
+        Frame result = newFrame(getTemplate().getStart());
+        result = addFrame(result, result);
+        return result;
     }
 
-    /** Returns a final frame for this instance. */
-    public Frame getFinal() {
-        return addFrame(newFrame(getTemplate().getFinal()));
+    /** Returns a final frame for this instance. 
+     * @param primeF prime frame for the new frame; if {@code null}, the new frame is itself prime
+     */
+    public Frame getFinal(Frame primeF) {
+        return newFrame(getTemplate().getFinal());
     }
 
-    /** Returns a deadlocked frame at given transience depth for this instance. */
+    /** Returns a deadlocked frame at given transience depth for this instance. 
+     */
     public Frame getDead(int depth) {
-        return addFrame(newFrame(this.template.getDead(depth)));
+        return newFrame(this.template.getDead(depth));
     }
 
     /** Returns the next available frame number. */
@@ -71,9 +76,11 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
         return nodeCount();
     }
 
-    /** Normalises a frame, adds it to the nodes of this graph, and returns the normalised frame. */
-    Frame addFrame(Frame frame) {
-        Frame result = frame.normalise();
+    /** 
+     * Normalises a frame, adds it to the nodes of this graph, and returns the normalised frame.
+     */
+    Frame addFrame(Frame frame, Frame prime) {
+        Frame result = canonical(frame.normalise(prime));
         addNode(result);
         return result;
     }
@@ -103,23 +110,38 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
         return new Automaton(getTemplate());
     }
 
-    /** Constructs the initial, top-level frame for a given control location. */
+    /** Constructs the initial, top-level frame for a given control location. 
+     */
     Frame newFrame(Location loc) {
         Frame result = new Frame(this, loc.getFirstStage(), new CallStack(), null, null, null);
         return canonical(result);
     }
 
     /** 
-     * Constructs a new frame.
+     * Constructs a new, primeless frame.
      * Makes sure final and deadlock frames are only created for top-level locations.
      */
     Frame newFrame(Stage stage, CallStack callStack, Frame nextF, Frame alsoF, Frame elseF) {
         if (nextF != null || alsoF != null || elseF != null) {
-            nextF = nextF == null ? getFinal() : nextF;
+            nextF = nextF == null ? getFinal(null) : nextF;
             alsoF = alsoF == null ? getDead(stage.getDepth()) : alsoF;
             elseF = elseF == null ? getDead(stage.getDepth()) : elseF;
         }
         Frame result = new Frame(this, stage, callStack, nextF, alsoF, elseF);
+        return canonical(result);
+    }
+
+    /** 
+     * Constructs a new frame by cloning an existing frame and setting the prime
+     * Makes sure final and deadlock frames are only created for top-level locations.
+     * @param prime the prime frame for the new frame; if {@code null}, the new frame
+     * is to be its own prime
+     */
+    Frame newFrame(Frame orig, Frame prime) {
+        Frame result =
+            new Frame(this, orig.getStage(), orig.getCallStack(), orig.getNext(), orig.getAlso(),
+                orig.getElse());
+        result.setPrime(prime == null ? result : prime);
         return canonical(result);
     }
 

@@ -35,6 +35,7 @@ import groove.control.template.Switch;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
+import groove.gui.Viewer;
 import groove.util.Groove;
 
 import java.util.Arrays;
@@ -64,6 +65,10 @@ public class AutomatonBuildTest {
             "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
         add("main", "f|a; ");
         Automaton p = build();
+        p.explore();
+        if (DEBUG) {
+            Viewer.showGraph(p, true);
+        }
         Frame f = p.getStart();
         assertEquals(Position.Type.TRIAL, f.getType());
         Step s = f.getAttempt();
@@ -210,4 +215,6 @@ public class AutomatonBuildTest {
 
     /** Most recently built program. */
     private Program prog;
+
+    private final static boolean DEBUG = false;
 }
