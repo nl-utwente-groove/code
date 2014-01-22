@@ -63,8 +63,7 @@ public class ProgramBuildTest {
     public void testDouble() {
         // no procedure name may be declared more than once
         buildWrong("double", "function f() { a; } function f() { a; }");
-        buildWrong("double",
-            "function f(out node x) { a; } function f(int x) { a; }");
+        buildWrong("double", "function f(out node x) { a; } function f(int x) { a; }");
     }
 
     @Test
@@ -81,22 +80,20 @@ public class ProgramBuildTest {
         buildWrong("empty", "recipe f() { try a; }");
     }
 
+    @Test
     public void testNonTermination() {
         build("nonterminating", "function f() { while (true) { a; } }");
         buildWrong("nonterminating", "recipe f() { while (true) { a; } }");
         build("nonterminating", "function f() { a; g; } function g() { a; f; }");
-        buildWrong("nonterminating",
-            "recipe f() { a; g; } function g() { a; f; }");
-        build("terminating",
-            "function f() { a; g; } function g() { a; (b|f); }");
+        buildWrong("nonterminating", "recipe f() { a; g; } function g() { a; f; }");
+        build("terminating", "function f() { a; g; } function g() { a; (b|f); }");
         build("terminating", "recipe f() { a; g; } function g() { a; (b|f); }");
+        build("alap", "recipe f() { g; alap g; } function g() { a | b; }");
     }
 
     @Test
     public void testRecursion() {
-        Program p =
-            build("recurse",
-                "function f() { a; r; } function r() { if (b) f; }");
+        Program p = build("recurse", "function f() { a; r; } function r() { if (b) f; }");
         assertNull(p.getTerm());
         assertEquals(2, p.getProcs().size());
         Procedure fProc = p.getProc("f");
@@ -107,12 +104,9 @@ public class ProgramBuildTest {
         assertEquals(call("b").ifOnly(call(fProc)), rTerm);
         // circular
         buildWrong("circular", "function f() { f; }");
-        buildWrong("circular",
-            "function f() { a | g; } function g() { try a; else f; }");
-        buildWrong("unguarded",
-            "function f() { try a; } function g() { f; g; }");
-        build("guarded",
-            "function f() { try a; else b; } function g() { f; g; }");
+        buildWrong("circular", "function f() { a | g; } function g() { try a; else f; }");
+        buildWrong("unguarded", "function f() { try a; } function g() { f; g; }");
+        build("guarded", "function f() { try a; else b; } function g() { f; g; }");
         //
         p = build("forward call", "f; function f() { a;f; }");
         fProc = p.getProc("f");
@@ -123,8 +117,7 @@ public class ProgramBuildTest {
     @Test
     public void testParameters() {
         Program p =
-            build(
-                "pars",
+            build("pars",
                 "function f(int x, out node n) { iInt(x); node n2; oNode(out n2); bNode-oNode(n2, out n); }");
         Procedure fProc = p.getProc("f");
         CtrlPar xIn = CtrlPar.inVar("f.x", "int");
@@ -135,8 +128,7 @@ public class ProgramBuildTest {
             call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out)).seq(
                 call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
         //
-        build(
-            "r",
+        build("r",
             "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
         //
         buildWrong("out", "function f(node p) { oNode(p); }");
@@ -148,18 +140,15 @@ public class ProgramBuildTest {
     @Test
     public void testMultiple() {
         add("main", "import sub.f; int n; f(out n);");
-        add("sub.defF",
-            "package sub; import bInt; function f(out int x) { bInt(out x); g(x); }");
-        add("sub.getG",
-            "package sub; import bInt; function g(int y) { bInt(y); }");
+        add("sub.defF", "package sub; import bInt; function f(out int x) { bInt(out x); g(x); }");
+        add("sub.getG", "package sub; import bInt; function g(int y) { bInt(y); }");
         Program p = build();
         Procedure fProc = p.getProc("sub.f");
         Procedure gProc = p.getProc("sub.g");
         assertEquals(call(fProc, CtrlPar.outVar("n", "int")), p.getTerm());
         CtrlPar xIn = CtrlPar.inVar("sub.f.x", "int");
         CtrlPar xOut = CtrlPar.outVar("sub.f.x", "int");
-        assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)),
-            fProc.getTerm());
+        assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());
         CtrlPar yIn = CtrlPar.inVar("sub.g.y", "int");
         assertEquals(call(rule("bInt"), yIn), gProc.getTerm());
     }
@@ -204,8 +193,7 @@ public class ProgramBuildTest {
     protected Program build(String controlName, String program) {
         Program result = null;
         try {
-            result =
-                createLoader().parse(controlName, program).check().toProgram();
+            result = createLoader().parse(controlName, program).check().toProgram();
             result.setFixed();
         } catch (FormatException e) {
             fail(e.toString());
@@ -222,8 +210,7 @@ public class ProgramBuildTest {
     protected void buildWrong(String controlName, String program) {
         try {
             createLoader().parse(controlName, program).check().toProgram().setFixed();
-            fail(String.format("Expected %s to be erronous, but it isn't",
-                program));
+            fail(String.format("Expected %s to be erronous, but it isn't", program));
         } catch (FormatException e) {
             // this is the expected outcome
             if (DEBUG) {

@@ -70,10 +70,9 @@ public class GrammarModel implements Observer {
         this.store = store;
         this.changeCount = new ChangeCount();
         String grammarVersion = store.getProperties().getGrammarVersion();
-        boolean noActiveStartGraphs =
-            store.getProperties().getActiveNames(HOST).isEmpty();
-        if (Version.compareGrammarVersions(grammarVersion,
-            Version.GRAMMAR_VERSION_3_2) < 0 && noActiveStartGraphs) {
+        boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
+        if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
+            && noActiveStartGraphs) {
             setLocalActiveNames(HOST, Groove.DEFAULT_START_GRAPH_NAME);
         }
         for (ResourceKind resource : ResourceKind.all(false)) {
@@ -117,8 +116,7 @@ public class GrammarModel implements Observer {
      * @throws FormatException if the properties object is not {@code null}
      * and does not satisfy {@link GrammarProperties#check(GrammarModel)}
      */
-    public void setProperties(GrammarProperties properties)
-        throws FormatException {
+    public void setProperties(GrammarProperties properties) throws FormatException {
         if (properties != null) {
             properties.check(this);
         }
@@ -141,8 +139,7 @@ public class GrammarModel implements Observer {
     }
 
     /** Returns the map from resource names to resource models of a given kind. */
-    public Map<String,? extends ResourceModel<?>> getResourceMap(
-            ResourceKind kind) {
+    public Map<String,? extends ResourceModel<?>> getResourceMap(ResourceKind kind) {
         return this.resourceMap.get(kind);
     }
 
@@ -153,15 +150,13 @@ public class GrammarModel implements Observer {
 
     /** Returns a named graph-based resource model of a given kind. */
     public GraphBasedModel<?> getGraphResource(ResourceKind kind, String name) {
-        assert kind.isGraphBased() : String.format(
-            "Resource kind %s is not graph-based", kind);
+        assert kind.isGraphBased() : String.format("Resource kind %s is not graph-based", kind);
         return (GraphBasedModel<?>) getResourceMap(kind).get(name);
     }
 
     /** Returns a named text-based resource model of a given kind. */
     public TextBasedModel<?> getTextResource(ResourceKind kind, String name) {
-        assert kind.isTextBased() : String.format(
-            "Resource kind %s is not text-based", kind);
+        assert kind.isTextBased() : String.format("Resource kind %s is not text-based", kind);
         return (TextBasedModel<?>) getResourceMap(kind).get(name);
     }
 
@@ -315,8 +310,7 @@ public class GrammarModel implements Observer {
 
     public HostModel getStartGraphModel() {
         if (this.startGraphModel == null) {
-            TreeMap<String,AspectGraph> graphMap =
-                new TreeMap<String,AspectGraph>();
+            TreeMap<String,AspectGraph> graphMap = new TreeMap<String,AspectGraph>();
             for (String name : getActiveNames(HOST)) {
                 graphMap.put(name, getStore().getGraphs(HOST).get(name));
             }
@@ -413,8 +407,8 @@ public class GrammarModel implements Observer {
         getPrologEnvironment();
         for (ResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
-                this.errors.add("Error in prolog program '%s': %s",
-                    prologModel.getFullName(), error, prologModel);
+                this.errors.add("Error in prolog program '%s': %s", prologModel.getFullName(),
+                    error, prologModel);
             }
         }
         // check if all resource names are valid identifiers
@@ -422,8 +416,7 @@ public class GrammarModel implements Observer {
             for (ResourceModel<?> model : getResourceSet(kind)) {
                 if (!QualName.isValid(model.getFullName(), null, null)) {
                     this.errors.add(new FormatError(kind.getName() + " name '"
-                        + model.getFullName() + "' "
-                        + "is an illegal identifier", model));
+                        + model.getFullName() + "' " + "is an illegal identifier", model));
                 }
             }
         }
@@ -453,19 +446,19 @@ public class GrammarModel implements Observer {
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
-                    errors.add("Error in rule '%s': %s",
-                        ruleModel.getFullName(), error, ruleModel.getSource());
+                    errors.add("Error in rule '%s': %s", ruleModel.getFullName(), error,
+                        ruleModel.getSource());
                 }
             }
         }
         try {
             // set control
             CtrlAut control = getControlModel().toResource();
-            if (result.hasMultiplePriorities()
-                && !getActiveNames(CONTROL).isEmpty()) {
+            if (result.hasMultiplePriorities() && !getActiveNames(CONTROL).isEmpty()) {
                 errors.add("Rule priorities and explicit control cannot be used simultaneously");
             }
             result.setCtrlAut(control);
+            result.setControl(getControlModel().getAutomaton());
         } catch (FormatException e) {
             errors.addAll(e.getErrors());
         }
@@ -489,8 +482,7 @@ public class GrammarModel implements Observer {
                 startGraphErrors = exc.getErrors();
             }
             for (FormatError error : startGraphErrors) {
-                errors.add("Error in start graph: %s", error,
-                    getStartGraphModel().getSource());
+                errors.add("Error in start graph: %s", error, getStartGraphModel().getSource());
             }
         }
         // Set the Prolog environment.
@@ -576,8 +568,7 @@ public class GrammarModel implements Observer {
         modelMap.keySet().retainAll(sourceMap.keySet());
         // collect the new active names
         SortedSet<String> newActiveNames = new TreeSet<String>();
-        if (kind != RULE && kind != ResourceKind.GROOVY
-            && kind != ResourceKind.CONFIG) {
+        if (kind != RULE && kind != ResourceKind.GROOVY && kind != ResourceKind.CONFIG) {
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
@@ -589,8 +580,7 @@ public class GrammarModel implements Observer {
                 modelMap.put(name, model = createModel(kind, name));
                 // collect the active rules
             }
-            if (kind == RULE
-                && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
+            if (kind == RULE && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
                 newActiveNames.add(name);
             }
         }
@@ -675,8 +665,7 @@ public class GrammarModel implements Observer {
 
     /** Mapping from resource kinds and names to resource models. */
     private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
-        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(
-            ResourceKind.class);
+        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
@@ -728,8 +717,7 @@ public class GrammarModel implements Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public GrammarModel newInstance(URL url)
-        throws IllegalArgumentException, IOException {
+    static public GrammarModel newInstance(URL url) throws IllegalArgumentException, IOException {
         SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
         GrammarModel result = store.toGrammarModel();
@@ -753,8 +741,7 @@ public class GrammarModel implements Observer {
      * @throws IOException if an error occurred while creating the store, or
      * if the store exists but does not contain a grammar
      */
-    static public GrammarModel newInstance(File file, boolean create)
-        throws IOException {
+    static public GrammarModel newInstance(File file, boolean create) throws IOException {
         SystemStore store = SystemStoreFactory.newStore(file, create);
         store.reload();
         GrammarModel result = store.toGrammarModel();
@@ -769,8 +756,8 @@ public class GrammarModel implements Observer {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public GrammarModel newInstance(String location)
-        throws IllegalArgumentException, IOException {
+    static public GrammarModel newInstance(String location) throws IllegalArgumentException,
+        IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {
@@ -803,8 +790,7 @@ public class GrammarModel implements Observer {
          * Apply a manipulation action. The boolean return value indicates if
          * the set was changed as a result of this operation.
          */
-        public static boolean apply(Set<String> set, Manipulation manipulation,
-                Set<String> selected) {
+        public static boolean apply(Set<String> set, Manipulation manipulation, Set<String> selected) {
             switch (manipulation) {
             case ADD:
                 return set.addAll(selected);
@@ -831,8 +817,7 @@ public class GrammarModel implements Observer {
          * Convenience method for applying a manipulation on a singleton
          * value. Inefficient.
          */
-        public static boolean apply(Set<String> set, Manipulation manipulation,
-                String selected) {
+        public static boolean apply(Set<String> set, Manipulation manipulation, String selected) {
             Set<String> temp = new HashSet<String>();
             temp.add(selected);
             return apply(set, manipulation, temp);

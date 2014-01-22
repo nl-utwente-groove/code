@@ -34,6 +34,7 @@ import groove.util.Fixable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -96,7 +97,6 @@ public class Program implements Fixable {
      * May be {@code null} if this program has no main body.
      */
     public Term getTerm() {
-        assert isFixed();
         return this.term;
     }
 
@@ -480,10 +480,12 @@ public class Program implements Fixable {
         boolean modified = true;
         while (modified) {
             modified = false;
-            for (Procedure proc : remaining) {
+            Iterator<Procedure> procIter = remaining.iterator();
+            while (procIter.hasNext()) {
+                Procedure proc = procIter.next();
                 if (willTerminate(proc.getTemplate(), result)) {
                     result.add(proc);
-                    remaining.remove(proc);
+                    procIter.remove();
                     modified = true;
                 }
             }
@@ -503,19 +505,19 @@ public class Program implements Fixable {
         while (!queue.isEmpty()) {
             Location next = queue.poll();
             for (Switch edge : inMap.get(next)) {
-                if (!edge.getKind().isCallable()) {
-                    continue;
+                boolean terminates = false;
+                if (edge.getKind().isCallable()) {
+                    Callable unit = edge.getCall().getUnit();
+                    terminates = unit instanceof Rule || terminationSet.contains(unit);
+                } else {
+                    terminates = true;
                 }
-                Callable unit = edge.getCall().getUnit();
-                if (!(unit instanceof Rule) && !terminationSet.contains(unit)) {
-                    continue;
-                }
-                if (terminating.add(edge.source())) {
+                if (terminates && terminating.add(edge.source())) {
                     queue.add(edge.source());
                 }
             }
         }
-        return terminating.size() == template.nodeCount();
+        return terminating.containsAll(template.nodeSet());
     }
 
     @Override

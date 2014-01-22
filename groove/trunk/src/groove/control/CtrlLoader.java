@@ -21,11 +21,14 @@ import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
+import groove.control.template.Program;
 import groove.grammar.Action;
 import groove.grammar.Grammar;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.util.Groove;
 
@@ -53,10 +56,8 @@ public class CtrlLoader {
      * @param checkDependencies flag to determine whether the name space
      * should check for circular dependencies and forward references.
      */
-    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules,
-            boolean checkDependencies) {
-        this.family =
-            algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
+    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules, boolean checkDependencies) {
+        this.family = algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
         this.namespace = new Namespace(this.family, checkDependencies);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
@@ -72,8 +73,7 @@ public class CtrlLoader {
      * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public CtrlTree parse(String controlName, String program)
-        throws FormatException {
+    public CtrlTree parse(String controlName, String program) throws FormatException {
         this.namespace.setControlName(controlName);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
         Object oldRecord = this.treeMap.put(controlName, tree);
@@ -115,6 +115,27 @@ public class CtrlLoader {
             }
         }
         return CtrlFactory.instance().buildDefault(actions, this.family);
+    }
+
+    /** Returns a control program constructed from a set of program names. */
+    public Program buildProgram(Collection<String> progNames) throws FormatException {
+        FormatErrorSet errors = new FormatErrorSet();
+        Program result = new Program();
+        for (String name : progNames) {
+            CtrlTree tree = this.treeMap.get(name);
+            try {
+                result.add(tree.toProgram());
+            } catch (FormatException e) {
+                for (FormatError error : e.getErrors()) {
+                    errors.add("Error in %s: %s", name, error);
+                }
+            }
+        }
+        if (!result.hasBody()) {
+            result.add(parse(" main", "#any;").check().toProgram());
+        }
+        errors.throwException();
+        return result;
     }
 
     /** 
@@ -177,11 +198,10 @@ public class CtrlLoader {
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(Grammar grammar, String programName,
-            String program) throws FormatException {
+    public static CtrlAut run(Grammar grammar, String programName, String program)
+        throws FormatException {
         CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
-                grammar.getAllRules(), true);
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(), grammar.getAllRules(), true);
         instance.parse(programName, program);
         return instance.buildAutomaton(programName).normalise();
     }
@@ -190,8 +210,7 @@ public class CtrlLoader {
     public static CtrlAut run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
         CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
-                grammar.getAllRules(), true);
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(), grammar.getAllRules(), true);
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {

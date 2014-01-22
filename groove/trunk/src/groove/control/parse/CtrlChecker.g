@@ -60,6 +60,7 @@ import_decl
 
 recipes
   : ^(RECIPES recipe*)
+       { helper.reorderFunctions($RECIPES); }
   ;
 
 recipe

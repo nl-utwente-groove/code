@@ -233,6 +233,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         for (Location state : nodeSet()) {
             result.put(state, new HashSet<Switch>());
         }
+        result.put(getFinal(), new HashSet<Switch>());
         for (Switch trans : edgeSet()) {
             result.get(trans.target()).add(trans);
         }
