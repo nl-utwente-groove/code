@@ -71,8 +71,7 @@ public class CheckboxTree extends JTree {
         this.treeModel = new DefaultTreeModel(this.topNode);
         setModel(this.treeModel);
         // set selection mode
-        getSelectionModel().setSelectionMode(
-            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
     }
 
     @Override
@@ -117,8 +116,7 @@ public class CheckboxTree extends JTree {
                 int checkboxBorder = pathBounds.x + CHECKBOX_WIDTH;
                 result = labelNode.hasCheckbox() && x < checkboxBorder;
             } else {
-                int checkboxBorder =
-                    pathBounds.x + pathBounds.width - CHECKBOX_WIDTH;
+                int checkboxBorder = pathBounds.x + pathBounds.width - CHECKBOX_WIDTH;
                 result = labelNode.hasCheckbox() && x >= checkboxBorder;
             }
         }
@@ -192,14 +190,12 @@ public class CheckboxTree extends JTree {
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
 
     /** Preferred width of a checkbox. */
-    private static final int CHECKBOX_WIDTH =
-        new JCheckBox().getPreferredSize().width;
+    private static final int CHECKBOX_WIDTH = new JCheckBox().getPreferredSize().width;
 
     /**
      * Special cell renderer for nodes with optional checkboxes.
      */
-    static protected class CellRenderer extends JPanel implements
-            TreeCellRenderer {
+    static protected class CellRenderer extends JPanel implements TreeCellRenderer {
         /** 
          * Empty constructor with the correct visibility. 
          * @param tree the enclosing checkbox tree
@@ -221,19 +217,18 @@ public class CheckboxTree extends JTree {
             setOpaque(false);
         }
 
-        public JComponent getTreeCellRendererComponent(JTree tree,
-                Object value, boolean sel, boolean expanded, boolean leaf,
-                int row, boolean hasFocus) {
+        @Override
+        public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
+                boolean expanded, boolean leaf, int row, boolean hasFocus) {
             this.initialising = true;
             JComponent result;
-            this.jLabel.getTreeCellRendererComponent(tree, value, sel,
-                expanded, leaf, row, hasFocus);
+            this.jLabel.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
+                hasFocus);
             Color background = this.tree.getColor(tree.isEnabled());
             // this.jLabel.setBackgroundNonSelectionColor(background);
             this.jLabel.setOpaque(!sel);
             this.jLabel.setBackground(background);
-            this.labelNode =
-                value instanceof TreeNode ? (TreeNode) value : null;
+            this.labelNode = value instanceof TreeNode ? (TreeNode) value : null;
             if (this.labelNode != null && this.labelNode.hasCheckbox()) {
                 this.checkbox.setSelected(this.labelNode.isSelected());
                 setBackground(background);
@@ -300,8 +295,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        protected void firePropertyChange(String propertyName, Object oldValue,
-                Object newValue) {
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
             // Strings get interned...
             if ("text".equals(propertyName)
                 || (("font".equals(propertyName) || "foreground".equals(propertyName))
@@ -316,8 +310,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, byte oldValue,
-                byte newValue) {
+        public void firePropertyChange(String propertyName, byte oldValue, byte newValue) {
             // empty
         }
 
@@ -326,8 +319,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, char oldValue,
-                char newValue) {
+        public void firePropertyChange(String propertyName, char oldValue, char newValue) {
             // empty
         }
 
@@ -336,8 +328,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, short oldValue,
-                short newValue) {
+        public void firePropertyChange(String propertyName, short oldValue, short newValue) {
             // empty
         }
 
@@ -346,8 +337,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, int oldValue,
-                int newValue) {
+        public void firePropertyChange(String propertyName, int oldValue, int newValue) {
             // empty
         }
 
@@ -356,8 +346,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, long oldValue,
-                long newValue) {
+        public void firePropertyChange(String propertyName, long oldValue, long newValue) {
             // empty
         }
 
@@ -366,8 +355,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, float oldValue,
-                float newValue) {
+        public void firePropertyChange(String propertyName, float oldValue, float newValue) {
             // empty
         }
 
@@ -376,8 +364,7 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, double oldValue,
-                double newValue) {
+        public void firePropertyChange(String propertyName, double oldValue, double newValue) {
             // empty
         }
 
@@ -386,20 +373,19 @@ public class CheckboxTree extends JTree {
          * href="#override">Implementation Note</a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, boolean oldValue,
-                boolean newValue) {
+        public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
             // empty
         }
     }
 
     /** Tree cell editor to be used by subclasses of the {@link CheckboxTree}. */
-    static protected class CellEditor extends AbstractCellEditor implements
-            TreeCellEditor {
+    static protected class CellEditor extends AbstractCellEditor implements TreeCellEditor {
         /** Constructs a new editor for the enclosing tree. */
         public CellEditor(CheckboxTree tree) {
             this.tree = tree;
             this.editor = tree.createRenderer();
             ItemListener itemListener = new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent itemEvent) {
                     if (!CellEditor.this.editor.isInitialising()) {
                         stopCellEditing();
@@ -412,6 +398,7 @@ public class CheckboxTree extends JTree {
         }
 
         /** Returns the {@link TreeNode} currently being edited. */
+        @Override
         public TreeNode getCellEditorValue() {
             return this.editor.getTreeNode();
         }
@@ -427,9 +414,7 @@ public class CheckboxTree extends JTree {
             boolean result = false;
             if (event instanceof MouseEvent) {
                 MouseEvent mouseEvent = (MouseEvent) event;
-                result =
-                    this.tree.isOverCheckBox(mouseEvent.getX(),
-                        mouseEvent.getY());
+                result = this.tree.isOverCheckBox(mouseEvent.getX(), mouseEvent.getY());
             }
             return result;
         }
@@ -440,11 +425,12 @@ public class CheckboxTree extends JTree {
         }
 
         /** Passes the request on to the renderer. */
-        public Component getTreeCellEditorComponent(JTree tree, Object value,
-                boolean selected, boolean expanded, boolean leaf, int row) {
+        @Override
+        public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected,
+                boolean expanded, boolean leaf, int row) {
             Component result =
-                this.editor.getTreeCellRendererComponent(tree, value, selected,
-                    expanded, leaf, row, false);
+                this.editor.getTreeCellRendererComponent(tree, value, selected, expanded, leaf,
+                    row, false);
 
             return result;
         }

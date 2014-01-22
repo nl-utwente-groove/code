@@ -28,12 +28,15 @@ import groove.transform.Event;
  */
 public interface GraphTransition extends Edge {
     /** Overrides the method to specialise the result type. */
+    @Override
     GraphState source();
 
     /** Overrides the method to specialise the result type. */
+    @Override
     GraphState target();
 
     /** Overrides the method to specialise the result type. */
+    @Override
     ActionLabel label();
 
     /**

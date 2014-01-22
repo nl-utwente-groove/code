@@ -96,10 +96,12 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
         return !getCacheReference().isStrong();
     }
 
+    @Override
     final public CacheReference<C> getCacheReference() {
         return this.reference;
     }
 
+    @Override
     final public void setCacheReference(CacheReference<C> reference) {
         this.reference = reference;
     }

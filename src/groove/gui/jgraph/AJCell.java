@@ -41,8 +41,8 @@ import org.jgraph.graph.DefaultGraphCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>>
-        extends DefaultGraphCell implements JCell<G> {
+public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>> extends
+        DefaultGraphCell implements JCell<G> {
     /** 
      * Constructs a new, uninitialised cell.
      * Call {@link #setJModel(JModel)} to initialise to a given model.
@@ -59,6 +59,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     }
 
     /** Sets a new JModel for this cell. */
+    @Override
     @SuppressWarnings("unchecked")
     public void setJModel(JModel<G> jModel) {
         this.jModel = (JM) jModel;
@@ -129,6 +130,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     private Set<Edge> edges;
 
     /** Sets or resets a look value. */
+    @Override
     public boolean setLook(Look look, boolean set) {
         assert !look.isStructural();
         boolean change = set ? getLooks().add(look) : getLooks().remove(look);
@@ -161,12 +163,14 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
         return Look.BASIC;
     }
 
+    @Override
     final public void putVisual(VisualKey key, Object value) {
         assert key.getNature() != Nature.DERIVED;
         this.visuals.put(key, value);
         this.staleKeys.remove(key);
     }
 
+    @Override
     final public void putVisuals(VisualMap map) {
         for (VisualKey key : map.keySet()) {
             if (key.getNature() != Nature.DERIVED) {
@@ -271,8 +275,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
                 if (result == 0) {
                     result = o1.source().getNumber() - o2.source().getNumber();
                     if (result == 0) {
-                        result =
-                            o1.target().getNumber() - o2.target().getNumber();
+                        result = o1.target().getNumber() - o2.target().getNumber();
                     }
                 }
                 return result;

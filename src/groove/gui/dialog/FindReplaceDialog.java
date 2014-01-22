@@ -89,9 +89,7 @@ public class FindReplaceDialog {
             propagateSelection();
         }
         setReplaceEnabled();
-        JDialog dialog =
-            getOptionPane().createDialog(frame,
-                title == null ? DEFAULT_TITLE : title);
+        JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
         int result;
@@ -111,8 +109,7 @@ public class FindReplaceDialog {
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
         getOldTypeLabel().setText(selection.getRole().getDescription(true));
-        getNewTypeCombobox().setSelectedIndex(
-            EdgeRole.getIndex(selection.getRole()));
+        getNewTypeCombobox().setSelectedIndex(EdgeRole.getIndex(selection.getRole()));
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
         getNewField().setSelectionEnd(selection.text().length());
@@ -148,18 +145,15 @@ public class FindReplaceDialog {
             TypeLabel oldLabel = getOldLabel();
             if (result.equals(oldLabel)) {
                 throw new FormatException("Old and new labels coincide");
-            } else if (this.typeGraph.isNodeType(oldLabel)
-                && this.typeGraph.isNodeType(result)) {
+            } else if (this.typeGraph.isNodeType(oldLabel) && this.typeGraph.isNodeType(result)) {
                 TypeNode oldType = this.typeGraph.getNode(oldLabel);
                 TypeNode newType = this.typeGraph.getNode(result);
                 if (newType != null) {
                     if (this.typeGraph.isSubtype(oldType, newType)) {
                         throw new FormatException(
-                            "New label '%s' is an existing supertype of '%s'",
-                            result, oldLabel);
+                            "New label '%s' is an existing supertype of '%s'", result, oldLabel);
                     } else if (this.typeGraph.isSubtype(newType, oldType)) {
-                        throw new FormatException(
-                            "New label '%s' is an existing subtype of '%s'",
+                        throw new FormatException("New label '%s' is an existing subtype of '%s'",
                             result, oldLabel);
                     }
                 }
@@ -211,9 +205,8 @@ public class FindReplaceDialog {
             errorPanel.setPreferredSize(oldPanel.getPreferredSize());
             this.optionPane =
                 new JOptionPane(new Object[] {oldPanel, newPanel, errorPanel},
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
-                    null, new Object[] {getFindButton(), getReplaceButton(),
-                        getCancelButton()});
+                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
+                        getFindButton(), getReplaceButton(), getCancelButton()});
         }
         return this.optionPane;
     }
@@ -266,8 +259,7 @@ public class FindReplaceDialog {
     /** Returns the text field in which the user is to enter his input. */
     private JComboBox getOldField() {
         if (this.oldField == null) {
-            final JComboBox result =
-                this.oldField = getLabelComboBox(this.typeGraph);
+            final JComboBox result = this.oldField = getLabelComboBox(this.typeGraph);
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -285,8 +277,7 @@ public class FindReplaceDialog {
     private JTextField getNewField() {
         if (this.newField == null) {
             this.newField = new JTextField();
-            this.newField.getDocument().addDocumentListener(
-                new OverlapListener());
+            this.newField.getDocument().addDocumentListener(new OverlapListener());
             this.newField.addActionListener(getNameFieldListener());
         }
         return this.newField;
@@ -340,15 +331,13 @@ public class FindReplaceDialog {
         result.setFocusable(false);
         result.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList list,
-                    Object value, int index, boolean isSelected,
-                    boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof TypeLabel) {
-                    value =
-                        HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
+                    value = HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
                 }
-                return super.getListCellRendererComponent(list, value, index,
-                    isSelected, cellHasFocus);
+                return super.getListCellRendererComponent(list, value, index, isSelected,
+                    cellHasFocus);
             }
         });
         for (TypeLabel label : sortLabels(typeGraph.getLabels())) {
@@ -451,6 +440,7 @@ public class FindReplaceDialog {
             this.enabled = enabled;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (this.enabled) {
                 getOptionPane().setValue(e.getSource());
@@ -473,14 +463,17 @@ public class FindReplaceDialog {
             // empty
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             testRenaming();
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             testRenaming();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             testRenaming();
         }

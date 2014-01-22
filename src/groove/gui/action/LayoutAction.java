@@ -40,6 +40,7 @@ public class LayoutAction extends AbstractAction {
         this.jGraph = jGraph;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (this.jGraph.isEnabled()) {
             doLayout();

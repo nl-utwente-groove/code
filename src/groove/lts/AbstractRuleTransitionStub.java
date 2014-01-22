@@ -37,8 +37,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
      * Constructs a stub on the basis of a given rule event, added nodes and
      * target state.
      */
-    AbstractRuleTransitionStub(MatchResult match, HostNode[] addedNodes,
-            GraphState target) {
+    AbstractRuleTransitionStub(MatchResult match, HostNode[] addedNodes, GraphState target) {
         this.event = match.getEvent();
         this.ctrlTrans = match.getCtrlTransition();
         this.addedNodes = addedNodes;
@@ -46,6 +45,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
     }
 
     /** This implementation always returns the stored target state. */
+    @Override
     public GraphState getTarget(GraphState source) {
         return this.target;
     }
@@ -60,10 +60,12 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
         return getEvent().getRule();
     }
 
+    @Override
     public MatchResult getKey(GraphState source) {
         return new MatchResult(this.event, this.ctrlTrans);
     }
 
+    @Override
     public HostNode[] getAddedNodes(GraphState source) {
         return this.addedNodes;
     }
@@ -81,9 +83,10 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
         }
     }
 
+    @Override
     public RuleTransition toTransition(GraphState source) {
-        return new DefaultRuleTransition(source, getKey(source),
-            getAddedNodes(source), getTarget(source), isSymmetry());
+        return new DefaultRuleTransition(source, getKey(source), getAddedNodes(source),
+            getTarget(source), isSymmetry());
     }
 
     /**

@@ -44,8 +44,8 @@ public class BehaviourOption extends JMenu implements ItemListener {
     public BehaviourOption(String name, int choiceCount) {
         super(name);
         if (choiceCount != 2 && choiceCount != 3) {
-            throw new IllegalArgumentException(String.format(
-                "Number of options cannot be %d", choiceCount));
+            throw new IllegalArgumentException(String.format("Number of options cannot be %d",
+                choiceCount));
         }
         this.answers = choiceCount == 2 ? standardAnswers2 : standardAnswers3;
         this.answerGroup = new ButtonGroup();
@@ -76,8 +76,8 @@ public class BehaviourOption extends JMenu implements ItemListener {
      */
     public final void setValue(int value) {
         if (value < 0 || value >= getItemCount()) {
-            throw new IllegalArgumentException(String.format(
-                "Value should be in the range %d-%d", 0, getItemCount()));
+            throw new IllegalArgumentException(String.format("Value should be in the range %d-%d",
+                0, getItemCount()));
         }
         if (value != this.value) {
             int oldValue = this.value;
@@ -136,6 +136,7 @@ public class BehaviourOption extends JMenu implements ItemListener {
     }
 
     /** Sets this menu's value according to the selected menu item. */
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             // look up the item
@@ -186,8 +187,7 @@ public class BehaviourOption extends JMenu implements ItemListener {
         Collections.unmodifiableList(Arrays.asList(ASK_TEXT, ALWAYS_TEXT));
     /** Array of values for behaviour menus with 3 options. */
     static private final List<String> standardAnswers3 =
-        Collections.unmodifiableList(Arrays.asList(ASK_TEXT, ALWAYS_TEXT,
-            NEVER_TEXT));
+        Collections.unmodifiableList(Arrays.asList(ASK_TEXT, ALWAYS_TEXT, NEVER_TEXT));
     /** Title if the dialog displayed by {@link #confirm(Component, String)}. */
     static private final String DIALOG_TITLE = "Confirm";
     /**

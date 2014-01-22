@@ -94,11 +94,9 @@ public class TabLabel extends JPanel {
         this.hasButton = button;
         this.iconLabel = new JLabel(title, icon, JLabel.LEFT);
         this.iconLabel.setBackground(Values.ERROR_COLOR);
-        this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0,
-            tabKind.getHGap()));
+        this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, tabKind.getHGap()));
         if (tabKind != Kind.RESOURCE) {
-            this.iconLabel.setFont(this.iconLabel.getFont().deriveFont(
-                Font.BOLD));
+            this.iconLabel.setFont(this.iconLabel.getFont().deriveFont(Font.BOLD));
         }
         add(this.iconLabel);
         if (button && title != null) {
@@ -117,8 +115,7 @@ public class TabLabel extends JPanel {
     /** 
      * Creates a new component, for a given display. 
      */
-    public TabLabel(DisplaysPanel parent, Display display, Icon icon,
-            String title) {
+    public TabLabel(DisplaysPanel parent, Display display, Icon icon, String title) {
         this(Kind.DISPLAY, icon, title, true);
         this.display = display;
         this.parent = parent;
@@ -223,12 +220,12 @@ public class TabLabel extends JPanel {
             setRolloverEnabled(true);
             //Close the proper tab by clicking the button
             addActionListener(this);
-            if (TabLabel.this.kind != Kind.RESOURCE
-                && TabLabel.this.kind != Kind.LIST) {
+            if (TabLabel.this.kind != Kind.RESOURCE && TabLabel.this.kind != Kind.LIST) {
                 setIcon(Icons.PIN_ICON);
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             doButtonAction();
         }
@@ -243,8 +240,7 @@ public class TabLabel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            if (TabLabel.this.kind == Kind.RESOURCE
-                || TabLabel.this.kind == Kind.LIST) {
+            if (TabLabel.this.kind == Kind.RESOURCE || TabLabel.this.kind == Kind.LIST) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 //shift the image for pressed buttons
                 if (getModel().isPressed()) {
@@ -256,19 +252,16 @@ public class TabLabel extends JPanel {
                     g2.setColor(Color.MAGENTA);
                 }
                 int delta = 6;
-                g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight()
-                    - delta - 1);
-                g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight()
-                    - delta - 1);
+                g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
+                g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
                 g2.dispose();
             }
         }
     }
 
     private static enum Kind {
-        RESOURCE(1, Options.CANCEL_EDIT_ACTION_NAME), DISPLAY(3,
-                Options.DETACH_ACTION_NAME), STATE(5,
-                Options.DETACH_ACTION_NAME), LIST(5, "Close");
+        RESOURCE(1, Options.CANCEL_EDIT_ACTION_NAME), DISPLAY(3, Options.DETACH_ACTION_NAME), STATE(
+                5, Options.DETACH_ACTION_NAME), LIST(5, "Close");
 
         private Kind(int hGap, String name) {
             this.hGap = hGap;
@@ -290,24 +283,23 @@ public class TabLabel extends JPanel {
     }
 
     /** Listener that arms any {@link TabButton} that the mouse comes over. */
-    private final static MouseListener buttonMouseListener =
-        new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                Component component = e.getComponent();
-                if (component instanceof AbstractButton) {
-                    AbstractButton button = (AbstractButton) component;
-                    button.setBorderPainted(true);
-                }
+    private final static MouseListener buttonMouseListener = new MouseAdapter() {
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            Component component = e.getComponent();
+            if (component instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton) component;
+                button.setBorderPainted(true);
             }
+        }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-                Component component = e.getComponent();
-                if (component instanceof AbstractButton) {
-                    AbstractButton button = (AbstractButton) component;
-                    button.setBorderPainted(false);
-                }
+        @Override
+        public void mouseExited(MouseEvent e) {
+            Component component = e.getComponent();
+            if (component instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton) component;
+                button.setBorderPainted(false);
             }
-        };
+        }
+    };
 }

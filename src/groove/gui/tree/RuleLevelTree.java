@@ -48,8 +48,7 @@ import org.jgraph.event.GraphSelectionListener;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleLevelTree extends CheckboxTree implements
-        TreeSelectionListener {
+public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener {
     /** Creates a new tree, for a given rule model. */
     public RuleLevelTree(AspectJGraph jGraph) {
         this.jGraph = jGraph;
@@ -95,22 +94,21 @@ public class RuleLevelTree extends CheckboxTree implements
     /** Indicates if a given aspect cell is in the set of visible cells. */
     public boolean isVisible(AspectJCell jCell) {
         synchroniseJModel();
-        return !this.allCellSet.contains(jCell)
-            || this.selectedSet.contains(jCell);
+        return !this.allCellSet.contains(jCell) || this.selectedSet.contains(jCell);
     }
 
     /**
      * Emphasises/deemphasises cells in the associated jmodel, based on the list
      * selection.
      */
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         synchroniseJModel();
         Set<AspectJCell> emphSet = new HashSet<AspectJCell>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
-                Index index =
-                    ((LevelNode) selectedPath.getLastPathComponent()).getIndex();
+                Index index = ((LevelNode) selectedPath.getLastPathComponent()).getIndex();
                 emphSet.addAll(this.levelCellMap.get(index));
             }
         }
@@ -143,8 +141,7 @@ public class RuleLevelTree extends CheckboxTree implements
                 if (index.isTopLevel()) {
                     getTopNode().add(levelNode);
                 } else {
-                    LevelNode parentNode =
-                        this.levelNodeMap.get(index.getParent());
+                    LevelNode parentNode = this.levelNodeMap.get(index.getParent());
                     parentNode.add(levelNode);
                 }
                 this.levelNodeMap.put(index, levelNode);
@@ -170,8 +167,7 @@ public class RuleLevelTree extends CheckboxTree implements
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
-                    for (AspectEdge edge : this.rule.getSource().edgeSet(
-                        ruleLevelNode)) {
+                    for (AspectEdge edge : this.rule.getSource().edgeSet(ruleLevelNode)) {
                         jCell = jModel.getJCell(edge);
                         if (jCell != null) {
                             levelCells.add(jCell);
@@ -194,13 +190,11 @@ public class RuleLevelTree extends CheckboxTree implements
      * level nodes.
      * @return the set of changed cells
      */
-    private Set<AspectJCell> updateVisibleCells(
-            Collection<LevelNode> changedNodes) {
+    private Set<AspectJCell> updateVisibleCells(Collection<LevelNode> changedNodes) {
         Set<AspectJCell> selecteds = new HashSet<AspectJCell>();
         Set<AspectJCell> unselecteds = new HashSet<AspectJCell>();
         for (LevelNode node : changedNodes) {
-            Set<AspectJCell> levelCells =
-                this.levelCellMap.get(node.getIndex());
+            Set<AspectJCell> levelCells = this.levelCellMap.get(node.getIndex());
             if (node.isSelected()) {
                 selecteds.addAll(levelCells);
             } else {
@@ -210,8 +204,7 @@ public class RuleLevelTree extends CheckboxTree implements
         this.selectedSet.removeAll(unselecteds);
         this.selectedSet.addAll(selecteds);
         // Collect the changed cells
-        Set<AspectJCell> result =
-            new HashSet<AspectJCell>(selecteds.size() + unselecteds.size());
+        Set<AspectJCell> result = new HashSet<AspectJCell>(selecteds.size() + unselecteds.size());
         result.addAll(selecteds);
         result.addAll(unselecteds);
         // now refresh the changed cells
@@ -242,8 +235,7 @@ public class RuleLevelTree extends CheckboxTree implements
     /** Rule of which this tree shows the levels. */
     private RuleModel rule;
     /** Mapping from level indices to level tree nodes. */
-    private final Map<Index,LevelNode> levelNodeMap =
-        new TreeMap<RuleModel.Index,LevelNode>();
+    private final Map<Index,LevelNode> levelNodeMap = new TreeMap<RuleModel.Index,LevelNode>();
     /**
      * Model for which {@link #levelNodeMap} {@link #levelCellMap} and
      * {@link #selectedSet} are currently computed.
@@ -256,8 +248,7 @@ public class RuleLevelTree extends CheckboxTree implements
      */
     private final Set<AspectJCell> selectedSet = new HashSet<AspectJCell>();
     /** Mapping from level indices to jCells. */
-    private final Map<Index,Set<AspectJCell>> levelCellMap =
-        new TreeMap<Index,Set<AspectJCell>>();
+    private final Map<Index,Set<AspectJCell>> levelCellMap = new TreeMap<Index,Set<AspectJCell>>();
 
     private class LevelNode extends TreeNode {
         /** Creates an instance for a given level index. */
@@ -275,8 +266,7 @@ public class RuleLevelTree extends CheckboxTree implements
 
         public String getName() {
             if (this.name == null) {
-                StringBuilder result =
-                    new StringBuilder(this.index.getOperator().getSymbol());
+                StringBuilder result = new StringBuilder(this.index.getOperator().getSymbol());
                 String levelName = null;
                 if (this.index.getLevelNode() != null) {
                     levelName = this.index.getLevelNode().getLevelName();
@@ -308,8 +298,7 @@ public class RuleLevelTree extends CheckboxTree implements
         @Override
         public void setSelected(boolean selected) {
             this.selected = selected;
-            Set<AspectJCell> changes =
-                updateVisibleCells(Collections.singleton(this));
+            Set<AspectJCell> changes = updateVisibleCells(Collections.singleton(this));
             getJGraph().refreshCells(changes);
         }
 
@@ -331,11 +320,9 @@ public class RuleLevelTree extends CheckboxTree implements
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                TreePath path =
-                    getPathForLocation(e.getPoint().x, e.getPoint().y);
+                TreePath path = getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
-                    LevelNode levelNode =
-                        (LevelNode) path.getLastPathComponent();
+                    LevelNode levelNode = (LevelNode) path.getLastPathComponent();
                     levelNode.setSelected(!levelNode.isSelected());
                     RuleLevelTree.this.repaint();
                 }

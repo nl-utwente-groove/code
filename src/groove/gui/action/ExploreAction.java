@@ -48,9 +48,8 @@ import javax.swing.plaf.basic.BasicSliderUI;
 public class ExploreAction extends SimulatorAction {
     /** Constructs a new action, for a given simulator. */
     public ExploreAction(Simulator simulator, boolean animated) {
-        super(simulator, animated ? Options.ANIMATE_ACTION_NAME
-                : Options.EXPLORE_ACTION_NAME, animated ? Icons.GO_START_ICON
-                : Icons.GO_FORWARD_ICON);
+        super(simulator, animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
+            animated ? Icons.GO_START_ICON : Icons.GO_FORWARD_ICON);
         if (!animated) {
             putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
         }
@@ -75,8 +74,7 @@ public class ExploreAction extends SimulatorAction {
      * @param setResult if {@code true}, the result of the exploration will be set in the GTS
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
-    public void explore(Exploration exploration, boolean setResult,
-            boolean emphasise) {
+    public void explore(Exploration exploration, boolean setResult, boolean emphasise) {
         LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
@@ -111,8 +109,7 @@ public class ExploreAction extends SimulatorAction {
         }
         if (emphasise) {
             Collection<GraphState> result = exploration.getResult().getValue();
-            getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result),
-                true);
+            getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result), true);
         }
         if (isAnimated() && exploration.getLastState() != null) {
             getSimulatorModel().setState(exploration.getLastState());
@@ -124,8 +121,8 @@ public class ExploreAction extends SimulatorAction {
         GrammarModel grammar = getSimulatorModel().getGrammar();
         Exploration exploration = getSimulatorModel().getExploration();
         boolean enabled =
-            grammar != null && grammar.getStartGraphModel() != null
-                && !grammar.hasErrors() && grammar.hasRules();
+            grammar != null && grammar.getStartGraphModel() != null && !grammar.hasErrors()
+                && grammar.hasRules();
         FormatException compatibilityError = null;
         if (enabled) {
             try {
@@ -137,17 +134,15 @@ public class ExploreAction extends SimulatorAction {
         }
         setEnabled(enabled);
         String toolTipText =
-            String.format("%s (%s)",
-                this.animated ? Options.ANIMATE_ACTION_NAME
-                        : Options.EXPLORE_ACTION_NAME,
+            String.format("%s (%s)", this.animated ? Options.ANIMATE_ACTION_NAME
+                    : Options.EXPLORE_ACTION_NAME,
                 HTMLConverter.STRONG_TAG.on(exploration.getIdentifier()));
         if (compatibilityError != null) {
             toolTipText +=
                 HTMLConverter.HTML_LINEBREAK
                     + HTMLConverter.EMBARGO_TAG.on(HTMLConverter.toHtml(compatibilityError.getMessage()));
         }
-        putValue(Action.SHORT_DESCRIPTION,
-            HTMLConverter.HTML_TAG.on(toolTipText));
+        putValue(Action.SHORT_DESCRIPTION, HTMLConverter.HTML_TAG.on(toolTipText));
     }
 
     final boolean isAnimated() {
@@ -225,8 +220,7 @@ public class ExploreAction extends SimulatorAction {
             });
             slider.setAlignmentX(Component.CENTER_ALIGNMENT);
             this.animationPanel = new JPanel();
-            this.animationPanel.setLayout(new BoxLayout(this.animationPanel,
-                BoxLayout.Y_AXIS));
+            this.animationPanel.setLayout(new BoxLayout(this.animationPanel, BoxLayout.Y_AXIS));
             this.animationPanel.add(label);
             this.animationPanel.add(slider);
         }
@@ -242,8 +236,7 @@ public class ExploreAction extends SimulatorAction {
             @Override
             public void run() {
                 getStateCountLabel().setText("States: " + gts.nodeCount());
-                getTransitionCountLabel().setText(
-                    "Transitions: " + gts.edgeCount());
+                getTransitionCountLabel().setText("Transitions: " + gts.edgeCount());
             }
         });
     }
@@ -258,8 +251,7 @@ public class ExploreAction extends SimulatorAction {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        ExploreWarningDialog dialog =
-                            ExploreWarningDialog.instance();
+                        ExploreWarningDialog dialog = ExploreWarningDialog.instance();
                         dialog.setBound(ExploreAction.this.bound);
                         if (dialog.ask(getFrame())) {
                             ExploreAction.this.bound = dialog.getBound();
@@ -285,8 +277,7 @@ public class ExploreAction extends SimulatorAction {
      */
     private Exploration getStateExploration() {
         if (this.stateExploration == null) {
-            this.stateExploration =
-                new Exploration(StrategyValue.STATE, AcceptorValue.NONE, 0);
+            this.stateExploration = new Exploration(StrategyValue.STATE, AcceptorValue.NONE, 0);
         }
         return this.stateExploration;
     }
@@ -406,8 +397,7 @@ public class ExploreAction extends SimulatorAction {
             } catch (FormatException exc) {
                 // this should not occur, as the exploration and the
                 // grammar in the simulator model should always be compatible
-                showErrorDialog(exc,
-                    "Exploration strategy %s incompatible with grammar",
+                showErrorDialog(exc, "Exploration strategy %s incompatible with grammar",
                     this.exploration.getIdentifier());
             }
             gts.removeLTSListener(this.progressListener);
@@ -422,10 +412,8 @@ public class ExploreAction extends SimulatorAction {
             JDialog result;
             // create message dialog
             JOptionPane message =
-                new JOptionPane(isAnimated() ? getAnimationPanel()
-                        : new Object[] {getStateCountLabel(),
-                            getTransitionCountLabel()},
-                    JOptionPane.PLAIN_MESSAGE);
+                new JOptionPane(isAnimated() ? getAnimationPanel() : new Object[] {
+                    getStateCountLabel(), getTransitionCountLabel()}, JOptionPane.PLAIN_MESSAGE);
             message.setOptions(new Object[] {getCancelButton()});
             result = message.createDialog(getFrame(), "Exploring state space");
             result.pack();
@@ -475,6 +463,7 @@ public class ExploreAction extends SimulatorAction {
          */
         private ActionListener createCancelListener() {
             return new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     ExploreThread.this.interrupt();
                 }

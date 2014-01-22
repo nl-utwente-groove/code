@@ -32,15 +32,19 @@ import groove.transform.RuleEvent;
  */
 public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     /** Overrides the method to specialise the result type. */
+    @Override
     GraphState source();
 
     /** Overrides the method to specialise the result type. */
+    @Override
     GraphState target();
 
     /** Returns the event associated with this rule transition. */
+    @Override
     RuleEvent getEvent();
 
     /** Overrides the method to specialise the result type. */
+    @Override
     RuleTransitionLabel label();
 
     /** Callback method to construct a rule application from this
@@ -77,6 +81,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     /**
      * Returns the (partial) morphism from the source to the target graph.
      */
+    @Override
     public HostGraphMorphism getMorphism();
 
     /**
@@ -88,6 +93,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      *         symmetry
      * @see #getMorphism()
      */
+    @Override
     public boolean isSymmetry();
 
     /**
@@ -95,9 +101,11 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      * which the original transition can be retrieved by
      * {@link GraphTransitionStub#toTransition(GraphState)}.
      */
+    @Override
     public RuleTransitionStub toStub();
 
     /** Indicates if this rule transition is part of a recipe transition. */
+    @Override
     public boolean isPartial();
 
     /** Returns the (optional) recipe that this rule transition is part of. */

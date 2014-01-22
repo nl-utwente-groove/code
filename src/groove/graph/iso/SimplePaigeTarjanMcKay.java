@@ -204,9 +204,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                 this.partitionRecord.add(clone);
             }
             if (newBlocks.length > 0) {
-                int last =
-                    block.isSplitter() ? newBlocks.length
-                            : newBlocks.length - 1;
+                int last = block.isSplitter() ? newBlocks.length : newBlocks.length - 1;
                 for (int i = 0; i < last; i++) {
                     splitterList.add(newBlocks[i]);
                     newBlocks[i].setSplitter(true);
@@ -232,10 +230,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     }
 
     @Override
-    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
-            NodeCertificate target) {
-        return new MyEdge2Cert(this, edge, (MyNodeCert) source,
-            (MyNodeCert) target);
+    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
+        return new MyEdge2Cert(this, edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
     /**
@@ -278,25 +274,24 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     /**
      * Store for node certificates, to count the number of partitions
      */
-    static private final TreeHashSet<MyNodeCert> certStore =
-        new TreeHashSet<MyNodeCert>(TREE_RESOLUTION) {
-            /**
-             * For the purpose of this set, only the certificate value is of
-             * importance.
-             */
-            @Override
-            protected boolean allEqual() {
-                return true;
-            }
+    static private final TreeHashSet<MyNodeCert> certStore = new TreeHashSet<MyNodeCert>(
+        TREE_RESOLUTION) {
+        /**
+         * For the purpose of this set, only the certificate value is of
+         * importance.
+         */
+        @Override
+        protected boolean allEqual() {
+            return true;
+        }
 
-            @Override
-            protected int getCode(MyNodeCert key) {
-                return key.getValue();
-            }
-        };
+        @Override
+        protected int getCode(MyNodeCert key) {
+            return key.getValue();
+        }
+    };
     /** Static empty list, to be shared among split blocks. */
-    private static final List<MyNodeCert> EMPTY_NODE_LIST =
-        Collections.emptyList();
+    private static final List<MyNodeCert> EMPTY_NODE_LIST = Collections.emptyList();
     /**
      * Static empty array of blocks, to be returned in case of singular split
      * blocks.
@@ -400,6 +395,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         }
 
         /** Returns the element of which this is a certificate. */
+        @Override
         public Node getElement() {
             return this.node;
         }
@@ -492,6 +488,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             sourceCert.addSelf(this);
         }
 
+        @Override
         final public Edge getElement() {
             return this.edge;
         }
@@ -510,14 +507,12 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;
-            return other.sourceCert.equals(this.sourceCert)
-                && other.label.equals(this.label);
+            return other.sourceCert.equals(this.sourceCert) && other.label.equals(this.label);
         }
 
         @Override
         public String toString() {
-            return "[" + getSource() + "," + this.label + "(" + this.initValue
-                + ")]";
+            return "[" + getSource() + "," + this.label + "(" + this.initValue + ")]";
         }
 
         @Override
@@ -545,8 +540,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     }
 
     static class MyEdge2Cert extends MyEdge1Cert {
-        MyEdge2Cert(SimplePaigeTarjanMcKay strategy, Edge edge,
-                MyNodeCert sourceCert, MyNodeCert targetCert) {
+        MyEdge2Cert(SimplePaigeTarjanMcKay strategy, Edge edge, MyNodeCert sourceCert,
+                MyNodeCert targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
             sourceCert.addOutgoing(this);
@@ -570,8 +565,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
 
         @Override
         public String toString() {
-            return "[" + getSource() + "," + getElement().label() + "("
-                + this.initValue + ")," + getTarget() + "]";
+            return "[" + getSource() + "," + getElement().label() + "(" + this.initValue + "),"
+                + getTarget() + "]";
         }
 
         private MyNodeCert getTarget() {
@@ -663,8 +658,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                     if (block == null || block.value != node.getValue()) {
                         block = blockMap.get(node.getValue());
                         if (block == null) {
-                            blockMap.put(node.getValue(), block =
-                                new Block(this.strategy, node.getValue()));
+                            blockMap.put(node.getValue(),
+                                block = new Block(this.strategy, node.getValue()));
                         }
                     }
                     block.append(node);
@@ -686,8 +681,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         /** Merges this block with another with the same hash code. */
         void merge(Block other) {
             assert this.value == other.value : String.format(
-                "Merging blocks %s and %s with distinct hash codes", this,
-                other);
+                "Merging blocks %s and %s with distinct hash codes", this, other);
             for (MyNodeCert otherNode : other.getNodes()) {
                 otherNode.setBlock(this);
                 this.nodes.add(otherNode);
@@ -716,13 +710,13 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
          * A block is smaller than another if it has fewer nodes, or a smaller
          * hash value.
          */
+        @Override
         public int compareTo(Block other) {
             int result = size() - other.size();
             if (result != 0) {
                 return result;
             }
-            return this.value < other.value ? -1 : this.value > other.value
-                    ? +1 : 0;
+            return this.value < other.value ? -1 : this.value > other.value ? +1 : 0;
         }
 
         @Override
@@ -741,8 +735,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             for (MyNodeCert nodeCert : this.nodes) {
                 content.add(nodeCert.getElement());
             }
-            return String.format("B%dx%d%s", this.nodes.size(), this.value,
-                content);
+            return String.format("B%dx%d%s", this.nodes.size(), this.value, content);
         }
 
         @Override

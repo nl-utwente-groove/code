@@ -41,17 +41,15 @@ import java.util.Collections;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
-public class DefaultRuleTransition extends
-        AEdge<GraphState,RuleTransitionLabel> implements
+public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel> implements
         RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public DefaultRuleTransition(GraphState source, MatchResult match,
-            HostNode[] addedNodes, GraphState target, boolean symmetry) {
-        super(source,
-            RuleTransitionLabel.createLabel(source, match, addedNodes), target);
+    public DefaultRuleTransition(GraphState source, MatchResult match, HostNode[] addedNodes,
+            GraphState target, boolean symmetry) {
+        super(source, RuleTransitionLabel.createLabel(source, match, addedNodes), target);
         this.symmetry = symmetry;
     }
 
@@ -60,8 +58,7 @@ public class DefaultRuleTransition extends
      * @param match the rule event
      * @param target the target state
      */
-    public DefaultRuleTransition(GraphState source, MatchResult match,
-            GraphState target) {
+    public DefaultRuleTransition(GraphState source, MatchResult match, GraphState target) {
         this(source, match, null, target, false);
     }
 
@@ -75,6 +72,7 @@ public class DefaultRuleTransition extends
         return getEvent().getRule();
     }
 
+    @Override
     public RuleEvent getEvent() {
         return label().getEvent();
     }
@@ -94,20 +92,21 @@ public class DefaultRuleTransition extends
         return ((AbstractRuleEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
     }
 
+    @Override
     public boolean isSymmetry() {
         return this.symmetry;
     }
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying()
-            || getCtrlTransition().isModifying()) {
+        if (getEvent().getRule().isModifying() || getCtrlTransition().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
         }
     }
 
+    @Override
     public HostNode[] getAddedNodes() {
         return label().getAddedNodes();
     }
@@ -117,19 +116,19 @@ public class DefaultRuleTransition extends
         return new MatchResult(this);
     }
 
+    @Override
     public RuleTransitionStub toStub() {
         if (isSymmetry()) {
-            return new SymmetryTransitionStub(getKey(), getAddedNodes(),
-                target());
+            return new SymmetryTransitionStub(getKey(), getAddedNodes(), target());
         } else if (target() instanceof DefaultGraphNextState) {
-            return ((DefaultGraphNextState) target()).createInTransitionStub(
-                source(), getKey(), getAddedNodes());
+            return ((DefaultGraphNextState) target()).createInTransitionStub(source(), getKey(),
+                getAddedNodes());
         } else {
-            return new IdentityTransitionStub(getKey(), getAddedNodes(),
-                target());
+            return new IdentityTransitionStub(getKey(), getAddedNodes(), target());
         }
     }
 
+    @Override
     public Proof getProof() {
         return getEvent().getMatch(source().getGraph());
     }
@@ -139,6 +138,7 @@ public class DefaultRuleTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns {@link #getEvent()}.
      */
+    @Override
     public GraphTransitionKey getKey(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
@@ -152,6 +152,7 @@ public class DefaultRuleTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns {@link #getAddedNodes()}.
      */
+    @Override
     public HostNode[] getAddedNodes(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
@@ -165,6 +166,7 @@ public class DefaultRuleTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns <code>this</code>.
      */
+    @Override
     public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
@@ -178,6 +180,7 @@ public class DefaultRuleTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns <code>target()</code>.
      */
+    @Override
     public GraphState getTarget(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
@@ -190,6 +193,7 @@ public class DefaultRuleTransition extends
      * This implementation reconstructs the rule application from the stored
      * footprint, and appends an isomorphism to the actual target if necessary.
      */
+    @Override
     public HostGraphMorphism getMorphism() {
         if (this.morphism == null) {
             this.morphism = computeMorphism();
@@ -200,9 +204,10 @@ public class DefaultRuleTransition extends
     /** Callback method to construct a rule application from this
      * state, considered as a graph transition.
      */
+    @Override
     public RuleApplication createRuleApplication() {
-        return new RuleApplication(getEvent(), source().getGraph(),
-            target().getGraph(), getAddedNodes());
+        return new RuleApplication(getEvent(), source().getGraph(), target().getGraph(),
+            getAddedNodes());
     }
 
     /**
@@ -219,15 +224,10 @@ public class DefaultRuleTransition extends
                 HostGraph derivedTarget = appl.getTarget().clone();
                 HostGraph realTarget = target().getGraph().clone();
                 final Morphism<HostNode,HostEdge> iso =
-                    IsoChecker.getInstance(true).getIsomorphism(derivedTarget,
-                        realTarget);
-                assert iso != null : "Can't reconstruct derivation from graph transition "
-                    + this
-                    + ": \n"
-                    + AGraph.toString(derivedTarget)
-                    + " and \n"
-                    + AGraph.toString(realTarget)
-                    + " \nnot isomorphic";
+                    IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
+                assert iso != null : "Can't reconstruct derivation from graph transition " + this
+                    + ": \n" + AGraph.toString(derivedTarget) + " and \n"
+                    + AGraph.toString(realTarget) + " \nnot isomorphic";
                 result = result.then(iso);
             }
         } else {
@@ -267,8 +267,7 @@ public class DefaultRuleTransition extends
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RuleTransition
-            && equalsSource((RuleTransition) obj)
+        return obj instanceof RuleTransition && equalsSource((RuleTransition) obj)
             && equalsEvent((RuleTransition) obj);
     }
 
@@ -278,11 +277,11 @@ public class DefaultRuleTransition extends
      */
     @Override
     protected int computeHashCode() {
-        return System.identityHashCode(source())
-            + System.identityHashCode(getEvent());
+        return System.identityHashCode(source()) + System.identityHashCode(getEvent());
     }
 
     /** Returns the (possibly {@code null} underlying control transition. */
+    @Override
     public CtrlTransition getCtrlTransition() {
         return this.label.getCtrlTransition();
     }

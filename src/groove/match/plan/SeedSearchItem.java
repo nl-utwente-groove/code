@@ -44,10 +44,8 @@ class SeedSearchItem extends AbstractSearchItem {
      */
     SeedSearchItem(Anchor seed) {
         this.seed = seed;
-        this.boundNodes =
-            Arrays.asList(seed.nodeSet().toArray(new RuleNode[0]));
-        this.boundEdges =
-            Arrays.asList(seed.edgeSet().toArray(new RuleEdge[0]));
+        this.boundNodes = Arrays.asList(seed.nodeSet().toArray(new RuleNode[0]));
+        this.boundEdges = Arrays.asList(seed.edgeSet().toArray(new RuleEdge[0]));
         this.boundVars = Arrays.asList(seed.varSet().toArray(new LabelVar[0]));
     }
 
@@ -105,23 +103,21 @@ class SeedSearchItem extends AbstractSearchItem {
         return Integer.MAX_VALUE;
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         for (RuleNode node : this.boundNodes) {
-            assert !strategy.isNodeFound(node) : String.format(
-                "Node %s is not fresh", node);
+            assert !strategy.isNodeFound(node) : String.format("Node %s is not fresh", node);
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         for (RuleEdge edge : this.boundEdges) {
-            assert !strategy.isEdgeFound(edge) : String.format(
-                "Edge %s is not fresh", edge);
+            assert !strategy.isEdgeFound(edge) : String.format("Edge %s is not fresh", edge);
             this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
         }
         this.varIxMap = new HashMap<LabelVar,Integer>();
         for (LabelVar var : this.boundVars) {
-            assert !strategy.isVarFound(var) : String.format(
-                "Variable %s is not fresh", var);
+            assert !strategy.isVarFound(var) : String.format("Variable %s is not fresh", var);
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }
@@ -131,10 +127,10 @@ class SeedSearchItem extends AbstractSearchItem {
         return String.format("Check %s", this.seed);
     }
 
-    public Record createRecord(
-            groove.match.plan.PlanSearchStrategy.Search search) {
-        assert allElementsMatched(search) : String.format(
-            "Elements %s not pre-matched", this.unmatched);
+    @Override
+    public Record createRecord(Search search) {
+        assert allElementsMatched(search) : String.format("Elements %s not pre-matched",
+            this.unmatched);
         return new DummyRecord();
     }
 

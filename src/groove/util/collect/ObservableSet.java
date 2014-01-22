@@ -35,6 +35,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      * Delegates the method to the underlying set, then notifies the observers
      * with an AddUpdate.
      */
+    @Override
     public boolean add(T o) {
         if (this.set.add(o)) {
             setChanged();
@@ -49,6 +50,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      * Adds the elements to the underlying set, then notifies the observers for
      * those elements actually added.
      */
+    @Override
     public boolean addAll(Collection<? extends T> c) {
         Set<T> addedElements = new HashSet<T>();
         boolean result = false;
@@ -69,6 +71,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      * Delegates the method to the underlying set, then notifies the observers
      * with a {@link RemoveUpdate}.
      */
+    @Override
     public void clear() {
         if (!this.set.isEmpty()) {
             Set<T> elements = new HashSet<T>(this.set);
@@ -81,6 +84,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public boolean contains(Object o) {
         return this.set.contains(o);
     }
@@ -88,6 +92,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public boolean containsAll(Collection<?> c) {
         return this.set.containsAll(c);
     }
@@ -111,6 +116,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public boolean isEmpty() {
         return this.set.isEmpty();
     }
@@ -120,18 +126,22 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      * set, in addition notifying the observers if <code>remove</code> is
      * called in the iterator.
      */
+    @Override
     public Iterator<T> iterator() {
         final Iterator<T> iter = this.set.iterator();
         return new Iterator<T>() {
+            @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
+            @Override
             public T next() {
                 this.last = iter.next();
                 return this.last;
             }
 
+            @Override
             public void remove() {
                 iter.remove();
                 setChanged();
@@ -146,6 +156,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public boolean remove(Object o) {
         if (this.set.remove(o)) {
@@ -160,6 +171,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public boolean removeAll(Collection<?> c) {
         Set<T> removedElements = new HashSet<T>();
@@ -181,6 +193,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public boolean retainAll(Collection<?> c) {
         boolean result = false;
         Set<T> removedSet = new HashSet<T>();
@@ -203,6 +216,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public int size() {
         return this.set.size();
     }
@@ -210,6 +224,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public Object[] toArray() {
         return this.set.toArray();
     }
@@ -217,6 +232,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /**
      * Delegates the method to the underlying set.
      */
+    @Override
     public <U> U[] toArray(U[] a) {
         return this.set.toArray(a);
     }

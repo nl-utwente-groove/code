@@ -56,8 +56,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         GrammarProperties properties = condition.getSystemProperties();
         this.matcher = MatcherFactory.instance().createMatcher(condition);
         if (condition.hasPattern()) {
-            this.intAlgebra =
-                properties.getAlgebraFamily().getAlgebra(SignatureKind.INT);
+            this.intAlgebra = properties.getAlgebraFamily().getAlgebra(SignatureKind.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
             this.neededVars = this.rootGraph.varSet();
@@ -143,6 +142,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         return true;
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         if (this.condition.getOp() != Condition.Op.NOT) {
             this.condIx = strategy.getCondIx(this.condition);
@@ -167,6 +167,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         }
     }
 
+    @Override
     public Record createRecord(Search search) {
         switch (this.condition.getOp()) {
         case EXISTS:
@@ -269,8 +270,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
         @Override
         boolean write() {
-            this.search.putSubMatch(ConditionSearchItem.this.condIx,
-                new TreeMatch(ConditionSearchItem.this.condition, null));
+            this.search.putSubMatch(ConditionSearchItem.this.condIx, new TreeMatch(
+                ConditionSearchItem.this.condition, null));
             return true;
         }
 
@@ -301,16 +302,13 @@ class ConditionSearchItem extends AbstractSearchItem {
         final RuleToHostMap createContextMap() {
             RuleToHostMap result = this.host.getFactory().createRuleToHostMap();
             for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
-                result.putNode(nodeIxEntry.getKey(),
-                    this.search.getNode(nodeIxEntry.getValue()));
+                result.putNode(nodeIxEntry.getKey(), this.search.getNode(nodeIxEntry.getValue()));
             }
             for (Map.Entry<RuleEdge,Integer> edgeIxEntry : ConditionSearchItem.this.edgeIxMap.entrySet()) {
-                result.putEdge(edgeIxEntry.getKey(),
-                    this.search.getEdge(edgeIxEntry.getValue()));
+                result.putEdge(edgeIxEntry.getKey(), this.search.getEdge(edgeIxEntry.getValue()));
             }
             for (Map.Entry<LabelVar,Integer> varIxEntry : ConditionSearchItem.this.varIxMap.entrySet()) {
-                result.putVar(varIxEntry.getKey(),
-                    this.search.getVar(varIxEntry.getValue()));
+                result.putVar(varIxEntry.getKey(), this.search.getVar(varIxEntry.getValue()));
             }
             return result;
         }
@@ -329,8 +327,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         boolean find() {
             boolean result = true;
             if (ConditionSearchItem.this.preCounted) {
-                HostNode countImage =
-                    this.search.getNode(ConditionSearchItem.this.countNodeIx);
+                HostNode countImage = this.search.getNode(ConditionSearchItem.this.countNodeIx);
                 this.preCount =
                     (Integer) AlgebraFamily.DEFAULT.toValue(((ValueNode) countImage).getTerm());
             }
@@ -378,8 +375,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             default:
                 throw new IllegalStateException();
             }
-            TreeMatch result =
-                new TreeMatch(op, ConditionSearchItem.this.condition);
+            TreeMatch result = new TreeMatch(op, ConditionSearchItem.this.condition);
             if (!noMatches) {
                 result.addSubMatches(matches);
             }
@@ -390,14 +386,10 @@ class ConditionSearchItem extends AbstractSearchItem {
         boolean write() {
             boolean result = true;
             if (this.countImage != null) {
-                result =
-                    this.search.putNode(ConditionSearchItem.this.countNodeIx,
-                        this.countImage);
+                result = this.search.putNode(ConditionSearchItem.this.countNodeIx, this.countImage);
             }
             if (result) {
-                result =
-                    this.search.putSubMatch(ConditionSearchItem.this.condIx,
-                        this.match);
+                result = this.search.putSubMatch(ConditionSearchItem.this.condIx, this.match);
             }
             return result;
         }
@@ -434,8 +426,7 @@ class ConditionSearchItem extends AbstractSearchItem {
 
         @Override
         boolean find() {
-            return ConditionSearchItem.this.matcher.find(this.host,
-                createContextMap()) == null;
+            return ConditionSearchItem.this.matcher.find(this.host, createContextMap()) == null;
         }
 
         @Override

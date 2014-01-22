@@ -16,7 +16,6 @@
  */
 package groove.util.collect;
 
-
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,8 +29,7 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
-        Bag<T> {
+public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**
      * Models the multiplicity of an element in a bag. The multiplicity value is
      * initially 1, and never becomes zero.
@@ -51,6 +49,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
          * @return The multiplicity value
          * @ensure <tt>result > 0</tt>
          */
+        @Override
         public int getValue() {
             assert this.value >= 0;
             return this.value;
@@ -76,8 +75,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof Multiplicity
-                && ((MyMultiplicity) obj).value == this.value;
+            return obj instanceof Multiplicity && ((MyMultiplicity) obj).value == this.value;
         }
 
         @SuppressWarnings("unchecked")
@@ -127,6 +125,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
     @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
+            @Override
             public boolean hasNext() {
                 if (this.count == 0) {
                     return this.entryIter.hasNext();
@@ -135,6 +134,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
                 }
             }
 
+            @Override
             public T next() {
                 if (this.count == 0) {
                     nextEntry();
@@ -144,6 +144,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
                 return this.entry.getKey();
             }
 
+            @Override
             public void remove() {
                 if (this.removed) {
                     throw new IllegalStateException();
@@ -186,6 +187,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
      * positive multiplicity.
      * @return the set of elements occurring in this bag
      */
+    @Override
     public Set<T> elementSet() {
         return this.bag.keySet();
     }
@@ -194,6 +196,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
      * Returns the multiplicity of a given element in this bag.
      * @ensure <tt>result >= 0</tt>
      */
+    @Override
     public int multiplicity(Object elem) {
         MyMultiplicity mult = this.bag.get(elem);
         if (mult == null) {
@@ -207,6 +210,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
      * Returns a mapping from keys to (positive) multiplicities.
      * @ensure <tt>result.keysSet().equals(elementSet())</tt>
      */
+    @Override
     public Map<T,? extends Multiplicity> multiplicityMap() {
         return Collections.unmodifiableMap(this.bag);
     }
@@ -245,6 +249,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
      *         was removed
      * @see #remove(Object)
      */
+    @Override
     public boolean removeWasLast(Object elem) {
         return removeGetCount(elem) == 0;
     }
@@ -256,6 +261,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
      *         instance; <tt>-1</tt> if
      *         <tt>elem did not occur in the first place</tt>
      */
+    @Override
     @SuppressWarnings("unchecked")
     public int removeGetCount(Object elem) {
         MyMultiplicity mult = this.bag.remove(elem);
@@ -270,6 +276,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
         }
     }
 
+    @Override
     public boolean minus(Collection<?> c) {
         boolean result = false;
         for (Object elem : c) {
@@ -289,8 +296,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
     public int hashCode() {
         int result = 0;
         for (Map.Entry<T,MyMultiplicity> entry : this.bag.entrySet()) {
-            result +=
-                entry.getKey().hashCode() * ((MyMultiplicity) entry).getValue();
+            result += entry.getKey().hashCode() * ((MyMultiplicity) entry).getValue();
         }
         return result;
     }

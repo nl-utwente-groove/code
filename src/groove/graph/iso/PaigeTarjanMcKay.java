@@ -113,12 +113,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         if (TRACE) {
             System.err.printf(
                 "First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
-                this.partition.size(), this.nodeCertCount, this.iterateCount,
-                this.graphCertificate);
+                this.partition.size(), this.nodeCertCount, this.iterateCount, this.graphCertificate);
         }
         // check if duplicate
-        if ((this.strong || BREAK_DUPLICATES)
-            && this.partition.size() < this.nodeCertCount) {
+        if ((this.strong || BREAK_DUPLICATES) && this.partition.size() < this.nodeCertCount) {
             // now look for smallest unbroken duplicate certificate (if any)
             do {
                 Block nontrivialBlock = selectNontrivialBlock();
@@ -128,8 +126,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                     }
                     break;
                 } else if (TRACE) {
-                    System.err.printf("Breaking symmetry at %s%n",
-                        nontrivialBlock);
+                    System.err.printf("Breaking symmetry at %s%n", nontrivialBlock);
                 }
                 checkpointCertificates();
                 // successively break the symmetry at each of the nodes in the
@@ -148,8 +145,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 if (TRACE) {
                     System.err.printf(
                         "Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
-                        this.partition.size(), this.nodeCertCount,
-                        this.iterateCount, this.graphCertificate);
+                        this.partition.size(), this.nodeCertCount, this.iterateCount,
+                        this.graphCertificate);
                 }
             } while (true);
         }
@@ -297,8 +294,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             MyNodeCert nodeCert = (MyNodeCert) this.nodeCerts[i];
             if (!nodeCert.isBroken()) {
                 Block block = nodeCert.getBlock();
-                if (block.size() > 1
-                    && (result == null || nodeCert.getValue() < result.getValue())) {
+                if (block.size() > 1 && (result == null || nodeCert.getValue() < result.getValue())) {
                     result = block;
                 }
             }
@@ -322,8 +318,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     }
 
     @Override
-    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
-            NodeCertificate target) {
+    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -490,6 +485,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         }
 
         /** Returns the element of which this is a certificate. */
+        @Override
         public Node getElement() {
             return this.element;
         }
@@ -687,6 +683,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             sourceCert.addSelf(this);
         }
 
+        @Override
         final public Edge getElement() {
             return this.edge;
         }
@@ -705,16 +702,15 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;
-            return other.sourceCert.equals(this.sourceCert)
-                && other.label.equals(this.label);
+            return other.sourceCert.equals(this.sourceCert) && other.label.equals(this.label);
         }
 
         @Override
         public String toString() {
-            return "[" + getSource() + "," + this.label + "("
-                + this.label.hashCode() + ")]";
+            return "[" + getSource() + "," + this.label + "(" + this.label.hashCode() + ")]";
         }
 
+        @Override
         final public int getValue() {
             return this.value;
         }
@@ -765,8 +761,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
         @Override
         public String toString() {
-            return "[" + getSource() + "," + getElement().label() + "("
-                + this.initValue + ")," + getTarget() + "]";
+            return "[" + getSource() + "," + getElement().label() + "(" + this.initValue + "),"
+                + getTarget() + "]";
         }
 
         MyNodeCert getTarget() {
@@ -807,15 +803,16 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
      * An iterator over node certificates, based on a doubly linked list with a
      * dummy head node.
      */
-    private class NodeCertificateList extends MyNodeCert implements
-            Iterable<MyNodeCert> {
+    private class NodeCertificateList extends MyNodeCert implements Iterable<MyNodeCert> {
         /** Creates an empty list, associated with a given block. */
         NodeCertificateList(Block block) {
             super(block);
         }
 
+        @Override
         public Iterator<MyNodeCert> iterator() {
             return new Iterator<MyNodeCert>() {
+                @Override
                 public boolean hasNext() {
                     if (this.next == null) {
                         this.next = NodeCertificateList.this.next;
@@ -823,6 +820,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                     return this.next != NodeCertificateList.this;
                 }
 
+                @Override
                 public MyNodeCert next() {
                     if (hasNext()) {
                         MyNodeCert result = this.next;
@@ -833,6 +831,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                     }
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }
@@ -856,8 +855,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             // that this is the array of nodes in the container block.
             assert this == getBlock().getNodes();
             MyNodeCert[] result =
-                new PaigeTarjanMcKay.MyNodeCert[getBlock().size()
-                    - getBlock().markedSize()];
+                new PaigeTarjanMcKay.MyNodeCert[getBlock().size() - getBlock().markedSize()];
             int i = 0;
             for (MyNodeCert cert = this.next; cert != this; cert = cert.next, i++) {
                 result[i] = cert;
@@ -987,14 +985,12 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                     if (lastBlock == null || lastBlock.value != newValue) {
                         lastBlock = blockMap.get(newValue);
                         if (lastBlock == null) {
-                            blockMap.put(newValue, lastBlock =
-                                new Block(newValue));
+                            blockMap.put(newValue, lastBlock = new Block(newValue));
                             lastBlock.setSplitter(true);
                         }
                     }
                     lastBlock.add(markedNode);
-                    if (lastBlock.size() > largestSize
-                        || lastBlock.size() == largestSize
+                    if (lastBlock.size() > largestSize || lastBlock.size() == largestSize
                         && newValue > largestValue) {
                         largestSize = lastBlock.size();
                         largestValue = newValue;
@@ -1082,19 +1078,18 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
          * A block is smaller than another if it has fewer nodes, or a smaller
          * hash value.
          */
+        @Override
         public int compareTo(Block other) {
             int result = size() - other.size();
             if (result != 0) {
                 return result;
             }
-            return this.value < other.value ? -1 : this.value > other.value
-                    ? +1 : 0;
+            return this.value < other.value ? -1 : this.value > other.value ? +1 : 0;
         }
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof PaigeTarjanMcKay.Block
-                && ((Block) obj).value == this.value;
+            return obj instanceof PaigeTarjanMcKay.Block && ((Block) obj).value == this.value;
         }
 
         @Override

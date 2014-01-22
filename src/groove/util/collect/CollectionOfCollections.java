@@ -34,8 +34,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
      * Constructs a new collection of collections.
      * @require <tt>collections \subseteq Collection</tt>
      */
-    public CollectionOfCollections(
-            Collection<? extends Collection<? extends T>> collections) {
+    public CollectionOfCollections(Collection<? extends Collection<? extends T>> collections) {
         this.collections = collections;
     }
 
@@ -50,16 +49,19 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
     @Override
     public Iterator<T> iterator() {
         Iterator<T> res = new Iterator<T>() {
+            @Override
             public boolean hasNext() {
                 return forwardCollectionIter();
             }
 
+            @Override
             public T next() {
                 forwardCollectionIter();
                 T latest = this.elemIter.next();
                 return latest;
             }
 
+            @Override
             public void remove() {
                 this.elemIter.remove();
                 updateRemove(this.latest);

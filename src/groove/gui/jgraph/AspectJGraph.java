@@ -135,8 +135,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
      * This is certainly the case if this model is editable.
      */
     public final boolean isShowValueNodes() {
-        return hasActiveEditor()
-            || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
@@ -151,8 +150,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Sets a level tree for this JGraph. */
     public void setLevelTree(RuleLevelTree levelTree) {
-        assert levelTree == null || getGraphRole() == GraphRole.RULE
-            && !hasActiveEditor();
+        assert levelTree == null || getGraphRole() == GraphRole.RULE && !hasActiveEditor();
         this.levelTree = levelTree;
     }
 
@@ -197,9 +195,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         if (isForState()) {
             editAction = getActions().getEditStateAction();
         } else {
-            editAction =
-                getActions().getEditAction(
-                    ResourceKind.toResource(getGraphRole()));
+            editAction = getActions().getEditAction(ResourceKind.toResource(getGraphRole()));
         }
         result.add(editAction);
         result.addSubmenu(createEditMenu(atPoint));
@@ -257,9 +253,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel().edit(
-            Collections.singletonMap(jCell, newVisuals.getAttributes()), null,
-            null, null);
+        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null,
+            null);
     }
 
     /**
@@ -272,8 +267,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
         AspectJVertex jVertex =
-            (AspectJVertex) getModel().createJVertex(
-                getModel().createAspectNode());
+            (AspectJVertex) getModel().createJVertex(getModel().createAspectNode());
         jVertex.setNodeFixed();
         jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
@@ -297,8 +291,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     void addEdge(Point2D screenFrom, Point2D screenTo) {
         stopEditing();
         // translate screen coordinates to real coordinates
-        PortView fromPortView =
-            getPortViewAt(screenFrom.getX(), screenFrom.getY());
+        PortView fromPortView = getPortViewAt(screenFrom.getX(), screenFrom.getY());
         Point2D from = fromPortView.getLocation();
         PortView toPortView = getPortViewAt(screenTo.getX(), screenTo.getY());
         Point2D to;
@@ -309,8 +302,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         } else {
             to = toPortView.getLocation();
         }
-        assert fromPortView != null : "addEdge should not be called with dangling source "
-            + from;
+        assert fromPortView != null : "addEdge should not be called with dangling source " + from;
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
@@ -359,8 +351,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             cell = getModel().getJCellForEdge((Edge) elem);
         }
         if (cell != null) {
-            if (cell instanceof AspectJEdge
-                && ((AspectJEdge) cell).isSourceLabel()) {
+            if (cell instanceof AspectJEdge && ((AspectJEdge) cell).isSourceLabel()) {
                 cell = ((AspectJEdge) cell).getSourceVertex();
             }
             setSelectionCell(cell);
@@ -412,8 +403,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     /**
      * Abstract class for j-cell edit actions.
      */
-    private abstract class JCellEditAction extends AbstractAction implements
-            GraphSelectionListener {
+    private abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
         /**
          * Constructs an edit action that is enabled for all j-cells.
          * @param name the name of the action
@@ -446,6 +436,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * Sets the j-cell to the first selected cell. Disables the action if
          * the type of the cell disagrees with the expected type.
          */
+        @Override
         public void valueChanged(GraphSelectionEvent e) {
             refresh();
         }
@@ -455,8 +446,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             this.jCells.clear();
             for (Object cell : AspectJGraph.this.getSelectionCells()) {
                 AspectJCell jCell = (AspectJCell) cell;
-                if (this.allCells
-                    || this.vertexOnly == (jCell instanceof JVertex)) {
+                if (this.allCells || this.vertexOnly == (jCell instanceof JVertex)) {
                     this.jCell = jCell;
                     this.jCells.add(jCell);
                 }
@@ -481,8 +471,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          *        <tt>null</tt>, a point is added at random
          * @return a copy of the points of the underlying j-edge with a point added
          */
-        protected List<Point2D> addPointAt(List<Point2D> points,
-                Point2D location) {
+        protected List<Point2D> addPointAt(List<Point2D> points, Point2D location) {
             List<Point2D> result = new LinkedList<Point2D>(points);
             if (location == null) {
                 result.add(1, createPointBetween(result.get(0), result.get(1)));
@@ -506,8 +495,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             double closestDistance = Double.MAX_VALUE;
             for (int i = 1; i < points.size(); i++) {
                 double distance =
-                    location.distance(points.get(i - 1))
-                        + location.distance(points.get(i));
+                    location.distance(points.get(i - 1)) + location.distance(points.get(i));
                 if (distance < closestDistance) {
                     result = i;
                     closestDistance = distance;
@@ -587,6 +575,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             return this.jCells.size() == 1;
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             execute(this.jCell);
         }
@@ -594,8 +583,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         /** Executes the action. */
         public void execute(AspectJCell jCell) {
             VisualMap visuals = jCell.getVisuals();
-            List<Point2D> points =
-                addPointAt(visuals.getPoints(), this.location);
+            List<Point2D> points = addPointAt(visuals.getPoints(), this.location);
             edit(jCell, VisualKey.POINTS, points);
         }
     }
@@ -626,6 +614,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             startEditingAtCell(this.jCell);
         }
@@ -663,6 +652,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             return this.jCells.size() == 1;
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             execute(this.jCell);
         }
@@ -689,13 +679,11 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * @return a copy of the points, possibly with a
          *         point removed
          */
-        private List<Point2D> removePointAt(List<Point2D> points,
-                Point2D location) {
+        private List<Point2D> removePointAt(List<Point2D> points, Point2D location) {
             LinkedList<Point2D> result = new LinkedList<Point2D>(points);
             if (result.size() > 2
                 && (!result.getFirst().equals(result.getLast()) || result.size() > 3)) {
-                int ix =
-                    location == null ? 1 : getClosestIndex(points, location);
+                int ix = location == null ? 1 : getClosestIndex(points, location);
                 result.remove(ix);
             }
             return result;
@@ -729,6 +717,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         }
 
         /** Resets the label positions of the selected cells. */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             for (AspectJCell jCell : this.jCells) {
                 execute(jCell);
@@ -741,8 +730,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * @param jEdge the j-edge to be modified
          */
         public void execute(AspectJCell jEdge) {
-            edit(jEdge, VisualKey.LABEL_POS,
-                VisualKey.LABEL_POS.getDefaultValue());
+            edit(jEdge, VisualKey.LABEL_POS, VisualKey.LABEL_POS.getDefaultValue());
         }
     }
 
@@ -753,8 +741,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     public JCellEditAction getSetLineStyleAction(LineStyle lineStyle) {
         JCellEditAction result = this.setLineStyleActionMap.get(lineStyle);
         if (result == null) {
-            this.setLineStyleActionMap.put(lineStyle, result =
-                new SetLineStyleAction(lineStyle));
+            this.setLineStyleActionMap.put(lineStyle, result = new SetLineStyleAction(lineStyle));
             addAccelerator(result);
         }
         return result;
@@ -771,6 +758,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             this.lineStyle = lineStyle;
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             VisualMap newVisuals = new VisualMap();
             for (AspectJCell jCell : this.jCells) {
@@ -800,8 +788,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     /**
      * Menu offering a choice of line style setting actions.
      */
-    private class SetLineStyleMenu extends JMenu implements
-            GraphSelectionListener {
+    private class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
         /** Constructs an instance of the action. */
         SetLineStyleMenu() {
             super(Options.SET_LINE_STYLE_MENU);
@@ -813,6 +800,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             }
         }
 
+        @Override
         public void valueChanged(GraphSelectionEvent e) {
             this.setEnabled(getSelectionCell() instanceof JEdge);
         }
@@ -851,8 +839,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(
-                AccessibleState.ENABLED.toDisplayString())
+            if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
                 && isEnabled()) {
                 rebuild();
             }
@@ -865,8 +852,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          */
         private void rebuild() {
             AspectJModel oldModel = getModel();
-            AspectJModel newModel =
-                oldModel.cloneWithNewGraph(oldModel.getGraph());
+            AspectJModel newModel = oldModel.cloneWithNewGraph(oldModel.getGraph());
             setModel(newModel);
         }
     }

@@ -18,6 +18,7 @@ public class AboutAction extends AbstractAction {
         this.frame = frame;
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         VersionDialog.showAbout(this.frame);
     }

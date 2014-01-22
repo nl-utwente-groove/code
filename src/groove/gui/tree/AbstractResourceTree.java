@@ -43,8 +43,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /** Abstract superclass for all display trees. */
-public abstract class AbstractResourceTree extends JTree implements
-        SimulatorListener {
+public abstract class AbstractResourceTree extends JTree implements SimulatorListener {
     /** Constructs a resource tree for a given parent display. */
     protected AbstractResourceTree(ResourceDisplay parentDisplay) {
         this.parentDisplay = parentDisplay;
@@ -73,8 +72,7 @@ public abstract class AbstractResourceTree extends JTree implements
         }
         this.listening = true;
         addTreeSelectionListener(getSelectionListener());
-        getSimulatorModel().addListener(this, GRAMMAR, GTS,
-            Change.toChange(getResourceKind()));
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, Change.toChange(getResourceKind()));
     }
 
     /** Suspend the listeners of this tree. */
@@ -209,6 +207,7 @@ public abstract class AbstractResourceTree extends JTree implements
          * Notifies the {@link SimulatorModel} every time the selection of
          * this resource tree changes.
          */
+        @Override
         public void valueChanged(TreeSelectionEvent evt) {
             List<TreeNode> selected = new ArrayList<TreeNode>();
             suspendListeners();

@@ -34,12 +34,12 @@ public final class Strings {
      * <p>A string comparator that does case sensitive comparisons and handles embedded numbers correctly.</p>
      * <p><b>Do not use</b> if your app might ever run on any locale that uses more than 7-bit ascii characters.</p>
      */
-    private static final Comparator<String> NATURAL_COMPARATOR_ASCII =
-        new Comparator<String>() {
-            public int compare(String o1, String o2) {
-                return compareNaturalAscii(o1, o2);
-            }
-        };
+    private static final Comparator<String> NATURAL_COMPARATOR_ASCII = new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            return compareNaturalAscii(o1, o2);
+        }
+    };
 
     /**
      * <p>A string comparator that does case insensitive comparisons and handles embedded numbers correctly.</p>
@@ -47,6 +47,7 @@ public final class Strings {
      */
     private static final Comparator<String> IGNORE_CASE_NATURAL_COMPARATOR_ASCII =
         new Comparator<String>() {
+            @Override
             public int compare(String o1, String o2) {
                 return compareNaturalIgnoreCaseAscii(o1, o2);
             }
@@ -83,14 +84,14 @@ public final class Strings {
      *         correctly.</p>
      * @see #getNaturalComparator()
      */
-    public static Comparator<String> getNaturalComparator(
-            final Collator collator) {
+    public static Comparator<String> getNaturalComparator(final Collator collator) {
         if (collator == null) {
             // it's important to explicitly handle this here - else the bug will manifest anytime later in possibly
             // unrelated code that tries to use the comparator
             throw new NullPointerException("collator must not be null");
         }
         return new Comparator<String>() {
+            @Override
             public int compare(String o1, String o2) {
                 return compareNatural(collator, o1, o2);
             }
@@ -193,8 +194,7 @@ public final class Strings {
      *         a value less than zero iff <code>s</code> lexicographically precedes <code>t</code>
      *         and a value larger than zero iff <code>s</code> lexicographically follows <code>t</code>
      */
-    private static int compareNatural(String s, String t,
-            boolean caseSensitive, Collator collator) {
+    private static int compareNatural(String s, String t, boolean caseSensitive, Collator collator) {
         int sIndex = 0;
         int tIndex = 0;
 
@@ -244,10 +244,8 @@ public final class Strings {
                     }
                     tChar = t.charAt(tIndex);
                 }
-                boolean sAllZero =
-                    sIndex == sLength || !Character.isDigit(sChar);
-                boolean tAllZero =
-                    tIndex == tLength || !Character.isDigit(tChar);
+                boolean sAllZero = sIndex == sLength || !Character.isDigit(sChar);
+                boolean tAllZero = tIndex == tLength || !Character.isDigit(tChar);
                 if (sAllZero && tAllZero) {
                     continue;
                 }
@@ -266,8 +264,7 @@ public final class Strings {
                     ++sIndex;
                     ++tIndex;
                     if (sIndex == sLength && tIndex == tLength) {
-                        return diff != 0 ? diff : sLeadingZeroCount
-                            - tLeadingZeroCount;
+                        return diff != 0 ? diff : sLeadingZeroCount - tLeadingZeroCount;
                     }
                     if (sIndex == sLength) {
                         if (diff == 0) {
@@ -308,12 +305,10 @@ public final class Strings {
                     int bw = tIndex;
                     do {
                         ++sIndex;
-                    } while (sIndex < sLength
-                        && !Character.isDigit(s.charAt(sIndex)));
+                    } while (sIndex < sLength && !Character.isDigit(s.charAt(sIndex)));
                     do {
                         ++tIndex;
-                    } while (tIndex < tLength
-                        && !Character.isDigit(t.charAt(tIndex)));
+                    } while (tIndex < tLength && !Character.isDigit(t.charAt(tIndex)));
 
                     String as = s.substring(aw, sIndex);
                     String bs = t.substring(bw, tIndex);

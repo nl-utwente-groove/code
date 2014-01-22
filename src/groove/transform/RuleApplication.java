@@ -68,14 +68,13 @@ public class RuleApplication implements DeltaApplier {
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
-    public RuleApplication(final RuleEvent event, HostGraph source,
-            HostNode[] coanchorImage) {
+    public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] coanchorImage) {
         this.event = event;
         this.rule = event.getRule();
         this.source = source;
         this.addedNodes = coanchorImage;
-        assert testEvent(event, source) : String.format(
-            "Event error for %s applied to %s", event, source);
+        assert testEvent(event, source) : String.format("Event error for %s applied to %s", event,
+            source);
     }
 
     /**
@@ -104,17 +103,15 @@ public class RuleApplication implements DeltaApplier {
             }
         };
         final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);
-        final Property<TreeMatch> matchContainsProof =
-            new Property<TreeMatch>() {
-                @Override
-                public boolean isSatisfied(TreeMatch value) {
-                    return value.traverseProofs(eventFinder) != null;
-                }
-            };
+        final Property<TreeMatch> matchContainsProof = new Property<TreeMatch>() {
+            @Override
+            public boolean isSatisfied(TreeMatch value) {
+                return value.traverseProofs(eventFinder) != null;
+            }
+        };
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
         boolean result =
-            getRule().getEventMatcher().traverse(source, event.getAnchorMap(),
-                matchFinder) != null;
+            getRule().getEventMatcher().traverse(source, event.getAnchorMap(), matchFinder) != null;
         eventFinder.dispose();
         matchFinder.dispose();
         return result;
@@ -243,16 +240,14 @@ public class RuleApplication implements DeltaApplier {
         HostNodeSet sourceNodes = new HostNodeSet(this.source.nodeSet());
         HostEdgeSet sourceEdges = new HostEdgeSet(this.source.edgeSet());
         for (HostNode node : sourceNodes) {
-            HostNode nodeImage =
-                mergeMap == null ? node : mergeMap.getNode(node);
+            HostNode nodeImage = mergeMap == null ? node : mergeMap.getNode(node);
             if (nodeImage != null && getTarget().containsNode(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
         }
         for (HostEdge edge : sourceEdges) {
             if (!getEffect().isErasedEdge(edge)) {
-                HostEdge edgeImage =
-                    mergeMap == null ? edge : mergeMap.mapEdge(edge);
+                HostEdge edgeImage = mergeMap == null ? edge : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
                 }
@@ -298,6 +293,7 @@ public class RuleApplication implements DeltaApplier {
      * @param target the target object on which the modifications are to be
      *        performed
      */
+    @Override
     public void applyDelta(DeltaTarget target) {
         if (getRule().isModifying()) {
             RuleEffect record = getEffect();
@@ -313,6 +309,7 @@ public class RuleApplication implements DeltaApplier {
      * Wraps <code>target</code> into a {@link FilteredDeltaTarget} and then
      * calls {@link #applyDelta(DeltaTarget)}.
      */
+    @Override
     public void applyDelta(DeltaTarget target, int mode) {
         applyDelta(new FilteredDeltaTarget(target, mode));
     }
@@ -354,8 +351,7 @@ public class RuleApplication implements DeltaApplier {
                 // register the removal of an edge pointing to a value node
                 HostNode edgeTarget = edge.target();
                 if (edgeTarget instanceof ValueNode) {
-                    HostEdgeSet edges =
-                        getValueNodeEdges((ValueNode) edgeTarget);
+                    HostEdgeSet edges = getValueNodeEdges((ValueNode) edgeTarget);
                     edges.remove(edge);
                     if (edges.isEmpty()) {
                         addIsolatedValueNode((ValueNode) edgeTarget);
@@ -419,14 +415,12 @@ public class RuleApplication implements DeltaApplier {
             return false;
         }
         RuleApplication other = (RuleApplication) obj;
-        return getEvent() == other.getEvent()
-            && getSource() == other.getSource();
+        return getEvent() == other.getEvent() && getSource() == other.getSource();
     }
 
     @Override
     public String toString() {
-        StringBuffer result =
-            new StringBuffer("Application of rule " + getRule().getFullName());
+        StringBuffer result = new StringBuffer("Application of rule " + getRule().getFullName());
         result.append("\nEffect: " + getEffect());
         return result.toString();
     }
@@ -524,8 +518,7 @@ public class RuleApplication implements DeltaApplier {
         return result;
     }
 
-    private void collectComatch(Map<RuleNode,HostNodeSet> result,
-            BasicEvent event) {
+    private void collectComatch(Map<RuleNode,HostNodeSet> result, BasicEvent event) {
         Rule rule = event.getRule();
         Anchor anchor = rule.getAnchor();
         for (int i = 0; i < anchor.size(); i++) {
@@ -545,8 +538,7 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,HostNodeSet> result,
-            RuleNode ruleNode, HostNode hostNode) {
+    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode, HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
         if (image == null) {

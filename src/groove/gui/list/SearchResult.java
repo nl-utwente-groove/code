@@ -92,16 +92,19 @@ public class SearchResult implements SelectableListEntry {
     }
 
     /** Returns the list of elements in which the error occurs. May be empty. */
+    @Override
     public final List<Element> getElements() {
         return this.elements;
     }
 
     /** Returns the resource kind for which this error occurs. */
+    @Override
     public final ResourceKind getResourceKind() {
         return this.resourceKind;
     }
 
     /** Returns the resource kind for which this error occurs. */
+    @Override
     public final String getResourceName() {
         return this.resourceName;
     }

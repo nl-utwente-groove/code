@@ -31,6 +31,7 @@ final public class HashIntSet implements IntSet {
     /**
      * This implementation clears the underlying {@link HashSet}.
      */
+    @Override
     public void clear(int capacity) {
         this.store.clear();
     }
@@ -38,6 +39,7 @@ final public class HashIntSet implements IntSet {
     /**
      * This implementation returns the size of the underlying {@link HashSet}.
      */
+    @Override
     public int size() {
         return this.store.size();
     }
@@ -46,6 +48,7 @@ final public class HashIntSet implements IntSet {
      * Adds an {@link Integer} on the basis of <code>key</code> to the
      * underlying set.
      */
+    @Override
     public boolean add(int key) {
         return this.store.add(Integer.valueOf(key));
     }

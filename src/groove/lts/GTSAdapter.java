@@ -18,7 +18,6 @@ package groove.lts;
 
 import groove.lts.GraphState.Flag;
 
-
 /**
  * Default implementation of an LTS listener that does nothing.
  * @author Arend Rensink
@@ -41,6 +40,7 @@ public class GTSAdapter implements GTSListener {
      * Event that occurs when closing a state. This default implementation
      * has no behaviour.
      */
+    @Override
     public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
         // this implementation does nothing
     }

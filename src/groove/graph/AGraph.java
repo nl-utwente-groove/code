@@ -46,10 +46,12 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         this.name = name;
     }
 
+    @Override
     public int nodeCount() {
         return nodeSet().size();
     }
 
+    @Override
     public int edgeCount() {
         return edgeSet().size();
     }
@@ -57,6 +59,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     /*
      * Defers the containment question to {@link #nodeSet()}
      */
+    @Override
     public boolean containsNode(Node elem) {
         assert isTypeCorrect(elem);
         return nodeSet().contains(elem);
@@ -65,9 +68,9 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     /*
      * Defers the containment question to {@link #edgeSet()}
      */
+    @Override
     public boolean containsEdge(Edge elem) {
-        assert isTypeCorrect(elem) : String.format(
-            "Edge %s is not of correct type", elem);
+        assert isTypeCorrect(elem) : String.format("Edge %s is not of correct type", elem);
         return edgeSet().contains(elem);
     }
 
@@ -79,10 +82,12 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return containsEdge(getFactory().createEdge(source, label, target));
     }
 
+    @Override
     public int size() {
         return nodeCount() + edgeCount();
     }
 
+    @Override
     public boolean isEmpty() {
         return nodeCount() == 0;
     }
@@ -91,6 +96,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * This implementation retrieves the node-to-edges mapping from the cache,
      * and looks up the required set in the image for <tt>node</tt>.
      */
+    @Override
     public Set<? extends E> edgeSet(Node node) {
         assert isTypeCorrect(node);
         Set<? extends E> result = getCache().getNodeEdgeMap().get(node);
@@ -105,9 +111,9 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * This implementation retrieves the node-to-out-edges mapping from the cache,
      * and looks up the required set in the image for <tt>node</tt>.
      */
+    @Override
     public Set<? extends E> outEdgeSet(Node node) {
-        assert isTypeCorrect(node) : String.format(
-            "Type %s of node %s incorrect for this graph",
+        assert isTypeCorrect(node) : String.format("Type %s of node %s incorrect for this graph",
             node.getClass().getName(), node);
         Set<? extends E> result = getCache().getNodeOutEdgeMap().get(node);
         if (result == null) {
@@ -121,6 +127,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * This implementation retrieves the node-to-in-edges mapping from the cache,
      * and looks up the required set in the image for <tt>node</tt>.
      */
+    @Override
     public Set<? extends E> inEdgeSet(Node node) {
         assert isTypeCorrect(node);
         Set<? extends E> result = getCache().getNodeInEdgeMap().get(node);
@@ -131,6 +138,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         }
     }
 
+    @Override
     public Set<? extends E> edgeSet(Label label) {
         assert isTypeCorrect(label);
         Set<? extends E> result = getCache().getLabelEdgeMap().get(label);
@@ -177,9 +185,8 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     @Override
     public void testFixed(boolean fixed) throws IllegalStateException {
         if (isFixed() != fixed) {
-            throw new IllegalStateException(String.format(
-                "Expected graph '%s' to be %s", getName(), fixed ? "fixed"
-                        : "unfixed"));
+            throw new IllegalStateException(String.format("Expected graph '%s' to be %s",
+                getName(), fixed ? "fixed" : "unfixed"));
         }
     }
 
@@ -263,6 +270,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return getCache().getNodeCounter();
     }
 
+    @Override
     public N addNode() {
         N freshNode = getFactory().createNode(getNodeCounter());
         assert !nodeSet().contains(freshNode) : String.format(
@@ -271,6 +279,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return freshNode;
     }
 
+    @Override
     public N addNode(int nr) {
         N freshNode = getFactory().createNode(nr);
         assert !nodeSet().contains(freshNode) : String.format(
@@ -279,6 +288,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return freshNode;
     }
 
+    @Override
     public boolean addNodeSet(Collection<? extends N> nodeSet) {
         boolean added = false;
         for (N node : nodeSet) {
@@ -290,6 +300,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     /**
      * Creates its result using {@link ElementFactory#createEdge(Node, Label, Node)}.
      */
+    @Override
     public E addEdge(N source, String label, N target) {
         return addEdge(source, getFactory().createLabel(label), target);
     }
@@ -297,6 +308,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     /**
      * Creates its result using {@link ElementFactory#createEdge(Node, Label, Node)}.
      */
+    @Override
     public E addEdge(N source, Label label, N target) {
         assert containsNode(source);
         assert containsNode(target);
@@ -310,6 +322,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * {@link #addEdge(Edge)} for the actual addition of
      * the edge and its incident nodes.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public boolean addEdgeContext(E edge) {
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
@@ -322,6 +335,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return added;
     }
 
+    @Override
     public boolean addEdgeSetContext(Collection<? extends E> edgeSet) {
         boolean added = false;
         for (E edge : edgeSet) {
@@ -335,9 +349,9 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * {@link #removeNodeWithoutCheck(Node)} for the actual removal
      * of the incident edges and the node.
      */
+    @Override
     public boolean removeNodeContext(N node) {
-        assert !isFixed() : "Trying to remove " + node
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
         boolean removed = containsNode(node);
         if (removed) {
             for (E edge : edgeSet(node)) {
@@ -348,6 +362,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return removed;
     }
 
+    @Override
     public boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
         boolean removed = false;
         for (N node : nodeSet) {
@@ -356,6 +371,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return removed;
     }
 
+    @Override
     public boolean removeNodeSet(Collection<? extends N> nodeSet) {
         boolean removed = false;
         for (N node : nodeSet) {
@@ -364,6 +380,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return removed;
     }
 
+    @Override
     public boolean removeEdgeSet(Collection<? extends E> edgeSet) {
         boolean removed = false;
         for (E edge : edgeSet) {
@@ -452,12 +469,14 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setName(String name) {
         assert !isFixed();
         assert name != null;
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return this.name;
     }
@@ -509,16 +528,15 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
-    static private CertificateStrategy certificateFactory =
-        new PartitionRefiner((GGraph<Node,Edge>) null);
+    static private CertificateStrategy certificateFactory = new PartitionRefiner(
+        (GGraph<Node,Edge>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.
      * @param certificateFactory the new strategy
      * @see #getCertifier(boolean)
      */
-    static public void setCertificateFactory(
-            CertificateStrategy certificateFactory) {
+    static public void setCertificateFactory(CertificateStrategy certificateFactory) {
         AGraph.certificateFactory = certificateFactory;
     }
 

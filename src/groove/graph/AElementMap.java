@@ -51,6 +51,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @return <code>true</code> if the entire map (both the node and the edge
      *         part) is empty.
      */
+    @Override
     public boolean isEmpty() {
         return nodeMap().isEmpty() && edgeMap().isEmpty();
     }
@@ -58,6 +59,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Returns the combined number of node end edge entries in the map.
      */
+    @Override
     public int size() {
         return nodeMap().size() + edgeMap().size();
     }
@@ -65,6 +67,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Returns the image for a given node key.
      */
+    @Override
     public TN getNode(Node key) {
         return nodeMap().get(key);
     }
@@ -72,6 +75,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Returns the image for a given edge key.
      */
+    @Override
     public TE getEdge(Edge key) {
         return edgeMap().get(key);
     }
@@ -120,6 +124,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Tests whether all keys are mapped to different elements.
      */
+    @Override
     public boolean isInjective() {
         Set<TN> nodeValues = new HashSet<TN>(nodeMap().values());
         return nodeMap().size() == nodeValues.size();
@@ -209,6 +214,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Returns the built-in node map.
      */
+    @Override
     public Map<SN,? extends TN> nodeMap() {
         return this.nodeMap;
     }
@@ -216,6 +222,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Returns the built-in edge map.
      */
+    @Override
     public Map<SE,? extends TE> edgeMap() {
         return this.edgeMap;
     }

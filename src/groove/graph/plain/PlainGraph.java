@@ -81,6 +81,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return edgeSet != null && edgeSet.contains(edge);
     }
 
+    @Override
     public Set<? extends PlainEdge> edgeSet() {
         Set<PlainEdge> result = new LinkedHashSet<PlainEdge>();
         for (Map.Entry<PlainNode,Set<PlainEdge>> edgeEntry : this.edgeMap.entrySet()) {
@@ -94,6 +95,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return Collections.unmodifiableSet(this.edgeMap.get(node));
     }
 
+    @Override
     public Set<? extends PlainNode> nodeSet() {
         return Collections.unmodifiableSet(this.edgeMap.keySet());
     }
@@ -104,6 +106,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return result;
     }
 
+    @Override
     public PlainGraph newGraph(String name) {
         return new PlainGraph(name, getRole());
     }
@@ -115,6 +118,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return PlainFactory.instance();
     }
 
+    @Override
     public boolean addNode(PlainNode node) {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsNode(node);
@@ -125,6 +129,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return added;
     }
 
+    @Override
     public boolean addEdge(PlainEdge edge) {
         assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
@@ -136,6 +141,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return added;
     }
 
+    @Override
     public boolean removeEdge(PlainEdge edge) {
         assert !isFixed() : "Trying to remove " + edge + " from unmodifiable graph";
         Set<PlainEdge> outEdgeSet = this.edgeMap.get(edge.source());
@@ -173,6 +179,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
         return result;
     }
 
+    @Override
     public boolean removeNode(PlainNode node) {
         assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
         boolean result = false;
@@ -187,6 +194,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable
     /**
      * Returns the role of this default graph, as set in the constructor.
      */
+    @Override
     public final GraphRole getRole() {
         return this.role;
     }

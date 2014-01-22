@@ -46,8 +46,7 @@ public class StepHistory implements SimulatorListener {
         this.simulatorModel = simulator.getModel();
         this.undoAction = new BackAction();
         this.redoAction = new ForwardAction();
-        this.simulatorModel.addListener(this, Change.GTS, Change.STATE,
-            Change.MATCH);
+        this.simulatorModel.addListener(this, Change.GTS, Change.STATE, Change.MATCH);
     }
 
     /**
@@ -65,10 +64,8 @@ public class StepHistory implements SimulatorListener {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        if (changes.contains(Change.GTS)
-            && source.getGts() != oldModel.getGts()) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
+        if (changes.contains(Change.GTS) && source.getGts() != oldModel.getGts()) {
             this.history.clear();
             refreshActions();
         }
@@ -86,8 +83,7 @@ public class StepHistory implements SimulatorListener {
     private synchronized void setStateUpdate(GraphState state) {
         if (!this.ignoreSimulationUpdates) {
             HistoryAction newAction = new SetStateAction(state);
-            if (this.history.isEmpty()
-                || !state.equals(this.history.current().getState())) {
+            if (this.history.isEmpty() || !state.equals(this.history.current().getState())) {
                 this.history.add(newAction);
             } else {
                 this.history.replace(newAction);
@@ -108,8 +104,7 @@ public class StepHistory implements SimulatorListener {
             // test if the previous history action was setting the source state
             // of this transition
             if (this.history.isEmpty()
-                || !transition.source().equals(
-                    this.history.current().getState())) {
+                || !transition.source().equals(this.history.current().getState())) {
                 this.history.add(newAction);
             } else {
                 this.history.replace(newAction);
@@ -132,6 +127,7 @@ public class StepHistory implements SimulatorListener {
             setEnabled(false);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             if (StepHistory.this.history.hasNext()) {
                 StepHistory.this.ignoreSimulationUpdates = true;
@@ -159,6 +155,7 @@ public class StepHistory implements SimulatorListener {
             setEnabled(false);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             if (StepHistory.this.history.hasPrevious()) {
                 StepHistory.this.ignoreSimulationUpdates = true;
@@ -237,8 +234,7 @@ public class StepHistory implements SimulatorListener {
          * @param transition the transition set in the action; <code>null</code>
          *        if the action is setting a state
          */
-        public HistoryAction(final GraphState state,
-                final GraphTransition transition) {
+        public HistoryAction(final GraphState state, final GraphTransition transition) {
             this.transition = transition;
             if (state == null) {
                 this.state = transition.source();
@@ -269,8 +265,7 @@ public class StepHistory implements SimulatorListener {
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof HistoryAction
-                && stateEquals((HistoryAction) obj)
+            return obj instanceof HistoryAction && stateEquals((HistoryAction) obj)
                 && transitionEquals((HistoryAction) obj);
         }
 

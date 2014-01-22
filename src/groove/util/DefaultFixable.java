@@ -22,20 +22,22 @@ package groove.util;
  * @version $Revision $
  */
 public class DefaultFixable implements Fixable {
+    @Override
     public boolean setFixed() {
         boolean result = !isFixed();
         this.fixed = true;
         return result;
     }
 
+    @Override
     public boolean isFixed() {
         return this.fixed;
     }
 
+    @Override
     public void testFixed(boolean fixed) throws IllegalStateException {
         if (this.fixed != fixed) {
-            throw new IllegalStateException(String.format(
-                "Expected fixed = %b", fixed));
+            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
         }
     }
 

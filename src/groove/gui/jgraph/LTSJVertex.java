@@ -13,8 +13,7 @@ import groove.lts.GraphState;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
-        implements LTSJCell {
+public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> implements LTSJCell {
     /**
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
@@ -42,11 +41,13 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
         }
     }
 
+    @Override
     public void setVisibleFlag(boolean visible) {
         this.visibleFlag = visible;
         setStale(VisualKey.VISIBLE);
     }
 
+    @Override
     public boolean hasVisibleFlag() {
         return this.visibleFlag;
     }
@@ -126,6 +127,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
+    @Override
     public final boolean setActive(boolean active) {
         return setLook(Look.ACTIVE, active);
     }

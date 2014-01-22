@@ -20,7 +20,6 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
 
-
 /**
  * Delta applier constructed from a frozen delta array. A frozen delta array is
  * an array of nodes and edges that together constitute an entire graph.
@@ -35,6 +34,7 @@ public class FrozenDeltaApplier implements StoredDeltaApplier {
         this.elements = elements;
     }
 
+    @Override
     public void applyDelta(DeltaTarget target, int mode) {
         for (HostElement elem : this.elements) {
             if (elem instanceof HostNode && mode != EDGES_ONLY) {
@@ -46,6 +46,7 @@ public class FrozenDeltaApplier implements StoredDeltaApplier {
         }
     }
 
+    @Override
     public void applyDelta(DeltaTarget target) {
         applyDelta(target, ALL_ELEMENTS);
     }

@@ -74,8 +74,8 @@ import org.jgraph.event.GraphSelectionListener;
  * @author Arend Rensink
  * @version $Revision: 1915 $
  */
-public class LabelTree<G extends Graph> extends CheckboxTree implements
-        GraphModelListener, TreeSelectionListener {
+public class LabelTree<G extends Graph> extends CheckboxTree implements GraphModelListener,
+        TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
@@ -99,8 +99,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
     }
 
     void installListeners() {
-        getJGraph().addPropertyChangeListener(
-            org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
+        getJGraph().addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -114,6 +113,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
             }
         });
         getFilter().addObserver(new Observer() {
+            @Override
             @SuppressWarnings("unchecked")
             public void update(Observable o, Object arg) {
                 LabelTree.this.repaint();
@@ -250,8 +250,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
         Set<TreeNode> collapsedNodes = new HashSet<TreeNode>();
         for (int i = 0; i < getRowCount(); i++) {
             if (isCollapsed(i)) {
-                TreeNode child =
-                    (TreeNode) getPathForRow(i).getLastPathComponent();
+                TreeNode child = (TreeNode) getPathForRow(i).getLastPathComponent();
                 if (child.getChildCount() > 0) {
                     collapsedNodes.add(child);
                 }
@@ -299,6 +298,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
     /**
      * Updates the label list according to the change event.
      */
+    @Override
     public void graphChanged(GraphModelEvent e) {
         boolean changed = false;
         GraphModelEvent.GraphModelChange change = e.getChange();
@@ -311,8 +311,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
     /**
      * Records the changes imposed by a graph change.
      */
-    private boolean processEdit(GraphModelEvent.GraphModelChange change,
-            boolean changed) {
+    private boolean processEdit(GraphModelEvent.GraphModelChange change, boolean changed) {
         // insertions double as changes, so we do insertions first
         // and remove them from the change map
         Map<Object,Object> changeMap = new HashMap<Object,Object>();
@@ -362,6 +361,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
      * Emphasises/deemphasises cells in the associated jmodel, based on the list
      * selection.
      */
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         Set<JCell<?>> emphSet = new HashSet<JCell<?>>();
         TreePath[] selectionPaths = getSelectionPaths();
@@ -395,11 +395,9 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
     private void addActionItems(JPopupMenu result) {
         TreePath[] selectedValues = getSelectionPaths();
         ActionStore actions = getJGraph().getActions();
-        if (selectedValues != null && selectedValues.length == 1
-            && actions != null) {
+        if (selectedValues != null && selectedValues.length == 1 && actions != null) {
             result.add(actions.getFindReplaceAction());
-            if (getJGraph() instanceof AspectJGraph
-                && actions.getSelectColorAction().isEnabled()) {
+            if (getJGraph() instanceof AspectJGraph && actions.getSelectColorAction().isEnabled()) {
                 result.add(actions.getSelectColorAction());
             }
             result.addSeparator();
@@ -431,14 +429,13 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
      * returns an HTML-formatted string with the text of the label.
      */
     @Override
-    public String convertValueToText(Object value, boolean selected,
-            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    public String convertValueToText(Object value, boolean selected, boolean expanded,
+            boolean leaf, int row, boolean hasFocus) {
         if (value instanceof LabelTree.EntryNode) {
             Entry entry = ((EntryNode) value).getEntry();
             return getText(entry);
         } else {
-            return super.convertValueToText(value, selected, expanded, leaf,
-                row, hasFocus);
+            return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
     }
 
@@ -471,16 +468,13 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
     /** Indicates if a given jCell is entirely filtered. */
     public boolean isFiltered(JCell<G> jCell) {
         synchroniseModel();
-        return hasFilter()
-            && getFilter().isFiltered(jCell,
-                getJGraph().isShowUnfilteredEdges());
+        return hasFilter() && getFilter().isFiltered(jCell, getJGraph().isShowUnfilteredEdges());
     }
 
     /** Indicates if a given key is actively filtered. */
     public boolean isFiltered(Label key) {
         synchroniseModel();
-        return hasFilter()
-            && !getFilter().isSelected(getFilter().getEntry(key));
+        return hasFilter() && !getFilter().isSelected(getFilter().getEntry(key));
     }
 
     /**
@@ -581,8 +575,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
         @Override
         public void mouseClicked(MouseEvent e) {
             if (hasFilter() && e.getClickCount() == 2) {
-                TreePath path =
-                    getPathForLocation(e.getPoint().x, e.getPoint().y);
+                TreePath path = getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
                     Object treeNode = path.getLastPathComponent();
                     if (treeNode instanceof LabelTree.EntryNode) {
@@ -595,8 +588,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
 
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
-                createPopupMenu().show(evt.getComponent(), evt.getX(),
-                    evt.getY());
+                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
             }
         }
     }
@@ -614,8 +606,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
         }
 
         FilterAction(TreePath[] cells, boolean filter) {
-            super(filter ? Options.FILTER_ACTION_NAME
-                    : Options.UNFILTER_ACTION_NAME);
+            super(filter ? Options.FILTER_ACTION_NAME : Options.UNFILTER_ACTION_NAME);
             this.filter = filter;
             this.entries = new ArrayList<Entry>();
             for (TreePath path : cells) {
@@ -627,6 +618,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             getFilter().setSelected(this.entries, !this.filter);
         }
@@ -642,12 +634,10 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
         }
 
         @Override
-        public JComponent getTreeCellRendererComponent(JTree tree,
-                Object value, boolean sel, boolean expanded, boolean leaf,
-                int row, boolean hasFocus) {
+        public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
+                boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JComponent result =
-                super.getTreeCellRendererComponent(tree, value, sel, expanded,
-                    leaf, row, hasFocus);
+                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
             if (getTreeNode() instanceof LabelTree.EntryNode) {
@@ -680,8 +670,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements
                 if (entry instanceof TypeEntry) {
                     TypeElement typeElement = ((TypeEntry) entry).getType();
                     TypeNode typeNode =
-                        typeElement instanceof TypeNode
-                                ? (TypeNode) typeElement
+                        typeElement instanceof TypeNode ? (TypeNode) typeElement
                                 : ((TypeEdge) typeElement).source();
                     Color color = typeNode.getColor();
                     if (color != null) {

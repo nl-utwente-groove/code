@@ -14,8 +14,7 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
-        implements LTSJCell {
+public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> implements LTSJCell {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.
@@ -32,8 +31,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
 
     @Override
     public boolean isCompatible(Edge edge) {
-        return super.isCompatible(edge)
-            && isPartial() == ((GraphTransition) edge).isPartial();
+        return super.isCompatible(edge) && isPartial() == ((GraphTransition) edge).isPartial();
     }
 
     @Override
@@ -67,15 +65,13 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
             } else {
                 description = trans.getEvent().getRule().getFullName();
             }
-            displayedLabels[labelIndex] =
-                HTMLConverter.STRONG_TAG.on(description, true);
+            displayedLabels[labelIndex] = HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
         }
         if (displayedLabels.length == 1) {
             result.append(displayedLabels[0]);
         } else {
-            result.append(Groove.toString(displayedLabels, "<br>- ", "",
-                "<br>- "));
+            result.append(Groove.toString(displayedLabels, "<br>- ", "", "<br>- "));
         }
         return result.toString();
     }
@@ -102,11 +98,13 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
         return result;
     }
 
+    @Override
     public void setVisibleFlag(boolean visible) {
         this.visibleFlag = visible;
         setStale(VisualKey.VISIBLE);
     }
 
+    @Override
     public boolean hasVisibleFlag() {
         return this.visibleFlag;
     }
@@ -114,6 +112,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
+    @Override
     public final boolean setActive(boolean active) {
         return setLook(Look.ACTIVE, active);
     }

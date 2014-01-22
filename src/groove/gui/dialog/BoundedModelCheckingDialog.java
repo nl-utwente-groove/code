@@ -57,8 +57,8 @@ public class BoundedModelCheckingDialog {
     JOptionPane createContentPane() {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
         this.pane =
-            new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.OK_CANCEL_OPTION, null, buttons);
+            new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
+                null, buttons);
         return this.pane;
     }
 
@@ -236,13 +236,13 @@ public class BoundedModelCheckingDialog {
             // empty
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 if (e.getSource() == getOkButton()) {
                     setBoundary();
                 }
-                BoundedModelCheckingDialog.this.dialog.getContentPane().setVisible(
-                    false);
+                BoundedModelCheckingDialog.this.dialog.getContentPane().setVisible(false);
                 BoundedModelCheckingDialog.this.dialog.dispose();
             } catch (NumberFormatException e1) {
                 // invalid entries in the dialog, do not do anything
@@ -250,16 +250,14 @@ public class BoundedModelCheckingDialog {
         }
 
         private void setBoundary() {
-            BoundedModelCheckingDialog aDialog =
-                BoundedModelCheckingDialog.this;
+            BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (aDialog.graphBoundButton.isSelected()) {
                 int graphBound = Integer.parseInt(aDialog.boundField.getText());
                 int delta = Integer.parseInt(aDialog.deltaField.getText());
                 aDialog.boundary = new GraphNodeSizeBoundary(graphBound, delta);
             } else if (aDialog.ruleSetBoundButton.isSelected()) {
                 Set<Rule> selectedRules = new HashSet<Rule>();
-                Iterator<String> selectedRuleNamesIter =
-                    aDialog.selectedRuleNames.iterator();
+                Iterator<String> selectedRuleNamesIter = aDialog.selectedRuleNames.iterator();
                 while (selectedRuleNamesIter.hasNext()) {
                     String ruleName = selectedRuleNamesIter.next();
                     selectedRules.add(aDialog.grammar.getRule(ruleName));
@@ -273,11 +271,10 @@ public class BoundedModelCheckingDialog {
      * Action listener that closes the dialog and makes sure that the property
      * is set (possibly to null).
      */
-    private class SelectionListener implements ActionListener,
-            ListSelectionListener {
+    private class SelectionListener implements ActionListener, ListSelectionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            BoundedModelCheckingDialog aDialog =
-                BoundedModelCheckingDialog.this;
+            BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (e.getSource() == aDialog.graphBoundButton) {
                 aDialog.boundField.setEditable(true);
                 aDialog.deltaField.setEditable(true);
@@ -301,9 +298,9 @@ public class BoundedModelCheckingDialog {
             }
         }
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
-            BoundedModelCheckingDialog aDialog =
-                BoundedModelCheckingDialog.this;
+            BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (e.getSource() == aDialog.ruleList) {
                 if (aDialog.ruleList.getSelectedValues().length > 0) {
                     aDialog.addButton.setEnabled(true);

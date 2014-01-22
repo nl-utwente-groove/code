@@ -16,7 +16,6 @@
  */
 package groove.util.collect;
 
-
 import java.util.Arrays;
 
 /**
@@ -49,8 +48,7 @@ final public class TreeIntSet implements IntSet {
      */
     public TreeIntSet(int resolution) {
         if (resolution < 1) {
-            throw new IllegalArgumentException(
-                "Resolution should be at least 1");
+            throw new IllegalArgumentException("Resolution should be at least 1");
         }
         this.resolution = resolution;
         this.width = 1 << resolution;
@@ -61,6 +59,7 @@ final public class TreeIntSet implements IntSet {
      * Uses the <code>capacity</code> parameter to assign a new length to the
      * underlying arrays, if they are smaller than this capacity.
      */
+    @Override
     public void clear(int capacity) {
         if (this.keys == null || this.keys.length <= capacity) {
             this.keys = new int[2 * capacity];
@@ -70,10 +69,12 @@ final public class TreeIntSet implements IntSet {
         this.size = 0;
     }
 
+    @Override
     public int size() {
         return this.size;
     }
 
+    @Override
     public boolean add(int key) {
         if (this.size == 0) {
             // at the first key, we still have to create the root of the tree
@@ -135,11 +136,9 @@ final public class TreeIntSet implements IntSet {
                     // the old and new branch values
                     int oldOffset, newOffset;
                     // so long as old and new key coincide, keep relocating
-                    while ((newOffset = (search & mask)) == (oldOffset =
-                        (oldSearch & mask))) {
+                    while ((newOffset = (search & mask)) == (oldOffset = (oldSearch & mask))) {
                         newIndex = newBranchIndex();
-                        index =
-                            (store = this.store)[index + newOffset] = newIndex;
+                        index = (store = this.store)[index + newOffset] = newIndex;
                         search >>>= resolution;
                         oldSearch >>>= resolution;
                     }

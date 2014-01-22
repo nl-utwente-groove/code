@@ -62,23 +62,28 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return ((StateReference) getCacheReference()).getGTS();
     }
 
+    @Override
     final public Set<? extends GraphTransition> getTransitions() {
         return getTransitions(GraphTransition.Class.COMPLETE);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     final public Set<RuleTransition> getRuleTransitions() {
         return (Set<RuleTransition>) getTransitions(GraphTransition.Class.RULE);
     }
 
+    @Override
     public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz) {
         return getCache().getTransitions(claz);
     }
 
+    @Override
     public boolean addTransition(GraphTransition transition) {
         return getCache().addTransition(transition);
     }
 
+    @Override
     public RuleTransitionStub getOutStub(MatchResult match) {
         assert match != null;
         RuleTransitionStub result = null;
@@ -184,10 +189,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return result;
     }
 
+    @Override
     public boolean isClosed() {
         return hasFlag(CLOSED);
     }
 
+    @Override
     public boolean setClosed(boolean complete) {
         boolean result = setStatus(CLOSED, true);
         if (result) {
@@ -387,6 +394,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * @throws IllegalStateException if {@link #hasNumber()} returns
      *         <code>false</code> at the time of calling
      */
+    @Override
     public int getNumber() {
         return this.nr;
     }
@@ -400,6 +408,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * Returns the map of parameters to nodes for this state
      * @return a Map<String,Node> of parameters
      */
+    @Override
     public HostNode[] getBoundNodes() {
         return EMPTY_NODE_LIST;
     }
@@ -439,6 +448,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         this.schedule = ctrlState.getSchedule();
     }
 
+    @Override
     public CtrlState getCtrlState() {
         return this.schedule.getState();
     }
@@ -450,6 +460,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         this.schedule = schedule;
     }
 
+    @Override
     public final CtrlSchedule getSchedule() {
         return this.schedule;
     }

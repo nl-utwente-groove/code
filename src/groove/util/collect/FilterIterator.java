@@ -36,6 +36,7 @@ public abstract class FilterIterator<T> implements Iterator<T> {
         this.inner = inner;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public boolean hasNext() {
         Object next = this.next;
@@ -50,13 +51,13 @@ public abstract class FilterIterator<T> implements Iterator<T> {
             }
         }
         if (ITERATE_DEBUG) {
-            Groove.message("Found next? "
-                + (next != null && approves(next) ? "Yes" : "No"));
+            Groove.message("Found next? " + (next != null && approves(next) ? "Yes" : "No"));
         }
         this.next = (T) next;
         return next != null;
     }
 
+    @Override
     public T next() {
         if (hasNext()) {
             T result = this.next;
@@ -77,6 +78,7 @@ public abstract class FilterIterator<T> implements Iterator<T> {
      * @throws IllegalStateException if {@link #hasNext()} was called after
      *         {@link #next()}
      */
+    @Override
     public void remove() {
         if (!this.removeAllowed) {
             throw new IllegalStateException();

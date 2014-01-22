@@ -36,6 +36,7 @@ public final class PlainLabel extends ALabel {
         this.text = text;
     }
 
+    @Override
     public String text() {
         return this.text;
     }

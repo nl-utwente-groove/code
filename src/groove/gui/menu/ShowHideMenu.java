@@ -275,8 +275,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * hidden).
      * </ul>
      */
-    static abstract protected class ShowHideAction<G extends Graph> extends
-            AbstractAction {
+    static abstract protected class ShowHideAction<G extends Graph> extends AbstractAction {
         /**
          * Constructs a nameless action.
          * @param jgraph the jgraph upon which this action works
@@ -296,6 +295,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          * @see #isInvolved
          * @see #isHiding
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             Set<JCell<G>> hiddenCells = new HashSet<JCell<G>>();
             Set<JCell<G>> shownCells = new HashSet<JCell<G>>();
@@ -417,8 +417,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
     /**
      * Action that inverts the shown/hidden nodes and edges in the graph.
      */
-    static protected class InvertAction<G extends Graph> extends
-            ShowHideAction<G> {
+    static protected class InvertAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -444,8 +443,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * Action that shows all incident edges of non-hidden nodes, or hides all
      * endpoints of hidden edges.
      */
-    static protected class ContextAction<G extends Graph> extends
-            ShowHideAction<G> {
+    static protected class ContextAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -468,9 +466,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 JCell<G> targetVertex = edge.getTargetVertex();
                 Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
-                    result =
-                        !sourceVertex.isGrayedOut()
-                            || !targetVertex.isGrayedOut();
+                    result = !sourceVertex.isGrayedOut() || !targetVertex.isGrayedOut();
                 } else {
                     Set<Object> selectedCells =
                         new HashSet<Object>(Arrays.asList(selectedCellArray));
@@ -486,8 +482,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
     /**
      * Action that shows/hides all nodes and edges with a given label.
      */
-    static protected class LabelAction<G extends Graph> extends
-            ShowHideAction<G> {
+    static protected class LabelAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Creates a <tt>LabelAction</tt> that tests for an explicitly given
          * label.
@@ -501,11 +496,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         protected LabelAction(JGraph<G> jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(
-                NAME,
-                label.text().length() == 0
-                        ? Options.EMPTY_LABEL_TEXT
-                        : HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
+            putValue(NAME, label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
+                    : HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
             this.label = label;
         }
 
@@ -530,8 +522,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * Action that shows/hides elements on the basis of a regular expression
      * over edge labels.
      */
-    static protected class RegExprAction<G extends Graph> extends
-            ShowHideAction<G> {
+    static protected class RegExprAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -552,14 +543,11 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 try {
                     RegExpr expr = RegExpr.parse(exprText);
                     if (expr != null) {
-                        if (this.calculator == null
-                            || this.calculator.getGraph() != graph) {
+                        if (this.calculator == null || this.calculator.getGraph() != graph) {
                             if (this.calculator != null) {
                                 this.calculator.stopListening();
                             }
-                            this.calculator =
-                                new RelationCalculator(graph,
-                                    new NodeRelation());
+                            this.calculator = new RelationCalculator(graph, new NodeRelation());
                             this.calculator.startListening();
                         }
                         NodeRelation rel = expr.apply(this.calculator);
@@ -567,9 +555,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                     }
                     super.actionPerformed(evt);
                 } catch (FormatException exc) {
-                    JOptionPane.showMessageDialog(null,
-                        "Error in regular expression '" + exprText + "': "
-                            + exc.getMessage());
+                    JOptionPane.showMessageDialog(null, "Error in regular expression '" + exprText
+                        + "': " + exc.getMessage());
                 }
             }
         }
@@ -606,8 +593,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static protected class SelectedAction<G extends Graph> extends
-            ShowHideAction<G> {
+    static protected class SelectedAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -635,8 +621,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * file format is one label per line.
      * @author Eduardo Zambon
      */
-    static protected class FromFileAction<G extends Graph> extends
-            ShowHideAction<G> {
+    static protected class FromFileAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph.
          * @param jgraph the underlying j-graph
@@ -650,16 +635,14 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            GrooveFileChooser fileChooser =
-                GrooveFileChooser.getInstance(FileType.TEXT);
+            GrooveFileChooser fileChooser = GrooveFileChooser.getInstance(FileType.TEXT);
             int result = fileChooser.showOpenDialog(this.jgraph);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
                 String fileLine;
                 Set<String> labels = new HashSet<String>();
                 try {
-                    BufferedReader in =
-                        new BufferedReader(new FileReader(labelsFile));
+                    BufferedReader in = new BufferedReader(new FileReader(labelsFile));
                     if (!in.ready()) {
                         in.close();
                         throw new IOException();
@@ -769,8 +752,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 // now (re-)fill the menu
                 removeAll();
                 for (Label labelAction : getJGraph().getLabelTree().getLabels()) {
-                    add(new LabelAction<G>(getJGraph(), this.showMode,
-                        labelAction));
+                    add(new LabelAction<G>(getJGraph(), this.showMode, labelAction));
                 }
             }
             super.menuSelectionChanged(isIncluded);

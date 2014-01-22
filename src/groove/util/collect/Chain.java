@@ -59,6 +59,7 @@ public class Chain<E> implements Iterable<E> {
     }
 
     /** Returns an iterator over the elements of the chain. */
+    @Override
     public Iterator<E> iterator() {
         return new Iterator<E>() {
             @Override

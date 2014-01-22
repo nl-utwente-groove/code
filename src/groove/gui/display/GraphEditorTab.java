@@ -96,8 +96,8 @@ import org.jgraph.graph.GraphUndoManager;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class GraphEditorTab extends ResourceTab implements
-        GraphModelListener, PropertyChangeListener {
+final public class GraphEditorTab extends ResourceTab implements GraphModelListener,
+        PropertyChangeListener {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -210,8 +210,7 @@ final public class GraphEditorTab extends ResourceTab implements
     @Override
     public void updateGrammar(GrammarModel grammar) {
         GraphBasedModel<?> graphModel =
-            (GraphBasedModel<?>) grammar.getResource(getResourceKind(),
-                getName());
+            (GraphBasedModel<?>) grammar.getResource(getResourceKind(), getName());
         AspectGraph source = graphModel == null ? null : graphModel.getSource();
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
@@ -286,8 +285,7 @@ final public class GraphEditorTab extends ResourceTab implements
      * @param updatePropertiesPanel if {@code true}, the change did not originate
      * from the properties table, so the table has to be refreshed as well
      */
-    private void changeProperties(Map<?,?> propertiesMap,
-            boolean updatePropertiesPanel) {
+    private void changeProperties(Map<?,?> propertiesMap, boolean updatePropertiesPanel) {
         AspectGraph newGraph = getGraph().clone();
         GraphProperties newProperties = new GraphProperties(propertiesMap);
         GraphInfo.setProperties(newGraph, newProperties);
@@ -304,8 +302,7 @@ final public class GraphEditorTab extends ResourceTab implements
      * @param updatePropertiesPanel if {@code true}, the change did not originate
      * from the properties table, so the table has to be refreshed as well
      */
-    private void loadProperties(AspectGraph newGraph,
-            boolean updatePropertiesPanel) {
+    private void loadProperties(AspectGraph newGraph, boolean updatePropertiesPanel) {
         if (updatePropertiesPanel) {
             // get the table first as creating it sets listenToPropertiesPanel to true
             PropertiesTable panel = getPropertiesPanel();
@@ -340,10 +337,7 @@ final public class GraphEditorTab extends ResourceTab implements
     public AspectJGraph getJGraph() {
         AspectJGraph result = this.jgraph;
         if (result == null) {
-            result =
-                this.jgraph =
-                    new AspectJGraph(getSimulator(), getDisplay().getKind(),
-                        true);
+            result = this.jgraph = new AspectJGraph(getSimulator(), getDisplay().getKind(), true);
             result.setLabelTree(getLabelTree());
         }
         return result;
@@ -364,10 +358,10 @@ final public class GraphEditorTab extends ResourceTab implements
      * Refreshes the status bar and the errors, if the text on any of the cells
      * has changed.
      */
+    @Override
     public void graphChanged(GraphModelEvent e) {
         boolean changed =
-            e.getChange().getInserted() != null
-                || e.getChange().getRemoved() != null
+            e.getChange().getInserted() != null || e.getChange().getRemoved() != null
                 || e.getChange().getAttributes() != null;
         if (changed) {
             updateStatus();
@@ -378,6 +372,7 @@ final public class GraphEditorTab extends ResourceTab implements
      * We listen to the 
      * {@link JGraph#JGRAPH_MODE_PROPERTY}.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         assert evt.getPropertyName().equals(JGraph.JGRAPH_MODE_PROPERTY);
         JGraphMode mode = getJGraph().getMode();
@@ -403,16 +398,16 @@ final public class GraphEditorTab extends ResourceTab implements
     private void initListeners() {
         getJGraph().setToolTipEnabled(true);
         // Update ToolBar based on Selection Changes
-        getJGraph().getSelectionModel().addGraphSelectionListener(
-            new GraphSelectionListener() {
-                public void valueChanged(GraphSelectionEvent e) {
-                    // Update Button States based on Current Selection
-                    boolean selected = !getJGraph().isSelectionEmpty();
-                    getDeleteAction().setEnabled(selected);
-                    getCopyAction().setEnabled(selected);
-                    getCutAction().setEnabled(selected);
-                }
-            });
+        getJGraph().getSelectionModel().addGraphSelectionListener(new GraphSelectionListener() {
+            @Override
+            public void valueChanged(GraphSelectionEvent e) {
+                // Update Button States based on Current Selection
+                boolean selected = !getJGraph().isSelectionEmpty();
+                getDeleteAction().setEnabled(selected);
+                getCopyAction().setEnabled(selected);
+                getCutAction().setEnabled(selected);
+            }
+        });
         getJGraph().addJGraphModeListener(this);
         getSnapToGridAction().addSnapListener(this);
     }
@@ -429,8 +424,7 @@ final public class GraphEditorTab extends ResourceTab implements
                     boolean relevant = true;
                     boolean minor = true;
                     // only process edits that really changed anything
-                    if (GraphEditorTab.this.refreshing
-                        || getJGraph().isModelRefreshing()) {
+                    if (GraphEditorTab.this.refreshing || getJGraph().isModelRefreshing()) {
                         relevant = false;
                     } else if (e.getEdit() instanceof GraphLayoutCacheChange) {
                         GraphModelChange edit = (GraphModelChange) e.getEdit();
@@ -439,17 +433,15 @@ final public class GraphEditorTab extends ResourceTab implements
                         Object[] changed = edit.getChanged();
                         ConnectionSet connections = edit.getConnectionSet();
                         relevant =
-                            inserted != null && inserted.length > 0
-                                || removed != null && removed.length > 0
-                                || changed != null && changed.length > 0;
+                            inserted != null && inserted.length > 0 || removed != null
+                                && removed.length > 0 || changed != null && changed.length > 0;
                         minor =
                             (connections == null || connections.isEmpty())
                                 && (inserted == null || inserted.length == 0)
                                 && (removed == null || removed.length == 0);
                         if (minor && changed != null) {
                             for (Object in : changed) {
-                                AttributeMap attrs =
-                                    (AttributeMap) edit.getAttributes().get(in);
+                                AttributeMap attrs = (AttributeMap) edit.getAttributes().get(in);
                                 if (GraphConstants.getValue(attrs) != null) {
                                     minor = false;
                                     break;
@@ -495,8 +487,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 JComponent propertiesPanel = getPropertiesPanel();
                 JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
                 scrollPanel.setName(propertiesPanel.getName());
-                scrollPanel.getViewport().setBackground(
-                    propertiesPanel.getBackground());
+                scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
                 result.addChangeListener(createInfoListener(true));
             }
@@ -516,8 +507,8 @@ final public class GraphEditorTab extends ResourceTab implements
             TypeTree labelTree = getLabelTree();
             this.labelPanel =
                 result =
-                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
-                        labelTree.createToolBar(), true);
+                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(),
+                        true);
             result.setTitled(false);
             result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
         }
@@ -541,8 +532,7 @@ final public class GraphEditorTab extends ResourceTab implements
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            this.propertiesPanel =
-                result = new PropertiesTable(GraphProperties.getKeyMap(), true);
+            this.propertiesPanel = result = new PropertiesTable(GraphProperties.getKeyMap(), true);
             result.setName("Properties");
             result.setBackground(JAttr.EDITOR_BACKGROUND);
             result.setProperties(GraphInfo.getProperties(getGraph()));
@@ -551,9 +541,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 @Override
                 public void tableChanged(TableModelEvent e) {
                     if (GraphEditorTab.this.listenToPropertiesPanel) {
-                        changeProperties(
-                            GraphEditorTab.this.propertiesPanel.getProperties(),
-                            false);
+                        changeProperties(GraphEditorTab.this.propertiesPanel.getProperties(), false);
                         setDirty(false);
                     }
                 }
@@ -591,15 +579,12 @@ final public class GraphEditorTab extends ResourceTab implements
         tabbedPane.addTab("Edges", null, createSyntaxList(this.edgeKeys),
             "Label prefixes that are allowed on edges");
         if (this.role == GraphRole.RULE) {
-            tabbedPane.addTab("RegExpr", null,
-                createSyntaxList(RegExpr.getDocMap().keySet()),
+            tabbedPane.addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
                 "Syntax for regular expressions over labels");
-            tabbedPane.addTab("Expr", null,
-                createSyntaxList(Algebras.getDocMap().keySet()),
+            tabbedPane.addTab("Expr", null, createSyntaxList(Algebras.getDocMap().keySet()),
                 "Available attribute operators");
         }
-        JPanel result =
-            new TitledPanel("Label syntax help", tabbedPane, null, false);
+        JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
         // when a cell edit is started in the JGraph
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
@@ -607,8 +592,7 @@ final public class GraphEditorTab extends ResourceTab implements
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == JGraph.CELL_EDIT_PROPERTY) {
                     int index =
-                        evt.getNewValue() instanceof AspectJEdge ? edgeTabIndex
-                                : nodeTabIndex;
+                        evt.getNewValue() instanceof AspectJEdge ? edgeTabIndex : nodeTabIndex;
                     tabbedPane.setSelectedIndex(index);
                 }
             }
@@ -640,8 +624,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 }
             }
 
-            private final ToolTipManager manager =
-                ToolTipManager.sharedInstance();
+            private final ToolTipManager manager = ToolTipManager.sharedInstance();
             private final int standardDelay = this.manager.getDismissDelay();
         });
         list.setSelectionModel(new DefaultListSelectionModel() {
@@ -666,10 +649,8 @@ final public class GraphEditorTab extends ResourceTab implements
         if (this.nodeKeys != null) {
             return;
         }
-        this.nodeKeys =
-            new TreeSet<String>(AspectKind.getNodeDocMap(this.role).keySet());
-        this.edgeKeys =
-            new TreeSet<String>(AspectKind.getEdgeDocMap(this.role).keySet());
+        this.nodeKeys = new TreeSet<String>(AspectKind.getNodeDocMap(this.role).keySet());
+        this.edgeKeys = new TreeSet<String>(AspectKind.getEdgeDocMap(this.role).keySet());
         // the edge role description for binary edges in rule graphs is inappropriate
         Help extra = null;
         for (Map.Entry<EdgeRole,Pair<String,String>> entry : EdgeRole.getRoleToDocMap().entrySet()) {
@@ -828,9 +809,7 @@ final public class GraphEditorTab extends ResourceTab implements
         if (this.cutAction == null) {
             Action action = TransferHandler.getCutAction();
             action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
-            this.cutAction =
-                new TransferAction(action, Options.CUT_KEY,
-                    Options.CUT_ACTION_NAME);
+            this.cutAction = new TransferAction(action, Options.CUT_KEY, Options.CUT_ACTION_NAME);
             this.cutAction.putValue(Action.SMALL_ICON, Icons.CUT_ICON);
         }
         return this.cutAction;
@@ -847,8 +826,7 @@ final public class GraphEditorTab extends ResourceTab implements
         if (this.copyAction == null) {
             Action action = TransferHandler.getCopyAction();
             this.copyAction =
-                new TransferAction(action, Options.COPY_KEY,
-                    Options.COPY_ACTION_NAME);
+                new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
             this.copyAction.putValue(Action.SMALL_ICON, Icons.COPY_ICON);
         }
         return this.copyAction;
@@ -865,8 +843,7 @@ final public class GraphEditorTab extends ResourceTab implements
         if (this.pasteAction == null) {
             Action action = TransferHandler.getPasteAction();
             this.pasteAction =
-                new TransferAction(action, Options.PASTE_KEY,
-                    Options.PASTE_ACTION_NAME);
+                new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
             this.pasteAction.putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
             this.pasteAction.setEnabled(true);
         }
@@ -882,8 +859,7 @@ final public class GraphEditorTab extends ResourceTab implements
     private Action getRedoAction() {
         if (this.redoAction == null) {
             this.redoAction =
-                new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY,
-                    Icons.REDO_ICON) {
+                new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, Icons.REDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -906,8 +882,7 @@ final public class GraphEditorTab extends ResourceTab implements
     private Action getUndoAction() {
         if (this.undoAction == null) {
             this.undoAction =
-                new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY,
-                    Icons.UNDO_ICON) {
+                new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, Icons.UNDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -944,8 +919,7 @@ final public class GraphEditorTab extends ResourceTab implements
     private class DeleteAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected DeleteAction() {
-            super(Options.DELETE_ACTION_NAME, Options.DELETE_KEY,
-                Icons.DELETE_ICON);
+            super(Options.DELETE_ACTION_NAME, Options.DELETE_KEY, Icons.DELETE_ICON);
             setEnabled(false);
         }
 
@@ -980,6 +954,7 @@ final public class GraphEditorTab extends ResourceTab implements
             putValue(ACCELERATOR_KEY, acceleratorKey);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             getJGraph().stopEditing();
         }
@@ -991,8 +966,7 @@ final public class GraphEditorTab extends ResourceTab implements
          * Constructs an action that redirects to another action, while setting
          * the source of the event to the editor's j-graph.
          */
-        public TransferAction(Action action, KeyStroke acceleratorKey,
-                String name) {
+        public TransferAction(Action action, KeyStroke acceleratorKey, String name) {
             super(name, acceleratorKey, (ImageIcon) action.getValue(SMALL_ICON));
             putValue(SHORT_DESCRIPTION, name);
             setEnabled(false);
@@ -1004,8 +978,8 @@ final public class GraphEditorTab extends ResourceTab implements
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             evt =
-                new ActionEvent(getJGraph(), evt.getID(),
-                    evt.getActionCommand(), evt.getModifiers());
+                new ActionEvent(getJGraph(), evt.getID(), evt.getActionCommand(),
+                    evt.getModifiers());
             this.action.actionPerformed(evt);
             if (this == getCutAction() || this == getCopyAction()) {
                 clipboardFilled = true;
@@ -1020,11 +994,10 @@ final public class GraphEditorTab extends ResourceTab implements
     /** Private cell renderer class that inserts the correct tool tips. */
     private class SyntaxCellRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
             Component result =
-                super.getListCellRendererComponent(list, value, index,
-                    isSelected, cellHasFocus);
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {
                 setToolTipText(GraphEditorTab.this.docMap.get(value));
             }

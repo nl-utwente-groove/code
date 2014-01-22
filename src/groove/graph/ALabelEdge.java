@@ -21,8 +21,7 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>>
-        implements Label {
+public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> implements Label {
     /**
      * Constructs a new instance, for a given source and target node.
      */
@@ -30,6 +29,7 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>>
         super(source, target);
     }
 
+    @Override
     public int compareTo(Label o) {
         return text().compareTo(o.text());
     }

@@ -98,16 +98,15 @@ public class Options implements Cloneable {
      */
     private final JCheckBoxMenuItem addCheckbox(final String name) {
         JCheckBoxMenuItem result = new JCheckBoxMenuItem(name);
-        boolean selected =
-            userPrefs.getBoolean(name, boolOptionDefaults.get(name));
+        boolean selected = userPrefs.getBoolean(name, boolOptionDefaults.get(name));
         boolean enabled = isEnabled(name);
         result.setSelected(selected & enabled);
         this.itemMap.put(name, result);
         if (enabled) {
             result.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
-                    userPrefs.putBoolean(name,
-                        e.getStateChange() == ItemEvent.SELECTED);
+                    userPrefs.putBoolean(name, e.getStateChange() == ItemEvent.SELECTED);
                 }
             });
         } else {
@@ -131,16 +130,15 @@ public class Options implements Cloneable {
      * @param name the name of the behaviour menu item to add
      * @return the added {@link javax.swing.JCheckBoxMenuItem}
      */
-    private final BehaviourOption addBehaviour(final String name,
-            int optionCount) {
+    private final BehaviourOption addBehaviour(final String name, int optionCount) {
         BehaviourOption result = new BehaviourOption(name, optionCount);
         result.setValue(userPrefs.getInt(name, intOptionDefaults.get(name)));
-        result.addPropertyChangeListener(BehaviourOption.SELECTION,
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent e) {
-                    userPrefs.putInt(name, (Integer) e.getNewValue());
-                }
-            });
+        result.addPropertyChangeListener(BehaviourOption.SELECTION, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                userPrefs.putInt(name, (Integer) e.getNewValue());
+            }
+        });
         this.itemMap.put(name, result);
         return result;
     }
@@ -226,8 +224,7 @@ public class Options implements Cloneable {
     /**
      * Map from option names to menu items.
      */
-    private final Map<String,JMenuItem> itemMap =
-        new LinkedHashMap<String,JMenuItem>();
+    private final Map<String,JMenuItem> itemMap = new LinkedHashMap<String,JMenuItem>();
 
     /**
      * Tests if the font used for rendering labels supports
@@ -249,8 +246,7 @@ public class Options implements Cloneable {
     static public void setLAF(final AbstractButton button) {
         button.setHideActionText(true);
         button.setFocusable(false);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEtchedBorder(),
+        button.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
             BorderFactory.createEmptyBorder(3, 2, 3, 2)));
         button.setBorderPainted(button.isEnabled());
         button.addChangeListener(new ChangeListener() {
@@ -301,8 +297,7 @@ public class Options implements Cloneable {
      * @param dots if {@code true}, a ... prefix is appended
      * @return The appropriate action name
      */
-    public static String getEditActionName(EditType edit,
-            ResourceKind resource, boolean dots) {
+    public static String getEditActionName(EditType edit, ResourceKind resource, boolean dots) {
         StringBuilder result = new StringBuilder(edit.getName());
         result.append(' ');
         result.append(resource.getName());
@@ -320,8 +315,7 @@ public class Options implements Cloneable {
      * @return The appropriate action name
      */
     public static String getEnableName(ResourceKind resource, boolean enable) {
-        StringBuilder result =
-            new StringBuilder(EditType.getEnableName(enable));
+        StringBuilder result = new StringBuilder(EditType.getEnableName(enable));
         result.append(' ');
         result.append(resource.getName());
         return result.toString();
@@ -434,8 +428,7 @@ public class Options implements Cloneable {
     /** Add point action name */
     public static final String ADD_POINT_ACTION = "Add Point";
     /** Animation action name */
-    public static final String ANIMATE_ACTION_NAME =
-        "Animate State Exploration";
+    public static final String ANIMATE_ACTION_NAME = "Animate State Exploration";
     /** Apply transition action name */
     public static final String APPLY_MATCH_ACTION_NAME = "Apply selected match";
     /** Back action name */
@@ -447,14 +440,12 @@ public class Options implements Cloneable {
     /** Change rules action name */
     public static final String CHANGE_RULES_ACTION_NAME = "Change Rules";
     /** Action name for checking CTL on full state space */
-    public static final String CHECK_CTL_FULL_ACTION_NAME =
-        "Check CTL property (full state space)";
+    public static final String CHECK_CTL_FULL_ACTION_NAME = "Check CTL property (full state space)";
     /** Action name for checking CTL on current state space */
     public static final String CHECK_CTL_AS_IS_ACTION_NAME =
         "Check CTL property (current state space)";
     /** Action name for checking LTL. */
-    public static final String CHECK_LTL_ACTION_NAME =
-        "Check LTL property (full state space)";
+    public static final String CHECK_LTL_ACTION_NAME = "Check LTL property (full state space)";
     /** Action name for checking LTL on bounded state space */
     public static final String CHECK_LTL_BOUNDED_ACTION_NAME =
         "Check LTL property (bounded state space)";
@@ -494,22 +485,18 @@ public class Options implements Cloneable {
     /** Edit state action name */
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
     /** Exploration dialog action name */
-    public static final String EXPLORATION_DIALOG_ACTION_NAME =
-        "Customize Exploration ...";
+    public static final String EXPLORATION_DIALOG_ACTION_NAME = "Customize Exploration ...";
     /** Exploration statistics dialog action name */
     public static final String EXPLORATION_STATS_DIALOG_ACTION_NAME =
         "Last Exploration Statistics ...";
     /** Layout dialog action name */
-    public static final String LAYOUT_DIALOG_ACTION_NAME =
-        "Customize Layout ...";
+    public static final String LAYOUT_DIALOG_ACTION_NAME = "Customize Layout ...";
     /** Explore single state action name */
-    public static final String EXPLORE_STATE_ACTION_NAME =
-        "Explore current state";
+    public static final String EXPLORE_STATE_ACTION_NAME = "Explore current state";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export control action name */
-    public static final String EXPORT_CONTROL_ACTION_NAME =
-        "Export Control Automaton ...";
+    public static final String EXPORT_CONTROL_ACTION_NAME = "Export Control Automaton ...";
     /** Export rule action name */
     public static final String EXPORT_RULE_ACTION_NAME = "Export Rule ...";
     /** Export lts action name */
@@ -529,29 +516,23 @@ public class Options implements Cloneable {
     /** Back action name */
     public static final String FORWARD_ACTION_NAME = "Step Forward";
     /** Find a final state action name */
-    public static final String GOTO_FINAL_STATE_ACTION_NAME =
-        "Go to Final State";
+    public static final String GOTO_FINAL_STATE_ACTION_NAME = "Go to Final State";
     /** Goto start state action name */
-    public static final String GOTO_START_STATE_ACTION_NAME =
-        "Go to Start State";
+    public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
     /** Hide LTS action name */
     public static final String HIDE_LTS_ACTION_NAME = "Hide LTS";
     /** List atomic propositions action name */
-    public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME =
-        "List Atom. Prop.";
+    public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME = "List Atom. Prop.";
     /** Load control file action name */
-    public static final String LOAD_CONTROL_FILE_ACTION_NAME =
-        "Load Control ...";
+    public static final String LOAD_CONTROL_FILE_ACTION_NAME = "Load Control ...";
     /** Load start state action name */
-    public static final String LOAD_START_STATE_ACTION_NAME =
-        "Load External Start State ...";
+    public static final String LOAD_START_STATE_ACTION_NAME = "Load External Start State ...";
     /** Import action name */
     public static final String IMPORT_ACTION_NAME = "Import ...";
     /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
     /** Load grammar from url action name */
-    public static final String LOAD_URL_GRAMMAR_ACTION_NAME =
-        "Load Grammar from URL ...";
+    public static final String LOAD_URL_GRAMMAR_ACTION_NAME = "Load Grammar from URL ...";
     /** Name of the "Lower Priority" action. */
     public static final String LOWER_PRIORITY_ACTION_NAME = "Lower Priority";
     /** Name for the model checking action. */
@@ -567,8 +548,7 @@ public class Options implements Cloneable {
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
     /** Preview control action name */
-    public static final String PREVIEW_CONTROL_ACTION_NAME =
-        "Preview Control ...";
+    public static final String PREVIEW_CONTROL_ACTION_NAME = "Preview Control ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
     /** Name of the "First Prolog Result" action. */
@@ -586,8 +566,7 @@ public class Options implements Cloneable {
      */
     public static final String RELOAD_LTS_ACTION_NAME = "Reload LTS";
     /** Find/replace action name */
-    public static final String FIND_REPLACE_ACTION_NAME =
-        "Find/Replace Label...";
+    public static final String FIND_REPLACE_ACTION_NAME = "Find/Replace Label...";
     /** Replace action name */
     public static final String REPLACE_ACTION_NAME = "Replace Label";
     /** Remove point action name */
@@ -601,8 +580,7 @@ public class Options implements Cloneable {
      */
     public static final String RESTART_ACTION_NAME = "Restart simulation";
     /** Edit properties action name */
-    public static final String RULE_PROPERTIES_ACTION_NAME =
-        "Rule Properties ...";
+    public static final String RULE_PROPERTIES_ACTION_NAME = "Rule Properties ...";
     /** Select colour action name */
     public static final String SELECT_COLOR_ACTION_NAME = "Select Color...";
     /** Use as start graph action name */
@@ -610,15 +588,12 @@ public class Options implements Cloneable {
     /**
      * Start simulation action name
      */
-    public static final String START_SIMULATION_ACTION_NAME =
-        "Restart simulation";
+    public static final String START_SIMULATION_ACTION_NAME = "Restart simulation";
 
     /** To abstract mode action name */
-    public static final String TOGGLE_TO_ABS_ACTION_NAME =
-        "Enter Abstraction Mode";
+    public static final String TOGGLE_TO_ABS_ACTION_NAME = "Enter Abstraction Mode";
     /** To concrete mode action name */
-    public static final String TOGGLE_TO_CONC_ACTION_NAME =
-        "Return to Concrete Mode";
+    public static final String TOGGLE_TO_CONC_ACTION_NAME = "Return to Concrete Mode";
     private static final String SAVE_NAME_TEMPLATE = "Save %s";
     private static final String SAVE_AS_NAME_TEMPLATE = "Save %s As ...";
     /**
@@ -632,13 +607,11 @@ public class Options implements Cloneable {
 
     /** Returns the save-as action name for a given item text. */
     private static final String getSaveActionName(String item, boolean saveAs) {
-        return String.format(saveAs ? SAVE_AS_NAME_TEMPLATE
-                : SAVE_NAME_TEMPLATE, item);
+        return String.format(saveAs ? SAVE_AS_NAME_TEMPLATE : SAVE_NAME_TEMPLATE, item);
     }
 
     /** Returns the save or save-as action name for a given resource kind. */
-    public static final String getSaveActionName(ResourceKind resource,
-            boolean saveAs) {
+    public static final String getSaveActionName(ResourceKind resource, boolean saveAs) {
         return getSaveActionName(resource.getName(), saveAs);
     }
 
@@ -668,8 +641,7 @@ public class Options implements Cloneable {
     /**
      * Show graph labels action name
      */
-    public static final String SHOW_EXISTING_LABELS_ACTION_NAME =
-        "Show only existing labels";
+    public static final String SHOW_EXISTING_LABELS_ACTION_NAME = "Show only existing labels";
     /**
      * Show subtypes action name
      */
@@ -689,15 +661,13 @@ public class Options implements Cloneable {
     /**
      * Edit action name
      */
-    public static final String SYSTEM_PROPERTIES_ACTION_NAME =
-        "Grammar Properties ...";
+    public static final String SYSTEM_PROPERTIES_ACTION_NAME = "Grammar Properties ...";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
     /** Unfilter labels action name */
     public static final String UNFILTER_ACTION_NAME = "Reset label filter";
     /** Unfilter type-based labels action name */
-    public static final String UNFILTER_TYPE_ACTION_NAME =
-        "Reset type graph filter";
+    public static final String UNFILTER_TYPE_ACTION_NAME = "Reset type graph filter";
     /** Pan mode action name */
     public static final String PAN_MODE_NAME = "Pan and Zoom mode";
     /** Preview mode action name */
@@ -706,27 +676,25 @@ public class Options implements Cloneable {
     public static final String SELECT_MODE_NAME = "Selection mode";
 
     /** Add point keystroke. */
-    public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(
-        KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
+    public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT,
+        InputEvent.ALT_MASK);
     /**
      * Apply keystroke
      */
-    static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(
-        KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
+    static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
+        InputEvent.CTRL_MASK);
     /** Back keystroke */
     public static final KeyStroke BACK_KEY = KeyStroke.getKeyStroke("alt LEFT");
     /** Cancel keystroke */
     public static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke("ESCAPE");
 
     /** Cancel keystroke */
-    public static final KeyStroke CLOSE_KEY =
-        KeyStroke.getKeyStroke("control W");
+    public static final KeyStroke CLOSE_KEY = KeyStroke.getKeyStroke("control W");
 
     /**
      * Copy keystroke
      */
-    public static final KeyStroke COPY_KEY =
-        KeyStroke.getKeyStroke("control C");
+    public static final KeyStroke COPY_KEY = KeyStroke.getKeyStroke("control C");
     /**
      * Cut keystroke
      */
@@ -743,22 +711,18 @@ public class Options implements Cloneable {
     /**
      * Edge mode keystroke
      */
-    public static final KeyStroke EDIT_MODE_KEY =
-        KeyStroke.getKeyStroke("alt E");
+    public static final KeyStroke EDIT_MODE_KEY = KeyStroke.getKeyStroke("alt E");
     /**
      * Edit keystroke
      */
-    public static final KeyStroke EDIT_KEY =
-        KeyStroke.getKeyStroke("control E");
+    public static final KeyStroke EDIT_KEY = KeyStroke.getKeyStroke("control E");
     /**
      * Export keystroke
      */
-    public static final KeyStroke EXPORT_KEY =
-        KeyStroke.getKeyStroke("control alt S");
+    public static final KeyStroke EXPORT_KEY = KeyStroke.getKeyStroke("control alt S");
     /** Explore state space keystroke */
     /** Back keystroke */
-    public static final KeyStroke FORWARD_KEY =
-        KeyStroke.getKeyStroke("alt RIGHT");
+    public static final KeyStroke FORWARD_KEY = KeyStroke.getKeyStroke("alt RIGHT");
     /** Find and go to final state keystroke */
     public static final KeyStroke GOTO_FINAL_STATE_KEY =
         KeyStroke.getKeyStroke("control shift END");
@@ -770,90 +734,68 @@ public class Options implements Cloneable {
      */
     public static final KeyStroke INSERT_KEY = KeyStroke.getKeyStroke("INSERT");
     /** Last exploration keystroke */
-    public static final KeyStroke LAYOUT_KEY =
-        KeyStroke.getKeyStroke("control L");
+    public static final KeyStroke LAYOUT_KEY = KeyStroke.getKeyStroke("control L");
     /** New keystroke */
     public static final KeyStroke NEW_KEY = KeyStroke.getKeyStroke("control N");
     /**
      * Node mode keystroke
      */
-    public static final KeyStroke NODE_MODE_KEY =
-        KeyStroke.getKeyStroke("alt N");
+    public static final KeyStroke NODE_MODE_KEY = KeyStroke.getKeyStroke("alt N");
     /** Open keystroke */
-    public static final KeyStroke OPEN_KEY =
-        KeyStroke.getKeyStroke("control O");
+    public static final KeyStroke OPEN_KEY = KeyStroke.getKeyStroke("control O");
     /** Open keystroke */
-    public static final KeyStroke OPEN_URL_KEY =
-        KeyStroke.getKeyStroke("control alt O");
+    public static final KeyStroke OPEN_URL_KEY = KeyStroke.getKeyStroke("control alt O");
     /** Open graph keystroke */
-    public static final KeyStroke OPEN_GRAPH_KEY =
-        KeyStroke.getKeyStroke("control shift O");
+    public static final KeyStroke OPEN_GRAPH_KEY = KeyStroke.getKeyStroke("control shift O");
     /** Pan-and-zoom mode keystroke */
-    public static final KeyStroke PAN_MODE_KEY =
-        KeyStroke.getKeyStroke("alt Z");
+    public static final KeyStroke PAN_MODE_KEY = KeyStroke.getKeyStroke("alt Z");
     /**
      * Paste keystroke
      */
-    public static final KeyStroke PASTE_KEY =
-        KeyStroke.getKeyStroke("control V");
+    public static final KeyStroke PASTE_KEY = KeyStroke.getKeyStroke("control V");
     /**
      * Preview keystroke
      */
-    public static final KeyStroke PREVIEW_MODE_KEY =
-        KeyStroke.getKeyStroke("alt P");
+    public static final KeyStroke PREVIEW_MODE_KEY = KeyStroke.getKeyStroke("alt P");
     /** Quit keystroke */
-    public static final KeyStroke QUIT_KEY =
-        KeyStroke.getKeyStroke("control Q");
+    public static final KeyStroke QUIT_KEY = KeyStroke.getKeyStroke("control Q");
     /** Redo keystroke */
-    public static final KeyStroke REDO_KEY =
-        KeyStroke.getKeyStroke("control Y");
+    public static final KeyStroke REDO_KEY = KeyStroke.getKeyStroke("control Y");
     /** Refresh keystroke */
     public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5");
     /**
      * Replace label keystroke
      */
-    public static final KeyStroke RELABEL_KEY =
-        KeyStroke.getKeyStroke("control R");
+    public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("control R");
     /**
      * Edit label keystroke
      */
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
-    public static final KeyStroke REMOVE_POINT_KEY = KeyStroke.getKeyStroke(
-        KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
+    public static final KeyStroke REMOVE_POINT_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,
+        InputEvent.ALT_MASK);
     /** Save keystroke */
-    public static final KeyStroke SAVE_KEY =
-        KeyStroke.getKeyStroke("control S");
+    public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
     /** Save keystroke */
-    public static final KeyStroke SAVE_GRAMMAR_AS_KEY =
-        KeyStroke.getKeyStroke("control shift S");
+    public static final KeyStroke SAVE_GRAMMAR_AS_KEY = KeyStroke.getKeyStroke("control shift S");
     /** Search keystroke */
-    public static final KeyStroke SEARCH_KEY =
-        KeyStroke.getKeyStroke("control F");
+    public static final KeyStroke SEARCH_KEY = KeyStroke.getKeyStroke("control F");
     /** Select mode keystroke */
-    public static final KeyStroke SELECT_MODE_KEY =
-        KeyStroke.getKeyStroke("alt S");
+    public static final KeyStroke SELECT_MODE_KEY = KeyStroke.getKeyStroke("alt S");
     /** Run keystroke */
-    public static final KeyStroke START_SIMULATION_KEY =
-        KeyStroke.getKeyStroke("F11");
+    public static final KeyStroke START_SIMULATION_KEY = KeyStroke.getKeyStroke("F11");
     /** Toggle exploration keystroke */
-    public static final KeyStroke TOGGLE_EXP_MODE_KEY =
-        KeyStroke.getKeyStroke("control B");
+    public static final KeyStroke TOGGLE_EXP_MODE_KEY = KeyStroke.getKeyStroke("control B");
     /** Undo keystroke */
-    public static final KeyStroke UNDO_KEY =
-        KeyStroke.getKeyStroke("control Z");
+    public static final KeyStroke UNDO_KEY = KeyStroke.getKeyStroke("control Z");
     /** Orthogonal line style keystroke */
-    public static final KeyStroke ORTHOGONAL_LINE_STYLE_KEY =
-        KeyStroke.getKeyStroke("alt 1");
+    public static final KeyStroke ORTHOGONAL_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 1");
     /** Spline line style keystroke */
-    public static final KeyStroke SPLINE_LINE_STYLE_KEY =
-        KeyStroke.getKeyStroke("alt 2");
+    public static final KeyStroke SPLINE_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 2");
     /** Bezier line style keystroke */
-    public static final KeyStroke BEZIER_LINE_STYLE_KEY =
-        KeyStroke.getKeyStroke("alt 3");
+    public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 3");
     /** Manhattan line style keystroke */
-    public static final KeyStroke MANHATTAN_LINE_STYLE_KEY =
-        KeyStroke.getKeyStroke("alt 4");
+    public static final KeyStroke MANHATTAN_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
 
     /** Mnemonic key for the New action. */
     public static final int NEW_MNEMONIC = KeyEvent.VK_N;
@@ -877,8 +819,7 @@ public class Options implements Cloneable {
     public static String getShowTabOption(ResourceKind kind) {
         String result = showTabOptionMap.get(kind);
         if (result == null) {
-            showTabOptionMap.put(kind,
-                result = String.format("Show %ss", kind.getDescription()));
+            showTabOptionMap.put(kind, result = String.format("Show %ss", kind.getDescription()));
         }
         return result;
     }
@@ -892,46 +833,36 @@ public class Options implements Cloneable {
     }
 
     /** Set of resource kinds for which the display tab is optional. */
-    private static final Set<ResourceKind> optionalTabs = EnumSet.of(
-        ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE,
-        ResourceKind.GROOVY);
+    private static final Set<ResourceKind> optionalTabs = EnumSet.of(ResourceKind.CONTROL,
+        ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
 
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show bidirectional edges. */
-    static public final String SHOW_BIDIRECTIONAL_EDGES_OPTION =
-        "Show bidirectional edges";
+    static public final String SHOW_BIDIRECTIONAL_EDGES_OPTION = "Show bidirectional edges";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Show partial transitions option */
-    static public final String SHOW_PARTIAL_GTS_OPTION =
-        "Show partial transitions";
+    static public final String SHOW_PARTIAL_GTS_OPTION = "Show partial transitions";
     /** Show unfiltered edges to filtered nodes. */
-    static public final String SHOW_UNFILTERED_EDGES_OPTION =
-        "Show all unfiltered edges";
+    static public final String SHOW_UNFILTERED_EDGES_OPTION = "Show all unfiltered edges";
     /** Show data values as nodes rather than assignments. */
-    static public final String SHOW_VALUE_NODES_OPTION =
-        "Show data values as nodes";
+    static public final String SHOW_VALUE_NODES_OPTION = "Show data values as nodes";
     /** Show data values as nodes rather than assignments. */
-    static public final String SHOW_ARROWS_ON_LABELS_OPTION =
-        "Show arrows on labels";
+    static public final String SHOW_ARROWS_ON_LABELS_OPTION = "Show arrows on labels";
     /** Always delete resources without confirmation. */
-    static public final String DELETE_RESOURCE_OPTION =
-        "Delete seletected resource?";
+    static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
     /** Always check CTL properties on all states, rather than the initial state. */
-    static public final String VERIFY_ALL_STATES_OPTION =
-        "Check CTL on all states?";
+    static public final String VERIFY_ALL_STATES_OPTION = "Check CTL on all states?";
 
     /** Default value map for the boolean options. */
-    static private final Map<String,Boolean> boolOptionDefaults =
-        new HashMap<String,Boolean>();
+    static private final Map<String,Boolean> boolOptionDefaults = new HashMap<String,Boolean>();
     /** Default value map for the behaviour options. */
-    static private final Map<String,Integer> intOptionDefaults =
-        new HashMap<String,Integer>();
+    static private final Map<String,Integer> intOptionDefaults = new HashMap<String,Integer>();
 
     static {
         for (ResourceKind optionalTab : optionalTabs) {
@@ -957,21 +888,18 @@ public class Options implements Cloneable {
         try {
             result = ExprParser.splitExpr(storedValue, ",");
         } catch (FormatException e) {
-            assert false : String.format(
-                "Format error in user preference string %s: %s", storedValue,
-                e.getMessage());
+            assert false : String.format("Format error in user preference string %s: %s",
+                storedValue, e.getMessage());
         }
         for (int i = 0; i < result.length; i++) {
             try {
                 String newValue = ExprParser.toUnquoted(result[i], '"');
                 assert result[i] != null : String.format(
-                    "User preference string %s is not correctly quoted",
-                    result[i]);
+                    "User preference string %s is not correctly quoted", result[i]);
                 result[i] = newValue;
             } catch (FormatException e) {
-                assert false : String.format(
-                    "Format error in user preference string %s: %s", result[i],
-                    e.getMessage());
+                assert false : String.format("Format error in user preference string %s: %s",
+                    result[i], e.getMessage());
             }
         }
         return result;
@@ -994,25 +922,21 @@ public class Options implements Cloneable {
     }
 
     /** The persistently stored user preferences. */
-    public static final Preferences userPrefs =
-        Preferences.userNodeForPackage(Options.class);
+    public static final Preferences userPrefs = Preferences.userNodeForPackage(Options.class);
 
     static {
         try {
             // add those default user option values that do not yet exist to the
             // preferences
-            Set<String> keys =
-                new HashSet<String>(Arrays.asList(userPrefs.keys()));
+            Set<String> keys = new HashSet<String>(Arrays.asList(userPrefs.keys()));
             for (Map.Entry<String,Boolean> defaultsEntry : boolOptionDefaults.entrySet()) {
                 if (!keys.contains(defaultsEntry.getKey())) {
-                    userPrefs.putBoolean(defaultsEntry.getKey(),
-                        defaultsEntry.getValue());
+                    userPrefs.putBoolean(defaultsEntry.getKey(), defaultsEntry.getValue());
                 }
             }
             for (Map.Entry<String,Integer> defaultsEntry : intOptionDefaults.entrySet()) {
                 if (!keys.contains(defaultsEntry.getKey())) {
-                    userPrefs.putInt(defaultsEntry.getKey(),
-                        defaultsEntry.getValue());
+                    userPrefs.putInt(defaultsEntry.getKey(), defaultsEntry.getValue());
                 }
             }
         } catch (BackingStoreException exc) {
@@ -1065,9 +989,7 @@ public class Options implements Cloneable {
             result = UIManager.getDefaults().getFont("SansSerif");
         }
         if (result == null || !result.canDisplay(Util.DT)) {
-            result =
-                loadFont("stixgeneralregular.ttf").deriveFont(
-                    getLabelFont().getSize2D());
+            result = loadFont("stixgeneralregular.ttf").deriveFont(getLabelFont().getSize2D());
         }
         return result;
     }
@@ -1076,9 +998,7 @@ public class Options implements Cloneable {
     public static Font loadFont(String name) {
         Font result = null;
         try {
-            result =
-                Font.createFont(Font.TRUETYPE_FONT,
-                    Groove.getResource(name).openStream());
+            result = Font.createFont(Font.TRUETYPE_FONT, Groove.getResource(name).openStream());
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {
             // do nothing
