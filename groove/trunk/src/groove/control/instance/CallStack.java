@@ -17,7 +17,10 @@
 package groove.control.instance;
 
 import groove.control.template.Switch;
+import groove.util.DefaultFixable;
+import groove.util.Fixable;
 
+import java.util.Collection;
 import java.util.LinkedList;
 
 /**
@@ -25,7 +28,7 @@ import java.util.LinkedList;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CallStack extends LinkedList<Switch> {
+public class CallStack extends LinkedList<Switch> implements Fixable {
     /**
      * Constructs an empty stack.
      */
@@ -39,4 +42,35 @@ public class CallStack extends LinkedList<Switch> {
     public CallStack(CallStack stack) {
         super(stack);
     }
+
+    @Override
+    public boolean add(Switch e) {
+        testFixed(false);
+        return super.add(e);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Switch> c) {
+        testFixed(false);
+        return super.addAll(c);
+    }
+
+    @Override
+    public boolean setFixed() {
+        return this.fixable.setFixed();
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixable.isFixed();
+    }
+
+    @Override
+    public void testFixed(boolean fixed) {
+        if (this.fixable != null) {
+            this.fixable.testFixed(fixed);
+        }
+    }
+
+    private final DefaultFixable fixable = new DefaultFixable();
 }
