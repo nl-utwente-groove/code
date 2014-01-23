@@ -37,10 +37,18 @@ public class DefaultFixable implements Fixable {
     @Override
     public void testFixed(boolean fixed) throws IllegalStateException {
         if (this.fixed != fixed) {
-            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
+            throwException(fixed);
         }
     }
 
     /** Flag indicating if the object is currently fixed. */
     private boolean fixed;
+
+    /** 
+     * Throws a default exception message reflecting an expected fixed value. 
+     * Included for reuse in other {@link Fixable} implementations.
+     */
+    public static IllegalStateException throwException(boolean fixed) {
+        throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
+    }
 }
