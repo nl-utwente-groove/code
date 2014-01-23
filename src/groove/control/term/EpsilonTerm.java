@@ -16,6 +16,8 @@
  */
 package groove.control.term;
 
+import groove.util.collect.Pool;
+
 /**
  * Successful termination.
  * @author Arend Rensink
@@ -25,7 +27,7 @@ public class EpsilonTerm extends Term {
     /**
      * Constructs an epsilon term.
      */
-    public EpsilonTerm(TermPool pool) {
+    public EpsilonTerm(Pool<Term> pool) {
         super(pool, Term.Op.EPSILON);
     }
 

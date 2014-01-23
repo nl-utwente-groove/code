@@ -22,31 +22,24 @@ import groove.control.template.Location;
 import groove.control.template.Stage;
 import groove.control.template.Switch;
 import groove.graph.ANode;
+import groove.util.DefaultFixable;
+import groove.util.Fixable;
 
 /**
  * Run-time composed control location.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Frame extends ANode implements Position<Frame> {
+public class Frame extends ANode implements Position<Frame>, Fixable {
     /**
      * Possibly nested frame instantiating a given control stage.
-     * @param callStack switch from which the template of this frame was called
-     * @param nextFrame successor frame after this stage terminates; one level higher up
-     * in the call hierarchy
-     * @param alsoFrame next frame if the attempt of this one succeeds; may be {@code null}
-     * @param elseFrame next frame if the attempt of this one fails; may be {@code null}
      */
-    Frame(Automaton ctrl, Stage stage, CallStack callStack, Frame nextFrame, Frame alsoFrame,
-            Frame elseFrame) {
+    Frame(Automaton ctrl, Stage stage) {
         super(ctrl.getNextFrameNr());
         this.aut = ctrl;
         this.stage = stage;
-        this.callStack = new CallStack(callStack);
-        this.nextFrame = nextFrame;
-        this.alsoFrame = alsoFrame;
-        this.elseFrame = elseFrame;
-        this.depth = (nextFrame == null ? 0 : nextFrame.getDepth()) + stage.getDepth();
+        this.callStack = new CallStack();
+        this.depth = stage.getDepth();
     }
 
     /** Returns the containing control automaton. */
@@ -68,36 +61,16 @@ public class Frame extends ANode implements Position<Frame> {
 
     private final Stage stage;
 
-    /** Indicates that this is a nested frame. */
-    public boolean isNested() {
-        return !getCallStack().isEmpty();
-    }
-
-    /** Returns the switch from which the current template was called. */
-    public CallStack getCallStack() {
-        return this.callStack;
-    }
-
-    private final CallStack callStack;
-
-    /** 
-     * Returns the (possibly {@code null}) parent frame.
-     */
-    public Frame getNext() {
-        return this.nextFrame;
-    }
-
-    private final Frame nextFrame;
-
     /** 
      * Sets the prime frame of this frame.
      * The prime frame is the one from which this one was derived through
      * a sequence of verdict transitions.
+     * @param prime the prime frame; if {@code null}, this frame is its own prime
      */
     public void setPrime(Frame prime) {
-        assert prime != null;
-        assert this.primeFrame == null || this.primeFrame == prime;
-        this.primeFrame = prime;
+        assert !isFixed();
+        assert this.primeFrame == null;
+        this.primeFrame = prime == null ? this : prime;
     }
 
     /** 
@@ -116,19 +89,56 @@ public class Frame extends ANode implements Position<Frame> {
 
     private Frame primeFrame;
 
+    /** Indicates if the subframes of this frame are set. */
+    private boolean hasSubFrames() {
+        boolean result = getNext() != null;
+        assert result == (getAlso() != null);
+        assert result == (getElse() != null);
+        assert result || getCallStack().isEmpty();
+        return result;
+    }
+
+    /** Sets the values of the next/also/else frames and call stack. */
+    public void setSubFrames(Frame nextF, Frame alsoF, Frame elseF, CallStack stack) {
+        assert !isFixed();
+        this.nextFrame = nextF == null ? getFinal() : nextF;
+        this.alsoFrame = alsoF == null ? getDead(getStage().getDepth()) : alsoF;
+        this.elseFrame = elseF == null ? getDead(getStage().getDepth()) : elseF;
+        this.callStack.addAll(stack);
+        for (Switch swit : stack) {
+            this.depth += swit.source().getDepth();
+        }
+    }
+
+    /** 
+     * Returns the (possibly {@code null}) parent frame.
+     */
+    public Frame getNext() {
+        return this.nextFrame;
+    }
+
+    private Frame nextFrame;
+
     /** Returns the also-branch of this frame, if it is not a top-level frame. */
     public Frame getAlso() {
         return this.alsoFrame;
     }
 
-    private final Frame alsoFrame;
+    private Frame alsoFrame;
 
     /** Returns the else-branch of this frame, if it is not a top-level frame. */
     public Frame getElse() {
         return this.elseFrame;
     }
 
-    private final Frame elseFrame;
+    private Frame elseFrame;
+
+    /** Returns the switch from which the current template was called. */
+    public CallStack getCallStack() {
+        return this.callStack;
+    }
+
+    private final CallStack callStack;
 
     /** 
      * Returns the (possibly {@code null}) switch of the instantiated stage.
@@ -140,9 +150,7 @@ public class Frame extends ANode implements Position<Frame> {
     @Override
     public Type getType() {
         // we want this to work also for non-normal frames
-        if (getNext() == null) {
-            return getStage().getType();
-        } else {
+        if (hasSubFrames()) {
             switch (getStage().getType()) {
             case DEAD:
                 return getElse().getType();
@@ -168,6 +176,8 @@ public class Frame extends ANode implements Position<Frame> {
                 assert false;
                 return null;
             }
+        } else {
+            return getStage().getType();
         }
     }
 
@@ -188,11 +198,12 @@ public class Frame extends ANode implements Position<Frame> {
 
     @Override
     public Step getAttempt() {
+        assert isFixed();
         if (this.attempt == null) {
             this.attempt = computeAttempt();
-            getAut().addEdge(this.attempt);
-            getAut().addEdge(Step.newStep(this.attempt, true));
-            getAut().addEdge(Step.newStep(this.attempt, false));
+            getAut().addEdgeContext(this.attempt);
+            getAut().addEdgeContext(Step.newStep(this.attempt, true));
+            getAut().addEdgeContext(Step.newStep(this.attempt, false));
         }
         return this.attempt;
     }
@@ -212,9 +223,9 @@ public class Frame extends ANode implements Position<Frame> {
         do {
             // the order of the next assignments is important
             // otherwise they will interfere
-            elseF = getAut().newFrame(swit.onFailure(), stack, nextF, alsoF, elseF);
-            alsoF = getAut().newFrame(swit.onSuccess(), stack, nextF, alsoF, alsoF);
-            nextF = getAut().newFrame(swit.onFinish(), stack, nextF, null, null);
+            elseF = newFrame(swit.onFailure(), stack, nextF, alsoF, elseF);
+            alsoF = newFrame(swit.onSuccess(), stack, nextF, alsoF, alsoF);
+            nextF = newFrame(swit.onFinish(), stack, nextF, null, null);
             isProcedure = swit.getKind().isProcedure();
             if (isProcedure) {
                 stack.add(swit);
@@ -222,9 +233,9 @@ public class Frame extends ANode implements Position<Frame> {
                 swit = proc.getTemplate().getStart().getFirstStage().getAttempt();
             }
         } while (isProcedure);
-        Frame onSuccess = getAut().addFrame(alsoF, getPrime());
-        Frame onFailure = getAut().addFrame(elseF, getPrime());
-        Frame onFinish = getAut().addFrame(nextF, null);
+        Frame onSuccess = alsoF.normalise(getPrime());
+        Frame onFailure = elseF.normalise(getPrime());
+        Frame onFinish = nextF.normalise(null);
         return new Step(this, swit, stack, onFinish, onSuccess, onFailure);
     }
 
@@ -233,7 +244,7 @@ public class Frame extends ANode implements Position<Frame> {
         return this.depth;
     }
 
-    private final int depth;
+    private int depth;
 
     /** Tests if this is a normal frame.
      * A frame is normal if the next/also/else frames are simultaneously either
@@ -266,17 +277,31 @@ public class Frame extends ANode implements Position<Frame> {
         return true;
     }
 
-    /** Returns the normalised version of this frame. 
+    /** Returns a canonical final frame. 
+     */
+    public Frame getFinal() {
+        return newFrame(getAut().getTemplate().getFinal());
+    }
+
+    /** Returns a canonical deadlocked frame at given transient depth. 
+     */
+    public Frame getDead(int depth) {
+        return newFrame(getAut().getTemplate().getDead(depth));
+    }
+
+    /**
+     * Fixes this frame and returns the normalised, primed version. 
      * @param prime the prime frame for the normalised frame; if {@code null}, the new frame
      * is to be its own prime
      */
     public Frame normalise(Frame prime) {
+        setFixed();
         Frame result = null;
-        if (getNext() == null || getStage().isTrial()) {
-            // clone the frame and set the prime
-            result = getAut().newFrame(this, prime);
-        } else {
+        if (hasSubFrames()) {
             switch (getStage().getType()) {
+            case TRIAL:
+                result = newFrame(prime);
+                break;
             case DEAD:
                 result = getElse().normalise(prime);
                 break;
@@ -286,13 +311,16 @@ public class Frame extends ANode implements Position<Frame> {
             default:
                 assert false;
             }
+        } else {
+            // clone the frame and set the prime
+            result = newFrame(prime);
         }
         result.testNormal();
         return result;
     }
 
     /** Constructs the disjunction of this frame and another. */
-    public Frame or(Frame other) {
+    private Frame or(Frame other) {
         assert other != null;
         assert getDepth() == other.getDepth();
         Frame result;
@@ -308,12 +336,12 @@ public class Frame extends ANode implements Position<Frame> {
             }
             break;
         case TRIAL:
-            if (getNext() == null) {
-                result = getAut().newFrame(getStage(), getCallStack(), null, other, other);
-            } else {
+            if (hasSubFrames()) {
                 result =
-                    getAut().newFrame(getStage(), getCallStack(), getNext(), getAlso().or(other),
+                    newFrame(getStage(), getCallStack(), getNext(), getAlso().or(other),
                         getElse().or(other));
+            } else {
+                result = newFrame(getStage(), getCallStack(), null, other, other);
             }
             break;
         default:
@@ -321,6 +349,42 @@ public class Frame extends ANode implements Position<Frame> {
             result = null;
         }
         return result;
+    }
+
+    /** 
+     * Clones this frame and sets the prime frame.
+     * @param prime the prime frame for the new frame; if {@code null}, the new frame
+     * is to be its own prime
+     */
+    private Frame newFrame(Frame prime) {
+        Frame result = new Frame(getAut(), getStage());
+        if (hasSubFrames()) {
+            result.setSubFrames(getNext(), getAlso(), getElse(), getCallStack());
+        }
+        result.setPrime(prime);
+        return result.canonical();
+    }
+
+    /** Constructs the initial frame for a given control location (without sub-frames). 
+     */
+    private Frame newFrame(Location loc) {
+        Frame result = new Frame(getAut(), loc.getFirstStage());
+        return result.canonical();
+    }
+
+    /** 
+     * Constructs a new, primeless frame with given sub-frames.
+     */
+    private Frame newFrame(Stage stage, CallStack callStack, Frame nextF, Frame alsoF, Frame elseF) {
+        Frame result = new Frame(getAut(), stage);
+        result.setSubFrames(nextF, alsoF, elseF, callStack);
+        return result.canonical();
+    }
+
+    /** Fixes this frame and returns its canonical representative. */
+    private Frame canonical() {
+        setFixed();
+        return getAut().getFramePool().canonical(this);
     }
 
     @Override
@@ -393,7 +457,7 @@ public class Frame extends ANode implements Position<Frame> {
         default:
             assert false;
         }
-        if (getNext() != null) {
+        if (hasSubFrames()) {
             String nextString = getNext().toString(true);
             String alsoString = getAlso().toString(true);
             String elseString = getElse().toString(true);
@@ -429,4 +493,21 @@ public class Frame extends ANode implements Position<Frame> {
         result.append(getLocation().getNumber());
         return result.toString();
     }
+
+    @Override
+    public boolean setFixed() {
+        return this.fixable.setFixed();
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixable.isFixed();
+    }
+
+    @Override
+    public void testFixed(boolean fixed) {
+        this.fixable.testFixed(fixed);
+    }
+
+    private final DefaultFixable fixable = new DefaultFixable();
 }

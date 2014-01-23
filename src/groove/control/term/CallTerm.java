@@ -18,6 +18,7 @@ package groove.control.term;
 
 import groove.control.Call;
 import groove.control.Callable;
+import groove.util.collect.Pool;
 
 /**
  * Term for a call (of a {@link Callable}).
@@ -28,7 +29,7 @@ public class CallTerm extends Term {
     /**
      * Constructs a call term.
      */
-    public CallTerm(TermPool pool, Call call) {
+    public CallTerm(Pool<Term> pool, Call call) {
         super(pool, Op.CALL);
         this.call = call;
     }
