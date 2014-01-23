@@ -18,6 +18,7 @@ package groove.control.term;
 
 import groove.control.Call;
 import groove.control.Position;
+import groove.util.collect.Pool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,7 @@ import java.util.List;
  */
 abstract public class Term implements Position<Term> {
     /** Constructor for a prototype term. */
-    private Term(TermPool pool) {
+    private Term(Pool<Term> pool) {
         this.pool = pool;
         this.op = null;
         this.args = null;
@@ -40,7 +41,7 @@ abstract public class Term implements Position<Term> {
     /**
      * Constructs a term with a give operator and arguments.
      */
-    protected Term(TermPool pool, Op op) {
+    protected Term(Pool<Term> pool, Op op) {
         this.op = op;
         this.args = new Term[0];
         this.pool = pool;
@@ -61,11 +62,11 @@ abstract public class Term implements Position<Term> {
     }
 
     /** Returns the term pool used to normalise this term. */
-    TermPool getPool() {
+    Pool<Term> getPool() {
         return this.pool;
     }
 
-    private final TermPool pool;
+    private final Pool<Term> pool;
 
     /** Tests if all arguments of this term share the term pool. */
     private boolean argsSharePool() {
@@ -148,13 +149,13 @@ abstract public class Term implements Position<Term> {
     /** Returns the set of derivations for this symbolic location. */
     @Override
     public final DerivationList getAttempt() {
-        if (this.outEdges == null) {
-            this.outEdges = computeAttempt();
+        if (this.attempt == null) {
+            this.attempt = computeAttempt();
         }
-        return this.outEdges;
+        return this.attempt;
     }
 
-    private DerivationList outEdges;
+    private DerivationList attempt;
 
     /** Computes the set of outgoing call edges for this symbolic location. */
     abstract protected DerivationList computeAttempt();
@@ -258,7 +259,7 @@ abstract public class Term implements Position<Term> {
             return this;
         } else {
             SeqTerm result = new SeqTerm(this, arg1);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -270,7 +271,7 @@ abstract public class Term implements Position<Term> {
             return this;
         } else {
             Term result = new OrTerm(this, arg1);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -282,7 +283,7 @@ abstract public class Term implements Position<Term> {
             return thenPart.or(alsoPart);
         } else {
             Term result = new IfTerm(this, thenPart, alsoPart, elsePart);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -329,7 +330,7 @@ abstract public class Term implements Position<Term> {
             return star().seq(delta());
         } else {
             Term result = new UntilTerm(this, arg1);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -339,7 +340,7 @@ abstract public class Term implements Position<Term> {
             return epsilon();
         } else {
             Term result = new WhileTerm(this, bodyPart);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -349,7 +350,7 @@ abstract public class Term implements Position<Term> {
             return epsilon();
         } else {
             Term result = new StarTerm(this);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -361,7 +362,7 @@ abstract public class Term implements Position<Term> {
             return epsilon();
         } else {
             AtomTerm result = new AtomTerm(this);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
@@ -373,14 +374,14 @@ abstract public class Term implements Position<Term> {
             return delta(getDepth() + 1);
         } else {
             TransitTerm result = new TransitTerm(this);
-            return getPool().normalise(result);
+            return getPool().canonical(result);
         }
     }
 
     /** Returns the unique delta term at a certain depth. */
     public Term delta(int depth) {
         DeltaTerm result = new DeltaTerm(getPool(), depth);
-        return getPool().normalise(result);
+        return getPool().canonical(result);
     }
 
     /** Returns the unique delta term at depth 0. */
@@ -391,18 +392,18 @@ abstract public class Term implements Position<Term> {
     /** Returns the unique epsilon term. */
     public Term epsilon() {
         EpsilonTerm result = new EpsilonTerm(getPool());
-        return getPool().normalise(result);
+        return getPool().canonical(result);
     }
 
     /** Returns a call term wrapping a given call. */
     public Term call(Call call) {
         CallTerm result = new CallTerm(getPool(), call);
-        return getPool().normalise(result);
+        return getPool().canonical(result);
     }
 
     /** Creates a prototype term. */
     public static Term prototype() {
-        return new Term(new TermPool()) {
+        return new Term(new Pool<Term>()) {
             @Override
             protected DerivationList computeAttempt() {
                 throw new UnsupportedOperationException();

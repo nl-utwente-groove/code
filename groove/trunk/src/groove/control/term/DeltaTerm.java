@@ -16,6 +16,8 @@
  */
 package groove.control.term;
 
+import groove.util.collect.Pool;
+
 /**
  * Deadlock.
  * @author Arend Rensink
@@ -25,7 +27,7 @@ public class DeltaTerm extends Term {
     /**
      * Constructs a delta term.
      */
-    public DeltaTerm(TermPool pool, int depth) {
+    public DeltaTerm(Pool<Term> pool, int depth) {
         super(pool, Term.Op.DELTA);
         this.depth = depth;
     }

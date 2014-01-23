@@ -16,16 +16,13 @@
  */
 package groove.control.instance;
 
-import groove.control.template.Location;
-import groove.control.template.Stage;
 import groove.control.template.Template;
 import groove.graph.GraphRole;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.util.collect.Pool;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -41,7 +38,7 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
     public Automaton(Template template) {
         super(template.getName());
         this.template = template;
-        this.framePool = new HashMap<Frame,Frame>();
+        this.framePool = new Pool<Frame>();
     }
 
     /** Returns the template from which this control instance has been created. */
@@ -53,36 +50,15 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
 
     /** Returns the start frame of the automaton. */
     public Frame getStart() {
-        Frame result = newFrame(getTemplate().getStart());
-        result = addFrame(result, result);
+        Frame result = new Frame(this, getTemplate().getStart().getFirstStage());
+        result = result.normalise(null);
+        addNode(result);
         return result;
-    }
-
-    /** Returns a final frame for this instance. 
-     * @param primeF prime frame for the new frame; if {@code null}, the new frame is itself prime
-     */
-    public Frame getFinal(Frame primeF) {
-        return newFrame(getTemplate().getFinal());
-    }
-
-    /** Returns a deadlocked frame at given transience depth for this instance. 
-     */
-    public Frame getDead(int depth) {
-        return newFrame(this.template.getDead(depth));
     }
 
     /** Returns the next available frame number. */
     int getNextFrameNr() {
         return nodeCount();
-    }
-
-    /** 
-     * Normalises a frame, adds it to the nodes of this graph, and returns the normalised frame.
-     */
-    Frame addFrame(Frame frame, Frame prime) {
-        Frame result = canonical(frame.normalise(prime));
-        addNode(result);
-        return result;
     }
 
     @Override
@@ -110,53 +86,14 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
         return new Automaton(getTemplate());
     }
 
-    /** Constructs the initial, top-level frame for a given control location. 
+    /** Returns the mapping from frames to themselves, used to create
+     * canonical frame representations.
      */
-    Frame newFrame(Location loc) {
-        Frame result = new Frame(this, loc.getFirstStage(), new CallStack(), null, null, null);
-        return canonical(result);
+    Pool<Frame> getFramePool() {
+        return this.framePool;
     }
 
-    /** 
-     * Constructs a new, primeless frame.
-     * Makes sure final and deadlock frames are only created for top-level locations.
-     */
-    Frame newFrame(Stage stage, CallStack callStack, Frame nextF, Frame alsoF, Frame elseF) {
-        if (nextF != null || alsoF != null || elseF != null) {
-            nextF = nextF == null ? getFinal(null) : nextF;
-            alsoF = alsoF == null ? getDead(stage.getDepth()) : alsoF;
-            elseF = elseF == null ? getDead(stage.getDepth()) : elseF;
-        }
-        Frame result = new Frame(this, stage, callStack, nextF, alsoF, elseF);
-        return canonical(result);
-    }
-
-    /** 
-     * Constructs a new frame by cloning an existing frame and setting the prime
-     * Makes sure final and deadlock frames are only created for top-level locations.
-     * @param prime the prime frame for the new frame; if {@code null}, the new frame
-     * is to be its own prime
-     */
-    Frame newFrame(Frame orig, Frame prime) {
-        Frame result =
-            new Frame(this, orig.getStage(), orig.getCallStack(), orig.getNext(), orig.getAlso(),
-                orig.getElse());
-        result.setPrime(prime == null ? result : prime);
-        return canonical(result);
-    }
-
-    /** Returns a canonical representative for a given frame from the pool of known frames. */
-    private Frame canonical(Frame frame) {
-        Frame result = frame;
-        Frame oldResult = this.framePool.put(result, result);
-        if (oldResult != null) {
-            this.framePool.put(oldResult, oldResult);
-            result = oldResult;
-        }
-        return result;
-    }
-
-    private Map<Frame,Frame> framePool;
+    private final Pool<Frame> framePool;
 
     /** Fully explores this automaton. */
     public void explore() {
