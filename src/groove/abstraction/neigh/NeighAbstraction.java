@@ -22,6 +22,7 @@ import groove.abstraction.neigh.match.ReverseMatcherStore;
 import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.grammar.DefaultAnchorFactory;
 import groove.grammar.Rule;
+import groove.lts.RuleTransitionLabel;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
@@ -40,16 +41,16 @@ public final class NeighAbstraction {
         Rule.setAnchorFactory(NeighAnchorFactory.getInstance());
         // Make sure that the search engine is set to minimal mode. This is
         // needed when we have rules with NACs.
-        MatcherFactory.instance().setEngine(
-            PlanSearchEngine.getInstance(SearchMode.MINIMAL));
+        MatcherFactory.instance().setEngine(PlanSearchEngine.getInstance(SearchMode.MINIMAL));
         ReverseMatcherStore.initialise();
+        RuleTransitionLabel.REUSE_LABELS = false;
     }
 
     /** Leaves abstraction mode. */
     public static void terminate() {
         Rule.setAnchorFactory(DefaultAnchorFactory.getInstance());
-        MatcherFactory.instance().setEngine(
-            PlanSearchEngine.getInstance(SearchMode.NORMAL));
+        MatcherFactory.instance().setEngine(PlanSearchEngine.getInstance(SearchMode.NORMAL));
         ReverseMatcherStore.terminate();
+        RuleTransitionLabel.REUSE_LABELS = true;
     }
 }
