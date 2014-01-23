@@ -33,8 +33,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    private RuleTransitionLabel(GraphState source, MatchResult match,
-            HostNode[] addedNodes) {
+    private RuleTransitionLabel(GraphState source, MatchResult match, HostNode[] addedNodes) {
         this.event = match.getEvent();
         this.ctrlTrans = match.getCtrlTransition();
         this.addedNodes = addedNodes;
@@ -72,8 +71,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        boolean brackets =
-            getAction().getSystemProperties().isShowTransitionBrackets();
+        boolean brackets = getAction().getSystemProperties().isShowTransitionBrackets();
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
@@ -81,8 +79,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(getCtrlTransition().getRecipe().getFullName());
             result.append('/');
         }
-        result.append(((AbstractRuleEvent<?,?>) getEvent()).getLabelText(
-            this.addedNodes, anchored));
+        result.append(((AbstractRuleEvent<?,?>) getEvent()).getLabelText(this.addedNodes, anchored));
         if (brackets) {
             result.append(END_CHAR);
         }
@@ -123,8 +120,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
-            throw new IllegalArgumentException(String.format(
-                "Can't compare %s and %s", this.getClass(), obj.getClass()));
+            throw new IllegalArgumentException(String.format("Can't compare %s and %s",
+                this.getClass(), obj.getClass()));
         }
         int result = super.compareTo(obj);
         if (result != 0) {
@@ -156,8 +153,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      * Returns the label text for the rule label consisting of a given source state
      * and event. Optionally, the rule parameters are replaced by anchor images.
      */
-    public static final String text(GraphState source, MatchResult match,
-            boolean anchored) {
+    public static final String text(GraphState source, MatchResult match, boolean anchored) {
         return createLabel(source, match, null).text(anchored);
     }
 
@@ -165,10 +161,9 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      * Creates a normalised rule label.
      * @see Record#normaliseLabel(RuleTransitionLabel)
      */
-    public static final RuleTransitionLabel createLabel(GraphState source,
-            MatchResult match, HostNode[] addedNodes) {
-        RuleTransitionLabel result =
-            new RuleTransitionLabel(source, match, addedNodes);
+    public static final RuleTransitionLabel createLabel(GraphState source, MatchResult match,
+            HostNode[] addedNodes) {
+        RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
             Record record = source.getGTS().getRecord();
             result = record.normaliseLabel(result);
@@ -181,5 +176,5 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     /** The obligatory last character of a rule name. */
     private static final char END_CHAR = '>';
     /** Flag controlling whether transition labels are normalised. */
-    private static final boolean REUSE_LABELS = false;
+    public static boolean REUSE_LABELS = true;
 }
