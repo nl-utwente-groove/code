@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.grammar.Rule;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -48,6 +49,11 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> {
     /** Returns the called unit. */
     public Callable getUnit() {
         return one();
+    }
+
+    /** Returns the called unit, cast to a {@link Rule}. */
+    public Rule getRule() {
+        return (Rule) one();
     }
 
     /** Returns the list of arguments. */

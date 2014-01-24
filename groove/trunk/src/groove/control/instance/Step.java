@@ -17,7 +17,9 @@
 package groove.control.instance;
 
 import groove.control.Binding;
+import groove.control.Binding.Source;
 import groove.control.Call;
+import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
@@ -30,8 +32,10 @@ import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.Switch.Kind;
 import groove.grammar.Recipe;
+import groove.grammar.host.HostNode;
 import groove.graph.AEdge;
 import groove.graph.Edge;
+import groove.lts.GraphState;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -107,6 +111,29 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     /** Convenience method to return the call parameter binding of the switch of this step. */
     public final Binding[] getCallBinding() {
         return getSwitch().getCallBinding();
+    }
+
+    /** Convenience method to return called unit of this step. */
+    public final Callable getUnit() {
+        return getCall().getUnit();
+    }
+
+    /** Convenience method to return called rule of this step. */
+    public final Callable getRule() {
+        return getCall().getRule();
+    }
+
+    /** Convenience method to return the arguments of the call of this step. */
+    public final List<? extends CtrlPar> getArgs() {
+        return getCall().getArgs();
+    }
+
+    /**
+     * Indicates if this step assigns a new value to
+     * a given target variable position.
+     */
+    public boolean mayAssign(int targetVar) {
+        return getTargetBinding()[targetVar].getType() != Source.VAR;
     }
 
     @Override
@@ -322,6 +349,48 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     private Recipe recipe;
     private boolean recipeInit;
 
+    /** 
+     * Returns the array of host nodes corresponding to the input parameters of the call.
+     * The result may be {@code null} if one of the input parameters has been deleted
+     * from the graph.
+     */
+    public HostNode[] applyCallBinding(GraphState state) {
+        HostNode[] result;
+        List<? extends CtrlPar> args = getArgs();
+        if (args.isEmpty()) {
+            result = EMPTY_ARGS;
+        } else {
+            result = new HostNode[args.size()];
+            Binding[] parBind = getCallBinding();
+            HostNode[] boundNodes = state.getBoundNodes();
+            for (int i = 0; i < args.size(); i++) {
+                CtrlPar arg = args.get(i);
+                HostNode image = null;
+                if (arg instanceof CtrlPar.Const) {
+                    CtrlPar.Const constArg = (CtrlPar.Const) arg;
+                    image =
+                        state.getGraph().getFactory().createNode(constArg.getAlgebra(),
+                            constArg.getValue());
+                    assert image != null : String.format(
+                        "Constant argument %s not initialised properly", arg);
+                } else if (arg.isInOnly()) {
+                    assert parBind[i].getType() == Source.VAR;
+                    image = boundNodes[parBind[i].getIndex()];
+                    // test if the bound node is not deleted by a previous rule
+                    if (image == null) {
+                        result = null;
+                        break;
+                    }
+                } else {
+                    // non-input arguments are ignored
+                    continue;
+                }
+                result[i] = image;
+            }
+        }
+        return result;
+    }
+
     @Override
     protected int computeHashCode() {
         return System.identityHashCode(this);
@@ -331,6 +400,8 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     protected boolean isLabelEqual(Edge other) {
         return this == other;
     }
+
+    private final static HostNode[] EMPTY_ARGS = new HostNode[0];
 
     /** Constructs an artificial step reflecting a verdict of a base step. */
     static Step newStep(Step base, boolean success) {
