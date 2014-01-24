@@ -20,7 +20,7 @@ import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.CtrlState;
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 import groove.grammar.Rule;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -287,12 +287,12 @@ public class ShapeState extends AbstractGraphState {
         }
 
         @Override
-        public MatchResultSet computeMatches(CtrlTransition ct) {
+        public MatchResultSet computeMatches(CtrlStep step) {
             final MatchResultSet result = new MatchResultSet();
-            Rule rule = ct.getRule();
+            Rule rule = step.getRule();
             for (Proof preMatch : PreMatch.getPreMatches(
                 ShapeState.this.getGraph(), rule)) {
-                result.add(new MatchResult(getRecord().getEvent(preMatch), ct));
+                result.add(new MatchResult(getRecord().getEvent(preMatch), step));
             }
             return result;
         }

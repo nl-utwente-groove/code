@@ -20,6 +20,7 @@ import groove.control.Binding;
 import groove.control.Binding.Source;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
+import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -71,9 +72,10 @@ public class MatchCollector {
 
     /**
      * Returns the set of matching events for a given control transition.
-     * @param ct the transition for which matches are to be found; non-{@code null}
+     * @param step the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches(final CtrlTransition ct) {
+    public MatchResultSet computeMatches(final CtrlStep step) {
+        final CtrlTransition ct = (CtrlTransition) step;
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
@@ -253,17 +255,17 @@ public class MatchCollector {
     }
 
     /** The host graph we are working on. */
-    private final GraphState state;
+    protected final GraphState state;
     /** The system record is set at construction. */
-    private final Record record;
+    protected final Record record;
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    private final KeySet<GraphTransitionKey,GraphTransition> parentTransMap;
+    protected final KeySet<GraphTransitionKey,GraphTransition> parentTransMap;
     /** The rules that may be enabled. */
-    private final Set<Rule> enabledRules;
+    protected final Set<Rule> enabledRules;
     /** The rules that may be disabled. */
-    private final Set<Rule> disabledRules;
+    protected final Set<Rule> disabledRules;
 
     /** Returns the total number of reused parent events. */
     public static int getEventReuse() {

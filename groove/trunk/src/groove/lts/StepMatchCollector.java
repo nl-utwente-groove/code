@@ -33,7 +33,6 @@ import groove.transform.Proof;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
 import groove.util.Visitor;
-import groove.util.collect.KeySet;
 
 import java.util.List;
 import java.util.Map;
@@ -44,29 +43,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NewMatchCollector {
+public class StepMatchCollector extends MatchCollector {
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
      */
-    public NewMatchCollector(GraphState state) {
-        this.state = state;
-        this.record = state.getGTS().getRecord();
-        boolean checkDiamonds = state.getGTS().checkDiamonds();
-        GraphState parent = null;
-        if (state instanceof GraphNextState) {
-            parent = ((GraphNextState) state).source();
-        }
-        if (parent != null && parent.isClosed() && checkDiamonds) {
-            this.parentTransMap = parent.getCache().getTransitionMap();
-            Rule lastRule = ((GraphNextState) state).getEvent().getRule();
-            this.enabledRules = this.record.getEnabledRules(lastRule);
-            this.disabledRules = this.record.getDisabledRules(lastRule);
-        } else {
-            this.parentTransMap = null;
-            this.enabledRules = null;
-            this.disabledRules = null;
-        }
+    public StepMatchCollector(GraphState state) {
+        super(state);
     }
 
     /**
@@ -142,7 +125,7 @@ public class NewMatchCollector {
         } else {
             for (int i = 0; i < event.getRule().getAnchor().size(); i++) {
                 AnchorValue anchorImage = event.getAnchorImage(i);
-                HostGraph host = NewMatchCollector.this.state.getGraph();
+                HostGraph host = StepMatchCollector.this.state.getGraph();
                 switch (anchorImage.getAnchorKind()) {
                 case EDGE:
                     if (!host.containsEdge((HostEdge) anchorImage)) {
@@ -238,19 +221,6 @@ public class NewMatchCollector {
         }
         return result;
     }
-
-    /** The host graph we are working on. */
-    private final GraphState state;
-    /** The system record is set at construction. */
-    private final Record record;
-    /** Possibly {@code null} mapping from rules to sets of outgoing
-     * transitions for the parent of this state.
-     */
-    private final KeySet<GraphTransitionKey,GraphTransition> parentTransMap;
-    /** The rules that may be enabled. */
-    private final Set<Rule> enabledRules;
-    /** The rules that may be disabled. */
-    private final Set<Rule> disabledRules;
 
     /** Returns the total number of reused parent events. */
     public static int getEventReuse() {
