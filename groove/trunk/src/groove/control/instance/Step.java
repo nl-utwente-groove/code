@@ -16,18 +16,22 @@
  */
 package groove.control.instance;
 
-import groove.control.AssignSource;
+import groove.control.Binding;
 import groove.control.Call;
+import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
+import groove.control.CtrlStep;
+import groove.control.CtrlTransition;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.SoloAttempt;
 import groove.control.template.Location;
 import groove.control.template.Switch;
-import groove.grammar.Rule;
+import groove.grammar.Recipe;
 import groove.graph.AEdge;
+import groove.graph.Edge;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,7 +43,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
+public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, CtrlStep {
     /**
      * Constructs a step from the given parameters.
      */
@@ -52,6 +56,11 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
         this.callStack = new CallStack(callStack);
         this.onFailure = onFailure;
         this.onSuccess = onSuccess;
+    }
+
+    /** Convenience method to return the switch of this step. */
+    public Switch getSwitch() {
+        return label();
     }
 
     @Override
@@ -94,9 +103,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
         return getCallStack().size() - source().getCallStack().size();
     }
 
-    /** Tests if this transition changes the control state or any of the bound variables. */
+    @Override
     public boolean isModifying() {
-        return source() != target() || getCall().hasOutVars();
+        return source().getPrime() != target() || getCall().hasOutVars();
     }
 
     /** Returns the actions associated with this step. */
@@ -179,9 +188,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
      * from the variables of the caller location and the arguments of the call.
      * @param call the template call
      */
-    private Map<CtrlVar,AssignSource> enter(Switch call) {
+    private Map<CtrlVar,Binding> enter(Switch call) {
         assert call.getKind().isProcedure();
-        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
         Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> sig = ((Procedure) call.getUnit()).getInPars();
         for (CtrlVar var : call.target().getVars()) {
@@ -190,11 +199,11 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
             assert ix != null;
             // look up the corresponding argument in the call
             CtrlPar arg = call.getArgs().get(ix);
-            AssignSource rhs;
+            Binding rhs;
             if (arg instanceof Const) {
-                rhs = AssignSource.value((Const) arg);
+                rhs = Binding.value((Const) arg);
             } else {
-                rhs = AssignSource.var(sourceVars.get(((Var) arg).getVar()));
+                rhs = Binding.var(sourceVars.get(((Var) arg).getVar()));
             }
             result.put(var, rhs);
         }
@@ -207,9 +216,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
      * template and the source state of the call.
      * @param swit the template call
      */
-    private Map<CtrlVar,AssignSource> exit(Switch swit) {
+    private Map<CtrlVar,Binding> exit(Switch swit) {
         assert swit.getKind().isProcedure();
-        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = swit.source().getVarIxMap();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
@@ -217,10 +226,10 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
             ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
         for (CtrlVar var : swit.target().getVars()) {
             Integer ix = outVars.get(var);
-            AssignSource rhs;
+            Binding rhs;
             if (ix == null) {
                 // the value comes from the caller
-                rhs = AssignSource.caller(callerVars.get(var));
+                rhs = Binding.caller(callerVars.get(var));
             } else {
                 // the value comes from an output parameter of the call
                 ix = outVars.get(var);
@@ -228,7 +237,7 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
                 // find the corresponding formal parameter
                 CtrlVar par = sig.get(ix).getVar();
                 // look it up in the final location variables
-                rhs = AssignSource.var(finalVars.get(par));
+                rhs = Binding.var(finalVars.get(par));
             }
             assert rhs != null;
             result.put(var, rhs);
@@ -240,20 +249,20 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
      * a rule call, using the variables of the source location
      * combined with the output parameters of the call.
      */
-    private Map<CtrlVar,AssignSource> rule(Switch swit) {
+    private Map<CtrlVar,Binding> rule(Switch swit) {
         assert !swit.getKind().isProcedure();
-        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
+        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
         Map<CtrlVar,Integer> sourceVars = swit.source().getVarIxMap();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         for (CtrlVar var : swit.target().getVars()) {
             Integer ix = outVars.get(var);
-            AssignSource rhs;
+            Binding rhs;
             if (ix == null) {
                 // the value comes from the source
                 ix = sourceVars.get(var);
-                rhs = AssignSource.var(ix);
+                rhs = Binding.var(ix);
             } else {
-                rhs = AssignSource.arg(ix);
+                rhs = Binding.out(ix);
             }
             result.put(var, rhs);
         }
@@ -263,58 +272,58 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
     /** Computes the variable assignment for the target location of
      * a verdict, using the variables of the source location.
      */
-    private Map<CtrlVar,AssignSource> verdict(Location source, Location target) {
-        Map<CtrlVar,AssignSource> result = new LinkedHashMap<CtrlVar,AssignSource>();
+    private Map<CtrlVar,Binding> verdict(Location source, Location target) {
+        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
         Map<CtrlVar,Integer> sourceVars = source.getVarIxMap();
         for (CtrlVar var : target.getVars()) {
             // the value comes from the source
             int ix = sourceVars.get(var);
-            AssignSource rhs = AssignSource.var(ix);
+            Binding rhs = Binding.var(ix);
             result.put(var, rhs);
         }
         return result;
     }
 
-    /** 
-     * Returns an assignment of call parameters to source location
-     * variables and constant values (for input parameters), respectively
-     * anchor positions and fresh nodes (for output parameters).
-     */
-    public AssignSource[] getParAssign() {
-        if (this.parAssign == null) {
-            this.parAssign = computeParAssign();
+    @Override
+    public int compareTo(CtrlStep o) {
+        if (o instanceof CtrlTransition) {
+            return -1;
         }
-        return this.parAssign;
+        Step other = (Step) o;
+        return source().compareTo(other.source());
     }
 
-    /** Binding of transition in-parameters to bound source variables. */
-    private AssignSource[] parAssign;
+    @Override
+    public boolean isPartial() {
+        return getRecipe() != null;
+    }
 
-    /** Computes the binding of call arguments to source location variables.
-     */
-    private AssignSource[] computeParAssign() {
-        List<? extends CtrlPar> args = label().getArgs();
-        int size = args == null ? 0 : args.size();
-        AssignSource[] result = new AssignSource[size];
-        Map<CtrlVar,Integer> sourceVars = source().getLocation().getVarIxMap();
-        for (int i = 0; i < size; i++) {
-            CtrlPar arg = args.get(i);
-            if (arg instanceof CtrlPar.Var) {
-                CtrlPar.Var varArg = (CtrlPar.Var) arg;
-                if (arg.isInOnly()) {
-                    Integer ix = sourceVars.get(varArg.getVar());
-                    assert ix != null;
-                    result[i] = AssignSource.var(ix);
-                } else if (arg.isOutOnly()) {
-                    int ix = ((Rule) label().getUnit()).getParBinding(i);
-                    result[i] = AssignSource.out(ix);
-                } else {
-                    assert arg.isDontCare();
-                    result[i] = null;
+    @Override
+    public Recipe getRecipe() {
+        if (!this.recipeInit) {
+            for (Switch swit : getCallStack()) {
+                Callable unit = swit.getCall().getUnit();
+                if (unit instanceof Recipe) {
+                    this.recipe = (Recipe) unit;
+                    break;
                 }
             }
+            this.recipeInit = true;
         }
-        return result;
+        return this.recipe;
+    }
+
+    private Recipe recipe;
+    private boolean recipeInit;
+
+    @Override
+    protected int computeHashCode() {
+        return System.identityHashCode(this);
+    }
+
+    @Override
+    protected boolean isLabelEqual(Edge other) {
+        return this == other;
     }
 
     /** Constructs an artificial step reflecting a verdict of a base step. */

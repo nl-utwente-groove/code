@@ -413,32 +413,24 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return EMPTY_NODE_LIST;
     }
 
-    /** 
-     * Sets the prime control frame.
-     * This should occur at initialisation.
-     */
-    public final void setFrame(Frame frame) {
-        this.actualFrame = frame;
-    }
-
     @Override
     public Frame getFrame() {
-        return this.actualFrame.getPrime();
+        return this.currentFrame.getPrime();
     }
 
     @Override
-    public void setActualFrame(Frame actualFrame) {
+    public void setCurrentFrame(Frame actualFrame) {
         assert actualFrame != null;
-        assert this.actualFrame == null || actualFrame.getPrime() == this.actualFrame.getPrime();
-        this.actualFrame = actualFrame;
+        assert this.currentFrame == null || actualFrame.getPrime() == this.currentFrame.getPrime();
+        this.currentFrame = actualFrame;
     }
 
     @Override
-    public final Frame getActualFrame() {
-        return this.actualFrame;
+    public final Frame getCurrentFrame() {
+        return this.currentFrame;
     }
 
-    private Frame actualFrame;
+    private Frame currentFrame;
 
     /** 
      * Sets the control schedule.

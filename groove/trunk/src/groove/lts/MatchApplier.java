@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.Binding;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
@@ -76,12 +77,10 @@ public class MatchApplier {
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
                     && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
-                    RuleTransitionStub siblingOut =
-                        sibling.getOutStub(sourceKey);
+                    RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
-                            createTransition(source, match,
-                                siblingOut.getTarget(sibling),
+                            createTransition(source, match, siblingOut.getTarget(sibling),
                                 siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
@@ -97,8 +96,8 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                    new DefaultRuleTransition(source, match,
-                        freshTarget.getAddedNodes(), isoTarget, true);
+                    new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
+                        isoTarget, true);
             }
         }
         // add transition to gts
@@ -119,8 +118,7 @@ public class MatchApplier {
             RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
-            RuleEffect record =
-                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            RuleEffect record = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
             event.recordEffect(record);
             record.setFixed();
             addedNodes = record.getCreatedNodeArray();
@@ -131,15 +129,14 @@ public class MatchApplier {
         if (ctrlTrans.target().getBoundVars().isEmpty()) {
             boundNodes = EMPTY_NODE_ARRAY;
         } else {
-            RuleEffect record =
-                new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
+            RuleEffect record = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
             event.recordEffect(record);
             record.setFixed();
             boundNodes = computeBoundNodes(source, event, ctrlTrans, record);
         }
         assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
-        return new DefaultGraphNextState(this.gts.nodeCount(),
-            (AbstractGraphState) source, match, addedNodes, boundNodes);
+        return new DefaultGraphNextState(this.gts.nodeCount(), (AbstractGraphState) source, match,
+            addedNodes, boundNodes);
     }
 
     /**
@@ -147,24 +144,22 @@ public class MatchApplier {
      * and target state. A final parameter determines if the target state is
      * directly derived from the source, or modulo a symmetry.
      */
-    private RuleTransition createTransition(GraphState source,
-            MatchResult match, GraphState target, boolean symmetry) {
+    private RuleTransition createTransition(GraphState source, MatchResult match,
+            GraphState target, boolean symmetry) {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (match.getRule().hasNodeCreators()) {
-            RuleEffect record =
-                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            RuleEffect record = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
             event.recordEffect(record);
             record.setFixed();
             addedNodes = record.getCreatedNodeArray();
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        return new DefaultRuleTransition(source, match, addedNodes, target,
-            symmetry);
+        return new DefaultRuleTransition(source, match, addedNodes, target, symmetry);
     }
 
     /**
@@ -196,42 +191,49 @@ public class MatchApplier {
     private HostNode[] computeBoundNodes(GraphState source, RuleEvent event,
             CtrlTransition ctrlTrans, RuleEffect record) {
         HostNode[] result;
-        int[] varBinding = ctrlTrans.getTargetVarBinding();
-        int valueCount = varBinding.length;
+        Binding[] varBind = ctrlTrans.getTargetVarBinding();
+        int valueCount = varBind.length;
         result = new HostNode[valueCount];
         HostNode[] parentValues = source.getBoundNodes();
         Rule rule = event.getRule();
-        int anchorSize = rule.getAnchor().size();
         HostNode[] createdNodes = record.getCreatedNodeArray();
         Set<HostNode> removedNodes = record.getRemovedNodes();
         MergeMap mergeMap = record.getMergeMap();
         for (int i = 0; i < valueCount; i++) {
-            int fromI = varBinding[i];
-            HostNode value;
-            if (fromI >= parentValues.length) {
-                // this is an output parameter of the rule
-                int binding = rule.getParBinding(fromI - parentValues.length);
-                if (binding < anchorSize) {
-                    // the parameter is not a creator node
-                    HostNode sourceValue =
-                        (HostNode) event.getAnchorImage(binding);
-                    value = getNodeImage(sourceValue, mergeMap, removedNodes);
-                } else {
-                    // the parameter is a creator node
-                    value = createdNodes[binding - anchorSize];
-                }
-            } else {
+            Binding bind = varBind[i];
+            HostNode value = null;
+            switch (bind.getType()) {
+            case VAR:
                 // this is an input parameter of the rule
-                HostNode sourceValue = parentValues[fromI];
+                HostNode sourceValue = parentValues[bind.getIndex()];
                 value = getNodeImage(sourceValue, mergeMap, removedNodes);
+                break;
+            case OUT:
+                // this is an output parameter of the rule
+                bind = rule.getParBinding(bind.getIndex());
+                switch (bind.getType()) {
+                case ANCHOR:
+                    // the parameter is not a creator node
+                    sourceValue = (HostNode) event.getAnchorImage(bind.getIndex());
+                    value = getNodeImage(sourceValue, mergeMap, removedNodes);
+                    break;
+                case CREATOR:
+                    // the parameter is a creator node
+                    value = createdNodes[bind.getIndex()];
+                    break;
+                default:
+                    assert false;
+                }
+                break;
+            default:
+                assert false;
             }
             result[i] = value;
         }
         return result;
     }
 
-    private HostNode getNodeImage(HostNode key, MergeMap mergeMap,
-            Set<HostNode> removedNodes) {
+    private HostNode getNodeImage(HostNode key, MergeMap mergeMap, Set<HostNode> removedNodes) {
         if (mergeMap == null) {
             if (removedNodes == null || !removedNodes.contains(key)) {
                 return key;
@@ -271,12 +273,9 @@ public class MatchApplier {
     private static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 
     /** Reporter for profiling information. */
-    static private final Reporter reporter =
-        Reporter.register(MatchApplier.class);
+    static private final Reporter reporter = Reporter.register(MatchApplier.class);
     /** Profiling aid for adding states. */
-    static public final Reporter addStateReporter =
-        reporter.register("addState");
+    static public final Reporter addStateReporter = reporter.register("addState");
     /** Profiling aid for adding transitions. */
-    static public final Reporter addTransitionReporter =
-        reporter.register("addTransition");
+    static public final Reporter addTransitionReporter = reporter.register("addTransition");
 }

@@ -19,6 +19,7 @@ package groove.transform;
 import static groove.transform.RuleEvent.Reuse.AGGRESSIVE;
 import static groove.transform.RuleEvent.Reuse.EVENT;
 import static groove.transform.RuleEvent.Reuse.NONE;
+import groove.control.Binding;
 import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -134,7 +135,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     }
 
     @Override
-    Reuse getReuse() {
+    public Reuse getReuse() {
         if (getFreshNodeList() == NO_REUSE_LIST) {
             return NONE;
         } else if (getFreshNodeList() == AGGRESIVE_REUSE_LIST) {
@@ -202,17 +203,21 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[size];
-            int anchorSize = getRule().getAnchor().size();
             AnchorValue[] anchorImage = getAnchorImage();
             for (int i = 0; i < size; i++) {
-                int binding = getRule().getParBinding(i);
-                HostNode argument;
-                if (binding < anchorSize) {
-                    argument = (HostNode) anchorImage[binding];
-                } else if (addedNodes == null) {
-                    argument = null;
-                } else {
-                    argument = addedNodes[binding - anchorSize];
+                Binding binding = getRule().getParBinding(i);
+                HostNode argument = null;
+                switch (binding.getType()) {
+                case ANCHOR:
+                    argument = (HostNode) anchorImage[binding.getIndex()];
+                    break;
+                case CREATOR:
+                    if (addedNodes != null) {
+                        argument = addedNodes[binding.getIndex()];
+                    }
+                    break;
+                default:
+                    assert false;
                 }
                 result[i] = argument;
             }
