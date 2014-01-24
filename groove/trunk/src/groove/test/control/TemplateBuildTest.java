@@ -189,13 +189,27 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     @Test
-    public void testFunction() {
+    public void testProcedure() {
         build("function f() { a; b; }");
+        assertTrue(this.template.getStart().isFinal());
+        //
+        buildFunction("function f() { a; b; }", "f", true);
+        Location loc = getInit(this.aCall);
+        assertTrue(getNext(loc, this.bCall).isFinal());
+        //
+        buildFunction("recipe r() { a; b; }", "r", false);
+        loc = getInit(this.aCall);
+        assertEquals(0, loc.getDepth());
     }
 
     private void assertSize(int locCount, int switchCount) {
         Assert.assertEquals(locCount, this.minimal.nodeCount());
         Assert.assertEquals(switchCount, this.minimal.edgeCount());
+    }
+
+    private void buildFunction(String program, String procName, boolean function) {
+        this.template = builder.build(program, buildProcTerm(program, procName, function));
+        this.minimal = builder.normalise(this.template);
     }
 
     private void build(String program) {

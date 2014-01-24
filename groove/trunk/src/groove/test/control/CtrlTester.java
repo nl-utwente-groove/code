@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.control.parse.CtrlTree;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -89,8 +90,7 @@ abstract public class CtrlTester {
             } else {
                 aut = buildString(name, program);
             }
-            fail(String.format("%s builds without errors: %n%s%n", name,
-                aut.toString()));
+            fail(String.format("%s builds without errors: %n%s%n", name, aut.toString()));
         } catch (FormatException e) {
             if (DEBUG) {
                 System.out.println(e.getMessage());
@@ -115,12 +115,10 @@ abstract public class CtrlTester {
      * @param nodeCount expected node count
      * @param edgeCount expected edge count
      */
-    protected CtrlAut buildCorrect(String name, String program, int nodeCount,
-            int edgeCount) {
+    protected CtrlAut buildCorrect(String name, String program, int nodeCount, int edgeCount) {
         CtrlAut result = null;
         try {
-            result =
-                program == null ? buildFile(name) : buildString(name, program);
+            result = program == null ? buildFile(name) : buildString(name, program);
             assertEquals(nodeCount, result.nodeCount());
             assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
@@ -133,12 +131,9 @@ abstract public class CtrlTester {
     protected CtrlAut buildFile(String programName) throws FormatException {
         CtrlAut result = null;
         try {
-            result =
-                CtrlLoader.run(this.testGrammar, programName, new File(
-                    CONTROL_DIR));
+            result = CtrlLoader.run(this.testGrammar, programName, new File(CONTROL_DIR));
             if (DEBUG) {
-                System.out.printf("Control automaton for %s:%n%s%n",
-                    programName, result);
+                System.out.printf("Control automaton for %s:%n%s%n", programName, result);
             }
         } catch (IOException e) {
             fail(e.getMessage());
@@ -147,13 +142,11 @@ abstract public class CtrlTester {
     }
 
     /** Builds a control automaton from a given program. */
-    protected CtrlAut buildString(String programName, String program)
-        throws FormatException {
+    protected CtrlAut buildString(String programName, String program) throws FormatException {
         CtrlAut result = null;
         result = CtrlLoader.run(this.testGrammar, programName, program);
         if (DEBUG) {
-            System.out.printf("Control automaton for \'%s\':%n%s%n", program,
-                result);
+            System.out.printf("Control automaton for \'%s\':%n%s%n", program, result);
         }
         return result;
     }
@@ -164,12 +157,49 @@ abstract public class CtrlTester {
     }
 
     /** 
+     * Builds a symbolic term from a function or recipe in a control program.
+     * @param program control expression; non-{@code null}
+     * @param procName name of the recipe or function
+     * @param function if {@code true}, a function is retrieved, otherwise a recipe
+     */
+    protected Term buildProcTerm(String program, String procName, boolean function) {
+        try {
+            CtrlTree tree =
+                createLoader().parse("dummy", program).check().getChild(function ? 2 : 3);
+            CtrlTree body = null;
+            for (int i = 0; i < tree.getChildCount(); i++) {
+                CtrlTree functionTree = tree.getChild(i);
+                if (functionTree.getChild(0).getText().equals(procName)) {
+                    body = functionTree.getChild(2);
+                }
+            }
+            return body.toTerm();
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+            return null;
+        }
+    }
+
+    /** 
      * Builds a symbolic term from a control program.
      * @param program control expression; non-{@code null}
      */
     protected Term buildTerm(String program) {
         try {
-            return createLoader().parse("dummy", program).check().getChild(4).toTerm();
+            return buildTree(program).getChild(4).toTerm();
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+            return null;
+        }
+    }
+
+    /** 
+     * Builds a symbolic term from a control program.
+     * @param program control expression; non-{@code null}
+     */
+    protected CtrlTree buildTree(String program) {
+        try {
+            return createLoader().parse("dummy", program).check();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
             return null;
@@ -178,8 +208,7 @@ abstract public class CtrlTester {
 
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
-        return new CtrlLoader(
-            this.testGrammar.getProperties().getAlgebraFamily(),
+        return new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
             this.testGrammar.getAllRules(), true);
     }
 

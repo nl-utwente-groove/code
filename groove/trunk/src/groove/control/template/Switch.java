@@ -22,6 +22,7 @@ import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlVar;
 import groove.control.SoloAttempt;
+import groove.control.instance.CallStack;
 import groove.grammar.Action;
 import groove.grammar.Rule;
 import groove.graph.ALabelEdge;
@@ -164,6 +165,29 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
     }
 
     private final Switch caller;
+
+    /** Returns the depth of the call stack of this switch (not including this switch).
+     * Only valid if this is a derived switch.
+     * @see #isBase()
+     */
+    public int getCallDepth() {
+        return getCallStack().size();
+    }
+
+    /** Returns the call stack of this switch.
+     * Only valid if this is a derived switch.
+     * @see #isBase()
+     */
+    public CallStack getCallStack() {
+        assert !isBase() : "Base switch " + this + " cannot have a caller";
+        if (this.callStack == null) {
+            this.callStack = new CallStack(getCaller());
+        }
+        return this.callStack;
+    }
+
+    /** List of callers, from bottom to top. */
+    private CallStack callStack;
 
     /**
      * Convenience method testing if this is a verdict switch.

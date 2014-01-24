@@ -18,7 +18,6 @@ package groove.control.instance;
 
 import groove.control.Binding;
 import groove.control.Call;
-import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
@@ -29,6 +28,7 @@ import groove.control.Procedure;
 import groove.control.SoloAttempt;
 import groove.control.template.Location;
 import groove.control.template.Switch;
+import groove.control.template.Switch.Kind;
 import groove.grammar.Recipe;
 import groove.graph.AEdge;
 import groove.graph.Edge;
@@ -47,13 +47,11 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     /**
      * Constructs a step from the given parameters.
      */
-    public Step(Frame source, Switch edge, CallStack callStack, Frame onFinish, Frame onSuccess,
-            Frame onFailure) {
-        super(source, edge, onFinish);
+    public Step(Frame source, Switch swit, Frame onFinish, Frame onSuccess, Frame onFailure) {
+        super(source, swit, onFinish);
         assert onFinish.testNormal();
         assert onSuccess.testNormal();
         assert onFailure.testNormal();
-        this.callStack = new CallStack(callStack);
         this.onFailure = onFailure;
         this.onSuccess = onSuccess;
     }
@@ -91,16 +89,24 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     private final Frame onSuccess;
     private final Frame onFailure;
 
-    /** Returns the call stack for this step. */
-    public List<Switch> getCallStack() {
-        return this.callStack;
-    }
-
-    private final CallStack callStack;
-
     /** Returns the number of levels by which the call stack depth changes. */
     public int getCallDepth() {
         return getCallStack().size() - source().getCallStack().size();
+    }
+
+    /** Convenience method to return the call stack of the switch of this step. */
+    public final CallStack getCallStack() {
+        return getSwitch().getCallStack();
+    }
+
+    /** Convenience method to return the target variable binding of the switch of this step. */
+    public final Binding[] getTargetBinding() {
+        return getSwitch().getTargetBinding();
+    }
+
+    /** Convenience method to return the call parameter binding of the switch of this step. */
+    public final Binding[] getCallBinding() {
+        return getSwitch().getCallBinding();
     }
 
     @Override
@@ -301,12 +307,12 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     @Override
     public Recipe getRecipe() {
         if (!this.recipeInit) {
-            for (Switch swit : getCallStack()) {
-                Callable unit = swit.getCall().getUnit();
-                if (unit instanceof Recipe) {
-                    this.recipe = (Recipe) unit;
-                    break;
+            Switch caller = getSwitch().getCaller();
+            while (caller != null) {
+                if (caller.getKind() == Kind.RECIPE) {
+                    this.recipe = (Recipe) caller.getCall().getUnit();
                 }
+                caller = caller.getCaller();
             }
             this.recipeInit = true;
         }
@@ -331,6 +337,6 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         Frame source = base.source();
         Frame target = success ? base.onSuccess() : base.onFailure();
         Switch swit = new Switch(source.getLocation(), target.getLocation(), success);
-        return new Step(source, swit, new CallStack(), target, base.onSuccess(), base.onFailure());
+        return new Step(source, swit, target, base.onSuccess(), base.onFailure());
     }
 }

@@ -45,7 +45,6 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         super(ctrl.getNextFrameNr());
         this.aut = ctrl;
         this.stage = stage;
-        this.callStack = new CallStack();
         this.depth = stage.getDepth();
     }
 
@@ -76,11 +75,11 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
      * @param pastAttempts the set of attempts since the prime, or {@code null} if this frame
      * is prime
      */
-    private void setPrime(Frame prime, Set<CallStack> pastAttempts) {
+    private void setPrime(Frame prime, Set<Switch> pastAttempts) {
         assert !isFixed();
         assert this.primeFrame == null;
         this.primeFrame = prime == null ? this : prime;
-        this.pastAttempts = new HashSet<CallStack>();
+        this.pastAttempts = new HashSet<Switch>();
         if (pastAttempts != null) {
             this.pastAttempts.addAll(pastAttempts);
         }
@@ -112,18 +111,18 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
      * Should only be called if this frame is primed
      * @see #hasPrime
      */
-    public Set<CallStack> getPastAttempts() {
+    public Set<Switch> getPastAttempts() {
         return this.pastAttempts;
     }
 
-    private Set<CallStack> pastAttempts;
+    private Set<Switch> pastAttempts;
 
     /** Returns the set of rule calls that have been tried since the prime frame. */
     public Set<Call> getPastCalls() {
         if (this.pastCalls == null) {
             Set<Call> result = this.pastCalls = new HashSet<Call>();
-            for (CallStack attempt : getPastAttempts()) {
-                result.add(attempt.getLast().getCall());
+            for (Switch attempt : getPastAttempts()) {
+                result.add(attempt.getCall());
             }
         }
         return this.pastCalls;
@@ -140,21 +139,16 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
     }
 
     /** Sets the values of the next/also/else frames and call stack. */
-    private void setSubFrames(Frame nextF, Frame alsoF, Frame elseF, CallStack stack) {
+    private void setSubFrames(Frame nextF, Frame alsoF, Frame elseF) {
         assert !isFixed();
         // if all sub-frames are null, we're better off not setting them
         boolean setNext = nextF != null && !nextF.isFinal();
         boolean setAlso = alsoF != null && !alsoF.isDead();
         boolean setElse = elseF != null && !elseF.isDead();
-        if (setNext || setAlso || setElse || !stack.isEmpty()) {
-            this.nextFrame = nextF == null ? getFinal() : nextF;
-            this.alsoFrame = alsoF == null ? getDead(getStage().getDepth()) : alsoF;
-            this.elseFrame = elseF == null ? getDead(getStage().getDepth()) : elseF;
-            this.callStack.addAll(stack);
-            this.callStack.setFixed();
-            for (Switch swit : stack) {
-                this.depth += swit.source().getDepth();
-            }
+        if (setNext || setAlso || setElse || !getCallStack().isEmpty()) {
+            this.nextFrame = nextF == null ? newFinalFrame() : nextF;
+            this.alsoFrame = alsoF == null ? newDeadFrame(getStage().getDepth()) : alsoF;
+            this.elseFrame = elseF == null ? newDeadFrame(getStage().getDepth()) : elseF;
         }
     }
 
@@ -180,13 +174,6 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
     }
 
     private Frame elseFrame;
-
-    /** Returns the switch from which the current template was called. */
-    public CallStack getCallStack() {
-        return this.callStack;
-    }
-
-    private final CallStack callStack;
 
     /** 
      * Returns the (possibly {@code null}) switch of the instantiated stage.
@@ -264,31 +251,26 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         Frame nextF = getNext();
         Frame alsoF = getAlso();
         Frame elseF = getElse();
-        // construct the call stack
-        CallStack stack = new CallStack(getCallStack());
         Switch swit = getStage().getAttempt();
         boolean isProcedure;
         do {
             // the order of the next assignments is important
             // otherwise they will interfere
-            elseF = newFrame(swit.onFailure(), stack, nextF, alsoF, elseF);
-            alsoF = newFrame(swit.onSuccess(), stack, nextF, alsoF, alsoF);
-            nextF = newFrame(swit.onFinish(), stack, nextF, null, null);
+            elseF = newFrame(swit.onFailure(), nextF, alsoF, elseF);
+            alsoF = newFrame(swit.onSuccess(), nextF, alsoF, alsoF);
+            nextF = newFrame(swit.onFinish(), nextF, null, null);
             isProcedure = swit.getKind().isProcedure();
             if (isProcedure) {
-                stack.add(swit);
                 Procedure proc = (Procedure) swit.getCall().getUnit();
-                swit = proc.getTemplate().getStart().getFirstStage().getAttempt();
+                swit = proc.getTemplate().getStart().getFirstStage(swit).getAttempt();
             }
         } while (isProcedure);
-        Set<CallStack> triedCalls = new HashSet<CallStack>(getPastAttempts());
-        CallStack thisCall = new CallStack(stack);
-        thisCall.add(swit);
-        triedCalls.add(thisCall);
+        Set<Switch> triedCalls = new HashSet<Switch>(getPastAttempts());
+        triedCalls.add(swit);
         Frame onSuccess = alsoF.normalise(getPrime(), triedCalls);
         Frame onFailure = elseF.normalise(getPrime(), triedCalls);
         Frame onFinish = nextF.normalise(null, null);
-        return new Step(this, swit, stack, onFinish, onSuccess, onFailure);
+        return new Step(this, swit, onFinish, onSuccess, onFailure);
     }
 
     @Override
@@ -297,6 +279,12 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
     }
 
     private int depth;
+
+    /** Returns the call stack of this frame.
+     */
+    public CallStack getCallStack() {
+        return getStage().getCallStack();
+    }
 
     /** Tests if this is a normal frame.
      * A frame is normal if the next/also/else frames are simultaneously either
@@ -329,18 +317,6 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         return true;
     }
 
-    /** Returns a canonical final frame. 
-     */
-    public Frame getFinal() {
-        return newFrame(getAut().getTemplate().getFinal());
-    }
-
-    /** Returns a canonical deadlocked frame at given transient depth. 
-     */
-    public Frame getDead(int depth) {
-        return newFrame(getAut().getTemplate().getDead(depth));
-    }
-
     /**
      * Fixes this frame and returns the normalised, primed version. 
      * @param prime the prime frame for the normalised frame; if {@code null}, the new frame
@@ -348,7 +324,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
      * @param triedCalls the set of calls tried since the prime, or {@code null} if the new frame
      * is prime
      */
-    public Frame normalise(Frame prime, Set<CallStack> triedCalls) {
+    public Frame normalise(Frame prime, Set<Switch> triedCalls) {
         setFixed();
         Frame result = null;
         if (hasSubFrames()) {
@@ -391,11 +367,9 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
             break;
         case TRIAL:
             if (hasSubFrames()) {
-                result =
-                    newFrame(getStage(), getCallStack(), getNext(), getAlso().or(other),
-                        getElse().or(other));
+                result = newFrame(getStage(), getNext(), getAlso().or(other), getElse().or(other));
             } else {
-                result = newFrame(getStage(), getCallStack(), null, other, other);
+                result = newFrame(getStage(), null, other, other);
             }
             break;
         default:
@@ -412,11 +386,23 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
      * @param triedCalls the set of calls tried since the prime, or {@code null} if the new frame
      * is prime
      */
-    private Frame newFrame(Frame prime, Set<CallStack> triedCalls) {
+    private Frame newFrame(Frame prime, Set<Switch> triedCalls) {
         Frame result = new Frame(getAut(), getStage());
-        result.setSubFrames(getNext(), getAlso(), getElse(), getCallStack());
+        result.setSubFrames(getNext(), getAlso(), getElse());
         result.setPrime(prime, triedCalls);
         return result.canonical();
+    }
+
+    /** Returns a canonical final frame. 
+     */
+    private Frame newFinalFrame() {
+        return newFrame(getAut().getTemplate().getFinal());
+    }
+
+    /** Returns a canonical deadlocked frame at given transient depth. 
+     */
+    private Frame newDeadFrame(int depth) {
+        return newFrame(getAut().getTemplate().getDead(depth));
     }
 
     /** Constructs the initial frame for a given control location (without sub-frames). 
@@ -429,9 +415,9 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
     /** 
      * Constructs a new, primeless frame with given sub-frames.
      */
-    private Frame newFrame(Stage stage, CallStack callStack, Frame nextF, Frame alsoF, Frame elseF) {
+    private Frame newFrame(Stage stage, Frame nextF, Frame alsoF, Frame elseF) {
         Frame result = new Frame(getAut(), stage);
-        result.setSubFrames(nextF, alsoF, elseF, callStack);
+        result.setSubFrames(nextF, alsoF, elseF);
         return result.canonical();
     }
 
@@ -454,7 +440,6 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         result = prime * result + System.identityHashCode(this.nextFrame);
         result = prime * result + (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
         result = prime * result + (this.pastAttempts == null ? 0 : this.pastAttempts.hashCode());
-        result = prime * result + this.callStack.hashCode();
         result = prime * result + this.stage.hashCode();
         return result;
     }
@@ -490,9 +475,6 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         if (!this.stage.equals(other.stage)) {
             return false;
         }
-        if (!this.callStack.equals(other.callStack)) {
-            return false;
-        }
         return true;
     }
 
@@ -505,11 +487,12 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
                 result += "\nPrime";
             } else {
                 result += "\nTried:";
-                for (CallStack tried : getPastAttempts()) {
+                for (Switch tried : getPastAttempts()) {
                     List<String> names = new ArrayList<String>();
-                    for (Switch call : tried) {
+                    for (Switch call : tried.getCallStack()) {
                         names.add(call.getName());
                     }
+                    names.add(tried.getName());
                     result += " " + Groove.toString(names.toArray(), " ", "", "/");
                 }
             }

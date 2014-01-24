@@ -18,6 +18,7 @@ package groove.test.control;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.control.Call;
 import groove.control.Callable;
@@ -25,7 +26,9 @@ import groove.control.CtrlLoader;
 import groove.control.CtrlPar;
 import groove.control.Procedure;
 import groove.control.parse.CtrlTree;
+import groove.control.template.Location;
 import groove.control.template.Program;
+import groove.control.template.Template;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -151,6 +154,27 @@ public class ProgramBuildTest {
         assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());
         CtrlPar yIn = CtrlPar.inVar("sub.g.y", "int");
         assertEquals(call(rule("bInt"), yIn), gProc.getTerm());
+    }
+
+    @Test
+    public void testRecipes() {
+        build("atomic", "function f() { a; b; } recipe r() { a; b; }");
+        Template f = this.prog.getProc("f").getTemplate();
+        Location start = f.getStart();
+        assertEquals(0, start.getDepth());
+        Location next = start.getAttempt().get(0).target();
+        assertEquals(0, next.getDepth());
+        Location finish = next.getAttempt().get(0).target();
+        assertEquals(0, finish.getDepth());
+        assertTrue(finish.isFinal());
+        Template r = this.prog.getProc("r").getTemplate();
+        start = r.getStart();
+        assertEquals(0, start.getDepth());
+        next = start.getAttempt().get(0).target();
+        assertEquals(1, next.getDepth());
+        finish = next.getAttempt().get(0).target();
+        assertEquals(0, finish.getDepth());
+        assertTrue(finish.isFinal());
     }
 
     /** Loads the grammar to be used for testing. */

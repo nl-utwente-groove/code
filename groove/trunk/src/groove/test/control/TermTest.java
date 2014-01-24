@@ -77,6 +77,12 @@ public class TermTest extends CtrlTester {
         equal("a; any;", a.seq(a.or(b).or(c).or(d)));
     }
 
+    @Test
+    public void testProcedures() {
+        assertEquals(buildTerm("a;b;"), buildProcTerm("function f() { a; b; }", "f", true));
+        assertEquals(buildTerm("a;b;"), buildProcTerm("recipe r() { a; b; }", "r", false));
+    }
+
     private Term epsilon() {
         return p.epsilon();
     }
