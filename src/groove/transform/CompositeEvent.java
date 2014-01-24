@@ -58,7 +58,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     }
 
     @Override
-    Reuse getReuse() {
+    public Reuse getReuse() {
         return this.reuse;
     }
 

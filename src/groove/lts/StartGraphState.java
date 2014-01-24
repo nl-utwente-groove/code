@@ -19,7 +19,7 @@ public class StartGraphState extends AbstractGraphState {
         CtrlAut ctrlAut = gts.getGrammar().getCtrlAut();
         setCtrlState(ctrlAut.getStart());
         Automaton aut = gts.getGrammar().getControl();
-        setActualFrame(aut.getStart());
+        setCurrentFrame(aut.getStart());
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
     }

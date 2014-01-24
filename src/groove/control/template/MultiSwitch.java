@@ -81,7 +81,7 @@ public class MultiSwitch extends MultiAttempt<Location,Switch> {
         } else {
             onFailure = last ? onFailure().getFirstStage() : source().getStage(i + 1, success);
         }
-        return new Switch(get(i), onFinish, onSuccess, onFailure);
+        return new Switch(get(i), null, onFinish, onSuccess, onFailure);
     }
 
     private List<Duo<Switch>> stages;

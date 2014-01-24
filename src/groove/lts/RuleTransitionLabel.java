@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
@@ -30,12 +31,12 @@ import java.util.Arrays;
 /** Class of labels that can appear on rule transitions. */
 public class RuleTransitionLabel extends ALabel implements ActionLabel {
     /** 
-     * Constructs a new label on the basis of a given rule event and list
+     * Constructs a new label on the basis of a given match and list
      * of created nodes.
      */
     private RuleTransitionLabel(GraphState source, MatchResult match, HostNode[] addedNodes) {
         this.event = match.getEvent();
-        this.ctrlTrans = match.getCtrlTransition();
+        this.step = match.getStep();
         this.addedNodes = addedNodes;
     }
 
@@ -49,15 +50,26 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return this.event;
     }
 
-    /** Returns the event wrapped in this label. */
-    public CtrlTransition getCtrlTransition() {
-        return this.ctrlTrans;
+    private final RuleEvent event;
+
+    /** Returns the control step wrapped in this label. */
+    public CtrlStep getStep() {
+        return this.step;
     }
+
+    /** Returns the control transition wrapped in this label. */
+    public CtrlTransition getCtrlTransition() {
+        return (CtrlTransition) this.step;
+    }
+
+    private final CtrlStep step;
 
     /** Returns the added nodes of the label. */
     public HostNode[] getAddedNodes() {
         return this.addedNodes;
     }
+
+    private final HostNode[] addedNodes;
 
     @Override
     public String text() {
@@ -75,7 +87,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
-        if (getCtrlTransition().hasRecipe()) {
+        if (getCtrlTransition().isPartial()) {
             result.append(getCtrlTransition().getRecipe().getFullName());
             result.append('/');
         }
@@ -92,7 +104,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         int result = 1;
         result = prime * result + Arrays.hashCode(this.addedNodes);
         result = prime * result + this.event.hashCode();
-        result = prime * result + this.ctrlTrans.hashCode();
+        result = prime * result + this.step.hashCode();
         return result;
     }
 
@@ -111,7 +123,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (!this.event.equals(other.event)) {
             return false;
         }
-        if (!this.ctrlTrans.equals(other.ctrlTrans)) {
+        if (!this.step.equals(other.step)) {
             return false;
         }
         return true;
@@ -139,16 +151,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return result;
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        // TODO Auto-generated method stub
-        return super.clone();
-    }
-
-    private final RuleEvent event;
-    private final CtrlTransition ctrlTrans;
-    private final HostNode[] addedNodes;
-
     /** 
      * Returns the label text for the rule label consisting of a given source state
      * and event. Optionally, the rule parameters are replaced by anchor images.
@@ -166,7 +168,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
             Record record = source.getGTS().getRecord();
-            result = record.normaliseLabel(result);
+            RuleTransitionLabel newResult = record.normaliseLabel(result);
+            result = newResult;
         }
         return result;
     }

@@ -17,6 +17,7 @@
 package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
+import groove.control.Binding;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
@@ -309,12 +310,11 @@ public class Rule implements Action, Fixable {
         return this.sig;
     }
 
-    /** Returns, for a given index in the signature,
-     * the corresponding index in the anchor 
-     * or in the created nodes (if the parameter is a creator).
-     * The latter are offset by the anchor node count.
+    /**
+     * Returns, for a given index in the signature, the corresponding
+     * anchor or creator source of the actual value.
      */
-    public int getParBinding(int i) {
+    public Binding getParBinding(int i) {
         if (this.parBinding == null) {
             this.parBinding = computeParBinding();
         }
@@ -326,22 +326,21 @@ public class Rule implements Action, Fixable {
      * anchor respectively created node indices.
      * @see #getParBinding(int)
      */
-    private int[] computeParBinding() {
-        int[] result = new int[this.sig.size()];
-        int anchorSize = getAnchor().size();
+    private Binding[] computeParBinding() {
+        Binding[] result = new Binding[this.sig.size()];
+        List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
         for (int i = 0; i < this.sig.size(); i++) {
             CtrlPar.Var par = this.sig.get(i);
-            int binding;
+            Binding binding;
             RuleNode ruleNode = par.getRuleNode();
             if (par.isCreator()) {
                 // look up the node in the creator nodes
-                binding = Arrays.asList(getCreatorNodes()).indexOf(ruleNode) + anchorSize;
-                assert binding >= anchorSize;
+                binding = Binding.creator(creatorNodes.indexOf(ruleNode));
             } else {
                 // look up the node in the anchor
-                binding = getAnchor().indexOf(ruleNode);
-                assert binding >= 0 : String.format("Node %s not in anchors %s", ruleNode,
-                    getAnchor());
+                int ix = getAnchor().indexOf(ruleNode);
+                assert ix >= 0 : String.format("Node %s not in anchors %s", ruleNode, getAnchor());
+                binding = Binding.anchor(ix);
             }
             result[i] = binding;
         }
@@ -1403,7 +1402,7 @@ public class Rule implements Action, Fixable {
      * anchor position or to the position in the created nodes list.
      * The latter are offset by the length of the anchor.
      */
-    private int[] parBinding;
+    private Binding[] parBinding;
     /**
      * Set of anonymous (unnumbered) parameters.
      */

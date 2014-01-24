@@ -137,7 +137,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
             result = new CtrlTransition(this, label, target);
             this.transitionMap.put(label.getCall(), result);
             this.transitions.add(result);
-            if (result.hasRecipe()) {
+            if (result.isPartial()) {
                 this.recipeCount++;
             }
             if (label.getCall().isOmega()) {
@@ -428,10 +428,10 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
             result = one.getGuard().compareTo(two.getGuard());
         }
         if (result == 0) {
-            int myRecipe = one.hasRecipe() ? 1 : 0;
-            int hisRecipe = two.hasRecipe() ? 1 : 0;
+            int myRecipe = one.isPartial() ? 1 : 0;
+            int hisRecipe = two.isPartial() ? 1 : 0;
             result = myRecipe - hisRecipe;
-            if (result == 0 && one.hasRecipe()) {
+            if (result == 0 && one.isPartial()) {
                 result = one.getRecipe().compareTo(two.getRecipe());
             }
         }

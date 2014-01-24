@@ -107,6 +107,7 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
      * @param edge the edge to be added
      */
     public void addSwitch(Switch edge) {
+        assert edge.isBase();
         assert edge.source() == this;
         assert !isFixed();
         this.switches.add(edge);

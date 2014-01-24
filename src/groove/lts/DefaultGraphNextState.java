@@ -14,7 +14,9 @@
  */
 package groove.lts;
 
+import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
+import groove.control.instance.Step;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.DeltaHostGraph;
@@ -49,8 +51,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
         this.source = source;
         this.event = match.getEvent();
         this.addedNodes = addedNodes;
-        CtrlTransition ctrlTrans = this.ctrlTrans = match.getCtrlTransition();
-        setCtrlState(ctrlTrans.target());
+        this.step = match.getStep();
+        if (this.step instanceof Step) {
+            setCurrentFrame(((Step) getStep()).target());
+        } else {
+            setCtrlState(getCtrlTransition().target());
+        }
         this.boundNodes = boundNodes;
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
@@ -320,7 +326,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public CtrlTransition getCtrlTransition() {
-        return this.ctrlTrans;
+        return (CtrlTransition) getStep();
+    }
+
+    @Override
+    public CtrlStep getStep() {
+        return this.step;
     }
 
     @Override
@@ -345,10 +356,10 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      */
     private final RuleEvent event;
     /**
-     * The incoming control transition with which this state was
+     * The incoming control step with which this state was
      * created.
      */
-    private final CtrlTransition ctrlTrans;
+    private final CtrlStep step;
     /**
      * The identities of the nodes added with respect to the source state.
      */

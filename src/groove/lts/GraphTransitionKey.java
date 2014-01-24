@@ -16,10 +16,9 @@
  */
 package groove.lts;
 
-
 /** 
  * Type encoding the essential ingredients for a graph transition.
- * These ingredients consist of the event and the control transition.
+ * The implementation differs for rule and recipe transitions.
  */
 public interface GraphTransitionKey {
     // empty

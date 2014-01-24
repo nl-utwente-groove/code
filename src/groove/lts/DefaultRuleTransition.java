@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -271,7 +272,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             && equalsEvent((RuleTransition) obj);
     }
 
-    /**
+    /*
      * This implementation combines the hash codes of the rule and the anchor
      * images.
      */
@@ -280,10 +281,14 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         return System.identityHashCode(source()) + System.identityHashCode(getEvent());
     }
 
-    /** Returns the (possibly {@code null} underlying control transition. */
     @Override
     public CtrlTransition getCtrlTransition() {
-        return this.label.getCtrlTransition();
+        return label().getCtrlTransition();
+    }
+
+    @Override
+    public CtrlStep getStep() {
+        return label().getStep();
     }
 
     @Override
@@ -293,7 +298,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     @Override
     public Recipe getRecipe() {
-        return getCtrlTransition().getRecipe();
+        return getStep().getRecipe();
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package groove.control.instance;
 
+import groove.control.Call;
 import groove.control.Position;
 import groove.control.Procedure;
 import groove.control.template.Location;
@@ -72,16 +73,16 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
      * The prime frame is the one from which this one was derived through
      * a sequence of verdict transitions.
      * @param prime the prime frame; if {@code null}, this frame is its own prime
-     * @param triedCalls the set of calls tried since the prime, or {@code null} if this frame
+     * @param pastAttempts the set of attempts since the prime, or {@code null} if this frame
      * is prime
      */
-    private void setPrime(Frame prime, Set<CallStack> triedCalls) {
+    private void setPrime(Frame prime, Set<CallStack> pastAttempts) {
         assert !isFixed();
         assert this.primeFrame == null;
         this.primeFrame = prime == null ? this : prime;
-        this.triedCalls = new HashSet<CallStack>();
-        if (triedCalls != null) {
-            this.triedCalls.addAll(triedCalls);
+        this.pastAttempts = new HashSet<CallStack>();
+        if (pastAttempts != null) {
+            this.pastAttempts.addAll(pastAttempts);
         }
     }
 
@@ -99,17 +100,36 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         return getPrime() == this;
     }
 
-    private Frame primeFrame;
-
-    /** Returns the set of calls that have been attempted since the
-     * prime frame.
-     * @return the set of calls, or {@code null} if the prime has not been set
-     */
-    public Set<CallStack> getTriedCalls() {
-        return this.triedCalls;
+    /** Indicates if the prime of this frame has been set. */
+    public boolean hasPrime() {
+        return getPrime() != null;
     }
 
-    private Set<CallStack> triedCalls;
+    private Frame primeFrame;
+
+    /** Returns the set of attempts made since the
+     * prime frame.
+     * Should only be called if this frame is primed
+     * @see #hasPrime
+     */
+    public Set<CallStack> getPastAttempts() {
+        return this.pastAttempts;
+    }
+
+    private Set<CallStack> pastAttempts;
+
+    /** Returns the set of rule calls that have been tried since the prime frame. */
+    public Set<Call> getPastCalls() {
+        if (this.pastCalls == null) {
+            Set<Call> result = this.pastCalls = new HashSet<Call>();
+            for (CallStack attempt : getPastAttempts()) {
+                result.add(attempt.getLast().getCall());
+            }
+        }
+        return this.pastCalls;
+    }
+
+    private Set<Call> pastCalls;
 
     /** Indicates if the subframes of this frame are set. */
     private boolean hasSubFrames() {
@@ -261,7 +281,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
                 swit = proc.getTemplate().getStart().getFirstStage().getAttempt();
             }
         } while (isProcedure);
-        Set<CallStack> triedCalls = new HashSet<CallStack>(getTriedCalls());
+        Set<CallStack> triedCalls = new HashSet<CallStack>(getPastAttempts());
         CallStack thisCall = new CallStack(stack);
         thisCall.add(swit);
         triedCalls.add(thisCall);
@@ -433,7 +453,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         result = prime * result + System.identityHashCode(this.elseFrame);
         result = prime * result + System.identityHashCode(this.nextFrame);
         result = prime * result + (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
-        result = prime * result + (this.triedCalls == null ? 0 : this.triedCalls.hashCode());
+        result = prime * result + (this.pastAttempts == null ? 0 : this.pastAttempts.hashCode());
         result = prime * result + this.callStack.hashCode();
         result = prime * result + this.stage.hashCode();
         return result;
@@ -460,12 +480,12 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         if (this.primeFrame != other.primeFrame && this.isPrime() != other.isPrime()) {
             return false;
         }
-        if (this.triedCalls == null) {
-            if (other.triedCalls != null) {
+        if (this.pastAttempts == null) {
+            if (other.pastAttempts != null) {
                 return false;
             }
         } else {
-            return this.triedCalls.equals(other.triedCalls);
+            return this.pastAttempts.equals(other.pastAttempts);
         }
         if (!this.stage.equals(other.stage)) {
             return false;
@@ -485,7 +505,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
                 result += "\nPrime";
             } else {
                 result += "\nTried:";
-                for (CallStack tried : getTriedCalls()) {
+                for (CallStack tried : getPastAttempts()) {
                     List<String> names = new ArrayList<String>();
                     for (Switch call : tried) {
                         names.add(call.getName());

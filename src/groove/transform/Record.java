@@ -10,11 +10,10 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.rule.RuleToHostMap;
 import groove.lts.RuleTransitionLabel;
 import groove.transform.RuleEvent.Reuse;
+import groove.util.collect.Pool;
 
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,8 +45,7 @@ public class Record {
      * @throws IllegalStateException if the grammar is not fixed according to
      *         {@link Grammar#testFixed(boolean)}.
      */
-    public Record(Grammar grammar, HostFactory hostFactory)
-        throws IllegalStateException {
+    public Record(Grammar grammar, HostFactory hostFactory) throws IllegalStateException {
         this.grammar = grammar;
         this.hostFactory = hostFactory;
         grammar.testFixed(true);
@@ -115,10 +113,8 @@ public class Record {
      * @param rule the rule of the composite event
      * @param eventSet the set of sub-events for the composite event
      */
-    public RuleEvent createCompositeEvent(Rule rule,
-            Collection<BasicEvent> eventSet) {
-        return normaliseEvent(new CompositeEvent(this, rule, eventSet,
-            getReuse()));
+    public RuleEvent createCompositeEvent(Rule rule, Collection<BasicEvent> eventSet) {
+        return normaliseEvent(new CompositeEvent(this, rule, eventSet, getReuse()));
     }
 
     /**
@@ -128,19 +124,14 @@ public class Record {
      * @param elementMap the element map for the simple event
      */
     public BasicEvent createSimpleEvent(Rule rule, RuleToHostMap elementMap) {
-        return (BasicEvent) normaliseEvent(new BasicEvent(rule, elementMap,
-            getReuse()));
+        return (BasicEvent) normaliseEvent(new BasicEvent(rule, elementMap, getReuse()));
     }
 
     /** 
      * Normalises a given transition label.
      */
     public RuleTransitionLabel normaliseLabel(RuleTransitionLabel prototype) {
-        RuleTransitionLabel result = this.labelMap.get(prototype);
-        if (result == null) {
-            this.labelMap.put(result = prototype, prototype);
-        }
-        return result;
+        return this.labelPool.canonical(prototype);
     }
 
     /**
@@ -186,8 +177,7 @@ public class Record {
      */
     private final RuleEventSet eventMap = new RuleEventSet();
     /** Identity map of normal transition labels. */
-    private final Map<RuleTransitionLabel,RuleTransitionLabel> labelMap =
-        new HashMap<RuleTransitionLabel,RuleTransitionLabel>();
+    private final Pool<RuleTransitionLabel> labelPool = new Pool<RuleTransitionLabel>();
 
     /**
      * Sets the policy of the GTS in determining state equivalence. This is only

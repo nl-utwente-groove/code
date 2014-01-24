@@ -18,9 +18,9 @@ package groove.lts;
 
 import groove.control.Binding;
 import groove.control.Binding.Source;
-import groove.control.CtrlCall;
+import groove.control.Call;
 import groove.control.CtrlPar;
-import groove.control.CtrlTransition;
+import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
@@ -44,12 +44,12 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class MatchCollector {
+public class NewMatchCollector {
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
      */
-    public MatchCollector(GraphState state) {
+    public NewMatchCollector(GraphState state) {
         this.state = state;
         this.record = state.getGTS().getRecord();
         boolean checkDiamonds = state.getGTS().checkDiamonds();
@@ -70,10 +70,10 @@ public class MatchCollector {
     }
 
     /**
-     * Returns the set of matching events for a given control transition.
+     * Returns the set of matching events for a given control switch.
      * @param ct the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches(final CtrlTransition ct) {
+    public MatchResultSet computeMatches(final Step ct) {
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
@@ -88,7 +88,7 @@ public class MatchCollector {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition) {
                     RuleTransition ruleTrans = (RuleTransition) trans;
-                    if (ruleTrans.getEvent().getRule().equals(ct.getRule())) {
+                    if (ruleTrans.getEvent().getRule().equals(ct.getCall().getUnit())) {
                         result.add(ruleTrans.getKey());
                         if (DEBUG) {
                             System.out.print(" T" + System.identityHashCode(trans.getEvent()));
@@ -126,7 +126,8 @@ public class MatchCollector {
                         return true;
                     }
                 };
-                ct.getRule().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
+                ((Rule) ct.getCall().getUnit()).traverseMatches(this.state.getGraph(), boundMap,
+                    eventCollector);
             }
         }
         if (DEBUG) {
@@ -144,7 +145,7 @@ public class MatchCollector {
         } else {
             for (int i = 0; i < event.getRule().getAnchor().size(); i++) {
                 AnchorValue anchorImage = event.getAnchorImage(i);
-                HostGraph host = MatchCollector.this.state.getGraph();
+                HostGraph host = NewMatchCollector.this.state.getGraph();
                 switch (anchorImage.getAnchorKind()) {
                 case EDGE:
                     if (!host.containsEdge((HostEdge) anchorImage)) {
@@ -167,18 +168,18 @@ public class MatchCollector {
      * Indicates if new matches of a given control call might have been enabled
      * with respect to the parent state.
      */
-    private boolean isEnabled(CtrlCall call) {
-        if (this.enabledRules == null || this.enabledRules.contains(call.getRule())) {
+    private boolean isEnabled(Call call) {
+        if (this.enabledRules == null || this.enabledRules.contains(call.getUnit())) {
             return true;
         }
         // since enabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        if (state.getCtrlTransition().isModifying()) {
+        if (state.getStep().isModifying()) {
             return true;
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<CtrlCall> triedCalls = state.source().getSchedule().getTriedCalls();
+        Set<Call> triedCalls = state.source().getCurrentFrame().getPastCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 
@@ -186,13 +187,14 @@ public class MatchCollector {
      * Indicates if matches of a given control call might have been disabled
      * since the parent state.
      */
-    private boolean isDisabled(CtrlCall call) {
-        if (this.disabledRules == null || this.disabledRules.contains(call.getRule())) {
+    private boolean isDisabled(Call call) {
+        assert call.getUnit() instanceof Rule;
+        if (this.disabledRules == null || this.disabledRules.contains(call.getUnit())) {
             return true;
         }
         // since disabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        if (state.getCtrlTransition().isModifying()) {
+        if (state.getStep().isModifying()) {
             return true;
         }
         return false;
@@ -203,12 +205,12 @@ public class MatchCollector {
      * @return if {@code null}, the binding cannot be constructed and
      * so the rule cannot match
      */
-    private RuleToHostMap extractBinding(CtrlTransition ctrlTrans) {
+    private RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
-        List<CtrlPar> args = ctrlTrans.getCall().getArgs();
+        List<? extends CtrlPar> args = step.getCall().getArgs();
         if (args != null && args.size() > 0) {
-            Binding[] parBind = ctrlTrans.getParBinding();
-            List<CtrlPar.Var> ruleSig = ctrlTrans.getRule().getSignature();
+            Binding[] parBind = step.getSwitch().getTargetBinding();
+            List<CtrlPar.Var> ruleSig = step.getCall().getUnit().getSignature();
             HostNode[] boundNodes = this.state.getBoundNodes();
             for (int i = 0; i < args.size(); i++) {
                 CtrlPar arg = args.get(i);
@@ -242,7 +244,7 @@ public class MatchCollector {
      * Returns the parent state's out-transition for a given event, if any,
      * or otherwise the event itself.
      */
-    private MatchResult getParentTrans(RuleEvent event, CtrlTransition ct) {
+    private MatchResult getParentTrans(RuleEvent event, Step ct) {
         MatchResult result = null;
         if (this.parentTransMap != null) {
             RuleTransition trans =

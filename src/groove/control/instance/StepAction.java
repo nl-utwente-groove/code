@@ -16,7 +16,7 @@
  */
 package groove.control.instance;
 
-import groove.control.AssignSource;
+import groove.control.Binding;
 import groove.control.CtrlVar;
 
 import java.util.Map;
@@ -32,9 +32,9 @@ public class StepAction {
     /**
      * Creates an action with all necessary parameters.
      */
-    private StepAction(Kind kind, Map<CtrlVar,AssignSource> assignment) {
+    private StepAction(Kind kind, Map<CtrlVar,Binding> assignment) {
         this.kind = Kind.PUSH;
-        this.assignment = new AssignSource[assignment.size()];
+        this.assignment = new Binding[assignment.size()];
         assignment.values().toArray(this.assignment);
     }
 
@@ -46,24 +46,24 @@ public class StepAction {
     private final Kind kind;
 
     /** Returns the assignment for this action. */
-    public AssignSource[] getAssignment() {
+    public Binding[] getAssignment() {
         return this.assignment;
     }
 
-    private final AssignSource[] assignment;
+    private final Binding[] assignment;
 
     /** Creates a new {@link PUSH} action with a given assignment. */
-    public static StepAction push(Map<CtrlVar,AssignSource> assignment) {
+    public static StepAction push(Map<CtrlVar,Binding> assignment) {
         return new StepAction(Kind.PUSH, assignment);
     }
 
     /** Creates a new {@link Kind#POP} action with a given assignment. */
-    public static StepAction pop(Map<CtrlVar,AssignSource> assignment) {
+    public static StepAction pop(Map<CtrlVar,Binding> assignment) {
         return new StepAction(Kind.POP, assignment);
     }
 
     /** Creates a new {@link Kind#MODIFY} action, with a given assignment. */
-    public static StepAction modify(Map<CtrlVar,AssignSource> assignment) {
+    public static StepAction modify(Map<CtrlVar,Binding> assignment) {
         return new StepAction(Kind.MODIFY, assignment);
     }
 

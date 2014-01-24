@@ -50,7 +50,7 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public boolean isTransient() {
-        return getMatch().getCtrlTransition().hasRecipe();
+        return getMatch().getCtrlTransition().isPartial();
     }
 
     /**

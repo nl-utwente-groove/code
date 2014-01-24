@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.lts;
 
 import groove.abstraction.neigh.shape.Shape;
+import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -42,8 +43,7 @@ import java.util.Collections;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeNextState extends ShapeState implements GraphNextState,
-        RuleTransitionStub {
+public final class ShapeNextState extends ShapeState implements GraphNextState, RuleTransitionStub {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -59,10 +59,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     /** Default constructor, delegates to super class. 
      * @param number the number of the state to be created; non-negative
      */
-    public ShapeNextState(int number, Shape shape, ShapeState source,
-            MatchResult match) {
-        super(source.getCacheReference(), shape,
-            match.getCtrlTransition().target(), number);
+    public ShapeNextState(int number, Shape shape, ShapeState source, MatchResult match) {
+        super(source.getCacheReference(), shape, match.getCtrlTransition().target(), number);
         this.transition = new ShapeTransition(source, match, this);
     }
 
@@ -97,8 +95,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying()
-            || getCtrlTransition().isModifying()) {
+        if (getEvent().getRule().isModifying() || getCtrlTransition().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
@@ -153,6 +150,11 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     @Override
     public CtrlTransition getCtrlTransition() {
         return this.transition.getCtrlTransition();
+    }
+
+    @Override
+    public CtrlStep getStep() {
+        return this.transition.getStep();
     }
 
     @Override

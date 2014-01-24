@@ -68,7 +68,7 @@ public interface GraphState extends Node {
      * Sets a new actual frame for this state.
      * The prime frame of the new actual frame should equal the old prime frame.
      */
-    public void setActualFrame(Frame actualFrame);
+    public void setCurrentFrame(Frame frame);
 
     /** 
      * Returns the actual control frame associated with this state.
@@ -77,7 +77,7 @@ public interface GraphState extends Node {
      * The prime frame is always the prime of the actual frame.
      * @see Frame#getPrime() 
      */
-    public Frame getActualFrame();
+    public Frame getCurrentFrame();
 
     /** Returns the (non-{@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
