@@ -32,6 +32,7 @@ import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.Switch.Kind;
 import groove.grammar.Recipe;
+import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.graph.AEdge;
 import groove.graph.Edge;
@@ -119,7 +120,8 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     }
 
     /** Convenience method to return called rule of this step. */
-    public final Callable getRule() {
+    @Override
+    public final Rule getRule() {
         return getCall().getRule();
     }
 
