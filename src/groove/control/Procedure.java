@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
+import groove.control.template.Switch.Kind;
 import groove.control.template.Template;
 import groove.control.template.TemplateBuilder;
 import groove.control.term.Term;
@@ -100,7 +101,8 @@ public abstract class Procedure implements Callable, Fixable {
     public void setTerm(Term body) {
         assert body != null;
         assert !isFixed();
-        this.term = body;
+        // make the body atomic if it is a recipe
+        this.term = getKind() == Kind.RECIPE ? body.atom() : body;
         setFixed();
     }
 

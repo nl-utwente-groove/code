@@ -169,24 +169,34 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
     private MultiSwitch attempt;
 
     /**
-     * Returns the first stage of this position,
-     * with stage number {@code 0} and success status {@code false}.
+     * Returns the first stage of this location, with no caller,
+     * stage number {@code 0} and success status {@code false}.
      */
     public Stage getFirstStage() {
-        return getStage(0, false);
+        return getFirstStage(null);
     }
 
     /**
-     * Returns a stage based on this position, with a given
-     * stage number and success status.
+     * Returns the first stage of this location, with a given caller,
+     * stage number {@code 0} and success status {@code false}.
+     * @param caller procedure call switch from which the new stage is needed
      */
-    public Stage getStage(int nr, boolean success) {
+    public Stage getFirstStage(Switch caller) {
+        return getStage(caller, 0, false);
+    }
+
+    /**
+     * Returns a stage based on this location, with a given
+     * stage number and success status.
+     * @param caller procedure call switch from which the new stage is needed
+     */
+    public Stage getStage(Switch caller, int nr, boolean success) {
         if (this.stages == null) {
             List<Duo<Stage>> stages = new ArrayList<Duo<Stage>>();
             int size = isTrial() ? getAttempt().size() : 1;
             for (int i = 0; i < size; i++) {
-                Stage succIx = new Stage(this, i, true);
-                Stage failIx = new Stage(this, i, false);
+                Stage succIx = new Stage(this, caller, i, true);
+                Stage failIx = new Stage(this, caller, i, false);
                 stages.add(Duo.newDuo(succIx, failIx));
             }
             this.stages = stages;

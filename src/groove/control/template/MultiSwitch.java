@@ -20,7 +20,9 @@ import groove.control.MultiAttempt;
 import groove.util.Duo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Vector of switches in combination with the success and failure alternates.
@@ -57,32 +59,36 @@ public class MultiSwitch extends MultiAttempt<Location,Switch> {
     private final Location onSuccess;
 
     /**
-     * Returns a single stage of this multiswitch, with target set
-     * to the first slot of the appropriate target location.
+     * Derives a single stage of this multiswitch, with its target set
+     * to the the appropriate target location.
+     * @param caller caller of the derived switch
      */
-    public Switch getStage(int nr, boolean success) {
-        if (this.stages == null) {
-            this.stages = new ArrayList<Duo<Switch>>();
+    public Switch getStage(Switch caller, int nr, boolean success) {
+        List<Duo<Switch>> stages = this.stageMap.get(caller);
+        if (stages == null) {
+            stages = new ArrayList<Duo<Switch>>();
             for (int i = 0; i < size(); i++) {
-                this.stages.add(Duo.newDuo(computeSwitch(i, true), computeSwitch(i, false)));
+                stages.add(Duo.newDuo(computeSwitch(caller, i, true),
+                    computeSwitch(caller, i, false)));
             }
+            this.stageMap.put(caller, stages);
         }
-        Duo<Switch> duo = this.stages.get(nr);
+        Duo<Switch> duo = stages.get(nr);
         return success ? duo.one() : duo.two();
     }
 
-    private Switch computeSwitch(int i, boolean success) {
-        Stage onFinish = get(i).target().getFirstStage();
+    private Switch computeSwitch(Switch caller, int i, boolean success) {
+        Stage onFinish = get(i).target().getFirstStage(caller);
         boolean last = i == size() - 1;
-        Stage onSuccess = last ? onSuccess().getFirstStage() : source().getStage(i + 1, true);
+        Stage onSuccess = last ? onSuccess().getFirstStage(caller) : source().getStage(caller, i + 1, true);
         Stage onFailure;
         if (sameVerdict()) {
             onFailure = onSuccess;
         } else {
-            onFailure = last ? onFailure().getFirstStage() : source().getStage(i + 1, success);
+            onFailure = last ? onFailure().getFirstStage(caller) : source().getStage(caller, i + 1, success);
         }
-        return new Switch(get(i), null, onFinish, onSuccess, onFailure);
+        return new Switch(get(i), caller, onFinish, onSuccess, onFailure);
     }
 
-    private List<Duo<Switch>> stages;
+    private final Map<Switch,List<Duo<Switch>>> stageMap = new HashMap<Switch,List<Duo<Switch>>>();
 }
