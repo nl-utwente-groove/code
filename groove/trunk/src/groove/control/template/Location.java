@@ -25,6 +25,7 @@ import groove.util.Fixable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -191,21 +192,21 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
      * @param caller procedure call switch from which the new stage is needed
      */
     public Stage getStage(Switch caller, int nr, boolean success) {
-        if (this.stages == null) {
-            List<Duo<Stage>> stages = new ArrayList<Duo<Stage>>();
+        List<Duo<Stage>> stages = this.stageMap.get(caller);
+        if (stages == null) {
+            this.stageMap.put(caller, stages = new ArrayList<Duo<Stage>>());
             int size = isTrial() ? getAttempt().size() : 1;
             for (int i = 0; i < size; i++) {
                 Stage succIx = new Stage(this, caller, i, true);
                 Stage failIx = new Stage(this, caller, i, false);
                 stages.add(Duo.newDuo(succIx, failIx));
             }
-            this.stages = stages;
         }
-        Duo<Stage> indexPair = this.stages.get(nr);
+        Duo<Stage> indexPair = stages.get(nr);
         return success ? indexPair.one() : indexPair.two();
     }
 
-    private List<Duo<Stage>> stages;
+    private final Map<Switch,List<Duo<Stage>>> stageMap = new HashMap<Switch,List<Duo<Stage>>>();
 
     /** Indicates if this location has a non-empty set of control variables. */
     public boolean hasVars() {

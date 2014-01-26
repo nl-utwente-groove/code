@@ -52,8 +52,9 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
     public Frame getStart() {
         if (this.start == null) {
             Frame result = new Frame(this, getTemplate().getStart().getFirstStage());
-            this.start = result.normalise(null, null);
+            result = result.normalise(null, null);
             addNode(result);
+            this.start = result;
         }
         return this.start;
     }

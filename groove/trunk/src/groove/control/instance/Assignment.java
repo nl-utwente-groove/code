@@ -18,13 +18,10 @@ package groove.control.instance;
 
 import groove.control.Binding;
 import groove.control.Binding.Source;
-import groove.control.CtrlStep;
 import groove.control.CtrlVar;
 import groove.control.Valuator;
-import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -119,6 +116,36 @@ public class Assignment {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(this.bindings);
+        result = prime * result + this.kind.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Assignment)) {
+            return false;
+        }
+        Assignment other = (Assignment) obj;
+        if (!Arrays.equals(this.bindings, other.bindings)) {
+            return false;
+        }
+        if (this.kind != other.kind) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public String toString() {
         return this.kind.name() + Arrays.toString(this.bindings);
     }
@@ -136,33 +163,6 @@ public class Assignment {
     /** Creates a new {@link Kind#MODIFY} action with a given assignment. */
     public static Assignment call(List<Binding> bindings) {
         return new Assignment(Kind.MODIFY, bindings);
-    }
-
-    /**
-     * Returns bindings for a list of target variables of a
-     * control step, using the source variables
-     * combined with the output parameters of the call.
-     */
-    public static Assignment modify(CtrlStep step) {
-        List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = step.source().getVars();
-        Map<CtrlVar,Integer> outVars = step.getOutVars();
-        for (CtrlVar var : step.target().getVars()) {
-            Integer ix = outVars.get(var);
-            Binding rhs;
-            if (ix == null) {
-                // the value comes from the source
-                int pos = sourceVars.indexOf(var);
-                assert pos >= 0;
-                rhs = Binding.var(pos);
-            } else {
-                // the value is an output parameter of the rule
-                Rule rule = step.getRule();
-                rhs = rule.getParBinding(ix);
-            }
-            result.add(rhs);
-        }
-        return call(result);
     }
 
     /** Kind of {@link Assignment}. */

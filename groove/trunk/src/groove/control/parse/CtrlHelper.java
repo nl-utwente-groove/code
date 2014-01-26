@@ -225,7 +225,7 @@ public class CtrlHelper {
                 emitErrorMessage(unitTree.getChild(2),
                     "Priorities are not supported in this version.");
             }
-            List<CtrlPar.Var> parList = getPars(unitTree.getChild(1));
+            List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
             if (unitTree.getType() == CtrlParser.FUNCTION) {
                 // it's a function
@@ -245,7 +245,7 @@ public class CtrlHelper {
     /**
      * Extracts the parameter declarations.
      */
-    private List<CtrlPar.Var> getPars(CtrlTree parListTree) {
+    private List<CtrlPar.Var> getPars(String procName, CtrlTree parListTree) {
         assert parListTree.getType() == CtrlChecker.PARS;
         List<CtrlPar.Var> result = new ArrayList<CtrlPar.Var>();
         for (int i = 0; i < parListTree.getChildCount(); i++) {
@@ -253,7 +253,7 @@ public class CtrlHelper {
             boolean out = parTree.getChildCount() == 3;
             CtrlTree typeTree = parTree.getChild(out ? 1 : 0);
             CtrlType type = typeTree.getCtrlType();
-            String name = parTree.getChild(out ? 2 : 1).getText();
+            String name = toLocalName(procName, parTree.getChild(out ? 2 : 1).getText());
             result.add(CtrlPar.var(name, type, !out));
         }
         if (this.namespace.isCheckDependencies() && !result.isEmpty()) {
@@ -294,8 +294,8 @@ public class CtrlHelper {
     }
 
     /** Prefixes a given name with the current procedure name, if any. */
-    private String toLocalName(String name) {
-        return this.procName == null ? name : this.procName + "." + name;
+    private String toLocalName(String procName, String name) {
+        return procName == null ? name : procName + "." + name;
     }
 
     /** The function or transaction name currently processed. */
@@ -306,7 +306,7 @@ public class CtrlHelper {
     /** Adds a formal parameter to the symbol table. */
     boolean declarePar(CtrlTree nameTree, CtrlTree typeTree, CtrlTree out) {
         boolean result = true;
-        String name = toLocalName(nameTree.getText());
+        String name = toLocalName(this.procName, nameTree.getText());
         if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType(), out != null)) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
@@ -319,7 +319,7 @@ public class CtrlHelper {
     /** Adds a variable to the symbol table. */
     boolean declareVar(CtrlTree nameTree, CtrlTree typeTree) {
         boolean result = true;
-        String name = toLocalName(nameTree.getText());
+        String name = toLocalName(this.procName, nameTree.getText());
         if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType())) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
@@ -354,7 +354,7 @@ public class CtrlHelper {
      */
     CtrlVar checkVar(CtrlTree nameTree, boolean checkInit) {
         CtrlVar result = null;
-        String name = toLocalName(nameTree.getText());
+        String name = toLocalName(this.procName, nameTree.getText());
         CtrlType type = this.symbolTable.getType(name);
         if (type == null) {
             emitErrorMessage(nameTree, "Local variable %s not declared", name);

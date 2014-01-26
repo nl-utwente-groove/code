@@ -91,7 +91,7 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
 
     /** Returns the number of levels by which the call stack depth changes. */
     public int getCallDepth() {
-        return getCallStack().size() - source().getCallStack().size();
+        return target().getCallStack().size() - source().getCallStack().size();
     }
 
     /** Convenience method to return the call stack of the switch of this step. */
@@ -176,13 +176,40 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
 
     private List<Assignment> computeFrameChanges() {
         List<Assignment> result = computeFramePushes();
-        result.add(Assignment.modify(this));
+        result.add(modify(getSwitch()));
         // add pop actions for the calls that are finished
         for (int i = getCallStack().size() - 1; i >= onFinish().getCallStack().size(); i--) {
             Switch swit = getCallStack().get(i);
             result.add(exit(swit));
         }
         return result;
+    }
+
+    /**
+     * Returns bindings for a list of target variables of a
+     * control step, using the source variables
+     * combined with the output parameters of the call.
+     */
+    private Assignment modify(Switch swit) {
+        List<Binding> result = new ArrayList<Binding>();
+        List<CtrlVar> sourceVars = swit.source().getVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
+        for (CtrlVar var : swit.target().getVars()) {
+            Integer ix = outVars.get(var);
+            Binding rhs;
+            if (ix == null) {
+                // the value comes from the source
+                int pos = sourceVars.indexOf(var);
+                assert pos >= 0;
+                rhs = Binding.var(pos);
+            } else {
+                // the value is an output parameter of the rule
+                Rule rule = swit.getRule();
+                rhs = rule.getParBinding(ix);
+            }
+            result.add(rhs);
+        }
+        return Assignment.call(result);
     }
 
     /**
@@ -194,8 +221,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
         List<CtrlVar> sourceVars = swit.source().getVars();
-        Map<CtrlVar,Integer> sig = ((Procedure) swit.getUnit()).getInPars();
-        for (CtrlVar var : swit.target().getVars()) {
+        Procedure proc = (Procedure) swit.getUnit();
+        Map<CtrlVar,Integer> sig = proc.getInPars();
+        for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
             // all initial state variables are formal input parameters 
             Integer ix = sig.get(var);
             assert ix != null;

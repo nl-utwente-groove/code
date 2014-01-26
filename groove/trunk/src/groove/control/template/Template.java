@@ -55,28 +55,26 @@ import java.util.Set;
 public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     /**
      * Constructs a automaton for a given control unit and name.
-     * @param depth the transient depth of the initial state.
      */
-    private Template(String name, Procedure proc, int depth) {
+    private Template(String name, Procedure proc) {
         super(name);
         this.maxNodeNr = -1;
         this.owner = proc;
-        this.start = addLocation(depth);
+        this.start = addLocation(0);
     }
 
     /**
      * Constructs a named automaton.
-     * @param depth the transient depth of the initial state.
      */
-    protected Template(String name, int depth) {
-        this(name, null, depth);
+    protected Template(String name) {
+        this(name, null);
     }
 
     /**
      * Constructs a automaton for a given control unit.
      */
     protected Template(Procedure proc) {
-        this(proc.getFullName(), proc, 0);
+        this(proc.getFullName(), proc);
     }
 
     @Override
@@ -282,7 +280,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
 
     @Override
     public Template newGraph(String name) {
-        return new Template(name, getStart().getDepth());
+        return new Template(name, null);
     }
 
     @Override

@@ -19,13 +19,17 @@ package groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.algebra.JavaIntAlgebra;
+import groove.control.Binding;
+import groove.control.Binding.Source;
 import groove.control.Call;
 import groove.control.Callable;
 import groove.control.CtrlLoader;
 import groove.control.CtrlPar;
 import groove.control.Position;
+import groove.control.instance.Assignment;
 import groove.control.instance.Automaton;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
@@ -39,6 +43,7 @@ import groove.gui.Viewer;
 import groove.util.Groove;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -102,6 +107,88 @@ public class AutomatonBuildTest {
         f = s.target();
         assertEquals(2, s.getCallStack().size());
         assertEquals(0, f.getCallStack().size());
+    }
+
+    @Test
+    public void testBinding() {
+        add("f", "function f(node fx, out node fy) { g(fx, out fy); iInt(1); h(fx); h(fy); }");
+        add("g", "function g(node gx, out node gy) { bNode-oNode(out gx, out gy); bNode(gx); }");
+        add("h", "function h(node hx) { bNode(hx); }");
+        add("main", "node n; oNode(out n); f(n, out n);");
+        Automaton p = build();
+        //        p.explore();
+        //        Viewer.showGraph(p, true);
+        Frame f0 = p.getStart();
+        Step s0 = f0.getAttempt();
+        Frame f1 = s0.onFinish();
+        Step s1 = f1.getAttempt();
+        Frame f2 = s1.onFinish();
+        Step s2 = f2.getAttempt();
+        Frame f3 = s2.onFinish();
+        Step s3 = f3.getAttempt();
+        Frame f4 = s3.onFinish();
+        Step s4 = f4.getAttempt();
+        Frame f5 = s4.onFinish();
+        Step s5 = f5.getAttempt();
+        Frame f6 = s5.onFinish();
+        //
+        assertEquals(0, s0.getCallDepth());
+        List<Assignment> change = s0.getFrameChanges();
+        assertEquals(1, change.size());
+        Assignment a00 = change.get(0);
+        assertEquals(Assignment.Kind.MODIFY, a00.getKind());
+        Binding[] b00 = a00.getBindings();
+        assertEquals(1, b00.length);
+        assertEquals(Source.CREATOR, b00[0].getSource());
+        assertEquals(0, b00[0].getIndex());
+        //
+        assertEquals(2, s1.getCallDepth());
+        change = s1.getFrameChanges();
+        assertEquals(3, change.size());
+        List<Binding> b = Arrays.asList(Binding.var(0));
+        assertEquals(Assignment.push(b), change.get(0));
+        b = Arrays.asList();
+        assertEquals(Assignment.push(b), change.get(1));
+        b = Arrays.asList(Binding.anchor(0), Binding.creator(0));
+        assertEquals(Assignment.call(b), change.get(2));
+        //
+        assertEquals(-1, s2.getCallDepth());
+        change = s2.getFrameChanges();
+        assertEquals(2, change.size());
+        b = Arrays.asList(Binding.var(1));
+        assertEquals(Assignment.call(b), change.get(0));
+        b = Arrays.asList(Binding.caller(0), Binding.var(0));
+        assertEquals(Assignment.pop(b), change.get(1));
+        //
+        assertEquals(0, s3.getCallDepth());
+        change = s3.getFrameChanges();
+        assertEquals(1, change.size());
+        b = Arrays.asList(Binding.var(0), Binding.var(1));
+        assertEquals(Assignment.call(b), change.get(0));
+        //
+        assertEquals(0, s4.getCallDepth());
+        change = s4.getFrameChanges();
+        assertEquals(3, change.size());
+        b = Arrays.asList(Binding.var(0));
+        assertEquals(Assignment.push(b), change.get(0));
+        b = Arrays.asList();
+        assertEquals(Assignment.call(b), change.get(1));
+        b = Arrays.asList(Binding.caller(1));
+        assertEquals(Assignment.pop(b), change.get(2));
+        //
+        assertEquals(-1, s5.getCallDepth());
+        change = s5.getFrameChanges();
+        assertEquals(4, change.size());
+        b = Arrays.asList(Binding.var(0));
+        assertEquals(Assignment.push(b), change.get(0));
+        b = Arrays.asList();
+        assertEquals(Assignment.call(b), change.get(1));
+        b = Arrays.asList(Binding.caller(0));
+        assertEquals(Assignment.pop(b), change.get(2));
+        b = Arrays.asList();
+        assertEquals(Assignment.pop(b), change.get(3));
+        //
+        assertTrue(f6.isFinal());
     }
 
     /** Loads the grammar to be used for testing. */

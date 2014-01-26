@@ -118,7 +118,7 @@ public abstract class Procedure implements Callable, Fixable {
     public Template getTemplate() {
         assert isFixed();
         if (this.template == null) {
-            this.template = TemplateBuilder.instance().build(getFullName(), getTerm());
+            this.template = TemplateBuilder.instance().build(this, null, getTerm());
         }
         return this.template;
     }

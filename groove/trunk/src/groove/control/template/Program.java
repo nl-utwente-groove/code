@@ -109,7 +109,7 @@ public class Program implements Fixable {
     public Template getTemplate() {
         assert isFixed();
         if (this.template == null && hasBody()) {
-            this.template = TemplateBuilder.instance().build(getName(), getTerm());
+            this.template = TemplateBuilder.instance().build(null, getName(), getTerm());
         }
         return this.template;
     }
