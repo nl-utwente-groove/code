@@ -21,15 +21,14 @@ import static groove.lts.GTS.CollapseMode.COLLAPSE_ISO_STRONG;
 import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlFrame;
+import groove.control.Valuator;
 import groove.explore.result.Result;
 import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
-import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.PostApplicationError;
 import groove.grammar.type.EdgeMultiplicityVerifier;
@@ -39,7 +38,6 @@ import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
-import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
@@ -51,7 +49,6 @@ import groove.util.collect.TransformIterator;
 import groove.util.collect.TreeHashSet;
 
 import java.util.AbstractSet;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,6 +110,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         if (this.startState == null) {
             HostGraph startGraph = createStartGraph(this.grammar.getStartGraph());
             this.startState = createStartState(startGraph);
+            getGrammar().getCtrlAut().initialise(startGraph.getFactory());
             addState(this.startState);
         }
         return this.startState;
@@ -744,13 +742,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
                 return false;
             }
-            HostNode[] myBoundNodes = myState.getBoundNodes();
-            HostNode[] otherBoundNodes = otherState.getBoundNodes();
+            Object[] myBoundNodes = myState.getFrameValues();
+            Object[] otherBoundNodes = otherState.getFrameValues();
             HostGraph myGraph = myState.getGraph();
             HostGraph otherGraph = otherState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
                 // check for equality of the bound nodes
-                if (!Arrays.equals(myBoundNodes, otherBoundNodes)) {
+                if (!Valuator.areEqual(myBoundNodes, otherBoundNodes)) {
                     return false;
                 }
                 // check for graph equality
@@ -779,11 +777,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    for (HostNode node : stateKey.getBoundNodes()) {
-                        result += node == null ? 31 : node.hashCode();
-                        // shift left to ensure the parameters' order matters
-                        result = result << 1 | (result < 0 ? 1 : 0);
-                    }
+                    result += Valuator.hashCode(stateKey.getFrameValues());
                 }
             } else {
                 CertificateStrategy certifier =
@@ -793,21 +787,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    for (HostNode node : stateKey.getBoundNodes()) {
-                        int hashCode;
-                        // value nodes may be no longer in the graph
-                        if (node == null) {
-                            hashCode = 31;
-                        } else if (node instanceof ValueNode) {
-                            hashCode = node.hashCode();
-                        } else {
-                            Certificate parCert = certifier.getCertificateMap().get(node);
-                            hashCode = parCert.hashCode();
-                        }
-                        result += hashCode;
-                        // shift left to ensure the parameters' order matters
-                        result = result << 1 | (result < 0 ? 1 : 0);
-                    }
+                    result +=
+                        Valuator.hashCode(stateKey.getFrameValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {

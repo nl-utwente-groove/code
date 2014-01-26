@@ -22,6 +22,7 @@ import groove.control.template.Switch.Kind;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.host.HostFactory;
 import groove.util.Groove;
 
 import java.util.HashMap;
@@ -160,8 +161,7 @@ public class CtrlCall {
     /** Tests if this control call modifies the input arguments of another. */
     public boolean modifies(CtrlCall other) {
         boolean result = false;
-        if (!(getArgs() == null || getArgs().isEmpty()
-            || other.getArgs() == null || other.getArgs().isEmpty())) {
+        if (!(getArgs() == null || getArgs().isEmpty() || other.getArgs() == null || other.getArgs().isEmpty())) {
             Map<CtrlVar,Integer> otherInVars = other.getInVars();
             for (CtrlVar outVar : getOutVars().keySet()) {
                 if (otherInVars.containsKey(outVar)) {
@@ -306,6 +306,15 @@ public class CtrlCall {
 
     /** The name of the function being called; non-{@code null}. */
     private final String name;
+
+    /** Computes and inserts the host nodes to be used for constant value arguments. */
+    public void initialise(HostFactory factory) {
+        if (getArgs() != null) {
+            for (CtrlPar arg : getArgs()) {
+                arg.initialise(factory);
+            }
+        }
+    }
 
     /** 
      * Returns the call kind of a given grammar action.

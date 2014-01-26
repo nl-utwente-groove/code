@@ -426,7 +426,7 @@ public class STS {
         int end = rule.getSignature().size();
         for (int i = 0; i < end; i++) {
             Binding bind = rule.getParBinding(i);
-            assert bind.getType() == Source.ANCHOR;
+            assert bind.getSource() == Source.ANCHOR;
             AnchorKey k = rule.getAnchor().get(bind.getIndex());
             if (k instanceof VariableNode) {
                 VariableNode v = (VariableNode) k;

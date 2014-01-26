@@ -55,7 +55,7 @@ public class ControlAttributeParametersTest {
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assert.fail(e.toString());
         }
     }
 }

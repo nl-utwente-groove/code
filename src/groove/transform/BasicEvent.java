@@ -207,7 +207,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             for (int i = 0; i < size; i++) {
                 Binding binding = getRule().getParBinding(i);
                 HostNode argument = null;
-                switch (binding.getType()) {
+                switch (binding.getSource()) {
                 case ANCHOR:
                     argument = (HostNode) anchorImage[binding.getIndex()];
                     break;

@@ -16,6 +16,8 @@
  */
 package groove.control;
 
+import groove.control.instance.Assignment;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -175,6 +177,16 @@ public class CtrlSchedule implements CtrlFrame {
     }
 
     @Override
+    public boolean hasVars() {
+        return getPrime().hasVars();
+    }
+
+    @Override
+    public List<CtrlVar> getVars() {
+        return getPrime().getVars();
+    }
+
+    @Override
     public String toString() {
         return toString(0, "");
     }
@@ -208,9 +220,10 @@ public class CtrlSchedule implements CtrlFrame {
                     result.append(", parameter binding: ");
                     result.append(Arrays.toString(t.getCallBinding()));
                 }
-                if (t.getTargetBinding().length > 0) {
+                Assignment assign = t.getAssignment();
+                if (assign.size() > 0) {
                     result.append(", target variable binding: ");
-                    result.append(Arrays.toString(t.getTargetBinding()));
+                    result.append(assign.toString());
                 }
             }
             if (isFinal()) {

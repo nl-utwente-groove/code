@@ -28,17 +28,13 @@ import groove.control.CtrlTransition;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.SoloAttempt;
-import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.grammar.host.HostNode;
 import groove.graph.AEdge;
 import groove.graph.Edge;
-import groove.lts.GraphState;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,18 +99,6 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         return getSwitch().getCallStack();
     }
 
-    /** Convenience method to return the target variable binding of the switch of this step. */
-    @Override
-    public final Binding[] getTargetBinding() {
-        return getSwitch().getTargetBinding();
-    }
-
-    /** Convenience method to return the call parameter binding of the switch of this step. */
-    @Override
-    public final Binding[] getCallBinding() {
-        return getSwitch().getCallBinding();
-    }
-
     @Override
     public boolean isPartial() {
         return getSwitch().isPartial();
@@ -136,9 +120,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         return getCall().getRule();
     }
 
-    /** Convenience method to return the arguments of the call of this step. */
-    public final List<? extends CtrlPar> getArgs() {
-        return getCall().getArgs();
+    @Override
+    public Map<CtrlVar,Integer> getOutVars() {
+        return getCall().getOutVars();
     }
 
     /**
@@ -146,7 +130,12 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
      * a given target variable position.
      */
     public boolean mayAssign(int targetVar) {
-        return getTargetBinding()[targetVar].getType() != Source.VAR;
+        if (getCallDepth() != 0) {
+            return true;
+        }
+        // the target frame has the same depth as the source frame
+        Assignment lastAction = getFrameChanges().get(getFrameChanges().size() - 1);
+        return lastAction.getBinding(targetVar).getSource() != Source.VAR;
     }
 
     @Override
@@ -154,77 +143,44 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         return source().getPrime() != target() || getCall().hasOutVars();
     }
 
-    /** Returns the actions associated with this step. */
-    public List<StepAction> getPreActions() {
-        if (this.preActions == null) {
-            this.preActions = computePreActions();
+    /** Returns the push actions associated with this step. */
+    public List<Assignment> getFramePushes() {
+        if (this.pushes == null) {
+            this.pushes = computeFramePushes();
         }
-        return this.preActions;
+        return this.pushes;
     }
 
-    private List<StepAction> preActions;
+    private List<Assignment> pushes;
 
-    /** Returns the actions associated with this step. */
-    public List<StepAction> getFinishActions() {
-        if (this.finishActions == null) {
-            this.finishActions = computeFinishActions();
-        }
-        return this.finishActions;
-    }
-
-    private List<StepAction> finishActions;
-
-    /** Returns the actions associated with this step. */
-    public List<StepAction> getFailureActions() {
-        if (this.failureActions == null) {
-            this.failureActions = computeVerdictActions(onFailure());
-        }
-        return this.failureActions;
-    }
-
-    private List<StepAction> failureActions;
-
-    /** Returns the actions associated with this step. */
-    public List<StepAction> getSuccessActions() {
-        if (this.successActions == null) {
-            this.successActions = computeVerdictActions(onSuccess());
-        }
-        return this.successActions;
-    }
-
-    private List<StepAction> successActions;
-
-    private List<StepAction> computePreActions() {
-        List<StepAction> result = new ArrayList<StepAction>();
+    private List<Assignment> computeFramePushes() {
+        List<Assignment> result = new ArrayList<Assignment>();
         // add pop actions for every successive call on the
         // stack of entered calls
         for (int i = source().getCallStack().size(); i < getCallStack().size(); i++) {
             Switch swit = getCallStack().get(i);
-            result.add(StepAction.push(enter(swit)));
+            result.add(enter(swit));
         }
         return result;
     }
 
-    private List<StepAction> computeFinishActions() {
-        List<StepAction> result = new ArrayList<StepAction>();
-        result.add(StepAction.modify(rule(label())));
-        result.addAll(computePostActions(onFinish()));
-        return result;
+    @Override
+    public List<Assignment> getFrameChanges() {
+        if (this.changes == null) {
+            this.changes = computeFrameChanges();
+        }
+        return this.changes;
     }
 
-    private List<StepAction> computeVerdictActions(Frame target) {
-        List<StepAction> result = new ArrayList<StepAction>();
-        result.add(StepAction.modify(verdict(source().getLocation(), target.getLocation())));
-        result.addAll(computePostActions(target));
-        return result;
-    }
+    private List<Assignment> changes;
 
-    private List<StepAction> computePostActions(Frame target) {
-        List<StepAction> result = new ArrayList<StepAction>();
+    private List<Assignment> computeFrameChanges() {
+        List<Assignment> result = computeFramePushes();
+        result.add(Assignment.modify(this));
         // add pop actions for the calls that are finished
-        for (int i = getCallStack().size() - 1; i >= target.getCallStack().size(); i--) {
+        for (int i = getCallStack().size() - 1; i >= onFinish().getCallStack().size(); i--) {
             Switch swit = getCallStack().get(i);
-            result.add(StepAction.pop(exit(swit)));
+            result.add(exit(swit));
         }
         return result;
     }
@@ -232,28 +188,28 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     /**
      * Computes the variable assignment for the initial location of a called template
      * from the variables of the caller location and the arguments of the call.
-     * @param call the template call
+     * @param swit the template call
      */
-    private Map<CtrlVar,Binding> enter(Switch call) {
-        assert call.getKind().isProcedure();
-        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
-        Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();
-        Map<CtrlVar,Integer> sig = ((Procedure) call.getUnit()).getInPars();
-        for (CtrlVar var : call.target().getVars()) {
+    private Assignment enter(Switch swit) {
+        assert swit.getKind().isProcedure();
+        List<Binding> result = new ArrayList<Binding>();
+        List<CtrlVar> sourceVars = swit.source().getVars();
+        Map<CtrlVar,Integer> sig = ((Procedure) swit.getUnit()).getInPars();
+        for (CtrlVar var : swit.target().getVars()) {
             // all initial state variables are formal input parameters 
             Integer ix = sig.get(var);
             assert ix != null;
             // look up the corresponding argument in the call
-            CtrlPar arg = call.getArgs().get(ix);
+            CtrlPar arg = swit.getArgs().get(ix);
             Binding rhs;
             if (arg instanceof Const) {
                 rhs = Binding.value((Const) arg);
             } else {
-                rhs = Binding.var(sourceVars.get(((Var) arg).getVar()));
+                rhs = Binding.var(sourceVars.indexOf(((Var) arg).getVar()));
             }
-            result.put(var, rhs);
+            result.add(rhs);
         }
-        return result;
+        return Assignment.push(result);
     }
 
     /**
@@ -262,9 +218,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
      * template and the source state of the call.
      * @param swit the template call
      */
-    private Map<CtrlVar,Binding> exit(Switch swit) {
+    private Assignment exit(Switch swit) {
         assert swit.getKind().isProcedure();
-        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
+        List<Binding> result = new ArrayList<Binding>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = swit.source().getVarIxMap();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
@@ -278,56 +234,15 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
                 rhs = Binding.caller(callerVars.get(var));
             } else {
                 // the value comes from an output parameter of the call
-                ix = outVars.get(var);
-                assert ix != null;
                 // find the corresponding formal parameter
                 CtrlVar par = sig.get(ix).getVar();
                 // look it up in the final location variables
                 rhs = Binding.var(finalVars.get(par));
             }
             assert rhs != null;
-            result.put(var, rhs);
+            result.add(rhs);
         }
-        return result;
-    }
-
-    /** Computes the variable assignment for the target location of
-     * a rule call, using the variables of the source location
-     * combined with the output parameters of the call.
-     */
-    private Map<CtrlVar,Binding> rule(Switch swit) {
-        assert !swit.getKind().isProcedure();
-        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
-        Map<CtrlVar,Integer> sourceVars = swit.source().getVarIxMap();
-        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
-        for (CtrlVar var : swit.target().getVars()) {
-            Integer ix = outVars.get(var);
-            Binding rhs;
-            if (ix == null) {
-                // the value comes from the source
-                ix = sourceVars.get(var);
-                rhs = Binding.var(ix);
-            } else {
-                rhs = Binding.out(ix);
-            }
-            result.put(var, rhs);
-        }
-        return result;
-    }
-
-    /** Computes the variable assignment for the target location of
-     * a verdict, using the variables of the source location.
-     */
-    private Map<CtrlVar,Binding> verdict(Location source, Location target) {
-        Map<CtrlVar,Binding> result = new LinkedHashMap<CtrlVar,Binding>();
-        Map<CtrlVar,Integer> sourceVars = source.getVarIxMap();
-        for (CtrlVar var : target.getVars()) {
-            // the value comes from the source
-            int ix = sourceVars.get(var);
-            Binding rhs = Binding.var(ix);
-            result.put(var, rhs);
-        }
-        return result;
+        return Assignment.pop(result);
     }
 
     @Override
@@ -339,48 +254,6 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         return source().compareTo(other.source());
     }
 
-    /** 
-     * Returns the array of host nodes corresponding to the input parameters of the call.
-     * The result may be {@code null} if one of the input parameters has been deleted
-     * from the graph.
-     */
-    public HostNode[] applyCallBinding(GraphState state) {
-        HostNode[] result;
-        List<? extends CtrlPar> args = getArgs();
-        if (args.isEmpty()) {
-            result = EMPTY_ARGS;
-        } else {
-            result = new HostNode[args.size()];
-            Binding[] parBind = getCallBinding();
-            HostNode[] boundNodes = state.getBoundNodes();
-            for (int i = 0; i < args.size(); i++) {
-                CtrlPar arg = args.get(i);
-                HostNode image = null;
-                if (arg instanceof CtrlPar.Const) {
-                    CtrlPar.Const constArg = (CtrlPar.Const) arg;
-                    image =
-                        state.getGraph().getFactory().createNode(constArg.getAlgebra(),
-                            constArg.getValue());
-                    assert image != null : String.format(
-                        "Constant argument %s not initialised properly", arg);
-                } else if (arg.isInOnly()) {
-                    assert parBind[i].getType() == Source.VAR;
-                    image = boundNodes[parBind[i].getIndex()];
-                    // test if the bound node is not deleted by a previous rule
-                    if (image == null) {
-                        result = null;
-                        break;
-                    }
-                } else {
-                    // non-input arguments are ignored
-                    continue;
-                }
-                result[i] = image;
-            }
-        }
-        return result;
-    }
-
     @Override
     protected int computeHashCode() {
         return System.identityHashCode(this);
@@ -390,8 +263,6 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     protected boolean isLabelEqual(Edge other) {
         return this == other;
     }
-
-    private final static HostNode[] EMPTY_ARGS = new HostNode[0];
 
     /** Constructs an artificial step reflecting a verdict of a base step. */
     static Step newStep(Step base, boolean success) {

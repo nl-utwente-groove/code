@@ -20,7 +20,6 @@ import groove.control.CtrlFrame;
 import groove.control.CtrlState;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.graph.Node;
 
 import java.util.List;
@@ -148,9 +147,9 @@ public interface GraphState extends Node {
      * Returns a list of values for the bound variables of
      * the control frame.
      * @see #getPrimeFrame()
-     * @see CtrlState#getBoundVars()
+     * @see CtrlState#getVars()
      */
-    public HostNode[] getBoundNodes();
+    public Object[] getFrameValues();
 
     /** 
      * Returns the current state cache, or a fresh one if the cache is cleared.

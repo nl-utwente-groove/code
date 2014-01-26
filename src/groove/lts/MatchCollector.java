@@ -23,6 +23,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
+import groove.control.Valuator;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
@@ -181,8 +182,7 @@ public class MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<CtrlCall> triedCalls =
-            ((CtrlSchedule) state.source().getActualFrame()).getTriedCalls();
+        Set<CtrlCall> triedCalls = ((CtrlSchedule) state.source().getActualFrame()).getTriedCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 
@@ -213,20 +213,18 @@ public class MatchCollector {
         if (args != null && args.size() > 0) {
             Binding[] parBind = ctrlTrans.getCallBinding();
             List<CtrlPar.Var> ruleSig = ctrlTrans.getRule().getSignature();
-            HostNode[] boundNodes = this.state.getBoundNodes();
+            Object[] frameValues = this.state.getFrameValues();
             for (int i = 0; i < args.size(); i++) {
                 CtrlPar arg = args.get(i);
                 HostNode image = null;
                 if (arg instanceof CtrlPar.Const) {
                     CtrlPar.Const constArg = (CtrlPar.Const) arg;
-                    image =
-                        this.state.getGraph().getFactory().createNode(constArg.getAlgebra(),
-                            constArg.getValue());
+                    image = constArg.getNode();
                     assert image != null : String.format(
                         "Constant argument %s not initialised properly", arg);
                 } else if (arg.isInOnly()) {
-                    assert parBind[i].getType() == Source.VAR;
-                    image = boundNodes[parBind[i].getIndex()];
+                    assert parBind[i].getSource() == Source.VAR;
+                    image = Valuator.get(frameValues, parBind[i]);
                     // test if the bound node is not deleted by a previous rule
                     if (image == null) {
                         result = null;

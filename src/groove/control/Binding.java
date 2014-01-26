@@ -30,19 +30,19 @@ public class Binding {
     }
 
     /** Returns the type of assignment source. */
-    public Binding.Source getType() {
+    public Binding.Source getSource() {
         return this.type;
     }
 
     /** Returns the index, if this is not a constant assignment. */
     public int getIndex() {
-        assert getType() != Source.CONST;
+        assert getSource() != Source.CONST;
         return this.index;
     }
 
     /** Returns the assigned value, if this is a value binding. */
     public Const getValue() {
-        assert getType() == Source.CONST;
+        assert getSource() == Source.CONST;
         return this.value;
     }
 
@@ -50,11 +50,9 @@ public class Binding {
     private final int index;
     private final Const value;
 
-    /** Constructs a binding to an output parameter in a call.
-     * @see Source#OUT
-     */
-    public static Binding out(int index) {
-        return new Binding(Source.OUT, index, null);
+    @Override
+    public String toString() {
+        return this.type.name() + ":" + (getSource() == Source.CONST ? this.value : this.index);
     }
 
     /** Constructs a binding to a constant value.
@@ -95,11 +93,9 @@ public class Binding {
 
     /** Kind of source for a variable assignment. */
     public static enum Source {
-        /** Transition argument. */
-        OUT,
         /** Source location variable. */
         VAR,
-        /** Caller location variable. */
+        /** Parent location variable. */
         CALLER,
         /** Rule anchor. */
         ANCHOR,
