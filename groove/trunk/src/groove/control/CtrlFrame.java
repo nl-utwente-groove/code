@@ -18,6 +18,7 @@ package groove.control;
 
 import groove.control.instance.Frame;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,4 +53,10 @@ public interface CtrlFrame {
      * reached after a sequence of verdicts.
      */
     public abstract CtrlFrame getPrime();
+
+    /** Indicates if this frame has any control variables. */
+    public boolean hasVars();
+
+    /** Returns the list of control variables in this frame. */
+    public List<CtrlVar> getVars();
 }

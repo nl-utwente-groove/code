@@ -161,8 +161,7 @@ public final class ShapeIsoChecker extends IsoChecker {
     }
 
     /** Compares the two given shapes and returns a number formed by flags.*/
-    public Pair<Integer,Morphism<ShapeNode,ShapeEdge>> compareShapes(Shape dom,
-            Shape cod) {
+    public Pair<Integer,Morphism<ShapeNode,ShapeEdge>> compareShapes(Shape dom, Shape cod) {
         Pair<Integer,Morphism<ShapeNode,ShapeEdge>> result =
             new Pair<Integer,Morphism<ShapeNode,ShapeEdge>>(NON_ISO, null);
         if (!this.passBasicChecks(dom, cod)) {
@@ -170,17 +169,14 @@ public final class ShapeIsoChecker extends IsoChecker {
         }
         ShapeIsoChecker isoChecker = ShapeIsoChecker.getInstance(true);
         IsoChecker.IsoCheckerState state = new IsoCheckerState();
-        Morphism<ShapeNode,ShapeEdge> morphism =
-            isoChecker.getIsomorphism(dom, cod, state);
+        Morphism<ShapeNode,ShapeEdge> morphism = isoChecker.getIsomorphism(dom, cod, state);
         int comparison = NON_ISO;
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
             // Check for the extra conditions.
             comparison = this.checkIsomorphism(dom, cod, morphism);
             if (comparison != NON_ISO) {
-                result =
-                    new Pair<Integer,Morphism<ShapeNode,ShapeEdge>>(comparison,
-                        morphism);
+                result = new Pair<Integer,Morphism<ShapeNode,ShapeEdge>>(comparison, morphism);
                 break;
             } else {
                 // Keep trying.
@@ -202,8 +198,7 @@ public final class ShapeIsoChecker extends IsoChecker {
      * (2) they have the same outgoing and incoming edge multiplicities; and
      * (3) they have the same equivalence relation. 
      */
-    private int checkIsomorphism(Shape dom, Shape cod,
-            Morphism<ShapeNode,ShapeEdge> morphism) {
+    private int checkIsomorphism(Shape dom, Shape cod, Morphism<ShapeNode,ShapeEdge> morphism) {
         int result = DOM_EQUALS_COD | DOM_SUBSUMES_COD | COD_SUBSUMES_DOM;
         // First check the node multiplicities.
         Map<ShapeNode,Multiplicity> domMultMap = dom.getNodeMultMap();
@@ -228,12 +223,9 @@ public final class ShapeIsoChecker extends IsoChecker {
             ShapeEdge codEdge = edgeEntry.getValue();
             if (domEdge.getRole() == EdgeRole.BINARY) {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
-                    Multiplicity domEMult =
-                        domStore.getMult(domEdge, direction);
-                    Multiplicity codEMult =
-                        codStore.getMult(codEdge, direction);
-                    int comparison =
-                        this.compareMultiplicities(domEMult, codEMult);
+                    Multiplicity domEMult = domStore.getMult(domEdge, direction);
+                    Multiplicity codEMult = codStore.getMult(codEdge, direction);
+                    int comparison = this.compareMultiplicities(domEMult, codEMult);
                     result = this.updateResult(result, comparison);
                     if (result == NON_ISO) {
                         return NON_ISO;
@@ -243,8 +235,7 @@ public final class ShapeIsoChecker extends IsoChecker {
         }
 
         // Last, check the equivalence relation.
-        EquivClass<ShapeNode> mappedCodEc =
-            new NodeEquivClass<ShapeNode>(dom.getFactory());
+        EquivClass<ShapeNode> mappedCodEc = new NodeEquivClass<ShapeNode>(dom.getFactory());
         EquivRelation<ShapeNode> codEr = cod.getEquivRelation();
         for (EquivClass<ShapeNode> domEc : dom.getEquivRelation()) {
             ShapeNode codNode = null;
@@ -273,8 +264,7 @@ public final class ShapeIsoChecker extends IsoChecker {
      * to execute) then for sure the shapes are not isomorphic.
      */
     private boolean passBasicChecks(Shape dom, Shape cod) {
-        return dom.nodeCount() == cod.nodeCount()
-            && dom.edgeCount() == cod.edgeCount()
+        return dom.nodeCount() == cod.nodeCount() && dom.edgeCount() == cod.edgeCount()
             && dom.getEquivRelation().size() == cod.getEquivRelation().size()
             && dom.getEdgeSigSet().size() == cod.getEdgeSigSet().size();
     }
@@ -313,8 +303,7 @@ public final class ShapeIsoChecker extends IsoChecker {
     // ------------------------------------------------------------------------
 
     @Override
-    public boolean areIsomorphic(Graph dom, Graph cod, Node[] domNodes,
-            Node[] codNodes) {
+    public boolean areIsomorphic(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
         throw new UnsupportedOperationException();
     }
 

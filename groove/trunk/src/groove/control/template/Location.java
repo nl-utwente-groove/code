@@ -207,6 +207,11 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
 
     private List<Duo<Stage>> stages;
 
+    /** Indicates if this location has a non-empty set of control variables. */
+    public boolean hasVars() {
+        return getVars().isEmpty();
+    }
+
     /**
      * Returns the list of control variables in this location,
      * ordered alphabetically according to their names.

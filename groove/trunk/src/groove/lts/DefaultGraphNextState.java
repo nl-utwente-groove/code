@@ -42,17 +42,17 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
      * @param number the number of the state; required to be positive
-     * @param boundNodes nodes that are bound to control variables
+     * @param frameValues nodes that are bound to the variables in the control frame
      */
     public DefaultGraphNextState(int number, AbstractGraphState source, MatchResult match,
-            HostNode[] addedNodes, HostNode[] boundNodes) {
+            HostNode[] addedNodes, Object[] frameValues) {
         super(source.getCacheReference(), number);
         this.source = source;
         this.event = match.getEvent();
         this.addedNodes = addedNodes;
         this.step = match.getStep();
         setFrame(this.step.target());
-        this.boundNodes = boundNodes;
+        this.frameValues = frameValues;
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
             System.out.printf("  Graph: %s%n", source.getGraph());
@@ -98,8 +98,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-    public HostNode[] getBoundNodes() {
-        return this.boundNodes;
+    public Object[] getFrameValues() {
+        return this.frameValues;
     }
 
     /**
@@ -340,7 +340,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     /** Keeps track of bound variables */
-    private HostNode[] boundNodes;
+    private Object[] frameValues;
     /**
      * The rule of the incoming transition with which this state was created.
      */

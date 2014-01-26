@@ -16,9 +16,13 @@
  */
 package groove.control;
 
+import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.graph.Label;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Temporary interface to unify {@link CtrlTransition} and {@link Step}.
@@ -36,12 +40,17 @@ public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
      */
     boolean isModifying();
 
-    /** Convenience method to return the target variable binding of the switch of this step. */
-    public Binding[] getTargetBinding();
-
-    /** Convenience method to return the call parameter binding of the switch of this step. */
-    public Binding[] getCallBinding();
+    /** Method returning supertype of {@link CtrlState} and {@link Frame}. */
+    public CtrlFrame source();
 
     /** Method returning supertype of {@link CtrlState} and {@link Frame}. */
     public CtrlFrame target();
+
+    /**
+     * Returns the list of frame value changes caused by this step.
+     */
+    public List<Assignment> getFrameChanges();
+
+    /** Returns the mapping of output variables to argument positions of the called unit. */
+    public Map<CtrlVar,Integer> getOutVars();
 }

@@ -20,6 +20,7 @@ import static groove.graph.GraphRole.CTRL;
 import groove.control.template.Switch.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.host.HostFactory;
 import groove.grammar.model.FormatException;
 import groove.graph.AGraph;
 import groove.graph.GraphInfo;
@@ -149,7 +150,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
                         && state.getTransitions().iterator().next().getCall().isOmega();
                 image = result.addState(state, terminating ? null : recipe);
             }
-            image.setBoundVars(state.getBoundVars());
+            image.setVars(state.getVars());
             morphism.putNode(state, image);
         }
         for (CtrlTransition trans : edgeSet()) {
@@ -237,7 +238,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     public String toString() {
         StringBuilder result = new StringBuilder();
         for (CtrlState state : nodeSet()) {
-            result.append(String.format("State %s, variables %s%n", state, state.getBoundVars()));
+            result.append(String.format("State %s, variables %s%n", state, state.getVars()));
             result.append(state.getSchedule().toString());
         }
         return result.toString();
@@ -375,7 +376,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
                     distinct = !i.getRecipe().equals(j.getRecipe());
                 }
                 if (!distinct) {
-                    distinct = !i.getBoundVars().equals(j.getBoundVars());
+                    distinct = !i.getVars().equals(j.getVars());
                 }
                 if (!distinct) {
                     Map<CtrlTransition,CtrlTransition> equivalence = computeEquivalence(i, j);
@@ -535,23 +536,31 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         }
         for (CtrlTransition trans : edgeSet()) {
             inMap.get(trans.target()).add(trans);
-            trans.source().addBoundVars(trans.getInVars());
+            trans.source().addVars(trans.getInVars());
         }
         Queue<CtrlTransition> queue = new LinkedList<CtrlTransition>(edgeSet());
         while (!queue.isEmpty()) {
             CtrlTransition next = queue.poll();
             CtrlState source = next.source();
-            CtrlVarSet sourceVars = new CtrlVarSet(source.getBoundVars());
+            CtrlVarSet sourceVars = new CtrlVarSet(source.getVars());
             boolean modified = false;
-            for (CtrlVar targetVar : next.target().getBoundVars()) {
-                if (!next.getOutVars().contains(targetVar)) {
+            for (CtrlVar targetVar : next.target().getVars()) {
+                if (!next.getOutVars().containsKey(targetVar)) {
                     modified |= sourceVars.add(targetVar);
                 }
             }
             if (modified) {
-                source.setBoundVars(sourceVars);
+                source.setVars(sourceVars);
                 queue.addAll(inMap.get(source));
             }
+        }
+    }
+
+    /** Computes and inserts the host nodes to be used for constant value arguments. */
+    public void initialise(HostFactory factory) {
+        assert isFixed();
+        for (CtrlTransition trans : edgeSet()) {
+            trans.getCall().initialise(factory);
         }
     }
 

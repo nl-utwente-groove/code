@@ -17,6 +17,8 @@
 package groove.control;
 
 import groove.algebra.Algebra;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.RuleNode;
 
@@ -60,6 +62,11 @@ public abstract class CtrlPar {
      * the type derived from the variable or constant otherwise.
      */
     public abstract CtrlType getType();
+
+    /** Computes and inserts the host nodes to be used for constant value arguments. */
+    public void initialise(HostFactory factory) {
+        // empty
+    }
 
     /** String representation of a don't care parameter. */
     public static final String DONT_CARE = "_";
@@ -129,8 +136,7 @@ public abstract class CtrlPar {
                 return false;
             }
             Var other = (Var) obj;
-            return isInOnly() == other.isInOnly()
-                && getVar().equals(other.getVar());
+            return isInOnly() == other.isInOnly() && getVar().equals(other.getVar());
         }
 
         @Override
@@ -290,6 +296,17 @@ public abstract class CtrlPar {
             return false;
         }
 
+        /** Returns the host node containing the value of this constant. */
+        public HostNode getNode() {
+            assert this.node != null;
+            return this.node;
+        }
+
+        @Override
+        public void initialise(HostFactory factory) {
+            this.node = factory.createNode(getAlgebra(), getValue());
+        }
+
         @Override
         public String toString() {
             return this.algebra.getSymbol(this.value);
@@ -300,6 +317,8 @@ public abstract class CtrlPar {
         private final Object value;
         /** The type of the constant. */
         private final CtrlType type;
+        /** The host node to be used as image. */
+        private HostNode node;
     }
 
     /**

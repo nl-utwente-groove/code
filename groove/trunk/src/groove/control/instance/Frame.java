@@ -18,6 +18,7 @@ package groove.control.instance;
 
 import groove.control.Call;
 import groove.control.CtrlFrame;
+import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.control.Procedure;
 import groove.control.template.Location;
@@ -292,6 +293,16 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
      */
     public CallStack getCallStack() {
         return getStage().getCallStack();
+    }
+
+    @Override
+    public boolean hasVars() {
+        return getLocation().hasVars();
+    }
+
+    @Override
+    public List<CtrlVar> getVars() {
+        return getLocation().getVars();
     }
 
     /** Tests if this is a normal frame.

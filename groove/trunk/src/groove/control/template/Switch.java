@@ -18,9 +18,10 @@ package groove.control.template;
 
 import groove.control.Binding;
 import groove.control.Call;
-import groove.control.CalledAction;
 import groove.control.Callable;
+import groove.control.CalledAction;
 import groove.control.CtrlPar;
+import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.control.SoloAttempt;
 import groove.control.instance.CallStack;
@@ -31,7 +32,9 @@ import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.util.Groove;
+import groove.util.Pair;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -268,61 +271,11 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
     private final boolean success;
 
     /** 
-     * Returns a list of bindings for the variables in the target location.
-     * For each variable, the binding is either a variable index of
-     * the source location, or an output parameter index in the call.
-     */
-    public Binding[] getTargetBinding() {
-        if (this.targetBinding == null) {
-            this.targetBinding = isBase() ? computeTargetBinding() : getBase().getTargetBinding();
-        }
-        return this.targetBinding;
-    }
-
-    /** Binding of target variables to source variables and call parameters. */
-    private Binding[] targetBinding;
-
-    /**
-     * Computes the binding of target variables to source
-     * variables and call parameters.
-     * @see #getTargetBinding()
-     */
-    private Binding[] computeTargetBinding() {
-        Binding[] result;
-        List<CtrlVar> targetVars = target().getVars();
-        int targetVarCount = targetVars.size();
-        if (targetVarCount == 0) {
-            result = EMPTY_BINDING;
-        } else {
-            result = new Binding[targetVarCount];
-            for (int i = 0; i < targetVarCount; i++) {
-                result[i] = computeTargetBinding(targetVars.get(i));
-            }
-        }
-        return result;
-    }
-
-    private Binding computeTargetBinding(CtrlVar var) {
-        Binding result;
-        Map<CtrlVar,Integer> outVars = getCall().getOutVars();
-        if (outVars.containsKey(var)) {
-            int index = outVars.get(var);
-            result = Binding.out(index);
-        } else {
-            List<CtrlVar> sourceVars = label().source().getVars();
-            int index = sourceVars.indexOf(var);
-            result = Binding.var(index);
-        }
-        return result;
-    }
-
-    /** 
-     * Returns an assignment of call parameters to source location
-     * variables and constant values (for input parameters), respectively
-     * anchor positions and creator nodes (for output parameters).
+     * Returns pairs of input parameters of this call and corresponding
+     * bindings to source location variables and constant values.
      * This is only valid for rule calls.
      */
-    public Binding[] getCallBinding() {
+    public List<Pair<Var,Binding>> getCallBinding() {
         assert getKind() == Kind.RULE;
         if (this.callBinding == null) {
             this.callBinding = isBase() ? computeCallBinding() : getBase().getCallBinding();
@@ -330,32 +283,41 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
         return this.callBinding;
     }
 
-    /** Binding of transition in-parameters to bound source variables. */
-    private Binding[] callBinding;
+    /** Binding of in-parameter positions to source variables and constant arguments. */
+    private List<Pair<Var,Binding>> callBinding;
 
     /** 
-     * Computes the binding of call arguments to source location variables
-     * and rule anchors and creators. 
+     * Computes the binding of input parameter positions to source location
+     * variables and constant values.
      */
-    private Binding[] computeCallBinding() {
+    private List<Pair<Var,Binding>> computeCallBinding() {
+        List<Pair<Var,Binding>> result = new LinkedList<Pair<Var,Binding>>();
         List<? extends CtrlPar> args = getArgs();
+        List<Var> sig = getUnit().getSignature();
         int size = args == null ? 0 : args.size();
-        Binding[] result = new Binding[size];
         Map<CtrlVar,Integer> sourceVars = source().getVarIxMap();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = args.get(i);
+            Binding bind;
             if (arg instanceof CtrlPar.Var) {
                 CtrlPar.Var varArg = (CtrlPar.Var) arg;
                 if (arg.isInOnly()) {
                     Integer ix = sourceVars.get(varArg.getVar());
                     assert ix != null;
-                    result[i] = Binding.var(ix);
+                    bind = Binding.var(ix);
                 } else if (arg.isOutOnly()) {
-                    result[i] = ((Rule) getUnit()).getParBinding(i);
+                    bind = null;
                 } else {
-                    assert arg.isDontCare();
+                    assert false;
+                    bind = null;
                 }
+            } else if (arg instanceof CtrlPar.Const) {
+                bind = Binding.value((CtrlPar.Const) arg);
+            } else {
+                assert arg instanceof CtrlPar.Wild;
+                bind = null;
             }
+            result.add(Pair.newPair(sig.get(i), bind));
         }
         return result;
     }
@@ -476,9 +438,6 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
         }
         return result;
     }
-
-    /** Constant value for the empty binding. */
-    private static final Binding[] EMPTY_BINDING = new Binding[0];
 
     /** Control switch kind. */
     public static enum Kind {

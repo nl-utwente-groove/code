@@ -122,25 +122,22 @@ public final class PatternShapeIsoChecker extends IsoChecker {
     }
 
     /** Compares the two given shapes and returns a number formed by flags.*/
-    public Pair<Integer,Morphism<PatternNode,PatternEdge>> compareShapes(
-            PatternShape dom, PatternShape cod) {
+    public Pair<Integer,Morphism<PatternNode,PatternEdge>> compareShapes(PatternShape dom,
+            PatternShape cod) {
         Pair<Integer,Morphism<PatternNode,PatternEdge>> result =
             new Pair<Integer,Morphism<PatternNode,PatternEdge>>(NON_ISO, null);
         if (!passBasicChecks(dom, cod)) {
             return result;
         }
         IsoChecker.IsoCheckerState state = new IsoCheckerState();
-        Morphism<PatternNode,PatternEdge> morphism =
-            getIsomorphism(dom, cod, state);
+        Morphism<PatternNode,PatternEdge> morphism = getIsomorphism(dom, cod, state);
         int comparison = NON_ISO;
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
             // Check for the extra conditions.
             comparison = checkIsomorphism(dom, cod, morphism);
             if (comparison != NON_ISO) {
-                result =
-                    new Pair<Integer,Morphism<PatternNode,PatternEdge>>(
-                        comparison, morphism);
+                result = new Pair<Integer,Morphism<PatternNode,PatternEdge>>(comparison, morphism);
                 break;
             } else {
                 // Keep trying.
@@ -206,8 +203,7 @@ public final class PatternShapeIsoChecker extends IsoChecker {
      * to execute) then for sure the shapes are not isomorphic.
      */
     private boolean passBasicChecks(PatternShape dom, PatternShape cod) {
-        return dom.nodeCount() == cod.nodeCount()
-            && dom.edgeCount() == cod.edgeCount();
+        return dom.nodeCount() == cod.nodeCount() && dom.edgeCount() == cod.edgeCount();
     }
 
     /**
@@ -242,14 +238,12 @@ public final class PatternShapeIsoChecker extends IsoChecker {
     // ------------------------------------------------------------------------
 
     @Override
-    public <N extends Node,E extends Edge> boolean areIsomorphic(Graph dom,
-            Graph cod, Node[] domNodes, Node[] codNodes) {
+    public boolean areIsomorphic(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public <N extends Node,E extends Edge> Morphism<N,E> getIsomorphism(
-            Graph dom, Graph cod) {
+    public <N extends Node,E extends Edge> Morphism<N,E> getIsomorphism(Graph dom, Graph cod) {
         throw new UnsupportedOperationException();
     }
 }

@@ -16,10 +16,13 @@
  */
 package groove.lts;
 
+import groove.control.Binding;
 import groove.control.Call;
-import groove.control.CtrlPar;
+import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.control.Valuator;
+import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.grammar.Rule;
@@ -33,9 +36,9 @@ import groove.transform.CompositeEvent;
 import groove.transform.Proof;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
+import groove.util.Pair;
 import groove.util.Visitor;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -176,7 +179,7 @@ public class StepMatchCollector extends MatchCollector {
         // since disabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
         for (Map.Entry<CtrlVar,Integer> inArg : call.getInVars().entrySet()) {
-            // node variables may be deleted 
+            // node values may be deleted 
             if (inArg.getKey().getType() == CtrlType.NODE && call.getRule().hasNodeErasers()) {
                 return true;
             }
@@ -194,18 +197,35 @@ public class StepMatchCollector extends MatchCollector {
      * so the rule cannot match
      */
     private RuleToHostMap extractBinding(Step step) {
-        RuleToHostMap result;
-        HostNode[] binding = step.applyCallBinding(this.state);
-        if (binding == null) {
-            result = null;
-        } else {
-            List<CtrlPar.Var> ruleSig = step.getUnit().getSignature();
-            result = this.state.getGraph().getFactory().createRuleToHostMap();
-            for (int i = 0; i < binding.length; i++) {
-                if (binding[i] != null) {
-                    result.putNode(ruleSig.get(i).getRuleNode(), binding[i]);
-                }
+        RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
+        Object[] sourceValues = this.state.getFrameValues();
+        for (Assignment action : step.getFramePushes()) {
+            sourceValues = action.apply(sourceValues);
+        }
+        loop: for (Pair<Var,Binding> entry : step.getSwitch().getCallBinding()) {
+            Binding bind = entry.two();
+            HostNode value;
+            if (bind == null) {
+                // this corresponds to an output parameter of the call
+                continue;
             }
+            switch (bind.getSource()) {
+            case CONST:
+                value = bind.getValue().getNode();
+                break;
+            case VAR:
+                value = Valuator.get(sourceValues, bind);
+                // test if the value is not deleted by a previous rule
+                if (value == null) {
+                    result = null;
+                    break loop;
+                }
+                break;
+            default:
+                assert false;
+                value = null;
+            }
+            result.putNode(entry.one().getRuleNode(), value);
         }
         return result;
     }

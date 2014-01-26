@@ -328,7 +328,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
         MultiLabel result = getBasicVertexLabel(jVertex);
         CtrlState state = jVertex.getNode();
-        List<CtrlVar> boundVars = state.getBoundVars();
+        List<CtrlVar> boundVars = state.getVars();
         if (boundVars.size() > 0) {
             StringBuilder sb = new StringBuilder();
             sb.append(boundVars.toString());

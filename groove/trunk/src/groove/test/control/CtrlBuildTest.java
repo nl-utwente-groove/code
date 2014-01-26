@@ -67,7 +67,7 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlTransition t1 = aut.getStart().getTransitions().iterator().next();
         CtrlTransition t2 = t1.target().getTransitions().iterator().next();
         CtrlTransition t3 = t2.target().getTransitions().iterator().next();
-        assertEquals(2, t3.target().getBoundVars().size());
+        assertEquals(2, t3.target().getVars().size());
     }
 
     /** Tests the default automaton construction. */
@@ -222,22 +222,21 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlTransition second = first.target().getTransitions().iterator().next();
         CtrlTransition third = second.target().getTransitions().iterator().next();
         CtrlTransition fourth = third.target().getTransitions().iterator().next();
-        assertEquals(1, first.target().getBoundVars().size());
-        assertEquals(2, second.target().getBoundVars().size());
-        assertEquals(0, third.target().getBoundVars().size());
-        assertEquals(0, fourth.target().getBoundVars().size());
-        Binding[] targetVarBind = second.getTargetBinding();
+        assertEquals(1, first.target().getVars().size());
+        assertEquals(2, second.target().getVars().size());
+        assertEquals(0, third.target().getVars().size());
+        assertEquals(0, fourth.target().getVars().size());
+        Binding[] targetVarBind = second.getAssignment().getBindings();
         assertEquals(2, targetVarBind.length);
-        assertEquals(Binding.Source.VAR, targetVarBind[0].getType());
+        assertEquals(Binding.Source.VAR, targetVarBind[0].getSource());
         assertEquals(0, targetVarBind[0].getIndex());
-        assertEquals(Binding.Source.OUT, targetVarBind[1].getType());
-        assertEquals(1, targetVarBind[1].getIndex());
+        assertEquals(Binding.Source.CREATOR, targetVarBind[1].getSource());
+        assertEquals(0, targetVarBind[1].getIndex());
         Binding[] parBind = second.getCallBinding();
         assertEquals(2, parBind.length);
-        assertEquals(Binding.Source.VAR, parBind[0].getType());
+        assertEquals(Binding.Source.VAR, parBind[0].getSource());
         assertEquals(0, parBind[0].getIndex());
-        assertEquals(Binding.Source.CREATOR, parBind[1].getType());
-        assertEquals(0, parBind[1].getIndex());
+        assertEquals(null, parBind[1]);
     }
 
     /** Tests the transition scheduling. */

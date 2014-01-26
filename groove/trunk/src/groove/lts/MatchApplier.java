@@ -18,6 +18,8 @@ package groove.lts;
 
 import groove.control.Binding;
 import groove.control.CtrlStep;
+import groove.control.Valuator;
+import groove.control.instance.Assignment;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.transform.CompositeEvent;
@@ -110,31 +112,37 @@ public class MatchApplier {
      */
     private GraphNextState createState(GraphState source, MatchResult match) {
         HostNode[] addedNodes;
-        HostNode[] boundNodes;
+        Object[] frameValues;
         RuleEvent event = match.getEvent();
+        CtrlStep ctrlStep = match.getStep();
+        boolean hasFrameValues = ctrlStep.target().hasVars();
+        RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
-            RuleEffect record = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
-            event.recordEffect(record);
-            record.setFixed();
-            addedNodes = record.getCreatedNodeArray();
+            // compute the frame values at the same time, if there are any
+            Fragment fragment = hasFrameValues ? Fragment.NODE_ALL : Fragment.NODE_CREATION;
+            effectRecord = new RuleEffect(source.getGraph(), fragment);
+            event.recordEffect(effectRecord);
+            effectRecord.setFixed();
+            addedNodes = effectRecord.getCreatedNodeArray();
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        CtrlStep ctrlTrans = match.getCtrlTransition();
-        if (ctrlTrans.getTargetBinding().length == 0) {
-            boundNodes = EMPTY_NODE_ARRAY;
+        if (hasFrameValues) {
+            // only compute the effect if it has not yet been done
+            if (effectRecord == null) {
+                effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
+                event.recordEffect(effectRecord);
+                effectRecord.setFixed();
+            }
+            frameValues = computeFrameValues(ctrlStep, source, event, effectRecord);
         } else {
-            RuleEffect record = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
-            event.recordEffect(record);
-            record.setFixed();
-            boundNodes = computeBoundNodes(source, event, ctrlTrans, record);
+            frameValues = EMPTY_NODE_ARRAY;
         }
-        assert boundNodes.length == ctrlTrans.getTargetBinding().length;
         return new DefaultGraphNextState(this.gts.nodeCount(), (AbstractGraphState) source, match,
-            addedNodes, boundNodes);
+            addedNodes, frameValues);
     }
 
     /**
@@ -186,42 +194,54 @@ public class MatchApplier {
         return sourceEvent != matchEvent;
     }
 
-    private HostNode[] computeBoundNodes(GraphState source, RuleEvent event, CtrlStep ctrlTrans,
+    private Object[] computeFrameValues(CtrlStep step, GraphState source, RuleEvent event,
             RuleEffect record) {
-        HostNode[] result;
-        Binding[] varBind = ctrlTrans.getTargetBinding();
-        int valueCount = varBind.length;
-        result = new HostNode[valueCount];
-        HostNode[] parentValues = source.getBoundNodes();
-        Rule rule = event.getRule();
+        Object[] result = source.getFrameValues();
+        for (Assignment assign : step.getFrameChanges()) {
+            switch (assign.getKind()) {
+            case MODIFY:
+                Object[] values = apply(assign, result, event, record);
+                result = Valuator.replace(result, values);
+                break;
+            case POP:
+                result = Valuator.replace(Valuator.pop(result), assign.apply(result));
+                break;
+            case PUSH:
+                result = Valuator.push(result, assign.apply(result));
+                break;
+            default:
+                assert false;
+            }
+        }
+        return result;
+    }
+
+    /** Computes the frame values for the target of a rule application. */
+    private HostNode[] apply(Assignment assign, Object[] sourceValues,
+            RuleEvent event, RuleEffect record) {
+        Binding[] bindings = assign.getBindings();
+        int valueCount = bindings.length;
+        HostNode[] result = new HostNode[valueCount];
         HostNode[] createdNodes = record.getCreatedNodeArray();
         Set<HostNode> removedNodes = record.getRemovedNodes();
         MergeMap mergeMap = record.getMergeMap();
         for (int i = 0; i < valueCount; i++) {
-            Binding bind = varBind[i];
+            Binding bind = bindings[i];
             HostNode value = null;
-            switch (bind.getType()) {
+            switch (bind.getSource()) {
             case VAR:
                 // this is an input parameter of the rule
-                HostNode sourceValue = parentValues[bind.getIndex()];
+                HostNode sourceValue = Valuator.get(sourceValues, bind);
                 value = getNodeImage(sourceValue, mergeMap, removedNodes);
                 break;
-            case OUT:
-                // this is an output parameter of the rule
-                bind = rule.getParBinding(bind.getIndex());
-                switch (bind.getType()) {
-                case ANCHOR:
-                    // the parameter is not a creator node
-                    sourceValue = (HostNode) event.getAnchorImage(bind.getIndex());
-                    value = getNodeImage(sourceValue, mergeMap, removedNodes);
-                    break;
-                case CREATOR:
-                    // the parameter is a creator node
-                    value = createdNodes[bind.getIndex()];
-                    break;
-                default:
-                    assert false;
-                }
+            case ANCHOR:
+                // the parameter is not a creator node
+                sourceValue = (HostNode) event.getAnchorImage(bind.getIndex());
+                value = getNodeImage(sourceValue, mergeMap, removedNodes);
+                break;
+            case CREATOR:
+                // the parameter is a creator node
+                value = createdNodes[bind.getIndex()];
                 break;
             default:
                 assert false;

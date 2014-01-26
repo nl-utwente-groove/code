@@ -217,30 +217,32 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         return result;
     }
 
-    /**
-     * Returns the list of bound variables in this state,
-     * ordered according to the natural ordering of the control variables.
-     */
-    public List<CtrlVar> getBoundVars() {
-        return this.boundVars;
+    @Override
+    public boolean hasVars() {
+        return !getVars().isEmpty();
+    }
+
+    @Override
+    public List<CtrlVar> getVars() {
+        return this.vars;
     }
 
     /**
      * Adds bound variables to this state.
      */
-    public void addBoundVars(Collection<CtrlVar> variables) {
-        CtrlVarSet newVars = new CtrlVarSet(variables);
-        newVars.addAll(this.boundVars);
-        this.boundVars.clear();
-        this.boundVars.addAll(newVars);
+    public void addVars(Collection<CtrlVar> vars) {
+        CtrlVarSet newVars = new CtrlVarSet(vars);
+        newVars.addAll(this.vars);
+        this.vars.clear();
+        this.vars.addAll(newVars);
     }
 
     /**
      * Sets the bound variables of this state to the elements of a given collection.
      */
-    public void setBoundVars(Collection<CtrlVar> variables) {
-        this.boundVars.clear();
-        this.boundVars.addAll(new CtrlVarSet(variables));
+    public void setVars(Collection<CtrlVar> variables) {
+        this.vars.clear();
+        this.vars.addAll(new CtrlVarSet(variables));
     }
 
     /** Lazily creates and returns the schedule for trying the outgoing transitions of this state. */
@@ -476,7 +478,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     private final Map<CtrlCall,CtrlTransition> transitionMap =
         new HashMap<CtrlCall,CtrlTransition>();
     /** The collection of bound variables of this control state. */
-    private final List<CtrlVar> boundVars = new ArrayList<CtrlVar>();
+    private final List<CtrlVar> vars = new ArrayList<CtrlVar>();
     /** Optional name of a recipe of which this is a transient state. */
     private final Recipe recipe;
     /** If the state is transient, an optional guard under which the transient status is exited. */
