@@ -226,13 +226,13 @@ public class CtrlBuildTest extends CtrlTester {
         assertEquals(2, second.target().getBoundVars().size());
         assertEquals(0, third.target().getBoundVars().size());
         assertEquals(0, fourth.target().getBoundVars().size());
-        Binding[] targetVarBind = second.getTargetVarBinding();
+        Binding[] targetVarBind = second.getTargetBinding();
         assertEquals(2, targetVarBind.length);
         assertEquals(Binding.Source.VAR, targetVarBind[0].getType());
         assertEquals(0, targetVarBind[0].getIndex());
         assertEquals(Binding.Source.OUT, targetVarBind[1].getType());
         assertEquals(1, targetVarBind[1].getIndex());
-        Binding[] parBind = second.getParBinding();
+        Binding[] parBind = second.getCallBinding();
         assertEquals(2, parBind.length);
         assertEquals(Binding.Source.VAR, parBind[0].getType());
         assertEquals(0, parBind[0].getIndex());
@@ -250,26 +250,26 @@ public class CtrlBuildTest extends CtrlTester {
         assertEquals("a", getName(s1));
         assertTrue(s1 == s0.next(true));
         CtrlSchedule s1f = s1.next(false);
-        assertTrue(s1f.isSuccess());
+        assertTrue(s1f.isFinal());
         assertEquals(Arrays.asList("c", "e"), getNames(s1f));
         CtrlSchedule s1ff = s1f.next(false);
         assertEquals("d", getName(s1ff));
-        assertTrue(s1ff.isSuccess());
+        assertTrue(s1ff.isFinal());
         assertSame(s1ff.next(false), s1ff.next(true));
-        assertTrue(s1ff.next(false).isFinished());
+        assertTrue(s1ff.next(false).isDead());
         CtrlSchedule s1ft = s1f.next(true);
-        assertTrue(s1ft.isSuccess());
-        assertTrue(s1ft.isFinished());
+        assertTrue(s1ft.isFinal());
+        assertTrue(s1ft.isDead());
         CtrlSchedule s1t = s1.next(true);
         assertEquals(Arrays.asList("c", "e"), getNames(s1t));
         CtrlSchedule s1tf = s1t.next(false);
         assertEquals("d", getName(s1tf));
         assertSame(s1tf.next(false), s1tf.next(true));
-        assertTrue(s1tf.next(false).isFinished());
-        assertFalse(s1tf.next(false).isSuccess());
+        assertTrue(s1tf.next(false).isDead());
+        assertFalse(s1tf.next(false).isFinal());
         CtrlSchedule s1tt = s1t.next(true);
-        assertTrue(s1tt.isFinished());
-        assertFalse(s1tt.isSuccess());
+        assertTrue(s1tt.isDead());
+        assertFalse(s1tt.isFinal());
     }
 
     private String getName(CtrlSchedule s) {

@@ -115,9 +115,8 @@ public class PrologEngine {
         } catch (ParseException e) {
             throw new FormatException("Parse error in Prolog program: %s", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
-        return null;
     }
 
     /**

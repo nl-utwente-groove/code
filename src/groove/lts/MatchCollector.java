@@ -20,6 +20,7 @@ import groove.control.Binding;
 import groove.control.Binding.Source;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
+import groove.control.CtrlSchedule;
 import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
@@ -180,7 +181,8 @@ public class MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<CtrlCall> triedCalls = state.source().getSchedule().getTriedCalls();
+        Set<CtrlCall> triedCalls =
+            ((CtrlSchedule) state.source().getCurrentFrame()).getTriedCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 
@@ -209,7 +211,7 @@ public class MatchCollector {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
         List<CtrlPar> args = ctrlTrans.getCall().getArgs();
         if (args != null && args.size() > 0) {
-            Binding[] parBind = ctrlTrans.getParBinding();
+            Binding[] parBind = ctrlTrans.getCallBinding();
             List<CtrlPar.Var> ruleSig = ctrlTrans.getRule().getSignature();
             HostNode[] boundNodes = this.state.getBoundNodes();
             for (int i = 0; i < args.size(); i++) {

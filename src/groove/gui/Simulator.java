@@ -210,7 +210,7 @@ public class Simulator implements SimulatorListener {
                     OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
                     // should not happen (thrown when 'tryQuit' does not exist)
-                    e1.printStackTrace();
+                    // ignore
                 }
             }
             // register doQuit() as the closing method of the window

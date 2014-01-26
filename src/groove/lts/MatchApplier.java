@@ -17,7 +17,7 @@
 package groove.lts;
 
 import groove.control.Binding;
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.transform.CompositeEvent;
@@ -46,7 +46,7 @@ public class MatchApplier {
     /**
      * Returns the underlying GTS.
      */
-    public GTS getGTS() {
+    protected GTS getGTS() {
         return this.gts;
     }
 
@@ -59,8 +59,7 @@ public class MatchApplier {
         addTransitionReporter.start();
         RuleTransition transition = null;
         Rule rule = match.getRule();
-        CtrlTransition ctrlTrans = match.getCtrlTransition();
-        if (!ctrlTrans.isModifying()) {
+        if (!match.getStep().isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
             } else if (match.hasRuleTransition()) {
@@ -71,8 +70,7 @@ public class MatchApplier {
                 assert source instanceof GraphNextState;
                 RuleTransition parentTrans = match.getRuleTransition();
                 assert source != parentTrans.source();
-                boolean sourceModifiesCtrl =
-                    ((GraphNextState) source).getCtrlTransition().isModifying();
+                boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
                     && !match.getEvent().conflicts(sourceKey.getEvent())) {
@@ -125,8 +123,8 @@ public class MatchApplier {
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        CtrlTransition ctrlTrans = match.getCtrlTransition();
-        if (ctrlTrans.target().getBoundVars().isEmpty()) {
+        CtrlStep ctrlTrans = match.getCtrlTransition();
+        if (ctrlTrans.getTargetBinding().length == 0) {
             boundNodes = EMPTY_NODE_ARRAY;
         } else {
             RuleEffect record = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
@@ -134,7 +132,7 @@ public class MatchApplier {
             record.setFixed();
             boundNodes = computeBoundNodes(source, event, ctrlTrans, record);
         }
-        assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
+        assert boundNodes.length == ctrlTrans.getTargetBinding().length;
         return new DefaultGraphNextState(this.gts.nodeCount(), (AbstractGraphState) source, match,
             addedNodes, boundNodes);
     }
@@ -188,10 +186,10 @@ public class MatchApplier {
         return sourceEvent != matchEvent;
     }
 
-    private HostNode[] computeBoundNodes(GraphState source, RuleEvent event,
-            CtrlTransition ctrlTrans, RuleEffect record) {
+    private HostNode[] computeBoundNodes(GraphState source, RuleEvent event, CtrlStep ctrlTrans,
+            RuleEffect record) {
         HostNode[] result;
-        Binding[] varBind = ctrlTrans.getTargetVarBinding();
+        Binding[] varBind = ctrlTrans.getTargetBinding();
         int valueCount = varBind.length;
         result = new HostNode[valueCount];
         HostNode[] parentValues = source.getBoundNodes();

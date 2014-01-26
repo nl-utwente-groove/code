@@ -118,8 +118,7 @@ public class RuleApplicationTest {
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
-            GrammarModel view =
-                Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
+            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             for (String ruleName : view.getNames(RULE)) {
                 test(view, ruleName);
             }
@@ -147,8 +146,7 @@ public class RuleApplicationTest {
             }
         }
         if (i == 0) {
-            Assert.fail(String.format("No appropriate start graph for rule %s",
-                ruleName));
+            Assert.fail(String.format("No appropriate start graph for rule %s", ruleName));
         }
     }
 
@@ -160,29 +158,24 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel grammarModel, String ruleName,
-            String startName) {
+    private void test(GrammarModel grammarModel, String ruleName, String startName) {
         try {
             grammarModel.setLocalActiveNames(HOST, startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
-            AlgebraFamily family =
-                grammarModel.getProperties().getAlgebraFamily();
+            AlgebraFamily family = grammarModel.getProperties().getAlgebraFamily();
             boolean cont = true;
             for (int j = 0; cont; j++) {
                 String resultName = startName + "-" + j;
                 cont = grammarModel.getNames(HOST).contains(resultName);
                 if (cont) {
-                    results.add(grammarModel.getHostModel(resultName).toResource().clone(
-                        family));
+                    results.add(grammarModel.getHostModel(resultName).toResource().clone(family));
                 }
             }
             Rule rule = grammarModel.toGrammar().getRule(ruleName);
             if (rule == null) {
-                Assert.fail(String.format("Rule '%s' is currently disabled",
-                    ruleName));
+                Assert.fail(String.format("Rule '%s' is currently disabled", ruleName));
             }
-            test(grammarModel.getStartGraphModel().toHost().clone(family),
-                rule, results);
+            test(grammarModel.getStartGraphModel().toHost().clone(family), rule, results);
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
@@ -203,8 +196,7 @@ public class RuleApplicationTest {
             HostGraph target = new RuleApplication(event, start).getTarget();
             // look up this graph in the intended results
             for (int i = 0; target != null && i < results.size(); i++) {
-                if (!found.get(i)
-                    && checker.areIsomorphic(target, results.get(i))) {
+                if (!found.get(i) && checker.areIsomorphic(target, results.get(i))) {
                     found.set(i);
                     target = null;
                 }
@@ -213,14 +205,12 @@ public class RuleApplicationTest {
                 if (SAVE) {
                     try {
                         File tmpFile =
-                            File.createTempFile("error",
-                                FileType.STATE.getExtension(), new File(
-                                    INPUT_DIR));
-                        Groove.saveGraph(GraphConverter.toAspect(target),
-                            tmpFile);
+                            File.createTempFile("error", FileType.STATE.getExtension(), new File(
+                                INPUT_DIR));
+                        Groove.saveGraph(GraphConverter.toAspect(target), tmpFile);
                         System.out.printf("Graph saved in %s", tmpFile);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Assert.fail(e.toString());
                     }
                 }
                 Assert.fail(String.format(
@@ -230,10 +220,8 @@ public class RuleApplicationTest {
         }
         int leftOver = found.nextClearBit(0);
         if (leftOver < results.size()) {
-            Assert.fail(String.format(
-                "Rule %s, start graph %s: Expected target missing: %s",
-                rule.getFullName(), start.getName(),
-                results.get(leftOver).getName()));
+            Assert.fail(String.format("Rule %s, start graph %s: Expected target missing: %s",
+                rule.getFullName(), start.getName(), results.get(leftOver).getName()));
         }
     }
 }

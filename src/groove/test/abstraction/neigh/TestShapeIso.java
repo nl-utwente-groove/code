@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -43,8 +45,7 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestShapeIso {
 
-    static private final String DIRECTORY =
-        "junit/abstraction/basic-tests.gps/";
+    static private final String DIRECTORY = "junit/abstraction/basic-tests.gps/";
     static private GrammarModel view;
     static private Grammar grammar;
 
@@ -56,9 +57,9 @@ public class TestShapeIso {
             view = GrammarModel.newInstance(file, false);
             grammar = view.toGrammar();
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -72,7 +73,7 @@ public class TestShapeIso {
             graph1 = view.getHostModel("materialisation-test-1a").toResource();
             graph2 = view.getHostModel("rule-app-test-0").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule2 = grammar.getRule("add");
 
@@ -95,8 +96,7 @@ public class TestShapeIso {
         // More elaborated tests.
         Set<Proof> preMatches = PreMatch.getPreMatches(shape2, rule2);
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape2, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape2, preMatch);
             for (Materialisation mat : mats) {
                 Shape result = mat.applyMatch(null).one();
                 // The shape after rule application is different.

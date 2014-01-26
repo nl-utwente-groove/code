@@ -98,10 +98,8 @@ public class SymbolicStrategy extends GTSStrategy {
         Collection<? extends MatchResult> matchSet = state.getMatches();
         if (!matchSet.isEmpty()) {
             // Sort the matches in priority groups
-            List<Collection<? extends MatchResult>> priorityGroups =
-                createPriorityGroups(matchSet);
-            Set<SwitchRelation> higherPriorityRelations =
-                new HashSet<SwitchRelation>();
+            List<Collection<? extends MatchResult>> priorityGroups = createPriorityGroups(matchSet);
+            Set<SwitchRelation> higherPriorityRelations = new HashSet<SwitchRelation>();
             Set<SwitchRelation> temp = new HashSet<SwitchRelation>();
             boolean emptyGuard = false;
             for (Collection<? extends MatchResult> matches : priorityGroups) {
@@ -109,20 +107,18 @@ public class SymbolicStrategy extends GTSStrategy {
                     SwitchRelation sr = null;
                     try {
                         sr =
-                            this.sts.ruleMatchToSwitchRelation(
-                                getNextState().getGraph(), next,
+                            this.sts.ruleMatchToSwitchRelation(getNextState().getGraph(), next,
                                 higherPriorityRelations);
                     } catch (STSException e) {
                         // TODO: handle this exception
-                        e.printStackTrace();
+                        throw new IllegalStateException(e);
                     }
                     if (sr.getGuard().isEmpty()) {
                         emptyGuard = true;
                     }
                     temp.add(sr);
                     RuleTransition transition = getNextState().applyMatch(next);
-                    Location l =
-                        this.sts.hostGraphToLocation(transition.target().getGraph());
+                    Location l = this.sts.hostGraphToLocation(transition.target().getGraph());
                     current.addSwitchRelation(sr, l);
                 }
                 if (emptyGuard) {

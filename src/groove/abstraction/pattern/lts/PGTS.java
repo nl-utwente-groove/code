@@ -23,7 +23,7 @@ import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
 import groove.graph.AGraph;
 import groove.graph.ElementFactory;
 import groove.graph.GGraph;
@@ -110,8 +110,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
     /** Initialises the start state and corresponding host factory. */
     protected void initialise() {
         assert this.hostFactory == null && this.startState == null;
-        PatternGraph startGraph =
-            createStartGraph(this.grammar.getStartGraph());
+        PatternGraph startGraph = createStartGraph(this.grammar.getStartGraph());
         this.hostFactory = startGraph.getFactory();
         this.startState = createStartState(startGraph);
         addState(this.startState);
@@ -130,8 +129,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
      * Makes sure that the start state graph has a fresh factory.
      */
     protected PatternState createStartState(PatternGraph startGraph) {
-        return new PatternGraphState(startGraph,
-            this.grammar.getCtrlAut().getStart(), 0, this);
+        return new PatternGraphState(startGraph, this.grammar.getCtrlAut().getStart(), 0, this);
     }
 
     /**
@@ -334,15 +332,14 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
     /** Exports the GTS to a plain graph representation. */
     public PlainGraph toPlainGraph() {
         PlainGraph result = new PlainGraph(getName(), GraphRole.LTS);
-        Map<PatternState,PlainNode> nodeMap =
-            new HashMap<PatternState,PlainNode>();
+        Map<PatternState,PlainNode> nodeMap = new HashMap<PatternState,PlainNode>();
         for (PatternState state : nodeSet()) {
             PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
         }
         for (PatternTransition transition : edgeSet()) {
-            result.addEdge(nodeMap.get(transition.source()),
-                transition.label().text(), nodeMap.get(transition.target()));
+            result.addEdge(nodeMap.get(transition.source()), transition.label().text(),
+                nodeMap.get(transition.target()));
         }
         return result;
     }
@@ -408,8 +405,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
 
         /** Constructs a new, empty state set. */
         public StateSet(IsoChecker checker) {
-            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
-                STATE_SET_ROOT_RESOLUTION);
+            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION);
             if (checker == null) {
                 this.checker = IsoChecker.getInstance(true);
             } else {
@@ -423,11 +419,10 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
          */
         @Override
         protected boolean areEqual(PatternState myState, PatternState otherState) {
-            if (myState.getCtrlState() != otherState.getCtrlState()) {
+            if (myState.getFrame() != otherState.getFrame()) {
                 return false;
             }
-            return this.checker.areIsomorphic(myState.getGraph(),
-                otherState.getGraph());
+            return this.checker.areIsomorphic(myState.getGraph(), otherState.getGraph());
         }
 
         /**
@@ -437,13 +432,12 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
         @Override
         protected int getCode(PatternState stateKey) {
             int result;
-            CertificateStrategy certifier =
-                this.checker.getCertifier(stateKey.getGraph(), true);
+            CertificateStrategy certifier = this.checker.getCertifier(stateKey.getGraph(), true);
             Object certificate = certifier.getGraphCertificate();
             result = certificate.hashCode();
-            CtrlState ctrlState = stateKey.getCtrlState();
-            if (ctrlState != null) {
-                result += ctrlState.hashCode();
+            CtrlFrame frame = stateKey.getFrame();
+            if (frame != null) {
+                result += frame.hashCode();
             }
             return result;
         }
@@ -476,9 +470,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
             if (o instanceof PatternTransition) {
                 PatternTransition transition = (PatternTransition) o;
                 PatternState source = transition.source();
-                result =
-                    (containsNode(source) && outEdgeSet(source).contains(
-                        transition));
+                result = (containsNode(source) && outEdgeSet(source).contains(transition));
             }
             return result;
         }
@@ -493,8 +485,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
                 new TransformIterator<PatternState,Iterator<? extends PatternTransition>>(
                     nodeSet().iterator()) {
                     @Override
-                    public Iterator<? extends PatternTransition> toOuter(
-                            PatternState state) {
+                    public Iterator<? extends PatternTransition> toOuter(PatternState state) {
                         return outEdgeSet(state).iterator();
                     }
                 };

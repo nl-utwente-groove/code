@@ -37,6 +37,8 @@ import groove.util.Groove;
 import java.io.File;
 import java.io.IOException;
 
+import junit.framework.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,8 +48,7 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestShape {
 
-    static private final String DIRECTORY =
-        "junit/abstraction/basic-tests.gps/";
+    static private final String DIRECTORY = "junit/abstraction/basic-tests.gps/";
 
     @BeforeClass
     public static void setUp() {
@@ -84,8 +85,7 @@ public class TestShape {
         assertEquals(1, shape.nodeSet().size());
         assertEquals(1, Util.getBinaryEdges(shape).size());
         ShapeNode node = shape.nodeSet().iterator().next();
-        Multiplicity twoPlus =
-            Multiplicity.getMultiplicity(2, OMEGA, NODE_MULT);
+        Multiplicity twoPlus = Multiplicity.getMultiplicity(2, OMEGA, NODE_MULT);
         assertTrue(shape.getNodeMult(node).equals(twoPlus));
 
         file = new File(DIRECTORY + "shape-build-test-3.gst");
@@ -123,8 +123,7 @@ public class TestShape {
         shape = createShape(file);
         assertEquals(2, shape.nodeSet().size());
         assertEquals(4, Util.getBinaryEdges(shape).size());
-        Multiplicity twoPlus =
-            Multiplicity.getMultiplicity(2, OMEGA, NODE_MULT);
+        Multiplicity twoPlus = Multiplicity.getMultiplicity(2, OMEGA, NODE_MULT);
         for (ShapeNode node : shape.nodeSet()) {
             assertTrue(shape.getNodeMult(node).equals(twoPlus));
         }
@@ -142,8 +141,7 @@ public class TestShape {
         Shape shape = createShape(file);
         assertEquals(3, shape.nodeSet().size());
         assertEquals(2, Util.getBinaryEdges(shape).size());
-        Multiplicity twoPlus =
-            Multiplicity.getMultiplicity(2, OMEGA, EDGE_MULT);
+        Multiplicity twoPlus = Multiplicity.getMultiplicity(2, OMEGA, EDGE_MULT);
         for (ShapeEdge edgeS : Util.getBinaryEdges(shape)) {
             assertTrue(shape.getEdgeMult(edgeS, OUTGOING).equals(twoPlus));
         }
@@ -159,7 +157,7 @@ public class TestShape {
         try {
             result = new DefaultHostGraph(Groove.loadGraph(file));
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         return result;
     }

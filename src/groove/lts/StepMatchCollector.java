@@ -20,6 +20,7 @@ import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -159,7 +160,7 @@ public class StepMatchCollector extends MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<Call> triedCalls = state.source().getCurrentFrame().getPastCalls();
+        Set<Call> triedCalls = ((Frame) state.source().getCurrentFrame()).getPastCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 

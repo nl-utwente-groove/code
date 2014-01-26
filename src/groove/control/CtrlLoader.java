@@ -190,9 +190,7 @@ public class CtrlLoader {
                 System.out.printf("Control automaton for %s:%n%s", programName,
                     run(grammar, programName, new File(grammarName)));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -50,11 +50,15 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
 
     /** Returns the start frame of the automaton. */
     public Frame getStart() {
-        Frame result = new Frame(this, getTemplate().getStart().getFirstStage());
-        result = result.normalise(null, null);
-        addNode(result);
-        return result;
+        if (this.start == null) {
+            Frame result = new Frame(this, getTemplate().getStart().getFirstStage());
+            this.start = result.normalise(null, null);
+            addNode(result);
+        }
+        return this.start;
     }
+
+    private Frame start;
 
     /** Returns the next available frame number. */
     int getNextFrameNr() {

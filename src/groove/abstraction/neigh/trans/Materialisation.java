@@ -38,7 +38,6 @@ import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
@@ -59,7 +58,6 @@ import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -184,9 +182,7 @@ public final class Materialisation {
         this.matchedRule = preMatch.getRule();
         if (this.isRuleModifying()) {
             this.shape = this.originalShape.clone();
-            this.morph =
-                ShapeMorphism.createIdentityMorphism(this.shape,
-                    this.originalShape);
+            this.morph = ShapeMorphism.createIdentityMorphism(this.shape, this.originalShape);
             this.match = this.originalMatch.clone();
             // Create new auxiliary structures.
             this.matNodes = new MyHashSet<ShapeNode>();
@@ -258,8 +254,7 @@ public final class Materialisation {
      * materialisations are ready to be transformed by conventional rule
      * application.
      */
-    public static Set<Materialisation> getMaterialisations(Shape shape,
-            Proof preMatch) {
+    public static Set<Materialisation> getMaterialisations(Shape shape, Proof preMatch) {
         Set<Materialisation> result = new MyHashSet<Materialisation>();
         Materialisation initialMat = new Materialisation(shape, preMatch);
         if (initialMat.isRuleModifying()) {
@@ -295,8 +290,7 @@ public final class Materialisation {
 
     @Override
     public String toString() {
-        return "Materialisation:\nShape:\n" + this.shape + "Match: "
-            + this.match + "\n";
+        return "Materialisation:\nShape:\n" + this.shape + "Match: " + this.match + "\n";
     }
 
     @Override
@@ -412,8 +406,7 @@ public final class Materialisation {
      * Creates a new bundle with the given node and original signature.
      * This bundle is not stored in the materialisation structures.
      */
-    private EdgeBundle createBundleWithoutStoring(ShapeNode node,
-            EdgeSignature origEs) {
+    private EdgeBundle createBundleWithoutStoring(ShapeNode node, EdgeSignature origEs) {
         Multiplicity origEsMult = this.getOrigEsMult(origEs);
         return new EdgeBundle(origEs, origEsMult, node);
     }
@@ -447,8 +440,7 @@ public final class Materialisation {
 
     /** Returns the signature of the given edge on the original shape. */
     private EdgeSignature getOrigEs(ShapeEdge edge, EdgeMultDir direction) {
-        return this.getShapeMorphism().getEdgeSignature(
-            this.getOriginalShape(),
+        return this.getShapeMorphism().getEdgeSignature(this.getOriginalShape(),
             this.getShape().getEdgeSignature(edge, direction));
     }
 
@@ -550,10 +542,8 @@ public final class Materialisation {
             if (record != null) {
                 event = record.normaliseEvent(event);
             } */
-            event =
-                new BasicEvent(this.matchedRule, this.match, Reuse.AGGRESSIVE);
-            ShapeRuleApplication app =
-                new ShapeRuleApplication(event, this.shape);
+            event = new BasicEvent(this.matchedRule, this.match, Reuse.AGGRESSIVE);
+            ShapeRuleApplication app = new ShapeRuleApplication(event, this.shape);
             result = app.getTarget();
         } else {
             assert record != null;
@@ -567,9 +557,7 @@ public final class Materialisation {
     static boolean hasConcreteMatch(Shape shape, Proof proof) {
         boolean result = false;
         for (Proof subProof : proof.getSubProofs()) {
-            result =
-                hasConcreteMatch(shape,
-                    (RuleToShapeMap) subProof.getPatternMap());
+            result = hasConcreteMatch(shape, (RuleToShapeMap) subProof.getPatternMap());
             if (result) {
                 // One of the NACs has a concrete match.
                 break;
@@ -619,8 +607,7 @@ public final class Materialisation {
             // Item 4: check that for all nodes in the image of the LHS, their
             // equivalence class is a singleton set.
             if (!this.shape.getEquivClassOf(nodeS).isSingleton()) {
-                RuleNode nodeR =
-                    this.match.getPreImages(nodeS).iterator().next();
+                RuleNode nodeR = this.match.getPreImages(nodeS).iterator().next();
                 if (this.getSingularRuleNodes().contains(nodeR)) {
                     complyToEquivClass = false;
                     break;
@@ -640,26 +627,18 @@ public final class Materialisation {
                 for (ShapeNode v : this.match.nodeMapValueSet()) {
                     // For all nodes w in the image of the LHS.
                     for (ShapeNode w : this.match.nodeMapValueSet()) {
-                        EquivClass<ShapeNode> ecW =
-                            this.shape.getEquivClassOf(w);
+                        EquivClass<ShapeNode> ecW = this.shape.getEquivClassOf(w);
                         EdgeSignature outEs =
-                            this.shape.getEdgeSignature(EdgeMultDir.OUTGOING,
-                                v, label, ecW);
+                            this.shape.getEdgeSignature(EdgeMultDir.OUTGOING, v, label, ecW);
                         Multiplicity outMult = this.shape.getEdgeSigMult(outEs);
                         EdgeSignature inEs =
-                            this.shape.getEdgeSignature(EdgeMultDir.INCOMING,
-                                v, label, ecW);
+                            this.shape.getEdgeSignature(EdgeMultDir.INCOMING, v, label, ecW);
                         Multiplicity inMult = this.shape.getEdgeSigMult(inEs);
-                        Util.getIntersectEdges(this.shape, v, w, label,
-                            intersectEdges);
-                        Multiplicity vInterWMult =
-                            Multiplicity.getEdgeSetMult(intersectEdges);
-                        Util.getIntersectEdges(this.shape, w, v, label,
-                            intersectEdges);
-                        Multiplicity wInterVMult =
-                            Multiplicity.getEdgeSetMult(intersectEdges);
-                        if (!outMult.equals(vInterWMult)
-                            || !inMult.equals(wInterVMult)) {
+                        Util.getIntersectEdges(this.shape, v, w, label, intersectEdges);
+                        Multiplicity vInterWMult = Multiplicity.getEdgeSetMult(intersectEdges);
+                        Util.getIntersectEdges(this.shape, w, v, label, intersectEdges);
+                        Multiplicity wInterVMult = Multiplicity.getEdgeSetMult(intersectEdges);
+                        if (!outMult.equals(vInterWMult) || !inMult.equals(wInterVMult)) {
                             complyToEdgeMult = false;
                             break;
                         }
@@ -685,8 +664,7 @@ public final class Materialisation {
     }
 
     /** Records the materialisation of the new node from the collector node. */
-    public void addMatNode(ShapeNode newNode, ShapeNode collectorNode,
-            RuleNode nodeR) {
+    public void addMatNode(ShapeNode newNode, ShapeNode collectorNode, RuleNode nodeR) {
         assert this.stage == 1;
         assert this.shape.containsNode(newNode);
         this.match.putNode(nodeR, newNode);
@@ -695,8 +673,7 @@ public final class Materialisation {
     }
 
     /** Records the materialisation of the new edge from the inconsistent edge. */
-    public void addMatEdge(ShapeEdge newEdge, ShapeEdge inconsistentEdge,
-            RuleEdge edgeR) {
+    public void addMatEdge(ShapeEdge newEdge, ShapeEdge inconsistentEdge, RuleEdge edgeR) {
         assert this.stage == 1;
         assert this.shape.containsEdge(newEdge);
         this.match.putEdge(edgeR, newEdge);
@@ -751,8 +728,7 @@ public final class Materialisation {
         assert this.stage == 1;
         // Search for nodes in the original match image that have to be
         // materialised.
-        Map<ShapeNode,Multiplicity> originalMultMap =
-            this.originalShape.getNodeMultMap();
+        Map<ShapeNode,Multiplicity> originalMultMap = this.originalShape.getNodeMultMap();
         for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
             if (originalMultMap.get(nodeS).isCollector()) {
                 // We have a rule node that was matched to a collector
@@ -772,8 +748,7 @@ public final class Materialisation {
         this.match.setFixed();
 
         // Create the set of possible edges that can occur on the final shape.
-        this.createPossibleEdges(this.morph.clone(), this.shape,
-            this.originalShape, this.matNodes);
+        this.createPossibleEdges(this.morph.clone(), this.shape, this.originalShape, this.matNodes);
 
         // Make sure that all shape nodes in the match image are in a
         // singleton equivalence class.
@@ -800,8 +775,7 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    private void createPossibleEdges(ShapeMorphism morph, Shape from, Shape to,
-            Set<ShapeNode> nodes) {
+    private void createPossibleEdges(ShapeMorphism morph, Shape from, Shape to, Set<ShapeNode> nodes) {
         assert this.stage == 1 || this.stage == 2;
         if (nodes.isEmpty()) {
             return;
@@ -819,8 +793,7 @@ public final class Materialisation {
                     ShapeNode origOppNode = direction.opposite(origEdge);
                     for (ShapeNode oppNode : morph.getPreImages(origOppNode)) {
                         ShapeEdge possibleEdge =
-                            from.createEdge(node, oppNode, origEdge.label(),
-                                direction);
+                            from.createEdge(node, oppNode, origEdge.label(), direction);
                         if (!from.containsEdge(possibleEdge)) {
                             this.addPossibleEdge(possibleEdge, origEdge);
                         }
@@ -861,8 +834,7 @@ public final class Materialisation {
                     // Special case. We have to add all edges incident to this
                     // node.
                     for (ShapeEdge edge : this.shape.edgeSet(bundle.node)) {
-                        if (edge.getRole() == BINARY
-                            && !handledEdges.contains(edge)) {
+                        if (edge.getRole() == BINARY && !handledEdges.contains(edge)) {
                             toProcess.add(edge);
                         }
                     }
@@ -910,8 +882,7 @@ public final class Materialisation {
 
         // Compute the set of nodes that require splitting.
         Set<ShapeNode> origNodesToSplit = new MyHashSet<ShapeNode>();
-        Map<ShapeNode,Set<EdgeBundle>> auxBundleMap =
-            new MyHashMap<ShapeNode,Set<EdgeBundle>>();
+        Map<ShapeNode,Set<EdgeBundle>> auxBundleMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
         for (EdgeBundle nonSingBundle : nonSingBundles) {
             ShapeNode node = nonSingBundle.node;
             Set<EdgeBundle> bundles;
@@ -926,10 +897,8 @@ public final class Materialisation {
 
         // Auxiliary structures.
         Shape shape = this.getShape();
-        ShapeMorphism auxMorph =
-            ShapeMorphism.createIdentityMorphism(shape, shape);
-        Map<ShapeNode,PowerSetIterator> iterMap =
-            new MyHashMap<ShapeNode,PowerSetIterator>();
+        ShapeMorphism auxMorph = ShapeMorphism.createIdentityMorphism(shape, shape);
+        Map<ShapeNode,PowerSetIterator> iterMap = new MyHashMap<ShapeNode,PowerSetIterator>();
 
         // Fill in the node split map and try to create new nodes. 
         for (ShapeNode origNode : origNodesToSplit) {
@@ -1002,8 +971,8 @@ public final class Materialisation {
      *                we need to re-route them.
      * @param newNode the new split node that will receive the new edges.
      */
-    private void addNewEdges(ShapeNode origNode,
-            Map<EdgeBundle,Set<ShapeEdge>> origMap, ShapeNode newNode) {
+    private void addNewEdges(ShapeNode origNode, Map<EdgeBundle,Set<ShapeEdge>> origMap,
+            ShapeNode newNode) {
         assert this.stage == 2;
         Set<ShapeEdge> newEdges = new MyHashSet<ShapeEdge>();
         for (Entry<EdgeBundle,Set<ShapeEdge>> entry : origMap.entrySet()) {
@@ -1011,11 +980,9 @@ public final class Materialisation {
             EdgeMultDir direction = origBundle.direction;
             EdgeMultDir reverse = direction.reverse();
             // Create a new bundle for the new node.
-            EdgeBundle newBundle =
-                this.createBundle(newNode, origBundle.origEs);
+            EdgeBundle newBundle = this.createBundle(newNode, origBundle.origEs);
             for (ShapeEdge origEdge : entry.getValue()) {
-                this.routeNewEdges(origNode, origEdge, newNode, direction,
-                    newEdges);
+                this.routeNewEdges(origNode, origEdge, newNode, direction, newEdges);
                 for (ShapeEdge newEdge : newEdges) {
                     // Add the new edge to the new bundle.
                     newBundle.addEdge(this.shape, newEdge);
@@ -1046,21 +1013,18 @@ public final class Materialisation {
      * @param direction the direction to use the original and new node.
      * @param result the set to store the newly routed edges.
      */
-    private void routeNewEdges(ShapeNode origNode, ShapeEdge origEdge,
-            ShapeNode newNode, EdgeMultDir direction, Set<ShapeEdge> result) {
+    private void routeNewEdges(ShapeNode origNode, ShapeEdge origEdge, ShapeNode newNode,
+            EdgeMultDir direction, Set<ShapeEdge> result) {
         assert this.stage == 2;
         TypeLabel label = origEdge.label();
         ShapeNode incident = newNode;
         ShapeNode opposite = direction.opposite(origEdge);
-        ShapeEdge newEdge =
-            this.shape.createEdge(incident, opposite, label, direction);
+        ShapeEdge newEdge = this.shape.createEdge(incident, opposite, label, direction);
         result.add(newEdge);
         Set<ShapeNode> splitNodes = this.nodeSplitMap.get(opposite);
         if (splitNodes != null) {
             for (ShapeNode newOpposite : splitNodes) {
-                newEdge =
-                    this.shape.createEdge(incident, newOpposite, label,
-                        direction);
+                newEdge = this.shape.createEdge(incident, newOpposite, label, direction);
                 result.add(newEdge);
             }
         }
@@ -1083,8 +1047,7 @@ public final class Materialisation {
         assert garbageNodes != null;
         garbageNodes.clear();
         Shape shape = this.shape;
-        Map<EdgeSignature,Multiplicity> origEdgeMultMap =
-            this.originalShape.getEdgeMultMap();
+        Map<EdgeSignature,Multiplicity> origEdgeMultMap = this.originalShape.getEdgeMultMap();
         this.updateShapeMorphism();
         // AR asks: why clone the morphism?
         ShapeMorphism morph = this.morph.clone();
@@ -1095,8 +1058,7 @@ public final class Materialisation {
                 for (ShapeNode node : morph.getPreImages(origEs.getNode())) {
                     // We know that the original signature has edges.
                     // Check if the pre-images also do.
-                    Multiplicity mult =
-                        morph.getPreImagesMult(shape, node, origEs);
+                    Multiplicity mult = morph.getPreImagesMult(shape, node, origEs);
                     if (mult.isZero()) {
                         // The node got disconnected and therefore cannot exist.
                         garbageNodes.add(node);
@@ -1199,20 +1161,15 @@ public final class Materialisation {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             Grammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("rule");
-            Shape shape =
-                GxlIO.instance().loadGraph(file).toShape(
-                    view.getTypeGraph());
+            Shape shape = GxlIO.instance().loadGraph(file).toShape(view.getTypeGraph());
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
+                Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
                     ShapePreviewDialog.showShape(mat.shape);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

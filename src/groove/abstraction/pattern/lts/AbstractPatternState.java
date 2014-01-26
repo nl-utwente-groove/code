@@ -18,8 +18,10 @@ package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternGraph;
+import groove.control.CtrlFrame;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
+import groove.control.instance.Frame;
 import groove.lts.AbstractGraphState;
 
 import java.util.Set;
@@ -35,7 +37,7 @@ public abstract class AbstractPatternState implements PatternState {
     /** The number of this state */
     private final int nr;
     /** The underlying control state, if any. */
-    private CtrlSchedule schedule;
+    private CtrlFrame schedule;
     /** Flag to indicated if the state has been closed. */
     private boolean closed;
     /** Set of outgoing transitions from this state. */
@@ -71,27 +73,26 @@ public abstract class AbstractPatternState implements PatternState {
     abstract public PatternGraph getGraph();
 
     @Override
-    public final CtrlState getCtrlState() {
-        return this.schedule.getState();
-    }
-
-    /** 
-     * Sets the control schedule.
-     * This should occur at initialisation.
-     */
-    protected final void setCtrlState(CtrlState ctrlState) {
-        this.schedule = ctrlState.getSchedule();
+    public final CtrlFrame getFrame() {
+        if (this.schedule instanceof CtrlSchedule) {
+            return ((CtrlSchedule) this.schedule).getState();
+        } else {
+            return ((Frame) this.schedule).getPrime();
+        }
     }
 
     @Override
-    public final CtrlSchedule getSchedule() {
+    public final void setFrame(CtrlFrame frame) {
+        if (frame instanceof CtrlState) {
+            this.schedule = ((CtrlState) frame).getSchedule();
+        } else {
+            this.schedule = frame;
+        }
+    }
+
+    @Override
+    public final CtrlFrame getCurrentFrame() {
         return this.schedule;
-    }
-
-    @Override
-    public final void setSchedule(CtrlSchedule schedule) {
-        assert schedule.getState() == getCtrlState();
-        this.schedule = schedule;
     }
 
     @Override

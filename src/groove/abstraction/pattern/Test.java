@@ -29,11 +29,9 @@ import groove.abstraction.pattern.trans.Materialisation;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -41,8 +39,7 @@ import java.util.List;
  */
 public class Test {
 
-    private static final String PATH =
-        "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
+    private static final String PATH = "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
 
     // private static final String GRAMMAR = PATH + "pattern-list.gps/";
     // private static final String GRAMMAR = PATH + "circ-list-4.gps/";
@@ -65,14 +62,11 @@ public class Test {
         Rule sRule = null;
         HostGraph sGraph = null;
         try {
-            GrammarModel view =
-                GrammarModel.newInstance(new File(GRAMMAR), false);
+            GrammarModel view = GrammarModel.newInstance(new File(GRAMMAR), false);
             sRule = view.getRuleModel(RULE).toResource();
             sGraph = view.getHostModel(HOST).toResource();
             pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -91,8 +85,7 @@ public class Test {
         List<MatchResult> matches = matcher.findMatches(pShape, null);
         PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
 
-        for (PatternShape mat : Materialisation.getMaterialisations(pShape,
-            preMatch)) {
+        for (PatternShape mat : Materialisation.getMaterialisations(pShape, preMatch)) {
             PatternPreviewDialog.showPatternGraph(mat);
         }
     }

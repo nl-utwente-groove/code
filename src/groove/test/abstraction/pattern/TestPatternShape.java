@@ -27,6 +27,8 @@ import groove.grammar.model.GrammarModel;
 import java.io.File;
 import java.io.IOException;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 /**
@@ -69,7 +71,7 @@ public class TestPatternShape {
         try {
             typeGraph = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         return typeGraph;
     }
@@ -81,9 +83,9 @@ public class TestPatternShape {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             sGraph = view.getHostModel(hostGraphName).toResource();
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         return sGraph;
     }

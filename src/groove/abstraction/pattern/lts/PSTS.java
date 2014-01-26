@@ -142,7 +142,7 @@ public final class PSTS extends PGTS {
         protected boolean areEqual(PatternState myState, PatternState otherState) {
             assert myState.hasPatternShape() && otherState.hasPatternShape();
 
-            if (myState.getCtrlState() != otherState.getCtrlState()) {
+            if (myState.getFrame() != otherState.getFrame()) {
                 return false;
             }
 

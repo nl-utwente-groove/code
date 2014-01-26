@@ -76,10 +76,9 @@ public class TypeCheckTest {
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
-            GrammarModel grammarView =
-                Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.RULE,
-                ResourceKind.HOST, ResourceKind.TYPE)) {
+            GrammarModel grammarView = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
+            for (ResourceKind kind : EnumSet.of(ResourceKind.RULE, ResourceKind.HOST,
+                ResourceKind.TYPE)) {
                 for (Map.Entry<String,? extends ResourceModel<?>> entry : grammarView.getResourceMap(
                     kind).entrySet()) {
                     String name = entry.getKey();
@@ -117,7 +116,6 @@ public class TypeCheckTest {
             model.toResource();
             Assert.fail(kindName + " " + modelName + " has no errors");
         } catch (NullPointerException e) {
-            e.printStackTrace();
             Assert.fail(kindName + " " + modelName + " does not exist");
         } catch (FormatException e) {
             // do nothing; this is the expected case

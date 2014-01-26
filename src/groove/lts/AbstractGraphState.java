@@ -20,6 +20,7 @@ import static groove.lts.GraphState.Flag.ABSENT;
 import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
+import groove.control.CtrlFrame;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.instance.Frame;
@@ -166,12 +167,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public List<MatchResult> getMatches() {
-        return new ArrayList<MatchResult>(getCache().getMatches());
+        return new ArrayList<MatchResult>(getCache().getMatches().getAll());
     }
 
     @Override
     public MatchResult getMatch() {
-        return getCache().getMatch();
+        return getCache().getMatches().getOne();
     }
 
     @Override
@@ -203,7 +204,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             // reset the schedule to the beginning if the state was not 
             // completely explored
             if (!complete) {
-                setSchedule(getCtrlState().getSchedule());
+                setFrame(getFrame());
             }
             getCache().notifyClosed();
             fireStatus(CLOSED);
@@ -230,7 +231,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     final public boolean isTransient() {
-        return getSchedule().isTransient();
+        return getCurrentFrame().isTransient();
     }
 
     @Override
@@ -414,47 +415,39 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public Frame getFrame() {
-        return this.currentFrame.getPrime();
+    public CtrlFrame getFrame() {
+        if (this.currentFrame instanceof Frame) {
+            return ((Frame) this.currentFrame).getPrime();
+        } else {
+            return ((CtrlSchedule) this.currentFrame).getState();
+        }
     }
 
     @Override
-    public void setCurrentFrame(Frame actualFrame) {
-        assert actualFrame != null;
-        assert this.currentFrame == null || actualFrame.getPrime() == this.currentFrame.getPrime();
-        this.currentFrame = actualFrame;
+    public void setFrame(CtrlFrame frame) {
+        assert frame != null;
+        if (frame instanceof Frame) {
+            assert this.currentFrame == null
+                || ((Frame) frame).getPrime() == ((Frame) this.currentFrame).getPrime();
+            this.currentFrame = frame;
+        } else if (frame instanceof CtrlState) {
+            this.currentFrame = ((CtrlState) frame).getSchedule();
+        } else {
+            this.currentFrame = frame;
+        }
+        assert !(this.currentFrame instanceof CtrlState);
     }
 
     @Override
-    public final Frame getCurrentFrame() {
+    public final CtrlFrame getCurrentFrame() {
         return this.currentFrame;
     }
 
-    private Frame currentFrame;
-
-    /** 
-     * Sets the control schedule.
-     * This should occur at initialisation.
-     */
-    public final void setCtrlState(CtrlState ctrlState) {
-        this.schedule = ctrlState.getSchedule();
-    }
-
-    @Override
-    public CtrlState getCtrlState() {
-        return this.schedule.getState();
-    }
-
-    @Override
-    public void setSchedule(CtrlSchedule schedule) {
-        assert schedule != null;
-        assert schedule.getState() == getCtrlState();
-        this.schedule = schedule;
-    }
+    private CtrlFrame currentFrame;
 
     @Override
     public final CtrlSchedule getSchedule() {
-        return this.schedule;
+        return (CtrlSchedule) getCurrentFrame();
     }
 
     /**
@@ -463,9 +456,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * @invariant nr < nrNodes
      */
     private final int nr;
-
-    /** The underlying control state, if any. */
-    private CtrlSchedule schedule;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;

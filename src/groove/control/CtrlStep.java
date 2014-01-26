@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -48,4 +49,13 @@ public interface CtrlStep extends Comparable<CtrlStep> {
      * or the call has out-parameters.
      */
     boolean isModifying();
+
+    /** Convenience method to return the target variable binding of the switch of this step. */
+    public Binding[] getTargetBinding();
+
+    /** Convenience method to return the call parameter binding of the switch of this step. */
+    public Binding[] getCallBinding();
+
+    /** Method returning supertype of {@link CtrlState} and {@link Frame}. */
+    public CtrlFrame target();
 }

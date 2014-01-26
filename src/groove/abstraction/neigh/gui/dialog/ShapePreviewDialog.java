@@ -69,19 +69,13 @@ public final class ShapePreviewDialog extends GraphPreviewDialog<Shape> {
 
     // Test -------------------------------------------------------------------
 
-    private static Shape createShape(File file) {
+    private static Shape createShape(File file) throws IOException {
         HostGraph graph = createHostGraph(file);
         return Shape.createShape(graph);
     }
 
-    private static HostGraph createHostGraph(File file) {
-        HostGraph result = null;
-        try {
-            result = new DefaultHostGraph(Groove.loadGraph(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
+    private static HostGraph createHostGraph(File file) throws IOException {
+        return new DefaultHostGraph(Groove.loadGraph(file));
     }
 
     /** Test method. */
@@ -89,7 +83,11 @@ public final class ShapePreviewDialog extends GraphPreviewDialog<Shape> {
         NeighAbstraction.initialise();
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         File file = new File(DIRECTORY + "shape-build-test-0.gst");
-        Shape shape = createShape(file);
-        showShape(shape);
+        try {
+            Shape shape = createShape(file);
+            showShape(shape);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

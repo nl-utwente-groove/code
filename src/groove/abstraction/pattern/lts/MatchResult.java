@@ -18,12 +18,12 @@ package groove.abstraction.pattern.lts;
 
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 
 /** Class wrapping a match together with a corresponding control transition. */
 public class MatchResult {
     /** Constructs an object from a given match and (possibly {@code null}) control transition. */
-    public MatchResult(Match match, CtrlTransition ctrlTrans) {
+    public MatchResult(Match match, CtrlStep ctrlTrans) {
         this.match = match;
         this.ctrlTrans = ctrlTrans;
     }
@@ -39,10 +39,10 @@ public class MatchResult {
     }
 
     /** Returns the control transition of this result. */
-    public CtrlTransition getCtrlTransition() {
+    public CtrlStep getStep() {
         return this.ctrlTrans;
     }
 
     private final Match match;
-    private final CtrlTransition ctrlTrans;
+    private final CtrlStep ctrlTrans;
 }

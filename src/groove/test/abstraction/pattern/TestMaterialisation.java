@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,7 +65,7 @@ public class TestMaterialisation {
         try {
             view = GrammarModel.newInstance(file, false);
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -84,15 +86,13 @@ public class TestMaterialisation {
         testSingleResult(1, 6, 4, false);
     }
 
-    private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
-            boolean hostIsShape) {
+    private void testSingleResult(int testNumber, int nodeCount, int edgeCount, boolean hostIsShape) {
         loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
         List<MatchResult> matches = matcher.findMatches(pShape, null);
         assertEquals(1, matches.size());
         PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
-        Collection<PatternShape> mats =
-            Materialisation.getMaterialisations(pShape, preMatch);
+        Collection<PatternShape> mats = Materialisation.getMaterialisations(pShape, preMatch);
         assertEquals(1, mats.size());
         PatternShape matShape = mats.iterator().next();
         assertEquals(nodeCount, matShape.nodeCount());
@@ -135,9 +135,9 @@ public class TestMaterialisation {
             sRule = view.getRuleModel(RULE).toResource();
             pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
 
         pRule = pTGraph.lift(sRule);
@@ -148,9 +148,7 @@ public class TestMaterialisation {
         } else {
             File file = new File(DIRECTORY + HOST);
             try {
-                pShape =
-                    GxlIO.instance().loadGraph(file).toPattern(
-                        pTGraph);
+                pShape = GxlIO.instance().loadGraph(file).toPattern(pTGraph);
             } catch (IOException e) {
                 throw new IllegalArgumentException();
             }

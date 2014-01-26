@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 /** Sequence of control transitions to be tried out from a control state. */
-public class CtrlSchedule {
+public class CtrlSchedule implements CtrlFrame {
     /**
      * Constructs an untried schedule. 
      * @param state control state on which this schedule is based
@@ -31,8 +31,8 @@ public class CtrlSchedule {
      * @param isTransient if {@code true}, the schedule is part of a transaction
      * @param success if {@code true}, this schedule represents a success state
      */
-    public CtrlSchedule(CtrlState state, List<CtrlTransition> trans,
-            Set<CtrlTransition> previous, boolean success, boolean isTransient) {
+    public CtrlSchedule(CtrlState state, List<CtrlTransition> trans, Set<CtrlTransition> previous,
+            boolean success, boolean isTransient) {
         this.state = state;
         this.transitions = trans;
         this.triedCalls = new HashSet<CtrlCall>();
@@ -79,24 +79,32 @@ public class CtrlSchedule {
         this.triedSchedule = this;
     }
 
+    @Override
+    public boolean isStart() {
+        return getState().isStart();
+    }
+
     /** Indicates if this is the initial schedule of the control state. */
     public boolean isInitial() {
         return this == this.state.getSchedule();
     }
 
     /** Indicates if this node signals the end of the schedule. */
-    public boolean isFinished() {
+    @Override
+    public boolean isDead() {
         return this.transitions == null;
     }
 
     /** Indicates if this schedule represents a success state. */
-    public boolean isSuccess() {
+    @Override
+    public boolean isFinal() {
         return this.success;
     }
 
     /**
      * Indicates if this schedule is part of a transaction.
      */
+    @Override
     public boolean isTransient() {
         return this.isTransient;
     }
@@ -142,7 +150,7 @@ public class CtrlSchedule {
      * Returns the set of rules that have been tried at this point
      * of the schedule.
      * These are the rules occurring in {@link #getTriedCalls()}
-     * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
+     * @return a set of tried control calls, or {@code null} if {@link #isDead()} 
      * yields {@code false}.
      */
     public Set<String> getTriedRules() {
@@ -153,7 +161,7 @@ public class CtrlSchedule {
      * Returns the set of recipes that have been tried at this point
      * of the schedule.
      * These are the rules occurring in {@link #getTriedCalls()}
-     * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
+     * @return a set of tried control calls, or {@code null} if {@link #isDead()} 
      * yields {@code false}.
      */
     public Set<CtrlTransition> getTriedTransitions() {
@@ -186,7 +194,7 @@ public class CtrlSchedule {
         result.append(prefix);
         if (this.transitions == null) {
             result.append("No transitions");
-            if (isSuccess()) {
+            if (isFinal()) {
                 result.append("; success");
             }
             result.append("\n");
@@ -201,16 +209,16 @@ public class CtrlSchedule {
                 }
                 result.append("Call ");
                 result.append(t);
-                if (t.getParBinding().length > 0) {
+                if (t.getCallBinding().length > 0) {
                     result.append(", parameter binding: ");
-                    result.append(Arrays.toString(t.getParBinding()));
+                    result.append(Arrays.toString(t.getCallBinding()));
                 }
-                if (t.getTargetVarBinding().length > 0) {
+                if (t.getTargetBinding().length > 0) {
                     result.append(", target variable binding: ");
-                    result.append(Arrays.toString(t.getTargetVarBinding()));
+                    result.append(Arrays.toString(t.getTargetBinding()));
                 }
             }
-            if (isSuccess()) {
+            if (isFinal()) {
                 result.append("; success");
             }
             if (isTransient()) {
@@ -218,14 +226,14 @@ public class CtrlSchedule {
             }
             result.append("\n");
             if (this.succNext == this.failNext) {
-                if (!this.succNext.isFinished() || this.succNext.isSuccess()) {
+                if (!this.succNext.isDead() || this.succNext.isFinal()) {
                     result.append(this.succNext.toString(depth + 1, ""));
                 }
             } else {
-                if (!this.failNext.isFinished() || this.failNext.isSuccess()) {
+                if (!this.failNext.isDead() || this.failNext.isFinal()) {
                     result.append(this.failNext.toString(depth + 1, "Failed:  "));
                 }
-                if (!this.succNext.isFinished() || this.succNext.isSuccess()) {
+                if (!this.succNext.isDead() || this.succNext.isFinal()) {
                     result.append(this.succNext.toString(depth + 1, "Applied: "));
                 }
             }

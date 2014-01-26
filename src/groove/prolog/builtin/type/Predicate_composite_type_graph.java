@@ -30,26 +30,21 @@ import groove.prolog.builtin.graph.GraphPrologCode;
  */
 public class Predicate_composite_type_graph extends GraphPrologCode {
     @Override
-    public int execute(Interpreter interpreter, boolean backtrackMode,
-            Term[] args) throws PrologException {
+    public int execute(Interpreter interpreter, boolean backtrackMode, Term[] args)
+        throws PrologException {
 
         if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
             GrooveEnvironment.invalidEnvironment();
         }
 
-        try {
-            TypeGraph typeGraph =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeGraph();
+        TypeGraph typeGraph =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeGraph();
 
-            if (typeGraph == null) {
-                return FAIL;
-            }
-
-            Term nodeTerm = new JavaObjectTerm(typeGraph);
-            return interpreter.unify(args[0], nodeTerm);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (typeGraph == null) {
             return FAIL;
         }
+
+        Term nodeTerm = new JavaObjectTerm(typeGraph);
+        return interpreter.unify(args[0], nodeTerm);
     }
 }
