@@ -29,25 +29,19 @@ import groove.prolog.GrooveEnvironment;
  */
 public class Predicate_start_graph extends GraphPrologCode {
     @Override
-    public int execute(Interpreter interpreter, boolean backtrackMode,
-            Term[] args) throws PrologException {
+    public int execute(Interpreter interpreter, boolean backtrackMode, Term[] args)
+        throws PrologException {
         if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
             GrooveEnvironment.invalidEnvironment();
         }
 
-        try {
-            Graph startGraph =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getStartGraph();
+        Graph startGraph =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getStartGraph();
 
-            if (startGraph == null) {
-                return FAIL;
-            }
-
-            return interpreter.unify(args[0], new JavaObjectTerm(startGraph));
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (startGraph == null) {
+            return FAIL;
         }
 
-        return FAIL;
+        return interpreter.unify(args[0], new JavaObjectTerm(startGraph));
     }
 }

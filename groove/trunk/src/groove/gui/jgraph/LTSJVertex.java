@@ -1,6 +1,6 @@
 package groove.gui.jgraph;
 
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
 import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
@@ -56,10 +56,10 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
         result.append(HTMLConverter.UNDERLINE_TAG.on(getNode()));
-        CtrlState ctrlState = getNode().getCtrlState();
-        if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
+        CtrlFrame frame = getNode().getFrame();
+        if (!frame.isStart()) {
             result.append(" with control state ");
-            result.append(HTMLConverter.UNDERLINE_TAG.on(ctrlState));
+            result.append(HTMLConverter.UNDERLINE_TAG.on(frame));
         }
         return result;
     }
@@ -112,9 +112,9 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     @Override
     public String getNodeIdString() {
         String result = super.getNodeIdString();
-        CtrlState ctrlState = getNode().getCtrlState();
-        if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
-            result += "|" + ctrlState.toString();
+        CtrlFrame frame = getNode().getFrame();
+        if (!frame.isStart()) {
+            result += "|" + frame.toString();
         }
         return result;
     }

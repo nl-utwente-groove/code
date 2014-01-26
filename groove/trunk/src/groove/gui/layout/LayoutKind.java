@@ -282,10 +282,8 @@ public enum LayoutKind {
         Method method = null;
         try {
             method = layout.getClass().getMethod(name, parameterTypes);
-        } catch (SecurityException e) {
-            e.printStackTrace();
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
         return method;
     }
@@ -402,12 +400,10 @@ public enum LayoutKind {
         void invoke() {
             try {
                 this.methodToCall.invoke(this.layout, this.getValue());
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e.getCause());
             }
         }
     }
@@ -436,12 +432,10 @@ public enum LayoutKind {
         void invoke() {
             try {
                 this.methodToCall.invoke(this.layout, this.isSelected());
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e.getCause());
             }
         }
     }
@@ -471,12 +465,10 @@ public enum LayoutKind {
         void invoke() {
             try {
                 this.methodToCall.invoke(this.layout, this.value);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e.getCause());
             }
         }
     }
@@ -509,12 +501,10 @@ public enum LayoutKind {
         void invoke() {
             try {
                 this.methodToCall.invoke(this.layout, this.getModel().getNumber().doubleValue());
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e.getCause());
             }
         }
     }

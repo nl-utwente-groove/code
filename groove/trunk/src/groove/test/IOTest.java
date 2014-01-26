@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 /**
@@ -55,28 +57,23 @@ public class IOTest {
         int nodecount = 11;
         int edgecount = 12;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL,
-                nodecount, edgecount);
-            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL,
-                nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount, edgecount);
 
             File file = new File(DIRECTORY);
             URL url = Groove.toURL(file);
 
-            testControl(GrammarModel.newInstance(file, false), DEF_START,
-                DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(file, false), DEF_START,
-                DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(file, false), DEF_START, DEF_CONTROL, nodecount,
+                edgecount);
+            testControl(GrammarModel.newInstance(file, false), DEF_START, DEF_CONTROL, nodecount,
+                edgecount);
 
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
-                nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
-                nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
-                nodecount, edgecount);
+            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -85,10 +82,9 @@ public class IOTest {
         int nodecount = 12;
         int edgecount = 14;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY), ALT_START, DEF_CONTROL,
-                nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), ALT_START, DEF_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -99,18 +95,16 @@ public class IOTest {
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
             GrammarModel grammarView = GrammarModel.newInstance(dir);
-            testControl(grammarView, ALT_START, ALT_CONTROL, nodecount,
-                edgecount);
+            testControl(grammarView, ALT_START, ALT_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
 
     }
 
-    protected void testControl(GrammarModel view, String startName,
-            String controlName, int nodecount, int edgecount) {
-        testExploration(view, "control", startName, controlName, 3, nodecount,
-            edgecount);
+    protected void testControl(GrammarModel view, String startName, String controlName,
+            int nodecount, int edgecount) {
+        testExploration(view, "control", startName, controlName, 3, nodecount, edgecount);
     }
 
     /**
@@ -120,9 +114,8 @@ public class IOTest {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(GrammarModel view, String grammarName,
-            String startName, String controlName, int rulecount, int nodeCount,
-            int edgeCount) {
+    protected GTS testExploration(GrammarModel view, String grammarName, String startName,
+            String controlName, int rulecount, int nodeCount, int edgeCount) {
         try {
             // and also set the start graph directly
             view.setLocalActiveNames(ResourceKind.CONTROL, controlName);

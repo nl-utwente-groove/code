@@ -17,6 +17,7 @@
 package groove.control.instance;
 
 import groove.control.Call;
+import groove.control.CtrlFrame;
 import groove.control.Position;
 import groove.control.Procedure;
 import groove.control.template.Location;
@@ -37,7 +38,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Frame extends ANode implements Position<Frame>, Fixable {
+public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame {
     /**
      * Possibly nested frame instantiating a given control stage.
      */
@@ -54,6 +55,11 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
     }
 
     private final Automaton aut;
+
+    @Override
+    public boolean isStart() {
+        return getAut().getStart() == this;
+    }
 
     /** Returns the control location that this frame instantiates. */
     public Location getLocation() {
@@ -271,6 +277,11 @@ public class Frame extends ANode implements Position<Frame>, Fixable {
         Frame onFailure = elseF.normalise(getPrime(), triedCalls);
         Frame onFinish = nextF.normalise(null, null);
         return new Step(this, swit, onFinish, onSuccess, onFailure);
+    }
+
+    @Override
+    public boolean isTransient() {
+        return getDepth() > 0;
     }
 
     @Override

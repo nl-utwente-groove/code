@@ -105,11 +105,13 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     }
 
     /** Convenience method to return the target variable binding of the switch of this step. */
+    @Override
     public final Binding[] getTargetBinding() {
         return getSwitch().getTargetBinding();
     }
 
     /** Convenience method to return the call parameter binding of the switch of this step. */
+    @Override
     public final Binding[] getCallBinding() {
         return getSwitch().getCallBinding();
     }

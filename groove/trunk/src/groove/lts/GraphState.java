@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlFrame;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.instance.Frame;
@@ -61,14 +62,14 @@ public interface GraphState extends Node {
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 
-    /** Returns the prime control frame associated with this state. */
-    public Frame getFrame();
-
     /** 
      * Sets a new actual frame for this state.
      * The prime frame of the new actual frame should equal the old prime frame.
      */
-    public void setCurrentFrame(Frame frame);
+    public void setFrame(CtrlFrame frame);
+
+    /** Returns the prime control frame associated with this state. */
+    public CtrlFrame getFrame();
 
     /** 
      * Returns the actual control frame associated with this state.
@@ -77,16 +78,10 @@ public interface GraphState extends Node {
      * The prime frame is always the prime of the actual frame.
      * @see Frame#getPrime() 
      */
-    public Frame getCurrentFrame();
-
-    /** Returns the (non-{@code null}) control state associated with this state. */
-    public CtrlState getCtrlState();
+    public CtrlFrame getCurrentFrame();
 
     /** Returns the (non-{@code null}) control schedule associated with this state. */
     public CtrlSchedule getSchedule();
-
-    /** Sets a new control schedule for this state. */
-    public void setSchedule(CtrlSchedule schedule);
 
     /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
@@ -147,8 +142,8 @@ public interface GraphState extends Node {
 
     /**
      * Returns a list of values for the bound variables of
-     * the control state.
-     * @see #getCtrlState()
+     * the control frame.
+     * @see #getFrame()
      * @see CtrlState#getBoundVars()
      */
     public HostNode[] getBoundNodes();
@@ -205,7 +200,7 @@ public interface GraphState extends Node {
     /** 
      * Indicates if this is a transient state.
      * This is the case if and only if the associated control schedule is transient.
-     * @see #getSchedule()
+     * @see #getCurrentFrame()
      */
     public boolean isTransient();
 

@@ -39,7 +39,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlState implements Node, Comparator<CtrlTransition> {
+public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     /**
      * Creates a control state with a given number.
      * @param aut the automaton for which this state is created
@@ -92,6 +92,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     }
 
     /** Indicates if this is the start state of the automaton. */
+    @Override
     public boolean isStart() {
         return getAut().getStart() == this;
     }
@@ -100,8 +101,19 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
      * Indicates if this is a transient control state.
      * A control state is transient if there is a transaction underway.
      */
+    @Override
     public boolean isTransient() {
         return this.recipe != null;
+    }
+
+    @Override
+    public boolean isDead() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isFinal() {
+        throw new UnsupportedOperationException();
     }
 
     /** 

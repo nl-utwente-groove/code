@@ -19,7 +19,6 @@ package groove.io.ecore2groove;
 import groove.util.Groove;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,18 +87,16 @@ public class ModelHandler {
 
         // Create new ResourceSet and register an XMI model loader
         this.rs = new ResourceSetImpl();
-        this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
-            "*", new XMIResourceFactoryImpl());
+        this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*",
+            new XMIResourceFactoryImpl());
 
         // Load Ecore model, location refers to inside of .jar, then extract 
         // file from it. Especially with Ecore.ecore inside GROOVE resources
         try {
             if (modelLoc.contains(".jar!")) {
-                String substr =
-                    modelLoc.substring(5, modelLoc.lastIndexOf(".jar!") + 4);
+                String substr = modelLoc.substring(5, modelLoc.lastIndexOf(".jar!") + 4);
                 JarFile jarFile = new JarFile(substr);
-                InputStream in =
-                    jarFile.getInputStream(jarFile.getEntry("Ecore.ecore"));
+                InputStream in = jarFile.getInputStream(jarFile.getEntry("Ecore.ecore"));
                 this.r = this.rs.createResource(URI.createURI(substr));
                 this.r.load(in, null);
             } else {
@@ -111,10 +108,8 @@ public class ModelHandler {
                     in.close();
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
 
         // Iterate over all elements to register packages and find root package
@@ -130,8 +125,7 @@ public class ModelHandler {
                 }
 
                 // register all packages we find in the ResourceSet
-                this.rs.getPackageRegistry().put(modelPackage.getNsURI(),
-                    modelPackage);
+                this.rs.getPackageRegistry().put(modelPackage.getNsURI(), modelPackage);
                 if (modelPackage.getESuperPackage() == null) {
                     if (this.metaModelRoot == null
                         || this.metaModelRoot.eContents().size() < modelPackage.eContents().size()) {
@@ -239,9 +233,8 @@ public class ModelHandler {
         }
 
         if (type.equals("java.math.BigInteger") || type.equals("long")
-            || type.equals("java.lang.Long")
-            || type.equals("java.math.BigDecimal") || type.equals("double")
-            || type.equals("java.lang.Double")) {
+            || type.equals("java.lang.Long") || type.equals("java.math.BigDecimal")
+            || type.equals("double") || type.equals("java.lang.Double")) {
             this.bigAlgebra = true;
         }
     }
@@ -372,8 +365,8 @@ public class ModelHandler {
         // Ecore.ecore
         if (this.core) {
             this.rs = new ResourceSetImpl();
-            this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
-                "ecore", new XMIResourceFactoryImpl());
+            this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+                new XMIResourceFactoryImpl());
 
             this.ir = this.rs.getResource(modelURI, true);
 
@@ -405,16 +398,12 @@ public class ModelHandler {
      * @param r the instance model.
      * @param filePath the location where to store the model.
      */
-    public void saveModel(Resource r, String filePath) {
+    public void saveModel(Resource r, String filePath) throws IOException {
+        FileOutputStream out = new FileOutputStream(filePath);
         try {
-            FileOutputStream out = new FileOutputStream(filePath);
-            try {
-                r.save(out, Collections.EMPTY_MAP);
-            } finally {
-                out.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            r.save(out, Collections.EMPTY_MAP);
+        } finally {
+            out.close();
         }
     }
 

@@ -313,7 +313,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 try {
                     getDocument().insertString(getEditorComponent().getCaretPosition(), "\n", null);
                 } catch (BadLocationException e1) {
-                    e1.printStackTrace();
+                    throw new IllegalStateException(e1);
                 }
             }
         }

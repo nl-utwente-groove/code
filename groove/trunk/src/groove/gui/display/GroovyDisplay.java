@@ -78,8 +78,7 @@ final public class GroovyDisplay extends ResourceDisplay {
      * @param name Name of script resource to execute
      */
     public void executeGroovy(String name) {
-        String program =
-            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+        String program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 
@@ -89,8 +88,7 @@ final public class GroovyDisplay extends ResourceDisplay {
         try {
             writer = new PaneWriter(getEditorPane(), output);
         } catch (IOException e) {
-            e.printStackTrace(System.err);
-            return;
+            throw new IllegalStateException(e);
         }
 
         getEditorPane().setText("");
@@ -112,25 +110,21 @@ final public class GroovyDisplay extends ResourceDisplay {
             String loc = "";
             for (StackTraceElement elem : e.getStackTrace()) {
                 if (elem.getFileName().endsWith(FileType.GROOVY.getExtension())) {
-                    loc =
-                        elem.getFileName() + ":" + elem.getLineNumber() + " : ";
+                    loc = elem.getFileName() + ":" + elem.getLineNumber() + " : ";
                     break;
                 }
             }
             newstream.println(loc + e.getMessage());
         } catch (Exception e) {
-            newstream.println(e.getClass().getSimpleName()
-                + " during execution of Groovy script");
+            newstream.println(e.getClass().getSimpleName() + " during execution of Groovy script");
             newstream.println(e.getMessage());
             for (StackTraceElement elem : e.getStackTrace()) {
                 newstream.println(elem.toString());
             }
-            // e.printStackTrace(newstream);
         } catch (Error e) {
             newstream.println("!" + e.getClass().getSimpleName()
                 + " during execution of Groovy script!");
             newstream.println(e.getMessage());
-            e.printStackTrace(newstream);
         }
 
         // Close streams and stop thread, ignore any errors
@@ -159,8 +153,7 @@ final public class GroovyDisplay extends ResourceDisplay {
         private JEditorPane pane;
         private PipedInputStream stream;
 
-        public PaneWriter(JEditorPane pane, PipedOutputStream stream)
-            throws IOException {
+        public PaneWriter(JEditorPane pane, PipedOutputStream stream) throws IOException {
             this.pane = pane;
             this.stream = new PipedInputStream(stream);
         }
@@ -175,8 +168,7 @@ final public class GroovyDisplay extends ResourceDisplay {
                     buffer[lenRead] = 0;
                     // pane.setText(new String(buffer));
                     try {
-                        doc.insertString(doc.getLength(), new String(buffer, 0,
-                            lenRead), null);
+                        doc.insertString(doc.getLength(), new String(buffer, 0, lenRead), null);
                     } catch (BadLocationException e) {
                         // Ignore
                     }

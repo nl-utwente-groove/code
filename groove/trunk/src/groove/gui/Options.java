@@ -955,9 +955,7 @@ public class Options implements Cloneable {
                 // Set the look and feel
                 UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
             } catch (Exception e) {
-                // nothing to do here except not crash on the exception
-                System.out.println("Exception");
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             }
         }
     }

@@ -18,6 +18,7 @@ package groove.gui.look;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
+import groove.control.CtrlFrame;
 import groove.control.CtrlState;
 import groove.control.CtrlVar;
 import groove.grammar.aspect.Aspect;
@@ -107,9 +108,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
         if (jVertex.getJGraph().isShowNodeIdentities()) {
-            result.add(
-                Line.atom(jVertex.getNode().toString()).style(Style.ITALIC),
-                Direct.NONE);
+            result.add(Line.atom(jVertex.getNode().toString()).style(Style.ITALIC), Direct.NONE);
         }
         // only add edges that have an unfiltered label
         for (Edge edge : jVertex.getEdges()) {
@@ -138,9 +137,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getDataLines(node));
                 // show the visible self-edges
                 Line id =
-                    node.hasId()
-                            ? Line.atom(node.getId().getContentString()).style(
-                                Style.ITALIC) : null;
+                    node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
+                            : null;
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jVertex, edge)) {
                         Line line = edge.toLine(true);
@@ -229,9 +227,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
         } else {
             Line idLine =
-                node.hasId()
-                        ? Line.atom(node.getId().getContentString()).style(
-                            Style.ITALIC) : null;
+                node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
+                        : null;
             // show the quantifier aspect correctly
             if (node.getKind().isQuantifier()) {
                 result.add(getQuantifierLines(node, idLine));
@@ -308,12 +305,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.getJGraph().isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
-            CtrlState ctrlState = state.getCtrlState();
-            if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
-                id.append("|" + ctrlState.toString());
+            CtrlFrame frame = state.getFrame();
+            if (!frame.isStart()) {
+                id.append("|" + frame.toString());
             }
-            result.add(Line.atom(id.toString()).style(Style.ITALIC),
-                Direct.NONE);
+            result.add(Line.atom(id.toString()).style(Style.ITALIC), Direct.NONE);
         }
         // only add edges that have an unfiltered label
         boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
@@ -371,8 +367,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
             if (!isFiltered(jEdge, edge)) {
-                result.add(Line.atom(edge.label().text()),
-                    jEdge.getDirect(edge));
+                result.add(Line.atom(edge.label().text()), jEdge.getDirect(edge));
             }
         }
         return result;
@@ -386,17 +381,13 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = new MultiLabel();
         } else if (jEdge.isNodeEdgeIn()) {
             result = new MultiLabel();
-            LabelPattern pattern =
-                jEdge.getTargetVertex().getEdgeLabelPattern();
+            LabelPattern pattern = jEdge.getTargetVertex().getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
                 (GraphBasedModel) jEdge.getJModel().getResourceModel();
             try {
-                HostNode target =
-                    (HostNode) resourceModel.getMap().getNode(
-                        jEdge.getTargetNode());
-                String label =
-                    pattern.getLabel(resourceModel.toResource(), target);
+                HostNode target = (HostNode) resourceModel.getMap().getNode(jEdge.getTargetNode());
+                String label = pattern.getLabel(resourceModel.toResource(), target);
                 result.add(Line.atom(label), jEdge.getDirect(null));
             } catch (FormatException e) {
                 // assert false;
@@ -423,8 +414,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // only add edges that have an unfiltered label
             if (!isFiltered(jEdge, edge)) {
                 GraphTransition trans = (GraphTransition) edge;
-                result.add(Line.atom(trans.text(isShowAnchors)),
-                    jEdge.getDirect(edge));
+                result.add(Line.atom(trans.text(isShowAnchors)), jEdge.getDirect(edge));
             }
         }
         return result;
@@ -469,8 +459,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (attrAspect.getKind().hasSignature()) {
             Line dataLine = null;
             if (!attrAspect.hasContent()) {
-                dataLine =
-                    getSignatureLine(attrAspect.getKind().getSignature());
+                dataLine = getSignatureLine(attrAspect.getKind().getSignature());
             } else if (!this.jGraph.isShowNodeIdentities()) {
                 // show constants only if they are not already shown as node identities
                 dataLine = Line.atom(attrAspect.getContentString());
@@ -510,22 +499,18 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     static private final Map<SignatureKind,Line> sigLineMap;
     static {
-        Map<SignatureKind,Line> map =
-            new EnumMap<SignatureKind,Line>(SignatureKind.class);
+        Map<SignatureKind,Line> map = new EnumMap<SignatureKind,Line>(SignatureKind.class);
         for (SignatureKind kind : SignatureKind.values()) {
             map.put(kind, Line.atom(kind.getName()).style(Style.BOLD));
         }
         sigLineMap = map;
     }
 
-    static private final String IMPORT_TEXT = String.format("%simport%s",
-        Util.FRENCH_QUOTES_OPEN, Util.FRENCH_QUOTES_CLOSED);
-    static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(
-        Style.ITALIC);
+    static private final String IMPORT_TEXT = String.format("%simport%s", Util.FRENCH_QUOTES_OPEN,
+        Util.FRENCH_QUOTES_CLOSED);
+    static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(Style.ITALIC);
     static private final Line EXISTS = Line.atom("" + Util.EXISTS);
-    static private final Line EXISTS_OPT = EXISTS.append(Line.atom("?").style(
-        Style.SUPER));
+    static private final Line EXISTS_OPT = EXISTS.append(Line.atom("?").style(Style.SUPER));
     static private final Line FORALL = Line.atom("" + Util.FORALL);
-    static private final Line FORALL_POS = FORALL.append(Line.atom(">0").style(
-        Style.SUPER));
+    static private final Line FORALL_POS = FORALL.append(Line.atom(">0").style(Style.SUPER));
 }

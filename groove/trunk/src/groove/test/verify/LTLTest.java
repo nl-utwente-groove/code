@@ -19,8 +19,8 @@ package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 import groove.explore.AcceptorValue;
-import groove.explore.Generator;
 import groove.explore.Exploration;
+import groove.explore.Generator;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
@@ -99,12 +99,10 @@ public class LTLTest {
     /** Sets the GTS to a given grammar in the JUnit samples. */
     private void prepare(String grammarName) {
         try {
-            Generator generator =
-                new Generator("-v", "0", "junit/samples/" + grammarName);
+            Generator generator = new Generator("-v", "0", "junit/samples/" + grammarName);
             this.gts = generator.start();
         } catch (Exception e) {
-            // this should not occur
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -118,12 +116,9 @@ public class LTLTest {
             break;
         case LTL_BOUNDED:
         case LTL_POCKET:
-            strategy =
-                this.strategyTemplate.toSerialized(formula,
-                    new GraphNodeSizeBoundary(0, 1));
+            strategy = this.strategyTemplate.toSerialized(formula, new GraphNodeSizeBoundary(0, 1));
         }
-        Exploration exploration =
-            new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        Exploration exploration = new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {
             exploration.play(this.gts, this.gts.startState());
         } catch (FormatException e) {

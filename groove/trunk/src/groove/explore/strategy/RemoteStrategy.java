@@ -64,38 +64,30 @@ public class RemoteStrategy extends SymbolicStrategy {
     /**
      * Connects to the remote server.
      */
-    private void connect() {
+    private void connect() throws MalformedURLException, IOException {
         System.out.println("Connecting...");
-        try {
-            // Create a URLConnection object for a URL
-            URL url = new URL(this.host);
-            this.conn = (HttpURLConnection) url.openConnection();
-            this.conn.setDoOutput(true);
-            this.conn.setRequestMethod("POST");
-            this.conn.setReadTimeout(50000);
-            this.conn.setRequestProperty("Content-Type", "application/json");
+        // Create a URLConnection object for a URL
+        URL url = new URL(this.host);
+        this.conn = (HttpURLConnection) url.openConnection();
+        this.conn.setDoOutput(true);
+        this.conn.setRequestMethod("POST");
+        this.conn.setReadTimeout(50000);
+        this.conn.setRequestProperty("Content-Type", "application/json");
 
-            // conn.connect();
+        // conn.connect();
 
-            /*
-             * BufferedReader error = new BufferedReader(new
-             * InputStreamReader(conn.getErrorStream())); StringBuffer buf = new
-             * StringBuffer(); String line; while ((line = error.readLine()) !=
-             * null) { buf.append(line); }
-             * 
-             * if (buf.length() > 0) {
-             * System.out.println("Error in connection to: "+url);
-             * System.out.println(buf); } else { this.out = new
-             * OutputStreamWriter(conn.getOutputStream()); this.in = new
-             * BufferedReader(new InputStreamReader(conn.getInputStream())); }
-             */
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // this.out = new OutputStreamWriter(System.out);
-        // this.in = new BufferedReader(new InputStreamReader(System.in));
+        /*
+         * BufferedReader error = new BufferedReader(new
+         * InputStreamReader(conn.getErrorStream())); StringBuffer buf = new
+         * StringBuffer(); String line; while ((line = error.readLine()) !=
+         * null) { buf.append(line); }
+         * 
+         * if (buf.length() > 0) {
+         * System.out.println("Error in connection to: "+url);
+         * System.out.println(buf); } else { this.out = new
+         * OutputStreamWriter(conn.getOutputStream()); this.in = new
+         * BufferedReader(new InputStreamReader(conn.getInputStream())); }
+         */
     }
 
     /**
@@ -114,15 +106,10 @@ public class RemoteStrategy extends SymbolicStrategy {
             this.out.write(message);
             this.out.flush();
             if (this.conn.getResponseCode() != 200) {
-                this.in =
-                    new BufferedReader(new InputStreamReader(
-                        this.conn.getErrorStream()));
-                System.out.println("Error in connection to: "
-                    + this.conn.getURL());
+                this.in = new BufferedReader(new InputStreamReader(this.conn.getErrorStream()));
+                System.out.println("Error in connection to: " + this.conn.getURL());
             } else if (this.in == null) {
-                this.in =
-                    new BufferedReader(new InputStreamReader(
-                        this.conn.getInputStream()));
+                this.in = new BufferedReader(new InputStreamReader(this.conn.getInputStream()));
             }
             StringBuffer buf = new StringBuffer();
             String line;
@@ -131,7 +118,7 @@ public class RemoteStrategy extends SymbolicStrategy {
             }
             System.out.println(buf);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
     }
 

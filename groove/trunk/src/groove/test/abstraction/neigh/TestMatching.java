@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -58,9 +60,9 @@ public class TestMatching {
             view = GrammarModel.newInstance(file, false);
             grammar = view.toGrammar();
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -72,7 +74,7 @@ public class TestMatching {
         try {
             graph = view.getHostModel("shape-0").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-match-0");
         Shape shape = Shape.createShape(graph);
@@ -88,7 +90,7 @@ public class TestMatching {
         try {
             graph = view.getHostModel("shape-0").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-match-4");
         Shape shape = Shape.createShape(graph);
@@ -104,7 +106,7 @@ public class TestMatching {
         try {
             graph = view.getHostModel("shape-1").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape = Shape.createShape(graph);
         Rule rule = grammar.getRule("test-match-1");
@@ -121,7 +123,7 @@ public class TestMatching {
         try {
             graph = view.getHostModel("shape-2").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape = Shape.createShape(graph);
         Rule rule = grammar.getRule("test-match-3");
@@ -141,7 +143,7 @@ public class TestMatching {
             graph0c = view.getHostModel("test-nac-0c").toResource();
             graph0d = view.getHostModel("test-nac-0d").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape0a = Shape.createShape(graph0a);
         Shape shape0b = Shape.createShape(graph0b);
@@ -156,8 +158,7 @@ public class TestMatching {
         preMatches = PreMatch.getPreMatches(shape0c, rule);
         assertEquals(1, preMatches.size());
         Proof preMatch = preMatches.iterator().next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape0c, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape0c, preMatch);
         assertEquals(1, mats.size());
         preMatches = PreMatch.getPreMatches(shape0d, rule);
         assertEquals(4, preMatches.size());
@@ -171,7 +172,7 @@ public class TestMatching {
             graph1a = view.getHostModel("test-nac-1a").toResource();
             graph1b = view.getHostModel("test-nac-1b").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape1a = Shape.createShape(graph1a);
         Shape shape1b = Shape.createShape(graph1b);
@@ -182,8 +183,7 @@ public class TestMatching {
         preMatches = PreMatch.getPreMatches(shape1b, rule);
         assertEquals(1, preMatches.size());
         Proof preMatch = preMatches.iterator().next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape1b, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape1b, preMatch);
         assertEquals(1, mats.size());
     }
 
@@ -195,7 +195,7 @@ public class TestMatching {
             graph2a = view.getHostModel("test-nac-2a").toResource();
             graph2b = view.getHostModel("test-nac-2b").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape2a = Shape.createShape(graph2a);
         Shape shape2b = Shape.createShape(graph2b);
@@ -213,15 +213,14 @@ public class TestMatching {
         try {
             graph3 = view.getHostModel("test-nac-3").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape3 = Shape.createShape(graph3);
         Rule rule = grammar.getRule("test-nac-3");
         Set<Proof> preMatches = PreMatch.getPreMatches(shape3, rule);
         assertEquals(1, preMatches.size());
         Proof preMatch = preMatches.iterator().next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape3, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape3, preMatch);
         assertEquals(2, mats.size());
     }
 
@@ -231,15 +230,14 @@ public class TestMatching {
         try {
             graph4 = view.getHostModel("test-nac-4").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Shape shape4 = Shape.createShape(graph4);
         Rule rule = grammar.getRule("test-nac-4");
         Set<Proof> preMatches = PreMatch.getPreMatches(shape4, rule);
         assertEquals(1, preMatches.size());
         Proof preMatch = preMatches.iterator().next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape4, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape4, preMatch);
         assertEquals(1, mats.size());
     }
 
@@ -249,7 +247,7 @@ public class TestMatching {
         try {
             graph4 = view.getHostModel("test-nac-4").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
 
         NeighAbsParam.getInstance().setEdgeMultBound(2);
@@ -259,8 +257,7 @@ public class TestMatching {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape4, rule);
         assertEquals(1, preMatches.size());
         Proof preMatch = preMatches.iterator().next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape4, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape4, preMatch);
         assertEquals(0, mats.size());
     }
 
@@ -275,8 +272,7 @@ public class TestMatching {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         Proof preMatch = preMatches.iterator().next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
         assertEquals(0, mats.size());
     }
 
@@ -289,8 +285,7 @@ public class TestMatching {
         assertEquals(2, preMatches.size());
         Iterator<Proof> it = preMatches.iterator();
         Proof preMatch = it.next();
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
         assertEquals(2, mats.size());
         preMatch = it.next();
         mats = Materialisation.getMaterialisations(shape, preMatch);
@@ -299,8 +294,7 @@ public class TestMatching {
 
     private Shape loadShape(File file) {
         try {
-            return GxlIO.instance().loadGraph(file).toShape(
-                view.getTypeGraph());
+            return GxlIO.instance().loadGraph(file).toShape(view.getTypeGraph());
         } catch (IOException e) {
             throw new IllegalArgumentException();
         }

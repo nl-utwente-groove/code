@@ -37,7 +37,7 @@ public class PatternGraphNextState extends PatternGraphState implements
     /** Default constructor. */
     public PatternGraphNextState(PatternGraph graph, PatternGraphState source,
             int number, PGTS pgts, MatchResult match) {
-        super(graph, match.getCtrlTransition().target(), number, pgts);
+        super(graph, match.getStep().target(), number, pgts);
         this.transition = new PatternGraphTransition(source, match, this);
     }
 

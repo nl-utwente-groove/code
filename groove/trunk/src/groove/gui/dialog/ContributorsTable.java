@@ -53,8 +53,7 @@ public class ContributorsTable extends JTable {
         for (int i = 0; i < getColumnCount(); ++i) {
             int width = 0;
             for (int j = 0; j < getRowCount(); j++) {
-                Component renderer =
-                    prepareRenderer(getCellRenderer(j, i), j, i);
+                Component renderer = prepareRenderer(getCellRenderer(j, i), j, i);
                 // Set the preferred width to at least the width of the cell
                 width = Math.max(renderer.getPreferredSize().width, width);
             }
@@ -66,8 +65,7 @@ public class ContributorsTable extends JTable {
     public void showDialog(Component parent, String title) {
         JScrollPane scrollPane = new JScrollPane(this);
         scrollPane.getViewport().setPreferredSize(getPreferredSize());
-        JOptionPane optionPane =
-            new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE);
+        JOptionPane optionPane = new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE);
         JDialog dialog = optionPane.createDialog(parent, title);
         dialog.setVisible(true);
     }
@@ -120,17 +118,15 @@ public class ContributorsTable extends JTable {
      * Taken from {@link "http://java-swing-tips.blogspot.nl/2009/02/hyperlink-in-jtable-cell.html"}
      * @author TERAI Atsuhiro
      */
-    private static class URLRenderer extends DefaultTableCellRenderer implements
-            MouseListener, MouseMotionListener {
+    private static class URLRenderer extends DefaultTableCellRenderer implements MouseListener,
+            MouseMotionListener {
         private int row = -1;
         private int col = -1;
 
         @Override
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column) {
-            super.getTableCellRendererComponent(table, value, isSelected,
-                false, row, column);
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             StringBuilder text = new StringBuilder(value.toString());
             BLUE_TAG.on(text);
             if (this.row == row && this.col == column) {
@@ -177,7 +173,7 @@ public class ContributorsTable extends JTable {
                         Desktop.getDesktop().browse(url.toURI());
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    throw new IllegalStateException(ex);
                 }
             }
         }

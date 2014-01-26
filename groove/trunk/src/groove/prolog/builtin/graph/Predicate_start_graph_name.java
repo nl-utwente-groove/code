@@ -30,26 +30,20 @@ import groove.prolog.GrooveEnvironment;
  */
 public class Predicate_start_graph_name extends GraphPrologCode {
     @Override
-    public int execute(Interpreter interpreter, boolean backtrackMode,
-            Term[] args) throws PrologException {
+    public int execute(Interpreter interpreter, boolean backtrackMode, Term[] args)
+        throws PrologException {
         if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
             GrooveEnvironment.invalidEnvironment();
         }
 
-        try {
-            String startGraphName =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getStartGraph().getName();
+        String startGraphName =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getStartGraph().getName();
 
-            if (startGraphName == null) {
-                return FAIL;
-            }
-
-            Term value = AtomTerm.get(startGraphName);
-            return interpreter.unify(args[0], value);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (startGraphName == null) {
+            return FAIL;
         }
 
-        return FAIL;
+        Term value = AtomTerm.get(startGraphName);
+        return interpreter.unify(args[0], value);
     }
 }

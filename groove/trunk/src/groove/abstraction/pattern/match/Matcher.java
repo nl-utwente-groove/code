@@ -25,7 +25,7 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,8 +89,7 @@ public final class Matcher {
     }
 
     /** Returns a list of all matches found on the given graph. */
-    public List<MatchResult> findMatches(PatternGraph pGraph,
-            CtrlTransition ctrlTrans) {
+    public List<MatchResult> findMatches(PatternGraph pGraph, CtrlStep ctrlTrans) {
         List<MatchResult> result = new ArrayList<MatchResult>();
         this.search.initialise(pGraph);
         while (this.search.find()) {
@@ -236,8 +235,7 @@ public final class Matcher {
             if (this.found) {
                 current = planSize - 1;
                 SearchItem.Record currentRecord;
-                while (current >= 0
-                    && !(currentRecord = getRecord(current)).isRelevant()) {
+                while (current >= 0 && !(currentRecord = getRecord(current)).isRelevant()) {
                     currentRecord.repeat();
                     current--;
                 }
@@ -278,13 +276,11 @@ public final class Matcher {
                 result = item.createRecord(this);
                 result.initialise(this.host);
                 this.records[current] = result;
-                this.influence[current] =
-                    new SearchItem.Record[this.influence.length - current];
+                this.influence[current] = new SearchItem.Record[this.influence.length - current];
                 int dependency = Matcher.this.plan.getDependency(current);
                 assert dependency < current;
                 if (dependency >= 0) {
-                    this.influence[dependency][this.influenceCount[dependency]] =
-                        result;
+                    this.influence[dependency][this.influenceCount[dependency]] = result;
                     this.influenceCount[dependency]++;
                 }
                 if (this.lastSingular == current - 1 && result.isSingular()) {
@@ -328,8 +324,7 @@ public final class Matcher {
         Match createEmptyMatch() {
             // EZ says: I don't like this test but it's a fast hack...
             if (this.host instanceof PatternShape) {
-                return new PreMatch(Matcher.this.plan.getRule(),
-                    (PatternShape) this.host);
+                return new PreMatch(Matcher.this.plan.getRule(), (PatternShape) this.host);
             } else {
                 return new Match(Matcher.this.plan.getRule(), this.host);
             }
@@ -341,8 +336,7 @@ public final class Matcher {
                 PatternNode oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
-                    assert removed : String.format(
-                        "Node image %s not in used nodes %s", oldImage,
+                    assert removed : String.format("Node image %s not in used nodes %s", oldImage,
                         this.usedNodes);
                 }
                 if (image != null && !getUsedNodes().add(image)) {

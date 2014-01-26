@@ -663,7 +663,7 @@ public class Condition implements Fixable {
                 result.setFixed();
             } catch (FormatException e) {
                 // Cannot happen since we already had a fixed condition.
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             }
         }
         return result;
@@ -768,12 +768,13 @@ public class Condition implements Fixable {
     static public final Condition True = new Condition("true", Op.TRUE);
     /** Constant condition that is never satisfied. */
     static public final Condition False = new Condition("false", Op.FALSE);
+
     static {
         try {
             True.setFixed();
             False.setFixed();
         } catch (FormatException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
     }
 

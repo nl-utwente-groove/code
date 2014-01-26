@@ -34,8 +34,7 @@ public class TestShapeGenerator {
     private static final String STRATEGY = "shapedfs";
 
     private String[] getArgs(String grammar, String startGraph) {
-        return new String[] {"-v", VERBOSITY + "", "-s", STRATEGY, grammar,
-            startGraph};
+        return new String[] {"-v", VERBOSITY + "", "-s", STRATEGY, grammar, startGraph};
     }
 
     @Test
@@ -78,8 +77,7 @@ public class TestShapeGenerator {
 
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-            AGTS gts =
-                ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
+            AGTS gts = ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
             assertEquals(3, gts.getStateCount());
             assertEquals(3, gts.getTransitionCount());
         } catch (Exception e) {
@@ -97,8 +95,7 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         try {
-            AGTS gts =
-                ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
+            AGTS gts = ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
             assertEquals(26, gts.getStateCount());
             assertEquals(59, gts.getTransitionCount());
         } catch (Exception e) {
@@ -159,7 +156,6 @@ public class TestShapeGenerator {
             assertEquals(36, gts.getStateCount());
             assertEquals(64, gts.getTransitionCount());
         } catch (Exception e) {
-            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
     }

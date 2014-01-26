@@ -64,13 +64,11 @@ public class LibrariesTable extends JTable {
      * See http://binkley.blogspot.nl/2006/01/getting-jtable-columns-widths-to-fit.html
      */
     @Override
-    public Component prepareRenderer(TableCellRenderer renderer, int rowIx,
-            int colIx) {
+    public Component prepareRenderer(TableCellRenderer renderer, int rowIx, int colIx) {
         Component result = super.prepareRenderer(renderer, rowIx, colIx);
         // Set the preferred width to at least the width of the cell
         TableColumn col = getColumnModel().getColumn(colIx);
-        col.setPreferredWidth(Math.max(result.getPreferredSize().width,
-            col.getPreferredWidth()));
+        col.setPreferredWidth(Math.max(result.getPreferredSize().width, col.getPreferredWidth()));
 
         return result;
     }
@@ -107,8 +105,7 @@ public class LibrariesTable extends JTable {
     @Override
     public String getToolTipText(MouseEvent evt) {
         int row = rowAtPoint(evt.getPoint());
-        return "Library for "
-            + getModel().getValueAt(row, Column.DESCRIPTION.ordinal());
+        return "Library for " + getModel().getValueAt(row, Column.DESCRIPTION.ordinal());
     }
 
     /** Shows the content of this table as a dialog. */
@@ -117,10 +114,8 @@ public class LibrariesTable extends JTable {
         Dimension size = scrollPane.getPreferredSize();
         size.height = getPreferredSize().height;
         scrollPane.getViewport().setPreferredSize(size);
-        JOptionPane optionPane =
-            new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE);
-        JDialog dialog =
-            optionPane.createDialog(parent, "External libraries used in GROOVE");
+        JOptionPane optionPane = new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE);
+        JDialog dialog = optionPane.createDialog(parent, "External libraries used in GROOVE");
         dialog.setVisible(true);
     }
 
@@ -215,17 +210,15 @@ public class LibrariesTable extends JTable {
      * Taken from {@link "http://java-swing-tips.blogspot.nl/2009/02/hyperlink-in-jtable-cell.html"}
      * @author TERAI Atsuhiro
      */
-    private static class URLRenderer extends DefaultTableCellRenderer implements
-            MouseListener, MouseMotionListener {
+    private static class URLRenderer extends DefaultTableCellRenderer implements MouseListener,
+            MouseMotionListener {
         private int row = -1;
         private int col = -1;
 
         @Override
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column) {
-            super.getTableCellRendererComponent(table, value, isSelected,
-                false, row, column);
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             StringBuilder text = new StringBuilder(value.toString());
             BLUE_TAG.on(text);
             if (this.row == row && this.col == column) {
@@ -272,7 +265,7 @@ public class LibrariesTable extends JTable {
                         Desktop.getDesktop().browse(url.toURI());
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    throw new IllegalStateException(ex);
                 }
             }
         }

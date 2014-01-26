@@ -96,14 +96,13 @@ public class CTLTest {
     }
 
     /** Sets the GTS to a given grammar in the JUnit samples. */
-    private void setGTS(String grammarName, String startGraphName,
-            String... otherArgs) {
+    private void setGTS(String grammarName, String startGraphName, String... otherArgs) {
         try {
             File tmp = File.createTempFile("gts-" + grammarName, ".gxl");
             this.ltsLabels = new LTSLabels("sfro");
             List<String> genArgs = new ArrayList<String>();
-            genArgs.addAll(Arrays.asList("-v", "0", "-o",
-                tmp.getCanonicalPath(), "-ef", this.ltsLabels.toString()));
+            genArgs.addAll(Arrays.asList("-v", "0", "-o", tmp.getCanonicalPath(), "-ef",
+                this.ltsLabels.toString()));
             genArgs.addAll(Arrays.asList(otherArgs));
             genArgs.add("junit/samples/" + grammarName);
             if (startGraphName != null) {
@@ -114,7 +113,6 @@ public class CTLTest {
             this.gtsGraph = Groove.loadGraph(tmp);
             tmp.delete();
         } catch (Exception e) {
-            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
     }
@@ -127,8 +125,7 @@ public class CTLTest {
             Formula property = FormulaParser.parse(formula).toCtlFormula();
             CTLMarker modelChecker = new CTLMarker(property, this.gts);
             assertEquals(stateCount, modelChecker.getCount(true));
-            modelChecker =
-                new CTLMarker(property, this.gtsGraph, this.ltsLabels);
+            modelChecker = new CTLMarker(property, this.gtsGraph, this.ltsLabels);
             assertEquals(stateCount, modelChecker.getCount(true));
         } catch (Exception efe) {
             fail(efe.getMessage());

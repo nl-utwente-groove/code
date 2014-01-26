@@ -263,8 +263,7 @@ public class ExploreAction extends SimulatorAction {
             } catch (InterruptedException e) {
                 setInterrupted(true);
             } catch (InvocationTargetException e) {
-                e.getCause().printStackTrace();
-                assert false;
+                throw new IllegalStateException(e.getCause());
             }
             if (isInterrupted()) {
                 Thread.currentThread().interrupt();

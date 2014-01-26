@@ -33,8 +33,8 @@ import java.util.Set;
  */
 public class Predicate_rule_name extends GraphPrologCode {
     @Override
-    public int execute(Interpreter interpreter, boolean backtrackMode,
-            Term[] args) throws PrologException {
+    public int execute(Interpreter interpreter, boolean backtrackMode, Term[] args)
+        throws PrologException {
         if (backtrackMode) {
             PrologStringCollectionIterator it =
                 (PrologStringCollectionIterator) interpreter.popBacktrackInfo();
@@ -49,15 +49,10 @@ public class Predicate_rule_name extends GraphPrologCode {
                 ruleNames.add(rule.getFullName());
             }
 
-            try {
-                PrologStringCollectionIterator it =
-                    new PrologStringCollectionIterator(ruleNames, args[0],
-                        interpreter.getUndoPosition());
-                return it.nextSolution(interpreter);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return FAIL;
-            }
+            PrologStringCollectionIterator it =
+                new PrologStringCollectionIterator(ruleNames, args[0],
+                    interpreter.getUndoPosition());
+            return it.nextSolution(interpreter);
         }
     }
 }
