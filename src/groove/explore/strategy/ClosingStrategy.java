@@ -38,7 +38,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     public GraphState doNext() {
         GraphState state = getNextState();
         List<MatchResult> matches = state.getMatches();
-        if (!state.getCurrentFrame().isDead()) {
+        if (!state.getActualFrame().isDead()) {
             assert !state.isTransient();
             // there are potential rule matches now blocked until 
             // the previous ones have been explored

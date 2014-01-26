@@ -160,7 +160,7 @@ public class StepMatchCollector extends MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<Call> triedCalls = ((Frame) state.source().getCurrentFrame()).getPastCalls();
+        Set<Call> triedCalls = ((Frame) state.source().getActualFrame()).getPastCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 

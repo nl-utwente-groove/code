@@ -56,7 +56,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
         result.append(HTMLConverter.UNDERLINE_TAG.on(getNode()));
-        CtrlFrame frame = getNode().getFrame();
+        CtrlFrame frame = getNode().getPrimeFrame();
         if (!frame.isStart()) {
             result.append(" with control state ");
             result.append(HTMLConverter.UNDERLINE_TAG.on(frame));
@@ -112,7 +112,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     @Override
     public String getNodeIdString() {
         String result = super.getNodeIdString();
-        CtrlFrame frame = getNode().getFrame();
+        CtrlFrame frame = getNode().getPrimeFrame();
         if (!frame.isStart()) {
             result += "|" + frame.toString();
         }

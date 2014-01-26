@@ -91,11 +91,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
         }
     }
 
-    /** 
-     * Returns the prime frame of this frame.
-     * The prime frame is the one from which this one was derived through
-     * a sequence of verdict transitions.
-     */
+    @Override
     public Frame getPrime() {
         return this.primeFrame;
     }
@@ -117,6 +113,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
      * Should only be called if this frame is primed
      * @see #hasPrime
      */
+    @Override
     public Set<Switch> getPastAttempts() {
         return this.pastAttempts;
     }

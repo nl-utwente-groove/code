@@ -21,7 +21,7 @@ import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
-import groove.control.CtrlTransition;
+import groove.control.CalledAction;
 import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
@@ -416,12 +416,12 @@ public class RuleTree extends AbstractResourceTree {
         // clean up current match node map
         this.matchNodeMap.clear();
         // set the tried status of the rules
-        Set<CtrlTransition> triedTransitions =
-            state == null ? Collections.<CtrlTransition>emptySet()
-                    : state.getSchedule().getTriedTransitions();
+        Set<? extends CalledAction> pastAttempts =
+            state == null ? Collections.<CalledAction>emptySet()
+                    : state.getActualFrame().getPastAttempts();
         // convert the transitions to pairs of rule name + recipe name
         Set<Duo<String>> triedPairs = new HashSet<Duo<String>>();
-        for (CtrlTransition t : triedTransitions) {
+        for (CalledAction t : pastAttempts) {
             String ruleName = t.getRule().getFullName();
             String recipeName = t.isPartial() ? t.getRecipe().getFullName() : null;
             triedPairs.add(Duo.newDuo(ruleName, recipeName));

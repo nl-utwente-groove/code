@@ -182,7 +182,7 @@ public class MatchCollector {
         // there may be new matches only if the rule call was untried in
         // the parent state
         Set<CtrlCall> triedCalls =
-            ((CtrlSchedule) state.source().getCurrentFrame()).getTriedCalls();
+            ((CtrlSchedule) state.source().getActualFrame()).getTriedCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 

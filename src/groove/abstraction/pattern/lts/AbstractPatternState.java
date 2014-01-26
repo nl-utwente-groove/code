@@ -19,9 +19,7 @@ package groove.abstraction.pattern.lts;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.control.CtrlFrame;
-import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
-import groove.control.instance.Frame;
 import groove.lts.AbstractGraphState;
 
 import java.util.Set;
@@ -37,7 +35,7 @@ public abstract class AbstractPatternState implements PatternState {
     /** The number of this state */
     private final int nr;
     /** The underlying control state, if any. */
-    private CtrlFrame schedule;
+    private CtrlFrame frame;
     /** Flag to indicated if the state has been closed. */
     private boolean closed;
     /** Set of outgoing transitions from this state. */
@@ -74,25 +72,21 @@ public abstract class AbstractPatternState implements PatternState {
 
     @Override
     public final CtrlFrame getFrame() {
-        if (this.schedule instanceof CtrlSchedule) {
-            return ((CtrlSchedule) this.schedule).getState();
-        } else {
-            return ((Frame) this.schedule).getPrime();
-        }
+        return this.frame.getPrime();
     }
 
     @Override
     public final void setFrame(CtrlFrame frame) {
         if (frame instanceof CtrlState) {
-            this.schedule = ((CtrlState) frame).getSchedule();
+            this.frame = ((CtrlState) frame).getSchedule();
         } else {
-            this.schedule = frame;
+            this.frame = frame;
         }
     }
 
     @Override
     public final CtrlFrame getCurrentFrame() {
-        return this.schedule;
+        return this.frame;
     }
 
     @Override

@@ -21,9 +21,7 @@ import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
 import groove.control.CtrlFrame;
-import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
-import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
@@ -204,7 +202,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             // reset the schedule to the beginning if the state was not 
             // completely explored
             if (!complete) {
-                setFrame(getFrame());
+                setFrame(getPrimeFrame());
             }
             getCache().notifyClosed();
             fireStatus(CLOSED);
@@ -231,7 +229,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     final public boolean isTransient() {
-        return getCurrentFrame().isTransient();
+        return getActualFrame().isTransient();
     }
 
     @Override
@@ -415,40 +413,27 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public CtrlFrame getFrame() {
-        if (this.currentFrame instanceof Frame) {
-            return ((Frame) this.currentFrame).getPrime();
-        } else {
-            return ((CtrlSchedule) this.currentFrame).getState();
-        }
+    public CtrlFrame getPrimeFrame() {
+        return getActualFrame().getPrime();
     }
 
     @Override
     public void setFrame(CtrlFrame frame) {
         assert frame != null;
-        if (frame instanceof Frame) {
-            assert this.currentFrame == null
-                || ((Frame) frame).getPrime() == ((Frame) this.currentFrame).getPrime();
-            this.currentFrame = frame;
-        } else if (frame instanceof CtrlState) {
+        assert this.currentFrame == null || frame.getPrime() == getPrimeFrame();
+        if (frame instanceof CtrlState) {
             this.currentFrame = ((CtrlState) frame).getSchedule();
         } else {
             this.currentFrame = frame;
         }
-        assert !(this.currentFrame instanceof CtrlState);
     }
 
     @Override
-    public final CtrlFrame getCurrentFrame() {
+    public final CtrlFrame getActualFrame() {
         return this.currentFrame;
     }
 
     private CtrlFrame currentFrame;
-
-    @Override
-    public final CtrlSchedule getSchedule() {
-        return (CtrlSchedule) getCurrentFrame();
-    }
 
     /**
      * The number of this Node.
