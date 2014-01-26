@@ -81,7 +81,7 @@ public class CtrlSchedule implements CtrlFrame {
 
     @Override
     public boolean isStart() {
-        return getState().isStart();
+        return getPrime().isStart();
     }
 
     /** Indicates if this is the initial schedule of the control state. */
@@ -133,7 +133,8 @@ public class CtrlSchedule implements CtrlFrame {
     }
 
     /** Returns the control state to which this schedule belongs. */
-    public final CtrlState getState() {
+    @Override
+    public final CtrlState getPrime() {
         return this.state;
     }
 
@@ -157,14 +158,8 @@ public class CtrlSchedule implements CtrlFrame {
         return this.triedRules;
     }
 
-    /**
-     * Returns the set of recipes that have been tried at this point
-     * of the schedule.
-     * These are the rules occurring in {@link #getTriedCalls()}
-     * @return a set of tried control calls, or {@code null} if {@link #isDead()} 
-     * yields {@code false}.
-     */
-    public Set<CtrlTransition> getTriedTransitions() {
+    @Override
+    public Set<? extends CalledAction> getPastAttempts() {
         return this.triedTransitions;
     }
 

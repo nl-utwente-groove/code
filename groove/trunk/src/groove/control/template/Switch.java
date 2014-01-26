@@ -18,12 +18,14 @@ package groove.control.template;
 
 import groove.control.Binding;
 import groove.control.Call;
+import groove.control.CalledAction;
 import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlVar;
 import groove.control.SoloAttempt;
 import groove.control.instance.CallStack;
 import groove.grammar.Action;
+import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
@@ -43,7 +45,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
+public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, CalledAction {
     /** Constructs a base verdict switch.
      * @param source source location of the switch
      * @param target target location of the switch
@@ -357,6 +359,34 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
         }
         return result;
     }
+
+    @Override
+    public Rule getRule() {
+        return (Rule) getUnit();
+    }
+
+    @Override
+    public boolean isPartial() {
+        return getRecipe() != null;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        if (!this.recipeInit) {
+            Switch caller = getCaller();
+            while (caller != null) {
+                if (caller.getKind() == Kind.RECIPE) {
+                    this.recipe = (Recipe) caller.getCall().getUnit();
+                }
+                caller = caller.getCaller();
+            }
+            this.recipeInit = true;
+        }
+        return this.recipe;
+    }
+
+    private Recipe recipe;
+    private boolean recipeInit;
 
     @Override
     protected int computeLabelHash() {

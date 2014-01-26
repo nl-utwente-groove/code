@@ -394,7 +394,7 @@ public class StatisticsReporter extends AExplorationReporter {
         @Override
         public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
             if (flag == Flag.CLOSED) {
-                if (explored.getFrame().isTransient()) {
+                if (explored.getPrimeFrame().isTransient()) {
                     this.openTransientStateCount--;
                 }
                 if (explored.isTransient()) {

@@ -30,7 +30,6 @@ import groove.control.Procedure;
 import groove.control.SoloAttempt;
 import groove.control.template.Location;
 import groove.control.template.Switch;
-import groove.control.template.Switch.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
@@ -114,6 +113,16 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     @Override
     public final Binding[] getCallBinding() {
         return getSwitch().getCallBinding();
+    }
+
+    @Override
+    public boolean isPartial() {
+        return getSwitch().isPartial();
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return getSwitch().getRecipe();
     }
 
     /** Convenience method to return called unit of this step. */
@@ -329,29 +338,6 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         Step other = (Step) o;
         return source().compareTo(other.source());
     }
-
-    @Override
-    public boolean isPartial() {
-        return getRecipe() != null;
-    }
-
-    @Override
-    public Recipe getRecipe() {
-        if (!this.recipeInit) {
-            Switch caller = getSwitch().getCaller();
-            while (caller != null) {
-                if (caller.getKind() == Kind.RECIPE) {
-                    this.recipe = (Recipe) caller.getCall().getUnit();
-                }
-                caller = caller.getCaller();
-            }
-            this.recipeInit = true;
-        }
-        return this.recipe;
-    }
-
-    private Recipe recipe;
-    private boolean recipeInit;
 
     /** 
      * Returns the array of host nodes corresponding to the input parameters of the call.

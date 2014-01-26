@@ -18,8 +18,6 @@ package groove.control;
 
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
-import groove.grammar.Recipe;
-import groove.grammar.Rule;
 import groove.graph.Label;
 
 /**
@@ -27,19 +25,7 @@ import groove.graph.Label;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface CtrlStep extends Comparable<CtrlStep> {
-    /** Returns the rule invoked in this control step. */
-    Rule getRule();
-
-    /** 
-     * Indicates if this is a partial step.
-     * A step is partial if it has an enclosing recipe.
-     */
-    boolean isPartial();
-
-    /** Returns the outermost recipe of which this step is a part, if any. */
-    Recipe getRecipe();
-
+public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
     /** Returns the label of this control step. */
     Label label();
 

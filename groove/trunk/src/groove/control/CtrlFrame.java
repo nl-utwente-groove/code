@@ -18,6 +18,8 @@ package groove.control;
 
 import groove.control.instance.Frame;
 
+import java.util.Set;
+
 /**
  * Supertype of {@link CtrlState} and {@link Frame}, used for the
  * purpose of a smooth transition to the new control implementation.
@@ -37,4 +39,17 @@ public interface CtrlFrame {
 
     /** Indicates if this frame represents success. */
     boolean isFinal();
+
+    /**
+     * Returns the set of called actions that have been tried at this point
+     * of the frame.
+     */
+    public abstract Set<? extends CalledAction> getPastAttempts();
+
+    /** 
+     * Returns the prime frame of this frame.
+     * The prime frame is the initial frame from which this one was 
+     * reached after a sequence of verdicts.
+     */
+    public abstract CtrlFrame getPrime();
 }

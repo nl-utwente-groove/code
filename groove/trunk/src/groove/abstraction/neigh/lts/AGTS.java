@@ -313,7 +313,7 @@ public final class AGTS extends GTS {
                 // This can only happen on the first state.
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
-                    new ShapeState(AGTS.this, origSrcClosure.getGraph(), origSrcClosure.getFrame(),
+                    new ShapeState(AGTS.this, origSrcClosure.getGraph(), origSrcClosure.getPrimeFrame(),
                         0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
@@ -390,7 +390,7 @@ public final class AGTS extends GTS {
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
-            if (CHECK_CONTROL_LOCATION && myState.getFrame() != otherState.getFrame()) {
+            if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
                 return false;
             }
 

@@ -494,7 +494,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireUpdateState(GraphState state, Flag flag) {
         switch (flag) {
         case CLOSED:
-            if (state.getCurrentFrame().isFinal() || hasFinalProperties(state)) {
+            if (state.getActualFrame().isFinal() || hasFinalProperties(state)) {
                 setFinal(state);
             }
             this.closedStateCount++;
@@ -741,7 +741,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (this.collapse == COLLAPSE_NONE) {
                 return myState == otherState;
             }
-            if (CHECK_CONTROL_LOCATION && myState.getFrame() != otherState.getFrame()) {
+            if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
                 return false;
             }
             HostNode[] myBoundNodes = myState.getBoundNodes();
@@ -776,7 +776,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             } else if (this.collapse == COLLAPSE_EQUAL) {
                 HostGraph graph = stateKey.getGraph();
                 result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
-                CtrlFrame ctrlState = stateKey.getFrame();
+                CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     for (HostNode node : stateKey.getBoundNodes()) {
@@ -790,7 +790,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                     this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
-                CtrlFrame ctrlState = stateKey.getFrame();
+                CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     for (HostNode node : stateKey.getBoundNodes()) {
@@ -811,7 +811,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 }
             }
             if (CHECK_CONTROL_LOCATION) {
-                result += System.identityHashCode(stateKey.getFrame());
+                result += System.identityHashCode(stateKey.getPrimeFrame());
             }
             return result;
         }

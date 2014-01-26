@@ -83,7 +83,7 @@ public class StateMatches extends MatchResultSet {
 
     private boolean trySchedule() {
         boolean result = false;
-        CtrlSchedule schedule = (CtrlSchedule) getState().getCurrentFrame();
+        CtrlSchedule schedule = (CtrlSchedule) getState().getActualFrame();
         boolean isTransient = schedule.isTransient();
         if (schedule.isTried()) {
             // the schedule has been tried and has yielded matches; 
@@ -168,7 +168,7 @@ public class StateMatches extends MatchResultSet {
      * If this is the case, the state can be closed.
      */
     boolean isFinished() {
-        return isEmpty() && getState().getCurrentFrame().isDead();
+        return isEmpty() && getState().getActualFrame().isDead();
     }
 
     /** Strategy object used to find the matches. */

@@ -430,6 +430,16 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         return result;
     }
 
+    @Override
+    public CtrlFrame getPrime() {
+        return this;
+    }
+
+    @Override
+    public Set<? extends CalledAction> getPastAttempts() {
+        throw new UnsupportedOperationException();
+    }
+
     /** Compares two control transition for the purpose of deciding which one
      * is to come first in the schedule.
      */
