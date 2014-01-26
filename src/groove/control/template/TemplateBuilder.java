@@ -19,6 +19,7 @@ package groove.control.template;
 import groove.control.Call;
 import groove.control.Position;
 import groove.control.Position.Type;
+import groove.control.Procedure;
 import groove.control.term.Derivation;
 import groove.control.term.DerivationList;
 import groove.control.term.Term;
@@ -47,10 +48,12 @@ public class TemplateBuilder {
         // empty
     }
 
-    /** Constructs a template from a symbolic location. */
-    public Template build(String name, Term init) {
+    /** Constructs a template from a symbolic location,
+     * with a given owner or (if the owner is {@code null} a given name. */
+    public Template build(Procedure proc, String name, Term init) {
+        assert init.getDepth() == 0 : "Can't build template from transient term";
         // initialise the auxiliary data structures
-        Template result = this.template = createTemplate(name, init.getDepth());
+        Template result = this.template = createTemplate(proc, name);
         Map<Term,Location> locMap = this.locMap = new HashMap<Term,Location>();
         Deque<Term> fresh = this.fresh = new LinkedList<Term>();
         // set the initial location
@@ -119,6 +122,7 @@ public class TemplateBuilder {
      */
     public Template normalise(Template orig) {
         assert orig.isFixed();
+        assert orig.getStart().getDepth() == 0;
         Template result;
         if (!GraphInfo.hasErrors(orig)) {
             this.template = orig;
@@ -231,8 +235,7 @@ public class TemplateBuilder {
     /** Computes the quotient of {@link #template} from a given partition. */
     private Template computeQuotient(Partition partition) {
         Template result =
-            createTemplate("Normalised " + this.template.getName(),
-                this.template.getStart().getDepth());
+            createTemplate(this.template.getOwner(), "Normalised " + this.template.getName());
         // set of representative source locations
         Set<Location> reprSet = new HashSet<Location>();
         // map from all source locations to the result locations
@@ -282,8 +285,12 @@ public class TemplateBuilder {
     private Map<Location,Record<Location>> recordMap;
 
     /** Callback factory method for a template. */
-    private Template createTemplate(String name, int depth) {
-        return new Template(name, depth);
+    private Template createTemplate(Procedure owner, String name) {
+        if (owner != null) {
+            return new Template(owner);
+        } else {
+            return new Template(name);
+        }
     }
 
     /** Returns the singleton instance of this class. */

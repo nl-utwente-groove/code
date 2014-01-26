@@ -208,12 +208,12 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     private void buildFunction(String program, String procName, boolean function) {
-        this.template = builder.build(program, buildProcTerm(program, procName, function));
+        this.template = builder.build(null, program, buildProcTerm(program, procName, function));
         this.minimal = builder.normalise(this.template);
     }
 
     private void build(String program) {
-        this.template = builder.build(program, buildTerm(program));
+        this.template = builder.build(null, program, buildTerm(program));
         this.minimal = builder.normalise(this.template);
     }
 

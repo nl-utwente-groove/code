@@ -74,6 +74,9 @@ public class CtrlLoader {
      * @param program the control program
      */
     public CtrlTree parse(String controlName, String program) throws FormatException {
+        if (this.treeMap.containsKey(controlName)) {
+            throw new FormatException("Duplicate program name %s", controlName);
+        }
         this.namespace.setControlName(controlName);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
         Object oldRecord = this.treeMap.put(controlName, tree);
