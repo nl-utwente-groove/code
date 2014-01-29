@@ -97,6 +97,11 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         return getAut().getStart() == this;
     }
 
+    @Override
+    public int getDepth() {
+        return isTransient() ? 1 : 0;
+    }
+
     /** 
      * Indicates if this is a transient control state.
      * A control state is transient if there is a transaction underway.

@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import static groove.lts.GraphState.Flag.ABSENT;
 import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
@@ -234,37 +233,31 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setAbsent() {
-        boolean result = setStatus(ABSENT, true);
-        if (result) {
-            fireStatus(ABSENT);
-        }
-        return result;
+    public boolean isAbsent() {
+        return isDone() && getPresence() > 0;
     }
 
     @Override
-    public boolean isAbsent() {
-        return hasFlag(ABSENT);
+    public int getPresence() {
+        if (isError()) {
+            return Integer.MAX_VALUE;
+        } else if (isDone()) {
+            return Flag.getPresence(this.status);
+        } else {
+            return getCache().getPresence();
+        }
     }
 
     @Override
     public boolean isPresent() {
-        if (isAbsent()) {
-            return false;
-        } else if (isDone()) {
-            return true;
-        } else {
-            return getCache().isPresent();
-        }
+        return getPresence() == 0;
     }
 
     @Override
-    public boolean setDone(boolean present) {
+    public boolean setDone(int presence) {
         boolean result = setStatus(DONE, true);
         if (result) {
-            if (!present) {
-                setStatus(ABSENT, true);
-            }
+            this.status = Flag.setPresence(this.status, presence);
             getCache().notifyDone();
             setCacheCollectable();
             fireStatus(DONE);

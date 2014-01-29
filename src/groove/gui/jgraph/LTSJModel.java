@@ -98,9 +98,6 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     public void statusUpdate(GTS lts, GraphState explored, Flag flag) {
         JVertex<GTS> jCell = getJCellForNode(explored);
         switch (flag) {
-        case ABSENT:
-            jCell.setLook(Look.ABSENT, true);
-            break;
         case CLOSED:
             jCell.setLook(Look.OPEN, false);
             break;
