@@ -73,6 +73,11 @@ public class CtrlSchedule implements CtrlFrame {
         return this.success;
     }
 
+    @Override
+    public int getDepth() {
+        return isTransient() ? 1 : 0;
+    }
+
     /**
      * Indicates if this schedule is part of a transaction.
      */

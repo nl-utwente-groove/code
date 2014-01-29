@@ -29,7 +29,6 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
 import groove.lts.GTSCounter;
-import groove.lts.GraphState.Flag;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,8 +104,8 @@ public class RecipeTest {
      * @param hlt high-level transition count
      * @param llt low-level transition count
      */
-    private void testExploration(String startGraphName, String control,
-            int hls, int lls, int hlt, int llt) {
+    private void testExploration(String startGraphName, String control, int hls, int lls, int hlt,
+            int llt) {
         setStateCount(hls, lls);
         setTransitionCount(hlt, llt);
         testExploration(startGraphName, control);
@@ -130,23 +129,20 @@ public class RecipeTest {
      * @param control name of the control program
      * @param strategyDescr description of the exploration strategy to be used
      */
-    private void testExploration(String startGraphName, String control,
-            String strategyDescr) {
+    private void testExploration(String startGraphName, String control, String strategyDescr) {
         try {
             GrammarModel ggModel = loadGrammar(GRAMMAR, startGraphName);
             ggModel.setLocalActiveNames(ResourceKind.CONTROL, control);
             Grammar gg = ggModel.toGrammar();
             runExploration(gg, strategyDescr);
-            assertEquals(this.highLevelStateCount, counter.getStateCount()
-                - counter.getTransientStateCount());
-            assertEquals(this.lowLevelStateCount, counter.getStateCount()
-                - counter.getStateCount(Flag.ABSENT));
-            assertEquals(this.highLevelTransCount, counter.getTransitionCount()
-                - counter.getPartialTransitionCount());
-            assertEquals(
-                this.lowLevelTransCount,
-                counter.getRuleTransitionCount()
-                    - counter.getAbsentTransitionCount());
+            assertEquals(this.highLevelStateCount,
+                counter.getStateCount() - counter.getTransientStateCount());
+            assertEquals(this.lowLevelStateCount,
+                counter.getStateCount() - counter.getAbsentStateCount());
+            assertEquals(this.highLevelTransCount,
+                counter.getTransitionCount() - counter.getPartialTransitionCount());
+            assertEquals(this.lowLevelTransCount,
+                counter.getRuleTransitionCount() - counter.getAbsentTransitionCount());
         } catch (FormatException exc) {
             fail(exc.toString());
         }
@@ -161,9 +157,7 @@ public class RecipeTest {
             if (strategyDescr == null) {
                 exploration = new Exploration();
             } else {
-                Serialized strategy =
-                    StrategyEnumerator.instance().parseCommandline(
-                        strategyDescr);
+                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploration = new Exploration(strategy, acceptor, 0);
             }
@@ -176,8 +170,7 @@ public class RecipeTest {
 
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {
         try {
-            GrammarModel result =
-                GrammarModel.newInstance(new File(grammarName), false);
+            GrammarModel result = GrammarModel.newInstance(new File(grammarName), false);
             if (startGraphName != null) {
                 result.setLocalActiveNames(ResourceKind.HOST, startGraphName);
             }

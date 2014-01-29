@@ -47,7 +47,7 @@ public class StateCache {
      */
     protected StateCache(AbstractGraphState state) {
         this.state = state;
-        this.present = !state.isTransient();
+        this.presence = state.isError() ? Integer.MAX_VALUE : state.getActualFrame().getDepth();
         this.record = state.getRecord();
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory = DeltaHostGraph.getInstance(this.record.isCopyGraphs());
@@ -93,7 +93,7 @@ public class StateCache {
         notifyPartial(partial, partial);
         GraphState child = partial.target();
         StateCache childCache = child.getCache();
-        this.present |= childCache.present;
+        this.presence = Math.min(this.presence, childCache.presence);
         if (child.isTransient()) {
             if (!child.isDone()) {
                 // we've reached a transient raw state
@@ -121,7 +121,7 @@ public class StateCache {
         // add the partial if it was not already known
         if (getState().isTransient()) {
             if (this.partials.add(partial)) {
-                this.present |= !target.isTransient();
+                this.presence = Math.min(this.presence, target.getPresence());
                 // notify all parents of the new partial
                 for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
                     parent.one().notifyPartial(partial, parent.two());
@@ -149,7 +149,7 @@ public class StateCache {
     /** Callback method invoked when a child closed or became non-transient. */
     private void notifyChildChanged(GraphState child, RuleTransition initial) {
         if (this.transientOpens.remove(child)) {
-            this.present |= !child.isTransient();
+            this.presence = Math.min(this.presence, child.getPresence());
             if (getState().isTransient()) {
                 // notify all parents of the change
                 fireChanged(child);
@@ -183,7 +183,7 @@ public class StateCache {
     }
 
     private void setStateDone() {
-        getState().setDone(this.present);
+        getState().setDone(this.presence);
     }
 
     final AbstractGraphState getState() {
@@ -219,16 +219,25 @@ public class StateCache {
         return this.delta;
     }
 
-    /** Indicates if a path to a non-transient state has been found. */
-    final boolean isPresent() {
-        return this.present;
+    /** 
+     * Returns the lowest known presence depth of the state.
+     * This is {@link Integer#MAX_VALUE} if the state is erroneous,
+     * otherwise it is the minimum transient depth of the reachable states.
+     */
+    final int getPresence() {
+        return this.presence;
     }
 
-    /** Sets the present flag to {@code true} and fires a changed event. */
-    final void setPresent() {
-        this.present = true;
-        fireChanged(getState());
+    /** Decreases the presence level and fires a changed event. */
+    final void setPresence(int presence) {
+        if (presence < this.presence) {
+            this.presence = presence;
+            fireChanged(getState());
+        }
     }
+
+    /** Flag indicating if the associated state is known to be present. */
+    private int presence;
 
     /**
      * Callback factory method for a rule application on the basis of this
@@ -448,8 +457,6 @@ public class StateCache {
     private final Set<GraphState> transientOpens = new HashSet<GraphState>();
     /** Set of reachable partial rule transitions. */
     private final Set<RuleTransition> partials = new HashSet<RuleTransition>();
-    /** Flag indicating if the associated state is known to be present. */
-    private boolean present;
     /**
      * Flag indicating if (a fraction of the) state graphs should be frozen.
      * This is set to <code>true</code> if states in the GTS are collapsed.

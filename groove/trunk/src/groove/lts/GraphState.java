@@ -186,11 +186,11 @@ public interface GraphState extends Node {
 
     /** 
      * Declares this state to be done, while also setting its presence.
-     * @param present flag indicating if the state is present
+     * @param presence flag indicating if the state is present
      * @return if {@code false}, the state was already known to be done
      * @see Flag#DONE
      */
-    public boolean setDone(boolean present);
+    public boolean setDone(int presence);
 
     /** 
      * Indicates if this state is done. 
@@ -208,23 +208,33 @@ public interface GraphState extends Node {
     public boolean isTransient();
 
     /** 
-     * Declares this state to be absent from the state space.
-     * An state is absent if after exploration it turns out that a correctness
-     * condition is violated.
-     * The return value indicates if the absentee status was changed as
-     * a result of this call.
-     * @return if {@code false}, the state was already known to be absent
+     * Indicates if this state is known to be not properly part of the state 
+     * space. This is the case if the state is done and not present.
+     * A special case of absence is if the state is erroneous.
+     * @see #isDone()
      */
-    public boolean setAbsent();
-
-    /** Indicates if this state is not properly part of the state space. */
     public boolean isAbsent();
 
     /** 
+     * Indicates the transient depth at which this state is known to
+     * be present.
+     * This is infinite ({@link Integer#MAX_VALUE}) if the state is
+     * erroneous; otherwise it equals the minimum of the transient depths of 
+     * the reachable states.
+     * The state is <i>absent</i> if it is done and not present at 
+     * level 0.
+     * @see #isDone()
+     * @see #isAbsent() 
+     */
+    public int getPresence();
+
+    /** 
      * Indicates if this state is properly part of the state space.
+     * Convenience method for <code>getPresence() == 0</code>.
      * If a state is done, it is either present or absent.
      * @see #isDone()
      * @see #isAbsent() 
+     * @see #getPresence()
      */
     public boolean isPresent();
 
@@ -256,13 +266,6 @@ public interface GraphState extends Node {
          * sequences eventually lead to non-transient or absent states.
          */
         DONE(false),
-        /**
-         * Flag indicating that the graph state is absent.
-         * This is the case if it is closed and transient and has
-         * no reachable non-transient state, or if it violates a right
-         * application condition.
-         */
-        ABSENT(false),
         /** Flag indicating that the state has an error. */
         ERROR(false),
         /** Helper flag used during state space exploration. */
@@ -298,8 +301,28 @@ public interface GraphState extends Node {
             return this.strategy;
         }
 
+        /** Retrieves the presence level from a given status value. */
+        static public int getPresence(int status) {
+            return status >> PRESENCE_SHIFT;
+        }
+
+        /** Retrieves the presence level from a given status value. */
+        static public int setPresence(int status, int presence) {
+            if (presence > MAX_PRESENCE) {
+                throw new IllegalArgumentException(String.format(
+                    "Presence depth %d too large: max. %s", presence, MAX_PRESENCE));
+            }
+            return status | (presence << PRESENCE_SHIFT);
+        }
+
         private final int mask;
         /** Indicates if this flag is exploration-related. */
         private final boolean strategy;
+        /** Number of bits by which a status value has be right-shifted to get 
+         * the presence value.
+         */
+        private final static int PRESENCE_SHIFT = 25;
+        /** Maximal presence value that will fit into the available bits. */
+        private final static int MAX_PRESENCE = 1 << (31 - PRESENCE_SHIFT);
     }
 }

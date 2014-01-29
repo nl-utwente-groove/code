@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
-import groove.control.CtrlSchedule;
-import groove.control.CtrlTransition;
+import groove.control.instance.Frame;
+import groove.control.instance.Step;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,11 +29,11 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StateMatches extends MatchResultSet {
+public class FrameStateMatches extends MatchResultSet {
     /**
      * Creates an instance for a given state.
      */
-    public StateMatches(StateCache cache) {
+    public FrameStateMatches(StateCache cache) {
         this.cache = cache;
         this.state = cache.getState();
     }
@@ -83,8 +83,7 @@ public class StateMatches extends MatchResultSet {
 
     private boolean trySchedule() {
         boolean result = false;
-        CtrlSchedule schedule = (CtrlSchedule) getState().getActualFrame();
-        boolean isTransient = schedule.isTransient();
+        Frame frame = (Frame) getState().getActualFrame();
         if (hasOutstanding()) {
             // the schedule has been tried and has yielded matches; 
             // now see if at least one match has resulted
@@ -100,7 +99,7 @@ public class StateMatches extends MatchResultSet {
                     allAbsent = false;
                 } else {
                     GraphState target = t.target();
-                    if (target.isPresent()) {
+                    if (target.getPresence() <= frame.getDepth()) {
                         somePresent = true;
                         break;
                     } else if (target.isAbsent()) {
@@ -113,46 +112,45 @@ public class StateMatches extends MatchResultSet {
             if (somePresent || allAbsent) {
                 // yes, there is a present outgoing transition
                 // or all outgoing transitions are absent
-                schedule = schedule.next(somePresent);
-                getState().setFrame(schedule);
+                Step step = frame.getAttempt();
+                frame = somePresent ? step.onSuccess() : step.onFailure();
+                getState().setFrame(frame);
                 this.outstanding = EMPTY_MATCH_SET;
             }
         }
-        if (schedule.isDead()) {
+        if (frame.isDead()) {
             if (isEmpty()) {
                 assert isFinished();
                 getState().setClosed(true);
             }
         } else if (!hasOutstanding()) {
+            Step step = frame.getAttempt();
             // flag collecting if none of the transitions in this schedule
             // have a transient target
-            boolean noTransientTargets = true;
-            List<MatchResult> latestMatches = new LinkedList<MatchResult>();
-            for (CtrlTransition ct : schedule.getTransitions()) {
-                latestMatches.addAll(getMatchCollector().computeMatches(ct));
-                noTransientTargets &= !ct.target().isTransient();
-            }
-            CtrlSchedule nextSchedule;
-            if (latestMatches.isEmpty()) {
+            List<MatchResult> outstanding = new LinkedList<MatchResult>();
+            outstanding.addAll(getMatchCollector().computeMatches(step));
+            Frame nextFrame;
+            if (outstanding.isEmpty()) {
                 // no transitions will be generated
-                nextSchedule = schedule.next(false);
-            } else if (schedule.next(true) == schedule.next(false)) {
+                nextFrame = step.onFailure();
+            } else if (step.sameVerdict()) {
                 // it does not matter whether a transition is generated or not
-                nextSchedule = schedule.next(false);
-            } else if (schedule.isTransient() || noTransientTargets) {
-                // the control transition is atomic
+                nextFrame = step.onSuccess();
+            } else if (step.onFinish().getDepth() <= frame.getDepth()) {
+                // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
-                nextSchedule = schedule.next(true);
+                // to a state that is present on the level of the frame
+                nextFrame = step.onSuccess();
             } else {
-                nextSchedule = schedule;
-                this.outstanding = latestMatches;
+                nextFrame = frame;
+                this.outstanding = outstanding;
             }
-            getState().setFrame(nextSchedule);
-            addAll(latestMatches);
+            getState().setFrame(nextFrame);
+            addAll(outstanding);
             result = true;
         }
-        if (isTransient && !getState().isTransient()) {
-            getCache().setPresence(0);
+        if (frame.getDepth() < getState().getPresence()) {
+            getCache().setPresence(frame.getDepth());
         }
         return result;
     }

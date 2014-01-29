@@ -31,7 +31,13 @@ public interface CtrlFrame {
     /** Indicates that this is the initial frame of the automaton. */
     boolean isStart();
 
-    /** Indicates if this frame is inside an atomic block. */
+    /** Returns the transient depth of the frame. */
+    int getDepth();
+
+    /** 
+     * Indicates if this frame is inside an atomic block.
+     * Convenience method for <code>getDepth() > 0</code>
+     */
     boolean isTransient();
 
     /** Indicates if this frame is deadlocked, meaning that it will
