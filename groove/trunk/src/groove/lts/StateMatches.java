@@ -85,14 +85,14 @@ public class StateMatches extends MatchResultSet {
         boolean result = false;
         CtrlSchedule schedule = (CtrlSchedule) getState().getActualFrame();
         boolean isTransient = schedule.isTransient();
-        if (schedule.isTried()) {
+        if (hasOutstanding()) {
             // the schedule has been tried and has yielded matches; 
             // now see if at least one match has resulted
             // in a transition to a present state, or all matches
             // have resulted in transitions to absent states
             boolean allAbsent = true;
             boolean somePresent = false;
-            Iterator<MatchResult> matchIter = this.latestMatches.iterator();
+            Iterator<MatchResult> matchIter = this.outstanding.iterator();
             while (matchIter.hasNext()) {
                 MatchResult m = matchIter.next();
                 GraphTransition t = getTransition(m);
@@ -115,21 +115,22 @@ public class StateMatches extends MatchResultSet {
                 // or all outgoing transitions are absent
                 schedule = schedule.next(somePresent);
                 getState().setFrame(schedule);
-                this.latestMatches = EMPTY_MATCH_SET;
+                this.outstanding = EMPTY_MATCH_SET;
             }
         }
         if (schedule.isDead()) {
-            if (isFinished()) {
+            if (isEmpty()) {
+                assert isFinished();
                 getState().setClosed(true);
             }
-        } else if (!schedule.isTried()) {
-            // flag collecting if any of the transitions in this schedule
+        } else if (!hasOutstanding()) {
+            // flag collecting if none of the transitions in this schedule
             // have a transient target
-            boolean transientTargets = false;
+            boolean noTransientTargets = true;
             List<MatchResult> latestMatches = new LinkedList<MatchResult>();
             for (CtrlTransition ct : schedule.getTransitions()) {
                 latestMatches.addAll(getMatchCollector().computeMatches(ct));
-                transientTargets |= ct.target().isTransient();
+                noTransientTargets &= !ct.target().isTransient();
             }
             CtrlSchedule nextSchedule;
             if (latestMatches.isEmpty()) {
@@ -138,13 +139,13 @@ public class StateMatches extends MatchResultSet {
             } else if (schedule.next(true) == schedule.next(false)) {
                 // it does not matter whether a transition is generated or not
                 nextSchedule = schedule.next(false);
-            } else if (schedule.isTransient() || !transientTargets) {
+            } else if (schedule.isTransient() || noTransientTargets) {
                 // the control transition is atomic
                 // so the existence of a match guarantees the existence of a transition
                 nextSchedule = schedule.next(true);
             } else {
-                nextSchedule = schedule.toTriedSchedule();
-                this.latestMatches = latestMatches;
+                nextSchedule = schedule;
+                this.outstanding = latestMatches;
             }
             getState().setFrame(nextSchedule);
             addAll(latestMatches);
@@ -173,8 +174,18 @@ public class StateMatches extends MatchResultSet {
 
     /** Strategy object used to find the matches. */
     private MatchCollector matcher;
-    /** The matches found during the latest successful call to {@link #trySchedule()}. */
-    private List<MatchResult> latestMatches;
+
+    /** Tests if there are outstanding matches from the previous call to
+     * {@link #trySchedule()}.
+     */
+    private boolean hasOutstanding() {
+        return this.outstanding != null && !this.outstanding.isEmpty();
+    }
+
+    /** The matches found during the latest successful call to {@link #trySchedule()}.
+     * If at least one of these matches gives rise to a transition to a present state,
+     * the schedule has succeeded and we can move to the next. */
+    private List<MatchResult> outstanding;
 
     /** Unique empty match set. */
     static private final List<MatchResult> EMPTY_MATCH_SET = Collections.emptyList();

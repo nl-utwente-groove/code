@@ -49,36 +49,6 @@ public class CtrlSchedule implements CtrlFrame {
         this.success = success;
         assert !isTransient || state.isTransient();
         this.isTransient = isTransient;
-        this.tried = false;
-    }
-
-    /**
-     * Constructs a tried version of a given schedule.
-     */
-    private CtrlSchedule(CtrlSchedule origin) {
-        this.state = origin.state;
-        this.transitions = origin.transitions;
-        Set<CtrlCall> triedCalls = new HashSet<CtrlCall>();
-        Set<CtrlTransition> triedTransitions = new HashSet<CtrlTransition>();
-        Set<String> triedRules = new HashSet<String>();
-        for (CtrlTransition t : this.transitions) {
-            CtrlCall call = t.getCall();
-            triedCalls.addAll(origin.triedCalls);
-            triedCalls.add(call);
-            triedTransitions.addAll(origin.triedTransitions);
-            triedTransitions.add(t);
-            triedRules.addAll(origin.triedRules);
-            triedRules.add(call.getRule().getFullName());
-        }
-        this.triedCalls = triedCalls;
-        this.triedTransitions = triedTransitions;
-        this.triedRules = triedRules;
-        this.success = origin.success;
-        this.isTransient = origin.isTransient;
-        this.tried = true;
-        this.succNext = origin.succNext;
-        this.failNext = origin.failNext;
-        this.triedSchedule = this;
     }
 
     @Override
@@ -109,22 +79,6 @@ public class CtrlSchedule implements CtrlFrame {
     @Override
     public boolean isTransient() {
         return this.isTransient;
-    }
-
-    /**
-     * Indicates if the scheduled transitions have already been tried out,
-     * but the result has not yet been registered.
-     */
-    public boolean isTried() {
-        return this.tried;
-    }
-
-    /** Returns a tried version of this schedule. */
-    public CtrlSchedule toTriedSchedule() {
-        if (this.triedSchedule == null) {
-            this.triedSchedule = new CtrlSchedule(this);
-        }
-        return this.triedSchedule;
     }
 
     /** Returns the currently scheduled transition.
@@ -262,11 +216,6 @@ public class CtrlSchedule implements CtrlFrame {
     /** The set of rules that have been tried when this point of the schedule is reached.
      */
     private final Set<String> triedRules;
-    /** 
-     * Flag indicating that {@link #transitions} was already tried out (but the result
-     * has not yet been registered).
-     */
-    private final boolean tried;
     /** Next schedule node in case {@link #transitions} succeeds. */
     private CtrlSchedule succNext;
     /** Next schedule node in case {@link #transitions} fails. */
@@ -277,6 +226,4 @@ public class CtrlSchedule implements CtrlFrame {
      * Flag indicating if this schedule is part of a transaction.
      */
     private final boolean isTransient;
-    /** Tried version of this schedule (if this schedule is untried). */
-    private CtrlSchedule triedSchedule;
 }
