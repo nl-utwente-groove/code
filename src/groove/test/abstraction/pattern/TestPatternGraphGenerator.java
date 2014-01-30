@@ -51,6 +51,7 @@ public class TestPatternGraphGenerator {
             assertEquals(12, pgts.getTransitionCount());
             assertTrue(generator.compareGTSs(pgts));
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail(e.toString());
         }
 

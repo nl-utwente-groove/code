@@ -177,7 +177,7 @@ public class MatchCollector {
         }
         // since enabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        if (state.getCtrlTransition().isModifying()) {
+        if (state.getStep().isModifying()) {
             return true;
         }
         // there may be new matches only if the rule call was untried in
@@ -196,7 +196,7 @@ public class MatchCollector {
         }
         // since disabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        if (state.getCtrlTransition().isModifying()) {
+        if (state.getStep().isModifying()) {
             return true;
         }
         return false;

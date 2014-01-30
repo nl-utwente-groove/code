@@ -52,6 +52,11 @@ public class CtrlSchedule implements CtrlFrame {
     }
 
     @Override
+    public int getNumber() {
+        return 0;
+    }
+
+    @Override
     public boolean isStart() {
         return getPrime().isStart();
     }
@@ -64,7 +69,13 @@ public class CtrlSchedule implements CtrlFrame {
     /** Indicates if this node signals the end of the schedule. */
     @Override
     public boolean isDead() {
-        return this.transitions == null;
+        return this.transitions == null && !isFinal();
+    }
+
+    /** Indicates if this node signals the end of the schedule. */
+    @Override
+    public boolean isTrial() {
+        return this.transitions != null;
     }
 
     /** Indicates if this schedule represents a success state. */
@@ -193,14 +204,14 @@ public class CtrlSchedule implements CtrlFrame {
             }
             result.append("\n");
             if (this.succNext == this.failNext) {
-                if (!this.succNext.isDead() || this.succNext.isFinal()) {
+                if (!this.succNext.isDead()) {
                     result.append(this.succNext.toString(depth + 1, ""));
                 }
             } else {
-                if (!this.failNext.isDead() || this.failNext.isFinal()) {
+                if (!this.failNext.isDead()) {
                     result.append(this.failNext.toString(depth + 1, "Failed:  "));
                 }
-                if (!this.succNext.isDead() || this.succNext.isFinal()) {
+                if (!this.succNext.isDead()) {
                     result.append(this.succNext.toString(depth + 1, "Applied: "));
                 }
             }

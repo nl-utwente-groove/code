@@ -121,6 +121,11 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public boolean isTrial() {
+        throw new UnsupportedOperationException();
+    }
+
     /** 
      * Returns the (optional) name of a recipe of which this
      * is a transient state. 

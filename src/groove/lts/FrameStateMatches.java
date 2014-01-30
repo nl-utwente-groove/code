@@ -29,11 +29,12 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class FrameStateMatches extends MatchResultSet {
+public class FrameStateMatches extends StateMatches {
     /**
      * Creates an instance for a given state.
      */
     public FrameStateMatches(StateCache cache) {
+        super(cache);
         this.cache = cache;
         this.state = cache.getState();
     }
@@ -59,6 +60,7 @@ public class FrameStateMatches extends MatchResultSet {
      * without exploring any currently raw successor states. 
      * @return set of unexplored matches
      */
+    @Override
     MatchResultSet getAll() {
         // try all schedules as long as this is possible
         while (trySchedule()) {
@@ -68,6 +70,7 @@ public class FrameStateMatches extends MatchResultSet {
     }
 
     /** Returns the first unexplored match of the state. */
+    @Override
     MatchResult getOne() {
         MatchResult result = null;
         // compute matches insofar necessary and feasible
@@ -118,7 +121,7 @@ public class FrameStateMatches extends MatchResultSet {
                 this.outstanding = EMPTY_MATCH_SET;
             }
         }
-        if (frame.isDead()) {
+        if (!frame.isTrial()) {
             if (isEmpty()) {
                 assert isFinished();
                 getState().setClosed(true);
@@ -166,8 +169,9 @@ public class FrameStateMatches extends MatchResultSet {
      * Indicates that there are no more matches, and the schedule is finished.
      * If this is the case, the state can be closed.
      */
+    @Override
     boolean isFinished() {
-        return isEmpty() && getState().getActualFrame().isDead();
+        return isEmpty() && !getState().getActualFrame().isTrial();
     }
 
     /** Strategy object used to find the matches. */

@@ -17,7 +17,7 @@
 package groove.gui.layout;
 
 import groove.control.CtrlAut;
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
 import groove.graph.EdgeComparator;
 import groove.graph.NodeComparator;
 import groove.gui.jgraph.CtrlJGraph;
@@ -106,7 +106,7 @@ public class ForestLayouter extends AbstractLayouter {
             result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
         } else if (jGraph instanceof CtrlJGraph) {
             JModel<CtrlAut> jModel = ((CtrlJGraph) jGraph).getModel();
-            CtrlState start = jModel.getGraph().getStart();
+            CtrlFrame start = jModel.getGraph().getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {
             result = Arrays.asList(this.jGraph.getSelectionCells());

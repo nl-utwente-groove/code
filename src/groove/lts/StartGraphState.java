@@ -2,6 +2,8 @@
 package groove.lts;
 
 import groove.control.CtrlAut;
+import groove.control.CtrlFrame;
+import groove.control.instance.Automaton;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostGraph;
 
@@ -15,10 +17,13 @@ public class StartGraphState extends AbstractGraphState {
      */
     public StartGraphState(GTS gts, HostGraph graph) {
         super(StateReference.newInstance(gts), 0);
-        CtrlAut ctrlAut = gts.getGrammar().getCtrlAut();
-        setFrame(ctrlAut.getStart());
-        //        Automaton aut = gts.getGrammar().getControl();
-        //        setFrame(aut.getStart());
+        if (CtrlFrame.NEW_CONTROL) {
+            Automaton aut = gts.getGrammar().getControl();
+            setFrame(aut.getStart());
+        } else {
+            CtrlAut ctrlAut = gts.getGrammar().getCtrlAut();
+            setFrame(ctrlAut.getStart());
+        }
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
     }

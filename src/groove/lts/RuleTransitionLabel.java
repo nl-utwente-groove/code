@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.graph.ALabel;
@@ -57,11 +56,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return this.step;
     }
 
-    /** Returns the control transition wrapped in this label. */
-    public CtrlTransition getCtrlTransition() {
-        return (CtrlTransition) this.step;
-    }
-
     private final CtrlStep step;
 
     /** Returns the added nodes of the label. */
@@ -87,8 +81,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
-        if (getCtrlTransition().isPartial()) {
-            result.append(getCtrlTransition().getRecipe().getFullName());
+        if (getStep().isPartial()) {
+            result.append(getStep().getRecipe().getFullName());
             result.append('/');
         }
         result.append(((AbstractRuleEvent<?,?>) getEvent()).getLabelText(this.addedNodes, anchored));
@@ -143,7 +137,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             return -1;
         }
         RuleTransitionLabel other = (RuleTransitionLabel) obj;
-        result = getCtrlTransition().compareTo(other.getCtrlTransition());
+        result = getStep().compareTo(other.getStep());
         if (result != 0) {
             return result;
         }

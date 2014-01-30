@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlFrame;
-import groove.control.CtrlState;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
 import groove.graph.Node;
@@ -147,7 +146,7 @@ public interface GraphState extends Node {
      * Returns a list of values for the bound variables of
      * the control frame.
      * @see #getPrimeFrame()
-     * @see CtrlState#getVars()
+     * @see CtrlFrame#getVars()
      */
     public Object[] getFrameValues();
 

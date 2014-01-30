@@ -255,10 +255,9 @@ public class CtrlBuildTest extends CtrlTester {
         assertEquals("d", getName(s1ff));
         assertTrue(s1ff.isFinal());
         assertSame(s1ff.next(false), s1ff.next(true));
-        assertTrue(s1ff.next(false).isDead());
+        assertTrue(s1ff.next(false).isFinal());
         CtrlSchedule s1ft = s1f.next(true);
         assertTrue(s1ft.isFinal());
-        assertTrue(s1ft.isDead());
         CtrlSchedule s1t = s1.next(true);
         assertEquals(Arrays.asList("c", "e"), getNames(s1t));
         CtrlSchedule s1tf = s1t.next(false);

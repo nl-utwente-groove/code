@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
@@ -62,9 +61,6 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      * does not correspond to the actual rule parameters
      */
     public String getOutputString() throws FormatException;
-
-    /** Returns the control transition associated with this transition. */
-    CtrlTransition getCtrlTransition();
 
     /** Returns the control step associated with this transition. */
     CtrlStep getStep();

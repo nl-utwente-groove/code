@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.explore.util.PatternGraphFrameMatchCollector;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
@@ -129,7 +130,9 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
      * Makes sure that the start state graph has a fresh factory.
      */
     protected PatternState createStartState(PatternGraph startGraph) {
-        return new PatternGraphState(startGraph, this.grammar.getCtrlAut().getStart(), 0, this);
+        return new PatternGraphState(startGraph, CtrlFrame.NEW_CONTROL
+                ? this.grammar.getControl().getStart() : this.grammar.getCtrlAut().getStart(), 0,
+            this);
     }
 
     /**
@@ -351,7 +354,8 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
 
     /** Returns a fresh match collector for the given state. */
     public PatternGraphMatchSetCollector createMatchCollector(PatternState state) {
-        return new PatternGraphMatchSetCollector(state);
+        return CtrlFrame.NEW_CONTROL ? new PatternGraphFrameMatchCollector(state)
+                : new PatternGraphMatchSetCollector(state);
     }
 
     /** Returns the number of not fully explored states. */

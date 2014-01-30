@@ -22,10 +22,9 @@ import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.control.CtrlFrame;
-import groove.control.CtrlSchedule;
-import groove.control.CtrlState;
 import groove.control.CtrlStep;
+import groove.control.instance.Frame;
+import groove.control.instance.Step;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +32,7 @@ import java.util.List;
 /**
  * Collector of rule matches over a pattern graph.
  */
-public class PatternGraphMatchSetCollector {
+public class PatternGraphFrameMatchCollector extends PatternGraphMatchSetCollector {
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -42,17 +41,18 @@ public class PatternGraphMatchSetCollector {
     /** The host graph we are working on. */
     private final PatternState state;
     /** The control state of the graph state, if any. */
-    private final CtrlFrame ctrlState;
+    private final Frame frame;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** Constructs a match collector for the given state. */
-    public PatternGraphMatchSetCollector(PatternState state) {
+    public PatternGraphFrameMatchCollector(PatternState state) {
+        super(state);
         this.state = state;
-        this.ctrlState = state.getFrame();
-        assert this.ctrlState != null;
+        this.frame = (Frame) state.getFrame();
+        assert this.frame != null;
     }
 
     // ------------------------------------------------------------------------
@@ -63,29 +63,30 @@ public class PatternGraphMatchSetCollector {
      * Returns the set of matching events for the state passed in by the
      * constructor.
      */
+    @Override
     public Collection<MatchResult> getMatchSet() {
         Collection<MatchResult> result = new MyHashSet<MatchResult>();
-        CtrlStep ctrlTrans = firstCall();
-        while (ctrlTrans != null) {
-            boolean hasMatches = collectEvents(ctrlTrans, result);
-            ctrlTrans = nextCall(hasMatches);
+        CtrlStep step = firstCall();
+        while (step != null) {
+            boolean hasMatches = collectEvents(step, result);
+            step = nextCall(hasMatches);
         }
         return result;
     }
 
     /** Matching should be injective or not. */
+    @Override
     protected boolean isInjective() {
         return true;
     }
 
     /** Returns the first rule of the state's control schedule. */
-    private CtrlStep firstCall() {
-        CtrlStep result;
-        CtrlSchedule schedule = ((CtrlState) this.ctrlState).getSchedule();
-        this.state.setFrame(schedule);
-        if (schedule.isTrial()) {
-            result = schedule.getTransitions().get(0);
-            this.transIx = 1;
+    private Step firstCall() {
+        Step result;
+        Frame frame = this.frame;
+        this.state.setFrame(frame);
+        if (frame.isTrial()) {
+            result = frame.getAttempt();
             this.matchFound = false;
         } else {
             result = null;
@@ -94,24 +95,21 @@ public class PatternGraphMatchSetCollector {
     }
 
     /** Increments the rule iterator, and returns the next rule. */
-    private CtrlStep nextCall(boolean matchFound) {
-        CtrlStep result;
-        CtrlSchedule schedule = (CtrlSchedule) this.state.getCurrentFrame();
+    private Step nextCall(boolean matchFound) {
+        Step result;
+        Frame frame = (Frame) this.state.getCurrentFrame();
         this.matchFound |= matchFound;
-        if (!schedule.isTrial()) {
-            result = null;
-        } else if (this.transIx < schedule.getTransitions().size()) {
-            result = schedule.getTransitions().get(this.transIx);
-            this.transIx++;
-        } else {
-            this.state.setFrame(schedule = schedule.next(this.matchFound));
-            if (schedule.isTrial()) {
-                result = schedule.getTransitions().get(0);
-                this.transIx = 1;
+        if (frame.isTrial()) {
+            Step step = frame.getAttempt();
+            this.state.setFrame(frame = this.matchFound ? step.onSuccess() : step.onFailure());
+            if (frame.isTrial()) {
+                result = frame.getAttempt();
                 this.matchFound = false;
             } else {
                 result = null;
             }
+        } else {
+            result = null;
         }
         return result;
     }
@@ -126,6 +124,5 @@ public class PatternGraphMatchSetCollector {
         return !matches.isEmpty();
     }
 
-    private int transIx;
     private boolean matchFound;
 }

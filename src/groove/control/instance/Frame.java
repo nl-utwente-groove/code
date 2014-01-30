@@ -153,6 +153,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
             this.nextFrame = nextF == null ? newFinalFrame() : nextF;
             this.alsoFrame = alsoF == null ? newDeadFrame(getStage().getDepth()) : alsoF;
             this.elseFrame = elseF == null ? newDeadFrame(getStage().getDepth()) : elseF;
+            this.depth = computeDepth();
         }
     }
 
@@ -289,6 +290,39 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
 
     private int depth;
 
+    private int computeDepth() {
+        // we want this to work also for non-normal frames
+        if (hasSubFrames()) {
+            switch (getStage().getType()) {
+            case DEAD:
+                return getElse().getDepth();
+            case TRIAL:
+                return getStage().getDepth();
+            case FINAL:
+                switch (getNext().getType()) {
+                case DEAD:
+                    return getAlso().getDepth();
+                case FINAL:
+                    if (getAlso().isDead()) {
+                        return 0;
+                    } else {
+                        return getAlso().getDepth();
+                    }
+                case TRIAL:
+                    return getNext().getDepth();
+                default:
+                    assert false;
+                    return 0;
+                }
+            default:
+                assert false;
+                return 0;
+            }
+        } else {
+            return getStage().getDepth();
+        }
+    }
+
     /** Returns the call stack of this frame.
      */
     public CallStack getCallStack() {
@@ -371,7 +405,6 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
     /** Constructs the disjunction of this frame and another. */
     private Frame or(Frame other) {
         assert other != null;
-        assert getDepth() == other.getDepth();
         Frame result;
         switch (getType()) {
         case DEAD:

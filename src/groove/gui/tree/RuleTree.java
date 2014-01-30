@@ -450,7 +450,7 @@ public class RuleTree extends AbstractResourceTree {
         // insert new matches
         for (MatchResult match : matches) {
             Rule rule = match.getEvent().getRule();
-            Recipe recipe = match.getCtrlTransition().getRecipe();
+            Recipe recipe = match.getStep().getRecipe();
             String ruleName = rule.getFullName();
             // find the correct rule tree node
             for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {

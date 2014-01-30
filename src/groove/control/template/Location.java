@@ -210,7 +210,7 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
 
     /** Indicates if this location has a non-empty set of control variables. */
     public boolean hasVars() {
-        return getVars().isEmpty();
+        return !getVars().isEmpty();
     }
 
     /**

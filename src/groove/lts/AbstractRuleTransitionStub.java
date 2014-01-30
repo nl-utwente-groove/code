@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
@@ -39,7 +39,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
      */
     AbstractRuleTransitionStub(MatchResult match, HostNode[] addedNodes, GraphState target) {
         this.event = match.getEvent();
-        this.ctrlTrans = match.getCtrlTransition();
+        this.step = match.getStep();
         this.addedNodes = addedNodes;
         this.target = target;
     }
@@ -62,7 +62,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
 
     @Override
     public MatchResult getKey(GraphState source) {
-        return new MatchResult(this.event, this.ctrlTrans);
+        return new MatchResult(this.event, this.step);
     }
 
     @Override
@@ -126,7 +126,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
     /**
      * The control transition of this transition stub.
      */
-    private final CtrlTransition ctrlTrans;
+    private final CtrlStep step;
     /**
      * The rule event of this transition stub.
      */
