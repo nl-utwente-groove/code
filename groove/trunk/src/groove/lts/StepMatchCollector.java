@@ -17,14 +17,16 @@
 package groove.lts;
 
 import groove.control.Binding;
+import groove.control.Binding.Source;
 import groove.control.Call;
 import groove.control.CtrlPar.Var;
+import groove.control.CtrlStep;
 import groove.control.CtrlType;
-import groove.control.CtrlVar;
 import groove.control.Valuator;
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
+import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
@@ -39,7 +41,6 @@ import groove.transform.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -58,9 +59,11 @@ public class StepMatchCollector extends MatchCollector {
 
     /**
      * Returns the set of matching events for a given control switch.
-     * @param step the transition for which matches are to be found; non-{@code null}
+     * @param ctrlStep the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches(final Step step) {
+    @Override
+    public MatchResultSet computeMatches(CtrlStep ctrlStep) {
+        final Step step = (Step) ctrlStep;
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
@@ -70,7 +73,7 @@ public class StepMatchCollector extends MatchCollector {
         // save matching time, to reuse added nodes, and to find confluent 
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
-        final boolean isDisabled = isDisabled(step.getCall());
+        final boolean isDisabled = isDisabled(step.getSwitch());
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition) {
@@ -171,20 +174,23 @@ public class StepMatchCollector extends MatchCollector {
      * Indicates if matches of a given control call might have been disabled
      * since the parent state.
      */
-    private boolean isDisabled(Call call) {
-        assert call.getUnit() instanceof Rule;
-        if (this.disabledRules == null || this.disabledRules.contains(call.getRule())) {
+    private boolean isDisabled(Switch swit) {
+        assert swit.getUnit() instanceof Rule;
+        if (this.disabledRules == null || this.disabledRules.contains(swit.getRule())) {
             return true;
         }
         // since disabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        for (Map.Entry<CtrlVar,Integer> inArg : call.getInVars().entrySet()) {
+        for (Pair<Var,Binding> inArg : swit.getCallBinding()) {
+            if (inArg.two() == null || inArg.two().getSource() == Source.CONST) {
+                continue;
+            }
             // node values may be deleted 
-            if (inArg.getKey().getType() == CtrlType.NODE && call.getRule().hasNodeErasers()) {
+            if (inArg.one().getType() == CtrlType.NODE && swit.getRule().hasNodeErasers()) {
                 return true;
             }
             // the incoming control step may have affected the variable's value
-            if (((Step) state.getStep()).mayAssign(inArg.getValue())) {
+            if (((Step) state.getStep()).mayAssign(inArg.two().getIndex())) {
                 return true;
             }
         }
@@ -235,10 +241,12 @@ public class StepMatchCollector extends MatchCollector {
      * or otherwise the event itself.
      */
     private MatchResult getParentTrans(MatchResult key) {
-        MatchResult result = null;
+        MatchResult result;
         if (this.parentTransMap != null) {
             RuleTransition trans = (RuleTransition) this.parentTransMap.get(key);
             result = trans == null ? key : trans.getKey();
+        } else {
+            result = key;
         }
         return result;
     }

@@ -150,7 +150,7 @@ public final class ShapeMatchApplier extends MatchApplier {
         Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
         Shape transformedShape = pair.one();
         RuleEvent realEvent = pair.two();
-        MatchResult realMatch = new MatchResult(realEvent, match.getCtrlTransition());
+        MatchResult realMatch = new MatchResult(realEvent, match.getStep());
         Shape target = transformedShape.normalise();
 
         RuleTransition trans = null;

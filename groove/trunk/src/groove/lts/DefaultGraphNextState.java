@@ -15,7 +15,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.DeltaHostGraph;
@@ -138,7 +137,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying() || getCtrlTransition().isModifying()) {
+        if (getEvent().getRule().isModifying() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
@@ -291,7 +290,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      */
     protected boolean equalsTransition(RuleTransition other) {
         return source() == other.source() && getEvent().equals(other.getEvent())
-            && getCtrlTransition().equals(other.getCtrlTransition());
+            && getStep().equals(other.getStep());
     }
 
     /**
@@ -299,7 +298,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      */
     @Override
     public int hashCode() {
-        return source().getNumber() + getEvent().hashCode() + getCtrlTransition().hashCode();
+        return source().getNumber() + getEvent().hashCode() + getStep().hashCode();
     }
 
     /**
@@ -320,11 +319,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-    public CtrlTransition getCtrlTransition() {
-        return (CtrlTransition) getStep();
-    }
-
-    @Override
     public CtrlStep getStep() {
         return this.step;
     }
@@ -336,7 +330,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public Recipe getRecipe() {
-        return getCtrlTransition().getRecipe();
+        return getStep().getRecipe();
     }
 
     /** Keeps track of bound variables */

@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.graph.EdgeComparator;
 import groove.transform.RuleEvent;
@@ -81,11 +80,6 @@ public class MatchResult implements GraphTransitionKey {
     /** Returns the control transition wrapped by this transition key. */
     public CtrlStep getStep() {
         return this.step;
-    }
-
-    /** Returns the control transition wrapped by this transition key. */
-    public CtrlTransition getCtrlTransition() {
-        return (CtrlTransition) this.step;
     }
 
     private final CtrlStep step;
@@ -153,7 +147,7 @@ public class MatchResult implements GraphTransitionKey {
         public int compare(MatchResult o1, MatchResult o2) {
             int result = o1.getEvent().compareTo(o2.getEvent());
             if (result == 0) {
-                result = edgeComparator.compare(o1.getCtrlTransition(), o2.getCtrlTransition());
+                result = edgeComparator.compare(o1.getStep(), o2.getStep());
             }
             return result;
         }

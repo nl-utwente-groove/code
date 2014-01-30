@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
@@ -100,7 +99,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying() || getCtrlTransition().isModifying()) {
+        if (getEvent().getRule().isModifying() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
@@ -279,11 +278,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     protected int computeHashCode() {
         return System.identityHashCode(source()) + System.identityHashCode(getEvent());
-    }
-
-    @Override
-    public CtrlTransition getCtrlTransition() {
-        return label().getCtrlTransition();
     }
 
     @Override

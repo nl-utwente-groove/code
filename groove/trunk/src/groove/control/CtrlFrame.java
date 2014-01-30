@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.instance.Frame;
+import groove.graph.Node;
 
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface CtrlFrame {
+public interface CtrlFrame extends Node {
     /** Indicates that this is the initial frame of the automaton. */
     boolean isStart();
 
@@ -47,6 +48,9 @@ public interface CtrlFrame {
     /** Indicates if this frame represents success. */
     boolean isFinal();
 
+    /** Indicates if this frame has an outgoing control step. */
+    boolean isTrial();
+
     /**
      * Returns the set of called actions that have been tried at this point
      * of the frame.
@@ -65,4 +69,7 @@ public interface CtrlFrame {
 
     /** Returns the list of control variables in this frame. */
     public List<CtrlVar> getVars();
+
+    /** Flag determining if the new control implementation should be used. */
+    public final static boolean NEW_CONTROL = false;
 }

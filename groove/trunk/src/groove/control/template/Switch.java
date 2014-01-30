@@ -287,8 +287,10 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
     private List<Pair<Var,Binding>> callBinding;
 
     /** 
-     * Computes the binding of input parameter positions to source location
+     * Computes the binding of call parameter positions to source location
      * variables and constant values.
+     * @return a list of pairs of call parameter variables and bindings.
+     * The binding is {@code null} for a non-input-parameter.
      */
     private List<Pair<Var,Binding>> computeCallBinding() {
         List<Pair<Var,Binding>> result = new LinkedList<Pair<Var,Binding>>();

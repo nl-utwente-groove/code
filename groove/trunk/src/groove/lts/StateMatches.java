@@ -118,7 +118,7 @@ public class StateMatches extends MatchResultSet {
                 this.outstanding = EMPTY_MATCH_SET;
             }
         }
-        if (schedule.isDead()) {
+        if (!schedule.isTrial()) {
             if (isEmpty()) {
                 assert isFinished();
                 getState().setClosed(true);
@@ -169,7 +169,7 @@ public class StateMatches extends MatchResultSet {
      * If this is the case, the state can be closed.
      */
     boolean isFinished() {
-        return isEmpty() && getState().getActualFrame().isDead();
+        return isEmpty() && !getState().getActualFrame().isTrial();
     }
 
     /** Strategy object used to find the matches. */

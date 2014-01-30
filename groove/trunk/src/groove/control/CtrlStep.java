@@ -19,6 +19,7 @@ package groove.control;
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
+import groove.graph.Edge;
 import groove.graph.Label;
 
 import java.util.List;
@@ -29,8 +30,9 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
+public interface CtrlStep extends Comparable<CtrlStep>, CalledAction, Edge {
     /** Returns the label of this control step. */
+    @Override
     Label label();
 
     /** 
@@ -41,9 +43,11 @@ public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
     boolean isModifying();
 
     /** Method returning supertype of {@link CtrlState} and {@link Frame}. */
+    @Override
     public CtrlFrame source();
 
     /** Method returning supertype of {@link CtrlState} and {@link Frame}. */
+    @Override
     public CtrlFrame target();
 
     /**

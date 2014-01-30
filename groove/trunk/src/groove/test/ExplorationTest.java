@@ -311,7 +311,6 @@ public class ExplorationTest {
             }
             return lts;
         } catch (FormatException exc) {
-            exc.printStackTrace();
             Assert.fail(exc.toString());
             return null;
         }

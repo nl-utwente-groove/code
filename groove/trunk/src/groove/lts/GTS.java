@@ -513,8 +513,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         if (result) {
             for (RuleTransition trans : state.getRuleTransitions()) {
                 if (!trans.target().isAbsent()) {
-                    if (trans.getCtrlTransition().getRule().isModifying()
-                        || !trans.target().equals(state)) {
+                    if (trans.getStep().getRule().isModifying() || !trans.target().equals(state)) {
                         result = false;
                         break;
                     }

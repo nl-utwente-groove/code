@@ -34,6 +34,7 @@ import groove.lts.MatchResultSet;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
 import groove.lts.StateReference;
+import groove.lts.StepMatchCollector;
 import groove.transform.Proof;
 import groove.util.cache.CacheReference;
 
@@ -271,7 +272,8 @@ public class ShapeState extends AbstractGraphState {
 
         @Override
         protected MatchCollector createMatchCollector() {
-            return new ShapeMatchSetCollector();
+            return CtrlFrame.NEW_CONTROL ? new ShapeStepMatchCollector()
+                    : new ShapeMatchSetCollector();
         }
     }
 
@@ -280,6 +282,25 @@ public class ShapeState extends AbstractGraphState {
          * Constructs a match collector for this shape.
          */
         public ShapeMatchSetCollector() {
+            super(ShapeState.this);
+        }
+
+        @Override
+        public MatchResultSet computeMatches(CtrlStep step) {
+            final MatchResultSet result = new MatchResultSet();
+            Rule rule = step.getRule();
+            for (Proof preMatch : PreMatch.getPreMatches(ShapeState.this.getGraph(), rule)) {
+                result.add(new MatchResult(getRecord().getEvent(preMatch), step));
+            }
+            return result;
+        }
+    }
+
+    private class ShapeStepMatchCollector extends StepMatchCollector {
+        /**
+         * Constructs a match collector for this shape.
+         */
+        public ShapeStepMatchCollector() {
             super(ShapeState.this);
         }
 

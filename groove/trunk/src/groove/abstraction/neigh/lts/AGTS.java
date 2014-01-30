@@ -21,6 +21,7 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
+import groove.control.CtrlFrame;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostGraph;
 import groove.grammar.type.TypeEdge;
@@ -179,8 +180,10 @@ public final class AGTS extends GTS {
 
     @Override
     protected ShapeState createStartState(HostGraph startGraph) {
-        ShapeState result =
-            new ShapeState(this, (Shape) startGraph, getGrammar().getCtrlAut().getStart(), 0);
+        CtrlFrame startFrame =
+            CtrlFrame.NEW_CONTROL ? getGrammar().getControl().getStart()
+                    : getGrammar().getCtrlAut().getStart();
+        ShapeState result = new ShapeState(this, (Shape) startGraph, startFrame, 0);
         return result;
     }
 
@@ -313,8 +316,8 @@ public final class AGTS extends GTS {
                 // This can only happen on the first state.
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
-                    new ShapeState(AGTS.this, origSrcClosure.getGraph(), origSrcClosure.getPrimeFrame(),
-                        0);
+                    new ShapeState(AGTS.this, origSrcClosure.getGraph(),
+                        origSrcClosure.getPrimeFrame(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
                 result.startState = reducedSrc;
