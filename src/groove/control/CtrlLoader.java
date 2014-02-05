@@ -125,7 +125,7 @@ public class CtrlLoader {
         FormatErrorSet errors = new FormatErrorSet();
         Program result = new Program();
         for (String name : progNames) {
-            CtrlTree tree = this.treeMap.get(name);
+            CtrlTree tree = this.treeMap.get(name).check();
             try {
                 result.add(tree.toProgram());
             } catch (FormatException e) {

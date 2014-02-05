@@ -139,6 +139,18 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     @Test
+    public void testAlapChoice() {
+        build("alap a|b;");
+        assertSize(2, 3);
+        Location loc = getInit(this.bCall);
+        assertTrue(onFailure(loc).isFinal());
+        assertTrue(onSuccess(loc).isDead());
+        assertEquals(loc, getNext(loc, this.aCall));
+        assertEquals(loc, getNext(loc, this.bCall));
+
+    }
+
+    @Test
     public void testOther() {
         build("choice a; or { alap other; }");
         assertSize(5, 13);

@@ -27,7 +27,6 @@ public class SeqTerm extends Term {
      */
     SeqTerm(Term arg0, Term arg1) {
         super(Term.Op.SEQ, arg0, arg1);
-        assert arg1.isTopLevel();
     }
 
     @Override

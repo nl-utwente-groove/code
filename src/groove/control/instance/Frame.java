@@ -21,6 +21,7 @@ import groove.control.CtrlFrame;
 import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.control.Procedure;
+import groove.control.SoloAttempt;
 import groove.control.template.Location;
 import groove.control.template.Stage;
 import groove.control.template.Switch;
@@ -180,45 +181,54 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
 
     private Frame elseFrame;
 
-    /** 
-     * Returns the (possibly {@code null}) switch of the instantiated stage.
-     */
-    public Switch getSwitch() {
-        return getStage().getAttempt();
-    }
-
     @Override
     public Type getType() {
+        if (this.type == null) {
+            this.type = computeType();
+        }
+        return this.type;
+    }
+
+    /** The type of this frame. */
+    private Type type;
+
+    private Type computeType() {
+        Type result = null;
         // we want this to work also for non-normal frames
         if (hasSubFrames()) {
             switch (getStage().getType()) {
             case DEAD:
-                return getElse().getType();
+                result = getElse().getType();
+                break;
             case TRIAL:
-                return Type.TRIAL;
+                result = Type.TRIAL;
+                break;
             case FINAL:
                 switch (getNext().getType()) {
                 case DEAD:
-                    return getAlso().getType();
+                    result = getAlso().getType();
+                    break;
                 case FINAL:
                     if (getAlso().isDead()) {
-                        return Type.FINAL;
+                        result = Type.FINAL;
                     } else {
-                        return getAlso().getType();
+                        result = getAlso().getType();
                     }
+                    break;
                 case TRIAL:
-                    return Type.TRIAL;
+                    result = Type.TRIAL;
+                    break;
                 default:
                     assert false;
-                    return null;
                 }
+                break;
             default:
                 assert false;
-                return null;
             }
         } else {
-            return getStage().getType();
+            result = getStage().getType();
         }
+        return result;
     }
 
     @Override
@@ -239,6 +249,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
     @Override
     public Step getAttempt() {
         assert isFixed();
+        assert hasPrime() : "Can't retrieve attempt of untried frame " + this;
         if (this.attempt == null) {
             this.attempt = computeAttempt();
             getAut().addEdgeContext(this.attempt);
@@ -297,7 +308,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
             case DEAD:
                 return getElse().getDepth();
             case TRIAL:
-                return getStage().getDepth();
+                return getStage().getDepth() + getNext().getDepth();
             case FINAL:
                 switch (getNext().getType()) {
                 case DEAD:
@@ -535,6 +546,14 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
         String result = toString(false);
         if (RICH_LABELS) {
             result += "\nLoc: " + getIdString();
+            if (getDepth() > 0) {
+                result += ", d" + getDepth();
+            }
+            if (isFinal()) {
+                result += ", final";
+            } else if (isDead()) {
+                result += ", dead";
+            }
             if (isPrime()) {
                 result += "\nPrime";
             } else {
@@ -557,7 +576,8 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
      */
     private String toString(boolean nested) {
         String result = null;
-        switch (getType()) {
+        Position<?> pos = hasPrime() ? this : getStage();
+        switch (pos.getType()) {
         case DEAD:
             result = "D" + (getDepth() > 0 ? "" + getDepth() : "");
             break;
@@ -565,7 +585,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
             result = "E";
             break;
         case TRIAL:
-            result = getSwitch().getCall().toString();
+            result = ((SoloAttempt<?>) pos.getAttempt()).getCall().toString();
             break;
         default:
             assert false;
@@ -579,7 +599,7 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
         if (this == getAut().getStart()) {
             result = "S::" + result;
         }
-        if (nested && getNext() != null) {
+        if (nested && hasSubFrames()) {
             result = "(" + result + ")";
         }
         return result;

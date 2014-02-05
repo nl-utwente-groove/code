@@ -20,6 +20,7 @@ package groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
+import groove.control.instance.Automaton;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
@@ -134,6 +135,9 @@ public class RecipeTest {
             GrammarModel ggModel = loadGrammar(GRAMMAR, startGraphName);
             ggModel.setLocalActiveNames(ResourceKind.CONTROL, control);
             Grammar gg = ggModel.toGrammar();
+            Automaton a = gg.getControl();
+            a.explore();
+            //            Viewer.showGraph(a, true);
             runExploration(gg, strategyDescr);
             assertEquals(this.highLevelStateCount,
                 counter.getStateCount() - counter.getTransientStateCount());

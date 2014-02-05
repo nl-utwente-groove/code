@@ -27,7 +27,6 @@ public class AtomTerm extends Term {
      */
     public AtomTerm(Term arg0) {
         super(Op.ATOM, arg0);
-        assert arg0.isTopLevel();
     }
 
     @Override
