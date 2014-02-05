@@ -39,7 +39,6 @@ import groove.transform.BasicEvent;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent.Reuse;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -171,6 +170,7 @@ public class CriticalPair {
     protected void setStrictlyConfluent(ConfluenceStatus confluent,
             Grammar grammar) {
         this.confluent = confluent;
+        this.grammar = grammar;
     }
 
     CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
@@ -222,12 +222,15 @@ public class CriticalPair {
      * @param nodes the nodes for which overlappings should be computed
      * @return All possble overlappings of the given set of nodes
      */
-    public static Set<CriticalPair> computeCriticalPairs(Rule rule1, Rule rule2) {
+    public static LinkedHashSet<CriticalPair> computeCriticalPairs(Rule rule1,
+            Rule rule2) {
         assert canComputePairs(rule1);
         assert canComputePairs(rule2);
         //algebraFamily must be TERM, because the host graph will be constructed in the TERM algebra
-        assert rule1.getSystemProperties().getAlgebraFamily().equals(
-            AlgebraFamily.TERM);
+        //If the rule has no variables, then the algebra does not matter
+        assert (!hasVariableNodes(rule1.lhs()) && !hasVariableNodes(rule2.lhs()))
+            || rule1.getSystemProperties().getAlgebraFamily().equals(
+                AlgebraFamily.TERM);
         System.out.println("computeCriticalPairs(" + rule1.getFullName()
             + " , " + rule2.getFullName() + ")");
         if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null)
@@ -237,9 +240,10 @@ public class CriticalPair {
         //Special case, both of the two rules are nondeleting, then there are no critical pairs
         if (!(rule1.hasNodeErasers() || rule1.hasEdgeErasers()
             || rule2.hasNodeErasers() || rule2.hasEdgeErasers())) {
-            return Collections.emptySet();
+            return new LinkedHashSet<CriticalPair>();
         }
-        Set<ParallelPair> parrPairs = new LinkedHashSet<ParallelPair>();
+        LinkedHashSet<ParallelPair> parrPairs =
+            new LinkedHashSet<ParallelPair>();
 
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.ONE);
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.TWO);
@@ -271,7 +275,8 @@ public class CriticalPair {
         }
 
         //Filter out all critical pairs which are not parallel dependent
-        Set<CriticalPair> critPairs = new LinkedHashSet<CriticalPair>();
+        LinkedHashSet<CriticalPair> critPairs =
+            new LinkedHashSet<CriticalPair>();
         //        System.out.println(parrPairs.size() + " parralel pairs found");
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
@@ -323,8 +328,8 @@ public class CriticalPair {
      * @param matchnum the match number (1 or 2) this number states to which match mappings should be added
      * @return a set of parallel pairs
      */
-    private static Set<ParallelPair> buildCriticalSet(
-            Set<ParallelPair> parrPairs, Rule rule1, Rule rule2,
+    private static LinkedHashSet<ParallelPair> buildCriticalSet(
+            LinkedHashSet<ParallelPair> parrPairs, Rule rule1, Rule rule2,
             MatchNumber matchnum) {
         boolean injectiveOnly;
         RuleGraph ruleGraph;
@@ -374,7 +379,11 @@ public class CriticalPair {
                         addNodeToNewGroup(rnode, newPair, matchnum, edges);
                         newParrPairs.add(newPair);
                     }
-
+                }
+                //in order to ensure that the result (a LinkedHashSet) is ordered by size of the critical pairs
+                //from large to small, we handle case 1 and case 2 in separate loops
+                for (ParallelPair pair : parrPairs) {
+                    ParallelPair newPair;
                     //case 2: 
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
@@ -619,6 +628,15 @@ public class CriticalPair {
         }
 
         return true;
+    }
+
+    private static boolean hasVariableNodes(RuleGraph graph) {
+        for (RuleNode rn : graph.nodeSet()) {
+            if (rn instanceof VariableNode) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

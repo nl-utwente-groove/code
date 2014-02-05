@@ -57,6 +57,7 @@ public class TestDeleteUse {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         Rule addNodeAndEdge = getSimpleRule("addNodeAndEdge", view);
         Rule constantNode = getSimpleRule("constantNode", view);
         Rule constant_3_clique = getSimpleRule("constant_3_clique", view);
@@ -64,6 +65,8 @@ public class TestDeleteUse {
         Rule deleteEdge = getSimpleRule("deleteEdge", view);
         Rule deleteNode = getSimpleRule("deleteNode", view);
         Rule deleteSelfEdge = getSimpleRule("deleteSelfEdge", view);
+
+        System.out.println(addNodeAndEdge);
 
         Set<CriticalPair> pairs =
             CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);

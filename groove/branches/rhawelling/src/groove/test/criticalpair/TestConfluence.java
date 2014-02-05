@@ -52,7 +52,7 @@ public class TestConfluence {
         for (CriticalPair pair : pairs) {
             System.out.println(pair.getRule1().getFullName());
             System.out.println(pair.getRule2().getFullName() + "\n");
-            assertTrue(pair.getStrictlyConfluent(grammar) == ConfluenceStatus.CONFLUENT);
+            assertTrue(pair.getStrictlyConfluent(grammar) == ConfluenceStatus.STRICTLY_CONFLUENT);
         }
 
     }

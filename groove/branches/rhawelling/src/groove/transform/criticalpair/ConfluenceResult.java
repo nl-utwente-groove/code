@@ -28,12 +28,13 @@ public class ConfluenceResult {
     private Grammar grammar;
 
     private ConfluenceStatus status = ConfluenceStatus.UNTESTED;
+    private final boolean alternateMethod;
 
     /*
      * These untestedPairs should not be visible outside of this class, because the confluenceResult
      * Needs to know when pairs are tested
      */
-    private Set<CriticalPair> untestedPairs;
+    private LazyCriticalPairSet untestedPairs;
     private Set<CriticalPair> undecidedPairs = new HashSet<CriticalPair>();
     private Set<CriticalPair> nonConfluentPairs = new HashSet<CriticalPair>();
 
@@ -42,6 +43,10 @@ public class ConfluenceResult {
     }
 
     public ConfluenceResult(Grammar grammar) {
+        this(grammar, false);
+    }
+
+    public ConfluenceResult(Grammar grammar, boolean alternateMethod) {
         this.grammar = grammar;
         Set<Rule> rules = grammar.getAllRules();
         for (Rule rule : rules) {
@@ -53,6 +58,7 @@ public class ConfluenceResult {
             }
         }
         this.untestedPairs = new LazyCriticalPairSet(rules);
+        this.alternateMethod = alternateMethod;
     }
 
     public ConfluenceStatus getStatus() {
@@ -72,23 +78,30 @@ public class ConfluenceResult {
     }
 
     public static ConfluenceResult checkStrictlyConfluent(Grammar grammar) {
-        return checkStrictlyConfluent(grammar, ConfluenceStatus.NOTCONFLUENT);
+        return checkStrictlyConfluent(grammar, false);
     }
 
     public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
-            ConfluenceStatus target) {
-        ConfluenceResult result = new ConfluenceResult(grammar);
+            boolean alternateMethod) {
+        return checkStrictlyConfluent(grammar,
+            ConfluenceStatus.NOT_STICTLY_CONFLUENT, alternateMethod);
+    }
+
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
+            ConfluenceStatus target, boolean alternateMethod) {
+        ConfluenceResult result =
+            new ConfluenceResult(grammar, alternateMethod);
         result.analyzeUntil(target);
         return result;
     }
 
     public void analyzeUntil(ConfluenceStatus target) {
-        if (target == ConfluenceStatus.CONFLUENT) {
+        if (target == ConfluenceStatus.STRICTLY_CONFLUENT) {
             analyzeAll();
         } else if (target == ConfluenceStatus.UNTESTED) {
             //nothing needs to be done
         } else if (target == this.status
-            || (target == ConfluenceStatus.UNDECIDED && this.status == ConfluenceStatus.NOTCONFLUENT)) {
+            || (target == ConfluenceStatus.UNDECIDED && this.status == ConfluenceStatus.NOT_STICTLY_CONFLUENT)) {
             //nothing needs to be done
         } else {
             Iterator<CriticalPair> it = this.untestedPairs.iterator();
@@ -102,27 +115,38 @@ public class ConfluenceResult {
             if (this.status == ConfluenceStatus.UNTESTED
                 && this.undecidedPairs.isEmpty()) {
                 //everything has been analyzed but all pairs are confluent
-                this.status = ConfluenceStatus.CONFLUENT;
+                this.status = ConfluenceStatus.STRICTLY_CONFLUENT;
             }
         }
 
     }
 
     public void analyzeAll() {
-        Iterator<CriticalPair> it = this.untestedPairs.iterator();
-        while (it.hasNext()) {
-            CriticalPair pair = it.next();
-            updateStatus(pair);
-            //remove the pair from the untested set
-            it.remove();
+        Iterator<Set<CriticalPair>> setIt = this.untestedPairs.setIterator();
+        while (setIt.hasNext()) {
+            Set<CriticalPair> pairSet = setIt.next();
+            if (this.alternateMethod) {
+                ConfluenceAnalyzer.analyzePairSet(pairSet, this.grammar);
+                for (CriticalPair pair : pairSet) {
+                    //the confluenceStatus will not be computed again
+                    updateStatus(pair);
+                }
+            } else {
+                Iterator<CriticalPair> pairIt = pairSet.iterator();
+                while (pairIt.hasNext()) {
+                    CriticalPair pair = pairIt.next();
+                    updateStatus(pair);
+                    //remove the pair from the untested set
+                    pairIt.remove();
+                }
+            }
+            //remove all pairs in the set from the setIterator
+            setIt.remove();
         }
-        if (!this.undecidedPairs.isEmpty()) {
-            System.out.println(this.untestedPairs.size());
-            assert this.untestedPairs.isEmpty();
-        }
+        assert this.untestedPairs.isEmpty();
         if (this.status == ConfluenceStatus.UNTESTED) {
             //everything has been analyzed but all pairs are confluent
-            this.status = ConfluenceStatus.CONFLUENT;
+            this.status = ConfluenceStatus.STRICTLY_CONFLUENT;
         }
     }
 
@@ -138,13 +162,13 @@ public class ConfluenceResult {
         boolean result = false;
         ConfluenceStatus pairStatus = pair.getStrictlyConfluent(this.grammar);
         switch (pairStatus) {
-        case CONFLUENT:
+        case STRICTLY_CONFLUENT:
             //do nothing
             break;
         case UNDECIDED:
             //            System.out.println("UNDECIDEDFOUND!!!! "
             //                + getUndecidedPairs().size());
-            if (this.status == ConfluenceStatus.CONFLUENT
+            if (this.status == ConfluenceStatus.STRICTLY_CONFLUENT
                 || this.status == ConfluenceStatus.UNTESTED) {
                 this.status = ConfluenceStatus.UNDECIDED;
             }
@@ -153,11 +177,11 @@ public class ConfluenceResult {
                 result = true;
             }
             break;
-        case NOTCONFLUENT:
-            this.status = ConfluenceStatus.NOTCONFLUENT;
+        case NOT_STICTLY_CONFLUENT:
+            this.status = ConfluenceStatus.NOT_STICTLY_CONFLUENT;
             this.nonConfluentPairs.add(pair);
             if (target == ConfluenceStatus.UNDECIDED
-                || target == ConfluenceStatus.NOTCONFLUENT) {
+                || target == ConfluenceStatus.NOT_STICTLY_CONFLUENT) {
                 result = true;
             }
             break;

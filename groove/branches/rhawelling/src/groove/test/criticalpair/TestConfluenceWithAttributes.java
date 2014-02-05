@@ -17,7 +17,6 @@
 package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
-import groove.algebra.AlgebraFamily;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -81,20 +80,7 @@ public class TestConfluenceWithAttributes {
         }
         Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(grammar);
         assertTrue(pairs.size() == 0);
-        assertTrue(ConfluenceResult.checkStrictlyConfluent(grammar).getStatus() == ConfluenceStatus.CONFLUENT);
-
-        //test the same with pointalgebra
-        view.getProperties().setAlgebraFamily(AlgebraFamily.POINT);
-        try {
-            grammar = view.toGrammar();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-        pairs = CriticalPair.computeCriticalPairs(grammar);
-        System.out.println(pairs);
-        System.out.println(pairs.size());
-        assertTrue(pairs.size() == 1);
-        assertTrue(ConfluenceResult.checkStrictlyConfluent(grammar).getStatus() == ConfluenceStatus.CONFLUENT);
+        assertTrue(ConfluenceResult.checkStrictlyConfluent(grammar).getStatus() == ConfluenceStatus.STRICTLY_CONFLUENT);
 
     }
 }

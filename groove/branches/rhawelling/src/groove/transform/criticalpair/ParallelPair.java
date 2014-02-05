@@ -39,6 +39,7 @@ import groove.grammar.rule.VariableNode;
 import groove.graph.NodeFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -195,8 +196,6 @@ public class ParallelPair {
 
             CriticalPair potentialPair =
                 new CriticalPair(host, this.rule1, this.rule2, match1, match2);
-            System.out.println(potentialPair);
-            System.out.println(this);
             if (potentialPair.isParallelDependent()) {
                 //the pair is a critical pair
                 this.critPair = potentialPair;
@@ -242,7 +241,8 @@ public class ParallelPair {
                         AlgebraFamily.TERM.getAlgebra(varNode.getSignature());
                     //The set can contain multiple constants, the values of these constants
                     //in the algebra of the rule is the same
-                    Constant constant = getFirstConstant(ruleNodes);
+                    Constant constant =
+                        getFirstConstant(getCombination(entry.getKey()));
                     if (constant == null) {
                         target =
                             host.getFactory().createNode(
@@ -271,7 +271,6 @@ public class ParallelPair {
         for (RuleNode rn : ruleGraph.nodeSet()) {
             if (rn instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) rn;
-                System.out.println("Opnode found " + opNode);
                 SignatureKind sig = opNode.getOperator().getResultType();
                 Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                 Expression[] args =
@@ -293,6 +292,21 @@ public class ParallelPair {
                         new CallExpr(opNode.getOperator(), args));
                 host.addNode(target);
                 result.putNode(opNode.getTarget(), target);
+            } else if (rn instanceof VariableNode
+                && !result.nodeMap().containsKey(rn)) {
+                VariableNode varNode = (VariableNode) rn;
+                //add unconnected constants to the match
+                if (varNode.hasConstant()) {
+                    SignatureKind sig = varNode.getSignature();
+                    Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
+                    //Create this node in the host graph
+                    //(if a node with this constant already exists, it will be reused)
+                    HostNode constant =
+                        host.getFactory().createNode(alg, varNode.getConstant());
+                    host.addNode(constant);
+                    result.putNode(rn, constant);
+                }
+
             }
         }
 
@@ -324,7 +338,7 @@ public class ParallelPair {
      * @param nodes the set of RuleNodes which is traversed in search of a constant
      * @return a Constant Expression
      */
-    private Constant getFirstConstant(Set<RuleNode> nodes) {
+    private Constant getFirstConstant(Collection<RuleNode> nodes) {
         for (RuleNode node : nodes) {
             if (node instanceof VariableNode
                 && ((VariableNode) node).hasConstant()) {

@@ -17,7 +17,6 @@
 package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
-import groove.algebra.AlgebraFamily;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -51,19 +50,19 @@ public class TestDeleteUseWithAttributes {
 
         Set<CriticalPair> pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber_2);
-        assertTrue(pairs.size() == 5);
+        assertTrue(pairs.size() == 1);
         pairs = CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumber);
-        assertTrue(pairs.size() == 2);
+        assertTrue(pairs.size() == 1);
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumberOne);
-        assertTrue(pairs.size() == 2);
+        assertTrue(pairs.size() == 1);
 
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumber);
-        assertTrue(pairs.size() == 2);
+        assertTrue(pairs.size() == 1);
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumberOne);
-        assertTrue(pairs.size() == 2);
+        assertTrue(pairs.size() == 1);
         pairs =
             CriticalPair.computeCriticalPairs(deleteNumber, deleteNumberOne);
         assertTrue(pairs.size() == 1);
@@ -87,14 +86,15 @@ public class TestDeleteUseWithAttributes {
 
         Set<CriticalPair> pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber);
-        //This situation has 5 critical pairs, however two of these have identical matches
-        //therefore they are not considered critical because the transformation is the same
-        assertTrue(pairs.size() == 3);
+        //Since constants and targets of operations are not included in the search for critical pairs
+        //The only critical pair which we will find has the same match for both rules
+        //therefore this critical pair is not considered a critical pair
+        assertTrue(pairs.size() == 0);
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber_2,
                 addOneToNumber_2);
         //Similar to the previous
-        assertTrue(pairs.size() == 3);
+        assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(deleteNumber, deleteNumber);
         //There is one way to overlap the rule deleteNumber with itself such that
         //a conflicting parallel pair is formed, however, in this case the matches are equal
@@ -108,25 +108,25 @@ public class TestDeleteUseWithAttributes {
 
     }
 
-    @Test
-    public void testAttributes_Point() {
-        String grammar = "junit/criticalpair/attributes.gps/";
-        File grammarFile = new File(grammar);
-        GrammarModel view = null;
-        try {
-            view = GrammarModel.newInstance(grammarFile, false);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        view.getProperties().setAlgebraFamily(AlgebraFamily.POINT);
-        Rule deleteNumberTwo = getSimpleRule("deleteNumberTwo", view);
-        Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
-        //Both left-hand
-        Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberTwo);
-        assertTrue(pairs.size() == 1);
-
-    }
+    //    @Test
+    //    public void testAttributes_Point() {
+    //        String grammar = "junit/criticalpair/attributes.gps/";
+    //        File grammarFile = new File(grammar);
+    //        GrammarModel view = null;
+    //        try {
+    //            view = GrammarModel.newInstance(grammarFile, false);
+    //        } catch (IOException e) {
+    //            e.printStackTrace();
+    //        }
+    //        view.getProperties().setAlgebraFamily(AlgebraFamily.POINT);
+    //        Rule deleteNumberTwo = getSimpleRule("deleteNumberTwo", view);
+    //        Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
+    //        //Both left-hand
+    //        Set<CriticalPair> pairs =
+    //            CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberTwo);
+    //        assertTrue(pairs.size() == 1);
+    //
+    //    }
 
     private Rule getSimpleRule(String name, GrammarModel view) {
         Rule result = null;

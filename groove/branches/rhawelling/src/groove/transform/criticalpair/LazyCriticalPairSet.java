@@ -23,8 +23,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,11 +38,28 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
     /**
      * The set of critical pair which have already been computed
      */
-    private Set<CriticalPair> pairs = new LinkedHashSet<CriticalPair>();
+    private Map<RuleTuple,LinkedHashSet<CriticalPair>> pairMap =
+        new LinkedHashMap<RuleTuple,LinkedHashSet<CriticalPair>>();
+
     /**
      * Set of ruleTuples for which the critical pairs still need to be computed
      */
-    private final Set<RuleTuple> ruleTuples;
+    private final Set<RuleTuple> ruleTuplesToProcess;
+
+    Set<CriticalPair> getPairs(Rule rule1, Rule rule2) {
+        return getPairs(new RuleTuple(rule1, rule2));
+    }
+
+    Set<CriticalPair> getPairs(RuleTuple tuple) {
+        if (this.ruleTuplesToProcess.contains(tuple)) {
+            computePairs(tuple);
+        }
+        return this.pairMap.get(tuple);
+    }
+
+    Set<RuleTuple> getRuleTuples() {
+        return this.pairMap.keySet();
+    }
 
     /**
      * Creates a new set of CriticalPairs for rules
@@ -48,11 +67,13 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
      */
     LazyCriticalPairSet(Set<Rule> rules) {
         List<Rule> ruleList = new ArrayList<Rule>(rules);
-        this.ruleTuples = new HashSet<RuleTuple>();
+        this.ruleTuplesToProcess = new HashSet<RuleTuple>();
         for (int i = 0; i < ruleList.size(); i++) {
             for (int j = i; j < ruleList.size(); j++) {
-                this.ruleTuples.add(new RuleTuple(ruleList.get(i),
-                    ruleList.get(j)));
+                RuleTuple tuple =
+                    new RuleTuple(ruleList.get(i), ruleList.get(j));
+                this.ruleTuplesToProcess.add(tuple);
+                this.pairMap.put(tuple, null);
             }
         }
     }
@@ -63,16 +84,16 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
      * Otherwise an empty set (this means that this.ruleTuples.isEmpty after this call)
      */
     private Set<CriticalPair> computeMorePairs() {
-        Set<CriticalPair> result = Collections.emptySet();
-        if (!this.ruleTuples.isEmpty()) {
-            Iterator<RuleTuple> it = this.ruleTuples.iterator();
+        LinkedHashSet<CriticalPair> result = new LinkedHashSet<CriticalPair>(0);
+        if (!this.ruleTuplesToProcess.isEmpty()) {
+            Iterator<RuleTuple> it = this.ruleTuplesToProcess.iterator();
             while (result.isEmpty() && it.hasNext()) {
                 RuleTuple nextTuple = it.next();
                 result =
                     CriticalPair.computeCriticalPairs(nextTuple.rule1,
                         nextTuple.rule2);
                 //Add the new pairs to the internal set
-                this.pairs.addAll(result);
+                this.pairMap.put(nextTuple, result);
                 //remove the tuple
                 it.remove();
             }
@@ -83,7 +104,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     private Set<CriticalPair> computePairs(RuleTuple tuple) {
         Set<CriticalPair> result;
-        if (!this.ruleTuples.remove(tuple)) {
+        if (!this.ruleTuplesToProcess.remove(tuple)) {
             result = Collections.emptySet();
         } else {
             result =
@@ -93,15 +114,15 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
     }
 
     private void computeAllPairs() {
-        Iterator<RuleTuple> it = this.ruleTuples.iterator();
+        Iterator<RuleTuple> it = this.ruleTuplesToProcess.iterator();
         while (it.hasNext()) {
             RuleTuple nextTuple = it.next();
-            this.pairs.addAll(CriticalPair.computeCriticalPairs(
+            this.pairMap.put(nextTuple, CriticalPair.computeCriticalPairs(
                 nextTuple.rule1, nextTuple.rule2));
             it.remove();
         }
         //make sure that there are no remaining ruleTuples
-        this.ruleTuples.clear();
+        this.ruleTuplesToProcess.clear();
     }
 
     @Override
@@ -118,8 +139,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     @Override
     public void clear() {
-        this.pairs.clear();
-        this.ruleTuples.clear();
+        this.pairMap.clear();
+        this.ruleTuplesToProcess.clear();
     }
 
     @Override
@@ -127,10 +148,11 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
         if (o instanceof CriticalPair) {
             CriticalPair pair = (CriticalPair) o;
             RuleTuple tuple = new RuleTuple(pair.getRule1(), pair.getRule2());
-            if (this.ruleTuples.contains(tuple)) {
+            if (this.ruleTuplesToProcess.contains(tuple)) {
                 return computePairs(tuple).contains(pair);
             } else {
-                return this.pairs.contains(pair);
+                return this.pairMap.containsKey(tuple)
+                    && this.pairMap.get(tuple).contains(pair);
             }
         } else {
             return false;
@@ -149,10 +171,49 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     @Override
     public boolean isEmpty() {
-        while (this.pairs.isEmpty() && !this.ruleTuples.isEmpty()) {
-            computeMorePairs();
+        for (Set<CriticalPair> pairSet : this.pairMap.values()) {
+            if (!pairSet.isEmpty()) {
+                return false;
+            }
         }
-        return this.pairs.isEmpty();
+
+        boolean pairsFound = false;
+        while (this.ruleTuplesToProcess.isEmpty() && !pairsFound) {
+            pairsFound |= computeMorePairs().isEmpty();
+        }
+        return pairsFound;
+    }
+
+    Iterator<Set<CriticalPair>> setIterator() {
+        return new Iterator<Set<CriticalPair>>() {
+
+            private RuleTuple current = null;
+            private Iterator<RuleTuple> tupleIt =
+                LazyCriticalPairSet.this.pairMap.keySet().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return this.tupleIt.hasNext();
+            }
+
+            @Override
+            public Set<CriticalPair> next() {
+                this.current = this.tupleIt.next();
+                Set<CriticalPair> result =
+                    LazyCriticalPairSet.this.getPairs(this.current);
+                if (result == null) {
+                    //do not return null
+                    result = Collections.emptySet();
+                }
+                return result;
+            }
+
+            @Override
+            public void remove() {
+                this.tupleIt.remove();
+            }
+
+        };
     }
 
     @Override
@@ -165,15 +226,31 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
             //this is needed to implement remove() correctly
             private boolean currentItReplaced = false;
 
+            Iterator<RuleTuple> keyIt =
+                LazyCriticalPairSet.this.pairMap.keySet().iterator();
+
             Iterator<CriticalPair> currentIt =
-                LazyCriticalPairSet.this.pairs.iterator();
+            //initialize emptySet iterator
+                new HashSet<CriticalPair>().iterator();
 
             @Override
             public boolean hasNext() {
-                if (!this.currentIt.hasNext()) {
-                    this.currentIt = computeMorePairs().iterator();
+                while (this.keyIt.hasNext() && !this.currentIt.hasNext()) {
+                    Set<CriticalPair> pairs =
+                        LazyCriticalPairSet.this.pairMap.get(this.keyIt.next());
+                    if (pairs == null) {
+                        continue;
+                    } else {
+                        this.currentIt = pairs.iterator();
+                    }
                     this.currentItReplaced = true;
-
+                }
+                //if the iterator is still empty, then compute more pairs if possible
+                while (!this.currentIt.hasNext()
+                    && !LazyCriticalPairSet.this.ruleTuplesToProcess.isEmpty()) {
+                    this.currentIt =
+                        LazyCriticalPairSet.this.computeMorePairs().iterator();
+                    this.currentItReplaced = true;
                 }
                 return this.currentIt.hasNext();
             }
@@ -195,7 +272,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
                     if (this.last == null) {
                         throw new IllegalStateException();
                     } else {
-                        LazyCriticalPairSet.this.pairs.remove(this.last);
+                        LazyCriticalPairSet.this.remove(this.last);
                         this.last = null;
                     }
                 } else {
@@ -207,8 +284,15 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     @Override
     public boolean remove(Object o) {
-        if (this.contains(o)) {
-            return this.pairs.remove(o);
+        if (o instanceof CriticalPair) {
+            CriticalPair pair = (CriticalPair) o;
+            RuleTuple tuple = new RuleTuple(pair.getRule1(), pair.getRule2());
+            if (this.ruleTuplesToProcess.contains(tuple)) {
+                computePairs(tuple);
+            }
+            if (this.pairMap.get(tuple) != null) {
+                return this.pairMap.get(tuple).remove(pair);
+            }
         }
         return false;
     }
@@ -217,33 +301,51 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
     public boolean removeAll(Collection<?> c) {
         boolean result = false;
         for (Object obj : c) {
-            result |= remove(obj);
+            result = remove(obj) || result;
         }
         return result;
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        computeAllPairs();
-        return this.pairs.retainAll(c);
+        Iterator<CriticalPair> it = this.iterator();
+        boolean result = false;
+        while (it.hasNext()) {
+            if (!c.contains(it.next())) {
+                it.remove();
+                result = true;
+            }
+        }
+        return result;
     }
 
     @Override
     public int size() {
         computeAllPairs();
-        return this.pairs.size();
+        int result = 0;
+        for (Set<CriticalPair> pairSet : this.pairMap.values()) {
+            result += pairSet.size();
+        }
+        return result;
     }
 
     @Override
     public Object[] toArray() {
-        computeAllPairs();
-        return this.pairs.toArray();
+        return this.toSingleSet().toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        computeAllPairs();
-        return this.pairs.toArray(a);
+        return this.toSingleSet().toArray(a);
+    }
+
+    Set<CriticalPair> toSingleSet() {
+        this.computeAllPairs();
+        Set<CriticalPair> result = new HashSet<CriticalPair>();
+        for (Set<CriticalPair> pairSet : this.pairMap.values()) {
+            result.addAll(pairSet);
+        }
+        return result;
     }
 
 }

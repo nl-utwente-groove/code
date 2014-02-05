@@ -21,6 +21,9 @@ import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
 import groove.transform.Proof;
@@ -28,9 +31,11 @@ import groove.transform.Record;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -67,6 +72,14 @@ class ConfluenceAnalyzer {
      */
     static ConfluenceStatus getStrictlyConfluent(CriticalPair pair,
             Grammar grammar, int searchDepth) {
+        //analyse if the pair is strictly confluent
+        getConfluentPair(pair, grammar, searchDepth);
+        //the result is saved in the critical pair, return this result
+        return pair.getStrictlyConfluent();
+    }
+
+    private static ConfluentPair getConfluentPair(CriticalPair pair,
+            Grammar grammar, int searchDepth) {
         Set<HostGraphWithMorphism> oldStates1 =
             new HashSet<HostGraphWithMorphism>();
         Set<HostGraphWithMorphism> oldStates2 =
@@ -86,8 +99,9 @@ class ConfluenceAnalyzer {
         if (isConfluent(hwm1, hwm2)) {
             //the pair was already strictly confluent
             //System.out.println("Directly Confluent");
-            pair.setStrictlyConfluent(ConfluenceStatus.CONFLUENT, grammar);
-            return ConfluenceStatus.CONFLUENT;
+            pair.setStrictlyConfluent(ConfluenceStatus.STRICTLY_CONFLUENT,
+                grammar);
+            return new ConfluentPair(pair, hwm1);
         }
         newStates1.add(hwm1);
         newStates2.add(hwm2);
@@ -102,16 +116,27 @@ class ConfluenceAnalyzer {
             //create the sets of next states
             Set<HostGraphWithMorphism> nextStates1 =
                 computeNewStates(newStates1, grammar);
-            if (containsConfluentStatePair(nextStates1, oldStates2)) {
-                pair.setStrictlyConfluent(ConfluenceStatus.CONFLUENT, grammar);
-                return ConfluenceStatus.CONFLUENT;
+            HostGraphWithMorphism confluentState =
+                getConfluentState(nextStates1, oldStates2);
+            if (confluentState != null) {
+                pair.setStrictlyConfluent(ConfluenceStatus.STRICTLY_CONFLUENT,
+                    grammar);
+                return new ConfluentPair(pair, confluentState);
             }
             Set<HostGraphWithMorphism> nextStates2 =
                 computeNewStates(newStates2, grammar);
-            if (containsConfluentStatePair(nextStates1, nextStates2)
-                | containsConfluentStatePair(oldStates1, nextStates2)) {
-                pair.setStrictlyConfluent(ConfluenceStatus.CONFLUENT, grammar);
-                return ConfluenceStatus.CONFLUENT;
+            confluentState = getConfluentState(nextStates1, nextStates2);
+            if (confluentState != null) {
+                pair.setStrictlyConfluent(ConfluenceStatus.STRICTLY_CONFLUENT,
+                    grammar);
+                return new ConfluentPair(pair, confluentState);
+            } else {
+                confluentState = getConfluentState(oldStates1, nextStates2);
+                if (confluentState != null) {
+                    pair.setStrictlyConfluent(
+                        ConfluenceStatus.STRICTLY_CONFLUENT, grammar);
+                    return new ConfluentPair(pair, confluentState);
+                }
             }
             //no evidence for confluence has been found, we continue the search
 
@@ -146,12 +171,13 @@ class ConfluenceAnalyzer {
 
             if (oldStates1.size() + oldStates2.size() > searchDepth) {
                 pair.setStrictlyConfluent(ConfluenceStatus.UNDECIDED, grammar);
-                return ConfluenceStatus.UNDECIDED;
+                return null;
             }
         }
         //all states have been analyzed however no proof for strict local confluence has been found
-        pair.setStrictlyConfluent(ConfluenceStatus.NOTCONFLUENT, grammar);
-        return ConfluenceStatus.NOTCONFLUENT;
+        pair.setStrictlyConfluent(ConfluenceStatus.NOT_STICTLY_CONFLUENT,
+            grammar);
+        return null;
     }
 
     private static Set<HostGraphWithMorphism> computeNewStates(
@@ -186,17 +212,16 @@ class ConfluenceAnalyzer {
         return result;
     }
 
-    private static boolean containsConfluentStatePair(
+    private static HostGraphWithMorphism getConfluentState(
             Set<HostGraphWithMorphism> first, Set<HostGraphWithMorphism> second) {
-        //System.out.print(".");
         for (HostGraphWithMorphism hwm1 : first) {
             for (HostGraphWithMorphism hwm2 : second) {
                 if (isConfluent(hwm1, hwm2)) {
-                    return true;
+                    return hwm1;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     private static boolean isConfluent(HostGraphWithMorphism hwm1,
@@ -212,4 +237,316 @@ class ConfluenceAnalyzer {
         }
         return false;
     }
+
+    static int subsumed = 0;
+
+    /**
+     * 
+     * @param pairs a set of critical pairs, 
+     * @return
+     */
+    static ConfluenceStatus analyzePairSet(Set<CriticalPair> pairs,
+            Grammar grammar) {
+        if (pairs.isEmpty()) {
+            //if the set is empty, then all pairs in the set are strictly confluent
+            return ConfluenceStatus.STRICTLY_CONFLUENT;
+        }
+        ConfluenceStatus result = ConfluenceStatus.UNTESTED;
+        assert checkPairSet(pairs);
+        OrderedCriticalPairSet orderedSet = new OrderedCriticalPairSet(pairs);
+        LinkedHashSet<ConfluentPair> confluentPairs =
+            new LinkedHashSet<ConfluentPair>();
+
+        System.out.println("orderedSet size :" + orderedSet.size());
+        for (CriticalPair pair : orderedSet) {
+
+            ConfluenceStatus status = ConfluenceStatus.UNTESTED;
+
+            confluentPair: for (ConfluentPair confluentPair : confluentPairs) {
+                if (confluentPair.getCriticalpair().getHostGraph().nodeCount() == pair.getHostGraph().nodeCount()) {
+                    //since the morphism from the confluentpair must be surjective, it will also be injective (because the sizes are the same)
+                    //therefore the morphism will be an isomorphism which means that the critical pairs are the same
+                    continue;
+                }
+                assert confluentPair.getCriticalpair().getHostGraph().nodeCount() > pair.getHostGraph().nodeCount();
+
+                HostGraphMorphism match =
+                    getInclusion(confluentPair.getCriticalpair(), pair);
+
+                if (match == null) {
+                    continue;
+                }
+
+                HostGraphMorphism transformation =
+                    confluentPair.getConfluentState().getMorphism();
+
+                //check if the matches for the rules commute
+                if (isDInjective(match, transformation)) {
+                    status = ConfluenceStatus.STRICTLY_CONFLUENT;
+                    pair.setStrictlyConfluent(
+                        ConfluenceStatus.STRICTLY_CONFLUENT, grammar);
+                    //remark: there is no need to add this pair to the set of confluent pairs
+                    subsumed++;
+                    System.out.println(subsumed);
+                    System.out.println("Inclusion found");
+                    System.out.println(confluentPair.getCriticalpair().getRule1().getFullName()
+                        + " - "
+                        + confluentPair.getCriticalpair().getRule2().getFullName());
+                    System.out.println(confluentPair.getCriticalpair().getHostGraph());
+                    System.out.println(pair.getHostGraph());
+                    System.out.println(match);
+                    System.out.println();
+                    System.out.println(transformation);
+                    System.out.println();
+                    assert getStrictlyConfluent(pair, grammar) == ConfluenceStatus.STRICTLY_CONFLUENT;
+                    break confluentPair;
+                } else {
+                    System.out.println("not d-injective");
+                }
+            }
+
+            if (status == ConfluenceStatus.UNTESTED) {
+                ConfluentPair confPair =
+                    getConfluentPair(pair, grammar, DEFAULTSEARCHDEPTH);
+                if (confPair != null) {
+                    confluentPairs.add(confPair);
+                }
+                status = pair.getStrictlyConfluent();
+            }
+            result = ConfluenceStatus.getWorstStatus(status, result);
+        }
+        int confluent = 0;
+        for (CriticalPair pair : orderedSet) {
+            if (pair.getStrictlyConfluent() == ConfluenceStatus.STRICTLY_CONFLUENT) {
+                confluent++;
+            }
+        }
+        System.out.println("confluentPairs size :" + confluentPairs.size());
+        System.out.println("Total num confluent pairs :" + confluent);
+
+        return result;
+    }
+
+    private static HostGraphMorphism getInclusion(CriticalPair confluent,
+            CriticalPair target) {
+        HostGraphMorphism result =
+            new HostGraphMorphism(target.getHostGraph().getFactory());
+
+        assert confluent.getRule1().equals(target.getRule1());
+        assert confluent.getRule2().equals(target.getRule2());
+
+        if (buildHostGraphMorphism(result, confluent.getMatch1(),
+            target.getMatch1())
+            && buildHostGraphMorphism(result, confluent.getMatch2(),
+                target.getMatch2())) {
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean buildHostGraphMorphism(HostGraphMorphism morphism,
+            RuleToHostMap confluentMatch, RuleToHostMap targetMatch) {
+        for (RuleNode rn : confluentMatch.nodeMap().keySet()) {
+            HostNode cHostNode = confluentMatch.getNode(rn);
+            HostNode tHostNode = targetMatch.getNode(rn);
+            if (!morphism.nodeMap().containsKey(cHostNode)) {
+                assert cHostNode != null;
+                assert tHostNode != null;
+                morphism.putNode(cHostNode, tHostNode);
+            } else {
+                //if the morphism already has a different target for cHostNode
+                if (!morphism.nodeMap().get(cHostNode).equals(tHostNode)) {
+                    return false;
+                }
+            }
+        }
+
+        assert morphism.nodeMap().values().containsAll(
+            targetMatch.nodeMap().values());
+        assert morphism.nodeMap().keySet().containsAll(
+            confluentMatch.nodeMap().values());
+
+        //repeat for edges
+        for (RuleEdge re : confluentMatch.edgeMap().keySet()) {
+            HostEdge cHostEdge = confluentMatch.getEdge(re);
+            HostEdge tHostEdge = targetMatch.getEdge(re);
+            if (!morphism.nodeMap().containsKey(cHostEdge)) {
+                assert cHostEdge != null;
+                assert tHostEdge != null;
+                morphism.putEdge(cHostEdge, tHostEdge);
+            } else {
+                //if the morphism already has a different target for cHostNode
+                if (!morphism.nodeMap().get(cHostEdge).equals(tHostEdge)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //    private static HostGraphMorphism compose(
+    //            AElementMap<HostNode,HostEdge,RuleNode,RuleEdge> first,
+    //            RuleToHostMap second) {
+    //        HostGraphMorphism result = new HostGraphMorphism(second.getFactory());
+    //
+    //        for (HostNode hn : first.nodeMap().keySet()) {
+    //            RuleNode rn = first.getNode(hn);
+    //            if (rn != null && second.getNode(rn) != null) {
+    //                result.putNode(hn, second.getNode(rn));
+    //            }
+    //        }
+    //        for (HostEdge he : first.edgeMap().keySet()) {
+    //            RuleEdge re = first.getEdge(he);
+    //            if (re != null && second.getEdge(re) != null) {
+    //                result.putEdge(he, second.getEdge(re));
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+
+    private static boolean isDInjective(HostGraphMorphism match,
+            HostGraphMorphism transformation) {
+        ArrayList<HostNode> nodeList =
+            new ArrayList<HostNode>(match.nodeMap().keySet());
+        for (int i = 0; i < nodeList.size(); i++) {
+            for (int j = i + 1; j < nodeList.size(); j++) {
+                HostNode iNode = nodeList.get(i);
+                HostNode jNode = nodeList.get(j);
+                if (match.getNode(iNode).equals(match.getNode(jNode))) {
+                    //check if iNode and jNode are equal or both in the domain of rule
+                    if (iNode.equals(jNode)
+                        || (transformation.getNode(iNode) != null && transformation.getNode(jNode) != null)) {
+                        //everything is okay
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        //repeat the same for the edges
+        ArrayList<HostEdge> edgeList =
+            new ArrayList<HostEdge>(match.edgeMap().keySet());
+        for (int i = 0; i < edgeList.size(); i++) {
+            for (int j = i + 1; j < edgeList.size(); j++) {
+                HostEdge iEdge = edgeList.get(i);
+                HostEdge jEdge = edgeList.get(j);
+                System.out.println("iEdge=" + iEdge + "  jEdge=" + jEdge
+                    + "  equalUnderMatch="
+                    + match.getEdge(iEdge).equals(match.getEdge(jEdge)) + "  "
+                    + match.getEdge(iEdge) + "  " + match.getEdge(jEdge));
+                if (match.getEdge(iEdge).equals(match.getEdge(jEdge))) {
+                    System.out.println("iEdgeAndjEdgeEqual="
+                        + iEdge.equals(jEdge));
+                    System.out.println(transformation.getEdge(iEdge));
+                    System.out.println(transformation.getEdge(jEdge));
+                    //check if iNode and jNode are equal or both in the domain of rule
+                    if (iEdge.equals(jEdge)
+                        || (transformation.getEdge(iEdge) != null && transformation.getEdge(jEdge) != null)) {
+                        //everything is okay
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean checkPairSet(Set<CriticalPair> pairs) {
+        if (pairs.isEmpty()) {
+            return true;
+        }
+        Iterator<CriticalPair> it = pairs.iterator();
+        CriticalPair pair = it.next();
+        Rule rule1 = pair.getRule1();
+        Rule rule2 = pair.getRule2();
+        while (it.hasNext()) {
+            pair = it.next();
+            if (!pair.getRule1().equals(rule1)
+                || !pair.getRule2().equals(rule2)) {
+                return false;
+            }
+        }
+        return true;
+
+    }
+
+}
+
+class ConfluentPair {
+    private final CriticalPair criticalpair;
+    private final HostGraphWithMorphism confluentState;
+
+    ConfluentPair(CriticalPair criticalpair,
+            HostGraphWithMorphism confluentState) {
+        this.criticalpair = criticalpair;
+        this.confluentState = confluentState;
+    }
+
+    public CriticalPair getCriticalpair() {
+        return this.criticalpair;
+    }
+
+    public HostGraphWithMorphism getConfluentState() {
+        return this.confluentState;
+    }
+
+    //    private RuleGraph ruleGraph;
+    //
+    //    private AElementMap<HostNode,HostEdge,RuleNode,RuleEdge> hostToRuleMorphism;
+    //
+    //    RuleGraph getHostAsRuleGraph() {
+    //        if (this.ruleGraph == null) {
+    //            HostGraph hostGraph = this.criticalpair.getHostGraph();
+    //            RuleFactory factory =
+    //                RuleFactory.newInstance(hostGraph.getTypeGraph().getFactory());
+    //            this.ruleGraph = new RuleGraph("hostToRule", factory);
+    //            this.hostToRuleMorphism =
+    //                new AElementMap<HostNode,HostEdge,RuleNode,RuleEdge>(factory) {
+    //                    //default implementation
+    //                };
+    //
+    //            for (HostNode hn : hostGraph.nodeSet()) {
+    //                RuleNode newNode;
+    //                if (hn instanceof DefaultHostNode) {
+    //                    newNode =
+    //                        factory.nodes(hn.getType(), false, null).createNode();
+    //                } else if (hn instanceof ValueNode) {
+    //                    ValueNode valNode = (ValueNode) hn;
+    //                    newNode =
+    //                        factory.createVariableNode(factory.getMaxNodeNr() + 1,
+    //                            valNode.getTerm());
+    //                } else {
+    //                    //this wil not happen since HostNode only has the two above (direct) subtypes
+    //                    assert false;
+    //                    newNode = null;
+    //                }
+    //                this.ruleGraph.addNode(newNode);
+    //                this.hostToRuleMorphism.putNode(hn, newNode);
+    //            }
+    //
+    //            for (HostEdge he : hostGraph.edgeSet()) {
+    //                RuleNode source = this.hostToRuleMorphism.getNode(he.source());
+    //                RuleNode target = this.hostToRuleMorphism.getNode(he.target());
+    //                RuleEdge newEdge =
+    //                    new RuleEdge(source, new RuleLabel(he.label()),
+    //                        he.getType(), target);
+    //                this.ruleGraph.addEdge(newEdge);
+    //                this.hostToRuleMorphism.putEdge(he, newEdge);
+    //            }
+    //        }
+    //        return this.ruleGraph;
+    //    }
+    //
+    //    AElementMap<HostNode,HostEdge,RuleNode,RuleEdge> getHostToRuleMorphism() {
+    //        if (this.hostToRuleMorphism == null) {
+    //            //compute the rulegraph with the morphism
+    //            getHostAsRuleGraph();
+    //        }
+    //        return this.hostToRuleMorphism;
+    //    }
 }
