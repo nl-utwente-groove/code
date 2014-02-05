@@ -16,10 +16,9 @@
  */
 package groove.lts;
 
-import groove.control.CtrlSchedule;
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
+import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.graph.Node;
 
 import java.util.List;
@@ -60,14 +59,31 @@ public interface GraphState extends Node {
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 
-    /** Returns the (non-{@code null}) control state associated with this state. */
-    public CtrlState getCtrlState();
+    /** 
+     * Sets a new actual frame for this state.
+     * This also initialises the prime frame, if that has not been done yet.
+     * If the prime frame has been initialised, it should equal the prime of
+     * the new actual frame.
+     */
+    public void setFrame(CtrlFrame frame);
 
-    /** Returns the (non-{@code null}) control schedule associated with this state. */
-    public CtrlSchedule getSchedule();
+    /**
+     * Returns the prime control frame associated with this state.
+     * The prime frame is the frame with which the state is initialised;
+     * it is fixed for the lifetime of the state.
+     * This is in contrast with the actual frame, which may change as
+     * the state is explored. 
+     */
+    public CtrlFrame getPrimeFrame();
 
-    /** Sets a new control schedule for this state. */
-    public void setSchedule(CtrlSchedule schedule);
+    /** 
+     * Returns the actual control frame associated with this state.
+     * The actual control frame evolves as the state is explored, whereas the
+     * prime frame is fixed at creation time.
+     * The prime frame is always the prime of the actual frame.
+     * @see Frame#getPrime() 
+     */
+    public CtrlFrame getActualFrame();
 
     /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
@@ -96,8 +112,7 @@ public interface GraphState extends Node {
      * transitions of a certain class starting in this state.
      * @param claz class of graph transformations to be returned
      */
-    public Set<? extends GraphTransition> getTransitions(
-            GraphTransition.Class claz);
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz);
 
     /**
      * Adds an outgoing transition to this state, if it is not yet there.
@@ -129,11 +144,11 @@ public interface GraphState extends Node {
 
     /**
      * Returns a list of values for the bound variables of
-     * the control state.
-     * @see #getCtrlState()
-     * @see CtrlState#getBoundVars()
+     * the control frame.
+     * @see #getPrimeFrame()
+     * @see CtrlFrame#getVars()
      */
-    public HostNode[] getBoundNodes();
+    public Object[] getFrameValues();
 
     /** 
      * Returns the current state cache, or a fresh one if the cache is cleared.
@@ -170,11 +185,11 @@ public interface GraphState extends Node {
 
     /** 
      * Declares this state to be done, while also setting its presence.
-     * @param present flag indicating if the state is present
+     * @param presence flag indicating if the state is present
      * @return if {@code false}, the state was already known to be done
      * @see Flag#DONE
      */
-    public boolean setDone(boolean present);
+    public boolean setDone(int presence);
 
     /** 
      * Indicates if this state is done. 
@@ -187,28 +202,38 @@ public interface GraphState extends Node {
     /** 
      * Indicates if this is a transient state.
      * This is the case if and only if the associated control schedule is transient.
-     * @see #getSchedule()
+     * @see #getActualFrame()
      */
     public boolean isTransient();
 
     /** 
-     * Declares this state to be absent from the state space.
-     * An state is absent if after exploration it turns out that a correctness
-     * condition is violated.
-     * The return value indicates if the absentee status was changed as
-     * a result of this call.
-     * @return if {@code false}, the state was already known to be absent
+     * Indicates if this state is known to be not properly part of the state 
+     * space. This is the case if the state is done and not present.
+     * A special case of absence is if the state is erroneous.
+     * @see #isDone()
      */
-    public boolean setAbsent();
-
-    /** Indicates if this state is not properly part of the state space. */
     public boolean isAbsent();
 
     /** 
+     * Indicates the transient depth at which this state is known to
+     * be present.
+     * This is infinite ({@link Integer#MAX_VALUE}) if the state is
+     * erroneous; otherwise it equals the minimum of the transient depths of 
+     * the reachable states.
+     * The state is <i>absent</i> if it is done and not present at 
+     * level 0.
+     * @see #isDone()
+     * @see #isAbsent() 
+     */
+    public int getPresence();
+
+    /** 
      * Indicates if this state is properly part of the state space.
+     * Convenience method for <code>getPresence() == 0</code>.
      * If a state is done, it is either present or absent.
      * @see #isDone()
      * @see #isAbsent() 
+     * @see #getPresence()
      */
     public boolean isPresent();
 
@@ -240,13 +265,6 @@ public interface GraphState extends Node {
          * sequences eventually lead to non-transient or absent states.
          */
         DONE(false),
-        /**
-         * Flag indicating that the graph state is absent.
-         * This is the case if it is closed and transient and has
-         * no reachable non-transient state, or if it violates a right
-         * application condition.
-         */
-        ABSENT(false),
         /** Flag indicating that the state has an error. */
         ERROR(false),
         /** Helper flag used during state space exploration. */
@@ -282,8 +300,28 @@ public interface GraphState extends Node {
             return this.strategy;
         }
 
+        /** Retrieves the presence level from a given status value. */
+        static public int getPresence(int status) {
+            return status >> PRESENCE_SHIFT;
+        }
+
+        /** Retrieves the presence level from a given status value. */
+        static public int setPresence(int status, int presence) {
+            if (presence > MAX_PRESENCE) {
+                throw new IllegalArgumentException(String.format(
+                    "Presence depth %d too large: max. %s", presence, MAX_PRESENCE));
+            }
+            return status | (presence << PRESENCE_SHIFT);
+        }
+
         private final int mask;
         /** Indicates if this flag is exploration-related. */
         private final boolean strategy;
+        /** Number of bits by which a status value has be right-shifted to get 
+         * the presence value.
+         */
+        private final static int PRESENCE_SHIFT = 25;
+        /** Maximal presence value that will fit into the available bits. */
+        private final static int MAX_PRESENCE = 1 << (31 - PRESENCE_SHIFT);
     }
 }

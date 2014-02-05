@@ -28,8 +28,7 @@ import java.util.Collections;
  */
 public class ObjectWrapSpeedTest {
     /** Constructs a version of the test. */
-    public ObjectWrapSpeedTest(String version, Action storeAction,
-            Action getAction) {
+    public ObjectWrapSpeedTest(String version, Action storeAction, Action getAction) {
         this.version = version;
         this.measure = reporter.register(version);
         this.storeAction = storeAction;
@@ -39,8 +38,7 @@ public class ObjectWrapSpeedTest {
     /** Starts the test. */
     public void start() {
         test();
-        System.out.printf("Results for %s: %s ms%n", this.version,
-            this.measure.getTotalTime());
+        System.out.printf("Results for %s: %s ms%n", this.version, this.measure.getTotalTime());
     }
 
     private void test() {
@@ -61,37 +59,45 @@ public class ObjectWrapSpeedTest {
      */
     public static void main(String[] args) {
         new ObjectWrapSpeedTest("Bare", new Action() {
+            @Override
             public Object start(Object object) {
                 return object;
             }
         }, new Action() {
+            @Override
             public Object start(Object object) {
                 return object;
             }
         }).start();
         new ObjectWrapSpeedTest("Wrapped", new Action() {
+            @Override
             public Object start(Object object) {
                 return new Wrapper(object);
             }
         }, new Action() {
+            @Override
             public Object start(Object object) {
                 return ((Wrapper) object).get();
             }
         }).start();
         new ObjectWrapSpeedTest("Set", new Action() {
+            @Override
             public Object start(Object object) {
                 return Collections.singleton(object);
             }
         }, new Action() {
+            @Override
             public Object start(Object object) {
                 return ((Collection<?>) object).iterator().next();
             }
         }).start();
         new ObjectWrapSpeedTest("Array", new Action() {
+            @Override
             public Object start(Object object) {
                 return new Object[] {object};
             }
         }, new Action() {
+            @Override
             public Object start(Object object) {
                 return ((Object[]) object)[0];
             }
@@ -100,8 +106,7 @@ public class ObjectWrapSpeedTest {
 
     static private final int BOUND = 100000000;
 
-    static private final Reporter reporter =
-        Reporter.register(ObjectWrapSpeedTest.class);
+    static private final Reporter reporter = Reporter.register(ObjectWrapSpeedTest.class);
 
     /** Interface for an action to be repeatedly invoked in the test. */
     private static interface Action {

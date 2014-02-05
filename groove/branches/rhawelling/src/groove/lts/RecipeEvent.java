@@ -20,9 +20,8 @@ import groove.grammar.Recipe;
 import groove.transform.Event;
 
 /** Event class for recipe transitions. */
-public class RecipeEvent implements GraphTransitionStub, Event,
-        GraphTransitionKey {
-    /** Constructs a stub from a sequence of rule transitions. */
+public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionKey {
+    /** Constructs an instance from a recipe transition. */
     public RecipeEvent(RecipeTransition trans) {
         this.recipe = trans.getAction();
         this.initial = trans.getInitial().toStub();
@@ -56,8 +55,7 @@ public class RecipeEvent implements GraphTransitionStub, Event,
 
     @Override
     public RecipeTransition toTransition(GraphState source) {
-        return new RecipeTransition(source, this.initial.toTransition(source),
-            this.target);
+        return new RecipeTransition(source, this.initial.toTransition(source), this.target);
     }
 
     @Override

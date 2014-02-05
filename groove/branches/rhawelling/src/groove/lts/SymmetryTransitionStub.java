@@ -33,6 +33,7 @@ class SymmetryTransitionStub extends AbstractRuleTransitionStub {
     }
 
     /** This type of transition stub involves a non-trivial symmetry. */
+    @Override
     public boolean isSymmetry() {
         return true;
     }

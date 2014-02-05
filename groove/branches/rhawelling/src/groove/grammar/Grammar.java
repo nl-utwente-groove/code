@@ -17,6 +17,7 @@
 package groove.grammar;
 
 import groove.control.CtrlAut;
+import groove.control.instance.Automaton;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
@@ -174,8 +175,7 @@ public class Grammar {
         Set<Action> priorityRuleSet = this.priorityActionMap.get(priority);
         // if there is not yet any rule with this priority, create a set
         if (priorityRuleSet == null) {
-            this.priorityActionMap.put(priority, priorityRuleSet =
-                createActionSet());
+            this.priorityActionMap.put(priority, priorityRuleSet = createActionSet());
         }
         priorityRuleSet.add(action);
         this.actions.add(action);
@@ -195,8 +195,7 @@ public class Grammar {
             }
             break;
         default:
-            assert false : String.format("'%s' is not a rule or recipe",
-                action.getFullName());
+            assert false : String.format("'%s' is not a rule or recipe", action.getFullName());
         }
     }
 
@@ -231,11 +230,9 @@ public class Grammar {
     public final void testFixed(boolean value) throws IllegalStateException {
         if (isFixed() != value) {
             if (value) {
-                throw new IllegalStateException(
-                    "Operation not allowed: Rule system is not fixed");
+                throw new IllegalStateException("Operation not allowed: Rule system is not fixed");
             } else {
-                throw new IllegalStateException(
-                    "Operation not allowed: Rule system is fixed");
+                throw new IllegalStateException("Operation not allowed: Rule system is fixed");
             }
         }
     }
@@ -328,6 +325,36 @@ public class Grammar {
     }
 
     /**
+     * The control automaton of this grammar; <code>null</code> if there is
+     * none.
+     */
+    private CtrlAut ctrlAut;
+
+    /**
+     * Sets a control automaton for this grammar. This is only allowed if the
+     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @throws IllegalStateException if the grammar is already fixed
+     * @see #isFixed()
+     */
+    public void setControl(Automaton control) {
+        testFixed(false);
+        this.control = control;
+    }
+
+    /**
+     * Returns the control automaton of this grammar, or <code>null</code> if
+     * there is none.
+     */
+    public Automaton getControl() {
+        return this.control;
+    }
+
+    /**
+     * The control automaton of this grammar.
+     */
+    private Automaton control;
+
+    /**
      * Sets a Prolog environment for this grammar. This is only allowed if the
      * grammar is not yet fixed, as indicated by {@link #isFixed()}.
      * @throws IllegalStateException if the grammar is already fixed
@@ -349,8 +376,7 @@ public class Grammar {
     /** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof Grammar)
-            && getStartGraph().equals(((Grammar) obj).getStartGraph())
+        return (obj instanceof Grammar) && getStartGraph().equals(((Grammar) obj).getStartGraph())
             && super.equals(obj);
     }
 
@@ -383,8 +409,7 @@ public class Grammar {
     /**
      * A mapping from action names to the available transactions.
      */
-    private final Map<String,Recipe> nameRecipeMap =
-        new TreeMap<String,Recipe>();
+    private final Map<String,Recipe> nameRecipeMap = new TreeMap<String,Recipe>();
     /**
      * A mapping from priorities to sets of rules having that priority. The
      * ordering is from high to low priority.
@@ -395,8 +420,7 @@ public class Grammar {
      * Set of all actions, collected separately for purposes of speedup.
      * @see #getActions()
      */
-    private final Set<Action> actions = new TreeSet<Action>(
-        Action.ACTION_COMPARATOR);
+    private final Set<Action> actions = new TreeSet<Action>(Action.ACTION_COMPARATOR);
     /**
      * Set of all rules, being the union of the top-level action rules
      * and the subrules used in recipes.
@@ -421,11 +445,6 @@ public class Grammar {
      * The start graph of this graph grammar.
      */
     private HostGraph startGraph;
-    /**
-     * The control automaton of this grammar; <code>null</code> if there is
-     * none.
-     */
-    private CtrlAut ctrlAut;
     /** The prolog environment derived from the system store. */
     private GrooveEnvironment prologEnvironment;
 

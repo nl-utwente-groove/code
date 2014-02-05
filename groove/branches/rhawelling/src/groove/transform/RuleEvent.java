@@ -21,7 +21,6 @@ import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostGraph;
 import groove.grammar.rule.RuleToHostMap;
 
-
 /**
  * Interface to encode a rule instantiation that provides images to the rule
  * anchors. Together with the host graph, the event uniquely defines a
@@ -95,6 +94,9 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
      * event's system record if there is one.
      */
     public RuleEvent createEvent(Proof proof);
+
+    /** Returns the reuse policy of rule events. */
+    public Reuse getReuse();
 
     /** 
      * Event reuse mode.

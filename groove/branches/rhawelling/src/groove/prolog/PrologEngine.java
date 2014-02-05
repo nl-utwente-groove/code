@@ -86,8 +86,7 @@ public class PrologEngine {
 
         FormatErrorSet errors = new FormatErrorSet();
         for (PrologTextLoaderError error : getEnvironment().getLoadingErrors()) {
-            errors.add("%s", error.getMessage(), error.getLine(),
-                error.getColumn());
+            errors.add("%s", error.getMessage(), error.getLine(), error.getColumn());
         }
         errors.throwException();
     }
@@ -97,18 +96,15 @@ public class PrologEngine {
      * @throws FormatException if there was an error compiling the term
      * @throws PrologException if there was an error executing the query
      */
-    public QueryResult newQuery(String term) throws FormatException,
-        PrologException {
+    public QueryResult newQuery(String term) throws FormatException, PrologException {
         if (this.currentResult != null) {
             // terminate the previous goal
             if (this.currentResult.getReturnValue() == QueryReturnValue.SUCCESS) {
                 this.interpreter.stop(this.currentResult.getGoal());
             }
         }
-        ReadOptions readOpts =
-            new ReadOptions(getEnvironment().getOperatorSet());
-        TermReader termReader =
-            new TermReader(new StringReader(term), getEnvironment());
+        ReadOptions readOpts = new ReadOptions(getEnvironment().getOperatorSet());
+        TermReader termReader = new TermReader(new StringReader(term), getEnvironment());
         try {
             Term goalTerm = termReader.readTermEof(readOpts);
             Goal goal = this.interpreter.prepareGoal(goalTerm);
@@ -117,12 +113,10 @@ public class PrologEngine {
             termReader.close();
             return next();
         } catch (ParseException e) {
-            throw new FormatException("Parse error in Prolog program: %s",
-                e.getMessage());
+            throw new FormatException("Parse error in Prolog program: %s", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
-        return null;
     }
 
     /**
@@ -282,6 +276,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#getExecutionTime()
          */
+        @Override
         public long getExecutionTime() {
             return this.executionTime;
         }
@@ -298,6 +293,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#getReturnValue()
          */
+        @Override
         public QueryReturnValue getReturnValue() {
             return this.returnValue;
         }
@@ -306,6 +302,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#getVariables()
          */
+        @Override
         public Map<String,Object> getVariables() {
             return Collections.unmodifiableMap(this.variables);
         }
@@ -314,6 +311,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#isLastResult()
          */
+        @Override
         public boolean isLastResult() {
             return this.returnValue == QueryReturnValue.SUCCESS_LAST
                 || this.returnValue == QueryReturnValue.FAIL
@@ -324,6 +322,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#nextResult()
          */
+        @Override
         public QueryResult getNextResult() {
             return this.nextResult;
         }
@@ -332,6 +331,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#previousResult()
          */
+        @Override
         public QueryResult getPreviousResult() {
             return this.previousResult;
         }
@@ -340,6 +340,7 @@ public class PrologEngine {
          * (non-Javadoc)
          * @see groove.prolog.QueryResult#queryString()
          */
+        @Override
         public String getQuery() {
             return this.query;
         }

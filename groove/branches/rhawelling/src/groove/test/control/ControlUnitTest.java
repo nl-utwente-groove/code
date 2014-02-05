@@ -88,13 +88,13 @@ public class ControlUnitTest extends CtrlTester {
             assertEquals(1, transList.size());
             CtrlTransition trans = transList.get(0);
             assertTrue(schedule.isInitial());
-            assertEquals(Collections.emptySet(), schedule.getTriedTransitions());
+            assertEquals(Collections.emptySet(), schedule.getPastAttempts());
             assertEquals(Collections.emptySet(), schedule.getTriedCalls());
             assertEquals(Collections.emptySet(), schedule.getTriedRules());
             schedule = schedule.next(false);
             assertFalse(schedule.isInitial());
             assertEquals(Collections.singleton(trans),
-                schedule.getTriedTransitions());
+                schedule.getPastAttempts());
             assertEquals(Collections.singleton(trans.getCall()),
                 schedule.getTriedCalls());
             assertEquals(Collections.singleton("a"), schedule.getTriedRules());

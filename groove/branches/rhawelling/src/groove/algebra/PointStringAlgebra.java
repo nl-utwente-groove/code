@@ -24,8 +24,8 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer>
-        implements PointAlgebra<String> {
+public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer> implements
+        PointAlgebra<String> {
     /** Private constructor for the singleton instance. */
     private PointStringAlgebra() {
         // empty
@@ -81,10 +81,12 @@ public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer>
         return AlgebraFamily.POINT;
     }
 
+    @Override
     public boolean isValue(Object value) {
         return value == singleString;
     }
 
+    @Override
     public String getSymbol(Object value) {
         return singleString;
     }
@@ -99,6 +101,7 @@ public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer>
         return singleString;
     }
 
+    @Override
     public String toValueFromConstant(Constant constant) {
         return singleString;
     }

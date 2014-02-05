@@ -7,8 +7,8 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
-import groove.control.Program;
-import groove.control.symbolic.Term;
+import groove.control.template.Program;
+import groove.control.term.Term;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
@@ -147,14 +147,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * @throws FormatException if the term being built violates static semantic assumptions
      */
     public Term toTerm() throws FormatException {
-        return toTerm(Term.prototype());
-    }
-
-    /**
-     * Constructs a control term from this tree, using a given term prototype.
-     * @throws FormatException if the term being built violates static semantic assumptions
-     */
-    private Term toTerm(Term prot) throws FormatException {
+        Term prot = getInfo().getPrototype();
         Term result = null;
         int arity;
         switch (getType()) {
@@ -167,7 +160,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         }
         Term[] args = new Term[arity];
         for (int i = 0; i < arity; i++) {
-            args[i] = getChild(i).toTerm(prot);
+            args[i] = getChild(i).toTerm();
         }
         switch (getType()) {
         case CtrlParser.BLOCK:
@@ -192,7 +185,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = args[0].alap();
             break;
         case CtrlParser.WHILE:
-            result = args[0].seq(args[1]).whileDo();
+            result = args[0].whileDo(args[1]);
             break;
         case CtrlParser.UNTIL:
             result = args[0].untilDo(args[1]);
@@ -202,18 +195,21 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             checkSuitableForAtom(args[0]);
             if (getChildCount() == 1) {
                 // without else clause
-                result = args[0].tryNoElse();
+                result = args[0].tryOnly();
             } else {
                 result = args[0].tryElse(args[1]);
             }
             break;
         case CtrlParser.IF:
-            if (getChildCount() == 2) {
+            if (args[0].willSucceed()) {
+                // the condition will always succeed, no else required
+                result = args[0].seq(args[1]);
+            } else if (getChildCount() == 2) {
                 // without else clause
-                result = args[0].seq(args[1]).ifNoElse();
+                result = args[0].ifOnly(args[1]);
             } else {
                 // with else clause
-                result = args[0].seq(args[1]).ifElse(args[2]);
+                result = args[0].ifElse(args[1], args[2]);
             }
             break;
         case CtrlParser.CHOICE:
@@ -257,16 +253,18 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         return result;
     }
 
+    /**
+     * Checks the suitability of a given term as body of an atomic block
+     * @throws FormatException if the given term is not suitable to be used 
+     * within an atomic block
+     */
     private void checkSuitableForAtom(Term term) throws FormatException {
-        if (!term.hasClearFinal()) {
-            throw new FormatException(
-                createError("Atomically wrapped argument does not have a clear final state"));
-        }
+        // currently no limiting factors are imposed
     }
 
     /** Constructs a control program from a top-level control tree. */
     public Program toProgram() throws FormatException {
-        assert getType() == CtrlParser.PROGRAM;
+        assert getType() == CtrlParser.PROGRAM && isChecked();
         Program result = new Program(getControlName());
         CtrlTree functions = getChild(2);
         CtrlTree recipes = getChild(3);
@@ -282,7 +280,6 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             CtrlTree recipeTree = recipes.getChild(i);
             result.addProc(recipeTree.toProcedure());
         }
-        result.setFixed();
         return result;
     }
 
@@ -290,7 +287,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     public String toPackageName() {
         assert getType() == CtrlParser.PROGRAM;
         CtrlTree pack = getChild(0);
-        return pack == null ? "" : pack.getText();
+        return pack == null ? "" : pack.getChild(0).getText();
     }
 
     /**
@@ -306,7 +303,11 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         String name = QualName.extend(packName, getChild(0).getText());
         Procedure result = (Procedure) getInfo().getCallable(name);
         CtrlTree bodyTree = getChild(getChildCount() - 1);
-        result.setTerm(bodyTree.toTerm());
+        Term bodyTerm = bodyTree.toTerm();
+        if (getType() == CtrlParser.RECIPE) {
+            checkSuitableForAtom(bodyTerm);
+        }
+        result.setTerm(bodyTerm);
         return result;
     }
 
@@ -360,56 +361,6 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     }
 
     /**
-     * Tests if this term always evolves to a clean final state.
-     * A final state is clean if it has no outgoing transitions.
-     */
-    public boolean hasCleanFinal() {
-        boolean result = false;
-        CtrlTree arg0 = getChildCount() > 0 ? getChild(0) : null;
-        CtrlTree arg1 = getChildCount() > 1 ? getChild(1) : null;
-        switch (getType()) {
-        case CtrlParser.TRUE:
-        case CtrlParser.VAR:
-        case CtrlParser.CALL:
-        case CtrlParser.ANY:
-        case CtrlParser.OTHER:
-            result = true;
-            break;
-        case CtrlParser.STAR:
-        case CtrlParser.ALAP:
-            result = false;
-            break;
-        case CtrlParser.BLOCK:
-            result = true;
-            for (int i = 0; i < getChildCount(); i++) {
-                result &= getChild(i).maybeFinal();
-            }
-            break;
-        case CtrlParser.ATOM:
-        case CtrlParser.SEMI:
-        case CtrlParser.UNTIL:
-            result = arg0.maybeFinal();
-            break;
-        case CtrlParser.WHILE:
-            result = arg0.maybeFinal() && arg1.maybeFinal();
-            break;
-        case CtrlParser.TRY:
-        case CtrlParser.IF:
-            result = arg0.maybeFinal() || (arg1 != null && arg1.maybeFinal());
-            break;
-        case CtrlParser.CHOICE:
-            result = false;
-            for (int i = 0; i < getChildCount(); i++) {
-                result |= getChild(i).maybeFinal();
-            }
-            break;
-        default:
-            assert false;
-        }
-        return result;
-    }
-
-    /**
      * Runs the checker on this tree.
      * @return the resulting (transformed) syntax tree
      */
@@ -419,6 +370,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             return this;
         } else {
             try {
+                getInfo().setControlName(getControlName());
                 CtrlChecker checker = createChecker();
                 CtrlTree result = (CtrlTree) checker.program().getTree();
                 getInfo().getErrors().throwException();
@@ -442,17 +394,13 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * @return the resulting control automaton
      */
     public CtrlAut build() throws FormatException {
-        if (isChecked()) {
-            try {
-                CtrlBuilder builder = createBuilder();
-                CtrlAut result = builder.program().aut;
-                getInfo().getErrors().throwException();
-                return result == null ? null : result.clone(getControlName());
-            } catch (RecognitionException e) {
-                throw new FormatException(e);
-            }
-        } else {
-            return check().build();
+        try {
+            CtrlBuilder builder = check().createBuilder();
+            CtrlAut result = builder.program().aut;
+            getInfo().getErrors().throwException();
+            return result == null ? null : result.clone(getControlName());
+        } catch (RecognitionException e) {
+            throw new FormatException(e);
         }
     }
 

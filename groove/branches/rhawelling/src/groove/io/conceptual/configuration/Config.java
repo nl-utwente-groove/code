@@ -62,23 +62,18 @@ public class Config {
         this.m_xmlPath = xml;
 
         try {
-            this.jaxbContext =
-                JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
+            this.jaxbContext = JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
             this.unmarshaller = this.jaxbContext.createUnmarshaller();
 
             String xmlString =
-                (String) grammar.getResource(ResourceKind.CONFIG,
-                    this.m_xmlPath).toResource();
-            Object obj =
-                this.unmarshaller.unmarshal(new InputSource(new StringReader(
-                    xmlString)));
+                (String) grammar.getResource(ResourceKind.CONFIG, this.m_xmlPath).toResource();
+            Object obj = this.unmarshaller.unmarshal(new InputSource(new StringReader(xmlString)));
 
             Configuration xmlCfg = (Configuration) obj;
             this.m_xmlConfig = xmlCfg;
 
         } catch (JAXBException e) {
-            throw new RuntimeException("Unable to parse configuration "
-                + this.m_xmlPath, e);
+            throw new RuntimeException("Unable to parse configuration " + this.m_xmlPath, e);
         } catch (FormatException e) {
             // ConfigModel doesn't throw this exception, should be safe to ignore
         }
@@ -90,16 +85,13 @@ public class Config {
         this.m_xmlPath = xml;
 
         try {
-            Object obj =
-                this.unmarshaller.unmarshal(new InputSource(new StringReader(
-                    xml)));
+            Object obj = this.unmarshaller.unmarshal(new InputSource(new StringReader(xml)));
 
             Configuration xmlCfg = (Configuration) obj;
             this.m_xmlConfig = xmlCfg;
 
         } catch (JAXBException e) {
-            throw new RuntimeException("Unable to parse configuration "
-                + this.m_xmlPath, e);
+            throw new RuntimeException("Unable to parse configuration " + this.m_xmlPath, e);
         }
 
         loadIdInfo();
@@ -169,8 +161,7 @@ public class Config {
             return id.getName().toString();
         }
 
-        if (mode.equals(IdModeType.DISAMBIGUATE)
-            && this.m_activeTypeModel != null) {
+        if (mode.equals(IdModeType.DISAMBIGUATE) && this.m_activeTypeModel != null) {
             id = this.m_activeTypeModel.getShortId(id);
         }
 
@@ -274,9 +265,7 @@ public class Config {
             // Otherwise, if non-unique, then required (BAG)
             // Otherwise, not required
             boolean useIndex = useIndex(c);
-            boolean unique =
-                c.getContainerType() == Kind.SET
-                    || c.getContainerType() == Kind.ORD;
+            boolean unique = c.getContainerType() == Kind.SET || c.getContainerType() == Kind.ORD;
 
             if (!unique) {
                 return true;
@@ -315,9 +304,7 @@ public class Config {
     public boolean useIndex(Container c) {
         boolean useIndex =
             this.m_xmlConfig.getTypeModel().getFields().getContainers().getOrdering().getType() != OrderType.NONE;
-        useIndex &=
-            c.getContainerType() == Kind.ORD
-                || c.getContainerType() == Kind.SEQ;
+        useIndex &= c.getContainerType() == Kind.ORD || c.getContainerType() == Kind.SEQ;
 
         return useIndex;
     }
@@ -336,26 +323,22 @@ public class Config {
             name += idToName(cmClass.getId());
             if (cmClass.isProper()) {
                 if (usePostfix) {
-                    name +=
-                        this.m_xmlConfig.getGlobal().getStrings().getProperPostfix();
+                    name += this.m_xmlConfig.getGlobal().getStrings().getProperPostfix();
                 }
             } else {
                 // For nullable classes, the postfix is always required (they share the same name with the proper variant)
                 // So ignore usePostfix
-                name +=
-                    this.m_xmlConfig.getGlobal().getStrings().getNullablePostfix();
+                name += this.m_xmlConfig.getGlobal().getStrings().getNullablePostfix();
             }
         } else if (type instanceof Enum) {
             name += idToName(((Enum) type).getId());
             if (usePostfix) {
-                name +=
-                    this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix();
+                name += this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix();
             }
         } else if (type instanceof CustomDataType) {
             name += idToName(((CustomDataType) type).getId());
             if (usePostfix) {
-                name +=
-                    this.m_xmlConfig.getGlobal().getStrings().getDataPostfix();
+                name += this.m_xmlConfig.getGlobal().getStrings().getDataPostfix();
             }
         } else if (type instanceof Tuple) {
             //TODO: tuples have no ID, how to name?
@@ -366,8 +349,7 @@ public class Config {
                 name += "tup";
             }
             if (usePostfix) {
-                name +=
-                    this.m_xmlConfig.getGlobal().getStrings().getTuplePostfix();
+                name += this.m_xmlConfig.getGlobal().getStrings().getTuplePostfix();
             }
         } else if (type instanceof DataType) {
             name += ((DataType) type).typeString();
@@ -380,8 +362,7 @@ public class Config {
 
     public String getName(Field field) {
         String classId = idToName(field.getDefiningClass().getId());
-        return "type:" + classId
-            + this.m_xmlConfig.getGlobal().getIdSeparator() + field.getName();
+        return "type:" + classId + this.m_xmlConfig.getGlobal().getIdSeparator() + field.getName();
     }
 
     public String getContainerName(String base, Container c) {

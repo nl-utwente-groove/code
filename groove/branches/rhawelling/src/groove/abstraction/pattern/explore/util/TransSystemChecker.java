@@ -66,8 +66,8 @@ public final class TransSystemChecker {
         PrintStream out = System.out;
         out.println(String.format("PGTS: states = %s / transitions = %s",
             this.pgts.getStateCount(), this.pgts.getTransitionCount()));
-        out.println(String.format("SGTS: states = %s / transitions = %s",
-            this.sgts.nodeCount(), this.sgts.getTransitionCount()));
+        out.println(String.format("SGTS: states = %s / transitions = %s", this.sgts.nodeCount(),
+            this.sgts.getTransitionCount()));
         compare(out);
     }
 
@@ -102,10 +102,9 @@ public final class TransSystemChecker {
             // do that.
             for (PatternState pState : this.pgts.nodeSet()) {
                 HostGraph pGraph = pState.getGraph().flatten();
-                AbstractGraphState newSState =
-                    new StartGraphState(this.sgts, pGraph);
+                AbstractGraphState newSState = new StartGraphState(this.sgts, pGraph);
                 // We need to copy the control state otherwise the IsoCheck fails.
-                newSState.setCtrlState(pState.getCtrlState());
+                newSState.setFrame(pState.getFrame());
                 GraphState oldSState = this.sgts.addState(newSState);
                 if (oldSState == null) {
                     out.println("FAILED!");

@@ -1,6 +1,6 @@
 package groove.gui.jgraph;
 
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
 import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
@@ -13,8 +13,7 @@ import groove.lts.GraphState;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
-        implements LTSJCell {
+public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> implements LTSJCell {
     /**
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
@@ -42,11 +41,13 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
         }
     }
 
+    @Override
     public void setVisibleFlag(boolean visible) {
         this.visibleFlag = visible;
         setStale(VisualKey.VISIBLE);
     }
 
+    @Override
     public boolean hasVisibleFlag() {
         return this.visibleFlag;
     }
@@ -55,10 +56,10 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
         result.append(HTMLConverter.UNDERLINE_TAG.on(getNode()));
-        CtrlState ctrlState = getNode().getCtrlState();
-        if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
+        CtrlFrame frame = getNode().getPrimeFrame();
+        if (!frame.isStart()) {
             result.append(" with control state ");
-            result.append(HTMLConverter.UNDERLINE_TAG.on(ctrlState));
+            result.append(HTMLConverter.UNDERLINE_TAG.on(frame));
         }
         return result;
     }
@@ -111,9 +112,9 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
     @Override
     public String getNodeIdString() {
         String result = super.getNodeIdString();
-        CtrlState ctrlState = getNode().getCtrlState();
-        if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
-            result += "|" + ctrlState.toString();
+        CtrlFrame frame = getNode().getPrimeFrame();
+        if (!frame.isStart()) {
+            result += "|" + frame.toString();
         }
         return result;
     }
@@ -126,6 +127,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
+    @Override
     public final boolean setActive(boolean active) {
         return setLook(Look.ACTIVE, active);
     }

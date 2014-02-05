@@ -26,12 +26,14 @@ import groove.grammar.host.HostNode;
  */
 public interface RuleTransitionStub extends GraphTransitionStub {
     /** Specialises the return type. */
+    @Override
     Rule getAction();
 
     /**
      * Returns the event that underlies the transition from a given source to
      * this object.
      */
+    @Override
     GraphTransitionKey getKey(GraphState source);
 
     /**
@@ -44,6 +46,7 @@ public interface RuleTransitionStub extends GraphTransitionStub {
      * Returns the target state of this graph transition stub, given
      * a certain source state.
      */
+    @Override
     GraphState getTarget(GraphState source);
 
     /**
@@ -53,6 +56,7 @@ public interface RuleTransitionStub extends GraphTransitionStub {
      * @return A graph transition based on the given source, and the rule,
      *         anchor images and target state stored in this out-transition.
      */
+    @Override
     RuleTransition toTransition(GraphState source);
 
     /**

@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.control.Switch.Kind;
+import groove.control.template.Switch.Kind;
 import groove.control.CtrlPar.Var;
 
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.List;
 public interface Callable {
     /**
      * Returns the kind of callable.
-     * @return the kind of callable; cannot be {@link Kind#CHOICE}
+     * @return the kind of callable; cannot be {@link Kind#VERDICT}
      */
     Kind getKind();
 

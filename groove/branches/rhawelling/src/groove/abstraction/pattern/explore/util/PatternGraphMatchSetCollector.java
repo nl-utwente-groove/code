@@ -22,9 +22,10 @@ import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
+import groove.control.CtrlFrame;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +42,7 @@ public class PatternGraphMatchSetCollector {
     /** The host graph we are working on. */
     private final PatternState state;
     /** The control state of the graph state, if any. */
-    private final CtrlState ctrlState;
+    private final CtrlFrame ctrlState;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -50,7 +51,7 @@ public class PatternGraphMatchSetCollector {
     /** Constructs a match collector for the given state. */
     public PatternGraphMatchSetCollector(PatternState state) {
         this.state = state;
-        this.ctrlState = state.getCtrlState();
+        this.ctrlState = state.getFrame();
         assert this.ctrlState != null;
     }
 
@@ -64,7 +65,7 @@ public class PatternGraphMatchSetCollector {
      */
     public Collection<MatchResult> getMatchSet() {
         Collection<MatchResult> result = new MyHashSet<MatchResult>();
-        CtrlTransition ctrlTrans = firstCall();
+        CtrlStep ctrlTrans = firstCall();
         while (ctrlTrans != null) {
             boolean hasMatches = collectEvents(ctrlTrans, result);
             ctrlTrans = nextCall(hasMatches);
@@ -78,52 +79,49 @@ public class PatternGraphMatchSetCollector {
     }
 
     /** Returns the first rule of the state's control schedule. */
-    private CtrlTransition firstCall() {
-        CtrlTransition result;
-        CtrlSchedule schedule = this.ctrlState.getSchedule();
-        this.state.setSchedule(schedule);
-        if (schedule.isFinished()) {
-            result = null;
-        } else {
+    private CtrlStep firstCall() {
+        CtrlStep result;
+        CtrlSchedule schedule = ((CtrlState) this.ctrlState).getSchedule();
+        this.state.setFrame(schedule);
+        if (schedule.isTrial()) {
             result = schedule.getTransitions().get(0);
             this.transIx = 1;
             this.matchFound = false;
+        } else {
+            result = null;
         }
         return result;
     }
 
     /** Increments the rule iterator, and returns the next rule. */
-    private CtrlTransition nextCall(boolean matchFound) {
-        CtrlTransition result;
-        CtrlSchedule schedule = this.state.getSchedule();
+    private CtrlStep nextCall(boolean matchFound) {
+        CtrlStep result;
+        CtrlSchedule schedule = (CtrlSchedule) this.state.getCurrentFrame();
         this.matchFound |= matchFound;
-        if (schedule.isFinished()) {
+        if (!schedule.isTrial()) {
             result = null;
         } else if (this.transIx < schedule.getTransitions().size()) {
             result = schedule.getTransitions().get(this.transIx);
             this.transIx++;
         } else {
-            this.state.setSchedule(schedule = schedule.next(this.matchFound));
-            if (schedule.isFinished()) {
-                result = null;
-            } else {
+            this.state.setFrame(schedule = schedule.next(this.matchFound));
+            if (schedule.isTrial()) {
                 result = schedule.getTransitions().get(0);
                 this.transIx = 1;
                 this.matchFound = false;
+            } else {
+                result = null;
             }
         }
         return result;
     }
 
     /** Adds the matching events for a given rule into an existing set. */
-    private boolean collectEvents(CtrlTransition ctrlTrans,
-            final Collection<MatchResult> result) {
+    private boolean collectEvents(CtrlStep ctrlTrans, final Collection<MatchResult> result) {
         String ruleName = ctrlTrans.getRule().getLastName();
         PatternRule pRule = this.state.getPGTS().getGrammar().getRule(ruleName);
-        Matcher matcher =
-            MatcherFactory.instance().getMatcher(pRule, isInjective());
-        List<MatchResult> matches =
-            matcher.findMatches(this.state.getGraph(), ctrlTrans);
+        Matcher matcher = MatcherFactory.instance().getMatcher(pRule, isInjective());
+        List<MatchResult> matches = matcher.findMatches(this.state.getGraph(), ctrlTrans);
         result.addAll(matches);
         return !matches.isEmpty();
     }

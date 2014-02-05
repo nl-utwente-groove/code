@@ -17,7 +17,7 @@
 package groove.abstraction.neigh.lts;
 
 import groove.abstraction.neigh.shape.Shape;
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraphMorphism;
@@ -42,8 +42,7 @@ import java.util.Collections;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeNextState extends ShapeState implements GraphNextState,
-        RuleTransitionStub {
+public final class ShapeNextState extends ShapeState implements GraphNextState, RuleTransitionStub {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -59,10 +58,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     /** Default constructor, delegates to super class. 
      * @param number the number of the state to be created; non-negative
      */
-    public ShapeNextState(int number, Shape shape, ShapeState source,
-            MatchResult match) {
-        super(source.getCacheReference(), shape,
-            match.getCtrlTransition().target(), number);
+    public ShapeNextState(int number, Shape shape, ShapeState source, MatchResult match) {
+        super(source.getCacheReference(), shape, match.getStep().target(), number);
         this.transition = new ShapeTransition(source, match, this);
     }
 
@@ -97,8 +94,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying()
-            || getCtrlTransition().isModifying()) {
+        if (getEvent().getRule().isModifying() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
@@ -151,8 +147,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public CtrlTransition getCtrlTransition() {
-        return this.transition.getCtrlTransition();
+    public CtrlStep getStep() {
+        return this.transition.getStep();
     }
 
     @Override
@@ -167,7 +163,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public Recipe getRecipe() {
-        return getCtrlTransition().getRecipe();
+        return getStep().getRecipe();
     }
 
     // ------------------------------------------------------------------------

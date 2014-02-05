@@ -287,15 +287,18 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
          * <tt>remove()</tt> by invoking the graph listeners.
          */
         class MyIterator implements Iterator<EL> {
+            @Override
             public boolean hasNext() {
                 return this.setIterator.hasNext();
             }
 
+            @Override
             public EL next() {
                 this.latest = this.setIterator.next();
                 return this.latest;
             }
 
+            @Override
             public void remove() {
                 this.setIterator.remove();
                 if (this.latest instanceof ShapeNode) {

@@ -77,8 +77,8 @@ public class ErrorDialog extends JDialog {
 
         // setup option pane
         JOptionPane optionPane =
-            new JOptionPane(message, JOptionPane.ERROR_MESSAGE,
-                JOptionPane.DEFAULT_OPTION, null, new Object[] {messagePane});
+            new JOptionPane(message, JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null,
+                new Object[] {messagePane});
         optionPane.add(messagePane, BorderLayout.SOUTH);
         // setup content pane
         Container contentPane = getContentPane();
@@ -196,15 +196,14 @@ public class ErrorDialog extends JDialog {
 
     /** Action listener that takes care of the dialog buttons. */
     protected class ButtonListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (source.equals(ErrorDialog.this.detailsButton)) {
-                ErrorDialog.this.detailsLevel =
-                    (ErrorDialog.this.detailsLevel + 1) % 3;
+                ErrorDialog.this.detailsLevel = (ErrorDialog.this.detailsLevel + 1) % 3;
                 if (ErrorDialog.this.detailsLevel == SOME_DETAILS
                     && ErrorDialog.this.exc.getMessage() == null) {
-                    ErrorDialog.this.detailsLevel =
-                        (ErrorDialog.this.detailsLevel + 1) % 3;
+                    ErrorDialog.this.detailsLevel = (ErrorDialog.this.detailsLevel + 1) % 3;
                 }
                 setDetailsLevel(ErrorDialog.this.detailsLevel);
             } else if (source.equals(ErrorDialog.this.cancelButton)) {

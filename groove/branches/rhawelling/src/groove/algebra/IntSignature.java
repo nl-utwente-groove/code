@@ -189,6 +189,7 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
         /** Value for {@link #toString(Object)}. */
         TO_STRING, ;
 
+        @Override
         public Operator getOperator() {
             if (this.operator == null) {
                 this.operator = Operator.newInstance(SignatureKind.INT, this);

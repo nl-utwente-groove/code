@@ -192,8 +192,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          */
         Collection<Comparator<SearchItem>> computeComparators() {
             Collection<Comparator<SearchItem>> result =
-                new TreeSet<Comparator<SearchItem>>(
-                    new ItemComparatorComparator());
+                new TreeSet<Comparator<SearchItem>>(new ItemComparatorComparator());
             result.add(new ItemTypeComparator());
             result.add(new ConnectedPartsComparator(this.remainingNodes));
             result.add(new LayerComparator());
@@ -204,10 +203,10 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          * Orders search items according to the lexicographic order of the
          * available item comparators.
          */
+        @Override
         public int compare(SearchItem o1, SearchItem o2) {
             int result = 0;
-            Iterator<Comparator<SearchItem>> comparatorIter =
-                this.comparators.iterator();
+            Iterator<Comparator<SearchItem>> comparatorIter = this.comparators.iterator();
             while (result == 0 && comparatorIter.hasNext()) {
                 Comparator<SearchItem> next = comparatorIter.next();
                 result = next.compare(o1, o2);
@@ -224,8 +223,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          */
         Collection<SearchItem> computeSearchItems() {
             Collection<SearchItem> result = new ArrayList<SearchItem>();
-            Set<RuleNode> unmatchedNodes =
-                new LinkedHashSet<RuleNode>(this.remainingNodes);
+            Set<RuleNode> unmatchedNodes = new LinkedHashSet<RuleNode>(this.remainingNodes);
             // First a search item per remaining edge.
             for (RuleEdge edge : this.remainingEdges) {
                 SearchItem edgeItem = createEdgeSearchItem(edge);
@@ -240,8 +238,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
             // Create a negated search item if we have a closure rule.
             if (this.pRule.isClosure()) {
                 RuleEdge edges[] = this.pRule.getCreatorEdges();
-                SearchItem negatedEdge =
-                    createNegatedSearchItem(edges[0], edges[1]);
+                SearchItem negatedEdge = createNegatedSearchItem(edges[0], edges[1]);
                 result.add(negatedEdge);
             }
             return result;
@@ -275,8 +272,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
      * the comparators should be ordered in decreasing priority.
      * @author Arend Rensink
      */
-    private static class ItemComparatorComparator implements
-            Comparator<Comparator<SearchItem>> {
+    private static class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** Empty constructor with the correct visibility. */
         ItemComparatorComparator() {
             // Empty by design.
@@ -286,6 +282,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          * Returns the difference in ratings between the two comparators. This
          * means lower-rated comparators are ordered first.
          */
+        @Override
         public int compare(Comparator<SearchItem> o1, Comparator<SearchItem> o2) {
             return getRating(o1) - getRating(o2);
         }
@@ -312,8 +309,8 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
             if (compClass == LayerComparator.class) {
                 return result;
             }
-            throw new IllegalArgumentException(String.format(
-                "Unknown comparator class %s", compClass));
+            throw new IllegalArgumentException(String.format("Unknown comparator class %s",
+                compClass));
         }
     }
 
@@ -332,6 +329,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          * <li> {@link PatternEdgeSearchItem}s
          * </ul>
          */
+        @Override
         public int compare(SearchItem o1, SearchItem o2) {
             return getRating(o1) - getRating(o2);
         }
@@ -356,8 +354,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
                 return result;
             }
 
-            throw new IllegalArgumentException(String.format(
-                "Unrecognised search item %s", item));
+            throw new IllegalArgumentException(String.format("Unrecognised search item %s", item));
         }
     }
 
@@ -366,8 +363,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
      * parts have been matched.
      * @author Arend Rensink
      */
-    private static class ConnectedPartsComparator implements
-            Comparator<SearchItem> {
+    private static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<RuleNode> remainingNodes) {
             this.remainingNodes = remainingNodes;
         }
@@ -375,6 +371,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
         /**
          * Compares the connect count (higher is better).
          */
+        @Override
         public int compare(SearchItem o1, SearchItem o2) {
             return getConnectCount(o1) - getConnectCount(o2);
         }
@@ -412,6 +409,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
         /**
          * Favours the item with the largest layer.
          */
+        @Override
         public int compare(SearchItem item1, SearchItem item2) {
             if (item1 instanceof NegatedSearchItem) {
                 item1 = ((NegatedSearchItem) item1).inner1;

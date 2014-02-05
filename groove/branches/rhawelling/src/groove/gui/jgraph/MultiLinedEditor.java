@@ -65,10 +65,9 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
      * edited view.
      */
     @Override
-    public Component getGraphCellEditorComponent(org.jgraph.JGraph graph,
-            Object cell, boolean isSelected) {
-        Component component =
-            super.getGraphCellEditorComponent(graph, cell, isSelected);
+    public Component getGraphCellEditorComponent(org.jgraph.JGraph graph, Object cell,
+            boolean isSelected) {
+        Component component = super.getGraphCellEditorComponent(graph, cell, isSelected);
         return component;
     }
 
@@ -92,28 +91,27 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
     }
 
     /** Internal editor implementation. */
-    private static class RealCellEditor extends AbstractCellEditor implements
-            GraphCellEditor, CaretListener {
+    private static class RealCellEditor extends AbstractCellEditor implements GraphCellEditor,
+            CaretListener {
         /**
          * Initialises the editor component with the edit string of the user
          * object of <tt>value</tt> (which is required to be a {@link JCell}).
          */
-        public Component getGraphCellEditorComponent(org.jgraph.JGraph graph,
-                Object value, boolean isSelected) {
+        @Override
+        public Component getGraphCellEditorComponent(org.jgraph.JGraph graph, Object value,
+                boolean isSelected) {
             AspectJCell jCell = (AspectJCell) value;
             // fill the set of labels for autocompletion
             this.labels.clear();
             this.labels.addAll(prefixes);
             AspectJModel jmodel = (AspectJModel) graph.getModel();
-            TypeGraph type =
-                jmodel.getResourceModel().getGrammar().getTypeGraph();
+            TypeGraph type = jmodel.getResourceModel().getGrammar().getTypeGraph();
             for (TypeLabel label : type.getLabels()) {
                 this.labels.add(label.text());
             }
             JTextArea result = getEditorComponent();
             // scale with the jGraph
-            Font font =
-                Options.LABEL_FONT.deriveFont(jCell.getVisuals().getFont());
+            Font font = Options.LABEL_FONT.deriveFont(jCell.getVisuals().getFont());
             font = (font != null) ? font : graph.getFont();
             if (graph.getScale() != 1) {
                 double scale = graph.getScale();
@@ -124,8 +122,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 font = font.deriveFont((float) (font.getSize() * scale));
             }
             result.setFont(font);
-            String editString =
-                ((AspectJCell) value).getUserObject().toEditString();
+            String editString = ((AspectJCell) value).getUserObject().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;
@@ -152,8 +149,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
 
             // substitute a JTextArea's VK_ENTER action with our own that will
             // stop an edit.
-            InputMap focusedInputMap =
-                result.getInputMap(JComponent.WHEN_FOCUSED);
+            InputMap focusedInputMap = result.getInputMap(JComponent.WHEN_FOCUSED);
             focusedInputMap.put(STOP_EDIT_KEY_1, STOP_EDIT_STRING);
             focusedInputMap.put(STOP_EDIT_KEY_2, STOP_EDIT_STRING);
             focusedInputMap.put(NEWLINE_KEY_1, NEWLINE_STRING);
@@ -161,12 +157,12 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             focusedInputMap.put(AUTOCOMPLETE_KEY, AUTOCOMPLETE_STRING);
             result.getActionMap().put(STOP_EDIT_STRING, new StopEditAction());
             result.getActionMap().put(NEWLINE_STRING, new NewlineAction());
-            result.getActionMap().put(AUTOCOMPLETE_STRING,
-                new AutocompleteAction());
+            result.getActionMap().put(AUTOCOMPLETE_STRING, new AutocompleteAction());
             result.addCaretListener(this);
             return result;
         }
 
+        @Override
         public Object getCellEditorValue() {
             return getEditorComponent().getText();
         }
@@ -206,27 +202,23 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 // only do completion if the selection runs up to the end of a label
                 Document document = getDocument();
                 if (max < document.getLength()
-                    && Character.isLetterOrDigit(document.getText(max, 1).charAt(
-                        0))) {
+                    && Character.isLetterOrDigit(document.getText(max, 1).charAt(0))) {
                     return result;
                 }
                 content = document.getText(0, min);
             } catch (BadLocationException exc) {
-                throw new IllegalStateException(String.format(
-                    "Impossible error: %s", exc));
+                throw new IllegalStateException(String.format("Impossible error: %s", exc));
             }
 
             // Find where the label starts
             int start = min;
-            while (start > 0
-                && Character.isLetterOrDigit(content.charAt(start - 1))) {
+            while (start > 0 && Character.isLetterOrDigit(content.charAt(start - 1))) {
                 start--;
             }
             if (start < min) {
                 // Identify the root of the word to be completed
                 String root = content.substring(start);
-                SortedSet<String> tailSet =
-                    RealCellEditor.this.labels.tailSet(root);
+                SortedSet<String> tailSet = RealCellEditor.this.labels.tailSet(root);
                 if (!tailSet.isEmpty()) {
                     Iterator<String> iter = tailSet.iterator();
                     String nextCompletion = iter.next();
@@ -260,16 +252,16 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         private final static String AUTOCOMPLETE_STRING = "autocomplete";
         private final static String NEWLINE_STRING = "newline";
         private final static String STOP_EDIT_STRING = "stop";
-        private final static KeyStroke AUTOCOMPLETE_KEY =
-            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
-        private final static KeyStroke NEWLINE_KEY_1 = KeyStroke.getKeyStroke(
-            KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
-        private final static KeyStroke NEWLINE_KEY_2 = KeyStroke.getKeyStroke(
-            KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
-        private final static KeyStroke STOP_EDIT_KEY_1 =
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        private final static KeyStroke STOP_EDIT_KEY_2 =
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        private final static KeyStroke AUTOCOMPLETE_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
+            InputEvent.CTRL_DOWN_MASK);
+        private final static KeyStroke NEWLINE_KEY_1 = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
+            InputEvent.SHIFT_DOWN_MASK);
+        private final static KeyStroke NEWLINE_KEY_2 = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
+            InputEvent.CTRL_DOWN_MASK);
+        private final static KeyStroke STOP_EDIT_KEY_1 = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
+            0);
+        private final static KeyStroke STOP_EDIT_KEY_2 = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,
+            0);
 
         /** The existing aspect prefixes. */
         private final static List<String> prefixes = new LinkedList<String>();
@@ -293,14 +285,14 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 this.completion = completion;
             }
 
+            @Override
             public void run() {
                 getEditorComponent().removeCaretListener(RealCellEditor.this);
                 Caret caret = getEditorComponent().getCaret();
                 int pos = Math.min(caret.getDot(), caret.getMark());
                 getEditorComponent().replaceSelection(this.completion);
                 getEditorComponent().setCaretPosition(pos);
-                getEditorComponent().moveCaretPosition(
-                    pos + this.completion.length());
+                getEditorComponent().moveCaretPosition(pos + this.completion.length());
                 getEditorComponent().addCaretListener(RealCellEditor.this);
             }
 
@@ -308,6 +300,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         }
 
         private class StopEditAction extends AbstractAction {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 stopCellEditing();
             }
@@ -315,18 +308,19 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
 
         private class NewlineAction extends AbstractAction {
             /** Inserts a newline into the edited text. */
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    getDocument().insertString(
-                        getEditorComponent().getCaretPosition(), "\n", null);
+                    getDocument().insertString(getEditorComponent().getCaretPosition(), "\n", null);
                 } catch (BadLocationException e1) {
-                    e1.printStackTrace();
+                    throw new IllegalStateException(e1);
                 }
             }
         }
 
         private class AutocompleteAction extends AbstractAction {
             /** Inserts a newline into the edited text. */
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 doAutocomplete();
             }

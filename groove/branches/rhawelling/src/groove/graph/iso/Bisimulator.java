@@ -100,8 +100,7 @@ public class Bisimulator extends CertificateStrategy {
                     if (!certStore.add(newCert)) {
                         // this certificate is a duplicate; maybe it is the
                         // smallest
-                        if (BREAK_SYMMETRIES && newCert < minCertValue
-                            || minCert == null) {
+                        if (BREAK_SYMMETRIES && newCert < minCertValue || minCert == null) {
                             minCertValue = newCert;
                             minCert = (MyNodeCert) nodeCert;
                         }
@@ -112,8 +111,7 @@ public class Bisimulator extends CertificateStrategy {
             int newPartitionCount = certStore.size();
             // break symmetry if we have converged on a partition count
             // lower than the node count
-            if (BREAK_SYMMETRIES && iterateCount > 0
-                && newPartitionCount == partitionCount
+            if (BREAK_SYMMETRIES && iterateCount > 0 && newPartitionCount == partitionCount
                 && newPartitionCount < nodeCertCount) {
                 minCert.breakSymmetry();
                 breakSymmetryCount++;
@@ -128,9 +126,7 @@ public class Bisimulator extends CertificateStrategy {
             if (iterateCount == 0) {
                 goOn = true;
             } else if (BREAK_SYMMETRIES) {
-                goOn =
-                    newPartitionCount < nodeCertCount
-                        && breakSymmetryCount < MAX_BREAK_SYMMETRY;
+                goOn = newPartitionCount < nodeCertCount && breakSymmetryCount < MAX_BREAK_SYMMETRY;
             } else {
                 goOn = newPartitionCount > partitionCount;
             }
@@ -174,14 +170,12 @@ public class Bisimulator extends CertificateStrategy {
     }
 
     @Override
-    EdgeCertificate createEdge1Certificate(Edge edge,
-            CertificateStrategy.NodeCertificate source) {
+    EdgeCertificate createEdge1Certificate(Edge edge, CertificateStrategy.NodeCertificate source) {
         return new MyEdge1Cert(edge, (MyNodeCert) source);
     }
 
     @Override
-    EdgeCertificate createEdge2Certificate(Edge edge,
-            CertificateStrategy.NodeCertificate source,
+    EdgeCertificate createEdge2Certificate(Edge edge, CertificateStrategy.NodeCertificate source,
             CertificateStrategy.NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
@@ -253,6 +247,7 @@ public class Bisimulator extends CertificateStrategy {
         /**
          * Returns the current certificate value.
          */
+        @Override
         public int getValue() {
             return this.value;
         }
@@ -280,6 +275,7 @@ public class Bisimulator extends CertificateStrategy {
         abstract protected int computeNewValue();
 
         /** Returns the element of which this is a certificate. */
+        @Override
         public EL getElement() {
             return this.element;
         }
@@ -431,8 +427,7 @@ public class Bisimulator extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge2Cert extends Certificate<Edge> implements
-            EdgeCertificate {
+    static private class MyEdge2Cert extends Certificate<Edge> implements EdgeCertificate {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
@@ -452,8 +447,8 @@ public class Bisimulator extends CertificateStrategy {
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + getElement().label() + "("
-                + this.initValue + ")," + this.target + "]";
+            return "[" + this.source + "," + getElement().label() + "(" + this.initValue + "),"
+                + this.target + "]";
         }
 
         @Override
@@ -465,8 +460,7 @@ public class Bisimulator extends CertificateStrategy {
                 return false;
             }
             MyEdge2Cert other = (MyEdge2Cert) obj;
-            if (!this.source.equals(other.source)
-                || !this.label.equals(other.label)) {
+            if (!this.source.equals(other.source) || !this.label.equals(other.label)) {
                 return false;
             }
             if (this.target == this.source) {
@@ -518,8 +512,7 @@ public class Bisimulator extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge1Cert extends Certificate<Edge> implements
-            EdgeCertificate {
+    static private class MyEdge1Cert extends Certificate<Edge> implements EdgeCertificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public MyEdge1Cert(Edge edge, MyNodeCert source) {
             super(edge);
@@ -532,8 +525,7 @@ public class Bisimulator extends CertificateStrategy {
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + getElement().label() + "("
-                + this.initValue + ")]";
+            return "[" + this.source + "," + getElement().label() + "(" + this.initValue + ")]";
         }
 
         @Override
@@ -545,8 +537,7 @@ public class Bisimulator extends CertificateStrategy {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;
-            return this.source.equals(other.source)
-                && !this.label.equals(other.label);
+            return this.source.equals(other.source) && !this.label.equals(other.label);
         }
 
         /**
@@ -555,8 +546,7 @@ public class Bisimulator extends CertificateStrategy {
         @Override
         protected int computeNewValue() {
             int sourceHashCode = this.source.hashCode();
-            int result =
-                (sourceHashCode << 8) + (sourceHashCode >> 24) + this.value;
+            int result = (sourceHashCode << 8) + (sourceHashCode >> 24) + this.value;
             // source.nextValue += result;
             return result;
         }

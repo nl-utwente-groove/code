@@ -17,7 +17,7 @@
 package groove.gui.layout;
 
 import groove.control.CtrlAut;
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
 import groove.graph.EdgeComparator;
 import groove.graph.NodeComparator;
 import groove.gui.jgraph.CtrlJGraph;
@@ -69,6 +69,7 @@ public class ForestLayouter extends AbstractLayouter {
         // setEnabled(true);
     }
 
+    @Override
     public Layouter newInstance(JGraph<?> jgraph) {
         return new ForestLayouter(getName(), jgraph);
     }
@@ -77,6 +78,7 @@ public class ForestLayouter extends AbstractLayouter {
      * This implementation successively calls <tt>reset()</tt>,
      * <tt>prepare()</tt>, <tt>layout()</tt> and <tt>finish()</tt>.
      */
+    @Override
     public void start() {
         synchronized (this.jGraph) {
             prepare();
@@ -101,11 +103,10 @@ public class ForestLayouter extends AbstractLayouter {
         JGraph<?> jGraph = this.jGraph;
         if (jGraph instanceof LTSJGraph) {
             LTSJModel jModel = ((LTSJGraph) jGraph).getModel();
-            result =
-                Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
+            result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
         } else if (jGraph instanceof CtrlJGraph) {
             JModel<CtrlAut> jModel = ((CtrlJGraph) jGraph).getModel();
-            CtrlState start = jModel.getGraph().getStart();
+            CtrlFrame start = jModel.getGraph().getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {
             result = Arrays.asList(this.jGraph.getSelectionCells());
@@ -140,10 +141,8 @@ public class ForestLayouter extends AbstractLayouter {
                     // it's possible that the edge is displayed as node label
                     // even though it has an explicit layout
                     EdgeView edgeView =
-                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(
-                            edge, false);
-                    if (edgeView != null && edge.getVisuals().isVisible()
-                        && !edge.isGrayedOut()) {
+                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(edge, false);
+                    if (edgeView != null && edge.getVisuals().isVisible() && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
                         JVertex<?> sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
@@ -159,8 +158,7 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 for (JEdge<?> edge : outEdges) {
                     EdgeView edgeView =
-                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(
-                            edge, false);
+                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(edge, false);
                     // add all the points on the edge to the branches of
                     // the
                     // source node
@@ -176,8 +174,7 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 // add the cell to the count map
                 Integer inEdgeCountKey = Integer.valueOf(inEdgeCount);
-                Set<LayoutNode> cellsWithInEdgeCount =
-                    this.inDegreeMap.get(inEdgeCountKey);
+                Set<LayoutNode> cellsWithInEdgeCount = this.inDegreeMap.get(inEdgeCountKey);
                 if (cellsWithInEdgeCount == null) {
                     this.inDegreeMap.put(inEdgeCountKey, cellsWithInEdgeCount =
                         new LinkedHashSet<LayoutNode>());
@@ -201,27 +198,22 @@ public class ForestLayouter extends AbstractLayouter {
         Collection<?> suggestedRoots = getSuggestedRoots();
         if (suggestedRoots != null && !suggestedRoots.isEmpty()) {
             Iterator<LayoutNode> suggestedRootIter =
-                new TransformIterator<Object,LayoutNode>(
-                    suggestedRoots.iterator()) {
+                new TransformIterator<Object,LayoutNode>(suggestedRoots.iterator()) {
                     @Override
                     public LayoutNode toOuter(Object in) {
-                        LayoutNode result =
-                            ForestLayouter.this.layoutMap.get(in);
+                        LayoutNode result = ForestLayouter.this.layoutMap.get(in);
                         if (result == null) {
-                            throw new IllegalArgumentException(
-                                "Suggested root " + in
-                                    + " is not a known graph cell");
+                            throw new IllegalArgumentException("Suggested root " + in
+                                + " is not a known graph cell");
                         }
                         return result;
                     }
                 };
-            rootIter =
-                new NestedIterator<LayoutNode>(suggestedRootIter, rootIter);
+            rootIter = new NestedIterator<LayoutNode>(suggestedRootIter, rootIter);
         }
         // now add real roots to the result list, one by one
         this.roots.clear();
-        Set<LayoutNode> leaves =
-            new LinkedHashSet<LayoutNode>(this.branchMap.keySet());
+        Set<LayoutNode> leaves = new LinkedHashSet<LayoutNode>(this.branchMap.keySet());
         while (rootIter.hasNext()) {
             LayoutNode root = rootIter.next();
             if (leaves.contains(root)) {
@@ -229,18 +221,15 @@ public class ForestLayouter extends AbstractLayouter {
                 leaves.remove(root);
                 // compute reachable cells and take them from leaves
                 // also adjust the branch sets of the reachable leaves
-                Set<LayoutNode> reachableCells =
-                    new LinkedHashSet<LayoutNode>();
+                Set<LayoutNode> reachableCells = new LinkedHashSet<LayoutNode>();
                 reachableCells.add(root);
                 while (!reachableCells.isEmpty()) {
-                    Iterator<LayoutNode> reachableCellIter =
-                        reachableCells.iterator();
+                    Iterator<LayoutNode> reachableCellIter = reachableCells.iterator();
                     Object nextReachableCell = reachableCellIter.next();
                     reachableCellIter.remove();
                     // we might have duplication in the list of reachable cells
                     // so we have to check whether this one was not done before
-                    Set<LayoutNode> branches =
-                        this.branchMap.get(nextReachableCell);
+                    Set<LayoutNode> branches = this.branchMap.get(nextReachableCell);
                     // restrict to branches which were unreached before
                     branches.retainAll(leaves);
                     reachableCells.addAll(branches);
@@ -277,28 +266,26 @@ public class ForestLayouter extends AbstractLayouter {
             leftIndent = new int[levelCount];
             rightIndent = new int[levelCount];
             int fit =
-                (leftLevelCount == 0) ? 0 : leftRightIndent[0]
-                    + rightLeftIndent[0] - MIN_CHILD_DISTANCE;
+                (leftLevelCount == 0) ? 0 : leftRightIndent[0] + rightLeftIndent[0]
+                    - MIN_CHILD_DISTANCE;
             // fit = Math.min(fit, leftWidth);
             for (int level = 0; level < levelCount; level++) {
                 if (level < leftLevelCount && level < rightLevelCount) {
                     fit =
-                        Math.min(fit, leftRightIndent[level]
-                            + rightLeftIndent[level] - MIN_NODE_DISTANCE);
+                        Math.min(fit, leftRightIndent[level] + rightLeftIndent[level]
+                            - MIN_NODE_DISTANCE);
                 }
             }
             for (int level = 0; level < levelCount; level++) {
                 if (level < leftLevelCount) {
                     leftIndent[level] = leftLeftIndent[level];
                 } else {
-                    leftIndent[level] =
-                        rightLeftIndent[level] + leftWidth - fit;
+                    leftIndent[level] = rightLeftIndent[level] + leftWidth - fit;
                 }
                 if (level < rightLevelCount) {
                     rightIndent[level] = rightRightIndent[level];
                 } else {
-                    rightIndent[level] =
-                        leftRightIndent[level] + rightWidth - fit;
+                    rightIndent[level] = leftRightIndent[level] + rightWidth - fit;
                 }
             }
             // shift the right and left branches as required to accommodate the
@@ -330,8 +317,7 @@ public class ForestLayouter extends AbstractLayouter {
         // recursively call layouting for the next level of the tree
         Set<LayoutNode> branches = this.branchMap.get(layoutable);
         Object[] branchLayout =
-            layout(branches,
-                height + VERTICAL_SPACE + (int) layoutable.getHeight());
+            layout(branches, height + VERTICAL_SPACE + (int) layoutable.getHeight());
         int branchWidth = ((Integer) branchLayout[0]).intValue();
         int[] branchLeftIndent = (int[]) branchLayout[1];
         int[] branchRightIndent = (int[]) branchLayout[2];
@@ -339,14 +325,10 @@ public class ForestLayouter extends AbstractLayouter {
         // compute the width and adjust
         int cellWidth = (int) layoutable.getWidth();
         // the top cell should be centered w.r.t. the top level of the branches
-        int branchLevel0LeftIndent =
-            branchLevelCount == 0 ? 0 : branchLeftIndent[0];
-        int branchLevel0RightIndent =
-            branchLevelCount == 0 ? 0 : branchRightIndent[0];
-        int branchLevel0Width =
-            branchWidth - branchLevel0LeftIndent - branchLevel0RightIndent;
-        int rootLeftIndent =
-            branchLevel0LeftIndent + (branchLevel0Width - cellWidth) / 2;
+        int branchLevel0LeftIndent = branchLevelCount == 0 ? 0 : branchLeftIndent[0];
+        int branchLevel0RightIndent = branchLevelCount == 0 ? 0 : branchRightIndent[0];
+        int branchLevel0Width = branchWidth - branchLevel0LeftIndent - branchLevel0RightIndent;
+        int rootLeftIndent = branchLevel0LeftIndent + (branchLevel0Width - cellWidth) / 2;
         int rootRightIndent = branchWidth - rootLeftIndent - cellWidth;
         // create the result for this tree
         int levelCount = branchLevelCount + 1;
@@ -410,8 +392,7 @@ public class ForestLayouter extends AbstractLayouter {
      * The in-degree of all layoutables, as a mapping from
      * {@link groove.gui.layout.AbstractLayouter.LayoutNode} to {@link Integer}.
      */
-    private final Map<Integer,Set<LayoutNode>> inDegreeMap =
-        new TreeMap<Integer,Set<LayoutNode>>();
+    private final Map<Integer,Set<LayoutNode>> inDegreeMap = new TreeMap<Integer,Set<LayoutNode>>();
     /**
      * The branch map of the forest. It maps each layoutable item (jgraph node
      * bounds or edge point) to the set of its children. For a node, all points
@@ -423,19 +404,17 @@ public class ForestLayouter extends AbstractLayouter {
     /** The roots of the forest. */
     private final Collection<LayoutNode> roots = new LinkedList<LayoutNode>();
 
-    private final static Comparator<JEdge<?>> edgeComparator =
-        new Comparator<JEdge<?>>() {
-            @Override
-            public int compare(JEdge<?> o1, JEdge<?> o2) {
-                int result =
-                    nodeComp.compare(o1.getTargetNode(), o2.getTargetNode());
-                if (result != 0) {
-                    return result;
-                }
-                result = edgeComp.compare(o1.getEdge(), o2.getEdge());
+    private final static Comparator<JEdge<?>> edgeComparator = new Comparator<JEdge<?>>() {
+        @Override
+        public int compare(JEdge<?> o1, JEdge<?> o2) {
+            int result = nodeComp.compare(o1.getTargetNode(), o2.getTargetNode());
+            if (result != 0) {
                 return result;
             }
-        };
+            result = edgeComp.compare(o1.getEdge(), o2.getEdge());
+            return result;
+        }
+    };
 
     private final static NodeComparator nodeComp = NodeComparator.instance();
     private final static EdgeComparator edgeComp = EdgeComparator.instance();

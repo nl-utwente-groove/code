@@ -22,6 +22,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.algebra.AlgebraFamily;
+import groove.control.Binding;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
@@ -66,7 +67,7 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlTransition t1 = aut.getStart().getTransitions().iterator().next();
         CtrlTransition t2 = t1.target().getTransitions().iterator().next();
         CtrlTransition t3 = t2.target().getTransitions().iterator().next();
-        assertEquals(2, t3.target().getBoundVars().size());
+        assertEquals(2, t3.target().getVars().size());
     }
 
     /** Tests the default automaton construction. */
@@ -75,8 +76,8 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlAut aut = null;
         try {
             aut =
-                CtrlFactory.instance().buildDefault(
-                    this.prioGrammar.getActions(), AlgebraFamily.DEFAULT);
+                CtrlFactory.instance().buildDefault(this.prioGrammar.getActions(),
+                    AlgebraFamily.DEFAULT);
         } catch (FormatException e) {
             fail();
         }
@@ -97,37 +98,27 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlCall callC1 = new CtrlCall(c1, null);
         CtrlState first = expected.getStart();
         CtrlGuard emptyGuard = new CtrlGuard();
-        CtrlTransition transM3 =
-            first.addTransition(createLabel(callM3, emptyGuard), first);
-        CtrlTransition transC3 =
-            first.addTransition(createLabel(callC3, emptyGuard), first);
+        CtrlTransition transM3 = first.addTransition(createLabel(callM3, emptyGuard), first);
+        CtrlTransition transC3 = first.addTransition(createLabel(callC3, emptyGuard), first);
         CtrlGuard level2AllGuard = new CtrlGuard();
         level2AllGuard.add(transM3);
         level2AllGuard.add(transC3);
-        CtrlTransition transC2 =
-            first.addTransition(createLabel(callC2, level2AllGuard), first);
-        CtrlTransition transM2 =
-            first.addTransition(createLabel(callM2, level2AllGuard), first);
+        CtrlTransition transC2 = first.addTransition(createLabel(callC2, level2AllGuard), first);
+        CtrlTransition transM2 = first.addTransition(createLabel(callM2, level2AllGuard), first);
         CtrlGuard level1AllGuard = new CtrlGuard();
         level1AllGuard.addAll(level2AllGuard);
         level1AllGuard.add(transM2);
         level1AllGuard.add(transC2);
-        CtrlTransition transC1 =
-            first.addTransition(createLabel(callC1, level1AllGuard), first);
-        CtrlTransition transM1 =
-            first.addTransition(createLabel(callM1, level1AllGuard), first);
+        CtrlTransition transC1 = first.addTransition(createLabel(callC1, level1AllGuard), first);
+        CtrlTransition transM1 = first.addTransition(createLabel(callM1, level1AllGuard), first);
         CtrlGuard omegaGuard = new CtrlGuard();
-        omegaGuard.addAll(Arrays.asList(transM1, transM2, transM3, transC1,
-            transC2, transC3));
+        omegaGuard.addAll(Arrays.asList(transM1, transM2, transM3, transC1, transC2, transC3));
         Set<CtrlLabel> expectedSelfLabels =
-            new HashSet<CtrlLabel>(Arrays.asList(transM1.label(),
-                transM2.label(), transM3.label(), transC1.label(),
-                transC2.label(), transC3.label()));
+            new HashSet<CtrlLabel>(Arrays.asList(transM1.label(), transM2.label(), transM3.label(),
+                transC1.label(), transC2.label(), transC3.label()));
         CtrlTransition omega =
-            first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard),
-                expected.getFinal());
-        Set<CtrlLabel> expectedOmegaLabels =
-            new HashSet<CtrlLabel>(Arrays.asList(omega.label()));
+            first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard), expected.getFinal());
+        Set<CtrlLabel> expectedOmegaLabels = new HashSet<CtrlLabel>(Arrays.asList(omega.label()));
         Set<CtrlLabel> actualSelfLabels = new HashSet<CtrlLabel>();
         Set<CtrlLabel> actualOmegaLabels = new HashSet<CtrlLabel>();
         for (CtrlTransition trans : aut.getStart().getTransitions()) {
@@ -207,9 +198,8 @@ public class CtrlBuildTest extends CtrlTester {
     @Test
     public void testAnyOther() {
         buildWrong("any;");
-        buildCorrect(
-            "node x; bNode(out x); iNode(x); iInt(3); iString-oNode(\"a\",_); other;",
-            7, 15);
+        buildCorrect("node x; bNode(out x); iNode(x); iInt(3); iString-oNode(\"a\",_); other;", 7,
+            15);
     }
 
     /** Tests function calls. */
@@ -219,71 +209,65 @@ public class CtrlBuildTest extends CtrlTester {
         buildCorrect("function f() { choice a; or {b;c;} } f(); f(); ", 6, 7);
         buildCorrect("function f() { node x; bNode(out x); } f(); ", 3, 2);
         buildWrong("function f() { g(); } function g() { f(); }");
-        buildCorrect("function g() { b; c; } function f() { a | g(); } f(); ",
-            4, 4);
+        buildCorrect("function g() { b; c; } function f() { a | g(); } f(); ", 4, 4);
     }
 
     /** Tests the variable binding. */
     @Test
     public void testVarBinding() {
         CtrlAut aut =
-            buildCorrect(
-                "node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
+            buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
                 5, 4);
-        CtrlTransition first =
-            aut.getStart().getTransitions().iterator().next();
-        CtrlTransition second =
-            first.target().getTransitions().iterator().next();
-        CtrlTransition third =
-            second.target().getTransitions().iterator().next();
-        CtrlTransition fourth =
-            third.target().getTransitions().iterator().next();
-        assertEquals(1, first.target().getBoundVars().size());
-        assertEquals(2, second.target().getBoundVars().size());
-        assertEquals(0, third.target().getBoundVars().size());
-        assertEquals(0, fourth.target().getBoundVars().size());
-        int[] targetVarBinding = second.getTargetVarBinding();
-        assertEquals(2, targetVarBinding.length);
-        assertEquals(0, targetVarBinding[0]);
-        assertEquals(2, targetVarBinding[1]);
-        int[] parBinding = second.getParBinding();
-        assertEquals(2, parBinding.length);
-        assertEquals(0, parBinding[0]);
-        assertEquals(1, parBinding[1]);
+        CtrlTransition first = aut.getStart().getTransitions().iterator().next();
+        CtrlTransition second = first.target().getTransitions().iterator().next();
+        CtrlTransition third = second.target().getTransitions().iterator().next();
+        CtrlTransition fourth = third.target().getTransitions().iterator().next();
+        assertEquals(1, first.target().getVars().size());
+        assertEquals(2, second.target().getVars().size());
+        assertEquals(0, third.target().getVars().size());
+        assertEquals(0, fourth.target().getVars().size());
+        Binding[] targetVarBind = second.getAssignment().getBindings();
+        assertEquals(2, targetVarBind.length);
+        assertEquals(Binding.Source.VAR, targetVarBind[0].getSource());
+        assertEquals(0, targetVarBind[0].getIndex());
+        assertEquals(Binding.Source.CREATOR, targetVarBind[1].getSource());
+        assertEquals(0, targetVarBind[1].getIndex());
+        Binding[] parBind = second.getCallBinding();
+        assertEquals(2, parBind.length);
+        assertEquals(Binding.Source.VAR, parBind[0].getSource());
+        assertEquals(0, parBind[0].getIndex());
+        assertEquals(null, parBind[1]);
     }
 
     /** Tests the transition scheduling. */
     @Test
     public void testSchedule() {
-        CtrlAut aut =
-            buildCorrect(
-                "choice { try a; } or { if (e|c) c; else d; } or { b;b;}", 5, 9);
+        CtrlAut aut = buildCorrect("choice { try a; } or { if (e|c) c; else d; } or { b;b;}", 5, 9);
         CtrlSchedule s0 = aut.getStart().getSchedule();
         assertEquals("b", getName(s0));
         CtrlSchedule s1 = s0.next(false);
         assertEquals("a", getName(s1));
         assertTrue(s1 == s0.next(true));
         CtrlSchedule s1f = s1.next(false);
-        assertTrue(s1f.isSuccess());
+        assertTrue(s1f.isFinal());
         assertEquals(Arrays.asList("c", "e"), getNames(s1f));
         CtrlSchedule s1ff = s1f.next(false);
         assertEquals("d", getName(s1ff));
-        assertTrue(s1ff.isSuccess());
+        assertTrue(s1ff.isFinal());
         assertSame(s1ff.next(false), s1ff.next(true));
-        assertTrue(s1ff.next(false).isFinished());
+        assertTrue(s1ff.next(false).isFinal());
         CtrlSchedule s1ft = s1f.next(true);
-        assertTrue(s1ft.isSuccess());
-        assertTrue(s1ft.isFinished());
+        assertTrue(s1ft.isFinal());
         CtrlSchedule s1t = s1.next(true);
         assertEquals(Arrays.asList("c", "e"), getNames(s1t));
         CtrlSchedule s1tf = s1t.next(false);
         assertEquals("d", getName(s1tf));
         assertSame(s1tf.next(false), s1tf.next(true));
-        assertTrue(s1tf.next(false).isFinished());
-        assertFalse(s1tf.next(false).isSuccess());
+        assertTrue(s1tf.next(false).isDead());
+        assertFalse(s1tf.next(false).isFinal());
         CtrlSchedule s1tt = s1t.next(true);
-        assertTrue(s1tt.isFinished());
-        assertFalse(s1tt.isSuccess());
+        assertTrue(s1tt.isDead());
+        assertFalse(s1tt.isFinal());
     }
 
     private String getName(CtrlSchedule s) {

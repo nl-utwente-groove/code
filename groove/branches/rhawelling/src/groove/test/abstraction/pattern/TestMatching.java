@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -58,7 +60,7 @@ public class TestMatching {
             view = GrammarModel.newInstance(grammarFile, false);
             typeGraph = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -86,7 +88,7 @@ public class TestMatching {
         try {
             result = view.getHostModel(name).toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         return result;
     }
@@ -96,7 +98,7 @@ public class TestMatching {
         try {
             result = view.getRuleModel(name).toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         return result;
     }

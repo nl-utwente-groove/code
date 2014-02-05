@@ -104,8 +104,7 @@ public class PartitionRefiner extends CertificateStrategy {
             int oldPartitionCount = this.nodePartitionCount;
             // first compute the new edge certificates
             advanceEdgeCerts();
-            advanceNodeCerts(this.iterateCount > 0
-                && this.nodePartitionCount < nodeCertCount);
+            advanceNodeCerts(this.iterateCount > 0 && this.nodePartitionCount < nodeCertCount);
             // we stop the iteration when the number of partitions has not grown
             // moreover, when the number of partitions equals the number of
             // nodes then
@@ -127,8 +126,7 @@ public class PartitionRefiner extends CertificateStrategy {
 
     /** Computes the node and edge certificate arrays. */
     private void iterateCertificates2() {
-        if ((this.strong || BREAK_DUPLICATES)
-            && this.nodePartitionCount < this.nodeCertCount) {
+        if ((this.strong || BREAK_DUPLICATES) && this.nodePartitionCount < this.nodeCertCount) {
             resizeTmpCertIxs();
             // now look for smallest unbroken duplicate certificate (if any)
             int oldPartitionCount;
@@ -158,8 +156,7 @@ public class PartitionRefiner extends CertificateStrategy {
                 if (TRACE) {
                     System.out.printf(
                         "Next iteration done; %d partitions for %d nodes in %d iterations%n",
-                        this.nodePartitionCount, this.nodeCertCount,
-                        this.iterateCount);
+                        this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
                 }
             } while (true);// this.nodePartitionCount < this.nodeCertCount &&
             // this.nodePartitionCount > oldPartitionCount);
@@ -308,8 +305,7 @@ public class PartitionRefiner extends CertificateStrategy {
     }
 
     @Override
-    MyEdge2Cert createEdge2Certificate(Edge edge, NodeCertificate source,
-            NodeCertificate target) {
+    MyEdge2Cert createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -340,22 +336,22 @@ public class PartitionRefiner extends CertificateStrategy {
     /**
      * Store for node certificates, to count the number of partitions
      */
-    static private final TreeHashSet<MyNodeCert> certStore =
-        new TreeHashSet<MyNodeCert>(TREE_RESOLUTION) {
-            /**
-             * For the purpose of this set, only the certificate value is of
-             * importance.
-             */
-            @Override
-            protected boolean allEqual() {
-                return true;
-            }
+    static private final TreeHashSet<MyNodeCert> certStore = new TreeHashSet<MyNodeCert>(
+        TREE_RESOLUTION) {
+        /**
+         * For the purpose of this set, only the certificate value is of
+         * importance.
+         */
+        @Override
+        protected boolean allEqual() {
+            return true;
+        }
 
-            @Override
-            protected int getCode(MyNodeCert key) {
-                return key.getValue();
-            }
-        };
+        @Override
+        protected int getCode(MyNodeCert key) {
+            return key.getValue();
+        }
+    };
     /** Temporary storage for node certificates. */
     static private int[] tmpCertIxs = new int[100];
 
@@ -404,6 +400,7 @@ public class PartitionRefiner extends CertificateStrategy {
         /**
          * Returns the current certificate value.
          */
+        @Override
         final public int getValue() {
             return this.value;
         }
@@ -431,6 +428,7 @@ public class PartitionRefiner extends CertificateStrategy {
         abstract protected int computeNewValue();
 
         /** Returns the element of which this is a certificate. */
+        @Override
         public E getElement() {
             return this.element;
         }
@@ -479,8 +477,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyNodeCert extends MyCert<Node> implements
-            CertificateStrategy.NodeCertificate {
+    static class MyNodeCert extends MyCert<Node> implements CertificateStrategy.NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -655,8 +652,8 @@ public class PartitionRefiner extends CertificateStrategy {
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + this.label + "(" + this.initValue
-                + ")," + this.target + "]";
+            return "[" + this.source + "," + this.label + "(" + this.initValue + ")," + this.target
+                + "]";
         }
 
         /**
@@ -674,8 +671,7 @@ public class PartitionRefiner extends CertificateStrategy {
                 return false;
             }
             MyEdge2Cert other = (MyEdge2Cert) obj;
-            if (!this.source.equals(other.source)
-                || !this.label.equals(other.label)) {
+            if (!this.source.equals(other.source) || !this.label.equals(other.label)) {
                 return false;
             }
             if (this.target == this.source) {
@@ -731,8 +727,7 @@ public class PartitionRefiner extends CertificateStrategy {
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + this.label + "(" + this.initValue
-                + ")]";
+            return "[" + this.source + "," + this.label + "(" + this.initValue + ")]";
         }
 
         /**
@@ -759,8 +754,7 @@ public class PartitionRefiner extends CertificateStrategy {
         @Override
         protected int computeNewValue() {
             int sourceHashCode = this.source.hashCode();
-            int result =
-                (sourceHashCode << 8) + (sourceHashCode >> 24) + this.value;
+            int result = (sourceHashCode << 8) + (sourceHashCode >> 24) + this.value;
             // source.nextValue += result;
             return result;
         }

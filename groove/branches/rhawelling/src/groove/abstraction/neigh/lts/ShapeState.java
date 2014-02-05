@@ -19,8 +19,8 @@ package groove.abstraction.neigh.lts;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.control.CtrlState;
-import groove.control.CtrlTransition;
+import groove.control.CtrlFrame;
+import groove.control.CtrlStep;
 import groove.grammar.Rule;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -34,6 +34,7 @@ import groove.lts.MatchResultSet;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
 import groove.lts.StateReference;
+import groove.lts.StepMatchCollector;
 import groove.transform.Proof;
 import groove.util.cache.CacheReference;
 
@@ -80,8 +81,8 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    protected ShapeState(CacheReference<StateCache> reference, Shape shape,
-            CtrlState ctrlState, int number) {
+    protected ShapeState(CacheReference<StateCache> reference, Shape shape, CtrlFrame frame,
+            int number) {
         super(reference, number);
         this.shape = shape;
         if (!this.shape.isFixed()) {
@@ -92,7 +93,7 @@ public class ShapeState extends AbstractGraphState {
         }
         this.transitions = new ArrayList<GraphTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
-        setCtrlState(ctrlState);
+        setFrame(frame);
     }
 
     /**
@@ -100,8 +101,8 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    public ShapeState(AGTS gts, Shape shape, CtrlState ctrlState, int number) {
-        this(StateReference.newInstance(gts), shape, ctrlState, number);
+    public ShapeState(AGTS gts, Shape shape, CtrlFrame frame, int number) {
+        this(StateReference.newInstance(gts), shape, frame, number);
     }
 
     // ------------------------------------------------------------------------
@@ -114,8 +115,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Set<? extends GraphTransition> getTransitions(
-            GraphTransition.Class claz) {
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz) {
         Set<GraphTransition> result = new HashSet<GraphTransition>();
         for (GraphTransition trans : this.transitions) {
             if (claz.admits(trans)) {
@@ -132,14 +132,13 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public boolean addTransition(GraphTransition transition) {
-        assert transition instanceof ShapeTransition
-            || transition instanceof ShapeNextState : "Invalid transition type.";
+        assert transition instanceof ShapeTransition || transition instanceof ShapeNextState : "Invalid transition type.";
         this.transitions.add(transition);
         return true;
     }
 
     @Override
-    public ShapeNode[] getBoundNodes() {
+    public Object[] getFrameValues() {
         return EMPTY_NODE_ARRAY;
     }
 
@@ -154,8 +153,7 @@ public class ShapeState extends AbstractGraphState {
     protected boolean containsTransition(ActionLabel label, ShapeState target) {
         boolean result = false;
         for (GraphTransition trans : this.transitions) {
-            if (trans.target().getNumber() == target.getNumber()
-                && trans.label().equals(label)) {
+            if (trans.target().getNumber() == target.getNumber() && trans.label().equals(label)) {
                 result = true;
                 break;
             }
@@ -250,14 +248,14 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    protected RuleTransitionStub createTransitionStub(MatchResult match,
-            HostNode[] addedNodes, GraphState target) {
+    protected RuleTransitionStub createTransitionStub(MatchResult match, HostNode[] addedNodes,
+            GraphState target) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected RuleTransitionStub createInTransitionStub(GraphState source,
-            MatchResult match, HostNode[] addedNodes) {
+    protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
+            HostNode[] addedNodes) {
         throw new UnsupportedOperationException();
     }
 
@@ -274,7 +272,8 @@ public class ShapeState extends AbstractGraphState {
 
         @Override
         protected MatchCollector createMatchCollector() {
-            return new ShapeMatchSetCollector();
+            return CtrlFrame.NEW_CONTROL ? new ShapeStepMatchCollector()
+                    : new ShapeMatchSetCollector();
         }
     }
 
@@ -287,12 +286,30 @@ public class ShapeState extends AbstractGraphState {
         }
 
         @Override
-        public MatchResultSet computeMatches(CtrlTransition ct) {
+        public MatchResultSet computeMatches(CtrlStep step) {
             final MatchResultSet result = new MatchResultSet();
-            Rule rule = ct.getRule();
-            for (Proof preMatch : PreMatch.getPreMatches(
-                ShapeState.this.getGraph(), rule)) {
-                result.add(new MatchResult(getRecord().getEvent(preMatch), ct));
+            Rule rule = step.getRule();
+            for (Proof preMatch : PreMatch.getPreMatches(ShapeState.this.getGraph(), rule)) {
+                result.add(new MatchResult(getRecord().getEvent(preMatch), step));
+            }
+            return result;
+        }
+    }
+
+    private class ShapeStepMatchCollector extends StepMatchCollector {
+        /**
+         * Constructs a match collector for this shape.
+         */
+        public ShapeStepMatchCollector() {
+            super(ShapeState.this);
+        }
+
+        @Override
+        public MatchResultSet computeMatches(CtrlStep step) {
+            final MatchResultSet result = new MatchResultSet();
+            Rule rule = step.getRule();
+            for (Proof preMatch : PreMatch.getPreMatches(ShapeState.this.getGraph(), rule)) {
+                result.add(new MatchResult(getRecord().getEvent(preMatch), step));
             }
             return result;
         }

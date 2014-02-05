@@ -52,9 +52,7 @@ public class NumberDialog {
      */
     public boolean showDialog(JFrame frame, String title, int initial) {
         getNumberField().setValue(initial);
-        JDialog dialog =
-            getOptionPane().createDialog(frame,
-                title == null ? DEFAULT_TITLE : title);
+        JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
         return response == getOkButton();
@@ -73,8 +71,8 @@ public class NumberDialog {
         if (this.optionPane == null) {
             this.optionPane =
                 new JOptionPane(getNumberPanel(), JOptionPane.PLAIN_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
-                        getOkButton(), getCancelButton()});
+                    JOptionPane.OK_CANCEL_OPTION, null, new Object[] {getOkButton(),
+                        getCancelButton()});
         }
         return this.optionPane;
     }
@@ -113,8 +111,7 @@ public class NumberDialog {
     /** Returns the text field in which the user is to enter his input. */
     private JPanel getNumberPanel() {
         if (this.numberPanel == null) {
-            this.numberPanel =
-                new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+            this.numberPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
             this.numberPanel.add(new JLabel(this.prompt));
             this.numberPanel.add(getNumberField());
         }
@@ -127,8 +124,7 @@ public class NumberDialog {
     /** Returns the text field in which the user is to enter his input. */
     private JSpinner getNumberField() {
         if (this.numberField == null) {
-            this.numberField =
-                new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+            this.numberField = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
             this.numberField.setPreferredSize(new Dimension(50,
                 this.numberField.getPreferredSize().height));
         }
@@ -152,6 +148,7 @@ public class NumberDialog {
             // empty
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             getOptionPane().setValue(e.getSource());
             getOptionPane().setVisible(false);

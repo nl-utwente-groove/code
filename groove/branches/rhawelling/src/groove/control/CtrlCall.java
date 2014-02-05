@@ -16,12 +16,13 @@
  */
 package groove.control;
 
-import static groove.control.Switch.Kind.OMEGA;
-import static groove.control.Switch.Kind.RULE;
-import groove.control.Switch.Kind;
+import static groove.control.template.Switch.Kind.OMEGA;
+import static groove.control.template.Switch.Kind.RULE;
+import groove.control.template.Switch.Kind;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.host.HostFactory;
 import groove.util.Groove;
 
 import java.util.HashMap;
@@ -160,8 +161,7 @@ public class CtrlCall {
     /** Tests if this control call modifies the input arguments of another. */
     public boolean modifies(CtrlCall other) {
         boolean result = false;
-        if (!(getArgs() == null || getArgs().isEmpty()
-            || other.getArgs() == null || other.getArgs().isEmpty())) {
+        if (!(getArgs() == null || getArgs().isEmpty() || other.getArgs() == null || other.getArgs().isEmpty())) {
             Map<CtrlVar,Integer> otherInVars = other.getInVars();
             for (CtrlVar outVar : getOutVars().keySet()) {
                 if (otherInVars.containsKey(outVar)) {
@@ -227,12 +227,12 @@ public class CtrlCall {
     private Map<CtrlVar,Integer> outVars;
 
     /** Returns the kind of object being called. */
-    public groove.control.Switch.Kind getKind() {
+    public groove.control.template.Switch.Kind getKind() {
         return this.kind;
     }
 
     /** The kind of object being called. */
-    private final groove.control.Switch.Kind kind;
+    private final groove.control.template.Switch.Kind kind;
 
     /** 
      * Returns the arguments of the call.
@@ -306,6 +306,15 @@ public class CtrlCall {
 
     /** The name of the function being called; non-{@code null}. */
     private final String name;
+
+    /** Computes and inserts the host nodes to be used for constant value arguments. */
+    public void initialise(HostFactory factory) {
+        if (getArgs() != null) {
+            for (CtrlPar arg : getArgs()) {
+                arg.initialise(factory);
+            }
+        }
+    }
 
     /** 
      * Returns the call kind of a given grammar action.

@@ -28,9 +28,8 @@ import java.util.Set;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AspectJEdge extends
-        AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements
-        AspectJCell {
+public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex>
+        implements AspectJCell {
     /** 
      * Creates an uninitialised instance.
      */
@@ -104,13 +103,11 @@ public class AspectJEdge extends
         }
         FormatError error = null;
         if (edge.getRole() != EdgeRole.BINARY) {
-            error =
-                new FormatError("Node label '%s' not allowed on edges",
-                    edge.label(), this);
+            error = new FormatError("Node label '%s' not allowed on edges", edge.label(), this);
         } else if (oldEdge != null && !edge.equalsAspects(oldEdge)) {
             error =
-                new FormatError("Conflicting aspects in edge labels %s and %s",
-                    oldEdge.label(), edge.label(), this);
+                new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
+                    edge.label(), this);
         }
         if (error != null) {
             edge = new AspectEdge(edge.source(), edge.label(), edge.target());
@@ -127,8 +124,8 @@ public class AspectJEdge extends
         // maybe update the look 
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
-            if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR
-                || ruleLabel.isNeg() && ruleLabel.getNegOperand().isEmpty()) {
+            if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR || ruleLabel.isNeg()
+                && ruleLabel.getNegOperand().isEmpty()) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
             } else if (!ruleLabel.isAtom()) {
@@ -164,8 +161,7 @@ public class AspectJEdge extends
                 result.append(super.getEdgeDescription());
             }
             if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
-                result.append("<br>"
-                    + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+                result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
             }
         }
         return result;
@@ -240,6 +236,7 @@ public class AspectJEdge extends
         }
     }
 
+    @Override
     public void saveToUserObject() {
         // collect the edge information
         AspectJObject userObject = getUserObject();
@@ -253,8 +250,7 @@ public class AspectJEdge extends
         AspectParser parser = AspectParser.getInstance();
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, role);
-            AspectEdge edge =
-                new AspectEdge(getSourceNode(), label, getTargetNode());
+            AspectEdge edge = new AspectEdge(getSourceNode(), label, getTargetNode());
             edge.setFixed();
             addEdge(edge);
         }

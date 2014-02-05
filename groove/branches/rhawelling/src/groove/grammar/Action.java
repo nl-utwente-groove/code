@@ -17,7 +17,7 @@
 package groove.grammar;
 
 import groove.control.Callable;
-import groove.control.Switch.Kind;
+import groove.control.template.Switch.Kind;
 
 import java.util.Comparator;
 
@@ -31,39 +31,40 @@ public interface Action extends Callable, Comparable<Action> {
      * Returns the action kind of this action.
      * @return the action kind; can only be {@link Kind#RECIPE} or {@link Kind#RULE}.
      */
+    @Override
     public Kind getKind();
 
     /**
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
      */
-    public static final Comparator<Integer> PRIORITY_COMPARATOR =
-        new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2) {
-                return o2.intValue() - o1.intValue();
-            }
+    public static final Comparator<Integer> PRIORITY_COMPARATOR = new Comparator<Integer>() {
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            return o2.intValue() - o1.intValue();
+        }
 
-        };
+    };
 
     /**
      * A comparator for actions. This
      * implementation orders priorities from high to low, and within priority,
      * according to the action (full) name.
      */
-    public static final Comparator<Action> ACTION_COMPARATOR =
-        new Comparator<Action>() {
-            public int compare(Action o1, Action o2) {
-                if (o1 == o2) {
-                    return 0;
-                }
-                int result = o2.getPriority() - o1.getPriority();
-                if (result == 0) {
-                    result = o1.getFullName().compareTo(o2.getFullName());
-                }
-                return result;
+    public static final Comparator<Action> ACTION_COMPARATOR = new Comparator<Action>() {
+        @Override
+        public int compare(Action o1, Action o2) {
+            if (o1 == o2) {
+                return 0;
             }
+            int result = o2.getPriority() - o1.getPriority();
+            if (result == 0) {
+                result = o1.getFullName().compareTo(o2.getFullName());
+            }
+            return result;
+        }
 
-        };
+    };
 
     /**
      * The lowest rule priority, which is also the default value if no explicit

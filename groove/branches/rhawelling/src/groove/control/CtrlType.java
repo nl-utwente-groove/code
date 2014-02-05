@@ -18,6 +18,9 @@ package groove.control;
 
 import groove.algebra.SignatureKind;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Class encapsulating a control type.
  * A control type is either a node type or a data type.
@@ -72,10 +75,23 @@ public enum CtrlType {
      * Returns a data type instance for a given signature.
      * @throws IllegalArgumentException if there is no signature with the given name 
      */
-    public static CtrlType getDataType(SignatureKind signature) {
+    public static CtrlType getType(SignatureKind signature) {
         return valueOf(signature.name());
     }
 
+    /** Returns the control type with a given name. */
+    public static CtrlType getType(String name) {
+        return typeMap.get(name);
+    }
+
+    private static final Map<String,CtrlType> typeMap;
+
+    static {
+        typeMap = new HashMap<String,CtrlType>();
+        for (CtrlType type : CtrlType.values()) {
+            typeMap.put(type.toString(), type);
+        }
+    }
     /** The name of the node type. */
     static public final String NODE_TYPE_NAME = "node";
 }

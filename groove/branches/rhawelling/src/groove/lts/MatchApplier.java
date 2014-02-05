@@ -16,7 +16,10 @@
  */
 package groove.lts;
 
-import groove.control.CtrlTransition;
+import groove.control.Binding;
+import groove.control.CtrlStep;
+import groove.control.Valuator;
+import groove.control.instance.Assignment;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.transform.CompositeEvent;
@@ -45,7 +48,7 @@ public class MatchApplier {
     /**
      * Returns the underlying GTS.
      */
-    public GTS getGTS() {
+    protected GTS getGTS() {
         return this.gts;
     }
 
@@ -58,8 +61,7 @@ public class MatchApplier {
         addTransitionReporter.start();
         RuleTransition transition = null;
         Rule rule = match.getRule();
-        CtrlTransition ctrlTrans = match.getCtrlTransition();
-        if (!ctrlTrans.isModifying()) {
+        if (!match.getStep().isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
             } else if (match.hasRuleTransition()) {
@@ -70,18 +72,15 @@ public class MatchApplier {
                 assert source instanceof GraphNextState;
                 RuleTransition parentTrans = match.getRuleTransition();
                 assert source != parentTrans.source();
-                boolean sourceModifiesCtrl =
-                    ((GraphNextState) source).getCtrlTransition().isModifying();
+                boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
                     && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
-                    RuleTransitionStub siblingOut =
-                        sibling.getOutStub(sourceKey);
+                    RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
-                            createTransition(source, match,
-                                siblingOut.getTarget(sibling),
+                            createTransition(source, match, siblingOut.getTarget(sibling),
                                 siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
@@ -97,8 +96,8 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                    new DefaultRuleTransition(source, match,
-                        freshTarget.getAddedNodes(), isoTarget, true);
+                    new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
+                        isoTarget, true);
             }
         }
         // add transition to gts
@@ -113,33 +112,37 @@ public class MatchApplier {
      */
     private GraphNextState createState(GraphState source, MatchResult match) {
         HostNode[] addedNodes;
-        HostNode[] boundNodes;
+        Object[] frameValues;
         RuleEvent event = match.getEvent();
+        CtrlStep ctrlStep = match.getStep();
+        boolean hasFrameValues = ctrlStep.target().hasVars();
+        RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
-            RuleEffect record =
-                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
-            event.recordEffect(record);
-            record.setFixed();
-            addedNodes = record.getCreatedNodeArray();
+            // compute the frame values at the same time, if there are any
+            Fragment fragment = hasFrameValues ? Fragment.NODE_ALL : Fragment.NODE_CREATION;
+            effectRecord = new RuleEffect(source.getGraph(), fragment);
+            event.recordEffect(effectRecord);
+            effectRecord.setFixed();
+            addedNodes = effectRecord.getCreatedNodeArray();
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        CtrlTransition ctrlTrans = match.getCtrlTransition();
-        if (ctrlTrans.target().getBoundVars().isEmpty()) {
-            boundNodes = EMPTY_NODE_ARRAY;
+        if (hasFrameValues) {
+            // only compute the effect if it has not yet been done
+            if (effectRecord == null) {
+                effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
+                event.recordEffect(effectRecord);
+                effectRecord.setFixed();
+            }
+            frameValues = computeFrameValues(ctrlStep, source, event, effectRecord);
         } else {
-            RuleEffect record =
-                new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
-            event.recordEffect(record);
-            record.setFixed();
-            boundNodes = computeBoundNodes(source, event, ctrlTrans, record);
+            frameValues = EMPTY_NODE_ARRAY;
         }
-        assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
-        return new DefaultGraphNextState(this.gts.nodeCount(),
-            (AbstractGraphState) source, match, addedNodes, boundNodes);
+        return new DefaultGraphNextState(this.gts.nodeCount(), (AbstractGraphState) source, match,
+            addedNodes, frameValues);
     }
 
     /**
@@ -147,24 +150,22 @@ public class MatchApplier {
      * and target state. A final parameter determines if the target state is
      * directly derived from the source, or modulo a symmetry.
      */
-    private RuleTransition createTransition(GraphState source,
-            MatchResult match, GraphState target, boolean symmetry) {
+    private RuleTransition createTransition(GraphState source, MatchResult match,
+            GraphState target, boolean symmetry) {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (match.getRule().hasNodeCreators()) {
-            RuleEffect record =
-                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            RuleEffect record = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
             event.recordEffect(record);
             record.setFixed();
             addedNodes = record.getCreatedNodeArray();
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        return new DefaultRuleTransition(source, match, addedNodes, target,
-            symmetry);
+        return new DefaultRuleTransition(source, match, addedNodes, target, symmetry);
     }
 
     /**
@@ -193,45 +194,64 @@ public class MatchApplier {
         return sourceEvent != matchEvent;
     }
 
-    private HostNode[] computeBoundNodes(GraphState source, RuleEvent event,
-            CtrlTransition ctrlTrans, RuleEffect record) {
-        HostNode[] result;
-        int[] varBinding = ctrlTrans.getTargetVarBinding();
-        int valueCount = varBinding.length;
-        result = new HostNode[valueCount];
-        HostNode[] parentValues = source.getBoundNodes();
-        Rule rule = event.getRule();
-        int anchorSize = rule.getAnchor().size();
+    private Object[] computeFrameValues(CtrlStep step, GraphState source, RuleEvent event,
+            RuleEffect record) {
+        Object[] result = source.getFrameValues();
+        for (Assignment assign : step.getFrameChanges()) {
+            switch (assign.getKind()) {
+            case MODIFY:
+                Object[] values = apply(assign, result, event, record);
+                result = Valuator.replace(result, values);
+                break;
+            case POP:
+                result = Valuator.replace(Valuator.pop(result), assign.apply(result));
+                break;
+            case PUSH:
+                result = Valuator.push(result, assign.apply(result));
+                break;
+            default:
+                assert false;
+            }
+        }
+        return result;
+    }
+
+    /** Computes the frame values for the target of a rule application. */
+    private HostNode[] apply(Assignment assign, Object[] sourceValues,
+            RuleEvent event, RuleEffect record) {
+        Binding[] bindings = assign.getBindings();
+        int valueCount = bindings.length;
+        HostNode[] result = new HostNode[valueCount];
         HostNode[] createdNodes = record.getCreatedNodeArray();
         Set<HostNode> removedNodes = record.getRemovedNodes();
         MergeMap mergeMap = record.getMergeMap();
         for (int i = 0; i < valueCount; i++) {
-            int fromI = varBinding[i];
-            HostNode value;
-            if (fromI >= parentValues.length) {
-                // this is an output parameter of the rule
-                int binding = rule.getParBinding(fromI - parentValues.length);
-                if (binding < anchorSize) {
-                    // the parameter is not a creator node
-                    HostNode sourceValue =
-                        (HostNode) event.getAnchorImage(binding);
-                    value = getNodeImage(sourceValue, mergeMap, removedNodes);
-                } else {
-                    // the parameter is a creator node
-                    value = createdNodes[binding - anchorSize];
-                }
-            } else {
+            Binding bind = bindings[i];
+            HostNode value = null;
+            switch (bind.getSource()) {
+            case VAR:
                 // this is an input parameter of the rule
-                HostNode sourceValue = parentValues[fromI];
+                HostNode sourceValue = Valuator.get(sourceValues, bind);
                 value = getNodeImage(sourceValue, mergeMap, removedNodes);
+                break;
+            case ANCHOR:
+                // the parameter is not a creator node
+                sourceValue = (HostNode) event.getAnchorImage(bind.getIndex());
+                value = getNodeImage(sourceValue, mergeMap, removedNodes);
+                break;
+            case CREATOR:
+                // the parameter is a creator node
+                value = createdNodes[bind.getIndex()];
+                break;
+            default:
+                assert false;
             }
             result[i] = value;
         }
         return result;
     }
 
-    private HostNode getNodeImage(HostNode key, MergeMap mergeMap,
-            Set<HostNode> removedNodes) {
+    private HostNode getNodeImage(HostNode key, MergeMap mergeMap, Set<HostNode> removedNodes) {
         if (mergeMap == null) {
             if (removedNodes == null || !removedNodes.contains(key)) {
                 return key;
@@ -271,12 +291,9 @@ public class MatchApplier {
     private static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 
     /** Reporter for profiling information. */
-    static private final Reporter reporter =
-        Reporter.register(MatchApplier.class);
+    static private final Reporter reporter = Reporter.register(MatchApplier.class);
     /** Profiling aid for adding states. */
-    static public final Reporter addStateReporter =
-        reporter.register("addState");
+    static public final Reporter addStateReporter = reporter.register("addState");
     /** Profiling aid for adding transitions. */
-    static public final Reporter addTransitionReporter =
-        reporter.register("addTransition");
+    static public final Reporter addTransitionReporter = reporter.register("addTransition");
 }

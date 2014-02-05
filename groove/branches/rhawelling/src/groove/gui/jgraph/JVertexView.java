@@ -122,9 +122,7 @@ public class JVertexView extends VertexView {
         Color color = getCellVisuals().getForeground();
         // refresh the text if label or colour have changed
         if (label != this.label || color != this.color) {
-            this.text =
-                HTMLLineFormat.toHtml(
-                    label.toString(HTMLLineFormat.instance()), color);
+            this.text = HTMLLineFormat.toHtml(label.toString(HTMLLineFormat.instance()), color);
             this.label = label;
             this.color = color;
         }
@@ -146,9 +144,8 @@ public class JVertexView extends VertexView {
         // extra border space
         float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
         bounds =
-            new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY()
-                + extra, bounds.getWidth() - 2 * extra, bounds.getHeight() - 2
-                * extra);
+            new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
+                bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
         double left = bounds.getMinX();
         double right = bounds.getMaxX();
         double top = bounds.getMinY();
@@ -158,22 +155,19 @@ public class JVertexView extends VertexView {
         // in manhattan line style, we shift the target point so it is
         // in horizontal or vertical reach of the node
         VisualMap edgeVisuals = ((JEdgeView) edge).getCell().getVisuals();
-        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN
-            && edgeVisuals.getPoints().size() > 2) {
+        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN && edgeVisuals.getPoints().size() > 2) {
             if ((qx < left || qx > right) && (qy < top || qy > bottom)) {
                 if (this == edge.getSource().getParentView()) {
                     // move qy into horizontal reach
                     double dy = qy - cy;
-                    double room =
-                        bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
+                    double room = bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
                     qy =
                         cy + room * Math.signum(dy)
                             * Math.min(Math.abs(dy) / MAX_RATIO_DISTANCE, 1);
                 } else {
                     // move qx into vertical reach
                     double dx = qx - cx;
-                    double room =
-                        bounds.getWidth() * (1 - 2 / DROP_FRACTION) * 0.5;
+                    double room = bounds.getWidth() * (1 - 2 / DROP_FRACTION) * 0.5;
                     qx =
                         cx + room * Math.signum(dx)
                             * Math.min(Math.abs(dx) / MAX_RATIO_DISTANCE, 1);
@@ -200,8 +194,7 @@ public class JVertexView extends VertexView {
         Rectangle2D adornBounds = getAdornBounds();
         // possibly adjust if the target point lies northwest of the adornment
         boolean adorn =
-            adornBounds != null && adornBounds.getMaxX() > qx
-                && adornBounds.getMaxY() > qy;
+            adornBounds != null && adornBounds.getMaxX() > qx && adornBounds.getMaxY() > qy;
         if (adorn) {
             double rx = result.getX();
             double ry = result.getY();
@@ -234,11 +227,10 @@ public class JVertexView extends VertexView {
         if (adornment != null) {
             result = getBounds();
             MyRenderer renderer =
-                ((MyRenderer) getRendererComponent(this.jGraph, false, false,
-                    false));
+                ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
             result =
-                new Rectangle2D.Double(result.getX(), result.getY(),
-                    renderer.adornWidth, renderer.adornHeight);
+                new Rectangle2D.Double(result.getX(), result.getY(), renderer.adornWidth,
+                    renderer.adornHeight);
         }
         return result;
     }
@@ -318,8 +310,9 @@ public class JVertexView extends VertexView {
             setMinimumSize(JAttr.DEFAULT_NODE_SIZE);
         }
 
-        public MyRenderer getRendererComponent(org.jgraph.JGraph graph,
-                CellView view, boolean sel, boolean focus, boolean preview) {
+        @Override
+        public MyRenderer getRendererComponent(org.jgraph.JGraph graph, CellView view, boolean sel,
+                boolean focus, boolean preview) {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
@@ -355,19 +348,15 @@ public class JVertexView extends VertexView {
             }
             setOpaque(visuals.isOpaque());
             Color foreground = visuals.getForeground();
-            setForeground((foreground != null) ? foreground
-                    : graph.getForeground());
+            setForeground((foreground != null) ? foreground : graph.getForeground());
             Color background = visuals.getBackground();
-            background =
-                (background != null) ? background : graph.getBackground();
+            background = (background != null) ? background : graph.getBackground();
             if (emph) {
                 float darken = .95f;
                 background =
-                    new Color(
-                        Math.max((int) (background.getRed() * darken), 0),
-                        Math.max((int) (background.getGreen() * darken), 0),
-                        Math.max((int) (background.getBlue() * darken), 0),
-                        background.getAlpha());
+                    new Color(Math.max((int) (background.getRed() * darken), 0), Math.max(
+                        (int) (background.getGreen() * darken), 0), Math.max(
+                        (int) (background.getBlue() * darken), 0), background.getAlpha());
             }
             setBackground(background);
             Font font = Options.LABEL_FONT.deriveFont(visuals.getFont());
@@ -459,8 +448,7 @@ public class JVertexView extends VertexView {
          */
         private void paintBackground(Graphics2D g, Shape shape) {
             Paint oldPaint = g.getPaint();
-            Paint newPaint =
-                JAttr.createPaint(shape.getBounds(), getBackground());
+            Paint newPaint = JAttr.createPaint(shape.getBounds(), getBackground());
             g.setPaint(newPaint);
             g.fill(shape);
             g.setPaint(oldPaint);
@@ -472,9 +460,9 @@ public class JVertexView extends VertexView {
          */
         private Border createEmptyBorder() {
             Insets i = this.view.getInsets();
-            return i == null ? null : BorderFactory.createEmptyBorder(i.top
-                + EXTRA_BORDER_SPACE, i.left + EXTRA_BORDER_SPACE, i.bottom
-                + EXTRA_BORDER_SPACE, i.right + EXTRA_BORDER_SPACE);
+            return i == null ? null : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
+                i.left + EXTRA_BORDER_SPACE, i.bottom + EXTRA_BORDER_SPACE, i.right
+                    + EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -499,9 +487,8 @@ public class JVertexView extends VertexView {
             // adjust for view insets
             Insets i = computeInsets(result.width, result.height);
             result =
-                new Dimension(result.width + i.left + i.right + 2
-                    * EXTRA_BORDER_SPACE, result.height + i.top + i.bottom + 2
-                    * EXTRA_BORDER_SPACE);
+                new Dimension(result.width + i.left + i.right + 2 * EXTRA_BORDER_SPACE,
+                    result.height + i.top + i.bottom + 2 * EXTRA_BORDER_SPACE);
             // store the insets in the view, to be used
             // when actually drawing the view
             this.view.setInsets(i);
@@ -539,9 +526,7 @@ public class JVertexView extends VertexView {
         private int getAdornWidth(String text) {
             Integer result = this.adornWidthMap.get(text);
             if (result == null) {
-                result =
-                    SwingUtilities.computeStringWidth(
-                        getFontMetrics(ADORNMENT_FONT), text);
+                result = SwingUtilities.computeStringWidth(getFontMetrics(ADORNMENT_FONT), text);
                 this.adornWidthMap.put(text, result);
             }
             return result;
@@ -635,11 +620,11 @@ public class JVertexView extends VertexView {
             case RECTANGLE:
                 return new Rectangle2D.Double(x, y, width, height);
             case ROUNDED:
-                return new RoundRectangle2D.Double(x, y, width, height,
-                    JAttr.NORMAL_ARC_SIZE, JAttr.NORMAL_ARC_SIZE);
+                return new RoundRectangle2D.Double(x, y, width, height, JAttr.NORMAL_ARC_SIZE,
+                    JAttr.NORMAL_ARC_SIZE);
             case OVAL:
-                return new RoundRectangle2D.Double(x, y, width, height,
-                    JAttr.STRONG_ARC_SIZE, JAttr.STRONG_ARC_SIZE);
+                return new RoundRectangle2D.Double(x, y, width, height, JAttr.STRONG_ARC_SIZE,
+                    JAttr.STRONG_ARC_SIZE);
             default:
                 assert false;
                 return null;
@@ -647,8 +632,7 @@ public class JVertexView extends VertexView {
         }
 
         /** Creates a diamond shape inscribed in the bounds given in the parameters. */
-        private Shape createDiamondShape(double x, double y, double width,
-                double height) {
+        private Shape createDiamondShape(double x, double y, double width, double height) {
             GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
             result.moveTo(x + width / 2, y);
             result.lineTo(x + width, y + height / 2);
@@ -699,8 +683,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        protected void firePropertyChange(String propertyName, Object oldValue,
-                Object newValue) {
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
             // Strings get interned...
             if ("text".equals(propertyName)) {
                 super.firePropertyChange(propertyName, oldValue, newValue);
@@ -712,8 +695,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, byte oldValue,
-                byte newValue) {
+        public void firePropertyChange(String propertyName, byte oldValue, byte newValue) {
             // empty
         }
 
@@ -722,8 +704,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, char oldValue,
-                char newValue) {
+        public void firePropertyChange(String propertyName, char oldValue, char newValue) {
             // empty
         }
 
@@ -732,8 +713,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, short oldValue,
-                short newValue) {
+        public void firePropertyChange(String propertyName, short oldValue, short newValue) {
             // empty
         }
 
@@ -742,8 +722,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, int oldValue,
-                int newValue) {
+        public void firePropertyChange(String propertyName, int oldValue, int newValue) {
             // empty
         }
 
@@ -752,8 +731,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, long oldValue,
-                long newValue) {
+        public void firePropertyChange(String propertyName, long oldValue, long newValue) {
             // empty
         }
 
@@ -762,8 +740,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, float oldValue,
-                float newValue) {
+        public void firePropertyChange(String propertyName, float oldValue, float newValue) {
             // empty
         }
 
@@ -772,8 +749,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, double oldValue,
-                double newValue) {
+        public void firePropertyChange(String propertyName, double oldValue, double newValue) {
             // empty
         }
 
@@ -782,8 +758,7 @@ public class JVertexView extends VertexView {
          * href="#override">Implementation Note </a> for more information.
          */
         @Override
-        public void firePropertyChange(String propertyName, boolean oldValue,
-                boolean newValue) {
+        public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
             // empty
         }
 
@@ -817,9 +792,7 @@ public class JVertexView extends VertexView {
         private int adornHeight;
         private int adornWidth;
         /** Mapping from (HTML) text to the preferred size for that text. */
-        private final Map<String,Dimension> sizeMap =
-            new HashMap<String,Dimension>();
-        private final Map<String,Integer> adornWidthMap =
-            new HashMap<String,Integer>();
+        private final Map<String,Dimension> sizeMap = new HashMap<String,Dimension>();
+        private final Map<String,Integer> adornWidthMap = new HashMap<String,Integer>();
     }
 }

@@ -21,6 +21,7 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
+import groove.control.CtrlFrame;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostGraph;
 import groove.grammar.type.TypeEdge;
@@ -125,8 +126,7 @@ public final class AGTS extends GTS {
             // There is no state in the transition system that subsumes the
             // new state. Maybe the new state subsumes some states that are
             // already in the GTS.
-            this.subsumedStatesCount +=
-                newState.markSubsumedStates(this.toRemove);
+            this.subsumedStatesCount += newState.markSubsumedStates(this.toRemove);
             if (this.reachability) {
                 for (ShapeState stateToRemove : this.toRemove) {
                     getStateSet().remove(stateToRemove);
@@ -148,8 +148,7 @@ public final class AGTS extends GTS {
      */
     @Override
     public void addTransition(GraphTransition transition) {
-        assert (transition instanceof ShapeTransition)
-            || (transition instanceof ShapeNextState) : "Type error : "
+        assert (transition instanceof ShapeTransition) || (transition instanceof ShapeNextState) : "Type error : "
             + transition + " is not of type ShapeTransition or ShapeNextState.";
         if (!this.reachability) {
             super.addTransition(transition);
@@ -181,9 +180,10 @@ public final class AGTS extends GTS {
 
     @Override
     protected ShapeState createStartState(HostGraph startGraph) {
-        ShapeState result =
-            new ShapeState(this, (Shape) startGraph,
-                getGrammar().getCtrlAut().getStart(), 0);
+        CtrlFrame startFrame =
+            CtrlFrame.NEW_CONTROL ? getGrammar().getControl().getStart()
+                    : getGrammar().getCtrlAut().getStart();
+        ShapeState result = new ShapeState(this, (Shape) startGraph, startFrame, 0);
         return result;
     }
 
@@ -219,8 +219,7 @@ public final class AGTS extends GTS {
             }
         }
 
-        List<String> absLabelsStr =
-            this.getGrammar().getProperties().getAbstractionLabels();
+        List<String> absLabelsStr = this.getGrammar().getProperties().getAbstractionLabels();
         Set<TypeLabel> absLabels = new MyHashSet<TypeLabel>();
 
         for (TypeLabel unaryLabel : unaryLabels) {
@@ -263,8 +262,7 @@ public final class AGTS extends GTS {
      */
     public AGTS reduceGTS() {
         AGTS result = new AGTS(this);
-        Map<ShapeState,ShapeState> closureMap =
-            new MyHashMap<ShapeState,ShapeState>();
+        Map<ShapeState,ShapeState> closureMap = new MyHashMap<ShapeState,ShapeState>();
         ArrayList<ShapeState> ancestors = new ArrayList<ShapeState>();
 
         // Go over all states and compute the closure for the subsumption
@@ -308,8 +306,7 @@ public final class AGTS extends GTS {
         // Add the shapes to the new GTS.
         List<ShapeState> toProcess = new LinkedList<ShapeState>();
         toProcess.add(this.startState());
-        Map<ShapeState,ShapeState> stateMap =
-            new MyHashMap<ShapeState,ShapeState>();
+        Map<ShapeState,ShapeState> stateMap = new MyHashMap<ShapeState,ShapeState>();
         while (!toProcess.isEmpty()) {
             ShapeState origSrc = toProcess.remove(0);
             ShapeState origSrcClosure = closureMap.get(origSrc);
@@ -320,7 +317,7 @@ public final class AGTS extends GTS {
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
                     new ShapeState(AGTS.this, origSrcClosure.getGraph(),
-                        origSrcClosure.getCtrlState(), 0);
+                        origSrcClosure.getPrimeFrame(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
                 result.startState = reducedSrc;
@@ -334,9 +331,8 @@ public final class AGTS extends GTS {
                 if (reducedTgt == null) {
                     // The target state doesn't exist yet.
                     reducedTgt =
-                        new ShapeNextState(result.nodeCount(),
-                            origTgtClosure.getGraph(), reducedSrc,
-                            origTrans.getKey());
+                        new ShapeNextState(result.nodeCount(), origTgtClosure.getGraph(),
+                            reducedSrc, origTrans.getKey());
                     toProcess.add(origTgtClosure);
                     addReducedState(result, origTgtClosure, reducedTgt);
                     stateMap.put(origTgtClosure, reducedTgt);
@@ -346,8 +342,7 @@ public final class AGTS extends GTS {
                     // Create a new transition.
                     if (!reducedSrc.containsTransition(transLabel, reducedTgt)) {
                         ShapeTransition reducedTrans =
-                            new ShapeTransition(reducedSrc, origTrans.getKey(),
-                                reducedTgt);
+                            new ShapeTransition(reducedSrc, origTrans.getKey(), reducedTgt);
                         result.addTransition(reducedTrans);
                     }
                 }
@@ -357,8 +352,7 @@ public final class AGTS extends GTS {
         return result;
     }
 
-    private void addReducedState(AGTS reducedGTS, ShapeState origState,
-            ShapeState reducedState) {
+    private void addReducedState(AGTS reducedGTS, ShapeState origState, ShapeState reducedState) {
         reducedGTS.addStateWithoutCheck(reducedState);
         if (reducedState instanceof ShapeNextState) {
             reducedGTS.addTransition((RuleTransition) reducedState);
@@ -399,8 +393,7 @@ public final class AGTS extends GTS {
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
-            if (CHECK_CONTROL_LOCATION
-                && myState.getCtrlState() != otherState.getCtrlState()) {
+            if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
                 return false;
             }
 
@@ -430,8 +423,7 @@ public final class AGTS extends GTS {
             // Now let's check for iso...
             ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
             int comparison =
-                checker.compareShapes(myShapeState.getGraph(),
-                    otherShapeState.getGraph()).one();
+                checker.compareShapes(myShapeState.getGraph(), otherShapeState.getGraph()).one();
             if (checker.isDomStrictlyLargerThanCod(comparison)) {
                 // New state subsumes old one.
                 myShapeState.addSubsumedState(otherShapeState);

@@ -35,8 +35,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
-public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
-        Cloneable {
+public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements Cloneable {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
      * new (default) graphs.
@@ -44,7 +43,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
      *         used for its <tt>newGraph()</tt> method.
      */
     static public PlainGraph getPrototype() {
-        return new PlainGraph(NO_NAME);
+        return new PlainGraph(NO_NAME, NONE);
     }
 
     /**
@@ -52,8 +51,9 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
      * @ensure result.isEmpty()
      * @param name the (non-{@code null}) name of the graph.
      */
-    public PlainGraph(String name) {
+    public PlainGraph(String name, GraphRole role) {
         super(name);
+        this.role = role;
     }
 
     /**
@@ -64,9 +64,9 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
      */
     protected PlainGraph(PlainGraph graph) {
         super(graph.getName());
+        this.role = graph.getRole();
         for (Map.Entry<PlainNode,Set<PlainEdge>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<PlainEdge>(
-                edgeEntry.getValue()));
+            this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<PlainEdge>(edgeEntry.getValue()));
         }
     }
 
@@ -81,6 +81,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return edgeSet != null && edgeSet.contains(edge);
     }
 
+    @Override
     public Set<? extends PlainEdge> edgeSet() {
         Set<PlainEdge> result = new LinkedHashSet<PlainEdge>();
         for (Map.Entry<PlainNode,Set<PlainEdge>> edgeEntry : this.edgeMap.entrySet()) {
@@ -94,6 +95,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return Collections.unmodifiableSet(this.edgeMap.get(node));
     }
 
+    @Override
     public Set<? extends PlainNode> nodeSet() {
         return Collections.unmodifiableSet(this.edgeMap.keySet());
     }
@@ -104,8 +106,9 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return result;
     }
 
+    @Override
     public PlainGraph newGraph(String name) {
-        return new PlainGraph(getName());
+        return new PlainGraph(name, getRole());
     }
 
     // ------------------------- COMMANDS ------------------------------
@@ -115,6 +118,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return PlainFactory.instance();
     }
 
+    @Override
     public boolean addNode(PlainNode node) {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsNode(node);
@@ -125,6 +129,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return added;
     }
 
+    @Override
     public boolean addEdge(PlainEdge edge) {
         assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
@@ -136,9 +141,9 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return added;
     }
 
+    @Override
     public boolean removeEdge(PlainEdge edge) {
-        assert !isFixed() : "Trying to remove " + edge
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + edge + " from unmodifiable graph";
         Set<PlainEdge> outEdgeSet = this.edgeMap.get(edge.source());
         boolean removed = outEdgeSet != null && outEdgeSet.remove(edge);
         if (removed) {
@@ -150,8 +155,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
     /** Reimplementation to improve performance. */
     @Override
     public boolean removeNodeContext(PlainNode node) {
-        assert !isFixed() : "Trying to remove " + node
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
         boolean result = false;
         Set<PlainEdge> outEdges = this.edgeMap.remove(node);
         if (outEdges != null) {
@@ -163,8 +167,7 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
                 Iterator<PlainEdge> edgeIter = edgeSet.iterator();
                 while (edgeIter.hasNext()) {
                     PlainEdge edge = edgeIter.next();
-                    if (edge.source().equals(node)
-                        || edge.target().equals(node)) {
+                    if (edge.source().equals(node) || edge.target().equals(node)) {
                         // remove and notify observers
                         edgeIter.remove();
                         fireRemoveEdge(edge);
@@ -176,9 +179,9 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         return result;
     }
 
+    @Override
     public boolean removeNode(PlainNode node) {
-        assert !isFixed() : "Trying to remove " + node
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
         boolean result = false;
         Set<PlainEdge> outEdges = this.edgeMap.remove(node);
         if (outEdges != null) {
@@ -189,21 +192,11 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
     }
 
     /**
-     * Returns the role of this default graph.
-     * If not set explicitly, the role is {@code NONE}.
-     * @see #setRole(GraphRole)
+     * Returns the role of this default graph, as set in the constructor.
      */
+    @Override
     public final GraphRole getRole() {
         return this.role;
-    }
-
-    /**
-     * Changes the role of this default graph.
-     * This is only allowed if the graph is not yet fixed.
-     * @param role the new role of the graph
-     */
-    public final void setRole(GraphRole role) {
-        this.role = role;
     }
 
     /**
@@ -215,5 +208,5 @@ public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
         new LinkedHashMap<PlainNode,Set<PlainEdge>>();
 
     /** The role of this default graph. */
-    private GraphRole role = NONE;
+    private final GraphRole role;
 }

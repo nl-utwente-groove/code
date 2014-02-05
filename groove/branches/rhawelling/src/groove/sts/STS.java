@@ -1,6 +1,8 @@
 package groove.sts;
 
 import groove.algebra.Constant;
+import groove.control.Binding;
+import groove.control.Binding.Source;
 import groove.grammar.Condition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
@@ -69,10 +71,8 @@ public class STS {
         this.locationMap = new HashMap<HostGraph,Location>();
         this.switchRelationMap = new HashMap<Object,SwitchRelation>();
         this.gates = new HashSet<Gate>();
-        this.interactionVariables =
-            new HashMap<Pair<VariableNode,Rule>,InteractionVariable>();
-        this.locationVariables =
-            new HashMap<Pair<Integer,TypeLabel>,LocationVariable>();
+        this.interactionVariables = new HashMap<Pair<VariableNode,Rule>,InteractionVariable>();
+        this.locationVariables = new HashMap<Pair<Integer,TypeLabel>,LocationVariable>();
         this.ruleInspector = RuleInspector.getInstance();
     }
 
@@ -83,8 +83,8 @@ public class STS {
      * @return The location variable.
      */
     public LocationVariable getLocationVariable(HostEdge edge) {
-        return this.locationVariables.get(new Pair<Integer,TypeLabel>(
-            edge.source().getNumber(), edge.label()));
+        return this.locationVariables.get(new Pair<Integer,TypeLabel>(edge.source().getNumber(),
+            edge.label()));
     }
 
     /**
@@ -98,10 +98,9 @@ public class STS {
     public LocationVariable addLocationVariable(HostEdge edge, Object init) {
         ValueNode node = (ValueNode) edge.target();
         String label = LocationVariable.createLocationVariableLabel(edge);
-        LocationVariable v =
-            new LocationVariable(label, node.getSignature(), init);
-        this.locationVariables.put(new Pair<Integer,TypeLabel>(
-            edge.source().getNumber(), edge.label()), v);
+        LocationVariable v = new LocationVariable(label, node.getSignature(), init);
+        this.locationVariables.put(
+            new Pair<Integer,TypeLabel>(edge.source().getNumber(), edge.label()), v);
         return v;
     }
 
@@ -152,10 +151,8 @@ public class STS {
      * @param rule The rule where the node is in.
      * @return The interaction variable.
      */
-    public InteractionVariable getInteractionVariable(VariableNode node,
-            Rule rule) {
-        return this.interactionVariables.get(new Pair<VariableNode,Rule>(node,
-            rule));
+    public InteractionVariable getInteractionVariable(VariableNode node, Rule rule) {
+        return this.interactionVariables.get(new Pair<VariableNode,Rule>(node, rule));
     }
 
     /**
@@ -173,14 +170,10 @@ public class STS {
      * @param rule The rule where the node is in.
      * @return The interaction variable.
      */
-    public InteractionVariable addInteractionVariable(VariableNode node,
-            Rule rule) {
-        String label =
-            InteractionVariable.createInteractionVariableLabel(rule, node);
-        InteractionVariable v =
-            new InteractionVariable(label, node.getSignature());
-        this.interactionVariables.put(new Pair<VariableNode,Rule>(node, rule),
-            v);
+    public InteractionVariable addInteractionVariable(VariableNode node, Rule rule) {
+        String label = InteractionVariable.createInteractionVariableLabel(rule, node);
+        InteractionVariable v = new InteractionVariable(label, node.getSignature());
+        this.interactionVariables.put(new Pair<VariableNode,Rule>(node, rule), v);
         return v;
     }
 
@@ -200,8 +193,8 @@ public class STS {
      * Removes a switch relation from this STS.
      */
     public void removeSwitchRelation(SwitchRelation relation) {
-        this.switchRelationMap.remove(SwitchRelation.getSwitchIdentifier(
-            relation.getGate(), relation.getGuard(), relation.getUpdate()));
+        this.switchRelationMap.remove(SwitchRelation.getSwitchIdentifier(relation.getGate(),
+            relation.getGuard(), relation.getUpdate()));
     }
 
     /**
@@ -237,9 +230,8 @@ public class STS {
      * @param match The rule match.
      * @return The transformed SwitchRelation.
      */
-    public SwitchRelation ruleMatchToSwitchRelation(HostGraph sourceGraph,
-            MatchResult match, Set<SwitchRelation> higherPriorityRelations)
-        throws STSException {
+    public SwitchRelation ruleMatchToSwitchRelation(HostGraph sourceGraph, MatchResult match,
+            Set<SwitchRelation> higherPriorityRelations) throws STSException {
 
         RuleEvent event = match.getEvent();
 
@@ -250,16 +242,12 @@ public class STS {
         mapInteractionVariables(event, iVarMap);
 
         // Map variable nodes to location variables in the LHS of this rule
-        Map<VariableNode,LocationVariable> lVarMap =
-            new HashMap<VariableNode,LocationVariable>();
-        Map<VariableNode,LocationVariable> lValueMap =
-            new HashMap<VariableNode,LocationVariable>();
+        Map<VariableNode,LocationVariable> lVarMap = new HashMap<VariableNode,LocationVariable>();
+        Map<VariableNode,LocationVariable> lValueMap = new HashMap<VariableNode,LocationVariable>();
         mapLocationVariables(event, sourceGraph, lVarMap, lValueMap);
 
         // Create the guard
-        String guard =
-            createGuard(event, iVarMap, lVarMap, lValueMap,
-                higherPriorityRelations);
+        String guard = createGuard(event, iVarMap, lVarMap, lValueMap, higherPriorityRelations);
 
         // Create the update for this switch relation
         String update = createUpdate(event, iVarMap, lVarMap);
@@ -291,9 +279,7 @@ public class STS {
      * @return The JSON string.
      */
     public String toJSON() {
-        String json =
-            "{\"_json\":{\"start\":" + getStartLocation().toJSON()
-                + ",\"lVars\":{";
+        String json = "{\"_json\":{\"start\":" + getStartLocation().toJSON() + ",\"lVars\":{";
         Set<LocationVariable> lVars = getLocationVariables();
         for (LocationVariable v : lVars) {
             json += v.toJSON() + ",";
@@ -336,8 +322,7 @@ public class STS {
             HostNode node = edge.target();
             if (node.getType().isDataType() && !isFinal(graph, edge.source())) {
                 ValueNode valueNode = (ValueNode) node;
-                addLocationVariable(
-                    edge,
+                addLocationVariable(edge,
                     this.ruleInspector.getSymbol((Constant) valueNode.getTerm()));
             }
         }
@@ -352,8 +337,7 @@ public class STS {
      */
     private boolean isFinal(HostGraph graph, HostNode node) {
         for (HostEdge e : graph.edgeSet(node)) {
-            if (e.getRole().equals(EdgeRole.FLAG)
-                && e.label().text().equals("final")) {
+            if (e.getRole().equals(EdgeRole.FLAG) && e.label().text().equals("final")) {
                 return true;
             }
         }
@@ -369,8 +353,7 @@ public class STS {
      */
     private boolean isFinal(RuleGraph graph, RuleNode node) {
         for (RuleEdge e : graph.edgeSet(node)) {
-            if (e.getRole().equals(EdgeRole.FLAG)
-                && e.label().text().equals("final")) {
+            if (e.getRole().equals(EdgeRole.FLAG) && e.label().text().equals("final")) {
                 return true;
             }
         }
@@ -387,8 +370,8 @@ public class STS {
      * @throws STSException Inconsistencies in the model are reported by throwing an STSException.
      */
     private void mapLocationVariables(RuleEvent event, HostGraph sourceGraph,
-            Map<VariableNode,LocationVariable> lVarMap,
-            Map<VariableNode,LocationVariable> lValueMap) throws STSException {
+            Map<VariableNode,LocationVariable> lVarMap, Map<VariableNode,LocationVariable> lValueMap)
+        throws STSException {
 
         RuleGraph lhs = event.getRule().lhs();
         RuleToHostMap ruleMap = event.getMatch(sourceGraph).getPatternMap();
@@ -398,9 +381,8 @@ public class STS {
                 HostEdge hostEdge = ruleMap.mapEdge(le);
                 LocationVariable var = getLocationVariable(hostEdge);
                 if (var == null && !isFinal(sourceGraph, hostEdge.source())) {
-                    throw new STSException(
-                        "ERROR: Data edge found not mapped by any variable: "
-                            + hostEdge);
+                    throw new STSException("ERROR: Data edge found not mapped by any variable: "
+                        + hostEdge);
                 } else if (!lVarMap.containsKey(le.target())) {
                     lVarMap.put((VariableNode) le.target(), var);
                 }
@@ -417,8 +399,7 @@ public class STS {
                             // For example, = edges are in the LHS, but have no
                             // image in the graph.
                             if (hostEdge != null) {
-                                LocationVariable var =
-                                    getLocationVariable(hostEdge);
+                                LocationVariable var = getLocationVariable(hostEdge);
                                 if (var != null) {
                                     lValueMap.put(n, var);
                                 }
@@ -444,16 +425,17 @@ public class STS {
 
         int end = rule.getSignature().size();
         for (int i = 0; i < end; i++) {
-            int index = rule.getParBinding(i);
-            AnchorKey k = rule.getAnchor().get(index);
+            Binding bind = rule.getParBinding(i);
+            assert bind.getSource() == Source.ANCHOR;
+            AnchorKey k = rule.getAnchor().get(bind.getIndex());
             if (k instanceof VariableNode) {
                 VariableNode v = (VariableNode) k;
                 InteractionVariable iVar = addInteractionVariable(v, rule);
                 iVarMap.put(v, iVar);
             } else {
                 // We don't allow non-variables to be parameters
-                throw new STSException("ERROR: non-variable node "
-                    + k.toString() + " listed as parameter");
+                throw new STSException("ERROR: non-variable node " + k.toString()
+                    + " listed as parameter");
             }
         }
     }
@@ -466,8 +448,7 @@ public class STS {
      * @param lValueMap A map of constants to location variables.
      * @return The created guard.
      */
-    private String createGuard(RuleEvent event,
-            Map<VariableNode,InteractionVariable> iVarMap,
+    private String createGuard(RuleEvent event, Map<VariableNode,InteractionVariable> iVarMap,
             Map<VariableNode,LocationVariable> lVarMap,
             Map<VariableNode,LocationVariable> lValueMap,
             Set<SwitchRelation> higherPriorityRelations) {
@@ -478,14 +459,13 @@ public class STS {
         String guard = "";
         for (VariableNode v : iVarMap.keySet()) {
             guard +=
-                this.ruleInspector.parseGuardExpression(rule, v,
-                    iVarMap.get(v), iVarMap, lVarMap);
+                this.ruleInspector.parseGuardExpression(rule, v, iVarMap.get(v), iVarMap, lVarMap);
         }
         for (VariableNode v : lVarMap.keySet()) {
             if (!iVarMap.containsKey(v)) {
                 guard +=
-                    this.ruleInspector.parseGuardExpression(rule, v,
-                        lVarMap.get(v), iVarMap, lVarMap);
+                    this.ruleInspector.parseGuardExpression(rule, v, lVarMap.get(v), iVarMap,
+                        lVarMap);
             }
         }
 
@@ -495,8 +475,7 @@ public class STS {
         // Do a one time check for expressions resulting in a known value,
         // to allow operator node with variable arguments to true/false output
         List<String> results =
-            this.ruleInspector.parseArgumentExpression(rule, lhs, iVarMap,
-                lVarMap);
+            this.ruleInspector.parseArgumentExpression(rule, lhs, iVarMap, lVarMap);
         for (String s : results) {
             guard += s + " && ";
         }
@@ -505,9 +484,7 @@ public class STS {
             combinedGuard += higherPriorityRelation.getGuard() + " && ";
         }
         if (!combinedGuard.isEmpty()) {
-            guard +=
-                "!(" + combinedGuard.substring(0, combinedGuard.length() - 4)
-                    + ") && ";
+            guard += "!(" + combinedGuard.substring(0, combinedGuard.length() - 4) + ") && ";
         }
         for (VariableNode v : lValueMap.keySet()) {
             guard +=
@@ -528,8 +505,7 @@ public class STS {
      * @return The created update.
      * @throws STSException Inconsistencies in the model are reported by throwing an STSException.
      */
-    private String createUpdate(RuleEvent event,
-            Map<VariableNode,InteractionVariable> iVarMap,
+    private String createUpdate(RuleEvent event, Map<VariableNode,InteractionVariable> iVarMap,
             Map<VariableNode,LocationVariable> lVarMap) throws STSException {
 
         Rule rule = event.getRule();
@@ -542,10 +518,8 @@ public class STS {
         Map<Pair<RuleNode,RuleLabel>,RuleEdge> possibleUpdates =
             new HashMap<Pair<RuleNode,RuleLabel>,RuleEdge>();
         for (RuleEdge e : rule.getEraserEdges()) {
-            if (e.target().getType().isDataType()
-                && !isFinal(rule.lhs(), e.source())) {
-                possibleUpdates.put(
-                    new Pair<RuleNode,RuleLabel>(e.source(), e.label()), e);
+            if (e.target().getType().isDataType() && !isFinal(rule.lhs(), e.source())) {
+                possibleUpdates.put(new Pair<RuleNode,RuleLabel>(e.source(), e.label()), e);
             }
         }
 
@@ -555,8 +529,8 @@ public class STS {
                 // A creator edge has been detected to a data node,
                 // this indicates an update for a location variable.
                 RuleEdge eraserEdge =
-                    possibleUpdates.remove(new Pair<RuleNode,RuleLabel>(
-                        creatorEdge.source(), creatorEdge.label()));
+                    possibleUpdates.remove(new Pair<RuleNode,RuleLabel>(creatorEdge.source(),
+                        creatorEdge.label()));
                 if (eraserEdge == null) {
                     // Modeling constraint, updates have to be done in
                     // eraser/creator pairs.
@@ -568,22 +542,20 @@ public class STS {
                 Variable var = lVarMap.get(eraserEdge.target());
                 if (var == null) {
                     // Data nodes should always be a location variable.
-                    throw new STSException(
-                        "ERROR: no location variable found referenced by "
-                            + eraserEdge.target().toString()
-                            + " in the LHS or Condition of rule " + name);
+                    throw new STSException("ERROR: no location variable found referenced by "
+                        + eraserEdge.target().toString() + " in the LHS or Condition of rule "
+                        + name);
                 }
                 RuleNode node = creatorEdge.target();
                 // Parse the resulting value. This can be a variable or an
                 // expression over variables and primitive data types.
                 String updateValue =
-                    this.ruleInspector.parseExpression(rule, nac.getPattern(),
-                        node, iVarMap, lVarMap);
+                    this.ruleInspector.parseExpression(rule, nac.getPattern(), node, iVarMap,
+                        lVarMap);
                 if (updateValue.length() == 0) {
                     // Update can't be empty. This should never happen.
-                    throw new STSException("ERROR: Update of " + var.toString()
-                        + " in rule " + rule.getFullName()
-                        + " is empty where it shouldn't be.");
+                    throw new STSException("ERROR: Update of " + var.toString() + " in rule "
+                        + rule.getFullName() + " is empty where it shouldn't be.");
                 }
                 update += var.getLabel() + " = " + updateValue + "; ";
             }

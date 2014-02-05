@@ -76,8 +76,7 @@ public class PlanSearchEngine extends SearchEngine {
     }
 
     @Override
-    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed,
-            ValueOracle oracle) {
+    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed, ValueOracle oracle) {
         Set<AnchorKey> anchorKeys = new HashSet<AnchorKey>();
         if (condition.hasRule()) {
             anchorKeys.addAll(condition.getRule().getAnchor());
@@ -108,15 +107,15 @@ public class PlanSearchEngine extends SearchEngine {
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan, oracle);
         if (PRINT) {
-            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s",
-                condition.getName(), seed, result));
+            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s", condition.getName(),
+                seed, result));
             System.out.printf("%n    Dependencies & Relevance: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d%s: %s", i, plan.get(i).isRelevant() ? "*"
-                        : "", plan.getDependency(i));
+                System.out.printf("%d%s: %s", i, plan.get(i).isRelevant() ? "*" : "",
+                    plan.getDependency(i));
             }
             System.out.println("]");
         }
@@ -139,8 +138,7 @@ public class PlanSearchEngine extends SearchEngine {
      */
     static public PlanSearchEngine getInstance(SearchMode searchMode) {
         if (instance == null) {
-            instance =
-                new EnumMap<SearchMode,PlanSearchEngine>(SearchMode.class);
+            instance = new EnumMap<SearchMode,PlanSearchEngine>(SearchMode.class);
             for (SearchMode mode : SearchMode.values()) {
                 instance.put(mode, new PlanSearchEngine(mode));
             }
@@ -159,8 +157,7 @@ public class PlanSearchEngine extends SearchEngine {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private static class PlanData extends Observable implements
-            Comparator<SearchItem> {
+    private static class PlanData extends Observable implements Comparator<SearchItem> {
         /**
          * Constructs a fresh instance of the plan data, based on a given set of
          * system properties, and sets of already matched nodes and edges.
@@ -181,8 +178,7 @@ public class PlanSearchEngine extends SearchEngine {
                 // compute the set of remaining (unmatched) edges and variables
                 this.remainingEdges.addAll(graph.edgeSet());
                 this.remainingVars.addAll(graph.varSet());
-                this.algebraFamily =
-                    condition.getSystemProperties().getAlgebraFamily();
+                this.algebraFamily = condition.getSystemProperties().getAlgebraFamily();
             } else {
                 this.algebraFamily = AlgebraFamily.DEFAULT;
             }
@@ -190,8 +186,7 @@ public class PlanSearchEngine extends SearchEngine {
 
         private void testUsed() {
             if (this.used) {
-                throw new IllegalStateException(
-                    "Method getPlan() was already called");
+                throw new IllegalStateException("Method getPlan() was already called");
             } else {
                 this.used = true;
             }
@@ -232,12 +227,12 @@ public class PlanSearchEngine extends SearchEngine {
                 notifyObservers(bestItem);
                 items.remove(bestItem);
             }
-            assert this.remainingEdges.isEmpty() : String.format(
-                "Unmatched edges %s", this.remainingEdges);
-            assert this.remainingNodes.isEmpty() : String.format(
-                "Unmatched nodes %s", this.remainingNodes);
-            assert this.remainingVars.isEmpty() : String.format(
-                "Unmatched variables %s", this.remainingVars);
+            assert this.remainingEdges.isEmpty() : String.format("Unmatched edges %s",
+                this.remainingEdges);
+            assert this.remainingNodes.isEmpty() : String.format("Unmatched nodes %s",
+                this.remainingNodes);
+            assert this.remainingVars.isEmpty() : String.format("Unmatched variables %s",
+                this.remainingVars);
             return result;
         }
 
@@ -245,10 +240,10 @@ public class PlanSearchEngine extends SearchEngine {
          * Orders search items according to the lexicographic order of the
          * available item comparators.
          */
+        @Override
         final public int compare(SearchItem o1, SearchItem o2) {
             int result = 0;
-            Iterator<Comparator<SearchItem>> comparatorIter =
-                getComparators().iterator();
+            Iterator<Comparator<SearchItem>> comparatorIter = getComparators().iterator();
             while (result == 0 && comparatorIter.hasNext()) {
                 Comparator<SearchItem> next = comparatorIter.next();
                 result = next.compare(o1, o2);
@@ -264,8 +259,7 @@ public class PlanSearchEngine extends SearchEngine {
          * @param seed the pre-matched subgraph
          */
         private Collection<AbstractSearchItem> computeSearchItems(Anchor seed) {
-            Collection<AbstractSearchItem> result =
-                new ArrayList<AbstractSearchItem>();
+            Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
             if (this.condition.hasPattern()) {
                 result.addAll(computePatternSearchItems(seed));
             }
@@ -273,14 +267,12 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem item = null;
                 if (subCondition.isCompatible(this.searchMode)) {
                     if (subCondition instanceof EdgeEmbargo) {
-                        item =
-                            createEdgeEmbargoItem((EdgeEmbargo) subCondition);
+                        item = createEdgeEmbargoItem((EdgeEmbargo) subCondition);
                     } else {
                         item = new ConditionSearchItem(subCondition);
                     }
                 } else {
-                    if (this.searchMode == SearchMode.REVERSE
-                        && subCondition.isReversable()) {
+                    if (this.searchMode == SearchMode.REVERSE && subCondition.isReversable()) {
                         item = new ConditionSearchItem(subCondition.reverse());
                     }
                 }
@@ -292,13 +284,11 @@ public class PlanSearchEngine extends SearchEngine {
         }
 
         /** Returned item may be null. */
-        private AbstractSearchItem createEdgeEmbargoItem(
-                EdgeEmbargo subCondition) {
+        private AbstractSearchItem createEdgeEmbargoItem(EdgeEmbargo subCondition) {
             AbstractSearchItem item = null;
             RuleEdge embargoEdge = subCondition.getEmbargoEdge();
             if (!embargoEdge.label().isEmpty()) {
-                AbstractSearchItem edgeSearchItem =
-                    createEdgeSearchItem(embargoEdge);
+                AbstractSearchItem edgeSearchItem = createEdgeSearchItem(embargoEdge);
                 item = createNegatedSearchItem(edgeSearchItem);
             } else {
                 if (!this.condition.isInjective()) {
@@ -313,12 +303,9 @@ public class PlanSearchEngine extends SearchEngine {
          * @param seed the set of pre-matched nodes
          */
         Collection<AbstractSearchItem> computePatternSearchItems(Anchor seed) {
-            Collection<AbstractSearchItem> result =
-                new ArrayList<AbstractSearchItem>();
-            Set<RuleNode> unmatchedNodes =
-                new LinkedHashSet<RuleNode>(this.remainingNodes);
-            Set<RuleEdge> unmatchedEdges =
-                new LinkedHashSet<RuleEdge>(this.remainingEdges);
+            Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
+            Set<RuleNode> unmatchedNodes = new LinkedHashSet<RuleNode>(this.remainingNodes);
+            Set<RuleEdge> unmatchedEdges = new LinkedHashSet<RuleEdge>(this.remainingEdges);
             // first a single search item for the pre-matched elements
             if (seed == null) {
                 seed = new Anchor();
@@ -333,8 +320,7 @@ public class PlanSearchEngine extends SearchEngine {
             Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
                 RuleNode node = unmatchedNodeIter.next();
-                if (node instanceof VariableNode
-                    && ((VariableNode) node).getConstant() != null
+                if (node instanceof VariableNode && ((VariableNode) node).getConstant() != null
                     || !node.getTypeGuards().isEmpty()) {
                     AbstractSearchItem nodeItem = createNodeSearchItem(node);
                     if (nodeItem != null) {
@@ -351,14 +337,12 @@ public class PlanSearchEngine extends SearchEngine {
                     // end nodes are only matched if the item is not negated and
                     // types are not specialised
                     RuleNode source = edge.source();
-                    if (edgeItem.bindsNodes().contains(source)
-                        && edge.getType() != null
+                    if (edgeItem.bindsNodes().contains(source) && edge.getType() != null
                         && edge.getType().source() == source.getType()) {
                         unmatchedNodes.remove(source);
                     }
                     RuleNode target = edge.target();
-                    if (edgeItem.bindsNodes().contains(target)
-                        && edge.getType() != null
+                    if (edgeItem.bindsNodes().contains(target) && edge.getType() != null
                         && edge.getType().target() == target.getType()) {
                         unmatchedNodes.remove(target);
                     }
@@ -368,12 +352,9 @@ public class PlanSearchEngine extends SearchEngine {
             for (RuleNode node : unmatchedNodes) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
-                    assert !(node instanceof VariableNode)
-                        || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.supportsSymbolic()
-                        || seed.nodeSet().contains(node) : String.format(
-                        "Variable node '%s' should be among anchors %s", node,
-                        seed);
+                    assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
+                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet().contains(node) : String.format(
+                        "Variable node '%s' should be among anchors %s", node, seed);
                     result.add(nodeItem);
                 }
             }
@@ -388,13 +369,10 @@ public class PlanSearchEngine extends SearchEngine {
          */
         Collection<Comparator<SearchItem>> computeComparators() {
             Collection<Comparator<SearchItem>> result =
-                new TreeSet<Comparator<SearchItem>>(
-                    new ItemComparatorComparator());
-            result.add(new NeededPartsComparator(this.remainingNodes,
-                this.remainingVars));
+                new TreeSet<Comparator<SearchItem>>(new ItemComparatorComparator());
+            result.add(new NeededPartsComparator(this.remainingNodes, this.remainingVars));
             result.add(new ItemTypeComparator());
-            result.add(new ConnectedPartsComparator(this.remainingNodes,
-                this.remainingVars));
+            result.add(new ConnectedPartsComparator(this.remainingNodes, this.remainingVars));
             result.add(new IndegreeComparator(this.remainingEdges));
             GrammarProperties properties = this.condition.getSystemProperties();
             if (properties != null) {
@@ -437,15 +415,12 @@ public class PlanSearchEngine extends SearchEngine {
             } else if (negOperand != null) {
                 RuleLabel negatedLabel = negOperand.toLabel();
                 AbstractSearchItem negatedItem;
-                if (negatedLabel.getRole() == EdgeRole.NODE_TYPE
-                    && !this.typeGraph.isImplicit()) {
+                if (negatedLabel.getRole() == EdgeRole.NODE_TYPE && !this.typeGraph.isImplicit()) {
                     TypeNode negatedType = this.typeGraph.getNode(negatedLabel);
-                    negatedItem =
-                        new NodeTypeSearchItem(edge.source(), negatedType);
+                    negatedItem = new NodeTypeSearchItem(edge.source(), negatedType);
                 } else {
                     RuleEdge negatedEdge =
-                        this.condition.getFactory().createEdge(source,
-                            negatedLabel, target);
+                        this.condition.getFactory().createEdge(source, negatedLabel, target);
                     negatedItem = createEdgeSearchItem(negatedEdge);
                 }
                 result = createNegatedSearchItem(negatedItem);
@@ -470,19 +445,14 @@ public class PlanSearchEngine extends SearchEngine {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
                 assert this.searchMode == NORMAL;
-                if (((VariableNode) node).hasConstant()
-                    || this.algebraFamily.supportsSymbolic()) {
-                    result =
-                        new ValueNodeSearchItem((VariableNode) node,
-                            this.algebraFamily);
+                if (((VariableNode) node).hasConstant() || this.algebraFamily.supportsSymbolic()) {
+                    result = new ValueNodeSearchItem((VariableNode) node, this.algebraFamily);
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
             } else if (node instanceof OperatorNode) {
                 assert this.searchMode == NORMAL;
-                result =
-                    new OperatorNodeSearchItem((OperatorNode) node,
-                        this.algebraFamily);
+                result = new OperatorNodeSearchItem((OperatorNode) node, this.algebraFamily);
             } else {
                 assert node instanceof DefaultRuleNode;
                 result = new NodeTypeSearchItem(node);
@@ -569,18 +539,17 @@ public class PlanSearchEngine extends SearchEngine {
          * Favours the edge with the lowest source indegree, or, failing that,
          * the highest target indegree.
          */
+        @Override
         public int compare(SearchItem item1, SearchItem item2) {
             int result = 0;
-            if (item1 instanceof Edge2SearchItem
-                && item2 instanceof Edge2SearchItem) {
+            if (item1 instanceof Edge2SearchItem && item2 instanceof Edge2SearchItem) {
                 RuleEdge first = ((Edge2SearchItem) item1).getEdge();
                 RuleEdge second = ((Edge2SearchItem) item2).getEdge();
                 // first test for the indegree of the source (lower = better)
                 result = indegree(second.source()) - indegree(first.source());
                 if (result == 0) {
                     // now test for the indegree of the target (higher = better)
-                    result =
-                        indegree(first.target()) - indegree(second.target());
+                    result = indegree(first.target()) - indegree(second.target());
                 }
             }
             return result;
@@ -590,6 +559,7 @@ public class PlanSearchEngine extends SearchEngine {
          * This method is called when a new edge is scheduled. It decreases the
          * indegree of all the edge target.
          */
+        @Override
         public void update(Observable o, Object arg) {
             if (arg instanceof Edge2SearchItem) {
                 RuleEdge selected = ((Edge2SearchItem) arg).getEdge();
@@ -619,8 +589,7 @@ public class PlanSearchEngine extends SearchEngine {
      * @version $Revision: 3291 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
-        NeededPartsComparator(Set<RuleNode> remainingNodes,
-                Set<LabelVar> remainingVars) {
+        NeededPartsComparator(Set<RuleNode> remainingNodes, Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
         }
@@ -629,6 +598,7 @@ public class PlanSearchEngine extends SearchEngine {
          * First compares the need count (higher is better), then the bind count
          * (lower is better).
          */
+        @Override
         public int compare(SearchItem o1, SearchItem o2) {
             return getNeedCount(o1) - getNeedCount(o2);
         }
@@ -663,8 +633,7 @@ public class PlanSearchEngine extends SearchEngine {
      * @version $Revision: 3291 $
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
-        ConnectedPartsComparator(Set<RuleNode> remainingNodes,
-                Set<LabelVar> remainingVars) {
+        ConnectedPartsComparator(Set<RuleNode> remainingNodes, Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
         }
@@ -672,6 +641,7 @@ public class PlanSearchEngine extends SearchEngine {
         /**
          * Compares the connect count (higher is better).
          */
+        @Override
         public int compare(SearchItem o1, SearchItem o2) {
             return getConnectCount(o1) - getConnectCount(o2);
         }
@@ -726,6 +696,7 @@ public class PlanSearchEngine extends SearchEngine {
          * <li> {@link SeedSearchItem}s
          * </ul>
          */
+        @Override
         public int compare(SearchItem o1, SearchItem o2) {
             return getRating(o1) - getRating(o2);
         }
@@ -780,8 +751,7 @@ public class PlanSearchEngine extends SearchEngine {
             if (itemClass == SeedSearchItem.class) {
                 return result;
             }
-            throw new IllegalArgumentException(String.format(
-                "Unrecognised search item %s", item));
+            throw new IllegalArgumentException(String.format("Unrecognised search item %s", item));
         }
     }
 
@@ -824,15 +794,13 @@ public class PlanSearchEngine extends SearchEngine {
          * latest in the low-priority labels. In case of equal priority,
          * alphabetical ordering is used.
          */
+        @Override
         public int compare(SearchItem first, SearchItem second) {
-            if (first instanceof Edge2SearchItem
-                && second instanceof Edge2SearchItem) {
+            if (first instanceof Edge2SearchItem && second instanceof Edge2SearchItem) {
                 Label firstLabel = ((Edge2SearchItem) first).getEdge().label();
-                Label secondLabel =
-                    ((Edge2SearchItem) second).getEdge().label();
+                Label secondLabel = ((Edge2SearchItem) second).getEdge().label();
                 // compare edge priorities
-                return getEdgePriority(firstLabel)
-                    - getEdgePriority(secondLabel);
+                return getEdgePriority(firstLabel) - getEdgePriority(secondLabel);
             } else {
                 return 0;
             }
@@ -864,8 +832,7 @@ public class PlanSearchEngine extends SearchEngine {
      * @author Arend Rensink
      * @version $Revision: 3291 $
      */
-    static class ItemComparatorComparator implements
-            Comparator<Comparator<SearchItem>> {
+    static class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** Empty constructor with the correct visibility. */
         ItemComparatorComparator() {
             // empty
@@ -875,6 +842,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Returns the difference in ratings between the two comparators. This
          * means lower-rated comparators are ordered first.
          */
+        @Override
         public int compare(Comparator<SearchItem> o1, Comparator<SearchItem> o2) {
             return getRating(o1) - getRating(o2);
         }
@@ -911,8 +879,8 @@ public class PlanSearchEngine extends SearchEngine {
             if (compClass == IndegreeComparator.class) {
                 return result;
             }
-            throw new IllegalArgumentException(String.format(
-                "Unknown comparator class %s", compClass));
+            throw new IllegalArgumentException(String.format("Unknown comparator class %s",
+                compClass));
         }
     }
 }

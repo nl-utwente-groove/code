@@ -17,8 +17,8 @@
 package groove.control;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.Switch.Kind;
 import groove.control.parse.Namespace;
+import groove.control.template.Switch.Kind;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -370,7 +370,7 @@ public class CtrlFactory {
         FormatErrorSet errors = new FormatErrorSet();
         SortedMap<Integer,Set<Action>> priorityMap =
             new TreeMap<Integer,Set<Action>>();
-        Namespace namespace = new Namespace(family);
+        Namespace namespace = new Namespace(family, true);
         // first add the names and signatures to the namespace
         for (Action action : actions) {
             boolean needsInput = false;

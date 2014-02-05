@@ -52,6 +52,7 @@ public class SpringLayouter extends AbstractLayouter {
         super(name, jgraph);
     }
 
+    @Override
     public Layouter newInstance(JGraph<?> jgraph) {
         return new SpringLayouter(getName(), jgraph, this.rigidity);
     }
@@ -60,12 +61,12 @@ public class SpringLayouter extends AbstractLayouter {
      * Starts layouting in a parallel thread; or stops the current layouter
      * thread if one is running.
      */
+    @Override
     public void start() {
         SpringLayouter.this.damper = 1.0;
         prepare();
         long currentTime = System.currentTimeMillis();
-        while (SpringLayouter.this.damper > 0
-            && System.currentTimeMillis() - currentTime < TIMEOUT) {
+        while (SpringLayouter.this.damper > 0 && System.currentTimeMillis() - currentTime < TIMEOUT) {
             relax();
         }
         finish();
@@ -104,8 +105,7 @@ public class SpringLayouter extends AbstractLayouter {
         List<LayoutNode> edgeTargetList = new LinkedList<LayoutNode>();
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
             JCell<?> jCell = (JCell<?>) this.jmodel.getRootAt(i);
-            if (jCell instanceof JEdge && jCell.getVisuals().isVisible()
-                && !jCell.isGrayedOut()) {
+            if (jCell instanceof JEdge && jCell.getVisuals().isVisible() && !jCell.isGrayedOut()) {
                 JEdge<?> jEdge = (JEdge<?>) jCell;
                 LayoutNode source = this.layoutMap.get(jEdge.getSourceVertex());
                 LayoutNode target = this.layoutMap.get(jEdge.getTargetVertex());
@@ -115,10 +115,8 @@ public class SpringLayouter extends AbstractLayouter {
                 }
             }
         }
-        this.edgeSources =
-            edgeSourceList.toArray(new LayoutNode[edgeSourceList.size()]);
-        this.edgeTargets =
-            edgeTargetList.toArray(new LayoutNode[edgeTargetList.size()]);
+        this.edgeSources = edgeSourceList.toArray(new LayoutNode[edgeSourceList.size()]);
+        this.edgeTargets = edgeTargetList.toArray(new LayoutNode[edgeTargetList.size()]);
     }
 
     private void damp() {
@@ -242,8 +240,7 @@ public class SpringLayouter extends AbstractLayouter {
                         }
                         position.y = 0;
                     }
-                    key.setLocation(
-                        Math.max(0, (int) position.x - key.getWidth() / 2),
+                    key.setLocation(Math.max(0, (int) position.x - key.getWidth() / 2),
                         Math.max(0, (int) position.y - key.getHeight() / 2));
                 }
             }
@@ -300,8 +297,7 @@ public class SpringLayouter extends AbstractLayouter {
      * <tt>(layoutables[i],deltas[i])</tt> for which
      * <tt>deltas[i] != null</tt>
      */
-    private final Map<LayoutNode,Point2D.Float> deltaMap =
-        new HashMap<LayoutNode,Point2D.Float>();
+    private final Map<LayoutNode,Point2D.Float> deltaMap = new HashMap<LayoutNode,Point2D.Float>();
 
     /**
      * Source vertices or midpoints of the edge fragments in this graph.

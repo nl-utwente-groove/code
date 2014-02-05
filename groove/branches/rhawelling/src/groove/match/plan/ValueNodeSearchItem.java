@@ -48,12 +48,11 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSignature());
         Expression term = node.getTerm();
-        this.value =
-            term instanceof Variable ? null : family.toValue(node.getTerm());
+        this.value = term instanceof Variable ? null : family.toValue(node.getTerm());
     }
 
-    public Record createRecord(
-            groove.match.plan.PlanSearchStrategy.Search matcher) {
+    @Override
+    public Record createRecord(groove.match.plan.PlanSearchStrategy.Search matcher) {
         if (this.value == null) {
             return new ValueQueryRecord(matcher);
         } else {
@@ -118,6 +117,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         return this.node;
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         this.nodeIx = strategy.getNodeIx(this.node);
         this.oracle = strategy.getOracle();
@@ -156,8 +156,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         public void initialise(HostGraph host) {
             super.initialise(host);
             this.image =
-                host.getFactory().createNode(
-                    ValueNodeSearchItem.this.algebra,
+                host.getFactory().createNode(ValueNodeSearchItem.this.algebra,
                     ValueNodeSearchItem.this.value);
         }
 
@@ -173,8 +172,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
 
         @Override
         boolean write() {
-            return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
-                this.image);
+            return this.search.putNode(ValueNodeSearchItem.this.nodeIx, this.image);
         }
 
         @Override
@@ -196,8 +194,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
             super.initialise(host);
             this.factory = host.getFactory();
             this.values =
-                ValueNodeSearchItem.this.oracle.getValues(
-                    ValueNodeSearchItem.this.condition,
+                ValueNodeSearchItem.this.oracle.getValues(ValueNodeSearchItem.this.condition,
                     ValueNodeSearchItem.this.node);
         }
 
@@ -210,10 +207,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         boolean write(Constant image) {
             Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
             ValueNode imageNode =
-                this.factory.createNode(algebra,
-                    algebra.toValueFromConstant(image));
-            return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
-                imageNode);
+                this.factory.createNode(algebra, algebra.toValueFromConstant(image));
+            return this.search.putNode(ValueNodeSearchItem.this.nodeIx, imageNode);
         }
 
         @Override

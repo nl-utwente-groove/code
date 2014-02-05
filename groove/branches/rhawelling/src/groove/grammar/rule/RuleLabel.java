@@ -43,8 +43,7 @@ public class RuleLabel extends ALabel {
      */
     public RuleLabel(RegExpr regExpr) {
         if (regExpr == null) {
-            throw new IllegalArgumentException(
-                "Can't create rule label from null expression");
+            throw new IllegalArgumentException("Can't create rule label from null expression");
         }
         //assert !regExpr.isNeg() : "Rule label expressions may not be negated";
         this.regExpr = regExpr;
@@ -97,6 +96,7 @@ public class RuleLabel extends ALabel {
     /**
      * Returns the textual description of the underlying regular expression.
      */
+    @Override
     public String text() {
         String result;
         result = getMatchExpr().toString();
@@ -119,8 +119,7 @@ public class RuleLabel extends ALabel {
      * used to match node type labels properly; non-{@code null}
      */
     public RegAut getAutomaton(TypeGraph typeGraph) {
-        if (this.automaton == null
-            || this.automaton.getTypeGraph() != typeGraph) {
+        if (this.automaton == null || this.automaton.getTypeGraph() != typeGraph) {
             this.automaton = calculator.compute(getMatchExpr(), typeGraph);
         }
         return this.automaton;
@@ -147,8 +146,7 @@ public class RuleLabel extends ALabel {
      */
     public String getAtomText() {
         RegExpr expr = getMatchExpr();
-        return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text()
-                : null;
+        return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text() : null;
     }
 
     /**

@@ -24,8 +24,8 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointIntAlgebra extends IntAlgebra<Integer,Boolean,String>
-        implements PointAlgebra<Integer> {
+public class PointIntAlgebra extends IntAlgebra<Integer,Boolean,String> implements
+        PointAlgebra<Integer> {
     /** Private constructor for the singleton instance. */
     private PointIntAlgebra() {
         // empty
@@ -41,6 +41,7 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Boolean,String>
         return AlgebraFamily.POINT;
     }
 
+    @Override
     public boolean isValue(Object value) {
         return value == singleInt;
     }
@@ -172,8 +173,7 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Boolean,String>
     /** Point value of the int algebra. */
     public static final Integer singleInt = 0;
     /** Constant representing the point value of the int algebra. */
-    public static final Constant singleIntConstant =
-        Constant.instance(singleInt);
+    public static final Constant singleIntConstant = Constant.instance(singleInt);
     /** Singleton instance of this algebra. */
     public static final PointIntAlgebra instance = new PointIntAlgebra();
 }

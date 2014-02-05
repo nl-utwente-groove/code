@@ -72,8 +72,7 @@ public class JEdgeLayout implements JCellLayout {
      * @param visuals the visual map
      */
     static public JEdgeLayout newInstance(VisualMap visuals) {
-        return new JEdgeLayout(visuals.getPoints(), visuals.getLabelPos(),
-            visuals.getLineStyle());
+        return new JEdgeLayout(visuals.getPoints(), visuals.getLabelPos(), visuals.getLineStyle());
     }
 
     /**
@@ -83,8 +82,7 @@ public class JEdgeLayout implements JCellLayout {
      *         default label position
      */
     static public boolean isDefaultLabelPosition(Point2D labelPosition) {
-        return labelPosition == null
-            || labelPosition.equals(defaultLabelPosition);
+        return labelPosition == null || labelPosition.equals(defaultLabelPosition);
     }
 
     /**
@@ -97,8 +95,7 @@ public class JEdgeLayout implements JCellLayout {
      *         <code>getLabelPosition().equals(labelPosition)</code> and
      *         <code>getLineStyle() == lineStyle</code>
      */
-    public JEdgeLayout(List<Point2D> points, Point2D labelPosition,
-            LineStyle lineStyle) {
+    public JEdgeLayout(List<Point2D> points, Point2D labelPosition, LineStyle lineStyle) {
         this.points = new LinkedList<Point2D>(points);
         if (labelPosition == null) {
             this.labelPosition = defaultLabelPosition;
@@ -143,12 +140,13 @@ public class JEdgeLayout implements JCellLayout {
      * linestyle as specified by this edge layout.
      * @return an attribute map with layout information
      */
+    @Override
     public AttributeMap toJAttr() {
         AttributeMap result = new AttributeMap();
         GraphConstants.setPoints(result, this.points);
         GraphConstants.setLineStyle(result, this.lineStyle.getCode());
-        GraphConstants.setLabelPosition(result, this.labelPosition == null
-                ? defaultLabelPosition : this.labelPosition);
+        GraphConstants.setLabelPosition(result, this.labelPosition == null ? defaultLabelPosition
+                : this.labelPosition);
         return result;
     }
 
@@ -169,6 +167,7 @@ public class JEdgeLayout implements JCellLayout {
      * Edge information is default if there are no points, and the label
      * position is default.
      */
+    @Override
     public boolean isDefault() {
         return VisualKey.LABEL_POS.getDefaultValue().equals(getLabelPosition())
             && this.lineStyle.isDefault() && getPoints().size() == 2;
@@ -196,14 +195,13 @@ public class JEdgeLayout implements JCellLayout {
      */
     @Override
     public int hashCode() {
-        return getPoints().hashCode() + getLabelPosition().hashCode()
-            + getLineStyle().hashCode();
+        return getPoints().hashCode() + getLabelPosition().hashCode() + getLineStyle().hashCode();
     }
 
     @Override
     public String toString() {
-        return "LabelPosition=" + getLabelPosition() + "; Points="
-            + getPoints() + "; LineStyle=" + getLineStyle();
+        return "LabelPosition=" + getLabelPosition() + "; Points=" + getPoints() + "; LineStyle="
+            + getLineStyle();
     }
 
     /** The label position of this edge layout. */

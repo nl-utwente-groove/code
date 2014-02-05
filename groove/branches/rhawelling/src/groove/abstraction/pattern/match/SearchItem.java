@@ -120,6 +120,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
      * after that, on the basis of their ratings. A lower rating means a
      * "smaller" search item, which is scheduled earlier.
      */
+    @Override
     public int compareTo(SearchItem other) {
         int result = getClass().getName().compareTo(other.getClass().getName());
         if (result == 0) {
@@ -325,6 +326,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
             return this.state == State.EMPTY;
         }
 
+        @Override
         public final boolean next() {
             State nextState = null;
             switch (this.state) {
@@ -361,6 +363,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
             this.state = this.state.getRepeat();
         }
 
+        @Override
         public final void reset() {
             if (this.state.isWritten()) {
                 erase();
@@ -388,8 +391,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
 
         @Override
         public String toString() {
-            return String.format("%s: %b", SearchItem.this.toString(),
-                this.state.isWritten());
+            return String.format("%s: %b", SearchItem.this.toString(), this.state.isWritten());
         }
 
     }
@@ -441,6 +443,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
          * until one is found for which {@link #write(Object)} is satisfied.
          * Calls {@link #reset()} if no such image is found.
          */
+        @Override
         public final boolean next() {
             State nextState;
             switch (this.state) {

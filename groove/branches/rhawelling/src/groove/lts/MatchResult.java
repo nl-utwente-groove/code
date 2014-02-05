@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 import groove.grammar.Rule;
 import groove.graph.EdgeComparator;
 import groove.transform.RuleEvent;
@@ -32,14 +32,14 @@ public class MatchResult implements GraphTransitionKey {
     public MatchResult(RuleTransition ruleTrans) {
         this.ruleTrans = ruleTrans;
         this.event = ruleTrans.getEvent();
-        this.ctrlTrans = ruleTrans.getCtrlTransition();
+        this.step = ruleTrans.getStep();
     }
 
-    /** Constructs a result from a given event and control transition. */
-    public MatchResult(RuleEvent event, CtrlTransition ctrlTrans) {
+    /** Constructs a result from a given event and control step. */
+    public MatchResult(RuleEvent event, CtrlStep step) {
         this.ruleTrans = null;
         this.event = event;
-        this.ctrlTrans = ctrlTrans;
+        this.step = step;
     }
 
     /** 
@@ -68,15 +68,21 @@ public class MatchResult implements GraphTransitionKey {
         return this.ruleTrans;
     }
 
+    private final RuleTransition ruleTrans;
+
     /** Returns the event wrapped by this transition key. */
     public RuleEvent getEvent() {
         return this.event;
     }
 
+    private final RuleEvent event;
+
     /** Returns the control transition wrapped by this transition key. */
-    public CtrlTransition getCtrlTransition() {
-        return this.ctrlTrans;
+    public CtrlStep getStep() {
+        return this.step;
     }
+
+    private final CtrlStep step;
 
     /** Returns the underlying rule of this match. */
     public Rule getRule() {
@@ -99,7 +105,7 @@ public class MatchResult implements GraphTransitionKey {
     private int computeHashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + getCtrlTransition().hashCode();
+        result = prime * result + getStep().hashCode();
         result = prime * result + getEvent().hashCode();
         return result;
     }
@@ -116,7 +122,7 @@ public class MatchResult implements GraphTransitionKey {
             return false;
         }
         MatchResult other = (MatchResult) obj;
-        if (!getCtrlTransition().equals(other.getCtrlTransition())) {
+        if (!getStep().equals(other.getStep())) {
             return false;
         }
         if (!getEvent().equals(other.getEvent())) {
@@ -127,31 +133,24 @@ public class MatchResult implements GraphTransitionKey {
 
     @Override
     public String toString() {
-        return this.ctrlTrans.label().text();
+        return getStep().label().text();
     }
 
     /** The precomputed hashcode; 0 if it has not yet been not initialised. */
     private int hashcode;
 
-    private final RuleTransition ruleTrans;
-    private final RuleEvent event;
-    private final CtrlTransition ctrlTrans;
     /** Fixed comparator for match results, which compares results for their 
      * rule events and then their control transitions. 
      */
-    public static final Comparator<MatchResult> COMPARATOR =
-        new Comparator<MatchResult>() {
-            @Override
-            public int compare(MatchResult o1, MatchResult o2) {
-                int result = o1.getEvent().compareTo(o2.getEvent());
-                if (result == 0) {
-                    result =
-                        edgeComparator.compare(o1.getCtrlTransition(),
-                            o2.getCtrlTransition());
-                }
-                return result;
+    public static final Comparator<MatchResult> COMPARATOR = new Comparator<MatchResult>() {
+        @Override
+        public int compare(MatchResult o1, MatchResult o2) {
+            int result = o1.getEvent().compareTo(o2.getEvent());
+            if (result == 0) {
+                result = edgeComparator.compare(o1.getStep(), o2.getStep());
             }
-        };
-    private static final EdgeComparator edgeComparator =
-        EdgeComparator.instance();
+            return result;
+        }
+    };
+    private static final EdgeComparator edgeComparator = EdgeComparator.instance();
 }

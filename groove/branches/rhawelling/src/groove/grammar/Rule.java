@@ -17,11 +17,12 @@
 package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.Switch;
+import groove.control.Binding;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.control.template.Switch;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -82,8 +83,7 @@ public class Rule implements Action, Fixable {
         this.lhs = condition.getPattern();
         this.rhs = rhs;
         assert coRoot == null || rhs().nodeSet().containsAll(coRoot.nodeSet()) : String.format(
-            "RHS nodes %s do not contain all co-root values %s",
-            rhs().nodeSet(), coRoot.nodeSet());
+            "RHS nodes %s do not contain all co-root values %s", rhs().nodeSet(), coRoot.nodeSet());
     }
 
     /** Returns the condition with which this rule is associated. */
@@ -102,6 +102,7 @@ public class Rule implements Action, Fixable {
     }
 
     /** Returns the qualified name of this rule (which equals the name of the associated condition). */
+    @Override
     public String getFullName() {
         return getCondition().getName();
     }
@@ -110,6 +111,7 @@ public class Rule implements Action, Fixable {
      * Returns the last part of the qualified name of this rule
      * (which equals the name of the associated condition). 
      */
+    @Override
     public String getLastName() {
         return QualName.getLastName(getFullName());
     }
@@ -128,12 +130,11 @@ public class Rule implements Action, Fixable {
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
         assert getCoRoot() != null : String.format(
-            "Sub-rule at level %s must have a non-trivial co-root map",
-            Arrays.toString(level));
+            "Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
         if (parent != null) {
             assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String.format(
-                "Rule '%s': Parent nodes %s do not contain all co-roots %s",
-                getFullName(), parent.rhs().nodeSet(), getCoRoot().nodeSet());
+                "Rule '%s': Parent nodes %s do not contain all co-roots %s", getFullName(),
+                parent.rhs().nodeSet(), getCoRoot().nodeSet());
         }
         this.parent = parent;
     }
@@ -184,6 +185,7 @@ public class Rule implements Action, Fixable {
      * Returns the priority of this object. A higher number means higher
      * priority, with {@link #DEFAULT_PRIORITY} the lowest.
      */
+    @Override
     public int getPriority() {
         return this.priority;
     }
@@ -295,11 +297,11 @@ public class Rule implements Action, Fixable {
             derivedSig.add(par);
         }
         assert derivedSig.equals(sig) : String.format(
-            "Declared signature %s differs from derived signature %s", sig,
-            derivedSig);
+            "Declared signature %s differs from derived signature %s", sig, derivedSig);
     }
 
     /** Returns the signature of the rule. */
+    @Override
     public List<CtrlPar.Var> getSignature() {
         assert isFixed();
         if (this.sig == null) {
@@ -308,12 +310,11 @@ public class Rule implements Action, Fixable {
         return this.sig;
     }
 
-    /** Returns, for a given index in the signature,
-     * the corresponding index in the anchor 
-     * or in the created nodes (if the parameter is a creator).
-     * The latter are offset by the anchor node count.
+    /**
+     * Returns, for a given index in the signature, the corresponding
+     * anchor or creator source of the actual value.
      */
-    public int getParBinding(int i) {
+    public Binding getParBinding(int i) {
         if (this.parBinding == null) {
             this.parBinding = computeParBinding();
         }
@@ -325,24 +326,21 @@ public class Rule implements Action, Fixable {
      * anchor respectively created node indices.
      * @see #getParBinding(int)
      */
-    private int[] computeParBinding() {
-        int[] result = new int[this.sig.size()];
-        int anchorSize = getAnchor().size();
+    private Binding[] computeParBinding() {
+        Binding[] result = new Binding[this.sig.size()];
+        List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
         for (int i = 0; i < this.sig.size(); i++) {
             CtrlPar.Var par = this.sig.get(i);
-            int binding;
+            Binding binding;
             RuleNode ruleNode = par.getRuleNode();
             if (par.isCreator()) {
                 // look up the node in the creator nodes
-                binding =
-                    Arrays.asList(getCreatorNodes()).indexOf(ruleNode)
-                        + anchorSize;
-                assert binding >= anchorSize;
+                binding = Binding.creator(creatorNodes.indexOf(ruleNode));
             } else {
                 // look up the node in the anchor
-                binding = getAnchor().indexOf(ruleNode);
-                assert binding >= 0 : String.format(
-                    "Node %s not in anchors %s", ruleNode, getAnchor());
+                int ix = getAnchor().indexOf(ruleNode);
+                assert ix >= 0 : String.format("Node %s not in anchors %s", ruleNode, getAnchor());
+                binding = Binding.anchor(ix);
             }
             result[i] = binding;
         }
@@ -395,8 +393,7 @@ public class Rule implements Action, Fixable {
      *         <code>null</code> and the condition is not ground, or if
      *         <code>contextMap</code> is not compatible with the root map
      */
-    public Collection<Proof> getAllMatches(HostGraph host,
-            RuleToHostMap contextMap) {
+    public Collection<Proof> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
         List<Proof> result = new ArrayList<Proof>();
         traverseMatches(host, contextMap, Visitor.newCollector(result));
         return result;
@@ -418,23 +415,21 @@ public class Rule implements Action, Fixable {
      *         graph
      * @see Visitor#visit(Object)
      */
-    public <R> R traverseMatches(final HostGraph host,
-            RuleToHostMap contextMap, final Visitor<Proof,R> visitor) {
+    public <R> R traverseMatches(final HostGraph host, RuleToHostMap contextMap,
+            final Visitor<Proof,R> visitor) {
         assert isFixed();
         RuleToHostMap seedMap =
-            contextMap == null ? host.getFactory().createRuleToHostMap()
-                    : contextMap;
-        getMatcher(seedMap).traverse(host, contextMap,
-            new Visitor<TreeMatch,R>() {
-                @Override
-                protected boolean process(TreeMatch match) {
-                    assert visitor.isContinue();
-                    if (isValidPatternMap(host, match.getPatternMap())) {
-                        match.traverseProofs(visitor);
-                    }
-                    return visitor.isContinue();
+            contextMap == null ? host.getFactory().createRuleToHostMap() : contextMap;
+        getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
+            @Override
+            protected boolean process(TreeMatch match) {
+                assert visitor.isContinue();
+                if (isValidPatternMap(host, match.getPatternMap())) {
+                    match.traverseProofs(visitor);
                 }
-            });
+                return visitor.isContinue();
+            }
+        });
         return visitor.getResult();
     }
 
@@ -470,10 +465,7 @@ public class Rule implements Action, Fixable {
             for (int i = 0; i < sigSize; i++) {
                 // set initPars if the seed map contains a value
                 // for this parameter
-                initPars.set(
-                    i,
-                    seedMap.nodeMap().containsKey(
-                        getSignature().get(i).getRuleNode()));
+                initPars.set(i, seedMap.nodeMap().containsKey(getSignature().get(i).getRuleNode()));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
@@ -539,13 +531,10 @@ public class Rule implements Action, Fixable {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             HostNode erasedNode = match.getNode(eraserNode);
-            HostEdgeSet danglingEdges =
-                new HostEdgeSet(host.edgeSet(erasedNode));
+            HostEdgeSet danglingEdges = new HostEdgeSet(host.edgeSet(erasedNode));
             for (RuleEdge eraserEdge : lhs().edgeSet(eraserNode)) {
-                boolean removed =
-                    danglingEdges.remove(match.getEdge(eraserEdge));
-                assert removed : String.format(
-                    "Match %s not present in incident edges %s",
+                boolean removed = danglingEdges.remove(match.getEdge(eraserEdge));
+                assert removed : String.format("Match %s not present in incident edges %s",
                     match.getEdge(eraserEdge), host.edgeSet(erasedNode));
             }
             if (!danglingEdges.isEmpty()) {
@@ -604,8 +593,7 @@ public class Rule implements Action, Fixable {
     @Override
     public String toString() {
         StringBuilder res =
-            new StringBuilder(String.format("Rule %s; anchor %s%n",
-                getFullName(), getAnchor()));
+            new StringBuilder(String.format("Rule %s; anchor %s%n", getFullName(), getAnchor()));
         res.append(getCondition().toString("    "));
         return res.toString();
     }
@@ -613,6 +601,7 @@ public class Rule implements Action, Fixable {
     /**
      * Compares two actions on the basis of their names.
      */
+    @Override
     public int compareTo(Action other) {
         return getFullName().compareTo(other.getFullName());
     }
@@ -717,8 +706,7 @@ public class Rule implements Action, Fixable {
      * Computes if the rule has mergers or not.
      */
     private boolean computeHasMergers() {
-        boolean result =
-            !getLhsMergeMap().isEmpty() || !getRhsMergeMap().isEmpty();
+        boolean result = !getLhsMergeMap().isEmpty() || !getRhsMergeMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.hasMergers();
@@ -748,9 +736,8 @@ public class Rule implements Action, Fixable {
      */
     private boolean computeIsModifying() {
         boolean result =
-            getEraserEdges().length > 0 || getEraserNodes().length > 0
-                || hasMergers() || hasNodeCreators() || hasEdgeCreators()
-                || !getColorMap().isEmpty();
+            getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
+                || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.isModifying();
@@ -1017,8 +1004,7 @@ public class Rule implements Action, Fixable {
         // iterate over all creator edges
         for (RuleEdge edge : getCreatorEdges()) {
             // determine if this edge is simple
-            if (nonCreatorNodes.contains(edge.source())
-                && nonCreatorNodes.contains(edge.target())) {
+            if (nonCreatorNodes.contains(edge.source()) && nonCreatorNodes.contains(edge.target())) {
                 result.add(edge);
             }
         }
@@ -1039,8 +1025,7 @@ public class Rule implements Action, Fixable {
      * Computes the creator edges that have at least one creator end.
      */
     private Set<RuleEdge> computeComplexCreatorEdges() {
-        Set<RuleEdge> result =
-            new HashSet<RuleEdge>(Arrays.asList(getCreatorEdges()));
+        Set<RuleEdge> result = new HashSet<RuleEdge>(Arrays.asList(getCreatorEdges()));
         result.removeAll(Arrays.asList(getSimpleCreatorEdges()));
         return result;
     }
@@ -1118,8 +1103,7 @@ public class Rule implements Action, Fixable {
         return creatorVarSet.toArray(new LabelVar[creatorVarSet.size()]);
     }
 
-    private void addCreatorVar(Set<LabelVar> creatorVarSet,
-            RuleElement creatorEdge) {
+    private void addCreatorVar(Set<LabelVar> creatorVarSet, RuleElement creatorEdge) {
         for (TypeGuard guard : creatorEdge.getTypeGuards()) {
             creatorVarSet.add(guard.getVar());
         }
@@ -1153,8 +1137,7 @@ public class Rule implements Action, Fixable {
      */
     public final Set<RuleNode> getCreatorEnds() {
         if (this.creatorEnds == null) {
-            this.creatorEnds =
-                new HashSet<RuleNode>(getCreatorGraph().nodeSet());
+            this.creatorEnds = new HashSet<RuleNode>(getCreatorGraph().nodeSet());
             this.creatorEnds.retainAll(lhs().nodeSet());
         }
         return this.creatorEnds;
@@ -1419,7 +1402,7 @@ public class Rule implements Action, Fixable {
      * anchor position or to the position in the created nodes list.
      * The latter are offset by the length of the anchor.
      */
-    private int[] parBinding;
+    private Binding[] parBinding;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
@@ -1435,8 +1418,7 @@ public class Rule implements Action, Fixable {
     /**
      * Mapping from sets of initialised parameters to match strategies.
      */
-    private final Map<BitSet,Matcher> matcherMap =
-        new HashMap<BitSet,Matcher>();
+    private final Map<BitSet,Matcher> matcherMap = new HashMap<BitSet,Matcher>();
 
     /** The matcher for events of this rule. */
     private Matcher eventMatcher;
@@ -1465,8 +1447,7 @@ public class Rule implements Action, Fixable {
     /**
      * The factory used for creating rule anchors.
      */
-    private static AnchorFactory anchorFactory =
-        DefaultAnchorFactory.getInstance();
+    private static AnchorFactory anchorFactory = DefaultAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
 }

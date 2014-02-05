@@ -38,15 +38,13 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
-public class RecipeTransition extends
-        AEdge<GraphState,RecipeTransitionLabel> implements
+public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> implements
         GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public RecipeTransition(GraphState source, RuleTransition initial,
-            GraphState target) {
+    public RecipeTransition(GraphState source, RuleTransition initial, GraphState target) {
         super(source, new RecipeTransitionLabel(initial), target);
     }
 
@@ -74,11 +72,13 @@ public class RecipeTransition extends
     }
 
     /** Returns the initial rule transition of the recipe transition. */
+    @Override
     public RuleTransition getInitial() {
         return label().getInitial();
     }
 
     /** Returns the collection of rule transitions comprising this label. */
+    @Override
     public Set<RuleTransition> getSteps() {
         Set<RuleTransition> result = this.steps;
         if (result == null) {
@@ -94,13 +94,11 @@ public class RecipeTransition extends
     public List<RuleTransition> getPath() {
         List<RuleTransition> result = null;
         // all paths of the current length
-        List<List<RuleTransition>> paths =
-            new ArrayList<List<RuleTransition>>();
+        List<List<RuleTransition>> paths = new ArrayList<List<RuleTransition>>();
         paths.add(Arrays.asList(getInitial()));
         // do the following for paths of increasing length
         while (result == null) {
-            List<List<RuleTransition>> newPaths =
-                new ArrayList<List<RuleTransition>>();
+            List<List<RuleTransition>> newPaths = new ArrayList<List<RuleTransition>>();
             for (List<RuleTransition> path : paths) {
                 GraphState target = path.get(path.size() - 1).target();
                 // check if any of the paths reaches the target
@@ -111,8 +109,7 @@ public class RecipeTransition extends
                     // otherwise, extend the path in all possible ways
                     for (RuleTransition next : target.getRuleTransitions()) {
                         if (getSteps().contains(next)) {
-                            List<RuleTransition> newPath =
-                                new ArrayList<RuleTransition>(path);
+                            List<RuleTransition> newPath = new ArrayList<RuleTransition>(path);
                             newPath.add(next);
                             newPaths.add(newPath);
                         }
@@ -126,8 +123,7 @@ public class RecipeTransition extends
 
     private Set<RuleTransition> computeSteps() {
         // mapping from states to sets of incoming transitions
-        Map<GraphState,Set<RuleTransition>> inMap =
-            new HashMap<GraphState,Set<RuleTransition>>();
+        Map<GraphState,Set<RuleTransition>> inMap = new HashMap<GraphState,Set<RuleTransition>>();
         // build the incoming transition map
         Stack<GraphState> pool = new Stack<GraphState>();
         pool.add(getInitial().target());
@@ -148,8 +144,7 @@ public class RecipeTransition extends
                 }
             }
         }
-        assert getInitial().target().equals(target())
-            || inMap.containsKey(target());
+        assert getInitial().target().equals(target()) || inMap.containsKey(target());
         // backward reachability to build up the result set
         Set<RuleTransition> result = new HashSet<RuleTransition>();
         result.add(getInitial());
@@ -176,6 +171,7 @@ public class RecipeTransition extends
      * This implementation reconstructs the rule application from the stored
      * footprint, and appends an isomorphism to the actual target if necessary.
      */
+    @Override
     public HostGraphMorphism getMorphism() {
         if (this.morphism == null) {
             this.morphism = computeMorphism();
@@ -202,9 +198,7 @@ public class RecipeTransition extends
         HostGraph host = source().getGraph();
         for (RuleTransition step : getSteps()) {
             RuleApplication appl = step.getEvent().newApplication(host);
-            result =
-                result == null ? appl.getMorphism()
-                        : result.then(appl.getMorphism());
+            result = result == null ? appl.getMorphism() : result.then(appl.getMorphism());
             host = appl.getTarget();
         }
         return result;

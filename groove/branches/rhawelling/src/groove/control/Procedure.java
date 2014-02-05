@@ -17,7 +17,10 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
-import groove.control.symbolic.Term;
+import groove.control.template.Switch.Kind;
+import groove.control.template.Template;
+import groove.control.template.TemplateBuilder;
+import groove.control.term.Term;
 import groove.grammar.QualName;
 import groove.util.Fixable;
 import groove.util.Groove;
@@ -42,8 +45,8 @@ public abstract class Procedure implements Callable, Fixable {
      * @param startLine first line in the control program at
      * which the unit declaration starts
      */
-    protected Procedure(String fullName, int priority, List<Var> signature,
-            String controlName, int startLine) {
+    protected Procedure(String fullName, int priority, List<Var> signature, String controlName,
+            int startLine) {
         this.fullName = fullName;
         this.priority = priority;
         this.signature = signature;
@@ -51,22 +54,26 @@ public abstract class Procedure implements Callable, Fixable {
         this.startLine = startLine;
     }
 
+    @Override
     public String getLastName() {
         return QualName.getLastName(getFullName());
     }
 
+    @Override
     public String getFullName() {
         return this.fullName;
     }
 
     private final String fullName;
 
+    @Override
     public int getPriority() {
         return this.priority;
     }
 
     private final int priority;
 
+    @Override
     public List<Var> getSignature() {
         return this.signature;
     }
@@ -92,8 +99,10 @@ public abstract class Procedure implements Callable, Fixable {
      * The call fixes the procedure.
      */
     public void setTerm(Term body) {
-        assert body == null && !isFixed();
-        this.term = body;
+        assert body != null;
+        assert !isFixed();
+        // make the body atomic if it is a recipe
+        this.term = getKind() == Kind.RECIPE ? body.atom() : body;
         setFixed();
     }
 
@@ -109,8 +118,7 @@ public abstract class Procedure implements Callable, Fixable {
     public Template getTemplate() {
         assert isFixed();
         if (this.template == null) {
-            this.template =
-                TemplateBuilder.instance().build(getFullName(), getTerm());
+            this.template = TemplateBuilder.instance().build(this, null, getTerm());
         }
         return this.template;
     }
@@ -119,9 +127,8 @@ public abstract class Procedure implements Callable, Fixable {
 
     /** Sets the control automaton of the procedure. */
     public void setBody(CtrlAut body) {
-        assert this.body == null : String.format(
-            "%s body of %s already set to %s", getKind().getName(true),
-            getFullName(), body);
+        assert this.body == null : String.format("%s body of %s already set to %s",
+            getKind().getName(true), getFullName(), body);
         this.body = body;
     }
 
@@ -172,20 +179,23 @@ public abstract class Procedure implements Callable, Fixable {
     private Map<CtrlVar,Integer> inParMap;
     private Map<CtrlVar,Integer> outParMap;
 
+    @Override
     public boolean setFixed() {
         boolean result = this.fixed;
         this.fixed = true;
         return result;
     }
 
+    @Override
     public boolean isFixed() {
         return this.fixed;
     }
 
+    @Override
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format(
-                "The unit is %sfixed", fixed ? "" : "not "));
+            throw new IllegalStateException(String.format("The unit is %sfixed", fixed ? ""
+                    : "not "));
         }
     }
 

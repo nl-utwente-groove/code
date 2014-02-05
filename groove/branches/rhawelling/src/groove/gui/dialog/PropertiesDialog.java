@@ -43,8 +43,7 @@ public class PropertiesDialog {
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
      */
-    public PropertiesDialog(Properties properties,
-            Map<String,? extends PropertyKey> defaultKeys) {
+    public PropertiesDialog(Properties properties, Map<String,? extends PropertyKey> defaultKeys) {
         this.table = new PropertiesTable(defaultKeys, true);
         this.table.setProperties(properties);
     }
@@ -63,8 +62,7 @@ public class PropertiesDialog {
         do {
             getContentPane().setValue(null);
             getContentPane().setVisible(true);
-            JDialog dialog =
-                getContentPane().createDialog(frame, createTitle());
+            JDialog dialog = getContentPane().createDialog(frame, createTitle());
             dialog.setResizable(true);
             dialog.setVisible(true);
             dialog.dispose();
@@ -97,8 +95,7 @@ public class PropertiesDialog {
      */
     private int showAbandonDialog() {
         int response =
-            JOptionPane.showConfirmDialog(getContentPane(),
-                "Use changed properties?", null,
+            JOptionPane.showConfirmDialog(getContentPane(), "Use changed properties?", null,
                 JOptionPane.YES_NO_CANCEL_OPTION);
         return response;
     }
@@ -114,8 +111,7 @@ public class PropertiesDialog {
             mode = JOptionPane.OK_CANCEL_OPTION;
             buttons = new Object[] {getOkButton(), createCancelButton()};
             this.pane =
-                new JOptionPane(createTablePane(), JOptionPane.PLAIN_MESSAGE,
-                    mode, null, buttons);
+                new JOptionPane(createTablePane(), JOptionPane.PLAIN_MESSAGE, mode, null, buttons);
         }
         return this.pane;
     }
@@ -189,6 +185,7 @@ public class PropertiesDialog {
             // empty
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             getContentPane().setValue(e.getSource());
             getContentPane().setVisible(false);

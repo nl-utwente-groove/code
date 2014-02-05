@@ -6,6 +6,7 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
+import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.JGraphPanel;
@@ -29,7 +30,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JDialog;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 /**
@@ -48,8 +48,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     /** Constructs a new dialog, for a given graph. */
-    private GraphPreviewDialog(Simulator simulator, GrammarModel grammar,
-            G graph) {
+    private GraphPreviewDialog(Simulator simulator, GrammarModel grammar, G graph) {
         super(simulator == null ? null : simulator.getFrame());
         this.simulator = simulator;
         this.grammar = grammar;
@@ -68,14 +67,15 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     /** Returns the main panel shown on this dialog. */
-    public JPanel getContent() {
+    public GraphPreviewPanel getContent() {
         if (this.contentPanel == null) {
-            this.contentPanel = new JGraphPanel<G>(getJGraph());
+            this.contentPanel = new GraphPreviewPanel(getJGraph());
             this.contentPanel.initialise();
             this.contentPanel.setEnabled(true);
             // make any dialog in which this panel is embedded resizable
             // taken from https://blogs.oracle.com/scblog/entry/tip_making_joptionpane_dialog_resizable
             this.contentPanel.addHierarchyListener(new HierarchyListener() {
+                @Override
                 public void hierarchyChanged(HierarchyEvent e) {
                     Window window =
                         SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
@@ -91,7 +91,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         return this.contentPanel;
     }
 
-    private JGraphPanel<G> contentPanel;
+    private GraphPreviewPanel contentPanel;
 
     /** Returns the JGraph shown on this dialog. */
     private JGraph<G> getJGraph() {
@@ -119,8 +119,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                 shownGraph = GraphConverter.toAspect(this.graph);
                 DisplayKind kind =
                     DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-                AspectJGraph aspectJGraph =
-                    new AspectJGraph(this.simulator, kind, false);
+                AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
                 if (this.simulator == null) {
                     aspectJGraph.setGrammar(this.grammar);
                 }
@@ -191,17 +190,30 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     /** Creates a panel showing a preview of a given graph. */
-    static public JPanel createPanel(GrammarModel grammar, Graph graph) {
+    static public GraphPreviewPanel createPanel(GrammarModel grammar, Graph graph) {
         return new GraphPreviewDialog<Graph>(grammar, graph).getContent();
     }
 
     private static Simulator globalSimulator;
-    private static Map<GraphRole,Set<String>> recentPreviews =
-        new EnumMap<GraphRole,Set<String>>(GraphRole.class);
+    private static Map<GraphRole,Set<String>> recentPreviews = new EnumMap<GraphRole,Set<String>>(
+        GraphRole.class);
     static {
         for (GraphRole role : GraphRole.values()) {
             recentPreviews.put(role, new HashSet<String>());
         }
     }
     private static final boolean TIMER = true;
+
+    /** A panel showing a JGraph, with functionality te retrieve the rendering options. */
+    public static class GraphPreviewPanel extends JGraphPanel<Graph> {
+        /** Creates a panel for a given JGraph. */
+        public GraphPreviewPanel(JGraph<? extends Graph> jGraph) {
+            super(jGraph);
+        }
+
+        /** Returns the options object used in rendering the JGraph. */
+        public Options getOptions() {
+            return getJGraph().getOptions();
+        }
+    }
 }

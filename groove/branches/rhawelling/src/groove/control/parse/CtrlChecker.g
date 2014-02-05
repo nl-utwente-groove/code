@@ -39,7 +39,7 @@ import java.util.HashMap;
 
 program 
 @init { helper.clearErrors(); }
-  : ^(PROGRAM package_decl import_decl* functions recipes block) 
+  : ^(PROGRAM package_decl imports functions recipes block) 
   ;
 
 package_decl
@@ -47,7 +47,11 @@ package_decl
        { helper.checkPackage($ID); }
      )
   ;
-  
+
+imports
+  : ^(IMPORTS import_decl*)
+  ;
+
 import_decl
   : ^( IMPORT ID SEMI
        { helper.checkImport($ID); }
@@ -56,6 +60,7 @@ import_decl
 
 recipes
   : ^(RECIPES recipe*)
+       { helper.reorderFunctions($RECIPES); }
   ;
 
 recipe
@@ -121,12 +126,11 @@ stat
        { helper.endBranch(); }
      )
   | ^( IF 
-       stat 
        { helper.startBranch(); }
        stat 
-       ( { helper.nextBranch(); }
-         stat
-       )?
+       stat
+       { helper.nextBranch(); }
+       stat?
        { helper.endBranch(); }
      )
   | ^( CHOICE
@@ -135,8 +139,8 @@ stat
        ( { helper.nextBranch(); }
          stat
        )*
-       )
        { helper.endBranch(); }
+     )
   | ^( STAR
        { helper.startBranch(); }
        stat

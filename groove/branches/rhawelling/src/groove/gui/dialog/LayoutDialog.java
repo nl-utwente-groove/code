@@ -40,8 +40,7 @@ import javax.swing.SwingConstants;
  * @author Eduardo Zambon
  * @version $Revision $
  */
-public class LayoutDialog extends JDialog implements ActionListener,
-        WindowFocusListener {
+public class LayoutDialog extends JDialog implements ActionListener, WindowFocusListener {
 
     private static LayoutDialog INSTANCE;
 
@@ -99,6 +98,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
         this.setVisible(true);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (this.layoutBox.equals(e.getSource())) {
             this.refreshPanel(this.layoutBox.getSelectedIndex());
@@ -112,8 +112,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
     private void refreshPanel(LayouterItem item) {
         if (getJGraph() != null) {
             getLayoutMenu().selectLayoutAction(item).actionPerformed(null);
-            LayouterItem layouterItem =
-                (LayouterItem) getJGraph().getLayouter();
+            LayouterItem layouterItem = (LayouterItem) getJGraph().getLayouter();
             replacePanel(layouterItem.getPanel());
         }
     }
@@ -136,8 +135,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
     private void refreshJGraph() {
         DisplayKind display = this.simulator.getModel().getDisplay();
         if (display.isGraphBased()) {
-            this.jGraph =
-                this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
+            this.jGraph = this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
         }
     }
 

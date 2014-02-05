@@ -33,8 +33,7 @@ public class TestPatternGraphGenerator {
     private static final int VERBOSITY = 0;
 
     private String[] getArgs(String grammar, String startGraph, String typeGraph) {
-        return new String[] {"-v", VERBOSITY + "", grammar, startGraph,
-            typeGraph};
+        return new String[] {"-v", VERBOSITY + "", grammar, startGraph, typeGraph};
     }
 
     @Test
@@ -46,28 +45,25 @@ public class TestPatternGraphGenerator {
 
         PGTS pgts;
         try {
-            generator =
-                new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
-                    typeGraph));
+            generator = new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
             pgts = generator.start();
             assertEquals(6, pgts.getStateCount());
             assertEquals(12, pgts.getTransitionCount());
             assertTrue(generator.compareGTSs(pgts));
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            e.printStackTrace();
+            Assert.fail(e.toString());
         }
 
         typeGraph = "ptgraph-min.gst";
         try {
-            generator =
-                new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
-                    typeGraph));
+            generator = new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
             pgts = generator.start();
             assertEquals(6, pgts.getStateCount());
             assertEquals(12, pgts.getTransitionCount());
             assertTrue(generator.compareGTSs(pgts));
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assert.fail(e.toString());
         }
     }
 
@@ -79,15 +75,13 @@ public class TestPatternGraphGenerator {
         PatternGraphGenerator generator;
 
         try {
-            generator =
-                new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
-                    typeGraph));
+            generator = new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
             PGTS pgts = generator.start();
             assertEquals(11, pgts.getStateCount());
             assertEquals(12, pgts.getTransitionCount());
             assertTrue(generator.compareGTSs(pgts));
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assert.fail(e.toString());
         }
     }
 

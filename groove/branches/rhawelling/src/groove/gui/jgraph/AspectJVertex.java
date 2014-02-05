@@ -32,9 +32,8 @@ import java.util.Set;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AspectJVertex extends
-        AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements
-        AspectJCell {
+public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge>
+        implements AspectJCell {
     /** 
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
@@ -124,8 +123,7 @@ public class AspectJVertex extends
                 // this is a constant or variable node
                 Object content = getNode().getAttrAspect().getContent();
                 if (content == null) {
-                    return VariableNode.TO_STRING_PREFIX
-                        + getNode().getNumber();
+                    return VariableNode.TO_STRING_PREFIX + getNode().getNumber();
                 } else if (content instanceof Expression) {
                     return ((Expression) content).toDisplayString();
                 } else {
@@ -172,8 +170,7 @@ public class AspectJVertex extends
                 HTMLConverter.toUppercase(result, false);
                 result.insert(0, " ");
                 result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
-                result.append("<br>"
-                    + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+                result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
             }
         }
         return result;
@@ -228,8 +225,7 @@ public class AspectJVertex extends
     protected Look getStructuralLook() {
         if (isNodeEdge()) {
             return Look.NODIFIED;
-        } else if (getNode().getGraphRole() == GraphRole.TYPE
-            && getAspect() == AspectKind.DEFAULT) {
+        } else if (getNode().getGraphRole() == GraphRole.TYPE && getAspect() == AspectKind.DEFAULT) {
             return Look.TYPE;
         } else {
             return Look.getLookFor(getAspect());
@@ -238,8 +234,7 @@ public class AspectJVertex extends
 
     /** Indicates if this vertex is in fact a nodified edge. */
     public boolean isNodeEdge() {
-        return getJGraph().getMode() != JGraphMode.EDIT_MODE
-            && getEdgeLabelPattern() != null;
+        return getJGraph().getMode() != JGraphMode.EDIT_MODE && getEdgeLabelPattern() != null;
     }
 
     /**
@@ -266,6 +261,7 @@ public class AspectJVertex extends
         return typeMap == null ? null : typeMap.getNode(getNode());
     }
 
+    @Override
     public void saveToUserObject() {
         // collect the node and edge information
         AspectJObject userObject = getUserObject();
@@ -297,8 +293,7 @@ public class AspectJVertex extends
         for (AspectLabel label : edgeLabels) {
             AspectEdge edge = new AspectEdge(node, label, node);
             edge.setFixed();
-            if (edge.getAspect() != null
-                && edge.getAspect().getKind() == REMARK) {
+            if (edge.getAspect() != null && edge.getAspect().getKind() == REMARK) {
                 if (remarkText.length() > 0) {
                     remarkText.append('\n');
                 }
@@ -310,9 +305,7 @@ public class AspectJVertex extends
         // turn the collected remark text into a single edge
         if (remarkText.length() > 0) {
             remarkText.insert(0, REMARK.getPrefix());
-            AspectEdge edge =
-                new AspectEdge(node, parser.parse(remarkText.toString(), role),
-                    node);
+            AspectEdge edge = new AspectEdge(node, parser.parse(remarkText.toString(), role), node);
             edge.setFixed();
             newEdges.add(edge);
         }

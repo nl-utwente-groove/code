@@ -19,6 +19,7 @@ package groove.abstraction.pattern.trans;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.control.CtrlAut;
+import groove.control.instance.Automaton;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 
@@ -40,8 +41,7 @@ public final class PatternGraphGrammar {
     /** The name of this grammar. */
     private final String name;
     /** A mapping from rule names to the available pattern graph rules. */
-    private final Map<String,PatternRule> nameRuleMap =
-        new TreeMap<String,PatternRule>();
+    private final Map<String,PatternRule> nameRuleMap = new TreeMap<String,PatternRule>();
     /** The start graph of this graph grammar. */
     private PatternGraph startGraph;
 
@@ -99,6 +99,11 @@ public final class PatternGraphGrammar {
     /** Basic getter. */
     public CtrlAut getCtrlAut() {
         return this.sGrammar.getCtrlAut();
+    }
+
+    /** Basic getter. */
+    public Automaton getControl() {
+        return this.sGrammar.getControl();
     }
 
     /** Returns the simple grammar from which this pattern grammar was created.*/

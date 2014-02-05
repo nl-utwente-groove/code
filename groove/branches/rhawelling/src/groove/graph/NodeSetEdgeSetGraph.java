@@ -29,8 +29,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
-        AGraph<N,E> implements Cloneable {
+public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends AGraph<N,E> implements
+        Cloneable {
     /**
      * Creates a new, named empty graph.
      * @param name name of the new graph
@@ -55,6 +55,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
 
     // ------------------------- COMMANDS ------------------------------
 
+    @Override
     public boolean addNode(N node) {
         boolean result;
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
@@ -67,8 +68,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
      */
     @Override
     public boolean removeNodeContext(N node) {
-        assert !isFixed() : "Trying to remove " + node
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
         boolean removed = this.graphNodeSet.contains(node);
         if (removed) {
             Iterator<E> edgeIter = this.graphEdgeSet.iterator();
@@ -83,9 +83,9 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
         return removed;
     }
 
+    @Override
     public boolean removeEdge(E edge) {
-        assert !isFixed() : "Trying to remove " + edge
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + edge + " from unmodifiable graph";
         return this.graphEdgeSet.remove(edge);
     }
 
@@ -96,8 +96,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
         Iterator<E> edgeIter = this.graphEdgeSet.iterator();
         while (edgeIter.hasNext()) {
             E other = edgeIter.next();
-            if (nodeSet.contains(other.source())
-                || nodeSet.contains(other.target())) {
+            if (nodeSet.contains(other.source()) || nodeSet.contains(other.target())) {
                 edgeIter.remove();
             }
         }
@@ -108,6 +107,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
 
     // -------------------- PackageGraph methods ---------------------
 
+    @Override
     public boolean addEdge(E edge) {
         assert isTypeCorrect(edge);
         boolean result;
@@ -115,6 +115,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
         return result;
     }
 
+    @Override
     public boolean removeNode(N node) {
         assert isTypeCorrect(node);
         boolean result;
@@ -135,14 +136,17 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
         return result;
     }
 
+    @Override
     public NodeSetEdgeSetGraph<N,E> newGraph(String name) {
         return new NodeSetEdgeSetGraph<N,E>(getName());
     }
 
+    @Override
     public Set<? extends E> edgeSet() {
         return Collections.unmodifiableSet(this.graphEdgeSet);
     }
 
+    @Override
     public Set<? extends N> nodeSet() {
         return Collections.unmodifiableSet(this.graphNodeSet);
     }
@@ -189,22 +193,24 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph
      * when elements are added or deleted
      */
-    abstract private class NotifySet<EL extends Element> extends
-            LinkedHashSet<EL> {
+    abstract private class NotifySet<EL extends Element> extends LinkedHashSet<EL> {
         /**
          * An iterator over the underlying hash set that extends
          * <tt>remove()</tt> by invoking the graph listeners.
          */
         class NotifySetIterator implements Iterator<EL> {
+            @Override
             public boolean hasNext() {
                 return this.setIterator.hasNext();
             }
 
+            @Override
             public EL next() {
                 this.latest = this.setIterator.next();
                 return this.latest;
             }
 
+            @Override
             @SuppressWarnings("unchecked")
             public void remove() {
                 this.setIterator.remove();

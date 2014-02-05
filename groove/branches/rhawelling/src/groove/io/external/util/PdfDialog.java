@@ -55,6 +55,7 @@ public class PdfDialog extends JDialog {
             }
         });
         ActionListener actionListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 setVisible(false);
             }
@@ -75,8 +76,7 @@ public class PdfDialog extends JDialog {
 
     /** Builds the dialog GUI. */
     private void buildGUI() {
-        this.m_outlineFont =
-            new JCheckBox("Use font outlines (larger PDF, more accurate)");
+        this.m_outlineFont = new JCheckBox("Use font outlines (larger PDF, more accurate)");
 
         JPanel form = new JPanel(new GridBagLayout());
 
@@ -97,6 +97,7 @@ public class PdfDialog extends JDialog {
 
         JButton okBtn = new JButton("OK");
         okBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 PdfDialog.this.m_dialogResult = true;
                 PdfDialog.this.dispose();
@@ -106,6 +107,7 @@ public class PdfDialog extends JDialog {
 
         JButton cancelBtn = new JButton("Cancel");
         cancelBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 PdfDialog.this.dispose();
             }

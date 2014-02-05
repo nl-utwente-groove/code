@@ -19,13 +19,11 @@ package groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
 import groove.util.Groove;
-
-import java.io.IOException;
+import junit.framework.Assert;
 
 import org.junit.Test;
 
@@ -43,8 +41,8 @@ public class ControlAttributeParametersTest {
         explore("control", 9, 8, 30, 40);
     }
 
-    private void explore(String control, int controlStates,
-            int controlTransitions, int expectedNodes, int expectedEdges) {
+    private void explore(String control, int controlStates, int controlTransitions,
+            int expectedNodes, int expectedEdges) {
         try {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
@@ -56,10 +54,9 @@ public class ControlAttributeParametersTest {
             assertFalse(exploration.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } catch (FormatException e) {
-            throw new IllegalStateException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 }

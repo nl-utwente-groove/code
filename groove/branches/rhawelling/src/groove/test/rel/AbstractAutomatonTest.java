@@ -53,6 +53,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -82,8 +84,7 @@ abstract public class AbstractAutomatonTest {
     static final List<String> wordBA = Arrays.asList("B", "A");
     static final List<String> wordABC = Arrays.asList("A", "B", "C");
     static final List<String> wordAAA = Arrays.asList("A", "A", "A");
-    static final List<String> wordAAABCAAA = Arrays.asList("A", "A", "A", "B",
-        "C", "A", "A", "A");
+    static final List<String> wordAAABCAAA = Arrays.asList("A", "A", "A", "B", "C", "A", "A", "A");
     static final String testGraphName = "regexpr-test-graph";
     static HostGraph testGraph;
 
@@ -102,7 +103,7 @@ abstract public class AbstractAutomatonTest {
                 new DefaultHostGraph(GxlIO.instance().loadGraph(
                     new File(GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         implicitTypeGraph = new ImplicitTypeGraph();
         for (HostEdge testEdge : testGraph.edgeSet()) {
@@ -543,22 +544,14 @@ abstract public class AbstractAutomatonTest {
         assertEquals(createRelated(nI3, nI3),
             aut.getMatches(testGraph, null, null, createValuation("x", "3")));
         aut = createAutomaton("(List.?x.?y)+.?x");
-        assertEquals(
-            createRelated(nList, nC1),
-            aut.getMatches(testGraph, null, null,
-                createValuation("x", "first", "y", "in")));
-        assertEquals(
-            createRelated(nList, nC4),
-            aut.getMatches(testGraph, null, null,
-                createValuation("x", "last", "y", "in")));
-        assertEquals(
-            createRelated(nList, nList),
-            aut.getMatches(testGraph, null, null,
-                createValuation("x", "List", "y", "List")));
-        assertEquals(
-            createRelated(nList, nC1),
-            aut.getMatches(testGraph, null, null,
-                createValuation("x", "first", "y", "in")));
+        assertEquals(createRelated(nList, nC1),
+            aut.getMatches(testGraph, null, null, createValuation("x", "first", "y", "in")));
+        assertEquals(createRelated(nList, nC4),
+            aut.getMatches(testGraph, null, null, createValuation("x", "last", "y", "in")));
+        assertEquals(createRelated(nList, nList),
+            aut.getMatches(testGraph, null, null, createValuation("x", "List", "y", "List")));
+        assertEquals(createRelated(nList, nC1),
+            aut.getMatches(testGraph, null, null, createValuation("x", "first", "y", "in")));
     }
 
     @Test
@@ -661,8 +654,7 @@ abstract public class AbstractAutomatonTest {
         return edgeSet.iterator().next().source();
     }
 
-    private static void addRelated(Set<Result> results, HostNode one,
-            HostNode two) {
+    private static void addRelated(Set<Result> results, HostNode one, HostNode two) {
         results.add(new Result(one, two));
     }
 }

@@ -47,6 +47,7 @@ public class GTSCounter implements GTSListener {
         for (Flag flag : Flag.values()) {
             this.count[flag.ordinal()] = 0;
         }
+        this.absentCount = 0;
         this.transientStateCount = 0;
         this.partialTransitionCount = 0;
         this.ruleTransitionCount = 0;
@@ -72,6 +73,9 @@ public class GTSCounter implements GTSListener {
             if (state.hasFlag(flag)) {
                 this.count[flag.ordinal()]++;
             }
+        }
+        if (state.isAbsent()) {
+            this.absentCount++;
         }
         if (!state.isDone()) {
             this.inTransMap.put(state, new ArrayList<RuleTransition>());
@@ -109,7 +113,7 @@ public class GTSCounter implements GTSListener {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);
             if (state.isAbsent()) {
                 this.absentTransitionCount += inTrans.size();
-                this.count[Flag.ABSENT.ordinal()]++;
+                this.absentCount++;
             }
         }
     }
@@ -132,6 +136,11 @@ public class GTSCounter implements GTSListener {
     /** Returns the number of incompletely explored states in the GTS. */
     public int getOpenStateCount() {
         return this.gts.openStateCount();
+    }
+
+    /** Returns the number of absent states in the GTS. */
+    public int getAbsentStateCount() {
+        return this.absentCount;
     }
 
     /** Returns the total number of transitions in the GTS. */
@@ -160,6 +169,7 @@ public class GTSCounter implements GTSListener {
     }
 
     private GTS gts;
+    private int absentCount;
     private final int[] count = new int[Flag.values().length];
     private int transientStateCount;
     private int partialTransitionCount;

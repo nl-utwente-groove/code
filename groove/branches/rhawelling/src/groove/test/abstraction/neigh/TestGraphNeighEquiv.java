@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
+import junit.framework.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -39,8 +41,7 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestGraphNeighEquiv {
 
-    static private final String DIRECTORY =
-        "junit/abstraction/basic-tests.gps/";
+    static private final String DIRECTORY = "junit/abstraction/basic-tests.gps/";
 
     @BeforeClass
     public static void setUp() {
@@ -103,7 +104,7 @@ public class TestGraphNeighEquiv {
         try {
             result = new DefaultHostGraph(Groove.loadGraph(file));
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         return result;
     }

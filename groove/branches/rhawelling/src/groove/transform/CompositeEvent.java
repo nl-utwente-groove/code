@@ -37,8 +37,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CompositeEvent extends
-        AbstractRuleEvent<Rule,CompositeEvent.CompositeEventCache> {
+public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.CompositeEventCache> {
     /**
      * Creates a composite event on the basis of a given (nonempty) constituent event set.
      * @param record the system record from which this event was created; may be
@@ -49,8 +48,7 @@ public class CompositeEvent extends
      *        dependency tree of the events, meaning the the first element is
      *        the event corresponding to the top level of <code>rule</code>.
      */
-    public CompositeEvent(Record record, Rule rule,
-            Collection<BasicEvent> eventSet, Reuse reuse) {
+    public CompositeEvent(Record record, Rule rule, Collection<BasicEvent> eventSet, Reuse reuse) {
         super(reference, rule);
         assert !eventSet.isEmpty();
         this.record = record;
@@ -60,10 +58,11 @@ public class CompositeEvent extends
     }
 
     @Override
-    Reuse getReuse() {
+    public Reuse getReuse() {
         return this.reuse;
     }
 
+    @Override
     public boolean conflicts(RuleEvent other) {
         for (RuleEvent event : this.eventArray) {
             if (event.conflicts(other)) {
@@ -83,11 +82,11 @@ public class CompositeEvent extends
         return this.eventArray[0].getAnchorMap();
     }
 
+    @Override
     public String getAnchorImageString() {
         List<String> eventLabels = new ArrayList<String>();
         for (BasicEvent event : this.eventArray) {
-            eventLabels.add(event.getRule().getFullName()
-                + event.getAnchorImageString());
+            eventLabels.add(event.getRule().getFullName() + event.getAnchorImageString());
         }
         return Arrays.toString(eventLabels.toArray());
     }
@@ -120,6 +119,7 @@ public class CompositeEvent extends
         }
     }
 
+    @Override
     public int compareTo(RuleEvent other) {
         int result = getRule().compareTo(other.getRule());
         if (result == 0) {
@@ -180,8 +180,7 @@ public class CompositeEvent extends
         if (myEvents.length != otherEvents.length) {
             return false;
         }
-        Set<BasicEvent> myEventSet =
-            new HashSet<BasicEvent>(Arrays.asList(myEvents));
+        Set<BasicEvent> myEventSet = new HashSet<BasicEvent>(Arrays.asList(myEvents));
         for (int i = 0; i < otherEvents.length; i++) {
             if (!myEventSet.contains(otherEvents[i])) {
                 return false;
@@ -233,8 +232,7 @@ public class CompositeEvent extends
         SortedSet<BasicEvent> getEventSet() {
             if (this.eventSet == null) {
                 this.eventSet =
-                    new TreeSet<BasicEvent>(
-                        Arrays.asList(CompositeEvent.this.eventArray));
+                    new TreeSet<BasicEvent>(Arrays.asList(CompositeEvent.this.eventArray));
             }
             return this.eventSet;
         }

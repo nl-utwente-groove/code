@@ -45,21 +45,20 @@ class Edge2SearchItem extends AbstractSearchItem {
     public Edge2SearchItem(RuleEdge edge) {
         // as this is subclassed by VarEdgeSearchItem,
         // the label may actually be an arbitrary regular expression
-        assert edge.label().isSharp() || edge.label().isAtom()
-            || edge.label().isWildcard();
+        assert edge.label().isSharp() || edge.label().isAtom() || edge.label().isWildcard();
         assert edge.getType() != null || edge.label().isWildcard();
         this.edge = edge;
         this.type = edge.getType();
         this.source = edge.source();
         TypeNode sourceType = this.source.getType();
         this.sourceType =
-            this.source.isSharp() || this.type == null
-                || sourceType != this.type.source() ? sourceType : null;
+            this.source.isSharp() || this.type == null || sourceType != this.type.source()
+                    ? sourceType : null;
         this.target = edge.target();
         TypeNode targetType = this.target.getType();
         this.targetType =
-            this.target.isSharp() || this.type == null
-                || targetType != this.type.target() ? targetType : null;
+            this.target.isSharp() || this.type == null || targetType != this.type.target()
+                    ? targetType : null;
         this.selfEdge = this.source == this.target;
         this.boundNodes = new HashSet<RuleNode>();
         this.boundNodes.add(this.source);
@@ -117,6 +116,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         return result;
     }
 
+    @Override
     public void activate(PlanSearchStrategy strategy) {
         // one would like the following assertion,
         // but since negative search items for the same edge also reserve the
@@ -161,8 +161,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         return getEdge().equals(other.getEdge());
     }
 
-    final public Record createRecord(
-            groove.match.plan.PlanSearchStrategy.Search search) {
+    @Override
+    final public Record createRecord(groove.match.plan.PlanSearchStrategy.Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();
@@ -185,14 +185,13 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Creates a record for the case the image is singular. */
     SingularRecord createSingularRecord(Search search) {
-        return new Edge2SingularRecord(search, this.edgeIx, this.sourceIx,
-            this.targetIx);
+        return new Edge2SingularRecord(search, this.edgeIx, this.sourceIx, this.targetIx);
     }
 
     /** Creates a record for the case the image is not singular. */
     MultipleRecord<HostEdge> createMultipleRecord(Search search) {
-        return new Edge2MultipleRecord(search, this.edgeIx, this.sourceIx,
-            this.targetIx, this.sourceFound, this.targetFound);
+        return new Edge2MultipleRecord(search, this.edgeIx, this.sourceIx, this.targetIx,
+            this.sourceFound, this.targetFound);
     }
 
     /** Tests if a given host edge type matches the search item. */
@@ -203,15 +202,13 @@ class Edge2SearchItem extends AbstractSearchItem {
     /** Tests if a given host edge source type matches the search item. */
     boolean checkSourceType(HostNode imageSource) {
         return this.sourceType == null
-            || this.sourceType.subsumes(imageSource.getType(),
-                this.source.isSharp());
+            || this.sourceType.subsumes(imageSource.getType(), this.source.isSharp());
     }
 
     /** Tests if a given host edge target type matches the search item. */
     boolean checkTargetType(HostNode imageTarget) {
         return this.targetType == null
-            || this.targetType.subsumes(imageTarget.getType(),
-                this.target.isSharp());
+            || this.targetType.subsumes(imageTarget.getType(), this.target.isSharp());
     }
 
     /**
@@ -258,8 +255,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     /** Indicates if the target is found before this item is invoked. */
     boolean targetFound;
 
-    private static final NodeComparator nodeComparator =
-        NodeComparator.instance();
+    private static final NodeComparator nodeComparator = NodeComparator.instance();
 
     /**
      * Search record to be used if the edge image is completely determined by
@@ -269,8 +265,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      */
     class Edge2SingularRecord extends SingularRecord {
         /** Constructs an instance for a given search. */
-        public Edge2SingularRecord(Search search, int edgeIx, int sourceIx,
-                int targetIx) {
+        public Edge2SingularRecord(Search search, int edgeIx, int sourceIx, int targetIx) {
             super(search);
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
@@ -320,18 +315,15 @@ class Edge2SearchItem extends AbstractSearchItem {
             if (sourceFind == null) {
                 sourceFind = this.search.getNode(this.sourceIx);
             }
-            assert sourceFind != null : String.format(
-                "Source node of %s has not been found",
+            assert sourceFind != null : String.format("Source node of %s has not been found",
                 Edge2SearchItem.this.edge);
             HostNode targetFind = this.targetSeed;
             if (targetFind == null) {
                 targetFind = this.search.getNode(this.targetIx);
             }
-            assert targetFind != null : String.format(
-                "Target node of %s has not been found",
+            assert targetFind != null : String.format("Target node of %s has not been found",
                 Edge2SearchItem.this.edge);
-            return this.host.getFactory().createEdge(sourceFind, getType(),
-                targetFind);
+            return this.host.getFactory().createEdge(sourceFind, getType(), targetFind);
         }
 
         /** Callback method to determine the label of the edge image. */
@@ -368,16 +360,16 @@ class Edge2SearchItem extends AbstractSearchItem {
         /**
          * Creates a record based on a given search.
          */
-        Edge2MultipleRecord(Search search, int edgeIx, int sourceIx,
-                int targetIx, boolean sourceFound, boolean targetFound) {
+        Edge2MultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx,
+                boolean sourceFound, boolean targetFound) {
             super(search);
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.targetIx = targetIx;
             this.sourceFound = sourceFound;
             this.targetFound = targetFound;
-            assert search.getEdge(edgeIx) == null : String.format(
-                "Edge %s already in %s", Edge2SearchItem.this.edge, search);
+            assert search.getEdge(edgeIx) == null : String.format("Edge %s already in %s",
+                Edge2SearchItem.this.edge, search);
         }
 
         @Override
@@ -392,14 +384,14 @@ class Edge2SearchItem extends AbstractSearchItem {
             this.sourceFind = this.sourceSeed;
             if (this.sourceFind == null && this.sourceFound) {
                 this.sourceFind = this.search.getNode(this.sourceIx);
-                assert this.sourceFind != null : String.format(
-                    "Source node of %s not found", Edge2SearchItem.this.edge);
+                assert this.sourceFind != null : String.format("Source node of %s not found",
+                    Edge2SearchItem.this.edge);
             }
             this.targetFind = this.targetSeed;
             if (this.targetFind == null && this.targetFound) {
                 this.targetFind = this.search.getNode(this.targetIx);
-                assert this.targetFind != null : String.format(
-                    "Target node of %s not found", Edge2SearchItem.this.edge);
+                assert this.targetFind != null : String.format("Target node of %s not found",
+                    Edge2SearchItem.this.edge);
             }
             initImages();
         }
@@ -503,18 +495,15 @@ class Edge2SearchItem extends AbstractSearchItem {
             Set<? extends HostEdge> labelEdgeSet =
                 this.host.edgeSet(Edge2SearchItem.this.type.label());
             if (this.sourceFind != null) {
-                Set<? extends HostEdge> nodeEdgeSet =
-                    this.host.edgeSet(this.sourceFind);
+                Set<? extends HostEdge> nodeEdgeSet = this.host.edgeSet(this.sourceFind);
                 if (nodeEdgeSet.size() < labelEdgeSet.size()) {
                     result = nodeEdgeSet;
                 }
             } else if (this.targetFind != null) {
-                Set<? extends HostEdge> nodeEdgeSet =
-                    this.host.edgeSet(this.targetFind);
+                Set<? extends HostEdge> nodeEdgeSet = this.host.edgeSet(this.targetFind);
                 if (nodeEdgeSet == null) {
                     assert this.targetFind instanceof ValueNode : String.format(
-                        "Host graph does not contain edges for node %s",
-                        this.targetFind);
+                        "Host graph does not contain edges for node %s", this.targetFind);
                     result = Collections.emptySet();
                 } else if (nodeEdgeSet.size() < labelEdgeSet.size()) {
                     result = nodeEdgeSet;

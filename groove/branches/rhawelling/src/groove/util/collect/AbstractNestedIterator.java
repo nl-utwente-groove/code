@@ -30,10 +30,12 @@ import java.util.NoSuchElementException;
  * @version $Revision$
  */
 abstract public class AbstractNestedIterator<T> implements Iterator<T> {
+    @Override
     public void remove() {
         this.latestProductiveInnerIter.remove();
     }
 
+    @Override
     public boolean hasNext() {
         while (!currentIterHasNext() && hasNextIterator()) {
             this.currentInnerIter = nextIterator();
@@ -41,6 +43,7 @@ abstract public class AbstractNestedIterator<T> implements Iterator<T> {
         return currentIterHasNext();
     }
 
+    @Override
     public T next() {
         if (hasNext()) {
             this.latestProductiveInnerIter = this.currentInnerIter;

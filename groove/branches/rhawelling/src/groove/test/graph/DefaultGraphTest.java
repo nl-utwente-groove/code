@@ -16,6 +16,7 @@
  */
 package groove.test.graph;
 
+import groove.graph.GraphRole;
 import groove.graph.plain.PlainGraph;
 
 /**
@@ -27,7 +28,7 @@ public class DefaultGraphTest extends GraphTest {
 
     @Override
     PlainGraph createGraph(String name) {
-        return new PlainGraph(name);
+        return new PlainGraph(name, GraphRole.NONE);
     }
 
 }

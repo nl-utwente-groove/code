@@ -62,8 +62,7 @@ public class InstanceGraphRep {
      */
     public InstanceGraphRep(String name, ModelHandler m) {
         this.mh = m;
-        this.ig = new PlainGraph(name);
-        this.ig.setRole(HOST);
+        this.ig = new PlainGraph(name, HOST);
         // First add instances of of classes to graph, then features
         addClasses(this.mh.getiClasses());
         addStructuralFeatures(this.mh.getiClasses());
@@ -253,8 +252,8 @@ public class InstanceGraphRep {
      * @require feature instanceof EAttribute, EClass instances must be
      * represented in the instance graph already.
      */
-    private PlainNode addAttribute(EObject source,
-            EStructuralFeature feature, Object target) {
+    private PlainNode addAttribute(EObject source, EStructuralFeature feature,
+            Object target) {
         String attributeLabel = GraphLabels.getLabel(feature);
         EDataType attributeType = ((EAttribute) feature).getEAttributeType();
         String datatypeLabel = GraphLabels.getLabel(attributeType, target);
@@ -298,8 +297,8 @@ public class InstanceGraphRep {
      * represented in the instance graph already, source and target must be
      * EClass instances.
      */
-    private PlainNode addReference(EObject source,
-            EStructuralFeature feature, EObject target) {
+    private PlainNode addReference(EObject source, EStructuralFeature feature,
+            EObject target) {
         String labelText = GraphLabels.getLabel(feature);
 
         // Create node to represent the reference and add it to ig
@@ -308,8 +307,7 @@ public class InstanceGraphRep {
 
         // If the reference is a containment reference, add flag:containment
         if (((EReference) feature).isContainment()) {
-            PlainLabel contLabel =
-                PlainLabel.createLabel("flag:containment");
+            PlainLabel contLabel = PlainLabel.createLabel("flag:containment");
             this.ig.addEdge(node, contLabel, node);
         }
 

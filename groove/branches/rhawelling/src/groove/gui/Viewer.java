@@ -20,18 +20,23 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
 import groove.io.FileType;
 import groove.io.graph.GraphIO;
 import groove.util.Groove;
 import groove.util.cli.ExistingFileHandler;
 import groove.util.cli.GrooveCmdLineTool;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 import org.kohsuke.args4j.Argument;
 
@@ -57,8 +62,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     }
 
     /** Shows a given file as a graph in an optionally modal dialog. */
-    public void show(File file, boolean modal) throws IOException,
-        FormatException {
+    public void show(File file, boolean modal) throws IOException, FormatException {
         GraphIO<?> io = null;
         for (FileType type : FileType.getType(file)) {
             if (type.hasGraphIO() && type.getGraphIO().canLoad()) {
@@ -83,9 +87,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     /** Shows a given graph in an optionally modal dialog. */
     private void show(final Graph graph, GrammarModel grammar, boolean modal) {
-        JPanel panel = GraphPreviewDialog.createPanel(grammar, graph);
-        JOptionPane optionPane =
-            new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
+        GraphPreviewPanel panel = GraphPreviewDialog.createPanel(grammar, graph);
+        panel.add(new NodeIdsButton(panel), BorderLayout.NORTH);
+        JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
         JDialog dialog = optionPane.createDialog(graph.getName());
         dialog.setModal(modal);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -108,8 +112,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     }
 
     /** The location of the file to be viewer. */
-    @Argument(
-            metaVar = "input",
+    @Argument(metaVar = "input",
             usage = "Graph file to be viewed. Its extension is used to guess its format and type",
             required = true, handler = ExistingFileHandler.class)
     private File inFile;
@@ -130,7 +133,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      * Tries to show a given file as a graph in a modeless dialog,
      * Convenience method for {@code showGraph(file,false)}.
      */
-    static public void showGraph(File file) {
+    static public void showGraph(File file) throws IOException, FormatException {
         showGraph(file, false);
     }
 
@@ -146,12 +149,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      * Tries to show a given file as a graph in an optionally modal dialog,
      * by invoking {@link #show(File,boolean)} on a fresh {@link Viewer} instance.
      */
-    static public void showGraph(File file, boolean modal) {
-        try {
-            new Viewer().show(file, modal);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    static public void showGraph(File file, boolean modal) throws IOException, FormatException {
+        new Viewer().show(file, modal);
     }
 
     /**
@@ -160,5 +159,29 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      */
     static public void showGraph(Graph graph, boolean modal) {
         new Viewer().show(graph, modal);
+    }
+
+    private class NodeIdsButton extends JButton {
+        NodeIdsButton(GraphPreviewPanel panel) {
+            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
+            setText();
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    NodeIdsButton.this.nodeIdsItem.setSelected(!NodeIdsButton.this.nodeIdsItem.isSelected());
+                    setText();
+                }
+            });
+        }
+
+        void setText() {
+            if (this.nodeIdsItem.isSelected()) {
+                setText("Hide node identities");
+            } else {
+                setText("Show node identities");
+            }
+        }
+
+        private final JMenuItem nodeIdsItem;
     }
 }

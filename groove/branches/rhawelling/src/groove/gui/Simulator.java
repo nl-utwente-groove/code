@@ -114,13 +114,12 @@ public class Simulator implements SimulatorListener {
     public Simulator(final String grammarLocation) {
         this();
         if (grammarLocation != null) {
-            final File location =
-                new File(GRAMMAR.addExtension(grammarLocation)).getAbsoluteFile();
+            final File location = new File(GRAMMAR.addExtension(grammarLocation)).getAbsoluteFile();
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
-                        Simulator.this.actions.getLoadGrammarAction().load(
-                            location);
+                        Simulator.this.actions.getLoadGrammarAction().load(location);
                     } catch (IOException exc) {
                         new ErrorDialog(getFrame(), exc.getMessage(), exc).setVisible(true);
                     }
@@ -155,8 +154,7 @@ public class Simulator implements SimulatorListener {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             setTitle();
             FormatErrorSet grammarErrors = getModel().getGrammar().getErrors();
@@ -209,11 +207,10 @@ public class Simulator implements SimulatorListener {
             // register doQuit() for the Command-Q shortcut on MacOS 
             if (Groove.IS_PLATFORM_MAC) {
                 try {
-                    OSXAdapter.setQuitHandler(this,
-                        this.getClass().getDeclaredMethod("tryQuit"));
+                    OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
                     // should not happen (thrown when 'tryQuit' does not exist)
-                    e1.printStackTrace();
+                    // ignore
                 }
             }
             // register doQuit() as the closing method of the window
@@ -263,8 +260,7 @@ public class Simulator implements SimulatorListener {
     JSplitPane getGrammarPanel() {
         if (this.grammarPanel == null) {
             this.grammarPanel =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(),
-                    getDisplaysInfoPanel());
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(), getDisplaysInfoPanel());
             this.grammarPanel.setBorder(null);
         }
         return this.grammarPanel;
@@ -276,8 +272,7 @@ public class Simulator implements SimulatorListener {
     JSplitPane getListsPanel() {
         if (this.listsPanel == null) {
             this.listsPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    getDisplaysPanel().getUpperListsPanel(),
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getDisplaysPanel().getUpperListsPanel(),
                     getDisplaysPanel().getLowerListsPanel());
             this.listsPanel.setBorder(null);
         }
@@ -291,8 +286,7 @@ public class Simulator implements SimulatorListener {
     JSplitPane getDisplaysInfoPanel() {
         JSplitPane result = this.displaysInfoPanel;
         if (result == null) {
-            this.displaysInfoPanel =
-                result = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            this.displaysInfoPanel = result = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
             result.setLeftComponent(getDisplaysPanel());
             result.setRightComponent(getDisplaysPanel().getInfoPanel());
             result.setOneTouchExpandable(true);
@@ -317,12 +311,9 @@ public class Simulator implements SimulatorListener {
     private ListTabbedPane getResultsPanel() {
         if (this.resultsPanel == null) {
             this.resultsPanel = new ListTabbedPane();
-            this.resultsPanel.getErrorListPanel().addSelectionListener(
-                createListListener());
-            this.resultsPanel.getSearchResultListPanel().addSelectionListener(
-                createListListener());
-            this.model.addListener(
-                this.resultsPanel.getSearchResultListPanel(), Change.GRAMMAR);
+            this.resultsPanel.getErrorListPanel().addSelectionListener(createListListener());
+            this.resultsPanel.getSearchResultListPanel().addSelectionListener(createListListener());
+            this.model.addListener(this.resultsPanel.getSearchResultListPanel(), Change.GRAMMAR);
         }
         return this.resultsPanel;
     }
@@ -359,8 +350,7 @@ public class Simulator implements SimulatorListener {
                         if (resource.isGraphBased()) {
                             AspectJGraph jGraph;
                             if (resourceTab.isEditor()) {
-                                jGraph =
-                                    ((GraphEditorTab) resourceTab).getJGraph();
+                                jGraph = ((GraphEditorTab) resourceTab).getJGraph();
                             } else {
                                 jGraph = ((GraphTab) resourceTab).getJGraph();
                             }
@@ -405,10 +395,8 @@ public class Simulator implements SimulatorListener {
         JComponent contentPane = (JComponent) getFrame().getContentPane();
         ActionMap am = contentPane.getActionMap();
         am.put(action.getValue(Action.NAME), action);
-        InputMap im =
-            contentPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY),
-            action.getValue(Action.NAME));
+        InputMap im = contentPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), action.getValue(Action.NAME));
     }
 
     /**
@@ -484,8 +472,7 @@ public class Simulator implements SimulatorListener {
 
         JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
         for (ResourceKind resource : ResourceKind.values()) {
-            if (resource != ResourceKind.PROPERTIES
-                && resource != ResourceKind.CONFIG) {
+            if (resource != ResourceKind.PROPERTIES && resource != ResourceKind.CONFIG) {
                 newMenu.add(this.actions.getNewAction(resource));
             }
         }
@@ -777,6 +764,7 @@ public class Simulator implements SimulatorListener {
         if (this.externalMenu == null) {
             this.externalMenu = createExternalActionsMenu();
             this.dummyExternalAction = new AbstractAction("(empty)") {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     // does nothing
                 }

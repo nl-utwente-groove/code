@@ -78,8 +78,7 @@ import javax.swing.tree.TreePath;
 public class PrologDisplay extends ResourceDisplay {
     private static final int MAX_HISTORY = 50;
 
-    static final Preferences PREFS =
-        Preferences.userNodeForPackage(PrologDisplay.class);
+    static final Preferences PREFS = Preferences.userNodeForPackage(PrologDisplay.class);
 
     /**
      * Construct a prolog panel
@@ -96,8 +95,7 @@ public class PrologDisplay extends ResourceDisplay {
         leading.setFont(leading.getFont().deriveFont(Font.BOLD));
         queryPane.add(leading, BorderLayout.WEST);
         queryPane.add(getQueryField(), BorderLayout.CENTER);
-        JPanel buttonsPane =
-            new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JPanel buttonsPane = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         buttonsPane.add(createExecuteButton());
         buttonsPane.add(getNextResultButton());
         buttonsPane.setBorder(null);
@@ -119,8 +117,7 @@ public class PrologDisplay extends ResourceDisplay {
 
     @Override
     protected JComponent createInfoPanel() {
-        return new TitledPanel("Available predicates", getSyntaxHelp(), null,
-            false);
+        return new TitledPanel("Available predicates", getSyntaxHelp(), null, false);
     }
 
     @Override
@@ -154,14 +151,12 @@ public class PrologDisplay extends ResourceDisplay {
      */
     private JComboBox getQueryField() {
         if (this.queryField == null) {
-            this.queryField =
-                new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
+            this.queryField = new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
             this.queryField.setFont(EDIT_FONT);
             this.queryField.setEditable(true);
             this.queryField.setEnabled(true);
             this.queryField.setPrototypeDisplayValue("groove+prolog");
-            this.queryEdit =
-                (JTextComponent) this.queryField.getEditor().getEditorComponent();
+            this.queryEdit = (JTextComponent) this.queryField.getEditor().getEditorComponent();
             this.queryEdit.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
@@ -203,8 +198,7 @@ public class PrologDisplay extends ResourceDisplay {
     private JTree getGrooveTree() {
         if (this.grooveTree == null) {
             this.grooveTree = createPredicateTree(true);
-            loadSyntaxHelpTree(this.grooveTree,
-                getEnvironment().getGrooveTags());
+            loadSyntaxHelpTree(this.grooveTree, getEnvironment().getGrooveTags());
         }
         return this.grooveTree;
     }
@@ -212,8 +206,7 @@ public class PrologDisplay extends ResourceDisplay {
     private JTree getPrologTree() {
         if (this.prologTree == null) {
             this.prologTree = createPredicateTree(false);
-            loadSyntaxHelpTree(this.prologTree,
-                getEnvironment().getPrologTags());
+            loadSyntaxHelpTree(this.prologTree, getEnvironment().getPrologTags());
         }
         return this.prologTree;
     }
@@ -228,11 +221,9 @@ public class PrologDisplay extends ResourceDisplay {
 
     /** Loads a tree with a given set of tags. */
     private void loadSyntaxHelpTree(JTree tree, Set<CompoundTermTag> tags) {
-        DefaultMutableTreeNode rootNode =
-            (DefaultMutableTreeNode) tree.getModel().getRoot();
+        DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) tree.getModel().getRoot();
         rootNode.removeAllChildren();
-        Map<AtomTerm,DefaultMutableTreeNode> nodes =
-            new HashMap<AtomTerm,DefaultMutableTreeNode>();
+        Map<AtomTerm,DefaultMutableTreeNode> nodes = new HashMap<AtomTerm,DefaultMutableTreeNode>();
         for (CompoundTermTag tag : tags) {
             DefaultMutableTreeNode baseNode = nodes.get(tag.functor);
             if (baseNode == null) {
@@ -241,12 +232,10 @@ public class PrologDisplay extends ResourceDisplay {
                 nodes.put(tag.functor, baseNode);
             } else {
                 if (baseNode.getChildCount() == 0) {
-                    baseNode.add(new DefaultMutableTreeNode(
-                        baseNode.getUserObject()));
+                    baseNode.add(new DefaultMutableTreeNode(baseNode.getUserObject()));
                     baseNode.setUserObject(tag.functor.value);
                 }
-                DefaultMutableTreeNode predNode =
-                    new DefaultMutableTreeNode(tag);
+                DefaultMutableTreeNode predNode = new DefaultMutableTreeNode(tag);
                 baseNode.add(predNode);
             }
         }
@@ -290,8 +279,7 @@ public class PrologDisplay extends ResourceDisplay {
      */
     private JButton getNextResultButton() {
         if (this.nextResultButton == null) {
-            this.nextResultButton =
-                Options.createButton(getActions().getPrologNextResultAction());
+            this.nextResultButton = Options.createButton(getActions().getPrologNextResultAction());
             this.nextResultButton.setFocusable(true);
         }
         return this.nextResultButton;
@@ -309,16 +297,14 @@ public class PrologDisplay extends ResourceDisplay {
         final JTree result = new JTree(new DefaultMutableTreeNode()) {
             @Override
             public String getToolTipText(MouseEvent evt) {
-                if (!toolTips
-                    || getRowForLocation(evt.getX(), evt.getY()) == -1) {
+                if (!toolTips || getRowForLocation(evt.getX(), evt.getY()) == -1) {
                     return null;
                 }
                 TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
                 Object userObject =
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 if (userObject instanceof CompoundTermTag) {
-                    return getEngine().getEnvironment().getToolTipText(
-                        (CompoundTermTag) userObject);
+                    return getEngine().getEnvironment().getToolTipText((CompoundTermTag) userObject);
                 } else {
                     return null;
                 }
@@ -326,8 +312,7 @@ public class PrologDisplay extends ResourceDisplay {
         };
         result.setRootVisible(false);
         result.setShowsRootHandles(true);
-        DefaultTreeCellRenderer renderer =
-            (DefaultTreeCellRenderer) result.getCellRenderer();
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) result.getCellRenderer();
         renderer.setLeafIcon(null);
         renderer.setClosedIcon(null);
         renderer.setOpenIcon(null);
@@ -335,8 +320,7 @@ public class PrologDisplay extends ResourceDisplay {
         result.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1
-                    && e.getButton() == MouseEvent.BUTTON1) {
+                if (e.getClickCount() > 1 && e.getButton() == MouseEvent.BUTTON1) {
                     // when double clicked add the selected predicate (with
                     // template) to the current query
                     TreePath sel = result.getSelectionPath();
@@ -347,10 +331,8 @@ public class PrologDisplay extends ResourceDisplay {
                             if (o instanceof CompoundTermTag) {
                                 CompoundTermTag tag = (CompoundTermTag) o;
                                 StringBuilder sb =
-                                    new StringBuilder(
-                                        getQueryField().getSelectedItem().toString());
-                                if (sb.length() > 0
-                                    && !sb.toString().endsWith(",")) {
+                                    new StringBuilder(getQueryField().getSelectedItem().toString());
+                                if (sb.length() > 0 && !sb.toString().endsWith(",")) {
                                     sb.append(',');
                                 }
                                 sb.append(tag.functor.value);
@@ -385,8 +367,7 @@ public class PrologDisplay extends ResourceDisplay {
                 }
             }
 
-            private final ToolTipManager manager =
-                ToolTipManager.sharedInstance();
+            private final ToolTipManager manager = ToolTipManager.sharedInstance();
             private final int standardDelay = this.manager.getDismissDelay();
         });
         return result;
@@ -412,8 +393,7 @@ public class PrologDisplay extends ResourceDisplay {
             if (getSimulatorModel().getGrammar() == null) {
                 this.environment = new GrooveEnvironment(null, getUserOutput());
             } else {
-                this.environment =
-                    getSimulatorModel().getGrammar().getPrologEnvironment();
+                this.environment = getSimulatorModel().getGrammar().getPrologEnvironment();
             }
         }
         return this.environment;
@@ -441,8 +421,7 @@ public class PrologDisplay extends ResourceDisplay {
      */
     public void executeQuery(String queryString) {
         if (getGrammar() == null) {
-            getResultsArea().setText(
-                "Please first load a grammar and select a start graph.");
+            getResultsArea().setText("Please first load a grammar and select a start graph.");
             return;
         }
 
@@ -473,10 +452,8 @@ public class PrologDisplay extends ResourceDisplay {
 
             MatchResult match = getSimulatorModel().getMatch();
             getEngine().setGrooveState(
-                new GrooveState(getGrammar().toGrammar(),
-                    getSimulatorModel().getGts(),
-                    getSimulatorModel().getState(), match == null ? null
-                            : match.getEvent()));
+                new GrooveState(getGrammar().toGrammar(), getSimulatorModel().getGts(),
+                    getSimulatorModel().getState(), match == null ? null : match.getEvent()));
 
             this.solutionCount = 0;
             processResults(getEngine().newQuery(queryString));
@@ -515,7 +492,7 @@ public class PrologDisplay extends ResourceDisplay {
         try {
             getUserOutput().flush();
         } catch (IOException e1) {
-            e1.printStackTrace();
+            // ignore
         }
         if (e.getCause() instanceof PrologException) {
             PrologException pe = (PrologException) e.getCause();
@@ -567,7 +544,7 @@ public class PrologDisplay extends ResourceDisplay {
         try {
             getUserOutput().flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            // ignore
         }
         JTextArea results = getResultsArea();
         if (!results.getText().endsWith("\n")) {
@@ -605,9 +582,8 @@ public class PrologDisplay extends ResourceDisplay {
                 results.append(String.format("Unexpected return value: %s",
                     getEngine().lastReturnValue().toString()));
             }
-            this.resultsStatus.setText(String.format(
-                "%d solution(s); Executed in %fms", this.solutionCount,
-                queryResult.getExecutionTime() / 1000000.0));
+            this.resultsStatus.setText(String.format("%d solution(s); Executed in %fms",
+                this.solutionCount, queryResult.getExecutionTime() / 1000000.0));
         }
     }
 

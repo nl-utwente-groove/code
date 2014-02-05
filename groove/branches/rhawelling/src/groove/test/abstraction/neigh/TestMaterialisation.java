@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -52,8 +54,7 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestMaterialisation {
 
-    static private final String DIRECTORY =
-        "junit/abstraction/basic-tests.gps/";
+    static private final String DIRECTORY = "junit/abstraction/basic-tests.gps/";
     static private GrammarModel view;
     static private Grammar grammar;
     static private GxlIO marshaller;
@@ -67,9 +68,9 @@ public class TestMaterialisation {
             grammar = view.toGrammar();
             marshaller = GxlIO.instance();
         } catch (IOException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
     }
 
@@ -79,7 +80,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-0a").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-0a");
 
@@ -89,8 +90,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -105,8 +105,7 @@ public class TestMaterialisation {
         preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -122,7 +121,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-0b").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-0b");
 
@@ -130,8 +129,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -147,7 +145,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-0c").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-0c");
 
@@ -155,8 +153,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -172,7 +169,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-1a").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-1a");
 
@@ -180,8 +177,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -198,7 +194,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-1b").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-1b");
 
@@ -206,8 +202,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -223,8 +218,7 @@ public class TestMaterialisation {
         preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
             boolean gotSeven = false;
             boolean gotEight = false;
@@ -251,7 +245,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-1c").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-1c");
 
@@ -261,8 +255,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(8, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -279,7 +272,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-2").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-2");
 
@@ -287,8 +280,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
             boolean gotFive = false;
             boolean gotSix = false;
@@ -315,7 +307,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-3").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-3");
 
@@ -323,8 +315,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
             boolean gotFour = false;
             boolean gotFive = false;
@@ -351,7 +342,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-4").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-4");
 
@@ -369,8 +360,7 @@ public class TestMaterialisation {
                 nodeR = node;
             }
         }
-        ShapeNode source =
-            (ShapeNode) preMatch.getPatternMap().nodeMap().get(nodeR);
+        ShapeNode source = (ShapeNode) preMatch.getPatternMap().nodeMap().get(nodeR);
         ShapeNode target = null;
         for (ShapeNode node : shape.getEquivClassOf(source)) {
             if (!node.equals(source) && shape.getNodeMult(node).isOne()) {
@@ -387,8 +377,7 @@ public class TestMaterialisation {
         ShapeEdge newEdge = shape.addEdge(source, label, target);
         // END HACK
 
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(shape, preMatch);
+        Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
         assertEquals(2, mats.size());
         boolean gotFour = false;
         boolean gotFive = false;
@@ -414,7 +403,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-5").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-5");
 
@@ -422,8 +411,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
             boolean gotFive = false;
             boolean gotSix = false;
@@ -478,7 +466,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-7").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-7");
 
@@ -486,8 +474,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -504,7 +491,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-8").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-8");
 
@@ -512,8 +499,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(3, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -531,7 +517,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-9").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-9");
 
@@ -539,8 +525,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(2, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -557,7 +542,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-10").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-10");
 
@@ -565,8 +550,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(3, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -584,7 +568,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-11").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-11");
 
@@ -594,8 +578,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -612,7 +595,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("materialisation-test-12").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("test-mat-12");
 
@@ -623,8 +606,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(2, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertTrue(mats.size() == 1 || mats.size() == 2);
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
@@ -648,8 +630,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(3, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertTrue(mats.size() == 2 || mats.size() == 0);
         }
     }
@@ -666,8 +647,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(2, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertTrue(mats.size() == 5 || mats.size() == 2);
         }
     }
@@ -678,7 +658,7 @@ public class TestMaterialisation {
         try {
             graph = view.getHostModel("rule-app-test-0").toResource();
         } catch (FormatException e) {
-            e.printStackTrace();
+            Assert.fail(e.toString());
         }
         Rule rule = grammar.getRule("add");
 
@@ -689,8 +669,7 @@ public class TestMaterialisation {
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(1, preMatches.size());
         for (Proof preMatch : preMatches) {
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(shape, preMatch);
+            Set<Materialisation> mats = Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();

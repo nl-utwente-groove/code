@@ -30,8 +30,7 @@ public enum AcceptorValue implements ParsableValue {
     /** Acceptor for final states. */
     FINAL("final", "Final States",
             "This acceptor succeeds when a state is added to the LTS that is "
-                + "<I>final</I>. A state is final when no modifying rule is"
-                + "applicable on it."),
+                + "<I>final</I>. A state is final when no modifying rule is" + "applicable on it."),
     /** Acceptor for states where a given invariant rule is applicable. */
     INVARIANT("inv", "Check Invariant",
             "This acceptor succeeds when a state is reached in which the "
@@ -39,34 +38,23 @@ public enum AcceptorValue implements ParsableValue {
                 + "<I>before</I> the rule has been applied.<BR> "
                 + "This acceptor ignores rule priorities."),
     /** Acceptor for states reached by the application of a certain rule. */
-    RULE(
-            "ruleapp",
-            "Rule Application",
+    RULE("ruleapp", "Rule Application",
             "This acceptor succeeds when a transition of the indicated rule is "
                 + "added to the LTS. Note that this is detected <I>after</I> "
                 + "the rule has been applied (which means that rule priorities "
                 + "are taken into account)."),
     /** Acceptor for states that satisfy a given rule formula. */
-    FORMULA(
-            "formula",
-            "Rule Formula",
+    FORMULA("formula", "Rule Formula",
             "This acceptor is a variant of Check Invariant that succeeds when a"
-                + " state is reached in which an arbitrary rule <i>formula</i> "
-                + "is applicable."),
+                + " state is reached in which an arbitrary rule <i>formula</i> " + "is applicable."),
     /** Acceptor for arbitrary states. */
-    ANY("any", "Any State",
-            "This acceptor succeeds whenever a state is added to the LTS."),
+    ANY("any", "Any State", "This acceptor succeeds whenever a state is added to the LTS."),
     /** Acceptor for cycles. */
-    CYCLE(
-            "cycle",
-            "Cycles",
-            "This acceptor listens to pairs of graph states and Büchi states,"
-                + "and succeeds when a pair is added that lies on a cycle with an"
-                + "accepting Büchi state. Should only be used in conjunction with "
-                + "LTL model checking."),
+    CYCLE("cycle", "Cycles", "This acceptor listens to pairs of graph states and Büchi states,"
+        + "and succeeds when a pair is added that lies on a cycle with an"
+        + "accepting Büchi state. Should only be used in conjunction with " + "LTL model checking."),
     /** Acceptor that does not accept any states. */
-    NONE("none", "No State",
-            "This acceptor always fails whenever a state is added to the LTS.");
+    NONE("none", "No State", "This acceptor always fails whenever a state is added to the LTS.");
 
     private AcceptorValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -75,16 +63,19 @@ public enum AcceptorValue implements ParsableValue {
     }
 
     /** Returns the identifying keyword of this acceptor value. */
+    @Override
     public String getKeyword() {
         return this.keyword;
     }
 
     /** Returns the name of this acceptor value. */
+    @Override
     public String getName() {
         return this.name;
     }
 
     /** Returns the description of this acceptor value. */
+    @Override
     public String getDescription() {
         return this.description;
     }
@@ -102,8 +93,8 @@ public enum AcceptorValue implements ParsableValue {
     @Override
     public boolean isDefault(GrammarModel grammar) {
         Exploration exploration = grammar.getDefaultExploration();
-        return exploration == null ? this == FINAL
-                : exploration.getAcceptor().getKeyword().equals(getKeyword());
+        return exploration == null ? this == FINAL : exploration.getAcceptor().getKeyword().equals(
+            getKeyword());
     }
 
     /** Creates the appropriate template for this acceptor. */
@@ -134,8 +125,8 @@ public enum AcceptorValue implements ParsableValue {
             };
 
         case FORMULA:
-            return new MyTemplate1<Predicate<GraphState>>(new PAll("formula"),
-                "formula", new EncodedRuleFormula()) {
+            return new MyTemplate1<Predicate<GraphState>>(new PAll("formula"), "formula",
+                new EncodedRuleFormula()) {
                 @Override
                 public Acceptor create(Predicate<GraphState> predicate) {
                     return new PredicateAcceptor(predicate);
@@ -144,16 +135,14 @@ public enum AcceptorValue implements ParsableValue {
 
         case INVARIANT:
             PSequence parser =
-                new PSequence(new POptional("!", "mode",
-                    EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
-                    new PIdentifier("rule"));
-            return new MyTemplate2<Rule,Boolean>(parser, "rule",
-                new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+                new PSequence(new POptional("!", "mode", EncodedRuleMode.NEGATIVE,
+                    EncodedRuleMode.POSITIVE), new PIdentifier("rule"));
+            return new MyTemplate2<Rule,Boolean>(parser, "rule", new EncodedEnabledRule(), "mode",
+                new EncodedRuleMode()) {
 
                 @Override
                 public Acceptor create(Rule rule, Boolean mode) {
-                    Predicate<GraphState> P =
-                        new Predicate.RuleApplicable(rule);
+                    Predicate<GraphState> P = new Predicate.RuleApplicable(rule);
                     if (!mode) {
                         P = new Predicate.Not<GraphState>(P);
                     }
@@ -170,13 +159,11 @@ public enum AcceptorValue implements ParsableValue {
             };
 
         case RULE:
-            return new MyTemplate1<Rule>(new PIdentifier("rule"), "rule",
-                new EncodedEnabledRule()) {
+            return new MyTemplate1<Rule>(new PIdentifier("rule"), "rule", new EncodedEnabledRule()) {
 
                 @Override
                 public Acceptor create(Rule rule) {
-                    return new PredicateAcceptor(
-                        new Predicate.RuleApplied(rule));
+                    return new PredicateAcceptor(new Predicate.RuleApplied(rule));
                 }
             };
 
@@ -199,17 +186,15 @@ public enum AcceptorValue implements ParsableValue {
 
     /** Specialised 1-parameter template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate1<T1> extends Template1<Acceptor,T1> {
-        public MyTemplate1(SerializedParser parser, String name,
-                EncodedType<T1,String> type) {
+        public MyTemplate1(SerializedParser parser, String name, EncodedType<T1,String> type) {
             super(AcceptorValue.this, parser, name, type);
         }
     }
 
     /** Specialised 2-parameter template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate2<T1,T2> extends Template2<Acceptor,T1,T2> {
-        public MyTemplate2(SerializedParser parser, String name1,
-                EncodedType<T1,String> type1, String name2,
-                EncodedType<T2,String> type2) {
+        public MyTemplate2(SerializedParser parser, String name1, EncodedType<T1,String> type1,
+                String name2, EncodedType<T2,String> type2) {
             super(AcceptorValue.this, parser, name1, type1, name2, type2);
         }
     }

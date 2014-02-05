@@ -34,8 +34,8 @@ class MatchTreeNode extends DisplayTreeNode {
      * Creates a new tree node based on a given graph transition. The node cannot have
      * children.
      */
-    public MatchTreeNode(SimulatorModel model, GraphState source,
-            MatchResult match, int nr, boolean anchored) {
+    public MatchTreeNode(SimulatorModel model, GraphState source, MatchResult match, int nr,
+            boolean anchored) {
         super(match, false);
         this.source = source;
         this.nr = nr;
@@ -50,7 +50,7 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public boolean isTransient() {
-        return getMatch().getCtrlTransition().hasRecipe();
+        return getMatch().getStep().isPartial();
     }
 
     /**
@@ -111,8 +111,7 @@ class MatchTreeNode extends DisplayTreeNode {
             }
             HTMLConverter.HTML_TAG.on(result);
         } else {
-            result.append(RuleTransitionLabel.text(this.source, getMatch(),
-                this.anchored));
+            result.append(RuleTransitionLabel.text(this.source, getMatch(), this.anchored));
             result.append(RIGHTARROW);
             result.append("?");
         }
@@ -127,6 +126,5 @@ class MatchTreeNode extends DisplayTreeNode {
     /** HTML representation of the right arrow. */
     private static final String RIGHTARROW = "-->";
     /** The suffix for a match that is in the selected trace. */
-    private static final String TRACE_SUFFIX = " "
-        + HTMLConverter.STRONG_TAG.on("(*)");
+    private static final String TRACE_SUFFIX = " " + HTMLConverter.STRONG_TAG.on("(*)");
 }

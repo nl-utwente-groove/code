@@ -26,11 +26,9 @@ import groove.graph.EdgeRole;
  * Class that implements the edges of a host graph.
  * @author Arend Rensink
  */
-public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements
-        HostEdge {
+public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEdge {
     /** Constructor for a typed edge. */
-    protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target,
-            int nr) {
+    protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         super(source, type.label(), target);
         assert label().getRole() == EdgeRole.BINARY || source == target : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
@@ -58,14 +56,14 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements
         if (getNumber() != other.getNumber()) {
             return false;
         }
-        return source().equals(other.source())
-            && target().equals(other.target());
+        return source().equals(other.source()) && target().equals(other.target());
     }
 
     /** 
      * Returns the number of this edge.
      * The number is guaranteed to be unique for each canonical edge representative.
      */
+    @Override
     public int getNumber() {
         return this.nr;
     }
@@ -74,6 +72,7 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements
      * Returns the (possibly {@code null}) type of this edge.
      * The number is guaranteed to be unique for each canonical edge representative.
      */
+    @Override
     public TypeEdge getType() {
         return this.type;
     }

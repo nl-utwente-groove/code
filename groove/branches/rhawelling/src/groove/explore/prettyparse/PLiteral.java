@@ -55,13 +55,13 @@ public class PLiteral implements SerializedParser {
         }
     }
 
+    @Override
     public String toParsableString(Serialized serialized) {
         String result = null;
         String value = serialized.getArgument(this.argumentName);
         if (value.startsWith(this.literal)) {
             result = this.literal;
-            serialized.setArgument(this.argumentName,
-                value.substring(result.length()));
+            serialized.setArgument(this.argumentName, value.substring(result.length()));
         }
         return result;
     }

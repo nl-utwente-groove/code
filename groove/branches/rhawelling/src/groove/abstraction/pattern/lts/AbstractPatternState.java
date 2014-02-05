@@ -18,7 +18,7 @@ package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternGraph;
-import groove.control.CtrlSchedule;
+import groove.control.CtrlFrame;
 import groove.control.CtrlState;
 import groove.lts.AbstractGraphState;
 
@@ -35,7 +35,7 @@ public abstract class AbstractPatternState implements PatternState {
     /** The number of this state */
     private final int nr;
     /** The underlying control state, if any. */
-    private CtrlSchedule schedule;
+    private CtrlFrame frame;
     /** Flag to indicated if the state has been closed. */
     private boolean closed;
     /** Set of outgoing transitions from this state. */
@@ -71,27 +71,22 @@ public abstract class AbstractPatternState implements PatternState {
     abstract public PatternGraph getGraph();
 
     @Override
-    public final CtrlState getCtrlState() {
-        return this.schedule.getState();
-    }
-
-    /** 
-     * Sets the control schedule.
-     * This should occur at initialisation.
-     */
-    protected final void setCtrlState(CtrlState ctrlState) {
-        this.schedule = ctrlState.getSchedule();
+    public final CtrlFrame getFrame() {
+        return this.frame.getPrime();
     }
 
     @Override
-    public final CtrlSchedule getSchedule() {
-        return this.schedule;
+    public final void setFrame(CtrlFrame frame) {
+        if (frame instanceof CtrlState) {
+            this.frame = ((CtrlState) frame).getSchedule();
+        } else {
+            this.frame = frame;
+        }
     }
 
     @Override
-    public final void setSchedule(CtrlSchedule schedule) {
-        assert schedule.getState() == getCtrlState();
-        this.schedule = schedule;
+    public final CtrlFrame getCurrentFrame() {
+        return this.frame;
     }
 
     @Override

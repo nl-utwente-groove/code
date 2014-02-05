@@ -47,16 +47,14 @@ abstract public class FreshNameDialog<Name> {
      * @param mustBeFresh flag indicating that the name to be chosen should not
      *        be among the existing names
      */
-    public FreshNameDialog(Set<Name> existingNames, String suggestion,
-            boolean mustBeFresh) {
+    public FreshNameDialog(Set<Name> existingNames, String suggestion, boolean mustBeFresh) {
         this.existingNames = new HashSet<Name>(existingNames);
         this.existingLowerCaseNames = new HashSet<String>();
         for (Name name : existingNames) {
             this.existingLowerCaseNames.add(name.toString().toLowerCase());
         }
         this.suggestion =
-            mustBeFresh ? generateNewName(suggestion, existingNames)
-                    : createName(suggestion);
+            mustBeFresh ? generateNewName(suggestion, existingNames) : createName(suggestion);
     }
 
     /**
@@ -97,13 +95,10 @@ abstract public class FreshNameDialog<Name> {
         nameField.setSelectionStart(0);
         nameField.setSelectionEnd(nameField.getText().length());
         setOkEnabled();
-        JDialog dialog =
-            getOptionPane().createDialog(frame,
-                title == null ? DEFAULT_TITLE : title);
+        JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
-        boolean result =
-            response == getOkButton() || response == getNameField();
+        boolean result = response == getOkButton() || response == getNameField();
         setName(result ? getChosenName() : null);
         return result;
     }
@@ -143,8 +138,8 @@ abstract public class FreshNameDialog<Name> {
             JTextField nameField = getNameField();
             this.optionPane =
                 new JOptionPane(new Object[] {nameField, getErrorLabel()},
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
-                    null, new Object[] {getOkButton(), getCancelButton()});
+                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
+                        getOkButton(), getCancelButton()});
         }
         return this.optionPane;
     }
@@ -189,8 +184,7 @@ abstract public class FreshNameDialog<Name> {
     private JTextField getNameField() {
         if (this.nameField == null) {
             this.nameField = new JTextField(30);
-            this.nameField.getDocument().addDocumentListener(
-                new OverlapListener());
+            this.nameField.getDocument().addDocumentListener(new OverlapListener());
             this.nameField.addActionListener(getNameFieldListener());
         }
         return this.nameField;
@@ -265,6 +259,7 @@ abstract public class FreshNameDialog<Name> {
             this.enabled = enabled;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (this.enabled) {
                 getOptionPane().setValue(e.getSource());
@@ -287,14 +282,17 @@ abstract public class FreshNameDialog<Name> {
             // empty
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             setOkEnabled();
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             setOkEnabled();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             setOkEnabled();
         }

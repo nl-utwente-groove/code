@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.control.CtrlTransition;
+import groove.control.CtrlStep;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
@@ -37,15 +37,15 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
      * Constructs a stub on the basis of a given rule event, added nodes and
      * target state.
      */
-    AbstractRuleTransitionStub(MatchResult match, HostNode[] addedNodes,
-            GraphState target) {
+    AbstractRuleTransitionStub(MatchResult match, HostNode[] addedNodes, GraphState target) {
         this.event = match.getEvent();
-        this.ctrlTrans = match.getCtrlTransition();
+        this.step = match.getStep();
         this.addedNodes = addedNodes;
         this.target = target;
     }
 
     /** This implementation always returns the stored target state. */
+    @Override
     public GraphState getTarget(GraphState source) {
         return this.target;
     }
@@ -60,10 +60,12 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
         return getEvent().getRule();
     }
 
+    @Override
     public MatchResult getKey(GraphState source) {
-        return new MatchResult(this.event, this.ctrlTrans);
+        return new MatchResult(this.event, this.step);
     }
 
+    @Override
     public HostNode[] getAddedNodes(GraphState source) {
         return this.addedNodes;
     }
@@ -81,9 +83,10 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
         }
     }
 
+    @Override
     public RuleTransition toTransition(GraphState source) {
-        return new DefaultRuleTransition(source, getKey(source),
-            getAddedNodes(source), getTarget(source), isSymmetry());
+        return new DefaultRuleTransition(source, getKey(source), getAddedNodes(source),
+            getTarget(source), isSymmetry());
     }
 
     /**
@@ -123,7 +126,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
     /**
      * The control transition of this transition stub.
      */
-    private final CtrlTransition ctrlTrans;
+    private final CtrlStep step;
     /**
      * The rule event of this transition stub.
      */

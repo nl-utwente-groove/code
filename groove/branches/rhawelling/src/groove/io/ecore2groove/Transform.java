@@ -111,20 +111,18 @@ public class Transform {
                 + " does not exist, is not a directory or cannot be read!");
             System.exit(1);
         }
-        System.out.println("Loaded or created graph grammar: " + f.getName()
-            + " (" + (new Date().getTime() - start) + " ms)"); //print duration
+        System.out.println("Loaded or created graph grammar: " + f.getName() + " ("
+            + (new Date().getTime() - start) + " ms)"); //print duration
 
         // Make sure the output directory exists and is writable
         File f2 = new File(instancesLoc);
         if (!f2.exists()) {
             if (!f2.mkdir()) {
-                System.out.println("Could not create directory " + instancesLoc
-                    + "!");
+                System.out.println("Could not create directory " + instancesLoc + "!");
                 System.exit(1);
             }
         } else if (!f2.isDirectory() || !f2.canWrite()) {
-            System.out.println(instancesLoc
-                + " is not directory or is not writable!");
+            System.out.println(instancesLoc + " is not directory or is not writable!");
             System.exit(1);
         }
 
@@ -135,8 +133,7 @@ public class Transform {
             start = new Date().getTime();
             AspectGraph instanceGraph = hostMap.get(graphName);
             InstanceModelRep im = new InstanceModelRep(mh, instanceGraph);
-            mh.saveModel(im.getInstanceModel(), instancesLoc + File.separator
-                + graphName);
+            mh.saveModel(im.getInstanceModel(), instancesLoc + File.separator + graphName);
             System.out.println("Created instance model: " + graphName + " ("
                 + (new Date().getTime() - start) + " ms)");
         }
@@ -177,8 +174,8 @@ public class Transform {
         File f = new File(args[args.length - 1]);
         SystemStore grammar = SystemStoreFactory.newStore(f, true);
         grammar.reload(); // reload to initialize
-        System.out.println("Loaded or created graph grammar: " + f.getName()
-            + " (" + (new Date().getTime() - start) + " ms)"); //print duration
+        System.out.println("Loaded or created graph grammar: " + f.getName() + " ("
+            + (new Date().getTime() - start) + " ms)"); //print duration
 
         // Get type graphs to store
         AspectGraph atg = AspectGraph.newInstance(tgr.getTypeGraph());
@@ -190,11 +187,9 @@ public class Transform {
             typeGraphsToDelete.add(graphName);
         }
         for (String graphName : typeGraphsToDelete) {
-            grammar.deleteGraphs(ResourceKind.TYPE,
-                Collections.singleton(graphName));
+            grammar.deleteGraphs(ResourceKind.TYPE, Collections.singleton(graphName));
         }
-        grammar.putGraphs(ResourceKind.TYPE, Arrays.asList(atg, ecoreatg),
-            false);
+        grammar.putGraphs(ResourceKind.TYPE, Arrays.asList(atg, ecoreatg), false);
 
         // Set grammar properties
         GrammarProperties sp = new GrammarProperties();
@@ -221,8 +216,7 @@ public class Transform {
         start = new Date().getTime();
         int number = 0;
         ConstraintRules constraints = new ConstraintRules(mh);
-        System.out.println("Created constraint rules ("
-            + (new Date().getTime() - start) + " ms)");
+        System.out.println("Created constraint rules (" + (new Date().getTime() - start) + " ms)");
 
         start = new Date().getTime();
         Set<AspectGraph> rules = new HashSet<AspectGraph>();
@@ -232,7 +226,6 @@ public class Transform {
                 arg = AspectGraph.newInstance(constraintRule);
             } catch (Exception e) {
                 System.out.println("Error with: " + constraintRule.getName());
-                e.printStackTrace();
                 continue;
             }
             GraphInfo.setPriority(arg, 50);

@@ -139,8 +139,7 @@ public final class GraphToKth {
     }
 
     private static boolean isFlowProp(AspectNode node) {
-        return FLOW_PROP_TYPE.equals(getType(node)) || isMethodProp(node)
-            || isExceptionProp(node);
+        return FLOW_PROP_TYPE.equals(getType(node)) || isMethodProp(node) || isExceptionProp(node);
     }
 
     private static boolean isMethodProp(AspectNode node) {
@@ -247,7 +246,7 @@ public final class GraphToKth {
             model = new HostModel(null, graph).toHost();
         } catch (FormatException e) {
             // Should never happen...
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
         for (HostEdge edge : model.edgeSet()) {
             if (edge.source().getNumber() == node.getNumber()) {
@@ -258,8 +257,7 @@ public final class GraphToKth {
                     // We found a string attribute.
                     String key = possibleKey;
                     ValueNode target = (ValueNode) possibleTarget;
-                    String value =
-                        wrapValue(target.getValue().toString(), node);
+                    String value = wrapValue(target.getValue().toString(), node);
                     attrs.put(key, value);
                 }
             }

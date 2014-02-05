@@ -64,7 +64,7 @@ public final class ShapeMatchApplier extends MatchApplier {
 
     /** Specialises the return type. */
     @Override
-    public AGTS getGTS() {
+    protected AGTS getGTS() {
         return (AGTS) super.getGTS();
     }
 
@@ -109,16 +109,14 @@ public final class ShapeMatchApplier extends MatchApplier {
             new Visitor<Materialisation,RuleTransition>() {
                 @Override
                 protected boolean process(Materialisation mat) {
-                    RuleTransition trans =
-                        applyMaterialisation(source, match, mat);
+                    RuleTransition trans = applyMaterialisation(source, match, mat);
                     if (trans != null) {
                         setResult(trans);
                     }
                     return true;
                 }
             };
-        Materialisation.visitMaterialisations(host, origEvent.getMatch(host),
-            visitor);
+        Materialisation.visitMaterialisations(host, origEvent.getMatch(host), visitor);
         result = visitor.getResult();
         //        } catch (Throwable e) {
         //            // Additional code for bug hunting.
@@ -145,15 +143,14 @@ public final class ShapeMatchApplier extends MatchApplier {
      * Transforms and normalises a source graph according to a given materialisation,
      * and adds it to the GTS, together with a transition to it if required.
      */
-    private RuleTransition applyMaterialisation(ShapeState source,
-            MatchResult match, Materialisation mat) {
+    private RuleTransition applyMaterialisation(ShapeState source, MatchResult match,
+            Materialisation mat) {
         AGTS agts = this.getGTS();
         // Transform and normalise the shape.
         Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
         Shape transformedShape = pair.one();
         RuleEvent realEvent = pair.two();
-        MatchResult realMatch =
-            new MatchResult(realEvent, match.getCtrlTransition());
+        MatchResult realMatch = new MatchResult(realEvent, match.getStep());
         Shape target = transformedShape.normalise();
 
         RuleTransition trans = null;
@@ -171,8 +168,7 @@ public final class ShapeMatchApplier extends MatchApplier {
         } else {
             // The state was added as a next-state.
             trans = newState;
-            this.println("New state: " + source + "--" + match + "-->"
-                + newState);
+            this.println("New state: " + source + "--" + match + "-->" + newState);
             if (USE_GUI) {
                 ShapePreviewDialog.showShape(newState.getGraph());
             }

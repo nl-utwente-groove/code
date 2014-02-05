@@ -21,11 +21,14 @@ import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
+import groove.control.template.Program;
 import groove.grammar.Action;
 import groove.grammar.Grammar;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.util.Groove;
 
@@ -50,11 +53,12 @@ public class CtrlLoader {
      * Constructs a control loader for a given set of rules and algebra family.
      * @param algebraFamily name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
+     * @param checkDependencies flag to determine whether the name space
+     * should check for circular dependencies and forward references.
      */
-    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules) {
-        this.family =
-            algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
-        this.namespace = new Namespace(this.family);
+    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules, boolean checkDependencies) {
+        this.family = algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
+        this.namespace = new Namespace(this.family, checkDependencies);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
         }
@@ -69,8 +73,10 @@ public class CtrlLoader {
      * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public CtrlTree parse(String controlName, String program)
-        throws FormatException {
+    public CtrlTree parse(String controlName, String program) throws FormatException {
+        if (this.treeMap.containsKey(controlName)) {
+            throw new FormatException("Duplicate program name %s", controlName);
+        }
         this.namespace.setControlName(controlName);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
         Object oldRecord = this.treeMap.put(controlName, tree);
@@ -94,7 +100,6 @@ public class CtrlLoader {
      */
     public CtrlAut buildAutomaton(String name) throws FormatException {
         this.namespace.setControlName(name);
-        check();
         CtrlTree tree = this.treeMap.get(name);
         return tree.build();
     }
@@ -113,6 +118,27 @@ public class CtrlLoader {
             }
         }
         return CtrlFactory.instance().buildDefault(actions, this.family);
+    }
+
+    /** Returns a control program constructed from a set of program names. */
+    public Program buildProgram(Collection<String> progNames) throws FormatException {
+        FormatErrorSet errors = new FormatErrorSet();
+        Program result = new Program();
+        for (String name : progNames) {
+            CtrlTree tree = this.treeMap.get(name);
+            try {
+                result.add(tree.toProgram());
+            } catch (FormatException e) {
+                for (FormatError error : e.getErrors()) {
+                    errors.add("Error in %s: %s", name, error);
+                }
+            }
+        }
+        if (!result.hasBody()) {
+            result.add(parse(" main", "#any;").check().toProgram());
+        }
+        errors.throwException();
+        return result;
     }
 
     /** 
@@ -145,6 +171,11 @@ public class CtrlLoader {
         return rewriter.toString();
     }
 
+    /** Returns the name space of this loader. */
+    public Namespace getNamespace() {
+        return this.namespace;
+    }
+
     /** Namespace of this loader. */
     private Namespace namespace;
     /** Algebra family for this control loader. */
@@ -162,19 +193,16 @@ public class CtrlLoader {
                 System.out.printf("Control automaton for %s:%n%s", programName,
                     run(grammar, programName, new File(grammarName)));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(Grammar grammar, String programName,
-            String program) throws FormatException {
+    public static CtrlAut run(Grammar grammar, String programName, String program)
+        throws FormatException {
         CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
-                grammar.getAllRules());
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(), grammar.getAllRules(), true);
         instance.parse(programName, program);
         return instance.buildAutomaton(programName).normalise();
     }
@@ -183,8 +211,7 @@ public class CtrlLoader {
     public static CtrlAut run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
         CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
-                grammar.getAllRules());
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(), grammar.getAllRules(), true);
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {

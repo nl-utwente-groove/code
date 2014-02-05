@@ -49,6 +49,7 @@ abstract public class TransformIterator<T,U> implements Iterator<U> {
     /**
      * Forwards the request to the inner iterator.
      */
+    @Override
     public void remove() {
         this.inner.remove();
     }
@@ -56,6 +57,7 @@ abstract public class TransformIterator<T,U> implements Iterator<U> {
     /**
      * Forwards the query to the inner iterator.
      */
+    @Override
     public boolean hasNext() {
         while (this.next == null && this.inner.hasNext()) {
             try {
@@ -71,6 +73,7 @@ abstract public class TransformIterator<T,U> implements Iterator<U> {
      * Retrieves the <tt>next()</tt> object from the inner iterator, applies
      * <tt>transform(Object)</tt> to it, and returns the result.
      */
+    @Override
     public U next() {
         if (hasNext()) {
             U result = this.next;

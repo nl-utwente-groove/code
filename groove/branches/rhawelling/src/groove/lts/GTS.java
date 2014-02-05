@@ -20,16 +20,15 @@ import static groove.lts.GTS.CollapseMode.COLLAPSE_EQUAL;
 import static groove.lts.GTS.CollapseMode.COLLAPSE_ISO_STRONG;
 import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.algebra.AlgebraFamily;
-import groove.control.CtrlState;
+import groove.control.CtrlFrame;
+import groove.control.Valuator;
 import groove.explore.result.Result;
 import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
-import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.PostApplicationError;
 import groove.grammar.type.EdgeMultiplicityVerifier;
@@ -39,7 +38,6 @@ import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
-import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
@@ -51,7 +49,6 @@ import groove.util.collect.TransformIterator;
 import groove.util.collect.TreeHashSet;
 
 import java.util.AbstractSet;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,8 +63,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AGraph<GraphState,GraphTransition> implements
-        Cloneable {
+public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**
@@ -112,9 +108,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
      */
     public GraphState startState() {
         if (this.startState == null) {
-            HostGraph startGraph =
-                createStartGraph(this.grammar.getStartGraph());
+            HostGraph startGraph = createStartGraph(this.grammar.getStartGraph());
             this.startState = createStartState(startGraph);
+            getGrammar().getCtrlAut().initialise(startGraph.getFactory());
             addState(this.startState);
         }
         return this.startState;
@@ -308,6 +304,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
         return new LTSFactory<GraphState,GraphTransition>(this);
     }
 
+    @Override
     public Set<? extends GraphState> nodeSet() {
         if (this.nodeSet == null) {
             this.nodeSet = getStateSet();
@@ -315,6 +312,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
         return this.nodeSet;
     }
 
+    @Override
     public Set<? extends GraphTransition> edgeSet() {
         if (this.transitionSet == null) {
             this.transitionSet = new TransitionSet();
@@ -376,8 +374,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
         }
         if (trans instanceof RuleTransition) {
             try {
-                String outputString =
-                    ((RuleTransition) trans).getOutputString();
+                String outputString = ((RuleTransition) trans).getOutputString();
                 if (outputString != null) {
                     System.out.print(outputString);
                 }
@@ -495,7 +492,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
     protected void fireUpdateState(GraphState state, Flag flag) {
         switch (flag) {
         case CLOSED:
-            if (state.getSchedule().isSuccess() || hasFinalProperties(state)) {
+            if (state.getActualFrame().isFinal() || hasFinalProperties(state)) {
                 setFinal(state);
             }
             this.closedStateCount++;
@@ -516,8 +513,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
         if (result) {
             for (RuleTransition trans : state.getRuleTransitions()) {
                 if (!trans.target().isAbsent()) {
-                    if (trans.getCtrlTransition().getRule().isModifying()
-                        || !trans.target().equals(state)) {
+                    if (trans.getStep().getRule().isModifying() || !trans.target().equals(state)) {
                         result = false;
                         break;
                     }
@@ -548,7 +544,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
      * open states, and state identifiers.
      */
     public PlainGraph toPlainGraph(LTSLabels flags) {
-        PlainGraph result = new PlainGraph(getName());
+        PlainGraph result = new PlainGraph(getName(), GraphRole.LTS);
         Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
@@ -570,9 +566,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 result.addEdge(image, flags.getOpenLabel(), image);
             }
             if (flags.showNumber()) {
-                String label =
-                    flags.getNumberLabel().replaceAll("#",
-                        "" + state.getNumber());
+                String label = flags.getNumberLabel().replaceAll("#", "" + state.getNumber());
                 result.addEdge(image, label, image);
             }
             if (flags.showTransience() && state.isTransient()) {
@@ -726,12 +720,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
     public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
         public StateSet(CollapseMode collapse, IsoChecker checker) {
-            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
-                STATE_SET_ROOT_RESOLUTION);
+            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
             if (checker == null) {
-                this.checker =
-                    IsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
+                this.checker = IsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
             } else {
                 this.checker = checker;
             }
@@ -746,17 +738,16 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
             if (this.collapse == COLLAPSE_NONE) {
                 return myState == otherState;
             }
-            if (CHECK_CONTROL_LOCATION
-                && myState.getCtrlState() != otherState.getCtrlState()) {
+            if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
                 return false;
             }
-            HostNode[] myBoundNodes = myState.getBoundNodes();
-            HostNode[] otherBoundNodes = otherState.getBoundNodes();
+            Object[] myBoundNodes = myState.getFrameValues();
+            Object[] otherBoundNodes = otherState.getFrameValues();
             HostGraph myGraph = myState.getGraph();
             HostGraph otherGraph = otherState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
                 // check for equality of the bound nodes
-                if (!Arrays.equals(myBoundNodes, otherBoundNodes)) {
+                if (!Valuator.areEqual(myBoundNodes, otherBoundNodes)) {
                     return false;
                 }
                 // check for graph equality
@@ -765,8 +756,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
-                return this.checker.areIsomorphic(myGraph, otherGraph,
-                    myBoundNodes, otherBoundNodes);
+                return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
+                    otherBoundNodes);
             }
         }
 
@@ -781,45 +772,26 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 result = System.identityHashCode(stateKey);
             } else if (this.collapse == COLLAPSE_EQUAL) {
                 HostGraph graph = stateKey.getGraph();
-                result =
-                    graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
-                CtrlState ctrlState = stateKey.getCtrlState();
+                result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+                CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    for (HostNode node : stateKey.getBoundNodes()) {
-                        result += node == null ? 31 : node.hashCode();
-                        // shift left to ensure the parameters' order matters
-                        result = result << 1 | (result < 0 ? 1 : 0);
-                    }
+                    result += Valuator.hashCode(stateKey.getFrameValues());
                 }
             } else {
                 CertificateStrategy certifier =
                     this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
-                CtrlState ctrlState = stateKey.getCtrlState();
+                CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    for (HostNode node : stateKey.getBoundNodes()) {
-                        int hashCode;
-                        // value nodes may be no longer in the graph
-                        if (node == null) {
-                            hashCode = 31;
-                        } else if (node instanceof ValueNode) {
-                            hashCode = node.hashCode();
-                        } else {
-                            Certificate parCert =
-                                certifier.getCertificateMap().get(node);
-                            hashCode = parCert.hashCode();
-                        }
-                        result += hashCode;
-                        // shift left to ensure the parameters' order matters
-                        result = result << 1 | (result < 0 ? 1 : 0);
-                    }
+                    result +=
+                        Valuator.hashCode(stateKey.getFrameValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {
-                result += System.identityHashCode(stateKey.getCtrlState());
+                result += System.identityHashCode(stateKey.getPrimeFrame());
             }
             return result;
         }
@@ -895,9 +867,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
             if (o instanceof GraphTransition) {
                 GraphTransition transition = (GraphTransition) o;
                 GraphState source = transition.source();
-                result =
-                    (containsNode(source) && outEdgeSet(source).contains(
-                        transition));
+                result = (containsNode(source) && outEdgeSet(source).contains(transition));
             }
             return result;
         }
@@ -912,8 +882,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
                     nodeSet().iterator()) {
                     @Override
-                    public Iterator<? extends GraphTransition> toOuter(
-                            GraphState state) {
+                    public Iterator<? extends GraphTransition> toOuter(GraphState state) {
                         return outEdgeSet(state).iterator();
                     }
                 };
