@@ -247,8 +247,8 @@ public class TermDerivationTest {
     private void assertSuccFail(Term success, Term failure) {
         Assert.assertEquals(Collections.emptyList(), this.edges);
         DerivationList attempt = source().getAttempt();
-        Assert.assertEquals(success, success == null ? attempt : attempt.onSuccess());
-        Assert.assertEquals(failure, failure == null ? attempt : attempt.onFailure());
+        Assert.assertEquals(success == null ? attempt : attempt.onSuccess(), success);
+        Assert.assertEquals(failure == null ? attempt : attempt.onFailure(), failure);
     }
 
     /** Predicts the final nature and transition depth of the current state. */

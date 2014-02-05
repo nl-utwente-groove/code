@@ -31,10 +31,6 @@ public class IfTerm extends Term {
      */
     IfTerm(Term cond, Term thenPart, Term alsoPart, Term elsePart) {
         super(Op.IF, cond, thenPart, alsoPart, elsePart);
-        assert cond.isTopLevel();
-        assert thenPart.isTopLevel();
-        assert alsoPart.isTopLevel();
-        assert elsePart.isTopLevel();
     }
 
     @Override

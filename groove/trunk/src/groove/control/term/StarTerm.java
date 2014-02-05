@@ -27,7 +27,6 @@ public class StarTerm extends Term {
      */
     public StarTerm(Term arg0) {
         super(Op.STAR, arg0);
-        assert arg0.isTopLevel();
     }
 
     @Override

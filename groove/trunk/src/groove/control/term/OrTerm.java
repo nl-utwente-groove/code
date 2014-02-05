@@ -26,8 +26,6 @@ public class OrTerm extends Term {
      */
     OrTerm(Term arg0, Term arg1) {
         super(Term.Op.OR, arg0, arg1);
-        assert arg0.isTopLevel();
-        assert arg1.isTopLevel();
     }
 
     @Override

@@ -64,13 +64,12 @@ public class ControlVariablesTest {
         explore("mergeTest", 2, 1, 9, 17);
     }
 
-    private void explore(String control, int controlStates,
-            int controlTransitions, int expectedNodes, int expectedEdges) {
+    private void explore(String control, int controlStates, int controlTransitions,
+            int expectedNodes, int expectedEdges) {
         try {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
             GTS lts = new GTS(sgv.toGrammar());
-
             Exploration scenario = new Exploration();
             scenario.play(lts, lts.startState());
 

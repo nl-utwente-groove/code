@@ -206,9 +206,14 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
             Location source = next.source();
             CtrlVarSet sourceVars = new CtrlVarSet(source.getVars());
             boolean modified = false;
-            for (CtrlVar targetVar : next.target().getVars()) {
-                if (!next.getCall().getOutVars().containsKey(targetVar)) {
-                    modified |= sourceVars.add(targetVar);
+            List<CtrlVar> targetVars = next.target().getVars();
+            if (next.isVerdict()) {
+                modified = sourceVars.addAll(targetVars);
+            } else {
+                for (CtrlVar targetVar : targetVars) {
+                    if (!next.getCall().getOutVars().containsKey(targetVar)) {
+                        modified |= sourceVars.add(targetVar);
+                    }
                 }
             }
             if (modified) {
