@@ -197,7 +197,9 @@ public class AutomatonBuildTest {
         p.explore();
         p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
         p.explore();
-        Viewer.showGraph(p, true);
+        if (DEBUG) {
+            Viewer.showGraph(p, true);
+        }
     }
 
     /** Loads the grammar to be used for testing. */
