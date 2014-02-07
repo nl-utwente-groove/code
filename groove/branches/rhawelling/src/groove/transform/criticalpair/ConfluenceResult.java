@@ -81,16 +81,14 @@ public class ConfluenceResult {
         return checkStrictlyConfluent(grammar, false);
     }
 
-    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
-            boolean alternateMethod) {
-        return checkStrictlyConfluent(grammar,
-            ConfluenceStatus.NOT_STICTLY_CONFLUENT, alternateMethod);
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar, boolean alternateMethod) {
+        return checkStrictlyConfluent(grammar, ConfluenceStatus.NOT_STICTLY_CONFLUENT,
+            alternateMethod);
     }
 
-    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
-            ConfluenceStatus target, boolean alternateMethod) {
-        ConfluenceResult result =
-            new ConfluenceResult(grammar, alternateMethod);
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar, ConfluenceStatus target,
+            boolean alternateMethod) {
+        ConfluenceResult result = new ConfluenceResult(grammar, alternateMethod);
         result.analyzeUntil(target);
         return result;
     }
@@ -112,8 +110,7 @@ public class ConfluenceResult {
                 //remove the pair from the untested set
                 it.remove();
             }
-            if (this.status == ConfluenceStatus.UNTESTED
-                && this.undecidedPairs.isEmpty()) {
+            if (this.status == ConfluenceStatus.UNTESTED && this.undecidedPairs.isEmpty()) {
                 //everything has been analyzed but all pairs are confluent
                 this.status = ConfluenceStatus.STRICTLY_CONFLUENT;
             }
@@ -123,9 +120,12 @@ public class ConfluenceResult {
 
     public void analyzeAll() {
         Iterator<Set<CriticalPair>> setIt = this.untestedPairs.setIterator();
+        //int essentialPairs = 0;
         while (setIt.hasNext()) {
             Set<CriticalPair> pairSet = setIt.next();
             if (this.alternateMethod) {
+
+                //essentialPairs += ConfluenceAnalyzer.analyzeEssential(pairSet, this.grammar);
                 ConfluenceAnalyzer.analyzePairSet(pairSet, this.grammar);
                 for (CriticalPair pair : pairSet) {
                     //the confluenceStatus will not be computed again
@@ -148,6 +148,7 @@ public class ConfluenceResult {
             //everything has been analyzed but all pairs are confluent
             this.status = ConfluenceStatus.STRICTLY_CONFLUENT;
         }
+        //System.out.println("Essential critical pairs: " + essentialPairs);
     }
 
     /**
@@ -186,12 +187,10 @@ public class ConfluenceResult {
             }
             break;
         case UNTESTED:
-            throw new RuntimeException("Test for confluence failed: "
-                + pairStatus);
+            throw new RuntimeException("Test for confluence failed: " + pairStatus);
         default:
             //can not happen unless the pairStatus enum is modified
-            throw new RuntimeException("Unknown ConfluenceStatus: "
-                + pairStatus);
+            throw new RuntimeException("Unknown ConfluenceStatus: " + pairStatus);
         }
         return result;
     }
