@@ -200,14 +200,12 @@ public enum AspectKind {
      * @throws FormatException if the string does not have content of the
      * correct kind
      */
-    public Pair<Aspect,String> parseAspect(String input, GraphRole role)
-        throws FormatException {
+    public Pair<Aspect,String> parseAspect(String input, GraphRole role) throws FormatException {
         assert input.startsWith(getName()) && input.indexOf(SEPARATOR) >= 0;
         // give the text to the content kind to parse
-        Pair<Object,String> result =
-            getContentKind().parse(input, getName().length(), role);
-        return new Pair<Aspect,String>(new Aspect(this, getContentKind(),
-            result.one()), result.two());
+        Pair<Object,String> result = getContentKind().parse(input, getName().length(), role);
+        return new Pair<Aspect,String>(new Aspect(this, getContentKind(), result.one()),
+            result.two());
     }
 
     /** 
@@ -324,8 +322,7 @@ public enum AspectKind {
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
         return this.contentKind != ContentKind.LEVEL
-            && this.contentKind != ContentKind.MULTIPLICITY
-            && this != COMPOSITE;
+            && this.contentKind != ContentKind.MULTIPLICITY && this != COMPOSITE;
     }
 
     private final ContentKind contentKind;
@@ -420,19 +417,16 @@ public enum AspectKind {
         return result;
     }
 
-    private static Help computeHelp(AspectKind kind, GraphRole role,
-            boolean forNode, boolean withLabel) {
+    private static Help computeHelp(AspectKind kind, GraphRole role, boolean forNode,
+            boolean withLabel) {
         String h = null;
         String s = null;
         List<String> b = new ArrayList<String>();
         List<String> p = new ArrayList<String>();
-        String qBody =
-            "The optional %1$s denotes an associated quantifier level.";
+        String qBody = "The optional %1$s denotes an associated quantifier level.";
         String qPar = "optional associated quantifier level";
-        String flagPar =
-            "text of the flag; must consist of letters, digits, '$', '-' or '_'";
-        String edgePar =
-            "text of the edge; must consist of letters, digits, '$', '-' or '_'";
+        String flagPar = "text of the flag; must consist of letters, digits, '$', '-' or '_'";
+        String edgePar = "text of the edge; must consist of letters, digits, '$', '-' or '_'";
         switch (kind) {
         case ABSTRACT:
             if (!forNode) {
@@ -910,14 +904,11 @@ public enum AspectKind {
     private static final Map<GraphRole,Map<String,String>> edgeDocMapMap =
         new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
-    private static final Map<String,AspectKind> kindMap =
-        new HashMap<String,AspectKind>();
+    private static final Map<String,AspectKind> kindMap = new HashMap<String,AspectKind>();
     /** Static mapping from nested value texts to values. */
-    private static final Map<String,NestedValue> nestedValueMap =
-        new HashMap<String,NestedValue>();
+    private static final Map<String,NestedValue> nestedValueMap = new HashMap<String,NestedValue>();
     /** Mapping from kind value names to symbols. */
-    private static final Map<String,String> tokenMap =
-        new HashMap<String,String>();
+    private static final Map<String,String> tokenMap = new HashMap<String,String>();
     /** Mapping from signature names to aspect kinds. */
     private static final Map<SignatureKind,AspectKind> sigKindMap =
         new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
@@ -950,31 +941,26 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static final Set<AspectKind> roles = EnumSet.of(ERASER, ADDER,
-        CREATOR, READER, EMBARGO, CONNECT);
-    /** Set of role aspects appearing (only) in NACs. */
-    public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER,
+    public static final Set<AspectKind> roles = EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO,
         CONNECT);
+    /** Set of role aspects appearing (only) in NACs. */
+    public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
     /** Set of role aspects appearing in LHSs. */
     public static final Set<AspectKind> lhs = EnumSet.of(READER, ERASER);
     /** Set of role aspects appearing in RHSs. */
-    public static final Set<AspectKind> rhs =
-        EnumSet.of(READER, CREATOR, ADDER);
+    public static final Set<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
-        EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
+    public static final Set<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
+        NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
-    public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN,
-        PARAM_OUT);
+    public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT);
     /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS,
-        EXISTS_OPT);
+    public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS, EXISTS_OPT);
     /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL,
-        FORALL_POS);
+    public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL, FORALL_POS);
     /** Set of attribute-related aspects. */
-    public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
-        ARGUMENT, STRING, INT, BOOL, REAL, TEST);
+    public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT, ARGUMENT, STRING, INT,
+        BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
@@ -988,30 +974,26 @@ public enum AspectKind {
             Set<AspectKind> nodeKinds, edgeKinds;
             switch (role) {
             case HOST:
-                nodeKinds =
-                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR,
-                        ID);
+                nodeKinds = EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR, ID);
                 edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
                 break;
             case RULE:
                 nodeKinds =
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
-                        BOOL, INT, REAL, STRING, PRODUCT, PARAM_BI, PARAM_IN,
-                        PARAM_OUT, FORALL, FORALL_POS, EXISTS, EXISTS_OPT, ID,
-                        COLOR);
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
+                        STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, ID, COLOR);
                 edgeKinds =
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
-                        CONNECT, BOOL, INT, REAL, STRING, ARGUMENT, PATH,
-                        LITERAL, FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
-                        NESTED, LET, TEST);
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT,
+                        REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
                 nodeKinds =
-                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING,
-                        ABSTRACT, IMPORT, COLOR, EDGE);
+                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR,
+                        EDGE);
                 edgeKinds =
-                    EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT,
-                        SUBTYPE, MULT_IN, MULT_OUT, COMPOSITE);
+                    EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
+                        MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
@@ -1028,11 +1010,10 @@ public enum AspectKind {
         /** No content. The label text is not checked. */
         NONE {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Suffix '%s' not allowed",
-                        text.substring(pos, text.indexOf(SEPARATOR)));
+                    throw new FormatException("Suffix '%s' not allowed", text.substring(pos,
+                        text.indexOf(SEPARATOR)));
                 }
                 return new Pair<Object,String>(null, text.substring(pos + 1));
             }
@@ -1046,11 +1027,10 @@ public enum AspectKind {
         /** Empty content: no text may precede or follow the separator. */
         EMPTY {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Suffix '%s' not allowed",
-                        text.substring(pos, text.indexOf(SEPARATOR)));
+                    throw new FormatException("Suffix '%s' not allowed", text.substring(pos,
+                        text.indexOf(SEPARATOR)));
                 }
                 if (pos < text.length() - 1) {
                     throw new FormatException("Label text '%s' not allowed",
@@ -1068,8 +1048,7 @@ public enum AspectKind {
         /** Quantifier level name. */
         LEVEL {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 String content = null;
                 int end = text.indexOf(SEPARATOR);
                 assert end >= 0;
@@ -1080,13 +1059,11 @@ public enum AspectKind {
             }
 
             @Override
-            String parseContent(String text, GraphRole role)
-                throws FormatException {
+            String parseContent(String text, GraphRole role) throws FormatException {
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
-                        throw new FormatException(
-                            "Invalid quantification level");
+                        throw new FormatException("Invalid quantification level");
                     }
                 }
                 return text;
@@ -1115,21 +1092,18 @@ public enum AspectKind {
          */
         MULTIPLICITY {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 int end = text.indexOf(SEPARATOR, pos);
                 assert end >= 0;
                 if (end == pos) {
                     throw new FormatException("Malformed multiplicity");
                 }
-                Multiplicity content =
-                    parseContent(text.substring(pos + 1, end), role);
+                Multiplicity content = parseContent(text.substring(pos + 1, end), role);
                 return new Pair<Object,String>(content, text.substring(end + 1));
             }
 
             @Override
-            Multiplicity parseContent(String text, GraphRole role)
-                throws FormatException {
+            Multiplicity parseContent(String text, GraphRole role) throws FormatException {
                 return Multiplicity.parse(text);
             }
 
@@ -1144,15 +1118,13 @@ public enum AspectKind {
          */
         PARAM {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 assert text.indexOf(SEPARATOR) >= 0;
                 // either the prefix is of the form par=$N: or par:M
                 // in the first case, the parameter number is N-1
                 String nrText;
                 int subtract;
-                FormatException nrFormatExc =
-                    new FormatException("Invalid parameter number");
+                FormatException nrFormatExc = new FormatException("Invalid parameter number");
                 switch (text.charAt(pos)) {
                 case SEPARATOR:
                     nrText = text.substring(pos + 1);
@@ -1160,14 +1132,12 @@ public enum AspectKind {
                     break;
                 case ASSIGN:
                     if (text.charAt(pos + 1) != PARAM_START_CHAR) {
-                        throw new FormatException(
-                            "Parameter number should start with '%s'", ""
-                                + PARAM_START_CHAR);
+                        throw new FormatException("Parameter number should start with '%s'", ""
+                            + PARAM_START_CHAR);
                     }
                     if (text.charAt(text.length() - 1) != SEPARATOR) {
-                        throw new FormatException(
-                            "Parameter line should end with '%s'", ""
-                                + SEPARATOR);
+                        throw new FormatException("Parameter line should end with '%s'", ""
+                            + SEPARATOR);
                     }
                     nrText = text.substring(pos + 2, text.length() - 1);
                     if (nrText.length() == 0) {
@@ -1197,13 +1167,11 @@ public enum AspectKind {
             }
 
             @Override
-            Integer parseContent(String text, GraphRole role)
-                throws FormatException {
+            Integer parseContent(String text, GraphRole role) throws FormatException {
                 try {
                     return Integer.parseInt(text);
                 } catch (NumberFormatException exc) {
-                    throw new FormatException("Invalid parameter number %s",
-                        text);
+                    throw new FormatException("Invalid parameter number %s", text);
                 }
             }
         },
@@ -1213,8 +1181,7 @@ public enum AspectKind {
          */
         NUMBER {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 assert text.indexOf(SEPARATOR) >= 0;
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse argument");
@@ -1224,11 +1191,9 @@ public enum AspectKind {
             }
 
             @Override
-            Integer parseContent(String text, GraphRole role)
-                throws FormatException {
+            Integer parseContent(String text, GraphRole role) throws FormatException {
                 int result;
-                FormatException formatExc =
-                    new FormatException("Invalid argument number %s", text);
+                FormatException formatExc = new FormatException("Invalid argument number %s", text);
                 try {
                     result = Integer.parseInt(text);
                 } catch (NumberFormatException exc) {
@@ -1243,19 +1208,15 @@ public enum AspectKind {
         /** Content must be a {@link NestedValue}. */
         NESTED {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse quantifier nesting",
-                        text);
+                    throw new FormatException("Can't parse quantifier nesting", text);
                 }
-                return new Pair<Object,String>(parseContent(
-                    text.substring(pos + 1), role), "");
+                return new Pair<Object,String>(parseContent(text.substring(pos + 1), role), "");
             }
 
             @Override
-            NestedValue parseContent(String text, GraphRole role)
-                throws FormatException {
+            NestedValue parseContent(String text, GraphRole role) throws FormatException {
                 NestedValue content = getNestedValue(text);
                 if (content == null) {
                     throw new FormatException("Can't parse quantifier nesting");
@@ -1266,22 +1227,18 @@ public enum AspectKind {
         /** Colour name or RGB value. */
         COLOR {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse colour value");
                 }
-                return new Pair<Object,String>(parseContent(
-                    text.substring(pos + 1), role), "");
+                return new Pair<Object,String>(parseContent(text.substring(pos + 1), role), "");
             }
 
             @Override
-            Color parseContent(String text, GraphRole role)
-                throws FormatException {
+            Color parseContent(String text, GraphRole role) throws FormatException {
                 Color result = Colors.findColor(text);
                 if (result == null) {
-                    throw new FormatException("Can't parse '%s' as colour",
-                        text);
+                    throw new FormatException("Can't parse '%s' as colour", text);
                 }
                 return result;
             }
@@ -1289,23 +1246,19 @@ public enum AspectKind {
         /** Node identifier. */
         NAME {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse node name");
                 }
-                return new Pair<Object,String>(parseContent(
-                    text.substring(pos + 1), role), "");
+                return new Pair<Object,String>(parseContent(text.substring(pos + 1), role), "");
             }
 
             @Override
-            String parseContent(String text, GraphRole role)
-                throws FormatException {
+            String parseContent(String text, GraphRole role) throws FormatException {
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
-                        throw new FormatException("Invalid node name '%s'",
-                            text);
+                        throw new FormatException("Invalid node name '%s'", text);
                     }
                 }
                 if (text.charAt(0) == '$' || text.equals(Keywords.SELF)) {
@@ -1317,28 +1270,23 @@ public enum AspectKind {
         /** Predicate (attribute) value. */
         TEST_EXPR {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse attribute predicate");
                 }
-                return new Pair<Object,String>(parseContent(
-                    text.substring(pos + 1), role), "");
+                return new Pair<Object,String>(parseContent(text.substring(pos + 1), role), "");
             }
 
             @Override
-            Expression parseContent(String text, GraphRole role)
-                throws FormatException {
+            Expression parseContent(String text, GraphRole role) throws FormatException {
                 Expression result = Expression.parseTest(text);
                 if (result.getKind() == Kind.FIELD) {
                     throw new FormatException(
-                        "Field expression '%s' not allowed as predicate expression",
-                        text);
+                        "Field expression '%s' not allowed as predicate expression", text);
                 }
                 if (result.getSignature() != SignatureKind.BOOL) {
                     throw new FormatException(
-                        "Non-boolean expression '%s' not allowed as predicate expression",
-                        text);
+                        "Non-boolean expression '%s' not allowed as predicate expression", text);
                 }
                 return result;
             }
@@ -1349,32 +1297,27 @@ public enum AspectKind {
             }
 
             @Override
-            Object relabel(Object content, TypeLabel oldLabel,
-                    TypeLabel newLabel) {
+            Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
                 return ((Expression) content).relabel(oldLabel, newLabel);
             }
         },
         /** Let expression content. */
         LET_EXPR {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse let expression");
                 }
-                return new Pair<Object,String>(parseContent(
-                    text.substring(pos + 1), role), "");
+                return new Pair<Object,String>(parseContent(text.substring(pos + 1), role), "");
             }
 
             @Override
-            Assignment parseContent(String text, GraphRole role)
-                throws FormatException {
+            Assignment parseContent(String text, GraphRole role) throws FormatException {
                 return Assignment.parse(text);
             }
 
             @Override
-            Object relabel(Object content, TypeLabel oldLabel,
-                    TypeLabel newLabel) {
+            Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
                 return ((Assignment) content).relabel(oldLabel, newLabel);
             }
         },
@@ -1382,25 +1325,20 @@ public enum AspectKind {
         /** Edge declaration content. */
         EDGE {
             @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role)
-                throws FormatException {
+            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException(
-                        "Can't parse edge pattern declaration");
+                    throw new FormatException("Can't parse edge pattern declaration");
                 }
-                return new Pair<Object,String>(parseContent(
-                    text.substring(pos + 1), role), "");
+                return new Pair<Object,String>(parseContent(text.substring(pos + 1), role), "");
             }
 
             @Override
-            LabelPattern parseContent(String text, GraphRole role)
-                throws FormatException {
+            LabelPattern parseContent(String text, GraphRole role) throws FormatException {
                 return LabelPattern.parse(text);
             }
 
             @Override
-            Object relabel(Object content, TypeLabel oldLabel,
-                    TypeLabel newLabel) {
+            Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
                 return ((LabelPattern) content).relabel(oldLabel, newLabel);
             }
         };
@@ -1424,14 +1362,12 @@ public enum AspectKind {
          * the remainder of the input string
          * @throws FormatException if the input string cannot be parsed 
          */
-        Pair<Object,String> parse(String text, int pos, GraphRole role)
-            throws FormatException {
+        Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
             // this implementation tries to find a literal of the
             // correct signature, or no content if the signature is not set
             assert text.indexOf(SEPARATOR, pos) >= 0;
             if (text.charAt(pos) != SEPARATOR) {
-                throw new FormatException(
-                    "Prefix %s should be followed by '%s' in %s",
+                throw new FormatException("Prefix %s should be followed by '%s' in %s",
                     text.substring(0, pos), "" + SEPARATOR, text);
             }
             if (this.signature == null || pos == text.length() - 1) {
@@ -1459,14 +1395,12 @@ public enum AspectKind {
             if (role == GraphRole.TYPE) {
                 // in a type graph, this is the declaration of an attribute
                 assert text.length() > 0;
-                boolean isIdent =
-                    Character.isJavaIdentifierStart(text.charAt(0));
+                boolean isIdent = Character.isJavaIdentifierStart(text.charAt(0));
                 for (int i = 1; isIdent && i < text.length(); i++) {
                     isIdent = Character.isJavaIdentifierPart(text.charAt(i));
                 }
                 if (!isIdent) {
-                    throw new FormatException(
-                        "Attributes field '%s' must be identifier", text);
+                    throw new FormatException("Attributes field '%s' must be identifier", text);
                 }
                 result = text;
             } else if (role == GraphRole.HOST) {
@@ -1482,14 +1416,13 @@ public enum AspectKind {
                 if (constant == null) {
                     result = this.signature.getOperator(text);
                 } else if (constant.getSignature() != this.signature) {
-                    throw new FormatException(
-                        "Constant '%s' is not of type '%s'", this.signature);
+                    throw new FormatException("Constant '%s' is not of type '%s'", constant,
+                        this.signature);
                 } else {
                     result = constant;
                 }
                 if (result == null) {
-                    throw new FormatException(
-                        "Signature '%s' has no constant or operator %s",
+                    throw new FormatException("Signature '%s' has no constant or operator %s",
                         this.signature, text);
                 }
             }
@@ -1532,8 +1465,7 @@ public enum AspectKind {
             if (content == null) {
                 return aspect.getPrefix();
             } else if (this == LEVEL || this == MULTIPLICITY) {
-                return aspect.getName() + ASSIGN + toString(content)
-                    + SEPARATOR;
+                return aspect.getName() + ASSIGN + toString(content) + SEPARATOR;
             } else {
                 return aspect.getPrefix() + toString(content);
             }
@@ -1551,8 +1483,7 @@ public enum AspectKind {
             Object result = content;
             if (this.signature != null && content instanceof String) {
                 // this is a field name
-                if (oldLabel.getRole() == EdgeRole.BINARY
-                    && oldLabel.text().equals(content)) {
+                if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text().equals(content)) {
                     result = newLabel.text();
                 }
             }
