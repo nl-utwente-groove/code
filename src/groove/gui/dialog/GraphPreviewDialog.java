@@ -136,7 +136,9 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         JModel<G> model = jGraph.newModel();
         model.loadGraph((G) shownGraph);
         jGraph.setModel(model);
-        jGraph.doLayout(true);
+        // EZ says: commented out since the 'setModel' above already calls
+        // the layouter.
+        // jGraph.doLayout(false);
         return jGraph;
     }
 
