@@ -287,4 +287,12 @@ public class GraphPredicates extends GroovePredicates {
     public void show_graph_1() {
         s(":-build_in(show_graph/1,'groove.prolog.builtin.graph.Predicate_show_graph').");
     }
+
+    @Signature({"Graph", "String", "+?"})
+    @ToolTipBody("Saves the given graph into the given file.")
+    @ToolTipPars({"the graph to save",
+        "file name to save to (the extension .gst is appended), if left empty, the graph name is used."})
+    public void save_graph_2() {
+        s(":-build_in(save_graph/2,'groove.prolog.builtin.graph.Predicate_save_graph').");
+    }
 }
