@@ -17,44 +17,41 @@
 package groove.control.term;
 
 /**
- * Term with increased transient depth.
+ * Term wrapping the body of a procedure.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TransitTerm extends Term {
+public class BodyTerm extends Term {
     /**
-     * Creates a term with increased transient depth.
+     * @param arg the body of the procedure
+     * @param caller the derivation from which the procedure was called.
      */
-    public TransitTerm(Term arg0) {
-        super(Op.TRANSIT, arg0);
-    }
-
-    @Override
-    protected MultiDerivation computeAttempt() {
-        MultiDerivation result = null;
-        if (isTrial()) {
-            result = createAttempt();
-            MultiDerivation ders = arg0().getAttempt();
-            for (Derivation deriv : ders) {
-                result.add(deriv.newInstance(deriv.onFinish().transit()));
-            }
-            result.setSuccess(ders.onSuccess().transit());
-            result.setFailure(ders.onFailure().transit());
-        }
-        return result;
-    }
-
-    @Override
-    protected int computeDepth() {
-        if (arg0().isFinal()) {
-            return 0;
-        } else {
-            return arg0().getDepth() + 1;
-        }
+    public BodyTerm(Term arg, Derivation caller) {
+        super(Op.BODY, arg);
+        this.caller = caller;
     }
 
     @Override
     protected Type computeType() {
         return arg0().getType();
     }
+
+    @Override
+    protected MultiDerivation computeAttempt() {
+        MultiDerivation result = createAttempt();
+        MultiDerivation argAttempt = arg0().getAttempt();
+        for (Derivation deriv : argAttempt) {
+            result.add(deriv.newInstance(this.caller));
+        }
+        result.setSuccess(body(argAttempt.onSuccess(), this.caller));
+        result.setFailure(body(argAttempt.onFailure(), this.caller));
+        return result;
+    }
+
+    @Override
+    protected int computeDepth() {
+        return arg0().getDepth();
+    }
+
+    private final Derivation caller;
 }

@@ -22,7 +22,7 @@ import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
 import groove.control.term.CallTerm;
 import groove.control.term.Derivation;
-import groove.control.term.DerivationList;
+import groove.control.term.MultiDerivation;
 import groove.control.term.Term;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -302,7 +302,7 @@ public class Program implements Fixable {
             assert false;
         }
         if (term.isTrial()) {
-            DerivationList derivList = term.getAttempt();
+            MultiDerivation derivList = term.getAttempt();
             for (Derivation edge : derivList) {
                 result.add(edge.getCall());
             }
