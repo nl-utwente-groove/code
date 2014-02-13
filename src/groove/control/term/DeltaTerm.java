@@ -33,7 +33,7 @@ public class DeltaTerm extends Term {
     }
 
     @Override
-    protected DerivationList computeAttempt() {
+    protected MultiDerivation computeAttempt() {
         return null;
     }
 

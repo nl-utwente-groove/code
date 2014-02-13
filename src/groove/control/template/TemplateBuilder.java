@@ -21,7 +21,7 @@ import groove.control.Position;
 import groove.control.Position.Type;
 import groove.control.Procedure;
 import groove.control.term.Derivation;
-import groove.control.term.DerivationList;
+import groove.control.term.MultiDerivation;
 import groove.control.term.Term;
 import groove.graph.GraphInfo;
 import groove.util.Duo;
@@ -67,7 +67,7 @@ public class TemplateBuilder {
                 continue;
             }
             Location source = locMap.get(next);
-            DerivationList attempt = next.getAttempt();
+            MultiDerivation attempt = next.getAttempt();
             for (Derivation deriv : attempt) {
                 Location target = addLocation(deriv.onFinish());
                 addSwitch(new Switch(source, target, deriv.getCall()));

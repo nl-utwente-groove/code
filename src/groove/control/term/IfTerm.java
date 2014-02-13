@@ -34,14 +34,14 @@ public class IfTerm extends Term {
     }
 
     @Override
-    protected DerivationList computeAttempt() {
-        DerivationList result = null;
+    protected MultiDerivation computeAttempt() {
+        MultiDerivation result = null;
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            DerivationList ders0 = arg0().getAttempt();
+            MultiDerivation ders0 = arg0().getAttempt();
             for (Derivation deriv : ders0) {
-                result.add(deriv.newAttempt(deriv.onFinish().seq(arg1())));
+                result.add(deriv.newInstance(deriv.onFinish().seq(arg1())));
             }
             result.setSuccess(ders0.onSuccess().seq(arg1()).or(arg2()));
             result.setFailure(ders0.onFailure().ifAlsoElse(arg1(), arg2(), arg3()));
