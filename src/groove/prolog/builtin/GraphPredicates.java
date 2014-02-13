@@ -174,8 +174,8 @@ public class GraphPredicates extends GroovePredicates {
     }
 
     @Signature({"Edge", "Label", "+?"})
-    @ToolTipBody("Gets the label of the edge")
-    @ToolTipPars({"the edge", "the label/Atom"})
+    @ToolTipBody("Gets the label text of the edge")
+    @ToolTipPars({"the edge", "the label text"})
     //    % @see groove.graph.Edge#label()
     public void edge_label_2() {
         s(":-build_in(edge_label/2,'groove.prolog.builtin.graph.Predicate_edge_label').");
