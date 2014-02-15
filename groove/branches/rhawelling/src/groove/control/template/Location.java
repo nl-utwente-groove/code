@@ -268,10 +268,15 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
 
     @Override
     public String toString() {
-        String result = super.toString();
+        String result = getTemplate().getName() + "." + getNumber();
         boolean brackets = false;
         if (isStart()) {
             result = result + "(start";
+            brackets = true;
+        }
+        if (isDead()) {
+            result = result + (brackets ? "," : "(");
+            result = result + "dead";
             brackets = true;
         }
         if (isFinal()) {
@@ -281,7 +286,7 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         }
         if (this.depth > 0) {
             result = result + (brackets ? "," : "(");
-            result = result + "depth=" + this.depth;
+            result = result + "d" + this.depth;
             brackets = true;
         }
 

@@ -17,11 +17,9 @@
 package groove.lts;
 
 import groove.control.Binding;
-import groove.control.Binding.Source;
 import groove.control.Call;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlStep;
-import groove.control.CtrlType;
 import groove.control.Valuator;
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
@@ -74,12 +72,18 @@ public class StepMatchCollector extends MatchCollector {
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
         final boolean isDisabled = isDisabled(step.getSwitch());
+        boolean isModifying = step.isModifying();
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition) {
                     RuleTransition ruleTrans = (RuleTransition) trans;
                     if (ruleTrans.getEvent().getRule().equals(step.getRule())) {
-                        result.add(ruleTrans.getKey());
+                        MatchResult match = ruleTrans.getKey();
+                        if (isModifying) {
+                            // we can reuse the event but not the control step
+                            match = new MatchResult(match.getEvent(), step);
+                        }
+                        result.add(match);
                         if (DEBUG) {
                             System.out.print(" T" + System.identityHashCode(trans.getEvent()));
                         }
@@ -181,20 +185,24 @@ public class StepMatchCollector extends MatchCollector {
         }
         // since disabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        for (Pair<Var,Binding> inArg : swit.getCallBinding()) {
-            if (inArg.two() == null || inArg.two().getSource() == Source.CONST) {
-                continue;
-            }
-            // node values may be deleted 
-            if (inArg.one().getType() == CtrlType.NODE && swit.getRule().hasNodeErasers()) {
-                return true;
-            }
-            // the incoming control step may have affected the variable's value
-            if (((Step) state.getStep()).mayAssign(inArg.two().getIndex())) {
-                return true;
-            }
+        if (state.getStep().isModifying()) {
+            return true;
         }
         return false;
+        //        for (Pair<Var,Binding> inArg : swit.getCallBinding()) {
+        //            if (inArg.two() == null || inArg.two().getSource() == Source.CONST) {
+        //                continue;
+        //            }
+        //            // node values may be deleted 
+        //            if (inArg.one().getType() == CtrlType.NODE && swit.getRule().hasNodeErasers()) {
+        //                return true;
+        //            }
+        //            // the incoming control step may have affected the variable's value
+        //            if (((Step) state.getStep()).mayAssign(inArg.two().getIndex())) {
+        //                return true;
+        //            }
+        //        }
+        //        return false;
     }
 
     /** Extracts the morphism from rule nodes to input graph nodes

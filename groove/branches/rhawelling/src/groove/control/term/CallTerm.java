@@ -18,6 +18,7 @@ package groove.control.term;
 
 import groove.control.Call;
 import groove.control.Callable;
+import groove.control.Procedure;
 import groove.util.collect.Pool;
 
 /**
@@ -42,11 +43,18 @@ public class CallTerm extends Term {
     private final Call call;
 
     @Override
-    protected DerivationList computeAttempt() {
-        DerivationList result = createAttempt();
-        result.add(new Derivation(this.call, epsilon()));
-        result.setSuccess(delta());
-        result.setFailure(delta());
+    protected MultiDerivation computeAttempt(boolean nested) {
+        Derivation deriv = new Derivation(getCall(), epsilon());
+        MultiDerivation result;
+        if (nested && getCall().getUnit() instanceof Procedure) {
+            Term inner = ((Procedure) getCall().getUnit()).getTerm();
+            result = body(inner, deriv).getAttempt(nested);
+        } else {
+            result = createAttempt();
+            result.add(deriv);
+            result.setSuccess(delta());
+            result.setFailure(delta());
+        }
         return result;
     }
 

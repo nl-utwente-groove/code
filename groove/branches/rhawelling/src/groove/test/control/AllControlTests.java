@@ -23,10 +23,10 @@ import org.junit.runners.Suite;
  * @author Eduardo Zambon
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AutomatonBuildTest.class, ControlAttributeParametersTest.class,
-    ControlVariablesTest.class, ControlGrammarsTest.class, CtrlBuildTest.class,
-    ControlUnitTest.class, RecipeTest.class, ProgramBuildTest.class, TemplateBuildTest.class,
-    TermTest.class, TermDerivationTest.class})
+@Suite.SuiteClasses({//AutomatonBuildTest.class, 
+ControlAttributeParametersTest.class, ControlVariablesTest.class, ControlGrammarsTest.class,
+    CtrlBuildTest.class, ControlUnitTest.class, RecipeTest.class, ProgramBuildTest.class,
+    TemplateBuildTest.class, TermTest.class, TermDerivationTest.class})
 public class AllControlTests {
     // Empty by design.
 }

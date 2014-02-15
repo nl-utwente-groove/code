@@ -140,29 +140,47 @@ abstract public class Term implements Position<Term> {
         return getType() == Type.TRIAL;
     }
 
-    /** Indicates that this term is dead, i.e., has no outgoing edges and is not final. */
     @Override
     public final boolean isDead() {
         return getType() == Type.DEAD;
     }
 
-    /** Returns the set of derivations for this symbolic location. */
     @Override
-    public final DerivationList getAttempt() {
-        if (this.attempt == null) {
-            this.attempt = computeAttempt();
-        }
-        return this.attempt;
+    public final MultiDerivation getAttempt() {
+        return getAttempt(true);
     }
 
-    private DerivationList attempt;
+    /** 
+     * Returns the derivation for this term.
+     * @param nested if {@code true}, the nested derivation is computed,
+     * otherwise only the bottom-level derivation is computed
+     */
+    public final MultiDerivation getAttempt(boolean nested) {
+        MultiDerivation result = nested ? this.nestedAttempt : this.flatAttempt;
+        if (result == null) {
+            result = computeAttempt(nested);
+            if (nested) {
+                this.nestedAttempt = result;
+            } else {
+                this.flatAttempt = result;
+            }
+        }
+        return result;
+    }
 
-    /** Computes the set of outgoing call edges for this symbolic location. */
-    abstract protected DerivationList computeAttempt();
+    private MultiDerivation flatAttempt;
+    private MultiDerivation nestedAttempt;
+
+    /** 
+     * Computes the derivation of this term. 
+     * @param nested if {@code true}, the nested derivation is computed,
+     * otherwise only the bottom-level derivation is computed
+     */
+    abstract protected MultiDerivation computeAttempt(boolean nested);
 
     /** Callback factory method for a list of attempts. */
-    protected final DerivationList createAttempt() {
-        return new DerivationList();
+    protected final MultiDerivation createAttempt() {
+        return new MultiDerivation();
     }
 
     /** Indicates if the failure verdicts transitively lead to a final term. */
@@ -239,7 +257,7 @@ abstract public class Term implements Position<Term> {
             result = result + ", final";
             break;
         case TRIAL:
-            DerivationList attempt = getAttempt();
+            MultiDerivation attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
                 result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
             }
@@ -401,11 +419,23 @@ abstract public class Term implements Position<Term> {
         return getPool().canonical(result);
     }
 
+    /** Returns a term wrapped as the body of a called unit. */
+    public Term body(Term inner, Derivation caller) {
+        if (inner.isFinal()) {
+            return epsilon();
+        } else if (inner.isDead()) {
+            return delta(inner.getDepth());
+        } else {
+            BodyTerm result = new BodyTerm(inner, caller);
+            return getPool().canonical(result);
+        }
+    }
+
     /** Creates a prototype term. */
     public static Term prototype() {
         return new Term(new Pool<Term>()) {
             @Override
-            protected DerivationList computeAttempt() {
+            protected MultiDerivation computeAttempt(boolean nested) {
                 throw new UnsupportedOperationException();
             }
 
@@ -428,7 +458,7 @@ abstract public class Term implements Position<Term> {
     static List<Derivation> makeTransit(List<Derivation> edges) {
         List<Derivation> result = new ArrayList<Derivation>();
         for (Derivation edge : edges) {
-            result.add(edge.newAttempt(edge.onFinish().transit()));
+            result.add(edge.newInstance(edge.onFinish().transit()));
         }
         return result;
     }
@@ -460,7 +490,9 @@ abstract public class Term implements Position<Term> {
         /** Atomic block. */
         ATOM(1),
         /** Transient term. */
-        TRANSIT(1), ;
+        TRANSIT(1),
+        /** Procedure body. */
+        BODY(1), ;
 
         private Op(int arity) {
             this.arity = arity;

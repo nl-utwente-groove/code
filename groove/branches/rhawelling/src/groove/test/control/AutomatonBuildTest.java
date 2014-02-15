@@ -33,7 +33,6 @@ import groove.control.instance.Assignment;
 import groove.control.instance.Automaton;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
-import groove.control.parse.CtrlTree;
 import groove.control.template.Program;
 import groove.control.template.Switch;
 import groove.grammar.Grammar;
@@ -43,8 +42,9 @@ import groove.gui.Viewer;
 import groove.util.Groove;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -191,6 +191,17 @@ public class AutomatonBuildTest {
         assertTrue(f6.isFinal());
     }
 
+    @Test
+    public void testNestedLoop() {
+        Automaton p = build("alap-choice", "alap a|b;");
+        p.explore();
+        p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
+        p.explore();
+        if (DEBUG) {
+            Viewer.showGraph(p, true);
+        }
+    }
+
     /** Loads the grammar to be used for testing. */
     protected void initGrammar(String name) {
         if (!name.equals(this.grammarName)) {
@@ -251,6 +262,7 @@ public class AutomatonBuildTest {
         }
         try {
             this.loader.parse(controlName, program);
+            this.controlNames.add(controlName);
         } catch (FormatException e) {
             fail(e.toString());
         }
@@ -261,20 +273,21 @@ public class AutomatonBuildTest {
         Program prog = new Program();
         Automaton result = null;
         try {
-            for (Map.Entry<String,CtrlTree> entry : this.loader.check().entrySet()) {
-                prog.add(entry.getValue().toProgram());
-            }
-            this.loader = null;
+            prog = this.loader.buildProgram(this.controlNames);
             prog.setFixed();
             result = new Automaton(prog.getTemplate());
         } catch (FormatException e) {
             fail(e.toString());
         }
         this.prog = prog;
+        // reset the loader so we get a fresh one next time
+        this.loader = null;
+        this.controlNames.clear();
         return result;
     }
 
     private CtrlLoader loader;
+    private final Set<String> controlNames = new HashSet<String>();
 
     protected Call call(String name) {
         Callable unit = rule(name);

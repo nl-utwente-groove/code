@@ -31,30 +31,26 @@ public class IfTerm extends Term {
      */
     IfTerm(Term cond, Term thenPart, Term alsoPart, Term elsePart) {
         super(Op.IF, cond, thenPart, alsoPart, elsePart);
-        assert cond.isTopLevel();
-        assert thenPart.isTopLevel();
-        assert alsoPart.isTopLevel();
-        assert elsePart.isTopLevel();
     }
 
     @Override
-    protected DerivationList computeAttempt() {
-        DerivationList result = null;
+    protected MultiDerivation computeAttempt(boolean nested) {
+        MultiDerivation result = null;
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            DerivationList ders0 = arg0().getAttempt();
+            MultiDerivation ders0 = arg0().getAttempt(nested);
             for (Derivation deriv : ders0) {
-                result.add(deriv.newAttempt(deriv.onFinish().seq(arg1())));
+                result.add(deriv.newInstance(deriv.onFinish().seq(arg1())));
             }
             result.setSuccess(ders0.onSuccess().seq(arg1()).or(arg2()));
             result.setFailure(ders0.onFailure().ifAlsoElse(arg1(), arg2(), arg3()));
             break;
         case FINAL:
-            result = arg1OrArg2().getAttempt();
+            result = arg1OrArg2().getAttempt(nested);
             break;
         case DEAD:
-            result = arg3().getAttempt();
+            result = arg3().getAttempt(nested);
             break;
         default:
             assert false;

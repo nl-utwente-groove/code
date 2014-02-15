@@ -16,38 +16,24 @@
  */
 package groove.control.term;
 
-import groove.util.collect.Pool;
+import java.util.ArrayList;
 
 /**
- * Successful termination.
+ * Stack of derivations; the bottom (first) element is the original caller.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EpsilonTerm extends Term {
+public class DerivationStack extends ArrayList<Derivation> {
     /**
-     * Constructs an epsilon term.
+     * Constructs a stack of derivations, from a given bottom-level
+     * derivation.
+     * The bottom-level derivation will become the first element of
+     * the stack, its nested derivation (if any) the second, etc.
      */
-    public EpsilonTerm(Pool<Term> pool) {
-        super(pool, Term.Op.EPSILON);
-    }
-
-    @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
-        return null;
-    }
-
-    @Override
-    protected int computeDepth() {
-        return 0;
-    }
-
-    @Override
-    protected Type computeType() {
-        return Type.FINAL;
-    }
-
-    @Override
-    public Term seq(Term arg1) {
-        return arg1;
+    public DerivationStack(Derivation bottom) {
+        add(bottom);
+        if (bottom.hasNested()) {
+            addAll(bottom.getNested().getStack());
+        }
     }
 }

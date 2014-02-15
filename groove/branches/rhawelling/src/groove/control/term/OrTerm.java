@@ -26,22 +26,20 @@ public class OrTerm extends Term {
      */
     OrTerm(Term arg0, Term arg1) {
         super(Term.Op.OR, arg0, arg1);
-        assert arg0.isTopLevel();
-        assert arg1.isTopLevel();
     }
 
     @Override
-    protected DerivationList computeAttempt() {
-        DerivationList result = null;
+    protected MultiDerivation computeAttempt(boolean nested) {
+        MultiDerivation result = null;
         if (isTrial()) {
-            DerivationList ders0 = arg0().getAttempt();
-            DerivationList ders1 = arg1().getAttempt();
+            MultiDerivation ders0 = arg0().getAttempt(nested);
+            MultiDerivation ders1 = arg1().getAttempt(nested);
             result = createAttempt();
-            if (useArg0Only()) {
+            if (useArg0Only(nested)) {
                 result.addAll(ders0);
                 result.setSuccess(ders0.onSuccess().or(arg1()));
                 result.setFailure(ders0.onFailure().or(arg1()));
-            } else if (useArg1Only()) {
+            } else if (useArg1Only(nested)) {
                 result.addAll(ders1);
                 result.setSuccess(arg0().or(ders1.onSuccess()));
                 result.setFailure(arg0().or(ders1.onFailure()));
@@ -60,16 +58,17 @@ public class OrTerm extends Term {
      * Yields true if arg0 is a trial position for which the verdicts are distinct,
      * or arg1 is not a trial position.
      */
-    private boolean useArg0Only() {
-        return arg0().isTrial() && !arg0().getAttempt().sameVerdict() || !arg1().isTrial();
+    private boolean useArg0Only(boolean nested) {
+        return arg0().isTrial() && !arg0().getAttempt(nested).sameVerdict() || !arg1().isTrial();
     }
 
     /** 
      * Yields true if arg0 is not a trial position, or it has equal verdicts
      * and arg1 is a trial position with distinct verdicts.
      */
-    private boolean useArg1Only() {
-        return !arg0().isTrial() || !useArg0Only() && !arg1().getAttempt().sameVerdict();
+    private boolean useArg1Only(boolean nested) {
+        return !arg0().isTrial() || !useArg0Only(nested)
+            && !arg1().getAttempt(nested).sameVerdict();
     }
 
     @Override

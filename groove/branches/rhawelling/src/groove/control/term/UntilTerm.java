@@ -30,18 +30,18 @@ public class UntilTerm extends Term {
     }
 
     @Override
-    protected DerivationList computeAttempt() {
-        DerivationList result = null;
+    protected MultiDerivation computeAttempt(boolean nested) {
+        MultiDerivation result = null;
         switch (arg0().getType()) {
         case TRIAL:
-            result = arg0().getAttempt();
+            result = arg0().getAttempt(nested);
             break;
         case DEAD:
             if (arg1().isTrial()) {
                 result = createAttempt();
-                DerivationList ders1 = arg1().getAttempt();
+                MultiDerivation ders1 = arg1().getAttempt(nested);
                 for (Derivation deriv : ders1) {
-                    result.add(deriv.newAttempt(deriv.onFinish().seq(this)));
+                    result.add(deriv.newInstance(deriv.onFinish().seq(this)));
                 }
                 result.setSuccess(ders1.onSuccess().seq(this));
                 result.setFailure(ders1.onFailure().seq(this));

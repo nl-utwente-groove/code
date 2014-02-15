@@ -80,12 +80,15 @@ public class MultiSwitch extends MultiAttempt<Location,Switch> {
     private Switch computeSwitch(Switch caller, int i, boolean success) {
         Stage onFinish = get(i).target().getFirstStage(caller);
         boolean last = i == size() - 1;
-        Stage onSuccess = last ? onSuccess().getFirstStage(caller) : source().getStage(caller, i + 1, true);
+        Stage onSuccess =
+            last ? onSuccess().getFirstStage(caller) : source().getStage(caller, i + 1, true);
         Stage onFailure;
         if (sameVerdict()) {
             onFailure = onSuccess;
         } else {
-            onFailure = last ? onFailure().getFirstStage(caller) : source().getStage(caller, i + 1, success);
+            onFailure =
+                last ? (success ? onSuccess() : onFailure()).getFirstStage(caller)
+                        : source().getStage(caller, i + 1, success);
         }
         return new Switch(get(i), caller, onFinish, onSuccess, onFailure);
     }

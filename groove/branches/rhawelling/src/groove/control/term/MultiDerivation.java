@@ -20,10 +20,11 @@ import groove.control.MultiAttempt;
 
 /**
  * List of term derivations in combination with the success and failure alternates.
+ * This constitutes a term attempt.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DerivationList extends MultiAttempt<Term,Derivation> {
+public class MultiDerivation extends MultiAttempt<Term,Derivation> {
     @Override
     public Term onSuccess() {
         assert this.onSuccess != null;

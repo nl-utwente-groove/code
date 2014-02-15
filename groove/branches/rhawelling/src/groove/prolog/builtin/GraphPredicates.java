@@ -174,8 +174,8 @@ public class GraphPredicates extends GroovePredicates {
     }
 
     @Signature({"Edge", "Label", "+?"})
-    @ToolTipBody("Gets the label of the edge")
-    @ToolTipPars({"the edge", "the label/Atom"})
+    @ToolTipBody("Gets the label text of the edge")
+    @ToolTipPars({"the edge", "the label text"})
     //    % @see groove.graph.Edge#label()
     public void edge_label_2() {
         s(":-build_in(edge_label/2,'groove.prolog.builtin.graph.Predicate_edge_label').");
@@ -227,16 +227,15 @@ public class GraphPredicates extends GroovePredicates {
 
     @ToolTipBody({"Gets the path from one node to an other"})
     @Signature({"Graph", "Node", "Node", "Path", "+++?"})
-    @ToolTipPars({"the graph that contains the nodes", "the starting node",
-        "the destination node", "list of edges that define the path"})
+    @ToolTipPars({"the graph that contains the nodes", "the starting node", "the destination node",
+        "list of edges that define the path"})
     public void node_path_4() {
         s("node_path(Graph,From,To,Path):-          ");
         s("        node_path(Graph,From,To,Path,[]).");
     }
 
     @Signature({"Graph", "Node", "Node", "Path", "Visited", "+++??"})
-    @ToolTipBody({
-        "Internal predicate which does all the processing for node_path/4",
+    @ToolTipBody({"Internal predicate which does all the processing for node_path/4",
         "Helper predicate, stop processing when the start node is reached"})
     public void node_path_5() {
         s("node_path(Graph,From,From,[],_).            ");
@@ -250,12 +249,10 @@ public class GraphPredicates extends GroovePredicates {
     }
 
     @Signature({"Graph", "Node", "Labels", "+??"})
-    @ToolTipBody({
-        "Nodes from the graph that contain self edges with labels from the list.",
+    @ToolTipBody({"Nodes from the graph that contain self edges with labels from the list.",
         "All the labels must be present, but more are allowed.",
         "<p>Example: start_graph(G),node_self_edges(G,Node,['Feature','includedFeature'])"})
-    @ToolTipPars({"the graph to query", "the node",
-        "the list of labels of the self edges"})
+    @ToolTipPars({"the graph to query", "the node", "the list of labels of the self edges"})
     public void node_self_edges_3() {
         s(":-build_in(node_self_edges/3,'groove.prolog.builtin.graph.Predicate_node_self_edges').");
     }
@@ -264,14 +261,12 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipBody({
         "Same as node_self_edges/3 except that that the list is exclusive, thus the node",
         "may not contain more edges"})
-    @ToolTipPars({"the graph to query", "the node",
-        "the list of labels of the self edges"})
+    @ToolTipPars({"the graph to query", "the node", "the list of labels of the self edges"})
     public void node_self_edges_excl_3() {
         s(":-build_in(node_self_edges_excl/3,'groove.prolog.builtin.graph.Predicate_node_self_edges_excl').");
     }
 
-    @ToolTipBody({
-        "Get the \"internal\" number of a node. Node numbers are volatile information,",
+    @ToolTipBody({"Get the \"internal\" number of a node. Node numbers are volatile information,",
         "\"similar\" nodes in different graph states do not share the same number. You should",
         "not build algorithms around the usage of this predicate. Note, that all node",
         "forms contain numbers, this completely depends on the Groove implementation "})
@@ -285,5 +280,19 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "Number", "+??"})
     public void node_number_3() {
         s("node_number(Graph,Node,Number):-graph_node(Graph,Node),node_number(Node,Number).");
+    }
+
+    @Signature({"Graph", "+"})
+    @ToolTipBody("Displays the given graph in a new preview dialog.")
+    public void show_graph_1() {
+        s(":-build_in(show_graph/1,'groove.prolog.builtin.graph.Predicate_show_graph').");
+    }
+
+    @Signature({"Graph", "String", "+?"})
+    @ToolTipBody("Saves the given graph into the given file.")
+    @ToolTipPars({"the graph to save",
+        "file name to save to (the extension .gst is appended), if left empty, the graph name is used."})
+    public void save_graph_2() {
+        s(":-build_in(save_graph/2,'groove.prolog.builtin.graph.Predicate_save_graph').");
     }
 }
