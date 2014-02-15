@@ -105,4 +105,35 @@ public class TestConfluence {
         result.analyzeAll();
         assertTrue(result.getStatus() == expected);
     }
+
+    /**
+     * The test below fails, this is because the theory for efficient confluence analysis is not applicable
+     * The problem is that some transformations are not pushouts
+     */
+    @Test
+    public void testPhilAlternateMethod() {
+        String grammarStr =
+            "junit/criticalpair/phil-invalidTransformation.gps/";
+        File grammarFile = new File(grammarStr);
+        GrammarModel view = null;
+        Grammar grammar = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+            //            GrammarProperties props = view.getProperties();
+            //            props.setInjective(true);
+            //            view.setProperties(props);
+            grammar = view.toGrammar();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        ConfluenceStatus expected = ConfluenceStatus.NOT_STICTLY_CONFLUENT;
+        ConfluenceResult result =
+            ConfluenceResult.checkStrictlyConfluent(grammar,
+                ConfluenceStatus.UNTESTED, true);
+        int totalPairs = result.getSizeOfUntestedPairs();
+        result.analyzeAll();
+        assertTrue(result.getStatus() == expected);
+    }
 }

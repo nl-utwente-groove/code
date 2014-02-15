@@ -333,6 +333,8 @@ class ConfluenceAnalyzer {
                         ConfluenceStatus.STRICTLY_CONFLUENT, grammar);
                     //remark: there is no need to add this pair to the set of confluent pairs
 
+                    //this assertion may fail in come cases: this is because the one of the transformations
+                    //which needs to be applied to show that "pair" is confluent, is actually not a pushout
                     assert getStrictlyConfluent(pair, grammar) == ConfluenceStatus.STRICTLY_CONFLUENT;
                     break confluentPair;
                 }
