@@ -19,21 +19,21 @@ package groove.control.term;
 import java.util.ArrayList;
 
 /**
- * Stack of derivations; the bottom element is the original caller.
+ * Stack of derivations; the bottom (first) element is the original caller.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class DerivationStack extends ArrayList<Derivation> {
     /**
-     * Constructs a list of derivations, from a given top-level
+     * Constructs a stack of derivations, from a given bottom-level
      * derivation.
-     * The top-level derivation will become the last element of
-     * the stack, its caller (if any) the last but one, etc.
+     * The bottom-level derivation will become the first element of
+     * the stack, its nested derivation (if any) the second, etc.
      */
-    public DerivationStack(Derivation top) {
-        if (top.hasCaller()) {
-            addAll(top.getCaller().getStack());
+    public DerivationStack(Derivation bottom) {
+        add(bottom);
+        if (bottom.hasNested()) {
+            addAll(bottom.getNested().getStack());
         }
-        add(top);
     }
 }

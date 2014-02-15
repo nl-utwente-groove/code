@@ -140,25 +140,43 @@ abstract public class Term implements Position<Term> {
         return getType() == Type.TRIAL;
     }
 
-    /** Indicates that this term is dead, i.e., has no outgoing edges and is not final. */
     @Override
     public final boolean isDead() {
         return getType() == Type.DEAD;
     }
 
-    /** Returns the set of derivations for this symbolic location. */
     @Override
     public final MultiDerivation getAttempt() {
-        if (this.attempt == null) {
-            this.attempt = computeAttempt();
-        }
-        return this.attempt;
+        return getAttempt(true);
     }
 
-    private MultiDerivation attempt;
+    /** 
+     * Returns the derivation for this term.
+     * @param nested if {@code true}, the nested derivation is computed,
+     * otherwise only the bottom-level derivation is computed
+     */
+    public final MultiDerivation getAttempt(boolean nested) {
+        MultiDerivation result = nested ? this.nestedAttempt : this.flatAttempt;
+        if (result == null) {
+            result = computeAttempt(nested);
+            if (nested) {
+                this.nestedAttempt = result;
+            } else {
+                this.flatAttempt = result;
+            }
+        }
+        return result;
+    }
 
-    /** Computes the set of outgoing call edges for this symbolic location. */
-    abstract protected MultiDerivation computeAttempt();
+    private MultiDerivation flatAttempt;
+    private MultiDerivation nestedAttempt;
+
+    /** 
+     * Computes the derivation of this term. 
+     * @param nested if {@code true}, the nested derivation is computed,
+     * otherwise only the bottom-level derivation is computed
+     */
+    abstract protected MultiDerivation computeAttempt(boolean nested);
 
     /** Callback factory method for a list of attempts. */
     protected final MultiDerivation createAttempt() {
@@ -239,7 +257,7 @@ abstract public class Term implements Position<Term> {
             result = result + ", final";
             break;
         case TRIAL:
-            MultiDerivation attempt = getAttempt();
+            MultiDerivation attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
                 result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
             }
@@ -417,7 +435,7 @@ abstract public class Term implements Position<Term> {
     public static Term prototype() {
         return new Term(new Pool<Term>()) {
             @Override
-            protected MultiDerivation computeAttempt() {
+            protected MultiDerivation computeAttempt(boolean nested) {
                 throw new UnsupportedOperationException();
             }
 

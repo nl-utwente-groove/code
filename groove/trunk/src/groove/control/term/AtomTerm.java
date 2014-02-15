@@ -30,10 +30,10 @@ public class AtomTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt() {
+    protected MultiDerivation computeAttempt(boolean nested) {
         MultiDerivation result = null;
         if (arg0().isTrial()) {
-            MultiDerivation ders = arg0().getAttempt();
+            MultiDerivation ders = arg0().getAttempt(nested);
             result = createAttempt();
             for (Derivation deriv : ders) {
                 result.add(deriv.newInstance(deriv.onFinish().transit()));

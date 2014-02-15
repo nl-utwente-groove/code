@@ -30,9 +30,9 @@ public class Derivation extends Pair<Call,Term> {
      * Constructs a derivation out of a call and a target term,
      * with a given caller.
      */
-    public Derivation(Call call, Term target, Derivation caller) {
+    public Derivation(Call call, Term target, Derivation nested) {
         super(call, target);
-        this.caller = caller;
+        this.nested = nested;
     }
 
     /**
@@ -55,17 +55,17 @@ public class Derivation extends Pair<Call,Term> {
         return two();
     }
 
-    /** Returns the (possibly {@code null} caller of this derivation. */
-    public Derivation getCaller() {
-        return this.caller;
+    /** Returns the (possibly {@code null} nested derivation of this derivation. */
+    public Derivation getNested() {
+        return this.nested;
     }
 
-    /** Indicates if this derivation has a caller. */
-    public boolean hasCaller() {
-        return getCaller() != null;
+    /** Indicates if this derivation has a nested derivation. */
+    public boolean hasNested() {
+        return getNested() != null;
     }
 
-    private final Derivation caller;
+    private final Derivation nested;
 
     /** Returns the stack of derivations of which this is the top element. */
     public DerivationStack getStack() {
@@ -79,7 +79,7 @@ public class Derivation extends Pair<Call,Term> {
 
     /** Creates a new derivation, with the call and derivation stack of this one but another target term. */
     public Derivation newInstance(Term target) {
-        return new Derivation(getCall(), target, getCaller());
+        return new Derivation(getCall(), target, getNested());
     }
 
     /**
@@ -88,8 +88,8 @@ public class Derivation extends Pair<Call,Term> {
      */
     public Derivation newInstance(Derivation caller) {
         Derivation result;
-        if (hasCaller()) {
-            result = new Derivation(getCall(), onFinish(), getCaller().newInstance(caller));
+        if (hasNested()) {
+            result = new Derivation(getCall(), onFinish(), getNested().newInstance(caller));
         } else {
             result = new Derivation(getCall(), onFinish(), caller);
         }
@@ -99,8 +99,8 @@ public class Derivation extends Pair<Call,Term> {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        if (hasCaller()) {
-            result.append(getCaller().toString());
+        if (hasNested()) {
+            result.append(getNested().toString());
             result.append("::");
         }
         result.append(super.toString());
@@ -116,12 +116,12 @@ public class Derivation extends Pair<Call,Term> {
             return false;
         }
         Derivation other = (Derivation) obj;
-        if (hasCaller()) {
-            if (getCaller().equals(other.hasCaller())) {
+        if (hasNested()) {
+            if (getNested().equals(other.hasNested())) {
                 return false;
             }
         } else {
-            if (other.hasCaller()) {
+            if (other.hasNested()) {
                 return false;
             }
         }
@@ -132,7 +132,7 @@ public class Derivation extends Pair<Call,Term> {
     public int hashCode() {
         int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (hasCaller() ? getCaller().hashCode() : 0);
+        result = prime * result + (hasNested() ? getNested().hashCode() : 0);
         return result;
     }
 }

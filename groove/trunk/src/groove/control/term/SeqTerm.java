@@ -30,12 +30,12 @@ public class SeqTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt() {
+    protected MultiDerivation computeAttempt(boolean nested) {
         MultiDerivation result = null;
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            MultiDerivation ders0 = arg0().getAttempt();
+            MultiDerivation ders0 = arg0().getAttempt(nested);
             for (Derivation deriv : ders0) {
                 result.add(deriv.newInstance(deriv.onFinish().seq(arg1())));
             }
@@ -43,7 +43,7 @@ public class SeqTerm extends Term {
             result.setFailure(ders0.onFailure().seq(arg1()));
             break;
         case FINAL:
-            result = arg1().isTrial() ? arg1().getAttempt() : null;
+            result = arg1().isTrial() ? arg1().getAttempt(nested) : null;
             break;
         }
         return result;

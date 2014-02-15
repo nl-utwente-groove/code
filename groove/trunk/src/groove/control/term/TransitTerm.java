@@ -30,11 +30,11 @@ public class TransitTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt() {
+    protected MultiDerivation computeAttempt(boolean nested) {
         MultiDerivation result = null;
         if (isTrial()) {
             result = createAttempt();
-            MultiDerivation ders = arg0().getAttempt();
+            MultiDerivation ders = arg0().getAttempt(nested);
             for (Derivation deriv : ders) {
                 result.add(deriv.newInstance(deriv.onFinish().transit()));
             }

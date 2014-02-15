@@ -37,11 +37,11 @@ public class BodyTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt() {
+    protected MultiDerivation computeAttempt(boolean nested) {
         MultiDerivation result = createAttempt();
-        MultiDerivation argAttempt = arg0().getAttempt();
+        MultiDerivation argAttempt = arg0().getAttempt(nested);
         for (Derivation deriv : argAttempt) {
-            result.add(deriv.newInstance(this.caller));
+            result.add(this.caller.newInstance(deriv));
         }
         result.setSuccess(body(argAttempt.onSuccess(), this.caller));
         result.setFailure(body(argAttempt.onFailure(), this.caller));
