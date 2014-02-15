@@ -16,15 +16,15 @@
  */
 package groove.transform.criticalpair;
 
-import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
-import groove.grammar.host.HostNode;
-import groove.grammar.rule.RuleEdge;
-import groove.grammar.rule.RuleGraph;
-import groove.grammar.rule.RuleNode;
-import groove.graph.AElementBiMap;
 
+/**
+ * 
+ * @author Ruud
+ * A HostGraph with a HostGraphMorphism
+ * Used to keep track of states when analysing whether a critical pair is strictly locally confluent
+ */
 class HostGraphWithMorphism {
 
     //the target of the morphism
@@ -35,10 +35,6 @@ class HostGraphWithMorphism {
         this.hostGraph = hostGraph;
         this.morphism = morphism;
     }
-
-    private RuleGraph ruleGraph = null;
-    private AElementBiMap<HostNode,HostEdge,RuleNode,RuleEdge> sourceToRuleMorphism =
-        null;
 
     public HostGraph getHostGraph() {
         return this.hostGraph;

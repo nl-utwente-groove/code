@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2013 University of Twente
+ * Copyright 2003--2014 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -40,23 +40,34 @@ import groove.graph.NodeFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class ParallelPair {
+/**
+ * Class that models combinations of ruleNodes for two rules. Used for generation of critical pairs
+ * 
+ * @author Ruud Welling
+ */
+class ParallelPair {
     private Rule rule1;
     private Rule rule2;
-    private Map<Long,Set<RuleNode>> nodeMatch1 =
-        new HashMap<Long,Set<RuleNode>>();
-    private Map<Long,Set<RuleNode>> nodeMatch2 =
-        new HashMap<Long,Set<RuleNode>>();
+
+    //A map wich gives Sets of RuleNodes a number these ruleNodes are combined in the match that will be constructed
+    //Every RuleNode in rule1 occurs in at most one of the Sets
+    private Map<Long,Set<RuleNode>> nodeMatch1 = new LinkedHashMap<Long,Set<RuleNode>>();
+
+    //Similar to nodeMatch1, if the same Long value is used, then ruleNodes from rule1 and rule2 are combined
+    private Map<Long,Set<RuleNode>> nodeMatch2 = new LinkedHashMap<Long,Set<RuleNode>>();
+
+    //prevents recomputing of the critical pair
     private boolean criticalPairComputed = false;
+    //if criticalPairComputed then critPair == null implies that this parallelPair is a parallel independent situation
     private CriticalPair critPair = null;
 
     //ensures that the targets of matches are unique when this is desired
@@ -64,7 +75,8 @@ public class ParallelPair {
     //counter to ensure that created variables are unique
     private static int variableCounter = 0;
 
-    static Long getNextMatchTargetNumer() {
+    //return an unused number which can be used to group sets of ruleNodes
+    static Long getNextMatchTargetNumber() {
         return matchTargetCounter++;
     }
 
@@ -84,13 +96,18 @@ public class ParallelPair {
         return this.rule2;
     }
 
+    /**
+     * Returns the rule with the given matchNum (ONE or TWO)
+     * @param matchnum the number of the requested rule
+     * @return either this.rule1 or this.rule2
+     */
     public Rule getRule(MatchNumber matchnum) {
         if (matchnum == MatchNumber.ONE) {
             return this.rule1;
         } else if (matchnum == MatchNumber.TWO) {
             return this.rule2;
         } else {
-            throw new IllegalArgumentException("matchnum must be One or Two");
+            throw new IllegalArgumentException("matchnum must be ONE or TWO");
         }
     }
 
@@ -104,6 +121,11 @@ public class ParallelPair {
         this.rule2 = rule2;
     }
 
+    /**
+     * Creates a new ParallelPair which is similar to other in the sense that the rules are the same
+     * and the nodeMatches have the same contents (but they are different sets)
+     * @param other the ParallelPair that will be copied 
+     */
     private ParallelPair(ParallelPair other) {
         this.nodeMatch1 = copyMatch(other.nodeMatch1);
         this.nodeMatch2 = copyMatch(other.nodeMatch2);
@@ -111,10 +133,15 @@ public class ParallelPair {
         this.rule2 = other.getRule2();
     }
 
+    /**
+     * Creates a copy of a Map<Long,Set<T>>
+     * @param match the Map that will be copied
+     * @return a new Map<Long,Set<T>>, the results can be modified without modifying match
+     */
     private static <T> Map<Long,Set<T>> copyMatch(Map<Long,Set<T>> match) {
-        Map<Long,Set<T>> result = new HashMap<Long,Set<T>>();
+        Map<Long,Set<T>> result = new LinkedHashMap<Long,Set<T>>();
         for (Entry<Long,Set<T>> entry : match.entrySet()) {
-            HashSet<T> newSet = new HashSet<T>();
+            LinkedHashSet<T> newSet = new LinkedHashSet<T>();
             newSet.addAll(entry.getValue());
             result.put(entry.getKey(), newSet);
         }
@@ -126,6 +153,11 @@ public class ParallelPair {
         return new ParallelPair(this);
     }
 
+    /**
+     * Returns the nodeMatch with the given matchNum (ONE or TWO)
+     * @param matchnum the number of the requested rule
+     * @return either this.nodeMatch1 or this.nodeMatch2
+     */
     public Map<Long,Set<RuleNode>> getNodeMatch(MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch;
         if (matchnum == MatchNumber.ONE) {
@@ -138,18 +170,10 @@ public class ParallelPair {
         return nodeMatch;
     }
 
-    public boolean isContainedInMatch(RuleNode rn, MatchNumber matchnum) {
-        Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
-        for (Set<RuleNode> nodes : nodeMatch.values()) {
-            for (RuleNode node : nodes) {
-                if (node.equals(rn)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    /**
+     * Returns all Long values which have been used for combinations in this ParallelPair
+     * @return a set of all Long values which have been used for combinations in this ParallelPair
+     */
     public Set<Long> getCombinationGroups() {
         Set<Long> result = new TreeSet<Long>();
         result.addAll(this.nodeMatch1.keySet());
@@ -157,6 +181,9 @@ public class ParallelPair {
         return result;
     }
 
+    /**
+     * Returns a List of all ruleNodes which have been combined under the number "group"
+     */
     public List<RuleNode> getCombination(Long group) {
         List<RuleNode> result = new ArrayList<RuleNode>();
         if (this.nodeMatch1.containsKey(group)) {
@@ -168,9 +195,12 @@ public class ParallelPair {
         return result;
     }
 
+    /**
+     * Returns a Set of all ruleNodes from the rule "matchnum" which have been combined under the number "group"
+     */
     public Set<RuleNode> getCombination(Long group, MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
-        Set<RuleNode> result = new HashSet<RuleNode>();
+        Set<RuleNode> result = new LinkedHashSet<RuleNode>();
         if (nodeMatch.containsKey(group)) {
             result.addAll(nodeMatch.get(group));
         }
@@ -186,13 +216,10 @@ public class ParallelPair {
     CriticalPair getCriticalPair() {
         if (!this.criticalPairComputed) {
             DefaultHostGraph host =
-                new DefaultHostGraph(
-                    "target",
+                new DefaultHostGraph("target",
                     HostFactory.newInstance(this.rule1.getTypeGraph().getFactory()));
-            RuleToHostMap match1 =
-                createRuleToHostMap(this.nodeMatch1, host, this.rule1.lhs());
-            RuleToHostMap match2 =
-                createRuleToHostMap(this.nodeMatch2, host, this.rule2.lhs());
+            RuleToHostMap match1 = createRuleToHostMap(this.nodeMatch1, host, this.rule1.lhs());
+            RuleToHostMap match2 = createRuleToHostMap(this.nodeMatch2, host, this.rule2.lhs());
 
             CriticalPair potentialPair =
                 new CriticalPair(host, this.rule1, this.rule2, match1, match2);
@@ -210,22 +237,29 @@ public class ParallelPair {
 
     }
 
+    //keep track of which hostNodes we have already created
     private Map<Long,HostNode> hostNodes;
 
-    private RuleToHostMap createRuleToHostMap(
-            Map<Long,Set<RuleNode>> nodeMatch, DefaultHostGraph host,
-            RuleGraph ruleGraph) {
+    /**
+     * Creates a createRuleToHostMap (a morphism from ruleGraph to host) using nodeMatch
+     * In this process the graph host is constructed as well
+     */
+    private RuleToHostMap createRuleToHostMap(Map<Long,Set<RuleNode>> nodeMatch,
+            DefaultHostGraph host, RuleGraph ruleGraph) {
         if (this.hostNodes == null) {
-            this.hostNodes = new HashMap<Long,HostNode>();
+            this.hostNodes = new LinkedHashMap<Long,HostNode>();
         }
         Set<RuleEdge> edges = ruleGraph.edgeSet();
         RuleToHostMap result = new RuleToHostMap(host.getFactory());
 
+        //Every entry in the nodeMach will be added to the result
         for (Entry<Long,Set<RuleNode>> entry : nodeMatch.entrySet()) {
+
+            //the hostNode to which all ruleNodes will be mapped
             HostNode target;
             Set<RuleNode> ruleNodes = entry.getValue();
             if (this.hostNodes.containsKey(entry.getKey())) {
-                //if the hostnode was already create it, then get it
+                //if the hostnode was already created, then get it
                 target = this.hostNodes.get(entry.getKey());
             } else {
                 //else create a hostnode depending on its type
@@ -237,26 +271,23 @@ public class ParallelPair {
                     target = typeFactory.createNode();
                 } else if (firstNode instanceof VariableNode) {
                     VariableNode varNode = (VariableNode) firstNode;
-                    Algebra<?> alg =
-                        AlgebraFamily.TERM.getAlgebra(varNode.getSignature());
+                    Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(varNode.getSignature());
                     //The set can contain multiple constants, the values of these constants
                     //in the algebra of the rule is the same
-                    Constant constant =
-                        getFirstConstant(getCombination(entry.getKey()));
+                    Constant constant = getFirstConstant(getCombination(entry.getKey()));
                     if (constant == null) {
                         target =
-                            host.getFactory().createNode(
-                                alg,
-                                new Variable("x" + variableCounter++,
-                                    varNode.getSignature()));
+                            host.getFactory().createNode(alg,
+                                new Variable("x" + variableCounter++, varNode.getSignature()));
                     } else {
                         target = host.getFactory().createNode(alg, constant);
                     }
                 } else {
-                    throw new UnsupportedOperationException(
-                        "Unknown type for RuleNode " + firstNode);
+                    throw new UnsupportedOperationException("Unknown type for RuleNode "
+                        + firstNode);
                 }
-                //Add the target node to the hostgraph
+
+                //Add the target node to the hostgraph (this does nothing if if was already added)
                 host.addNode(target);
                 //add the created hostNode to the map of created hostNodes
                 this.hostNodes.put(entry.getKey(), target);
@@ -267,14 +298,13 @@ public class ParallelPair {
             }
         }
 
-        //now we add all targets of operations to the match
+        //now we add all targets of operations to the match (these are not included in the nodeMatch)
         for (RuleNode rn : ruleGraph.nodeSet()) {
             if (rn instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) rn;
                 SignatureKind sig = opNode.getOperator().getResultType();
                 Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
-                Expression[] args =
-                    new Expression[opNode.getArguments().size()];
+                Expression[] args = new Expression[opNode.getArguments().size()];
                 for (int i = 0; i < opNode.getArguments().size(); i++) {
                     VariableNode varNode = opNode.getArguments().get(i);
                     Expression term;
@@ -288,12 +318,10 @@ public class ParallelPair {
                 }
 
                 HostNode target =
-                    host.getFactory().createNode(alg,
-                        new CallExpr(opNode.getOperator(), args));
+                    host.getFactory().createNode(alg, new CallExpr(opNode.getOperator(), args));
                 host.addNode(target);
                 result.putNode(opNode.getTarget(), target);
-            } else if (rn instanceof VariableNode
-                && !result.nodeMap().containsKey(rn)) {
+            } else if (rn instanceof VariableNode && !result.nodeMap().containsKey(rn)) {
                 VariableNode varNode = (VariableNode) rn;
                 //add unconnected constants to the match
                 if (varNode.hasConstant()) {
@@ -301,8 +329,7 @@ public class ParallelPair {
                     Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                     //Create this node in the host graph
                     //(if a node with this constant already exists, it will be reused)
-                    HostNode constant =
-                        host.getFactory().createNode(alg, varNode.getConstant());
+                    HostNode constant = host.getFactory().createNode(alg, varNode.getConstant());
                     host.addNode(constant);
                     result.putNode(rn, constant);
                 }
@@ -323,8 +350,7 @@ public class ParallelPair {
                 //or a constant which is only connected to a ProductNode
             } else {
                 HostEdge newEdge =
-                    host.getFactory().createEdge(hostSource, re.getType(),
-                        hostTarget);
+                    host.getFactory().createEdge(hostSource, re.getType(), hostTarget);
                 host.addEdge(newEdge);
                 result.putEdge(re, newEdge);
             }
@@ -340,8 +366,7 @@ public class ParallelPair {
      */
     private Constant getFirstConstant(Collection<RuleNode> nodes) {
         for (RuleNode node : nodes) {
-            if (node instanceof VariableNode
-                && ((VariableNode) node).hasConstant()) {
+            if (node instanceof VariableNode && ((VariableNode) node).hasConstant()) {
                 return ((VariableNode) node).getConstant();
             }
         }
@@ -358,8 +383,7 @@ public class ParallelPair {
         }
         for (Long group : getCombinationGroups()) {
             for (RuleNode rn : getCombination(group)) {
-                if (rn instanceof VariableNode
-                    && cons.equals(((VariableNode) rn).getConstant())) {
+                if (rn instanceof VariableNode && cons.equals(((VariableNode) rn).getConstant())) {
                     return group;
                 }
             }
@@ -367,11 +391,12 @@ public class ParallelPair {
         return null;
     }
 
+    //string representation for ParallelPairs for debug purposes
     @Override
     public String toString() {
         String result = "";
-        Map<RuleNode,String> nodeName1 = new HashMap<RuleNode,String>();
-        Map<RuleNode,String> nodeName2 = new HashMap<RuleNode,String>();
+        Map<RuleNode,String> nodeName1 = new LinkedHashMap<RuleNode,String>();
+        Map<RuleNode,String> nodeName2 = new LinkedHashMap<RuleNode,String>();
         int counter = 1;
         for (RuleNode rn : this.rule1.lhs().nodeSet()) {
             if (rn instanceof OperatorNode) {

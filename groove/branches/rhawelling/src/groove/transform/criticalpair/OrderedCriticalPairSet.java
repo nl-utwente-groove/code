@@ -26,7 +26,8 @@ import java.util.TreeSet;
 
 /**
  * @author Ruud
- * @version $Revision $
+ * Ordered Set of CriticalPairs, the iterator of this set will iterate over the pairs in descending order (the largest pairs first)
+ * The size of a criticalPair is determined by the number of vertices in the host graph
  */
 class OrderedCriticalPairSet implements Set<CriticalPair> {
 
@@ -74,8 +75,7 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
         if (o instanceof CriticalPair) {
             CriticalPair pair = (CriticalPair) o;
             int size = pair.getHostGraph().nodeCount();
-            return this.pairMap.get(size) != null
-                && this.pairMap.get(size).contains(pair);
+            return this.pairMap.get(size) != null && this.pairMap.get(size).contains(pair);
         } else {
             return false;
         }
@@ -87,8 +87,7 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
             if (obj instanceof CriticalPair) {
                 CriticalPair pair = (CriticalPair) obj;
                 int size = pair.getHostGraph().nodeCount();
-                if (this.pairMap.get(size) == null
-                    || !this.pairMap.get(size).contains(pair)) {
+                if (this.pairMap.get(size) == null || !this.pairMap.get(size).contains(pair)) {
                     return false;
                 }
             } else {
@@ -122,22 +121,19 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
             //this is needed to implement remove() correctly
             private boolean currentItReplaced = false;
 
-            Iterator<Integer> keyIt =
-                new TreeSet<Integer>(
-                    OrderedCriticalPairSet.this.pairMap.keySet()).descendingIterator();
+            Iterator<Integer> keyIt = new TreeSet<Integer>(
+                OrderedCriticalPairSet.this.pairMap.keySet()).descendingIterator();
 
-            Iterator<CriticalPair> currentIt =
-                this.keyIt.hasNext() ? OrderedCriticalPairSet.this.pairMap.get(
-                    this.keyIt.next()).iterator()
-                //initialize with emptySet iterator if the pairMap was empty
-                        : new HashSet<CriticalPair>().iterator();
+            Iterator<CriticalPair> currentIt = this.keyIt.hasNext()
+                    ? OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator()
+                    //initialize with emptySet iterator if the pairMap was empty
+                    : new HashSet<CriticalPair>().iterator();
 
             @Override
             public boolean hasNext() {
                 while (this.keyIt.hasNext() && !this.currentIt.hasNext()) {
                     this.currentIt =
-                        OrderedCriticalPairSet.this.pairMap.get(
-                            this.keyIt.next()).iterator();
+                        OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator();
                     this.currentItReplaced = true;
                 }
                 return this.currentIt.hasNext();

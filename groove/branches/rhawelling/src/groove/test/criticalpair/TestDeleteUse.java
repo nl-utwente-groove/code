@@ -66,35 +66,26 @@ public class TestDeleteUse {
         Rule deleteNode = getSimpleRule("deleteNode", view);
         Rule deleteSelfEdge = getSimpleRule("deleteSelfEdge", view);
 
-        System.out.println(addNodeAndEdge);
-
-        Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);
+        Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, constantNode);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(addNodeAndEdge, constant_3_clique);
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, constant_3_clique);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(addNodeAndEdge, constantSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, constantSelfEdge);
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteEdge);
         assertTrue(pairs.size() == 0);
 
-        pairs =
-            CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteNode);
         assertTrue(pairs.size() == 1);
-        pairs =
-            CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteSelfEdge);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(constantNode, constant_3_clique);
+        pairs = CriticalPair.computeCriticalPairs(constantNode, constant_3_clique);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(constantNode, constantSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(constantNode, constantSelfEdge);
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(constantNode, deleteEdge);
         assertTrue(pairs.size() == 0);
@@ -103,31 +94,23 @@ public class TestDeleteUse {
         pairs = CriticalPair.computeCriticalPairs(constantNode, deleteSelfEdge);
         assertTrue(pairs.size() == 0);
 
-        pairs =
-            CriticalPair.computeCriticalPairs(constant_3_clique,
-                constant_3_clique);
+        pairs = CriticalPair.computeCriticalPairs(constant_3_clique, constant_3_clique);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(constant_3_clique,
-                constantSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(constant_3_clique, constantSelfEdge);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(constant_3_clique, deleteEdge);
+        pairs = CriticalPair.computeCriticalPairs(constant_3_clique, deleteEdge);
         assertTrue(pairs.size() == 16);
 
-        pairs =
-            CriticalPair.computeCriticalPairs(constant_3_clique, deleteNode);
+        pairs = CriticalPair.computeCriticalPairs(constant_3_clique, deleteNode);
         assertTrue(pairs.size() == 10);
-        pairs =
-            CriticalPair.computeCriticalPairs(constant_3_clique, deleteSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(constant_3_clique, deleteSelfEdge);
         assertTrue(pairs.size() == 4);
 
         pairs = CriticalPair.computeCriticalPairs(constantSelfEdge, deleteEdge);
         assertTrue(pairs.size() == 1);
         pairs = CriticalPair.computeCriticalPairs(constantSelfEdge, deleteNode);
         assertTrue(pairs.size() == 1);
-        pairs =
-            CriticalPair.computeCriticalPairs(constantSelfEdge, deleteSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(constantSelfEdge, deleteSelfEdge);
         assertTrue(pairs.size() == 1);
 
         pairs = CriticalPair.computeCriticalPairs(deleteEdge, deleteNode);
@@ -146,8 +129,7 @@ public class TestDeleteUse {
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(deleteNode, deleteNode);
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(deleteSelfEdge, deleteSelfEdge);
+        pairs = CriticalPair.computeCriticalPairs(deleteSelfEdge, deleteSelfEdge);
         assertTrue(pairs.size() == 0);
 
     }
@@ -168,18 +150,15 @@ public class TestDeleteUse {
         Rule threeNodesOneFlag = getSimpleRule("threeNodesOneFlag", view);
         Rule threeNodesThreeFlags = getSimpleRule("threeNodesThreeFlags", view);
 
-        Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(deleteFlagA, nodeWithEdgeA);
+        Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(deleteFlagA, nodeWithEdgeA);
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(deleteFlagA, nodeWithEdgeA);
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(deleteFlagA, nodewithFlagA);
         assertTrue(pairs.size() == 1);
-        pairs =
-            CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesOneFlag);
+        pairs = CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesOneFlag);
         assertTrue(pairs.size() == 5);
-        pairs =
-            CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesThreeFlags);
+        pairs = CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesThreeFlags);
         assertTrue(pairs.size() == 10);
 
     }
@@ -203,8 +182,7 @@ public class TestDeleteUse {
         Rule deleteAndAddEdge = getSimpleRule("deleteAndAddEdge", view);
         RuleGraph lhs = deleteAndAddEdge.lhs();
         DefaultHostGraph host =
-            new DefaultHostGraph(
-                "target",
+            new DefaultHostGraph("target",
                 HostFactory.newInstance(deleteAndAddEdge.getTypeGraph().getFactory()));
         RuleToHostMap match = new RuleToHostMap(host.getFactory());
 
@@ -231,8 +209,7 @@ public class TestDeleteUse {
         }
 
         //now that we have a match, apply the transformation
-        BasicEvent ruleEvent =
-            new BasicEvent(deleteAndAddEdge, match, Reuse.NONE);
+        BasicEvent ruleEvent = new BasicEvent(deleteAndAddEdge, match, Reuse.NONE);
         RuleApplication app = new RuleApplication(ruleEvent, host);
         HostGraphMorphism transformationMorphism = app.getMorphism();
         assertTrue(transformationMorphism.edgeMap().isEmpty());

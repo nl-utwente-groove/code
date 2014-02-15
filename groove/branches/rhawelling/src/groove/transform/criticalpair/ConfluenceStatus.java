@@ -20,8 +20,11 @@ public enum ConfluenceStatus {
     //the declaration order is important for the result of getWorstStatus
     NOT_STICTLY_CONFLUENT, UNDECIDED, STRICTLY_CONFLUENT, UNTESTED;
 
-    public static ConfluenceStatus getWorstStatus(ConfluenceStatus first,
-            ConfluenceStatus second) {
+    /**
+     * Return the "worst" status of the two.
+     * i.e. the lowest status in the declaration order of the ConfluenceStatus enum
+     */
+    public static ConfluenceStatus getWorstStatus(ConfluenceStatus first, ConfluenceStatus second) {
         return first.compareTo(second) < 0 ? first : second;
     }
 }
