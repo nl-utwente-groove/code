@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.transform.criticalpair.ConfluenceResult;
 import groove.transform.criticalpair.ConfluenceStatus;
 import groove.transform.criticalpair.CriticalPair;
 
@@ -53,5 +54,55 @@ public class TestConfluence {
             assertTrue(pair.getStrictlyConfluent(grammar) == ConfluenceStatus.STRICTLY_CONFLUENT);
         }
 
+    }
+
+    @Test
+    public void testConfluentGrammar() {
+        String grammarStr = "junit/criticalpair/phil-getBoth.gps/";
+        File grammarFile = new File(grammarStr);
+        GrammarModel view = null;
+        Grammar grammar = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+            grammar = view.toGrammar();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        ConfluenceStatus expected = ConfluenceStatus.STRICTLY_CONFLUENT;
+        ConfluenceResult result =
+            ConfluenceResult.checkStrictlyConfluent(grammar, false);
+        assertTrue(result.getStatus() == expected);
+
+        //test using efficient method
+        result = ConfluenceResult.checkStrictlyConfluent(grammar, true);
+        assertTrue(result.getStatus() == expected);
+    }
+
+    @Test
+    public void testNonConfluentGrammar() {
+        String grammarStr = "junit/criticalpair/phil.gps/";
+        File grammarFile = new File(grammarStr);
+        GrammarModel view = null;
+        Grammar grammar = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+            grammar = view.toGrammar();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        ConfluenceStatus expected = ConfluenceStatus.NOT_STICTLY_CONFLUENT;
+        ConfluenceResult result =
+            ConfluenceResult.checkStrictlyConfluent(grammar, false);
+        result.analyzeAll();
+        assertTrue(result.getStatus() == expected);
+
+        //test using efficient method
+        result = ConfluenceResult.checkStrictlyConfluent(grammar, true);
+        result.analyzeAll();
+        assertTrue(result.getStatus() == expected);
     }
 }
