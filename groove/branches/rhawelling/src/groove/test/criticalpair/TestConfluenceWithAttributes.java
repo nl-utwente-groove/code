@@ -35,35 +35,6 @@ import org.junit.Test;
  */
 public class TestConfluenceWithAttributes {
 
-    //    @Test
-    //    public void testConfluenceWithAttributes() {
-    //        String grammarStr = "junit/criticalpair/attributes.gps/";
-    //        File grammarFile = new File(grammarStr);
-    //        GrammarModel view = null;
-    //        Grammar grammar = null;
-    //        try {
-    //            view = GrammarModel.newInstance(grammarFile, false);
-    //            grammar = view.toGrammar();
-    //        } catch (IOException e) {
-    //            e.printStackTrace();
-    //        } catch (FormatException e) {
-    //            e.printStackTrace();
-    //        }
-    //        ConfluenceStatus expected = ConfluenceStatus.CONFLUENT;
-    //        ConfluenceResult result =
-    //            ConfluenceResult.checkStrictlyConfluent(grammar);
-    //        result.analyzeAll();
-    //        System.out.println("Not confluent:");
-    //        for (CriticalPair nonConf : result.getNonConfluentPairs()) {
-    //            System.out.println(nonConf);
-    //            System.out.println(nonConf.getRuleApplication1().getTarget());
-    //            System.out.println(nonConf.getRuleApplication2().getTarget());
-    //        }
-    //        System.out.println(result.getStatus());
-    //        assertTrue(result.getStatus() == expected);
-    //
-    //    }
-
     @Test
     public void testConfluenceWithAttributes_OneTwo() {
         String grammarStr = "junit/criticalpair/attributes/delete-one-two.gps/";
