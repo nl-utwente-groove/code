@@ -194,7 +194,7 @@ public class Program implements Fixable {
         }
     }
 
-    /** Returns the set of procedure names that with initial recursion. */
+    /** Returns the set of procedure names with initial recursion. */
     public Set<String> getRecursion() {
         if (this.recursion == null) {
             this.recursion = computeRecursion();
@@ -204,7 +204,7 @@ public class Program implements Fixable {
 
     private Set<String> recursion;
 
-    /** Computes the set of procedure names that with initial recursion. */
+    /** Computes the set of procedure names with initial recursion. */
     private Set<String> computeRecursion() {
         Set<String> result = new TreeSet<String>();
         // collect the unguarded calls into a map
@@ -302,7 +302,7 @@ public class Program implements Fixable {
             assert false;
         }
         if (term.isTrial()) {
-            MultiDerivation derivList = term.getAttempt();
+            MultiDerivation derivList = term.getAttempt(false);
             for (Derivation edge : derivList) {
                 result.add(edge.getCall());
             }
@@ -526,8 +526,6 @@ public class Program implements Fixable {
         if (!result) {
             this.fixed = true;
             FormatErrorSet errors = new FormatErrorSet();
-            // check that all calls are resolved
-            checkCalls();
             // check that procedure bodies satisfy their requirements
             for (Procedure proc : this.procs.values()) {
                 String name = proc.getFullName();
@@ -547,6 +545,10 @@ public class Program implements Fixable {
                 }
             }
             errors.throwException();
+            // check that all calls are resolved
+            // this is done after the check for recursion,
+            // to avoid stack overflow
+            checkCalls();
         }
         return result;
     }

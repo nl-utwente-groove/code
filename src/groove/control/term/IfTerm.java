@@ -34,12 +34,12 @@ public class IfTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt() {
+    protected MultiDerivation computeAttempt(boolean nested) {
         MultiDerivation result = null;
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            MultiDerivation ders0 = arg0().getAttempt();
+            MultiDerivation ders0 = arg0().getAttempt(nested);
             for (Derivation deriv : ders0) {
                 result.add(deriv.newInstance(deriv.onFinish().seq(arg1())));
             }
@@ -47,10 +47,10 @@ public class IfTerm extends Term {
             result.setFailure(ders0.onFailure().ifAlsoElse(arg1(), arg2(), arg3()));
             break;
         case FINAL:
-            result = arg1OrArg2().getAttempt();
+            result = arg1OrArg2().getAttempt(nested);
             break;
         case DEAD:
-            result = arg3().getAttempt();
+            result = arg3().getAttempt(nested);
             break;
         default:
             assert false;
