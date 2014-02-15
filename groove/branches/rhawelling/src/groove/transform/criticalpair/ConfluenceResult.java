@@ -42,8 +42,10 @@ public class ConfluenceResult {
      * Needs to know when pairs are tested
      */
     private LazyCriticalPairSet untestedPairs;
-    private Set<CriticalPair> undecidedPairs = new LinkedHashSet<CriticalPair>();
-    private Set<CriticalPair> nonConfluentPairs = new LinkedHashSet<CriticalPair>();
+    private Set<CriticalPair> undecidedPairs =
+        new LinkedHashSet<CriticalPair>();
+    private Set<CriticalPair> nonConfluentPairs =
+        new LinkedHashSet<CriticalPair>();
 
     /**
      * @return the number of pairs for which confluence has not yet been analysed
@@ -80,10 +82,16 @@ public class ConfluenceResult {
         this.alternateMethod = alternateMethod;
     }
 
+    /**
+     * @return this.status
+     */
     public ConfluenceStatus getStatus() {
         return this.status;
     }
 
+    /**
+     * @return this.grammar
+     */
     public Grammar getGrammar() {
         return this.grammar;
     }
@@ -121,9 +129,10 @@ public class ConfluenceResult {
      * Unfortunately this method may give false positives in a rare case
      * (when a pushout does not exist for some intermediate tranformation)
      */
-    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar, boolean alternateMethod) {
-        return checkStrictlyConfluent(grammar, ConfluenceStatus.NOT_STICTLY_CONFLUENT,
-            alternateMethod);
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
+            boolean alternateMethod) {
+        return checkStrictlyConfluent(grammar,
+            ConfluenceStatus.NOT_STICTLY_CONFLUENT, alternateMethod);
     }
 
     /**
@@ -136,9 +145,10 @@ public class ConfluenceResult {
      * If (target == UNTESTED) then no analysis is started.
      * Otherwise analysis is started until the first pair with the ConfluenceStatus target has been found
      */
-    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar, ConfluenceStatus target,
-            boolean alternateMethod) {
-        ConfluenceResult result = new ConfluenceResult(grammar, alternateMethod);
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
+            ConfluenceStatus target, boolean alternateMethod) {
+        ConfluenceResult result =
+            new ConfluenceResult(grammar, alternateMethod);
         result.analyzeUntil(target);
         return result;
     }
@@ -165,7 +175,8 @@ public class ConfluenceResult {
                 //remove the pair from the untested set
                 it.remove();
             }
-            if (this.status == ConfluenceStatus.UNTESTED && this.undecidedPairs.isEmpty()) {
+            if (this.status == ConfluenceStatus.UNTESTED
+                && this.undecidedPairs.isEmpty()) {
                 //everything has been analyzed but all pairs are confluent
                 this.status = ConfluenceStatus.STRICTLY_CONFLUENT;
             }
@@ -247,10 +258,12 @@ public class ConfluenceResult {
             }
             break;
         case UNTESTED:
-            throw new RuntimeException("Test for confluence failed: " + pairStatus);
+            throw new RuntimeException("Test for confluence failed: "
+                + pairStatus);
         default:
             //can not happen unless the pairStatus enum is modified
-            throw new RuntimeException("Unknown ConfluenceStatus: " + pairStatus);
+            throw new RuntimeException("Unknown ConfluenceStatus: "
+                + pairStatus);
         }
         return result;
     }

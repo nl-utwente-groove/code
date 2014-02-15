@@ -77,7 +77,8 @@ public class CriticalPair {
     //the grammar used to analyse whether the pair is confluent
     private Grammar grammar = null;
 
-    CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2, RuleToHostMap m1, RuleToHostMap m2) {
+    CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
+            RuleToHostMap m1, RuleToHostMap m2) {
         this.hostGraph = target;
         this.match1 = m1;
         this.match2 = m2;
@@ -85,14 +86,23 @@ public class CriticalPair {
         this.rule2 = rule2;
     }
 
+    /**
+     * @return this.hostGraph
+     */
     public DefaultHostGraph getHostGraph() {
         return this.hostGraph;
     }
 
+    /**
+     * @return this.match1
+     */
     public RuleToHostMap getMatch1() {
         return this.match1;
     }
 
+    /**
+     * @return this.match2
+     */
     public RuleToHostMap getMatch2() {
         return this.match2;
     }
@@ -111,10 +121,16 @@ public class CriticalPair {
         }
     }
 
+    /**
+     * @return this.rule1
+     */
     public Rule getRule1() {
         return this.rule1;
     }
 
+    /**
+     * @return this.rule2
+     */
     public Rule getRule2() {
         return this.rule2;
     }
@@ -133,6 +149,9 @@ public class CriticalPair {
         }
     }
 
+    /**
+     * @return this.app1 (computed lazily if null)
+     */
     public RuleApplication getRuleApplication1() {
         if (this.app1 == null) {
             this.app1 = createRuleApplication(MatchNumber.ONE);
@@ -140,6 +159,9 @@ public class CriticalPair {
         return this.app1;
     }
 
+    /**
+     * @return this.app2 (computed lazily if null)
+     */
     public RuleApplication getRuleApplication2() {
         if (this.app2 == null) {
             this.app2 = createRuleApplication(MatchNumber.TWO);
@@ -165,7 +187,8 @@ public class CriticalPair {
      * Creates a RuleApplication (with the given number) using the rule, match and hostgraph
      */
     private RuleApplication createRuleApplication(MatchNumber matchnum) {
-        BasicEvent ruleEvent = new BasicEvent(getRule(matchnum), getMatch(matchnum), Reuse.NONE);
+        BasicEvent ruleEvent =
+            new BasicEvent(getRule(matchnum), getMatch(matchnum), Reuse.NONE);
         return new RuleApplication(ruleEvent, this.hostGraph);
     }
 
@@ -186,10 +209,12 @@ public class CriticalPair {
         if (grammar == null) {
             throw new IllegalArgumentException("grammar may not be null");
         }
-        if (this.confluent != ConfluenceStatus.UNTESTED && grammar.equals(this.grammar)) {
+        if (this.confluent != ConfluenceStatus.UNTESTED
+            && grammar.equals(this.grammar)) {
             //confluence has already been analyzed for this critical pair
         } else {
-            this.confluent = ConfluenceAnalyzer.getStrictlyConfluent(this, grammar);
+            this.confluent =
+                ConfluenceAnalyzer.getStrictlyConfluent(this, grammar);
         }
         return this.confluent;
     }
@@ -199,7 +224,8 @@ public class CriticalPair {
      * @param confluent the result of a confluence check
      * @param grammar the grammar used for the confluence check
      */
-    protected void setStrictlyConfluent(ConfluenceStatus confluent, Grammar grammar) {
+    protected void setStrictlyConfluent(ConfluenceStatus confluent,
+            Grammar grammar) {
         this.confluent = confluent;
         this.grammar = grammar;
     }
@@ -232,30 +258,34 @@ public class CriticalPair {
     /**
      * Compute all possble overlappings of the given set of nodes
      * Every element (set of combinations) in the result is an overlap
-     * @param nodes the nodes for which overlappings should be computed
      * @return All possble overlappings of the given set of nodes
      */
-    public static LinkedHashSet<CriticalPair> computeCriticalPairs(Rule rule1, Rule rule2) {
+    public static LinkedHashSet<CriticalPair> computeCriticalPairs(Rule rule1,
+            Rule rule2) {
         assert canComputePairs(rule1);
         assert canComputePairs(rule2);
         //algebraFamily must be TERM, because the host graph will be constructed in the TERM algebra
         //If the rule has no variables, then the algebra does not matter
         assert (!hasVariableNodes(rule1.lhs()) && !hasVariableNodes(rule2.lhs()))
-            || rule1.getSystemProperties().getAlgebraFamily().equals(AlgebraFamily.TERM);
+            || rule1.getSystemProperties().getAlgebraFamily().equals(
+                AlgebraFamily.TERM);
         if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null)
             || !rule1.getTypeGraph().equals(rule2.getTypeGraph())) {
             throw new IllegalArgumentException("Type graphs must be equal");
         }
         //Special case, both of the two rules are nondeleting, then there are no critical pairs
-        if (!(rule1.hasNodeErasers() || rule1.hasEdgeErasers() || rule2.hasNodeErasers() || rule2.hasEdgeErasers())) {
+        if (!(rule1.hasNodeErasers() || rule1.hasEdgeErasers()
+            || rule2.hasNodeErasers() || rule2.hasEdgeErasers())) {
             return new LinkedHashSet<CriticalPair>();
         }
-        LinkedHashSet<ParallelPair> parrPairs = new LinkedHashSet<ParallelPair>();
+        LinkedHashSet<ParallelPair> parrPairs =
+            new LinkedHashSet<ParallelPair>();
 
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.ONE);
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.TWO);
 
-        assert parrPairs.size() <= calculateMaxPairs(getNodesToProcess(rule1.lhs()).size()
+        assert parrPairs.size() <= calculateMaxPairs(getNodesToProcess(
+            rule1.lhs()).size()
             + getNodesToProcess(rule2.lhs()).size());
 
         Iterator<ParallelPair> it;
@@ -274,7 +304,8 @@ public class CriticalPair {
         }
 
         //Filter out all critical pairs which are not parallel dependent
-        LinkedHashSet<CriticalPair> critPairs = new LinkedHashSet<CriticalPair>();
+        LinkedHashSet<CriticalPair> critPairs =
+            new LinkedHashSet<CriticalPair>();
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
             if (criticalPair != null) {
@@ -287,7 +318,6 @@ public class CriticalPair {
     /**
      * Calculate the maximal numer of critical pairs that this algorithm could return
      * @param numnodes the number of nodes that can be overlapped in both rules
-     * @return
      */
     private static long calculateMaxPairs(int numnodes) {
         long sum = 0;
@@ -303,8 +333,7 @@ public class CriticalPair {
      * Calculates the number of critical pairs for wich the hostGraphs have nodesInPair nodes
      * Where the total number of nodes being overlapped is numnodes
      * @param numnodes the number of nodes in the two rules
-     * @param the number of nodes in the hostgraph of the pair
-     * @return
+     * @param nodesInPair the number of nodes in the hostgraph of the pair
      */
     private static long calculateMaxPairs(int numnodes, int nodesInPair) {
         if (numnodes < nodesInPair) {
@@ -318,22 +347,24 @@ public class CriticalPair {
     }
 
     /**
-     * Help method for formAllOverlaps(...)
-     * @param nodes the nodes which should be added
+     * Help method for computeCriticalPairs(...)
      * @param parrPairs the exists critical pairs (may be empty)
      * @param matchnum the match number (1 or 2) this number states to which match mappings should be added
      * @return a set of parallel pairs
      */
     private static LinkedHashSet<ParallelPair> buildCriticalSet(
-            LinkedHashSet<ParallelPair> parrPairs, Rule rule1, Rule rule2, MatchNumber matchnum) {
+            LinkedHashSet<ParallelPair> parrPairs, Rule rule1, Rule rule2,
+            MatchNumber matchnum) {
         boolean injectiveOnly;
         RuleGraph ruleGraph;
         if (matchnum == MatchNumber.ONE) {
             ruleGraph = rule1.lhs();
-            injectiveOnly = rule1.getCondition().getSystemProperties().isInjective();
+            injectiveOnly =
+                rule1.getCondition().getSystemProperties().isInjective();
         } else if (matchnum == MatchNumber.TWO) {
             ruleGraph = rule2.lhs();
-            injectiveOnly = rule2.getCondition().getSystemProperties().isInjective();
+            injectiveOnly =
+                rule2.getCondition().getSystemProperties().isInjective();
         } else {
             throw new IllegalArgumentException("matchnum must be ONE or TWO");
         }
@@ -345,7 +376,8 @@ public class CriticalPair {
         Set<RuleNode> nodesToProcess = getNodesToProcess(ruleGraph);
 
         for (RuleNode rnode : nodesToProcess) {
-            LinkedHashSet<ParallelPair> newParrPairs = new LinkedHashSet<ParallelPair>();
+            LinkedHashSet<ParallelPair> newParrPairs =
+                new LinkedHashSet<ParallelPair>();
             //initial case, parrPairs contains no pairs yet, this can only happen if l1.nodeSet().isEmpty()
             if (parrPairs.isEmpty()) {
                 ParallelPair pair = new ParallelPair(rule1, rule2);
@@ -357,7 +389,8 @@ public class CriticalPair {
                     //case 1: do not overlap rnode with an existing node of pair.getTarget()
                     //This means we create a copy of pair and add the set containing rnode as a separate element
                     if (rnode instanceof VariableNode
-                        && pair.findConstant(((VariableNode) rnode).getConstant(), algebraFamily) != null) {
+                        && pair.findConstant(
+                            ((VariableNode) rnode).getConstant(), algebraFamily) != null) {
                         //rnode is a VariableNode with a constant, however this constant already exists in some group
                         //case 1 is not applicable because constants are unique
                     } else {
@@ -374,7 +407,8 @@ public class CriticalPair {
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
                     for (Long group : pair.getCombinationGroups()) {
-                        if (isCompatible(rnode, group, pair, injectiveOnly, matchnum, algebraFamily)) {
+                        if (isCompatible(rnode, group, pair, injectiveOnly,
+                            matchnum, algebraFamily)) {
                             newPair = pair.clone();
                             addNodeToGroup(rnode, group, newPair, matchnum);
                             newParrPairs.add(newPair);
@@ -390,7 +424,8 @@ public class CriticalPair {
     /**
      * Adds ruleNode to a new match group in Pair
      */
-    private static void addNodeToNewGroup(RuleNode ruleNode, ParallelPair pair, MatchNumber matchnum) {
+    private static void addNodeToNewGroup(RuleNode ruleNode, ParallelPair pair,
+            MatchNumber matchnum) {
         Long targetGroup = ParallelPair.getNextMatchTargetNumber();
         addNodeToGroup(ruleNode, targetGroup, pair, matchnum);
     }
@@ -398,8 +433,9 @@ public class CriticalPair {
     /**
      * Checks whether ruleNode can be added to "group" in the ParallelPair pair
      */
-    private static boolean isCompatible(RuleNode ruleNode, Long group, ParallelPair pair,
-            boolean injectiveOnly, MatchNumber matchnum, AlgebraFamily algebraFamily) {
+    private static boolean isCompatible(RuleNode ruleNode, Long group,
+            ParallelPair pair, boolean injectiveOnly, MatchNumber matchnum,
+            AlgebraFamily algebraFamily) {
         //combination is always nonempty
         List<RuleNode> combination = pair.getCombination(group);
         RuleNode firstNode = combination.iterator().next();
@@ -467,9 +503,11 @@ public class CriticalPair {
                 return false;
             }
         } else if (ruleNode instanceof OperatorNode) {
-            throw new IllegalArgumentException("OperatorNodes may not be in matches");
+            throw new IllegalArgumentException(
+                "OperatorNodes may not be in matches");
         } else {
-            throw new UnsupportedOperationException("Unknown type for RuleNode " + ruleNode);
+            throw new UnsupportedOperationException(
+                "Unknown type for RuleNode " + ruleNode);
         }
 
     }
@@ -477,8 +515,8 @@ public class CriticalPair {
     /**
      * Adds ruleNode to targetGroup in the ParallelPair pair
      */
-    private static void addNodeToGroup(RuleNode ruleNode, Long targetGroup, ParallelPair pair,
-            MatchNumber matchnum) {
+    private static void addNodeToGroup(RuleNode ruleNode, Long targetGroup,
+            ParallelPair pair, MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = pair.getNodeMatch(matchnum);
         if (!nodeMatch.containsKey(targetGroup)) {
             nodeMatch.put(targetGroup, new LinkedHashSet<RuleNode>());
@@ -508,7 +546,8 @@ public class CriticalPair {
         for (HostNode hn : getMatch(matchnum.getOther()).nodeMap().values()) {
             //valueNodes may be not be defined under the transformation morphism
             //however all values exist universally, values can not actually be deleted
-            if (!(hn instanceof ValueNode) && transformationMorphism.nodeMap().get(hn) == null) {
+            if (!(hn instanceof ValueNode)
+                && transformationMorphism.nodeMap().get(hn) == null) {
                 return true;
             }
         }
@@ -535,7 +574,8 @@ public class CriticalPair {
      */
     private static Set<RuleNode> getNodesToProcess(RuleGraph ruleGraph) {
         Set<RuleNode> result = new LinkedHashSet<RuleNode>(ruleGraph.nodeSet());
-        Set<VariableNode> targetsOfOperatorNodes = new LinkedHashSet<VariableNode>();
+        Set<VariableNode> targetsOfOperatorNodes =
+            new LinkedHashSet<VariableNode>();
         for (RuleNode curNode : ruleGraph.nodeSet()) {
             if (curNode instanceof OperatorNode) {
                 result.remove(curNode);
@@ -546,13 +586,15 @@ public class CriticalPair {
                         + " is a target of multiple operators");
                 }
                 result.remove(target);
-            } else if (curNode instanceof VariableNode && ((VariableNode) curNode).hasConstant()) {
+            } else if (curNode instanceof VariableNode
+                && ((VariableNode) curNode).hasConstant()) {
                 Set<? extends RuleEdge> edges = ruleGraph.edgeSet(curNode);
                 boolean connectedToLhs = false;
                 for (RuleEdge e : edges) {
                     RuleNode source = e.source();
                     RuleNode target = e.target();
-                    if (source instanceof DefaultRuleNode || target instanceof DefaultRuleNode) {
+                    if (source instanceof DefaultRuleNode
+                        || target instanceof DefaultRuleNode) {
                         //curNode is connected to a DefaultRuleNode
                         //it must be included in the match
                         connectedToLhs = true;
@@ -571,7 +613,6 @@ public class CriticalPair {
 
     /**
      * Checks if the rule is can be used with this algorithm
-     * @param rule
      */
     static boolean canComputePairs(Rule rule) {
         boolean result = true;
@@ -582,7 +623,8 @@ public class CriticalPair {
         //RHS as NAC is not allowed
         result &= !rule.getCondition().getSystemProperties().isRhsAsNac();
         //Creator edges must not be treated as NACs
-        result &= !rule.getCondition().getSystemProperties().isCheckCreatorEdges();
+        result &=
+            !rule.getCondition().getSystemProperties().isCheckCreatorEdges();
         //The RhsAsNac property must be false
         result &= !rule.getCondition().getSystemProperties().isRhsAsNac();
         if (result && rule.getTypeGraph() != null) {
@@ -628,8 +670,8 @@ public class CriticalPair {
 
     @Override
     public String toString() {
-        return "Criticalpair(" + this.rule1.getFullName() + ", " + this.rule2.getFullName()
-            + ", hostGraph: " + this.hostGraph + ")";
+        return "Criticalpair(" + this.rule1.getFullName() + ", "
+            + this.rule2.getFullName() + ", hostGraph: " + this.hostGraph + ")";
     }
 }
 
