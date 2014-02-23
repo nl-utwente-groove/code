@@ -137,6 +137,11 @@ public class CtrlLoader {
         if (!result.hasBody()) {
             result.add(parse(" main", "#any;").check().toProgram());
         }
+        try {
+            result.setFixed();
+        } catch (FormatException e) {
+            errors.addAll(e.getErrors());
+        }
         errors.throwException();
         return result;
     }

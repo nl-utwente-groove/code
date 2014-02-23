@@ -28,6 +28,7 @@ import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.gui.Viewer;
 import groove.lts.GTS;
 import groove.lts.GTSCounter;
 
@@ -137,7 +138,9 @@ public class RecipeTest {
             Grammar gg = ggModel.toGrammar();
             Automaton a = gg.getControl();
             a.explore();
-            //            Viewer.showGraph(a, true);
+            if (DEBUG) {
+                Viewer.showGraph(a.toGraph(), true);
+            }
             runExploration(gg, strategyDescr);
             assertEquals(this.highLevelStateCount,
                 counter.getStateCount() - counter.getTransientStateCount());
@@ -183,4 +186,6 @@ public class RecipeTest {
             throw new RuntimeException(exc);
         }
     }
+
+    private final static boolean DEBUG = false;
 }

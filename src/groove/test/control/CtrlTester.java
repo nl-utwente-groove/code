@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
 import groove.control.parse.CtrlTree;
+import groove.control.template.Program;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -185,12 +186,22 @@ abstract public class CtrlTester {
      * @param program control expression; non-{@code null}
      */
     protected Term buildTerm(String program) {
+        return buildProgram(program).getTerm();
+    }
+
+    /** 
+     * Builds a symbolic term from a control program.
+     * @param program control expression; non-{@code null}
+     */
+    protected Program buildProgram(String program) {
+        Program result = null;
         try {
-            return buildTree(program).getChild(4).toTerm();
+            result = buildTree(program).toProgram();
+            result.setFixed();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
-            return null;
         }
+        return result;
     }
 
     /** 

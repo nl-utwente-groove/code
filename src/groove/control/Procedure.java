@@ -19,7 +19,6 @@ package groove.control;
 import groove.control.CtrlPar.Var;
 import groove.control.template.Switch.Kind;
 import groove.control.template.Template;
-import groove.control.template.TemplateBuilder;
 import groove.control.term.Term;
 import groove.grammar.QualName;
 import groove.util.Fixable;
@@ -114,12 +113,14 @@ public abstract class Procedure implements Callable, Fixable {
 
     private Term term;
 
-    /** Returns the body of this procedure. */
+    /** Sets the control automaton of this procedure. */
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    /** Returns the control automaton of this procedure. */
     public Template getTemplate() {
         assert isFixed();
-        if (this.template == null) {
-            this.template = TemplateBuilder.instance().build(this, null, getTerm());
-        }
         return this.template;
     }
 

@@ -18,7 +18,6 @@ package groove.lts;
 
 import groove.control.CtrlStep;
 import groove.grammar.Rule;
-import groove.graph.EdgeComparator;
 import groove.transform.RuleEvent;
 
 import java.util.Comparator;
@@ -133,7 +132,7 @@ public class MatchResult implements GraphTransitionKey {
 
     @Override
     public String toString() {
-        return getStep().label().text();
+        return getRule().getLastName();
     }
 
     /** The precomputed hashcode; 0 if it has not yet been not initialised. */
@@ -146,11 +145,10 @@ public class MatchResult implements GraphTransitionKey {
         @Override
         public int compare(MatchResult o1, MatchResult o2) {
             int result = o1.getEvent().compareTo(o2.getEvent());
-            if (result == 0) {
-                result = edgeComparator.compare(o1.getStep(), o2.getStep());
+            if (result != 0) {
+                return result;
             }
-            return result;
+            return o1.getStep().compareTo(o2.getStep());
         }
     };
-    private static final EdgeComparator edgeComparator = EdgeComparator.instance();
 }

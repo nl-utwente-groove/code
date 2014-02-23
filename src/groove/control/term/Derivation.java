@@ -16,7 +16,9 @@
  */
 package groove.control.term;
 
+import groove.control.Attempt;
 import groove.control.Call;
+import groove.control.CallStack;
 import groove.util.Pair;
 
 /**
@@ -25,13 +27,14 @@ import groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Derivation extends Pair<Call,Term> {
+public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,Derivation> {
     /**
      * Constructs a derivation out of a call and a target term,
      * with a given caller.
      */
-    public Derivation(Call call, Term target, Derivation nested) {
+    public Derivation(Call call, int depth, Term target, Derivation nested) {
         super(call, target);
+        this.depth = depth;
         this.nested = nested;
     }
 
@@ -39,10 +42,18 @@ public class Derivation extends Pair<Call,Term> {
      * Constructs a derivation out of a call and a target term.
      */
     public Derivation(Call call, Term target) {
-        this(call, target, null);
+        this(call, 0, target, null);
     }
 
-    /** Returns the call wrapped into this edge.
+    public Call getRuleCall() {
+        return getStack().peekLast().getCall();
+    }
+
+    /** 
+     * Returns the original derived call.
+     * If this derivation has a nested derivation,
+     * then this is a procedure call, otherwise it is a rule call
+     * (identical to #getRuleCall())
      */
     public Call getCall() {
         return one();
@@ -54,6 +65,12 @@ public class Derivation extends Pair<Call,Term> {
     public Term onFinish() {
         return two();
     }
+
+    public int getDepth() {
+        return this.depth;
+    }
+
+    private final int depth;
 
     /** Returns the (possibly {@code null} nested derivation of this derivation. */
     public Derivation getNested() {
@@ -77,21 +94,27 @@ public class Derivation extends Pair<Call,Term> {
 
     private DerivationStack stack;
 
+    public CallStack getCallStack() {
+        return getStack().getCallStack();
+    }
+
     /** Creates a new derivation, with the call and derivation stack of this one but another target term. */
-    public Derivation newInstance(Term target) {
-        return new Derivation(getCall(), target, getNested());
+    public Derivation newInstance(Term target, boolean enterAtom) {
+        int depth = getDepth() + (enterAtom ? 1 : 0);
+        return new Derivation(getCall(), depth, target, getNested());
     }
 
     /**
-     * Creates a new derivation, with a given caller at the bottom of
+     * Creates a new derivation, with a given nested call at the top of
      * the call stack.
      */
-    public Derivation newInstance(Derivation caller) {
+    public Derivation newInstance(Derivation nested) {
         Derivation result;
         if (hasNested()) {
-            result = new Derivation(getCall(), onFinish(), getNested().newInstance(caller));
+            result =
+                new Derivation(getCall(), getDepth(), onFinish(), getNested().newInstance(nested));
         } else {
-            result = new Derivation(getCall(), onFinish(), caller);
+            result = new Derivation(getCall(), getDepth(), onFinish(), nested);
         }
         return result;
     }

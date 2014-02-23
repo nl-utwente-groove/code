@@ -16,22 +16,67 @@
  */
 package groove.control;
 
+import java.util.ArrayList;
+
 /**
- * Attempt to invoke one or more callable units, with for every
- * unit a successor position.
- * The attempt can succeed or fail; what happens then is 
- * reflected by the {@link #onSuccess()} and 
- * {@link #onFailure()} results.
+ * List of calls to be attempted,
+ * to be tried successively in the given order.
+ * <P> the position type for which this is an attempt
+ * <A> the type of call to be attempted
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Attempt<P extends Position<P>> {
+public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,A>> extends
+        ArrayList<A> {
+    /** Sets the success alternate. */
+    final public void setSuccess(P onSuccess) {
+        this.onSuccess = onSuccess;
+    }
+
     /** Next alternative position in case this attempt succeeds. */
-    public P onSuccess();
+    final public P onSuccess() {
+        return this.onSuccess;
+    }
+
+    private P onSuccess;
+
+    /** Sets the failure alternate. */
+    final public void setFailure(P onFailure) {
+        this.onFailure = onFailure;
+    }
 
     /** Next alternative position in case this attempt fails. */
-    public P onFailure();
+    final public P onFailure() {
+        return this.onFailure;
+    }
+
+    private P onFailure;
 
     /** Indicates that the success and failure alternates are identical. */
-    public boolean sameVerdict();
+    public boolean sameVerdict() {
+        return onFailure() == onSuccess();
+    }
+
+    /**
+     * Element of a {@link Attempt}.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    public interface Stage<P extends Position<P,A>,A extends Stage<P,A>> {
+        /** 
+         * The rule called in this stage.
+         * This is the top element of the call stack.
+         * @see #getCallStack()
+         */
+        Call getRuleCall();
+
+        /** Returns the stack of calls of this stage. */
+        CallStack getCallStack();
+
+        /** The target position. */
+        P onFinish();
+
+        /** Returns the transient depth entered by this call. */
+        int getDepth();
+    }
 }

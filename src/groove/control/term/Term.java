@@ -20,9 +20,7 @@ import groove.control.Call;
 import groove.control.Position;
 import groove.util.collect.Pool;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Symbolic location, obtained by combining a number of existing locations.
@@ -30,7 +28,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class Term implements Position<Term> {
+abstract public class Term implements Position<Term,Derivation> {
     /** Constructor for a prototype term. */
     private Term(Pool<Term> pool) {
         this.pool = pool;
@@ -114,7 +112,6 @@ abstract public class Term implements Position<Term> {
         return getArgs()[3];
     }
 
-    /** Returns whether this symbolic location is final. */
     @Override
     public final Type getType() {
         if (this.type == null) {
@@ -125,16 +122,14 @@ abstract public class Term implements Position<Term> {
 
     private Type type = null;
 
-    /** Computes whether this symbolic location is final. */
+    /** Computes the position type of this term. */
     abstract protected Type computeType();
 
-    /** Returns whether this symbolic location is final. */
     @Override
     public final boolean isFinal() {
         return getType() == Type.FINAL;
     }
 
-    /** Indicates if this term has any outgoing edges. */
     @Override
     public final boolean isTrial() {
         return getType() == Type.TRIAL;
@@ -146,7 +141,7 @@ abstract public class Term implements Position<Term> {
     }
 
     @Override
-    public final MultiDerivation getAttempt() {
+    public final DerivationAttempt getAttempt() {
         return getAttempt(true);
     }
 
@@ -155,8 +150,8 @@ abstract public class Term implements Position<Term> {
      * @param nested if {@code true}, the nested derivation is computed,
      * otherwise only the bottom-level derivation is computed
      */
-    public final MultiDerivation getAttempt(boolean nested) {
-        MultiDerivation result = nested ? this.nestedAttempt : this.flatAttempt;
+    public final DerivationAttempt getAttempt(boolean nested) {
+        DerivationAttempt result = nested ? this.nestedAttempt : this.flatAttempt;
         if (result == null) {
             result = computeAttempt(nested);
             if (nested) {
@@ -168,19 +163,19 @@ abstract public class Term implements Position<Term> {
         return result;
     }
 
-    private MultiDerivation flatAttempt;
-    private MultiDerivation nestedAttempt;
+    private DerivationAttempt flatAttempt;
+    private DerivationAttempt nestedAttempt;
 
     /** 
      * Computes the derivation of this term. 
      * @param nested if {@code true}, the nested derivation is computed,
      * otherwise only the bottom-level derivation is computed
      */
-    abstract protected MultiDerivation computeAttempt(boolean nested);
+    abstract protected DerivationAttempt computeAttempt(boolean nested);
 
     /** Callback factory method for a list of attempts. */
-    protected final MultiDerivation createAttempt() {
-        return new MultiDerivation();
+    protected final DerivationAttempt createAttempt() {
+        return new DerivationAttempt();
     }
 
     /** Indicates if the failure verdicts transitively lead to a final term. */
@@ -257,7 +252,7 @@ abstract public class Term implements Position<Term> {
             result = result + ", final";
             break;
         case TRIAL:
-            MultiDerivation attempt = getAttempt(false);
+            DerivationAttempt attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
                 result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
             }
@@ -435,7 +430,7 @@ abstract public class Term implements Position<Term> {
     public static Term prototype() {
         return new Term(new Pool<Term>()) {
             @Override
-            protected MultiDerivation computeAttempt(boolean nested) {
+            protected DerivationAttempt computeAttempt(boolean nested) {
                 throw new UnsupportedOperationException();
             }
 
@@ -449,18 +444,6 @@ abstract public class Term implements Position<Term> {
                 throw new UnsupportedOperationException();
             }
         };
-    }
-
-    /** 
-     * Helper method to modify a set of outgoing edges so that
-     * their targets are made transient.
-     */
-    static List<Derivation> makeTransit(List<Derivation> edges) {
-        List<Derivation> result = new ArrayList<Derivation>();
-        for (Derivation edge : edges) {
-            result.add(edge.newInstance(edge.onFinish().transit()));
-        }
-        return result;
     }
 
     /** Operators available for construction. */

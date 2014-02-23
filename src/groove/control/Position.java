@@ -17,14 +17,12 @@
 package groove.control;
 
 /**
- * Position in a control structure that encodes the functionality of an 
- * {@link Attempt}, being one or more calls that are to be tried from this position,
- * together with <i>verdicts</i> reflecting how to proceed after the attempt
- * has either succeeded or failed.
+ * Position in a control structure that is either deadlocked, final, or
+ * offers an {@link Attempt}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Position<P extends Position<P>> {
+public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> {
     /** Returns the position type. */
     public abstract Type getType();
 
@@ -59,7 +57,7 @@ public interface Position<P extends Position<P>> {
      * Returns the attempt of this position.
      * Should only be invoked after the position is fixed, and is a trial position.
      */
-    public abstract Attempt<P> getAttempt();
+    public abstract Attempt<P,A> getAttempt();
 
     /** Position type. */
     public static enum Type {

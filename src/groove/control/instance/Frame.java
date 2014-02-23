@@ -20,15 +20,12 @@ import groove.control.Call;
 import groove.control.CtrlFrame;
 import groove.control.CtrlVar;
 import groove.control.Position;
-import groove.control.Procedure;
-import groove.control.SoloAttempt;
 import groove.control.template.Location;
-import groove.control.template.Stage;
 import groove.control.template.Switch;
-import groove.graph.ANode;
+import groove.control.template.SwitchAttempt;
+import groove.control.template.SwitchStack;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
-import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,15 +37,26 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame {
+public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     /**
      * Possibly nested frame instantiating a given control stage.
      */
-    Frame(Automaton ctrl, Stage stage) {
-        super(ctrl.getNextFrameNr());
+    Frame(Automaton ctrl, Location loc, SwitchStack callStack) {
         this.aut = ctrl;
-        this.stage = stage;
-        this.depth = stage.getDepth();
+        this.nr = ctrl.getFrames().size();
+        // avoid sharing
+        callStack = new SwitchStack(callStack);
+        // pop the call stack until we have a non-final location or empty stack
+        while (loc.isFinal() && !callStack.isEmpty()) {
+            loc = callStack.pollLast().onFinish();
+        }
+        this.callStack = callStack;
+        this.location = loc;
+        this.depth = -1;
+        // assume that this is a prime frame;
+        // if not, setPrime should be called afterwards
+        this.primeFrame = this;
+        this.pastAttempts = new HashSet<Switch>();
     }
 
     /** Returns the containing control automaton. */
@@ -58,39 +66,49 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
 
     private final Automaton aut;
 
+    /** 
+     * Returns the number of this frame.
+     * After a frame has been added to the automaton, 
+     * the frame number uniquely identifies the frame.
+     */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    private final int nr;
+
     @Override
     public boolean isStart() {
         return getAut().getStart() == this;
     }
 
-    /** Returns the control location that this frame instantiates. */
+    /** Returns the call stack giving rise to this frame. */
+    public SwitchStack getCallStack() {
+        return this.callStack;
+    }
+
+    private final SwitchStack callStack;
+
+    /** Returns the top control location instantiated by this frame. */
     public Location getLocation() {
-        return getStage().getLocation();
+        return this.location;
     }
 
-    /** Returns the control stage that this frame instantiates. */
-    public Stage getStage() {
-        return this.stage;
-    }
-
-    private final Stage stage;
+    private final Location location;
 
     /** 
-     * Sets the prime frame of this frame.
+     * Sets the prime frame of this frame, as well as the set of attempts
+     * since that frame.
      * The prime frame is the one from which this one was derived through
      * a sequence of verdict transitions.
-     * @param prime the prime frame; if {@code null}, this frame is its own prime
-     * @param pastAttempts the set of attempts since the prime, or {@code null} if this frame
-     * is prime
+     * @param prime the prime frame
+     * @param pastAttempts the set of attempts since the prime
      */
     private void setPrime(Frame prime, Set<Switch> pastAttempts) {
         assert !isFixed();
-        assert this.primeFrame == null;
-        this.primeFrame = prime == null ? this : prime;
-        this.pastAttempts = new HashSet<Switch>();
-        if (pastAttempts != null) {
-            this.pastAttempts.addAll(pastAttempts);
-        }
+        assert this.primeFrame == this;
+        this.primeFrame = prime;
+        this.pastAttempts.addAll(pastAttempts);
     }
 
     @Override
@@ -103,17 +121,10 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
         return getPrime() == this;
     }
 
-    /** Indicates if the prime of this frame has been set. */
-    public boolean hasPrime() {
-        return getPrime() != null;
-    }
-
     private Frame primeFrame;
 
     /** Returns the set of attempts made since the
      * prime frame.
-     * Should only be called if this frame is primed
-     * @see #hasPrime
      */
     @Override
     public Set<Switch> getPastAttempts() {
@@ -135,101 +146,16 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
 
     private Set<Call> pastCalls;
 
-    /** Indicates if the subframes of this frame are set. */
-    private boolean hasSubFrames() {
-        boolean result = getNext() != null;
-        assert result == (getAlso() != null);
-        assert result == (getElse() != null);
-        return result;
-    }
-
-    /** Sets the values of the next/also/else frames and call stack. */
-    private void setSubFrames(Frame nextF, Frame alsoF, Frame elseF) {
-        assert !isFixed();
-        // if all sub-frames are null, we're better off not setting them
-        boolean setNext = nextF != null && !nextF.isFinal();
-        boolean setAlso = alsoF != null && !alsoF.isDead();
-        boolean setElse = elseF != null && !elseF.isDead();
-        if (setNext || setAlso || setElse || !getCallStack().isEmpty()) {
-            this.nextFrame = nextF == null ? newFinalFrame() : nextF;
-            this.alsoFrame = alsoF == null ? newDeadFrame(getStage().getDepth()) : alsoF;
-            this.elseFrame = elseF == null ? newDeadFrame(getStage().getDepth()) : elseF;
-            this.depth = computeDepth();
-        }
-    }
-
-    /** 
-     * Returns the (possibly {@code null}) parent frame.
-     */
-    public Frame getNext() {
-        return this.nextFrame;
-    }
-
-    private Frame nextFrame;
-
-    /** Returns the also-branch of this frame, if it is not a top-level frame. */
-    public Frame getAlso() {
-        return this.alsoFrame;
-    }
-
-    private Frame alsoFrame;
-
-    /** Returns the else-branch of this frame, if it is not a top-level frame. */
-    public Frame getElse() {
-        return this.elseFrame;
-    }
-
-    private Frame elseFrame;
-
     @Override
     public Type getType() {
         if (this.type == null) {
-            this.type = computeType();
+            this.type = getLocation().getType();
         }
         return this.type;
     }
 
     /** The type of this frame. */
     private Type type;
-
-    private Type computeType() {
-        Type result = null;
-        // we want this to work also for non-normal frames
-        if (hasSubFrames()) {
-            switch (getStage().getType()) {
-            case DEAD:
-                result = getElse().getType();
-                break;
-            case TRIAL:
-                result = Type.TRIAL;
-                break;
-            case FINAL:
-                switch (getNext().getType()) {
-                case DEAD:
-                    result = getAlso().getType();
-                    break;
-                case FINAL:
-                    if (getAlso().isDead()) {
-                        result = Type.FINAL;
-                    } else {
-                        result = getAlso().getType();
-                    }
-                    break;
-                case TRIAL:
-                    result = Type.TRIAL;
-                    break;
-                default:
-                    assert false;
-                }
-                break;
-            default:
-                assert false;
-            }
-        } else {
-            result = getStage().getType();
-        }
-        return result;
-    }
 
     @Override
     public boolean isDead() {
@@ -247,46 +173,34 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
     }
 
     @Override
-    public Step getAttempt() {
+    public StepAttempt getAttempt() {
         assert isFixed();
-        assert hasPrime() : "Can't retrieve attempt of untried frame " + this;
         if (this.attempt == null) {
             this.attempt = computeAttempt();
-            getAut().addEdgeContext(this.attempt);
-            getAut().addEdgeContext(Step.newStep(this.attempt, true));
-            getAut().addEdgeContext(Step.newStep(this.attempt, false));
         }
         return this.attempt;
     }
 
-    private Step attempt;
+    private StepAttempt attempt;
 
     /** Computes the attempt of this frame. */
-    private Step computeAttempt() {
-        // recursively build the next/also/else frames
-        Frame nextF = getNext();
-        Frame alsoF = getAlso();
-        Frame elseF = getElse();
-        Switch swit = getStage().getAttempt();
-        boolean isProcedure;
-        do {
-            // the order of the next assignments is important
-            // otherwise they will interfere
-            elseF = newFrame(swit.onFailure(), nextF, alsoF, elseF);
-            alsoF = newFrame(swit.onSuccess(), nextF, alsoF, alsoF);
-            nextF = newFrame(swit.onFinish(), nextF, null, null);
-            isProcedure = swit.getKind().isProcedure();
-            if (isProcedure) {
-                Procedure proc = (Procedure) swit.getCall().getUnit();
-                swit = proc.getTemplate().getStart().getFirstStage(swit).getAttempt();
-            }
-        } while (isProcedure);
-        Set<Switch> triedCalls = new HashSet<Switch>(getPastAttempts());
-        triedCalls.add(swit);
-        Frame onSuccess = alsoF.normalise(getPrime(), triedCalls);
-        Frame onFailure = elseF.normalise(getPrime(), triedCalls);
-        Frame onFinish = nextF.normalise(null, null);
-        return new Step(this, swit, onFinish, onSuccess, onFailure);
+    private StepAttempt computeAttempt() {
+        SwitchAttempt locAttempt = getLocation().getAttempt();
+        Set<Switch> pastAttempts = new HashSet<Switch>(getPastAttempts());
+        List<Step> steps = new ArrayList<Step>();
+        for (Switch swit : locAttempt) {
+            pastAttempts.add(swit);
+            SwitchStack callStack = new SwitchStack(getCallStack());
+            callStack.addAll(swit.getStack());
+            Switch topCall = callStack.pollLast();
+            Frame onFinish = new Frame(getAut(), topCall.onFinish(), callStack);
+            steps.add(new Step(this, swit, onFinish.normalise()));
+        }
+        Frame onSuccess = newFrame(locAttempt.onSuccess(), pastAttempts);
+        Frame onFailure = newFrame(locAttempt.onFailure(), pastAttempts);
+        StepAttempt result = new StepAttempt(onSuccess, onFailure);
+        result.addAll(steps);
+        return result;
     }
 
     @Override
@@ -296,48 +210,21 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
 
     @Override
     public int getDepth() {
+        if (this.depth == -1) {
+            this.depth = computeDepth();
+        }
         return this.depth;
     }
 
     private int depth;
 
     private int computeDepth() {
-        // we want this to work also for non-normal frames
-        if (hasSubFrames()) {
-            switch (getStage().getType()) {
-            case DEAD:
-                return getElse().getDepth();
-            case TRIAL:
-                return getStage().getDepth() + getNext().getDepth();
-            case FINAL:
-                switch (getNext().getType()) {
-                case DEAD:
-                    return getAlso().getDepth();
-                case FINAL:
-                    if (getAlso().isDead()) {
-                        return 0;
-                    } else {
-                        return getAlso().getDepth();
-                    }
-                case TRIAL:
-                    return getNext().getDepth();
-                default:
-                    assert false;
-                    return 0;
-                }
-            default:
-                assert false;
-                return 0;
-            }
-        } else {
-            return getStage().getDepth();
+        int result = 0;
+        for (Switch caller : getCallStack()) {
+            result += caller.getDepth();
         }
-    }
-
-    /** Returns the call stack of this frame.
-     */
-    public CallStack getCallStack() {
-        return getStage().getCallStack();
+        result += getLocation().getDepth();
+        return result;
     }
 
     @Override
@@ -350,165 +237,37 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
         return getLocation().getVars();
     }
 
-    /** Tests if this is a normal frame.
-     * A frame is normal if the next/also/else frames are simultaneously either
-     * {@code null} or non-{@code null}; in the latter case, moreover, the stage
-     * is a trial stage.
-     * Only normal frames should ever be constructed.
-     * @throws IllegalStateException if the frame is not normal
-     */
-    boolean testNormal() throws IllegalStateException {
-        String message = null;
-        if (getNext() == null) {
-            if (getAlso() != null) {
-                message = "next is null but also is not";
-            } else if (getElse() != null) {
-                message = "next is null but else is not";
-            }
-        } else {
-            if (getAlso() == null) {
-                message = "also is null but next is not";
-            } else if (getElse() == null) {
-                message = "else is null but next is not";
-            } else if (!getStage().isTrial()) {
-                message = "nested location " + getStage().getLocation() + " is not a trial";
-            }
-        }
-        if (message != null) {
-            throw new IllegalStateException(String.format("Frame %s is not normal: %s", this,
-                message));
-        }
-        return true;
-    }
-
     /**
-     * Fixes this frame and returns the normalised, primed version. 
-     * @param prime the prime frame for the normalised frame; if {@code null}, the new frame
-     * is to be its own prime
-     * @param triedCalls the set of calls tried since the prime, or {@code null} if the new frame
-     * is prime
+     * Constructs a frame for a given control location,
+     * with the same prime frame and call stack as this frame. 
      */
-    public Frame normalise(Frame prime, Set<Switch> triedCalls) {
-        setFixed();
-        Frame result = null;
-        if (hasSubFrames()) {
-            switch (getStage().getType()) {
-            case TRIAL:
-                result = newFrame(prime, triedCalls);
-                break;
-            case DEAD:
-                result = getElse().normalise(prime, triedCalls);
-                break;
-            case FINAL:
-                result = getNext().or(getAlso()).normalise(prime, triedCalls);
-                break;
-            default:
-                assert false;
-            }
-        } else {
-            // clone the frame and set the prime
-            result = newFrame(prime, triedCalls);
-        }
-        result.testNormal();
-        return result;
-    }
-
-    /** Constructs the disjunction of this frame and another. */
-    private Frame or(Frame other) {
-        assert other != null;
-        Frame result;
-        switch (getType()) {
-        case DEAD:
-            result = other;
-            break;
-        case FINAL:
-            if (other.isTrial()) {
-                result = other.or(this);
-            } else {
-                result = this;
-            }
-            break;
-        case TRIAL:
-            if (hasSubFrames()) {
-                result = newFrame(getStage(), getNext(), getAlso().or(other), getElse().or(other));
-            } else {
-                result = newFrame(getStage(), null, other, other);
-            }
-            break;
-        default:
-            assert false;
-            result = null;
-        }
-        return result;
-    }
-
-    /** 
-     * Clones this frame and sets the prime frame.
-     * @param prime the prime frame for the new frame; if {@code null}, the new frame
-     * is to be its own prime
-     * @param triedCalls the set of calls tried since the prime, or {@code null} if the new frame
-     * is prime
-     */
-    private Frame newFrame(Frame prime, Set<Switch> triedCalls) {
-        Frame result = new Frame(getAut(), getStage());
-        result.setSubFrames(getNext(), getAlso(), getElse());
-        result.setPrime(prime, triedCalls);
-        return result.canonical();
-    }
-
-    /** Returns a canonical final frame. 
-     */
-    private Frame newFinalFrame() {
-        return newFrame(getAut().getTemplate().getFinal());
-    }
-
-    /** Returns a canonical deadlocked frame at given transient depth. 
-     */
-    private Frame newDeadFrame(int depth) {
-        return newFrame(getAut().getTemplate().getDead(depth));
-    }
-
-    /** Constructs the initial frame for a given control location (without sub-frames). 
-     */
-    private Frame newFrame(Location loc) {
-        Frame result = new Frame(getAut(), loc.getFirstStage());
-        return result.canonical();
-    }
-
-    /** 
-     * Constructs a new, primeless frame with given sub-frames.
-     */
-    private Frame newFrame(Stage stage, Frame nextF, Frame alsoF, Frame elseF) {
-        Frame result = new Frame(getAut(), stage);
-        result.setSubFrames(nextF, alsoF, elseF);
-        return result.canonical();
+    private Frame newFrame(Location loc, Set<Switch> pastAttempts) {
+        Frame result = new Frame(getAut(), loc, getCallStack());
+        result.setPrime(getPrime(), pastAttempts);
+        return result.normalise();
     }
 
     /** Fixes this frame and returns its canonical representative. */
-    private Frame canonical() {
+    public Frame normalise() {
         setFixed();
-        return getAut().getFramePool().canonical(this);
+        return getAut().addFrame(this);
     }
 
     @Override
-    protected String getToStringPrefix() {
-        return "c";
-    }
-
-    @Override
-    protected int computeHashCode() {
+    public int hashCode() {
+        assert isFixed();
         final int prime = 31;
-        int result = System.identityHashCode(this.alsoFrame);
-        result = prime * result + System.identityHashCode(this.elseFrame);
-        result = prime * result + System.identityHashCode(this.nextFrame);
-        result = prime * result + (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
-        result = prime * result + (this.pastAttempts == null ? 0 : this.pastAttempts.hashCode());
-        result = prime * result + this.stage.hashCode();
+        // use identity of prime frame as it has already been normalised
+        int result = (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
+        result = prime * result + this.pastAttempts.hashCode();
+        result = prime * result + this.location.hashCode();
+        result = prime * result + this.callStack.hashCode();
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
+        assert isFixed();
         if (this == obj) {
             return true;
         }
@@ -516,26 +275,16 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
             return false;
         }
         Frame other = (Frame) obj;
-        if (this.alsoFrame != other.alsoFrame) {
+        if (isPrime() ? !other.isPrime() : this.primeFrame != other.primeFrame) {
             return false;
         }
-        if (this.elseFrame != other.elseFrame) {
+        if (!this.pastAttempts.equals(other.pastAttempts)) {
             return false;
         }
-        if (this.nextFrame != other.nextFrame) {
+        if (!this.location.equals(other.location)) {
             return false;
         }
-        if (this.primeFrame != other.primeFrame && this.isPrime() != other.isPrime()) {
-            return false;
-        }
-        if (this.pastAttempts == null) {
-            if (other.pastAttempts != null) {
-                return false;
-            }
-        } else {
-            return this.pastAttempts.equals(other.pastAttempts);
-        }
-        if (!this.stage.equals(other.stage)) {
+        if (!this.callStack.equals(other.callStack)) {
             return false;
         }
         return true;
@@ -543,9 +292,8 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
 
     @Override
     public String toString() {
-        String result = toString(false);
+        String result = getIdString();
         if (RICH_LABELS) {
-            result += "\nLoc: " + getIdString();
             if (getDepth() > 0) {
                 result += ", d" + getDepth();
             }
@@ -557,50 +305,14 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
             if (isPrime()) {
                 result += "\nPrime";
             } else {
-                result += "\nTried:";
-                for (Switch tried : getPastAttempts()) {
-                    List<String> names = new ArrayList<String>();
-                    for (Switch call : tried.getCallStack()) {
-                        names.add(call.getName());
+                result += "\nPrime: " + getPrime().getIdString();
+                if (VERY_RICH_LABELS) {
+                    result += "\nTried:";
+                    for (Switch tried : getPastAttempts()) {
+                        result += " " + tried.getCallStack().toString();
                     }
-                    names.add(tried.getName());
-                    result += " " + Groove.toString(names.toArray(), " ", "", "/");
                 }
             }
-        }
-        return result;
-    }
-
-    /** Implements the functionality of {@link #toString()}.
-     * @param nested if {@code true}, the string will be nested in another {@link #toString()} call.
-     */
-    private String toString(boolean nested) {
-        String result = null;
-        Position<?> pos = hasPrime() ? this : getStage();
-        switch (pos.getType()) {
-        case DEAD:
-            result = "D" + (getDepth() > 0 ? "" + getDepth() : "");
-            break;
-        case FINAL:
-            result = "E";
-            break;
-        case TRIAL:
-            result = ((SoloAttempt<?>) pos.getAttempt()).getCall().toString();
-            break;
-        default:
-            assert false;
-        }
-        if (hasSubFrames()) {
-            String nextString = getNext().toString(true);
-            String alsoString = getAlso().toString(true);
-            String elseString = getElse().toString(true);
-            result = result + "?" + nextString + "&" + alsoString + ":" + elseString;
-        }
-        if (this == getAut().getStart()) {
-            result = "S::" + result;
-        }
-        if (nested && hasSubFrames()) {
-            result = "(" + result + ")";
         }
         return result;
     }
@@ -610,15 +322,19 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
         StringBuilder result = new StringBuilder();
         String callerName = null;
         for (Switch swit : getCallStack()) {
-            if (callerName != null) {
+            if (callerName == null) {
+                result.append("c");
+            } else {
                 result.append('/');
                 result.append(callerName);
                 result.append('.');
             }
-            result.append(swit.source().getNumber());
+            result.append(swit.getSource().getNumber());
             callerName = swit.getCall().getUnit().getLastName();
         }
-        if (callerName != null) {
+        if (callerName == null) {
+            result.append("c");
+        } else {
             result.append('/');
             result.append(callerName);
             result.append('.');
@@ -645,4 +361,5 @@ public class Frame extends ANode implements Position<Frame>, Fixable, CtrlFrame 
     private final DefaultFixable fixable = new DefaultFixable();
 
     private final static boolean RICH_LABELS = true;
+    private final static boolean VERY_RICH_LABELS = false;
 }

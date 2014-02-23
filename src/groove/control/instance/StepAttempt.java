@@ -14,22 +14,21 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.instance;
 
-import java.util.ArrayList;
+import groove.control.Attempt;
 
 /**
- * Attempt specialisation consisting of a list of other attempts,
- * to be tried successively in the given order.
- * <P> the position type for which this is an attempt
- * <A> the list of attempts of which this consists
+ * Attempt of a {@link Frame}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class MultiAttempt<P extends Position<P>,A> extends ArrayList<A> implements
-        Attempt<P> {
-    @Override
-    public boolean sameVerdict() {
-        return onFailure() == onSuccess();
+public class StepAttempt extends Attempt<Frame,Step> {
+    /**
+     * Creates a multi-step, initialised with success and failure alternates.
+     */
+    public StepAttempt(Frame onSuccess, Frame onFailure) {
+        setSuccess(onSuccess);
+        setFailure(onFailure);
     }
 }

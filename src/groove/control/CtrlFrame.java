@@ -17,7 +17,6 @@
 package groove.control;
 
 import groove.control.instance.Frame;
-import groove.graph.Node;
 
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface CtrlFrame extends Node {
+public interface CtrlFrame {
     /** Indicates that this is the initial frame of the automaton. */
     boolean isStart();
 

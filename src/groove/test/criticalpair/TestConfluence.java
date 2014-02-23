@@ -33,8 +33,8 @@ import org.junit.Test;
 /**
  * @author Ruud Welling
  */
+@SuppressWarnings("javadoc")
 public class TestConfluence {
-
     @Test
     public void testConfluence() {
         String grammarStr = "junit/criticalpair/basic.gps/";
@@ -129,7 +129,6 @@ public class TestConfluence {
         ConfluenceStatus expected = ConfluenceStatus.NOT_STICTLY_CONFLUENT;
         ConfluenceResult result =
             ConfluenceResult.checkStrictlyConfluent(grammar, ConfluenceStatus.UNTESTED, true);
-        int totalPairs = result.getSizeOfUntestedPairs();
         result.analyzeAll();
         assertTrue(result.getStatus() == expected);
     }

@@ -52,11 +52,6 @@ public class CtrlSchedule implements CtrlFrame {
     }
 
     @Override
-    public int getNumber() {
-        return 0;
-    }
-
-    @Override
     public boolean isStart() {
         return getPrime().isStart();
     }

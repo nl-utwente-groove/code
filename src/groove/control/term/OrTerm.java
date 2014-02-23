@@ -29,11 +29,11 @@ public class OrTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
-        MultiDerivation result = null;
+    protected DerivationAttempt computeAttempt(boolean nested) {
+        DerivationAttempt result = null;
         if (isTrial()) {
-            MultiDerivation ders0 = arg0().getAttempt(nested);
-            MultiDerivation ders1 = arg1().getAttempt(nested);
+            DerivationAttempt ders0 = arg0().getAttempt(nested);
+            DerivationAttempt ders1 = arg1().getAttempt(nested);
             result = createAttempt();
             if (useArg0Only(nested)) {
                 result.addAll(ders0);

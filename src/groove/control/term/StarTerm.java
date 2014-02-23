@@ -30,13 +30,13 @@ public class StarTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
-        MultiDerivation result = null;
+    protected DerivationAttempt computeAttempt(boolean nested) {
+        DerivationAttempt result = null;
         if (arg0().isTrial()) {
             result = createAttempt();
-            MultiDerivation ders = arg0().getAttempt(nested);
+            DerivationAttempt ders = arg0().getAttempt(nested);
             for (Derivation deriv : ders) {
-                result.add(deriv.newInstance(deriv.onFinish().seq(this)));
+                result.add(deriv.newInstance(deriv.onFinish().seq(this), false));
             }
             result.setSuccess(ders.onSuccess().seq(this).or(epsilon()));
             result.setFailure(ders.onFailure().seq(this).or(epsilon()));

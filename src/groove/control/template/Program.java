@@ -22,7 +22,7 @@ import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
 import groove.control.term.CallTerm;
 import groove.control.term.Derivation;
-import groove.control.term.MultiDerivation;
+import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -35,9 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -108,9 +106,6 @@ public class Program implements Fixable {
      */
     public Template getTemplate() {
         assert isFixed();
-        if (this.template == null && hasBody()) {
-            this.template = TemplateBuilder.instance().build(null, getName(), getTerm());
-        }
         return this.template;
     }
 
@@ -178,18 +173,20 @@ public class Program implements Fixable {
      * @throws IllegalStateException if there is an unresolved call 
      */
     public void checkCalls(Template template) throws IllegalStateException {
-        for (Switch edge : template.edgeSet()) {
-            if (edge.isVerdict()) {
+        for (Location loc : template.getLocations()) {
+            if (!loc.isTrial()) {
                 continue;
             }
-            Callable unit = edge.getUnit();
-            if (unit.getKind() == Kind.RULE) {
-                continue;
-            }
-            if (!this.procs.containsKey(unit.getFullName())) {
-                throw new IllegalStateException(String.format(
-                    "'%s' called from '%s' is not defined in this program", unit.getFullName(),
-                    template.getName()));
+            for (Switch swit : loc.getAttempt()) {
+                Callable unit = swit.getUnit();
+                if (unit.getKind() == Kind.RULE) {
+                    continue;
+                }
+                if (!this.procs.containsKey(unit.getFullName())) {
+                    throw new IllegalStateException(String.format(
+                        "'%s' called from '%s' is not defined in this program", unit.getFullName(),
+                        template.getName()));
+                }
             }
         }
     }
@@ -302,7 +299,7 @@ public class Program implements Fixable {
             assert false;
         }
         if (term.isTrial()) {
-            MultiDerivation derivList = term.getAttempt(false);
+            DerivationAttempt derivList = term.getAttempt(false);
             for (Derivation edge : derivList) {
                 result.add(edge.getCall());
             }
@@ -465,6 +462,7 @@ public class Program implements Fixable {
         return getTerminationSet().contains(proc);
     }
 
+    /** Returns the set of procedures that will certainly terminate. */
     private Set<Procedure> getTerminationSet() {
         if (this.terminationSet == null) {
             this.terminationSet = computeTerminationSet();
@@ -474,16 +472,23 @@ public class Program implements Fixable {
 
     private Set<Procedure> terminationSet;
 
+    /** Computes the set of procedures that will certainly terminate,
+     * through a smallest fixpoint computation. 
+     */
     private Set<Procedure> computeTerminationSet() {
         Set<Procedure> result = new HashSet<Procedure>();
+        // the set of procedures not yet known to terminate
         Set<Procedure> remaining = new HashSet<Procedure>(getProcs().values());
+        // iterate as long as procedures keep being added to the result set
         boolean modified = true;
         while (modified) {
             modified = false;
+            // compute the termination of the remaining procedures
             Iterator<Procedure> procIter = remaining.iterator();
             while (procIter.hasNext()) {
                 Procedure proc = procIter.next();
-                if (willTerminate(proc.getTemplate(), result)) {
+                if (willTerminate(proc.getTerm(), result)) {
+                    // proc will certainly terminate
                     result.add(proc);
                     procIter.remove();
                     modified = true;
@@ -493,31 +498,55 @@ public class Program implements Fixable {
         return result;
     }
 
-    /** Computes if a final location is reachable from all locations in a given template,
-     * given that a certain set of procedure calls is known to terminate */
-    public boolean willTerminate(Template template, Set<Procedure> terminationSet) {
-        Location finalLoc = template.getFinal();
-        Set<Location> terminating = new HashSet<Location>();
-        terminating.add(finalLoc);
-        Map<Location,Set<Switch>> inMap = template.getInEdgeMap();
-        Queue<Location> queue = new LinkedList<Location>();
-        queue.add(finalLoc);
-        while (!queue.isEmpty()) {
-            Location next = queue.poll();
-            for (Switch edge : inMap.get(next)) {
-                boolean terminates = false;
-                if (edge.getKind().isCallable()) {
-                    Callable unit = edge.getCall().getUnit();
-                    terminates = unit instanceof Rule || terminationSet.contains(unit);
-                } else {
-                    terminates = true;
-                }
-                if (terminates && terminating.add(edge.source())) {
-                    queue.add(edge.source());
-                }
-            }
+    /** Computes if all derivations from a given term have a reachable
+     * final term,
+     * given that a certain set of procedures is known to terminate.
+     */
+    private boolean willTerminate(Term term, Set<Procedure> terminationSet) {
+        // results for the arguments
+        Term[] args = term.getArgs();
+        boolean[] r = new boolean[args.length];
+        for (int i = 0; i < args.length; i++) {
+            r[i] = willTerminate(term.getArgs()[i], terminationSet);
         }
-        return terminating.containsAll(template.nodeSet());
+        switch (term.getOp()) {
+        case ALAP:
+        case ATOM:
+        case HASH:
+        case TRANSIT:
+        case BODY:
+        case STAR:
+            return r[0];
+        case CALL:
+            Callable unit = ((CallTerm) term).getCall().getUnit();
+            return unit.getKind() == Kind.RULE || terminationSet.contains(unit);
+        case DELTA:
+            return false;
+        case EPSILON:
+            return true;
+        case IF:
+            switch (args[0].getType()) {
+            case DEAD:
+                return r[3];
+            case FINAL:
+                return r[1] || r[2];
+            case TRIAL:
+                return r[0] && r[1] || r[2] || r[3];
+            default:
+                assert false;
+                return false;
+            }
+        case OR:
+            return r[0] || r[1];
+        case SEQ:
+        case UNTIL:
+            return r[0] && r[1];
+        case WHILE:
+            return !args[0].isFinal() && r[0] && r[1];
+        default:
+            assert false;
+            return false;
+        }
     }
 
     @Override
@@ -545,10 +574,7 @@ public class Program implements Fixable {
                 }
             }
             errors.throwException();
-            // check that all calls are resolved
-            // this is done after the check for recursion,
-            // to avoid stack overflow
-            checkCalls();
+            this.template = TemplateBuilder.instance().build(this);
         }
         return result;
     }

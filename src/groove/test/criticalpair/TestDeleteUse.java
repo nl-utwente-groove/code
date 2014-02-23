@@ -45,8 +45,8 @@ import org.junit.Test;
 /**
  * @author Ruud Welling
  */
+@SuppressWarnings("javadoc")
 public class TestDeleteUse {
-
     @Test
     public void testBasic() {
         String grammar = "junit/criticalpair/basic.gps/";

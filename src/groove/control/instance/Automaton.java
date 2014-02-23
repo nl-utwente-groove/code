@@ -16,9 +16,9 @@
  */
 package groove.control.instance;
 
+import groove.control.graph.ControlGraph;
+import groove.control.template.SwitchStack;
 import groove.control.template.Template;
-import groove.graph.GraphRole;
-import groove.graph.NodeSetEdgeSetGraph;
 import groove.util.collect.Pool;
 
 import java.util.HashSet;
@@ -31,14 +31,16 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
+public class Automaton {
     /**
      * Instantiates a given template.
      */
     public Automaton(Template template) {
-        super(template.getName());
         this.template = template;
         this.framePool = new Pool<Frame>();
+        Frame start = new Frame(this, getTemplate().getStart(), new SwitchStack());
+        start.setFixed();
+        this.start = addFrame(start);
     }
 
     /** Returns the template from which this control instance has been created. */
@@ -50,51 +52,38 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
 
     /** Returns the start frame of the automaton. */
     public Frame getStart() {
-        if (this.start == null) {
-            Frame result = new Frame(this, getTemplate().getStart().getFirstStage());
-            result = result.normalise(null, null);
-            addNode(result);
-            this.start = result;
-        }
+
         return this.start;
     }
 
-    private Frame start;
+    private final Frame start;
+
+    /** 
+     * Adds the canonical version of a frame to this automaton.
+     * @param frame the frame to be added; non-{@code null}
+     * @return either {@code frame} or an equal copy that was already in the automaton
+     */
+    Frame addFrame(Frame frame) {
+        assert frame.isFixed();
+        assert frame.getAut() == this;
+        assert frame.getNumber() == getFramePool().size();
+        return getFramePool().canonical(frame);
+    }
 
     /** Returns the next available frame number. */
     int getNextFrameNr() {
-        return nodeCount();
+        return getFramePool().size();
     }
 
-    @Override
-    public GraphRole getRole() {
-        return GraphRole.CTRL;
-    }
-
-    @Override
-    public Automaton newGraph(String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeEdge(Step edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeNode(Frame node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Automaton clone() {
-        return new Automaton(getTemplate());
+    /** Returns the set of frames in this automaton. */
+    public Set<Frame> getFrames() {
+        return getFramePool().keySet();
     }
 
     /** Returns the mapping from frames to themselves, used to create
      * canonical frame representations.
      */
-    Pool<Frame> getFramePool() {
+    private Pool<Frame> getFramePool() {
         return this.framePool;
     }
 
@@ -111,9 +100,11 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
             if (!next.isTrial()) {
                 continue;
             }
-            Frame onFinish = next.getAttempt().onFinish();
-            if (nodes.add(onFinish)) {
-                fresh.add(onFinish);
+            for (Step step : next.getAttempt()) {
+                Frame onFinish = step.onFinish();
+                if (nodes.add(onFinish)) {
+                    fresh.add(onFinish);
+                }
             }
             Frame onFailure = next.getAttempt().onFailure();
             if (nodes.add(onFailure)) {
@@ -124,5 +115,10 @@ public class Automaton extends NodeSetEdgeSetGraph<Frame,Step> {
                 fresh.add(onSuccess);
             }
         }
+    }
+
+    /** Returns a control graph consisting of this automaton's frames and steps. */
+    public ControlGraph toGraph() {
+        return ControlGraph.newGraph(this.template.getName(), this.getStart());
     }
 }

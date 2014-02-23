@@ -47,14 +47,14 @@ public class WhileTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
-        MultiDerivation result = null;
+    protected DerivationAttempt computeAttempt(boolean nested) {
+        DerivationAttempt result = null;
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            MultiDerivation ders0 = arg0().getAttempt(nested);
+            DerivationAttempt ders0 = arg0().getAttempt(nested);
             for (Derivation deriv : ders0) {
-                result.add(deriv.newInstance(deriv.onFinish().seq(arg1()).seq(this)));
+                result.add(deriv.newInstance(deriv.onFinish().seq(arg1()).seq(this), false));
             }
             result.setSuccess(ders0.onSuccess().seq(arg1()).seq(this));
             result.setFailure(ders0.onFailure().ifOnly(arg1().seq(this)));
@@ -62,9 +62,9 @@ public class WhileTerm extends Term {
         case FINAL:
             if (arg1().isTrial()) {
                 result = createAttempt();
-                MultiDerivation ders1 = arg1().getAttempt(nested);
+                DerivationAttempt ders1 = arg1().getAttempt(nested);
                 for (Derivation deriv : ders1) {
-                    result.add(deriv.newInstance(deriv.onFinish().seq(this)));
+                    result.add(deriv.newInstance(deriv.onFinish().seq(this), false));
                 }
                 result.setSuccess(ders1.onSuccess().seq(this));
                 result.setFailure(ders1.onFailure().seq(this));

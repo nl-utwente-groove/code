@@ -16,17 +16,14 @@
  */
 package groove.control.template;
 
-import static groove.graph.GraphRole.CTRL;
 import groove.control.Callable;
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
 import groove.control.Function;
 import groove.control.Position.Type;
 import groove.control.Procedure;
+import groove.control.graph.ControlGraph;
 import groove.grammar.Action;
-import groove.graph.GraphRole;
-import groove.graph.Node;
-import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,14 +49,15 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
+public class Template {
     /**
-     * Constructs a automaton for a given control unit and name.
+     * Constructs a automaton for a given procedure and name.
      */
     private Template(String name, Procedure proc) {
-        super(name);
+        this.name = name;
         this.maxNodeNr = -1;
         this.owner = proc;
+        this.locations = new ArrayList<Location>();
         this.start = addLocation(0);
     }
 
@@ -71,16 +69,18 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     }
 
     /**
-     * Constructs a automaton for a given control unit.
+     * Constructs a automaton for a given procedure.
      */
     protected Template(Procedure proc) {
         this(proc.getFullName(), proc);
     }
 
-    @Override
-    public GraphRole getRole() {
-        return CTRL;
+    /** Returns the template name. */
+    public String getName() {
+        return this.name;
     }
+
+    private final String name;
 
     /** 
      * Indicates if this automaton is the body of a procedure.
@@ -114,7 +114,6 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
      * Should only be called after the automaton is fixed.
      */
     public Location getFinal() {
-        assert isFixed();
         if (this.finalLoc == null) {
             this.finalLoc = computeFinal();
         }
@@ -128,13 +127,13 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
      */
     private Location computeFinal() {
         Location result = null;
-        for (Location loc : nodeSet()) {
+        for (Location loc : this.locations) {
             if (loc.isFinal()) {
                 result = loc;
             }
         }
         if (result == null) {
-            result = new Location(this, -1, 0);
+            result = addLocation(0);
             result.setType(Type.FINAL);
         }
         return result;
@@ -144,11 +143,18 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     public Location addLocation(int depth) {
         Location result = new Location(this, this.maxNodeNr + 1, depth);
         this.maxNodeNr++;
-        addNode(result);
+        this.locations.add(result);
         return result;
     }
 
     private int maxNodeNr;
+
+    /** Returns the set of locations of this template. */
+    public List<Location> getLocations() {
+        return this.locations;
+    }
+
+    private final List<Location> locations;
 
     /** 
      * Returns the set of actions occurring on control edges,
@@ -160,16 +166,21 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         Queue<Template> todo = new LinkedList<Template>();
         todo.add(this);
         while (!todo.isEmpty()) {
-            Template next = todo.poll();
-            for (Switch edge : next.edgeSet()) {
-                Callable unit = edge.getUnit();
-                if (unit instanceof Action) {
-                    result.add((Action) unit);
-                } else {
-                    Function function = (Function) unit;
-                    Template fresh = ((Function) unit).getTemplate();
-                    if (seen.add(function) && fresh != null) {
-                        todo.add(fresh);
+            Template t = todo.poll();
+            for (Location loc : t.getLocations()) {
+                if (!loc.isTrial()) {
+                    continue;
+                }
+                for (Switch n : loc.getAttempt()) {
+                    Callable unit = n.getCall().getUnit();
+                    if (unit instanceof Action) {
+                        result.add((Action) unit);
+                    } else {
+                        Function function = (Function) unit;
+                        Template fresh = ((Function) unit).getTemplate();
+                        if (seen.add(function) && fresh != null) {
+                            todo.add(fresh);
+                        }
                     }
                 }
             }
@@ -184,82 +195,69 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
      */
     void initVars() {
         // compute the map of incoming transitions
-        for (Location state : nodeSet()) {
+        for (Location state : this.locations) {
             Set<CtrlVar> vars;
             if (state.isFinal() && hasOwner()) {
                 vars = getOwner().getOutPars().keySet();
+            } else if (state.isTrial()) {
+                vars = new HashSet<CtrlVar>();
+                for (Switch n : state.getAttempt()) {
+                    vars.addAll(n.getCall().getInVars().keySet());
+                }
             } else {
                 vars = Collections.emptySet();
             }
             state.addVars(vars);
         }
-        for (Switch swit : edgeSet()) {
-            if (swit.isVerdict()) {
+        Map<Location,Set<Location>> inMap = getPredMap();
+        Queue<Location> todo = new LinkedList<Location>(getLocations());
+        while (!todo.isEmpty()) {
+            Location loc = todo.poll();
+            if (!loc.isTrial()) {
                 continue;
             }
-            swit.source().addVars(swit.getCall().getInVars().keySet());
-        }
-        Map<Location,Set<Switch>> inMap = getInEdgeMap();
-        Queue<Switch> queue = new LinkedList<Switch>(edgeSet());
-        while (!queue.isEmpty()) {
-            Switch next = queue.poll();
-            Location source = next.source();
-            CtrlVarSet sourceVars = new CtrlVarSet(source.getVars());
-            boolean modified = false;
-            List<CtrlVar> targetVars = next.target().getVars();
-            if (next.isVerdict()) {
-                modified = sourceVars.addAll(targetVars);
-            } else {
-                for (CtrlVar targetVar : targetVars) {
-                    if (!next.getCall().getOutVars().containsKey(targetVar)) {
-                        modified |= sourceVars.add(targetVar);
-                    }
-                }
+            SwitchAttempt attempt = loc.getAttempt();
+            CtrlVarSet sourceVars = new CtrlVarSet(loc.getVars());
+            boolean modified = sourceVars.addAll(attempt.onSuccess().getVars());
+            modified |= sourceVars.addAll(attempt.onFailure().getVars());
+            for (Switch swit : attempt) {
+                modified |= sourceVars.addAll(swit.onFinish().getVars());
             }
             if (modified) {
-                source.setVars(sourceVars);
-                queue.addAll(inMap.get(source));
+                loc.setVars(sourceVars);
+                todo.addAll(inMap.get(loc));
             }
         }
     }
 
-    /** Returns a mapping from locations to sets of incoming edges. */
-    public Map<Location,Set<Switch>> getInEdgeMap() {
-        if (this.inEdgeMap == null) {
-            this.inEdgeMap = computeInEdgeMap();
+    /** Returns a mapping from locations to sets of predecessors. */
+    public Map<Location,Set<Location>> getPredMap() {
+        if (this.predMap == null) {
+            this.predMap = computePredMap();
         }
-        return this.inEdgeMap;
+        return this.predMap;
     }
 
-    private Map<Location,Set<Switch>> inEdgeMap;
+    private Map<Location,Set<Location>> predMap;
 
     /** Computes a mapping from locations to sets of incoming edges. */
-    private Map<Location,Set<Switch>> computeInEdgeMap() {
-        Map<Location,Set<Switch>> result = new HashMap<Location,Set<Switch>>();
-        for (Location state : nodeSet()) {
-            result.put(state, new HashSet<Switch>());
+    private Map<Location,Set<Location>> computePredMap() {
+        Map<Location,Set<Location>> result = new HashMap<Location,Set<Location>>();
+        for (Location loc : getLocations()) {
+            result.put(loc, new HashSet<Location>());
         }
-        result.put(getFinal(), new HashSet<Switch>());
-        for (Switch trans : edgeSet()) {
-            result.get(trans.target()).add(trans);
+        for (Location state : getLocations()) {
+            if (state.isTrial()) {
+                SwitchAttempt attempt = state.getAttempt();
+                result.get(attempt.onSuccess()).add(state);
+                result.get(attempt.onFailure()).add(state);
+                for (Switch swit : state.getAttempt()) {
+                    result.get(swit.onFinish()).add(state);
+                }
+            }
         }
         return result;
     }
-
-    /**
-     * Returns a deadlocked location at a certain transient depth, which
-     * is not added to the nodes of the graph.
-     */
-    public Location getDead(int depth) {
-        for (int i = this.dead.size(); i <= depth; i++) {
-            Location result = new Location(this, -2 - depth, depth);
-            result.setType(Type.DEAD);
-            this.dead.add(result);
-        }
-        return this.dead.get(depth);
-    }
-
-    private final List<Location> dead = new ArrayList<Location>();
 
     /** Returns a copy of this automaton for a given enclosing procedure. */
     public Template clone(Procedure parent) {
@@ -267,48 +265,46 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     }
 
     @Override
-    public boolean setFixed() {
-        boolean result = super.setFixed();
-        if (result) {
-            for (Location loc : nodeSet()) {
-                loc.setFixed();
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.name.hashCode();
+        result = prime * result + ((this.owner == null) ? 0 : this.owner.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Template other = (Template) obj;
+        if (!this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.owner == null) {
+            if (other.owner != null) {
+                return false;
             }
+        } else if (!this.owner.equals(other.owner)) {
+            return false;
         }
-        return result;
+        return true;
     }
 
     @Override
-    public boolean addEdge(Switch edge) {
-        boolean result = super.addEdge(edge);
-        if (result) {
-            edge.source().addSwitch(edge);
-        }
-        return result;
+    public String toString() {
+        return getName() + ": " + getLocations();
     }
 
-    @Override
-    public Template newGraph(String name) {
-        return new Template(name, null);
+    /** Returns a control graph built from the locations and switches of this template. */
+    public ControlGraph toGraph() {
+        return ControlGraph.newGraph(getName(), getStart());
     }
-
-    @Override
-    public Set<? extends Switch> outEdgeSet(Node node) {
-        return ((Location) node).getSwitches();
-    }
-
-    @Override
-    public Set<? extends Switch> inEdgeSet(Node node) {
-        return getInEdgeMap().get(node);
-    }
-
-    @Override
-    public boolean removeEdge(Switch edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeNode(Location node) {
-        throw new UnsupportedOperationException();
-    }
-
 }

@@ -14,26 +14,16 @@
  *
  * $Id$
  */
-package groove.control.instance;
+package groove.control.term;
 
-import groove.control.template.Switch;
-
-import java.util.LinkedList;
+import groove.control.Attempt;
 
 /**
- * Stack of switches, corresponding to nested procedure calls.
+ * List of term derivations in combination with the success and failure alternates.
+ * This constitutes a term attempt.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CallStack extends LinkedList<Switch> {
-    /**
-     * Constructs a call stack from the possibly {@code null} top call switch.
-     */
-    public CallStack(Switch top) {
-        if (top != null) {
-            top.getKind().isProcedure();
-            addAll(top.getCallStack());
-            add(top);
-        }
-    }
+public class DerivationAttempt extends Attempt<Term,Derivation> {
+    // empty
 }

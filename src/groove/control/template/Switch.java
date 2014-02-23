@@ -16,21 +16,19 @@
  */
 package groove.control.template;
 
+import groove.control.Attempt;
 import groove.control.Binding;
 import groove.control.Call;
+import groove.control.CallStack;
 import groove.control.Callable;
 import groove.control.CalledAction;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
-import groove.control.SoloAttempt;
-import groove.control.instance.CallStack;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.graph.ALabelEdge;
-import groove.graph.Edge;
-import groove.graph.EdgeRole;
+import groove.graph.ALabel;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -41,165 +39,88 @@ import java.util.Map;
 /**
  * Transition between control locations, bearing either a call or a verdict.
  * A switch can either be <i>base</i>, meaning that it is used as an edge in a template,
- * or <i>derived</i>, meaning that it is used as the {@link SoloAttempt} of a control 
+ * or <i>derived</i>, meaning that it is used as the {@link Attempt} of a control 
  * step between frames in an actual control automaton. Derived switches may have a 
  * caller switch.
  * Only base switches can be verdicts.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, CalledAction {
-    /** Constructs a base verdict switch.
-     * @param source source location of the switch
-     * @param target target location of the switch
-     * @param success flag indicating if this is a success or failure switch
-     */
-    public Switch(Location source, Location target, boolean success) {
-        super(source, target);
-        this.base = null;
-        this.caller = null;
-        this.onFinish = null;
-        this.onSuccess = null;
-        this.onFailure = null;
-        this.kind = Kind.VERDICT;
-        this.success = success;
-        this.call = null;
-    }
-
+public class Switch extends ALabel implements Attempt.Stage<Location,Switch>, CalledAction {
     /**
      * Constructs a base call switch.
      * @param source source location of the switch
-     * @param target target location of the switch
+     * @param onFinish target location of the switch
      * @param call call to be used as label
      */
-    public Switch(Location source, Location target, Call call) {
-        super(source, target);
-        this.base = null;
-        this.caller = null;
-        this.onFinish = null;
-        this.onSuccess = null;
-        this.onFailure = null;
+    public Switch(Location source, Location onFinish, Call call, int depth) {
+        assert source != null;
+        assert onFinish != null;
+        this.source = source;
+        this.onFinish = onFinish;
+        this.nested = null;
         this.kind = call.getUnit().getKind();
         this.call = call;
-        this.success = false;
+        this.depth = depth;
     }
 
-    /**
-     * Constructs a derived call switch used as a solo-attempt.
-     * @param base base switch from which this one is derived
-     * @param caller derived switch from which this one is called; possibly {@code null}
-     * @param onFinish next stage after the switch call has finished
-     * @param onSuccess alternate stage if the switch call succeeds
-     * @param onFailure alternate stage if the switch call fails
-     */
-    public Switch(Switch base, Switch caller, Stage onFinish, Stage onSuccess, Stage onFailure) {
-        super(base.source(), onFinish.getLocation());
-        assert base.isBase();
-        this.base = base;
-        assert caller == null || !caller.isBase();
-        this.caller = caller;
-        this.onFinish = onFinish;
-        this.onSuccess = onSuccess;
-        this.onFailure = onFailure;
-        this.kind = base.getKind();
-        this.call = base.getCall();
-        this.success = false;
+    /** Returns the source location of this switch. */
+    public Location getSource() {
+        return this.source;
     }
+
+    private final Location source;
 
     @Override
-    public Stage onFinish() {
-        assert !isBase() : "Base switch " + this + " should not be used as attempt";
+    public Location onFinish() {
         return this.onFinish;
     }
 
-    private final Stage onFinish;
+    private final Location onFinish;
 
-    @Override
-    public Stage onSuccess() {
-        assert !isBase() : "Base switch " + this + " should not be used as attempt";
-        return this.onSuccess;
-    }
-
-    private final Stage onSuccess;
-
-    @Override
-    public Stage onFailure() {
-        assert !isBase() : "Base switch " + this + " should not be used as attempt";
-        return this.onFailure;
-    }
-
-    private final Stage onFailure;
-
-    @Override
-    public boolean sameVerdict() {
-        return onFailure() == onSuccess();
-    }
-
-    /** Indicates that this is a base switch.
-     * It the switch is not base, it is <i>derived</i> and used as a {@link SoloAttempt}.
-     * @see #getBase()
+    /**
+     * Sets a nested switch called from this one.
      */
-    public boolean isBase() {
-        return getBase() == null;
+    public void setNested(Switch nested) {
+        this.nested = nested;
     }
-
-    /** If non-{@code null}, this switch is used as a {@link SoloAttempt}
-     * derived from the returned base switch. */
-    public Switch getBase() {
-        return this.base;
-    }
-
-    private final Switch base;
 
     /** 
-     * Indicates if this switch has a caller.
-     * Only valid if this is a derived switch.
-     * @see #isBase()
+     * Indicates if this switch has a nested (called) switch.
      */
-    public boolean hasCaller() {
-        return getCaller() != null;
+    public boolean hasNested() {
+        return getNested() != null;
     }
 
-    /** Returns the switch from which this one was called, if any.
-     * Only valid if this is a derived switch.
-     * @see #isBase()
+    /**
+     * Returns the switch called from this one, if any.
      */
-    public Switch getCaller() {
-        assert !isBase() : "Base switch " + this + " cannot have a caller";
-        return this.caller;
+    public Switch getNested() {
+        return this.nested;
     }
 
-    private final Switch caller;
+    private Switch nested;
 
     /** Returns the depth of the call stack of this switch (not including this switch).
-     * Only valid if this is a derived switch.
-     * @see #isBase()
      */
     public int getCallDepth() {
-        return getCallStack().size();
+        return getStack().size();
     }
 
     /** Returns the call stack of this switch.
-     * Only valid if this is a derived switch.
-     * @see #isBase()
      */
-    public CallStack getCallStack() {
-        assert !isBase() : "Base switch " + this + " cannot have a caller";
+    public SwitchStack getStack() {
         if (this.callStack == null) {
-            this.callStack = new CallStack(getCaller());
+            this.callStack = new SwitchStack(this);
         }
         return this.callStack;
     }
 
     /** List of callers, from bottom to top. */
-    private CallStack callStack;
+    private SwitchStack callStack;
 
-    /**
-     * Convenience method testing if this is a verdict switch.
-     * @see #getKind() 
-     */
-    public boolean isVerdict() {
-        return getKind() == Kind.VERDICT;
+    public CallStack getCallStack() {
+        return getStack().getCallStack();
     }
 
     /**
@@ -217,7 +138,6 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
      * Only valid if this is a call switch.
      */
     public String getName() {
-        assert !isVerdict();
         return getUnit().getFullName();
     }
 
@@ -227,7 +147,6 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
      * @return the list of arguments
      */
     public final List<? extends CtrlPar> getArgs() {
-        assert !isVerdict() : "" + this + " is not a call switch";
         return getCall().getArgs();
     }
 
@@ -237,15 +156,14 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
      * @see #getKind()
      */
     public final Callable getUnit() {
-        assert !isVerdict() : "" + this + " is not a call switch";
         return getCall().getUnit();
     }
 
-    /*
-     * Only valid if this is a call switch.
-     * @see #getKind()
+    /**
+     * Returns the rule or procedure call wrapped in this switch.
+     * The call is a procedure call if and only if the switch has a nested
+     * switch.
      */
-    @Override
     public final Call getCall() {
         assert getKind().isCallable() : "" + this + " is not a call switch";
         return this.call;
@@ -257,18 +175,16 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
      */
     private final Call call;
 
-    /**
-     * Indicates if this transition is a success switch.
-     * Should only be invoked if this is a verdict switch.
-     * @return {@code true} if this is a success switch, {@code false} if
-     * this is a failure switch.
-     */
-    public boolean isSuccess() {
-        assert isVerdict();
-        return this.success;
+    public Call getRuleCall() {
+        return getCallStack().peek();
     }
 
-    private final boolean success;
+    @Override
+    public int getDepth() {
+        return this.depth;
+    }
+
+    private final int depth;
 
     /** 
      * Returns pairs of input parameters of this call and corresponding
@@ -278,7 +194,7 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
     public List<Pair<Var,Binding>> getCallBinding() {
         assert getKind() == Kind.RULE;
         if (this.callBinding == null) {
-            this.callBinding = isBase() ? computeCallBinding() : getBase().getCallBinding();
+            this.callBinding = computeCallBinding();
         }
         return this.callBinding;
     }
@@ -297,7 +213,7 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
         List<? extends CtrlPar> args = getArgs();
         List<Var> sig = getUnit().getSignature();
         int size = args == null ? 0 : args.size();
-        Map<CtrlVar,Integer> sourceVars = source().getVarIxMap();
+        Map<CtrlVar,Integer> sourceVars = getSource().getVarIxMap();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = args.get(i);
             Binding bind;
@@ -337,12 +253,12 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
     @Override
     public Recipe getRecipe() {
         if (!this.recipeInit) {
-            Switch caller = getCaller();
+            Switch caller = getNested();
             while (caller != null) {
                 if (caller.getKind() == Kind.RECIPE) {
                     this.recipe = (Recipe) caller.getCall().getUnit();
                 }
-                caller = caller.getCaller();
+                caller = caller.getNested();
             }
             this.recipeInit = true;
         }
@@ -353,90 +269,54 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage>, 
     private boolean recipeInit;
 
     @Override
-    protected int computeLabelHash() {
+    protected int computeHashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + getSource().hashCode();
+        result = prime * result + onFinish().hashCode();
         result = prime * result + getKind().hashCode();
         // don't call isSuccess here to escape kind test
-        result = prime * result + (this.success ? 1231 : 1237);
         result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
-        result = prime * result + ((this.base == null) ? 0 : this.base.hashCode());
-        result = prime * result + ((this.onFinish == null) ? 0 : this.onFinish.hashCode());
-        result = prime * result + ((this.onSuccess == null) ? 0 : this.onSuccess.hashCode());
-        result = prime * result + ((this.onFailure == null) ? 0 : this.onFailure.hashCode());
-        result = prime * result + ((this.caller == null) ? 0 : this.caller.hashCode());
+        result = prime * result + ((this.nested == null) ? 0 : this.nested.hashCode());
         return result;
     }
 
     @Override
-    protected boolean isTypeEqual(Object obj) {
-        return obj instanceof Switch;
-    }
-
-    @Override
-    protected boolean isLabelEqual(Edge obj) {
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
+        }
+        if (!(obj instanceof Switch)) {
+            return false;
         }
         Switch other = (Switch) obj;
         if (getKind() != other.getKind()) {
             return false;
         }
-        if (isBase()) {
-            if (!other.isBase()) {
+        if (getNested() == null) {
+            if (other.getNested() != null) {
                 return false;
             }
         } else {
-            if (!getBase().equals(other.getBase())) {
-                return false;
-            }
-            if (getCaller() == null) {
-                if (other.getCaller() != null) {
-                    return false;
-                }
-            } else {
-                if (!getCaller().equals(other.getCaller())) {
-                    return false;
-                }
-            }
-            if (!onFinish().equals(other.onFinish())) {
-                return false;
-            }
-            if (!onSuccess().equals(other.onSuccess())) {
-                return false;
-            }
-            if (!onFailure().equals(other.onFailure())) {
+            if (!getNested().equals(other.getNested())) {
                 return false;
             }
         }
-        if (isVerdict()) {
-            if (isSuccess() != other.isSuccess()) {
-                return false;
-            }
-        } else {
-            if (!getCall().equals(other.getCall())) {
-                return false;
-            }
+        if (!onFinish().equals(other.onFinish())) {
+            return false;
+        }
+        if (!getCall().equals(other.getCall())) {
+            return false;
         }
         return true;
     }
 
     @Override
-    public EdgeRole getRole() {
-        return EdgeRole.BINARY;
-    }
-
-    @Override
     public String text() {
         String result;
-        if (getKind() == Kind.VERDICT) {
-            result = isSuccess() ? "succ" : "fail";
-        } else {
-            result = getName();
-            if (getArgs() != null) {
-                result += Groove.toString(getArgs().toArray(), "(", ")", ",");
-            }
-            return result;
+        result = getName();
+        if (getArgs() != null) {
+            result += Groove.toString(getArgs().toArray(), "(", ")", ",");
         }
         return result;
     }

@@ -19,13 +19,9 @@ package groove.control.template;
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
 import groove.control.Position;
-import groove.graph.ANode;
-import groove.util.Duo;
-import groove.util.Fixable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,12 +33,12 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Location extends ANode implements Position<Location>, Comparable<Location>, Fixable {
+public class Location implements Position<Location,Switch>, Comparable<Location> {
     /**
      * Constructs a numbered location for a given automaton.
      */
     public Location(Template template, int nr, int depth) {
-        super(nr);
+        this.nr = nr;
         this.template = template;
         this.depth = depth;
         this.switches = new LinkedHashSet<Switch>();
@@ -69,12 +65,19 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
 
     private final int depth;
 
+    /** Returns the number of this location within the template. */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** The number of the location within the template. */
+    private final int nr;
+
     /**
      * Sets the position type of this location.
      * Should only be called if the location is not yet fixed.
      */
     public void setType(Type type) {
-        assert !isFixed();
         assert this.type == null;
         assert type != null;
         this.type = type;
@@ -105,13 +108,11 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
     /**
      * Adds an outgoing edge to this location.
      * Should only be invoked if the location is not yet fixed.
-     * @param edge the edge to be added
+     * @param swit the edge to be added
      */
-    public void addSwitch(Switch edge) {
-        assert edge.isBase();
-        assert edge.source() == this;
-        assert !isFixed();
-        this.switches.add(edge);
+    public void addSwitch(Switch swit) {
+        assert swit.getSource() == this;
+        this.switches.add(swit);
     }
 
     /**
@@ -119,94 +120,30 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
      * Should only be invoked after the location is fixed.
      */
     public Set<Switch> getSwitches() {
-        assert isFixed();
         return this.switches;
     }
 
     /** The set of all outgoing edges. */
     private final Set<Switch> switches;
 
+    /** 
+     * Sets the attempt of this location.
+     */
+    public void setAttempt(SwitchAttempt attempt) {
+        this.attempt = attempt;
+    }
+
     /**
      * Returns the list of outgoing call edges of this location.
      * Should only be invoked after the location is fixed.
      */
     @Override
-    public MultiSwitch getAttempt() {
-        assert isFixed();
-        if (this.attempt == null) {
-            this.attempt = computeAttempt();
-        }
+    public SwitchAttempt getAttempt() {
         return this.attempt;
     }
 
-    private MultiSwitch computeAttempt() {
-        assert isFixed();
-        List<Switch> switches = new ArrayList<Switch>();
-        Location onSuccess = null;
-        Location onFailure = null;
-        for (Switch edge : getSwitches()) {
-            if (edge.isVerdict()) {
-                if (edge.isSuccess()) {
-                    onSuccess = edge.target();
-                } else {
-                    onFailure = edge.target();
-                }
-            } else {
-                switches.add(edge);
-            }
-        }
-        if (onSuccess == null) {
-            onSuccess = getTemplate().getDead(getDepth());
-        }
-        if (onFailure == null) {
-            onFailure = getTemplate().getDead(getDepth());
-        }
-        MultiSwitch result = new MultiSwitch(this, onSuccess, onFailure);
-        result.addAll(switches);
-        return result;
-    }
-
     /** The set of outgoing call edges. */
-    private MultiSwitch attempt;
-
-    /**
-     * Returns the first stage of this location, with no caller,
-     * stage number {@code 0} and success status {@code false}.
-     */
-    public Stage getFirstStage() {
-        return getFirstStage(null);
-    }
-
-    /**
-     * Returns the first stage of this location, with a given caller,
-     * stage number {@code 0} and success status {@code false}.
-     * @param caller procedure call switch from which the new stage is needed
-     */
-    public Stage getFirstStage(Switch caller) {
-        return getStage(caller, 0, false);
-    }
-
-    /**
-     * Returns a stage based on this location, with a given
-     * stage number and success status.
-     * @param caller procedure call switch from which the new stage is needed
-     */
-    public Stage getStage(Switch caller, int nr, boolean success) {
-        List<Duo<Stage>> stages = this.stageMap.get(caller);
-        if (stages == null) {
-            this.stageMap.put(caller, stages = new ArrayList<Duo<Stage>>());
-            int size = isTrial() ? getAttempt().size() : 1;
-            for (int i = 0; i < size; i++) {
-                Stage succIx = new Stage(this, caller, i, true);
-                Stage failIx = new Stage(this, caller, i, false);
-                stages.add(Duo.newDuo(succIx, failIx));
-            }
-        }
-        Duo<Stage> indexPair = stages.get(nr);
-        return success ? indexPair.one() : indexPair.two();
-    }
-
-    private final Map<Switch,List<Duo<Stage>>> stageMap = new HashMap<Switch,List<Duo<Stage>>>();
+    private SwitchAttempt attempt;
 
     /** Indicates if this location has a non-empty set of control variables. */
     public boolean hasVars() {
@@ -228,7 +165,6 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
      * Callback method from {@link Template#initVars()} to add variables to this location.
      */
     void addVars(Collection<CtrlVar> variables) {
-        assert isFixed();
         CtrlVarSet newVars = new CtrlVarSet(variables);
         if (this.vars != null) {
             newVars.addAll(this.vars);
@@ -240,7 +176,6 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
      * Callback method from {@link Template#initVars()} to set variables for this location.
      */
     void setVars(Collection<CtrlVar> variables) {
-        assert isFixed();
         this.vars = new ArrayList<CtrlVar>(variables);
     }
 
@@ -249,7 +184,6 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
 
     /** Returns a mapping from variables to their indices for this location. */
     public Map<CtrlVar,Integer> getVarIxMap() {
-        assert isFixed();
         if (this.varIxMap == null) {
             this.varIxMap = computeVarIxMap();
         }
@@ -293,35 +227,6 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         return result + (brackets ? ")" : "");
     }
 
-    @Override
-    protected String getToStringPrefix() {
-        return "c";
-    }
-
-    @Override
-    public boolean setFixed() {
-        assert this.type != null;
-        boolean result = !this.fixed;
-        this.fixed = true;
-        return result;
-    }
-
-    @Override
-    public boolean isFixed() {
-        return this.fixed;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format("Control state should %sbe fixed", fixed
-                    ? "" : "not "));
-        }
-    }
-
-    private boolean fixed;
-
-    @Override
     public int compareTo(Location o) {
         return getNumber() - o.getNumber();
     }
