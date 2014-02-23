@@ -88,4 +88,9 @@ public class OrTerm extends Term {
         }
         return result;
     }
+
+    @Override
+    protected boolean isAtomic() {
+        return arg0().isAtomic() && arg1().isAtomic();
+    }
 }

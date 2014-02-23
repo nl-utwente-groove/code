@@ -67,4 +67,19 @@ public class SeqTerm extends Term {
             return null;
         }
     }
+
+    @Override
+    protected boolean isAtomic() {
+        switch (arg0().getType()) {
+        case TRIAL:
+            return arg0().isAtomic() && arg1().isFinal();
+        case DEAD:
+            return true;
+        case FINAL:
+            return arg1().isAtomic();
+        default:
+            assert false;
+            return false;
+        }
+    }
 }

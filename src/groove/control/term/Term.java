@@ -206,6 +206,12 @@ abstract public class Term implements Position<Term,Derivation> {
 
     private Integer depth;
 
+    /**
+     * Indicates if the execution of this term is guaranteed to
+     * be atomic.
+     */
+    abstract protected boolean isAtomic();
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -369,10 +375,8 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Returns this term, wrapped into an atomic block. */
     public Term atom() {
-        if (isDead()) {
+        if (isAtomic()) {
             return this;
-        } else if (isFinal()) {
-            return epsilon();
         } else {
             AtomTerm result = new AtomTerm(this);
             return getPool().canonical(result);
@@ -442,6 +446,11 @@ abstract public class Term implements Position<Term,Derivation> {
             @Override
             protected Type computeType() {
                 throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean isAtomic() {
+                return false;
             }
         };
     }

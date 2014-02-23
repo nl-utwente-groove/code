@@ -78,4 +78,9 @@ public class WhileTerm extends Term {
     protected int computeDepth() {
         return 0;
     }
+
+    @Override
+    protected boolean isAtomic() {
+        return !isTrial();
+    }
 }

@@ -241,8 +241,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
                 layoutMap.putEdge(edge, jCell.getVisuals());
             }
         } else if (jCell instanceof JVertex) {
-            layoutMap.putNode(((JVertex<G>) jCell).getNode(),
-                jCell.getVisuals());
+            layoutMap.putNode(((JVertex<G>) jCell).getNode(), jCell.getVisuals());
         }
     }
 
@@ -311,11 +310,19 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /**
      * Returns whether or not equally named bidirectional edges should be
      * merged (i.e. mapped to the same GraphJEdge). Override in subclass to
-     * enable this behavior.
-     * @see AspectJModel
+     * enable this behaviour.
      */
     public boolean isMergeBidirectionalEdges() {
         return getJGraph().isShowBidirectionalEdges();
+    }
+
+    /**
+     * Returns whether all edges should be
+     * merged (i.e. mapped to the same GraphJEdge). Override in subclass to
+     * enable this behaviour.
+     */
+    public boolean isMergeAllEdges() {
+        return getJGraph().isShowArrowsOnLabels();
     }
 
     /**
@@ -368,10 +375,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             // put the edge at the end to make sure it goes to the back
             this.addedJCells.add(result);
             JVertex<G> targetJVertex = getJCellForNode(edge.target());
-            assert targetJVertex != null : "No vertex for target node of "
-                + edge;
-            this.connections.connect(result, sourceJVertex.getPort(),
-                targetJVertex.getPort());
+            assert targetJVertex != null : "No vertex for target node of " + edge;
+            this.connections.connect(result, sourceJVertex.getPort(), targetJVertex.getPort());
             addJEdge(sourceJVertex, jEdge);
             addJEdge(targetJVertex, jEdge);
         }
@@ -485,8 +490,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     protected void doInsert(boolean replace) {
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
-        createEdit(addedCells, removedCells, null, this.connections,
-            getParentMap(), null).execute();
+        createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null).execute();
         List<JEdge<G>> edges = new ArrayList<JEdge<G>>();
         for (Object jCell : addedCells) {
             if (jCell instanceof JEdge) {
@@ -550,8 +554,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /**
      * Map from graph nodes to JGraph cells.
      */
-    protected Map<Node,JVertex<G>> nodeJCellMap =
-        new HashMap<Node,JVertex<G>>();
+    protected Map<Node,JVertex<G>> nodeJCellMap = new HashMap<Node,JVertex<G>>();
     /**
      * Map from graph edges to JGraph cells.
      */

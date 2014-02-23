@@ -50,6 +50,11 @@ public class DeltaTerm extends Term {
     }
 
     @Override
+    protected boolean isAtomic() {
+        return true;
+    }
+
+    @Override
     public int hashCode() {
         int prime = 31;
         return prime * super.hashCode() + getDepth();

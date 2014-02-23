@@ -56,8 +56,7 @@ public class AtomTerm extends Term {
     }
 
     @Override
-    public Term atom() {
-        return this;
+    protected boolean isAtomic() {
+        return true;
     }
-
 }

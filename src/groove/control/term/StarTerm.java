@@ -53,4 +53,9 @@ public class StarTerm extends Term {
     protected Type computeType() {
         return arg0().isTrial() ? Type.TRIAL : Type.FINAL;
     }
+
+    @Override
+    protected boolean isAtomic() {
+        return !arg0().isTrial();
+    }
 }

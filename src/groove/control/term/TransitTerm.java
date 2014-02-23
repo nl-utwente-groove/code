@@ -57,4 +57,9 @@ public class TransitTerm extends Term {
     protected Type computeType() {
         return arg0().getType();
     }
+
+    @Override
+    protected boolean isAtomic() {
+        return arg0().isAtomic();
+    }
 }

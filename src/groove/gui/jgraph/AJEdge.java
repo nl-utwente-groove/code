@@ -141,8 +141,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
 
     @Override
     public String toString() {
-        return String.format("%s wrapping %s", getClass().getSimpleName(),
-            getEdges());
+        return String.format("%s wrapping %s", getClass().getSimpleName(), getEdges());
     }
 
     /**
@@ -172,16 +171,13 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         //        if (!isLayoutCompatible(edge)) {
         //            return false;
         //        }
-        if (edge.source() == getSourceNode()
-            && edge.target() == getTargetNode()
-            && !getLooks().contains(Look.BIDIRECTIONAL)) {
+        if (edge.source() == getSourceNode() && edge.target() == getTargetNode()
+            && (getJModel().isMergeAllEdges() || !getLooks().contains(Look.BIDIRECTIONAL))) {
             return true;
         }
-        if (edge.source() == getTargetNode()
-            && edge.target() == getSourceNode()) {
-            return getJModel().isMergeBidirectionalEdges()
-                && getEdges().size() == 1
-                && edge.label().equals(getEdge().label());
+        if (edge.source() == getTargetNode() && edge.target() == getSourceNode()) {
+            return getJModel().isMergeBidirectionalEdges() && getEdges().size() == 1
+                && edge.label().equals(getEdge().label()) || getJModel().isMergeAllEdges();
         }
         return false;
     }
@@ -244,9 +240,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         boolean regular = false;
         if (edge instanceof RuleEdge) {
             RuleLabel label = ((RuleEdge) edge).label();
-            regular =
-                label.isEmpty() || label.isNeg()
-                    && label.getNegOperand().isEmpty();
+            regular = label.isEmpty() || label.isNeg() && label.getNegOperand().isEmpty();
         }
         if (regular) {
             result = Direct.NONE;
@@ -331,8 +325,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
             result.append(" (unlabelled)");
         } else {
             result.append(", labelled ");
-            result.append(Groove.toString(displayedLabels, "", "", ", ",
-                " and "));
+            result.append(Groove.toString(displayedLabels, "", "", ", ", " and "));
         }
         return result.toString();
     }
