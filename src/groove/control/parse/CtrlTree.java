@@ -118,8 +118,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Recursively collects all call tokens with a given name. */
     private void collectCallTokens(List<Token> result, String name) {
-        if (getToken().getType() == CtrlLexer.CALL
-            && getToken().getText().equals(name)) {
+        if (getToken().getType() == CtrlLexer.CALL && getToken().getText().equals(name)) {
             result.add(getToken());
         }
         for (int i = 0; i < getChildCount(); i++) {
@@ -269,7 +268,9 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         CtrlTree functions = getChild(2);
         CtrlTree recipes = getChild(3);
         CtrlTree body = getChild(4);
-        if (body.getChildCount() > 0) {
+        if (body.getChildCount() == 0) {
+            result.setTerm(getInfo().getPrototype().delta());
+        } else {
             result.setTerm(body.toTerm());
         }
         for (int i = 0; i < functions.getChildCount(); i++) {
@@ -296,8 +297,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * @throws FormatException if there are static semantic errors in the declaration.
      */
     public Procedure toProcedure() throws FormatException {
-        assert getType() == CtrlParser.FUNCTION
-            || getType() == CtrlParser.RECIPE;
+        assert getType() == CtrlParser.FUNCTION || getType() == CtrlParser.RECIPE;
         // look up the package name
         String packName = getParent().getParent().toPackageName();
         String name = QualName.extend(packName, getChild(0).getText());
@@ -430,8 +430,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     }
 
     /** Parses a given term, using an existing name space. */
-    static public CtrlTree parse(Namespace namespace, String term)
-        throws FormatException {
+    static public CtrlTree parse(Namespace namespace, String term) throws FormatException {
         try {
             CtrlParser parser = createParser(namespace, term);
             CtrlTree result = (CtrlTree) parser.program().getTree();

@@ -26,11 +26,10 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.template.Location;
-import groove.control.template.SwitchAttempt;
 import groove.control.template.Program;
 import groove.control.template.Switch;
+import groove.control.template.SwitchAttempt;
 import groove.control.template.Template;
-import groove.control.template.TemplateBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -216,7 +215,7 @@ public class TemplateBuildTest extends CtrlTester {
         assertTrue(getNext(loc, this.bCall).isFinal());
         //
         build("function f() { (a|g); c; } function g() { (b|c); } (d|f);");
-        SwitchAttempt s = this.minimal.getStart().getAttempt();
+        SwitchAttempt s = this.template.getStart().getAttempt();
         assertEquals(4, s.size());
         assertTrue(s.sameVerdict());
         Switch s0 = s.get(0);
@@ -252,27 +251,24 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     private void assertSize(int locCount) {
-        Assert.assertEquals(locCount, this.minimal.getLocations().size());
+        Assert.assertEquals(locCount, this.template.getLocations().size());
     }
 
     private void buildFunction(String program, String procName) {
         Program prog = buildProgram(program);
-        builder.build(prog);
         this.template = prog.getProc(procName).getTemplate();
-        this.minimal = builder.normalise(this.template);
     }
 
     private void build(String program) {
-        this.template = builder.build(buildProgram(program));
-        this.minimal = builder.normalise(this.template);
+        this.template = buildProgram(program).getTemplate();
     }
 
     private Location getStart() {
-        return this.minimal.getStart();
+        return this.template.getStart();
     }
 
     private Location getInit(Call call) {
-        return getNext(this.minimal.getStart(), call);
+        return getNext(this.template.getStart(), call);
     }
 
     private Set<Location> getNexts(Location loc, Call call) {
@@ -308,6 +304,4 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     private Template template;
-    private Template minimal;
-    static private final TemplateBuilder builder = TemplateBuilder.instance();
 }

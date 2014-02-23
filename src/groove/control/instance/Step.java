@@ -101,12 +101,12 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     @Override
     public boolean isPartial() {
-        return getSwitch().isPartial();
+        return getCallStack().isPartial();
     }
 
     @Override
     public Recipe getRecipe() {
-        return getSwitch().getRecipe();
+        return getCallStack().getRecipe();
     }
 
     /** Convenience method to return called rule of this step. */
@@ -189,7 +189,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
      */
     private Assignment modify(Switch swit) {
         List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = swit.getSource().getVars();
+        List<CtrlVar> sourceVars = swit.getSourceVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
@@ -201,7 +201,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
                 rhs = Binding.var(pos);
             } else {
                 // the value is an output parameter of the rule
-                Rule rule = swit.getRule();
+                Rule rule = getCallStack().getRule();
                 rhs = rule.getParBinding(ix);
             }
             result.add(rhs);
@@ -217,7 +217,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     private Assignment enter(Switch swit) {
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = swit.getSource().getVars();
+        List<CtrlVar> sourceVars = swit.getSourceVars();
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
         for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
@@ -247,7 +247,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
-        Map<CtrlVar,Integer> callerVars = swit.getSource().getVarIxMap();
+        List<CtrlVar> callerVars = swit.getSourceVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         Map<CtrlVar,Integer> finalVars =
             ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
@@ -256,7 +256,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
             Binding rhs;
             if (ix == null) {
                 // the value comes from the caller
-                rhs = Binding.caller(callerVars.get(var));
+                rhs = Binding.caller(callerVars.indexOf(var));
             } else {
                 // the value comes from an output parameter of the call
                 // find the corresponding formal parameter

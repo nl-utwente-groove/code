@@ -139,7 +139,7 @@ public class RecipeTest {
             Automaton a = gg.getControl();
             a.explore();
             if (DEBUG) {
-                Viewer.showGraph(a.toGraph(), true);
+                Viewer.showGraph(a.toGraph(FULL_GRAPH), true);
             }
             runExploration(gg, strategyDescr);
             assertEquals(this.highLevelStateCount,
@@ -188,4 +188,5 @@ public class RecipeTest {
     }
 
     private final static boolean DEBUG = false;
+    private final static boolean FULL_GRAPH = false;
 }

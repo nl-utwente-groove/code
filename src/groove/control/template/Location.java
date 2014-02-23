@@ -111,7 +111,6 @@ public class Location implements Position<Location,Switch>, Comparable<Location>
      * @param swit the edge to be added
      */
     public void addSwitch(Switch swit) {
-        assert swit.getSource() == this;
         this.switches.add(swit);
     }
 

@@ -24,8 +24,6 @@ import groove.control.Valuator;
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
-import groove.control.template.Switch;
-import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
@@ -71,7 +69,7 @@ public class StepMatchCollector extends MatchCollector {
         // save matching time, to reuse added nodes, and to find confluent 
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
-        final boolean isDisabled = isDisabled(step.getSwitch());
+        final boolean isDisabled = isDisabled(step.getRuleCall());
         boolean isModifying = step.isModifying();
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
@@ -177,9 +175,8 @@ public class StepMatchCollector extends MatchCollector {
      * Indicates if matches of a given control call might have been disabled
      * since the parent state.
      */
-    private boolean isDisabled(Switch swit) {
-        assert swit.getUnit() instanceof Rule;
-        if (this.disabledRules == null || this.disabledRules.contains(swit.getRule())) {
+    private boolean isDisabled(Call call) {
+        if (this.disabledRules == null || this.disabledRules.contains(call.getRule())) {
             return true;
         }
         // since disabledRules != null, it is now certain that this is a NextState

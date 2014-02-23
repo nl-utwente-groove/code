@@ -117,8 +117,12 @@ public class Automaton {
         }
     }
 
-    /** Returns a control graph consisting of this automaton's frames and steps. */
-    public ControlGraph toGraph() {
-        return ControlGraph.newGraph(this.template.getName(), this.getStart());
+    /** Returns a control graph consisting of this automaton's frames and steps.
+     * @param full if {@code true}, the full control flow is generated;
+     * otherwise, verdict edges are omitted (and their sources and targets mapped
+     * to the same node).
+     */
+    public ControlGraph toGraph(boolean full) {
+        return ControlGraph.newGraph(this.template.getName(), this.getStart(), full);
     }
 }

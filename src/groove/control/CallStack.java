@@ -16,6 +16,9 @@
  */
 package groove.control;
 
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+
 import java.util.Stack;
 
 /**
@@ -27,13 +30,39 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CallStack extends Stack<Call> {
+public class CallStack extends Stack<Call> implements CalledAction {
     /**
      * Constructs an initially empty stack.
      */
     public CallStack() {
         // empty
     }
+
+    public Rule getRule() {
+        return peek().getRule();
+    }
+
+    public boolean isPartial() {
+        return getRecipe() != null;
+    }
+
+    public Recipe getRecipe() {
+        if (!this.recipeInit) {
+            for (Call call : this) {
+                if (call.getUnit() instanceof Recipe) {
+                    this.recipe = (Recipe) call.getUnit();
+                    break;
+                }
+            }
+            this.recipeInit = true;
+        }
+        return this.recipe;
+    }
+
+    /** The first recipe in the call stack, or {@code null} if there is none. */
+    private Recipe recipe;
+    /** Flag indicating if the value of {@link #recipe} has been initialised. */
+    private boolean recipeInit;
 
     @Override
     public String toString() {

@@ -195,7 +195,7 @@ public class Template {
      */
     void initVars() {
         // compute the map of incoming transitions
-        for (Location state : this.locations) {
+        for (Location state : getLocations()) {
             Set<CtrlVar> vars;
             if (state.isFinal() && hasOwner()) {
                 vars = getOwner().getOutPars().keySet();
@@ -226,6 +226,14 @@ public class Template {
             if (modified) {
                 loc.setVars(sourceVars);
                 todo.addAll(inMap.get(loc));
+            }
+        }
+        // initialise the source vars in the switches
+        for (Location loc : getLocations()) {
+            if (loc.isTrial()) {
+                for (Switch swit : loc.getAttempt()) {
+                    swit.setSourceVars(loc.getVars());
+                }
             }
         }
     }
@@ -303,8 +311,12 @@ public class Template {
         return getName() + ": " + getLocations();
     }
 
-    /** Returns a control graph built from the locations and switches of this template. */
-    public ControlGraph toGraph() {
-        return ControlGraph.newGraph(getName(), getStart());
+    /** Returns a control graph consisting of this automaton's locations and switches.
+     * @param full if {@code true}, the full control flow is generated;
+     * otherwise, verdict edges are omitted (and their sources and targets mapped
+     * to the same node).
+     */
+    public ControlGraph toGraph(boolean full) {
+        return ControlGraph.newGraph(getName(), getStart(), full);
     }
 }

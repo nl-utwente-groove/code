@@ -21,20 +21,16 @@ import groove.control.Binding;
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.Callable;
-import groove.control.CalledAction;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.grammar.Action;
-import groove.grammar.Recipe;
-import groove.grammar.Rule;
 import groove.graph.ALabel;
 import groove.util.Groove;
 import groove.util.Pair;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Transition between control locations, bearing either a call or a verdict.
@@ -46,17 +42,14 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabel implements Attempt.Stage<Location,Switch>, CalledAction {
+public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
     /**
      * Constructs a base call switch.
-     * @param source source location of the switch
      * @param onFinish target location of the switch
      * @param call call to be used as label
      */
-    public Switch(Location source, Location onFinish, Call call, int depth) {
-        assert source != null;
+    public Switch(Location onFinish, Call call, int depth) {
         assert onFinish != null;
-        this.source = source;
         this.onFinish = onFinish;
         this.nested = null;
         this.kind = call.getUnit().getKind();
@@ -64,12 +57,21 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch>, Ca
         this.depth = depth;
     }
 
-    /** Returns the source location of this switch. */
-    public Location getSource() {
-        return this.source;
+    /** Initialises the control variables of the source location of the switch. */
+    void setSourceVars(List<CtrlVar> sourceVars) {
+        this.sourceVars = sourceVars;
     }
 
-    private final Location source;
+    /** Returns the control variables in the source location of this switch. */
+    public List<CtrlVar> getSourceVars() {
+        if (this.sourceVars == null) {
+            onFinish().getTemplate().initVars();
+            assert this.sourceVars != null;
+        }
+        return this.sourceVars;
+    }
+
+    private List<CtrlVar> sourceVars;
 
     @Override
     public Location onFinish() {
@@ -213,15 +215,15 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch>, Ca
         List<? extends CtrlPar> args = getArgs();
         List<Var> sig = getUnit().getSignature();
         int size = args == null ? 0 : args.size();
-        Map<CtrlVar,Integer> sourceVars = getSource().getVarIxMap();
+        List<CtrlVar> sourceVars = getSourceVars();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = args.get(i);
             Binding bind;
             if (arg instanceof CtrlPar.Var) {
                 CtrlPar.Var varArg = (CtrlPar.Var) arg;
                 if (arg.isInOnly()) {
-                    Integer ix = sourceVars.get(varArg.getVar());
-                    assert ix != null;
+                    int ix = sourceVars.indexOf(varArg.getVar());
+                    assert ix >= 0;
                     bind = Binding.var(ix);
                 } else if (arg.isOutOnly()) {
                     bind = null;
@@ -241,41 +243,13 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch>, Ca
     }
 
     @Override
-    public Rule getRule() {
-        return (Rule) getUnit();
-    }
-
-    @Override
-    public boolean isPartial() {
-        return getRecipe() != null;
-    }
-
-    @Override
-    public Recipe getRecipe() {
-        if (!this.recipeInit) {
-            Switch caller = getNested();
-            while (caller != null) {
-                if (caller.getKind() == Kind.RECIPE) {
-                    this.recipe = (Recipe) caller.getCall().getUnit();
-                }
-                caller = caller.getNested();
-            }
-            this.recipeInit = true;
-        }
-        return this.recipe;
-    }
-
-    private Recipe recipe;
-    private boolean recipeInit;
-
-    @Override
     protected int computeHashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + getSource().hashCode();
+        result = prime * result + getSourceVars().hashCode();
         result = prime * result + onFinish().hashCode();
         result = prime * result + getKind().hashCode();
-        // don't call isSuccess here to escape kind test
+        result = prime * result + getDepth();
         result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
         result = prime * result + ((this.nested == null) ? 0 : this.nested.hashCode());
         return result;
@@ -291,6 +265,12 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch>, Ca
         }
         Switch other = (Switch) obj;
         if (getKind() != other.getKind()) {
+            return false;
+        }
+        if (getDepth() != other.getDepth()) {
+            return false;
+        }
+        if (!getSourceVars().equals(other.getSourceVars())) {
             return false;
         }
         if (getNested() == null) {

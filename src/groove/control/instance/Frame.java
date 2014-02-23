@@ -17,6 +17,7 @@
 package groove.control.instance;
 
 import groove.control.Call;
+import groove.control.CallStack;
 import groove.control.CtrlFrame;
 import groove.control.CtrlVar;
 import groove.control.Position;
@@ -56,7 +57,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         // assume that this is a prime frame;
         // if not, setPrime should be called afterwards
         this.primeFrame = this;
-        this.pastAttempts = new HashSet<Switch>();
+        this.pastAttempts = new HashSet<CallStack>();
     }
 
     /** Returns the containing control automaton. */
@@ -104,7 +105,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
      * @param prime the prime frame
      * @param pastAttempts the set of attempts since the prime
      */
-    private void setPrime(Frame prime, Set<Switch> pastAttempts) {
+    private void setPrime(Frame prime, Set<CallStack> pastAttempts) {
         assert !isFixed();
         assert this.primeFrame == this;
         this.primeFrame = prime;
@@ -127,18 +128,18 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
      * prime frame.
      */
     @Override
-    public Set<Switch> getPastAttempts() {
+    public Set<CallStack> getPastAttempts() {
         return this.pastAttempts;
     }
 
-    private Set<Switch> pastAttempts;
+    private Set<CallStack> pastAttempts;
 
     /** Returns the set of rule calls that have been tried since the prime frame. */
     public Set<Call> getPastCalls() {
         if (this.pastCalls == null) {
             Set<Call> result = this.pastCalls = new HashSet<Call>();
-            for (Switch attempt : getPastAttempts()) {
-                result.add(attempt.getCall());
+            for (CallStack attempt : getPastAttempts()) {
+                result.add(attempt.peek());
             }
         }
         return this.pastCalls;
@@ -186,10 +187,10 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     /** Computes the attempt of this frame. */
     private StepAttempt computeAttempt() {
         SwitchAttempt locAttempt = getLocation().getAttempt();
-        Set<Switch> pastAttempts = new HashSet<Switch>(getPastAttempts());
+        Set<CallStack> pastAttempts = new HashSet<CallStack>(getPastAttempts());
         List<Step> steps = new ArrayList<Step>();
         for (Switch swit : locAttempt) {
-            pastAttempts.add(swit);
+            pastAttempts.add(swit.getCallStack());
             SwitchStack callStack = new SwitchStack(getCallStack());
             callStack.addAll(swit.getStack());
             Switch topCall = callStack.pollLast();
@@ -241,7 +242,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
      * Constructs a frame for a given control location,
      * with the same prime frame and call stack as this frame. 
      */
-    private Frame newFrame(Location loc, Set<Switch> pastAttempts) {
+    private Frame newFrame(Location loc, Set<CallStack> pastAttempts) {
         Frame result = new Frame(getAut(), loc, getCallStack());
         result.setPrime(getPrime(), pastAttempts);
         return result.normalise();
@@ -308,8 +309,8 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
                 result += "\nPrime: " + getPrime().getIdString();
                 if (VERY_RICH_LABELS) {
                     result += "\nTried:";
-                    for (Switch tried : getPastAttempts()) {
-                        result += " " + tried.getCallStack().toString();
+                    for (CallStack tried : getPastAttempts()) {
+                        result += " " + tried.toString();
                     }
                 }
             }
@@ -329,7 +330,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
                 result.append(callerName);
                 result.append('.');
             }
-            result.append(swit.getSource().getNumber());
+            result.append(swit.onFinish().getNumber());
             callerName = swit.getCall().getUnit().getLastName();
         }
         if (callerName == null) {
