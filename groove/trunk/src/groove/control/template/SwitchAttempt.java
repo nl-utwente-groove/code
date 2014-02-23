@@ -14,19 +14,27 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
+
+import groove.control.Attempt;
 
 /**
- * Specialisation for single attempts of a control position.
- * An attempt wraps a call that is attempted, and a position that is
- * reached afterwards.
+ * Vector of switches in combination with the success and failure alternates.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface SoloAttempt<P extends Position<P>> extends Attempt<P> {
-    /** Returns the call that is attempted. */
-    public Call getCall();
+public class SwitchAttempt extends Attempt<Location,Switch> {
+    /** Constructs a switch attempt for a given source location. */
+    public SwitchAttempt(Location source, Location onSuccess, Location onFailure) {
+        this.source = source;
+        setSuccess(onSuccess);
+        setFailure(onFailure);
+    }
 
-    /** Returns the position after the call has completed. */
-    public P onFinish();
+    /** Returns the source location of this switch attempt. */
+    public Location source() {
+        return this.source;
+    }
+
+    private final Location source;
 }

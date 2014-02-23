@@ -43,9 +43,9 @@ public class CallTerm extends Term {
     private final Call call;
 
     @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
+    protected DerivationAttempt computeAttempt(boolean nested) {
         Derivation deriv = new Derivation(getCall(), epsilon());
-        MultiDerivation result;
+        DerivationAttempt result;
         if (nested && getCall().getUnit() instanceof Procedure) {
             Term inner = ((Procedure) getCall().getUnit()).getTerm();
             result = body(inner, deriv).getAttempt(nested);

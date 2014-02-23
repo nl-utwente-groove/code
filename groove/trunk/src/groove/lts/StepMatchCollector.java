@@ -91,7 +91,7 @@ public class StepMatchCollector extends MatchCollector {
                 }
             }
         }
-        if (isDisabled || isEnabled(step.getCall())) {
+        if (isDisabled || isEnabled(step.getRuleCall())) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
             RuleToHostMap boundMap = extractBinding(step);
@@ -117,8 +117,7 @@ public class StepMatchCollector extends MatchCollector {
                         return true;
                     }
                 };
-                ((Rule) step.getUnit()).traverseMatches(this.state.getGraph(), boundMap,
-                    eventCollector);
+                step.getRule().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
             }
         }
         if (DEBUG) {

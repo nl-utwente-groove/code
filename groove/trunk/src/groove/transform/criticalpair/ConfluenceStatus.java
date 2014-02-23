@@ -17,18 +17,33 @@
 package groove.transform.criticalpair;
 
 /**
+ * Value indicating what is known about the confluence of a critical pair.
  * @author Ruud Welling
  */
 public enum ConfluenceStatus {
     //the declaration order is important for the result of getWorstStatus
-    NOT_STICTLY_CONFLUENT, UNDECIDED, STRICTLY_CONFLUENT, UNTESTED;
+    /**
+     * The critical pair is not confluent.
+     */
+    NOT_STICTLY_CONFLUENT,
+    /**
+     * Analysis was interrupted because it was taking too long.
+     */
+    UNDECIDED,
+    /**
+     * The critical pair is strictly confluent.
+     */
+    STRICTLY_CONFLUENT,
+    /**
+     * Initial value, before any analysis is done.
+     */
+    UNTESTED;
 
     /**
      * Return the "worst" status of the two.
      * i.e. the lowest status in the declaration order of the ConfluenceStatus enum
      */
-    public static ConfluenceStatus getWorstStatus(ConfluenceStatus first,
-            ConfluenceStatus second) {
+    public static ConfluenceStatus getWorstStatus(ConfluenceStatus first, ConfluenceStatus second) {
         return first.compareTo(second) < 0 ? first : second;
     }
 }

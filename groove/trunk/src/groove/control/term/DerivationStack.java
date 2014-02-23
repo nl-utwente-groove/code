@@ -16,14 +16,16 @@
  */
 package groove.control.term;
 
-import java.util.ArrayList;
+import groove.control.CallStack;
+
+import java.util.ArrayDeque;
 
 /**
  * Stack of derivations; the bottom (first) element is the original caller.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DerivationStack extends ArrayList<Derivation> {
+public class DerivationStack extends ArrayDeque<Derivation> {
     /**
      * Constructs a stack of derivations, from a given bottom-level
      * derivation.
@@ -36,4 +38,17 @@ public class DerivationStack extends ArrayList<Derivation> {
             addAll(bottom.getNested().getStack());
         }
     }
+
+    /** Returns the call stack corresponding to this derivation stack. */
+    public CallStack getCallStack() {
+        if (this.callStack == null) {
+            this.callStack = new CallStack();
+            for (Derivation deriv : this) {
+                this.callStack.add(deriv.getCall());
+            }
+        }
+        return this.callStack;
+    }
+
+    private CallStack callStack;
 }

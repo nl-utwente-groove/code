@@ -125,7 +125,6 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         // look for the control program with the main loop
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         Program program = getLoader().buildProgram(controlNames);
-        program.setFixed();
         return new Automaton(program.getTemplate());
     }
 

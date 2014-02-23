@@ -32,7 +32,7 @@ public class EpsilonTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
+    protected DerivationAttempt computeAttempt(boolean nested) {
         return null;
     }
 

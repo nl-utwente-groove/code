@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.control.instance.Frame;
+import groove.control.instance.StepAttempt;
 import groove.control.instance.Step;
 
 import java.util.Collections;
@@ -115,7 +116,7 @@ public class FrameStateMatches extends StateMatches {
             if (somePresent || allAbsent) {
                 // yes, there is a present outgoing transition
                 // or all outgoing transitions are absent
-                Step step = frame.getAttempt();
+                StepAttempt step = frame.getAttempt();
                 frame = somePresent ? step.onSuccess() : step.onFailure();
                 getState().setFrame(frame);
                 this.outstanding = EMPTY_MATCH_SET;
@@ -127,11 +128,15 @@ public class FrameStateMatches extends StateMatches {
                 getState().setClosed(true);
             }
         } else if (!hasOutstanding()) {
-            Step step = frame.getAttempt();
-            // flag collecting if none of the transitions in this schedule
-            // have a transient target
+            StepAttempt step = frame.getAttempt();
+            // Collect the new matches
+            // Keep track of increases in transient depth
+            boolean depthIncreases = false;
             List<MatchResult> outstanding = new LinkedList<MatchResult>();
-            outstanding.addAll(getMatchCollector().computeMatches(step));
+            for (Step ct : step) {
+                outstanding.addAll(getMatchCollector().computeMatches(ct));
+                depthIncreases |= ct.onFinish().getDepth() > frame.getDepth();
+            }
             Frame nextFrame;
             if (outstanding.isEmpty()) {
                 // no transitions will be generated
@@ -139,7 +144,7 @@ public class FrameStateMatches extends StateMatches {
             } else if (step.sameVerdict()) {
                 // it does not matter whether a transition is generated or not
                 nextFrame = step.onSuccess();
-            } else if (step.onFinish().getDepth() <= frame.getDepth()) {
+            } else if (!depthIncreases) {
                 // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
                 // to a state that is present on the level of the frame

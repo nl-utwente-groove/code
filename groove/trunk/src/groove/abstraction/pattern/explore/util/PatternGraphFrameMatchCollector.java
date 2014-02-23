@@ -24,6 +24,7 @@ import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.control.CtrlStep;
 import groove.control.instance.Frame;
+import groove.control.instance.StepAttempt;
 import groove.control.instance.Step;
 
 import java.util.Collection;
@@ -86,7 +87,8 @@ public class PatternGraphFrameMatchCollector extends PatternGraphMatchSetCollect
         Frame frame = this.frame;
         this.state.setFrame(frame);
         if (frame.isTrial()) {
-            result = frame.getAttempt();
+            result = frame.getAttempt().get(0);
+            this.stepIx = 1;
             this.matchFound = false;
         } else {
             result = null;
@@ -99,17 +101,21 @@ public class PatternGraphFrameMatchCollector extends PatternGraphMatchSetCollect
         Step result;
         Frame frame = (Frame) this.state.getCurrentFrame();
         this.matchFound |= matchFound;
-        if (frame.isTrial()) {
-            Step step = frame.getAttempt();
+        if (!frame.isTrial()) {
+            result = null;
+        } else if (this.stepIx < frame.getAttempt().size()) {
+            result = frame.getAttempt().get(this.stepIx);
+            this.stepIx++;
+        } else {
+            StepAttempt step = frame.getAttempt();
             this.state.setFrame(frame = this.matchFound ? step.onSuccess() : step.onFailure());
             if (frame.isTrial()) {
-                result = frame.getAttempt();
+                result = frame.getAttempt().get(0);
+                this.stepIx = 1;
                 this.matchFound = false;
             } else {
                 result = null;
             }
-        } else {
-            result = null;
         }
         return result;
     }
@@ -125,4 +131,6 @@ public class PatternGraphFrameMatchCollector extends PatternGraphMatchSetCollect
     }
 
     private boolean matchFound;
+    /** Index of the last step within the current frame's attempt. */
+    private int stepIx;
 }

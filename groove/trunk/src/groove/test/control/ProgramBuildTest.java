@@ -162,17 +162,17 @@ public class ProgramBuildTest {
         Template f = this.prog.getProc("f").getTemplate();
         Location start = f.getStart();
         assertEquals(0, start.getDepth());
-        Location next = start.getAttempt().get(0).target();
+        Location next = start.getAttempt().get(0).onFinish();
         assertEquals(0, next.getDepth());
-        Location finish = next.getAttempt().get(0).target();
+        Location finish = next.getAttempt().get(0).onFinish();
         assertEquals(0, finish.getDepth());
         assertTrue(finish.isFinal());
         Template r = this.prog.getProc("r").getTemplate();
         start = r.getStart();
         assertEquals(0, start.getDepth());
-        next = start.getAttempt().get(0).target();
+        next = start.getAttempt().get(0).onFinish();
         assertEquals(1, next.getDepth());
-        finish = next.getAttempt().get(0).target();
+        finish = next.getAttempt().get(0).onFinish();
         assertEquals(0, finish.getDepth());
         assertTrue(finish.isFinal());
     }

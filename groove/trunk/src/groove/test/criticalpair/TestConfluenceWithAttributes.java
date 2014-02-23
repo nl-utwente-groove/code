@@ -33,8 +33,8 @@ import org.junit.Test;
 /**
  * @author Ruud Welling
  */
+@SuppressWarnings("javadoc")
 public class TestConfluenceWithAttributes {
-
     @Test
     public void testConfluenceWithAttributes_OneTwo() {
         String grammarStr = "junit/criticalpair/attributes/delete-one-two.gps/";

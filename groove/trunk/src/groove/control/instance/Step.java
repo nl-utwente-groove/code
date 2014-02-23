@@ -16,10 +16,11 @@
  */
 package groove.control.instance;
 
+import groove.control.Attempt;
 import groove.control.Binding;
 import groove.control.Binding.Source;
 import groove.control.Call;
-import groove.control.Callable;
+import groove.control.CallStack;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
@@ -27,14 +28,13 @@ import groove.control.CtrlStep;
 import groove.control.CtrlTransition;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
-import groove.control.SoloAttempt;
 import groove.control.template.Switch;
+import groove.control.template.SwitchStack;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.graph.AEdge;
-import groove.graph.Edge;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -43,59 +43,59 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, CtrlStep {
+public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     /**
      * Constructs a step from the given parameters.
      */
-    public Step(Frame source, Switch swit, Frame onFinish, Frame onSuccess, Frame onFailure) {
-        super(source, swit, onFinish);
-        assert onFinish.testNormal();
-        assert onSuccess.testNormal();
-        assert onFailure.testNormal();
-        this.onFailure = onFailure;
-        this.onSuccess = onSuccess;
+    public Step(Frame source, Switch swit, Frame onFinish) {
+        this.swit = swit;
+        this.onFinish = onFinish;
+        this.source = source;
     }
+
+    /** Returns the source frame of this step. */
+    public Frame getSource() {
+        return this.source;
+    }
+
+    private final Frame source;
+
+    public Frame target() {
+        return onFinish();
+    }
+
+    public Frame onFinish() {
+        return this.onFinish;
+    }
+
+    private final Frame onFinish;
 
     /** Convenience method to return the switch of this step. */
     public Switch getSwitch() {
-        return label();
+        return this.swit;
     }
 
-    @Override
-    public Call getCall() {
-        return label().getCall();
+    private final Switch swit;
+
+    public Call getRuleCall() {
+        return getSwitch().getRuleCall();
     }
 
-    @Override
-    public Frame onFinish() {
-        return target();
+    public int getDepth() {
+        return getSwitch().getDepth();
     }
-
-    @Override
-    public Frame onSuccess() {
-        return this.onSuccess;
-    }
-
-    @Override
-    public Frame onFailure() {
-        return this.onFailure;
-    }
-
-    @Override
-    public boolean sameVerdict() {
-        return onFailure() == onSuccess();
-    }
-
-    private final Frame onSuccess;
-    private final Frame onFailure;
 
     /** Returns the number of levels by which the call stack depth changes. */
     public int getCallDepth() {
-        return target().getCallStack().size() - source().getCallStack().size();
+        return onFinish().getCallStack().size() - getSource().getCallStack().size();
     }
 
     /** Convenience method to return the call stack of the switch of this step. */
-    public final CallStack getCallStack() {
+    public final SwitchStack getSwitchStack() {
+        return getSwitch().getStack();
+    }
+
+    public CallStack getCallStack() {
         return getSwitch().getCallStack();
     }
 
@@ -109,20 +109,15 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         return getSwitch().getRecipe();
     }
 
-    /** Convenience method to return called unit of this step. */
-    public final Callable getUnit() {
-        return getCall().getUnit();
-    }
-
     /** Convenience method to return called rule of this step. */
     @Override
     public final Rule getRule() {
-        return getCall().getRule();
+        return getRuleCall().getRule();
     }
 
     @Override
     public Map<CtrlVar,Integer> getOutVars() {
-        return getCall().getOutVars();
+        return getRuleCall().getOutVars();
     }
 
     /**
@@ -140,7 +135,7 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
 
     @Override
     public boolean isModifying() {
-        return source().getPrime() != target() || getCall().hasOutVars();
+        return getSource().getPrime() != target() || getRuleCall().hasOutVars();
     }
 
     /** Returns the push actions associated with this step. */
@@ -157,9 +152,10 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         List<Assignment> result = new ArrayList<Assignment>();
         // add pop actions for every successive call on the
         // stack of entered calls
-        for (int i = source().getCallStack().size(); i < getCallStack().size(); i++) {
-            Switch swit = getCallStack().get(i);
-            result.add(enter(swit));
+        Iterator<Switch> switchIter = getSwitchStack().iterator();
+        int count = getCallStack().size() - getSource().getCallStack().size();
+        for (int i = 0; i < count; i++) {
+            result.add(enter(switchIter.next()));
         }
         return result;
     }
@@ -178,9 +174,10 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         List<Assignment> result = computeFramePushes();
         result.add(modify(getSwitch()));
         // add pop actions for the calls that are finished
-        for (int i = getCallStack().size() - 1; i >= onFinish().getCallStack().size(); i--) {
-            Switch swit = getCallStack().get(i);
-            result.add(exit(swit));
+        Iterator<Switch> switchIter = getSwitchStack().descendingIterator();
+        int count = getCallStack().size() - onFinish().getCallStack().size();
+        for (int i = 0; i < count; i++) {
+            result.add(exit(switchIter.next()));
         }
         return result;
     }
@@ -192,9 +189,9 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
      */
     private Assignment modify(Switch swit) {
         List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = swit.source().getVars();
+        List<CtrlVar> sourceVars = swit.getSource().getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
-        for (CtrlVar var : swit.target().getVars()) {
+        for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
@@ -220,7 +217,7 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
     private Assignment enter(Switch swit) {
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = swit.source().getVars();
+        List<CtrlVar> sourceVars = swit.getSource().getVars();
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
         for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
@@ -250,11 +247,11 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
-        Map<CtrlVar,Integer> callerVars = swit.source().getVarIxMap();
+        Map<CtrlVar,Integer> callerVars = swit.getSource().getVarIxMap();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         Map<CtrlVar,Integer> finalVars =
             ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
-        for (CtrlVar var : swit.target().getVars()) {
+        for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
@@ -279,24 +276,25 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame>, Ctr
             return -1;
         }
         Step other = (Step) o;
-        return source().compareTo(other.source());
+        int result = getSource().getNumber() - other.getSource().getNumber();
+        if (result != 0) {
+            return result;
+        }
+        result = getSwitch().compareTo(other.getSwitch());
+        if (result != 0) {
+            return result;
+        }
+        result = onFinish().getNumber() - other.onFinish().getNumber();
+        return result;
     }
 
     @Override
-    protected int computeHashCode() {
+    public int hashCode() {
         return System.identityHashCode(this);
     }
 
     @Override
-    protected boolean isLabelEqual(Edge other) {
+    public boolean equals(Object other) {
         return this == other;
-    }
-
-    /** Constructs an artificial step reflecting a verdict of a base step. */
-    static Step newStep(Step base, boolean success) {
-        Frame source = base.source();
-        Frame target = success ? base.onSuccess() : base.onFailure();
-        Switch swit = new Switch(source.getLocation(), target.getLocation(), success);
-        return new Step(source, swit, target, base.onSuccess(), base.onFailure());
     }
 }

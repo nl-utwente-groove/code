@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
 import groove.control.Call;
 import groove.control.Callable;
 import groove.control.term.Derivation;
-import groove.control.term.MultiDerivation;
+import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -246,7 +246,7 @@ public class TermDerivationTest {
      */
     private void assertSuccFail(Term success, Term failure) {
         Assert.assertEquals(Collections.emptyList(), this.edges);
-        MultiDerivation attempt = source().getAttempt();
+        DerivationAttempt attempt = source().getAttempt();
         Assert.assertEquals(success == null ? attempt : attempt.onSuccess(), success);
         Assert.assertEquals(failure == null ? attempt : attempt.onFailure(), failure);
     }

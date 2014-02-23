@@ -30,13 +30,13 @@ public class AtomTerm extends Term {
     }
 
     @Override
-    protected MultiDerivation computeAttempt(boolean nested) {
-        MultiDerivation result = null;
+    protected DerivationAttempt computeAttempt(boolean nested) {
+        DerivationAttempt result = null;
         if (arg0().isTrial()) {
-            MultiDerivation ders = arg0().getAttempt(nested);
+            DerivationAttempt ders = arg0().getAttempt(nested);
             result = createAttempt();
             for (Derivation deriv : ders) {
-                result.add(deriv.newInstance(deriv.onFinish().transit()));
+                result.add(deriv.newInstance(deriv.onFinish().transit(), true));
             }
             result.setSuccess(ders.onSuccess().atom());
             result.setFailure(ders.onFailure().atom());

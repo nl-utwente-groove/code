@@ -31,8 +31,8 @@ import org.junit.Test;
 /**
  * @author Ruud Welling
  */
+@SuppressWarnings("javadoc")
 public class TestDeleteUseWithAttributes {
-
     @Test
     public void testAttributes() {
         String grammar = "junit/criticalpair/attributes.gps/";
@@ -53,18 +53,14 @@ public class TestDeleteUseWithAttributes {
         assertTrue(pairs.size() == 1);
         pairs = CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumber);
         assertTrue(pairs.size() == 1);
-        pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumberOne);
+        pairs = CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumberOne);
         assertTrue(pairs.size() == 1);
 
-        pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumber);
+        pairs = CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumber);
         assertTrue(pairs.size() == 1);
-        pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumberOne);
+        pairs = CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumberOne);
         assertTrue(pairs.size() == 1);
-        pairs =
-            CriticalPair.computeCriticalPairs(deleteNumber, deleteNumberOne);
+        pairs = CriticalPair.computeCriticalPairs(deleteNumber, deleteNumberOne);
         assertTrue(pairs.size() == 1);
 
     }
@@ -84,15 +80,12 @@ public class TestDeleteUseWithAttributes {
         Rule deleteNumber = getSimpleRule("deleteNumber", view);
         Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
 
-        Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber);
+        Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber);
         //Since constants and targets of operations are not included in the search for critical pairs
         //The only critical pair which we will find has the same match for both rules
         //therefore this critical pair is not considered a critical pair
         assertTrue(pairs.size() == 0);
-        pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber_2,
-                addOneToNumber_2);
+        pairs = CriticalPair.computeCriticalPairs(addOneToNumber_2, addOneToNumber_2);
         //Similar to the previous
         assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(deleteNumber, deleteNumber);
@@ -102,8 +95,7 @@ public class TestDeleteUseWithAttributes {
         assertTrue(pairs.size() == 0);
         //Again, similarly to the previous same rules with the same match is not a critical pair
         //therefore there are no critical pairs for the following rule
-        pairs =
-            CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberOne);
+        pairs = CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberOne);
         assertTrue(pairs.size() == 0);
 
     }
