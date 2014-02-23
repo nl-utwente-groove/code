@@ -73,7 +73,7 @@ public class AutomatonBuildTest {
         Automaton p = build();
         p.explore();
         if (DEBUG) {
-            Viewer.showGraph(p.toGraph(), true);
+            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
         Frame f = p.getStart();
         assertEquals(Position.Type.TRIAL, f.getType());
@@ -207,7 +207,7 @@ public class AutomatonBuildTest {
         p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
         p.explore();
         if (DEBUG) {
-            Viewer.showGraph(p.toGraph(), true);
+            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
     }
 
@@ -326,4 +326,5 @@ public class AutomatonBuildTest {
     private Program prog;
 
     private final static boolean DEBUG = true;
+    private final static boolean FULL_GRAPH = true;
 }

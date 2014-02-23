@@ -29,6 +29,8 @@ public class SwitchAttempt extends Attempt<Location,Switch> {
         this.source = source;
         setSuccess(onSuccess);
         setFailure(onFailure);
+        assert source.getTemplate() == onSuccess.getTemplate();
+        assert source.getTemplate().getLocations().contains(source);
     }
 
     /** Returns the source location of this switch attempt. */

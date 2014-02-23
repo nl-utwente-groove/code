@@ -73,9 +73,13 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
         return GraphRole.CTRL;
     }
 
-    /** Constructs a control graph from a given initial position. */
+    /** 
+     * Constructs the control graph from a given initial position. 
+     * @param full if {@code true}, the full control structure is generated;
+     * otherwise, only the call edges are shown
+     */
     public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(String name,
-            P init) {
+            P init, boolean full) {
         ControlGraph result = new ControlGraph(name);
         Map<P,ControlNode> nodeMap = new HashMap<P,ControlNode>();
         Queue<P> fresh = new LinkedList<P>();
@@ -85,14 +89,25 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
             ControlNode node = nodeMap.get(next);
             if (next.isTrial()) {
                 Attempt<P,A> attempt = next.getAttempt();
-                if (!attempt.onSuccess().isDead()) {
-                    ControlNode target = addNode(result, nodeMap, attempt.onSuccess(), fresh);
-                    node.addVerdictEdge(target, true);
-                    fresh.add(attempt.onSuccess());
+                P onSuccess = attempt.onSuccess();
+                if (!onSuccess.isDead()) {
+                    if (full) {
+                        ControlNode target = addNode(result, nodeMap, onSuccess, fresh);
+                        node.addVerdictEdge(target, true);
+                    } else {
+                        nodeMap.put(onSuccess, node);
+                        fresh.add(onSuccess);
+                    }
                 }
-                if (!attempt.onFailure().isDead()) {
-                    ControlNode target = addNode(result, nodeMap, attempt.onFailure(), fresh);
-                    node.addVerdictEdge(target, false);
+                P onFailure = attempt.onFailure();
+                if (!onFailure.isDead()) {
+                    if (full) {
+                        ControlNode target = addNode(result, nodeMap, onFailure, fresh);
+                        node.addVerdictEdge(target, false);
+                    } else {
+                        nodeMap.put(onFailure, node);
+                        fresh.add(onFailure);
+                    }
                 }
                 for (A out : attempt) {
                     addEdge(result, nodeMap, node, out, fresh);

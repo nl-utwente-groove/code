@@ -17,7 +17,6 @@
 package groove.test.control;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.control.Call;
@@ -97,7 +96,7 @@ public class ProgramBuildTest {
     @Test
     public void testRecursion() {
         Program p = build("recurse", "function f() { a; r; } function r() { if (b) f; }");
-        assertNull(p.getTerm());
+        assertEquals(prot.delta(), p.getTerm());
         assertEquals(2, p.getProcs().size());
         Procedure fProc = p.getProc("f");
         Term fTerm = fProc.getTerm();
@@ -200,6 +199,7 @@ public class ProgramBuildTest {
         try {
             result = Groove.loadGrammar(CONTROL_DIR + name).toGrammar();
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.toString());
         }
         return result;

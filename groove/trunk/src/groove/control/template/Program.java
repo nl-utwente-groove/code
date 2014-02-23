@@ -83,11 +83,11 @@ public class Program implements Fixable {
     }
 
     /**
-     * Indicates if the program has a main body.
+     * Indicates if the program has a non-trivial main body.
      * Should only be invoked after the program is fixed.
      */
     public boolean hasBody() {
-        return getTerm() != null;
+        return getTerm() != null && !getTerm().isDead();
     }
 
     /** Returns the main block of this program, if any.
@@ -146,10 +146,11 @@ public class Program implements Fixable {
     public void add(Program other) {
         assert !isFixed();
         this.names.addAll(other.names);
-        if (this.term != null && other.hasBody()) {
-            throw new IllegalArgumentException("Both programs have a main template");
-        }
-        if (this.term == null) {
+        if (hasBody()) {
+            if (other.hasBody()) {
+                throw new IllegalArgumentException("Both programs have a main template");
+            }
+        } else {
             this.term = other.term;
         }
         for (Procedure proc : other.procs.values()) {
@@ -161,9 +162,6 @@ public class Program implements Fixable {
      * @throws IllegalStateException if there is an unresolved call 
      */
     public void checkCalls() throws IllegalStateException {
-        if (hasBody()) {
-            checkCalls(getTemplate());
-        }
         for (Procedure proc : getProcs().values()) {
             checkCalls(proc.getTemplate());
         }
