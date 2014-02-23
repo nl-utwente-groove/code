@@ -74,4 +74,9 @@ public class UntilTerm extends Term {
             return null;
         }
     }
+
+    @Override
+    protected boolean isAtomic() {
+        return !isTrial();
+    }
 }

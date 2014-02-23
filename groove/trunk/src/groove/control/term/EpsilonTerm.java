@@ -47,6 +47,11 @@ public class EpsilonTerm extends Term {
     }
 
     @Override
+    protected boolean isAtomic() {
+        return true;
+    }
+
+    @Override
     public Term seq(Term arg1) {
         return arg1;
     }

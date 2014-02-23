@@ -31,6 +31,8 @@ public class BodyTerm extends Term {
         this.caller = caller;
     }
 
+    private final Derivation caller;
+
     @Override
     protected Type computeType() {
         return arg0().getType();
@@ -53,5 +55,8 @@ public class BodyTerm extends Term {
         return arg0().getDepth();
     }
 
-    private final Derivation caller;
+    @Override
+    protected boolean isAtomic() {
+        return arg0().isAtomic();
+    }
 }

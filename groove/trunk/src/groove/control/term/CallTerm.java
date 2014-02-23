@@ -88,12 +88,7 @@ public class CallTerm extends Term {
     }
 
     @Override
-    public Term atom() {
-        if (this.call.getUnit().getKind().isAction()) {
-            // actions are executed atomically anyway
-            return this;
-        } else {
-            return super.atom();
-        }
+    protected boolean isAtomic() {
+        return this.call.getUnit().getKind().isAction();
     }
 }

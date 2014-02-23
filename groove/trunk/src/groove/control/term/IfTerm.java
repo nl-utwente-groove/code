@@ -91,4 +91,24 @@ public class IfTerm extends Term {
         }
         return result;
     }
+
+    @Override
+    protected boolean isAtomic() {
+        boolean result;
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().isAtomic() && arg0().isFinal();
+            break;
+        case FINAL:
+            result = arg0().isAtomic() && arg1().isAtomic();
+            break;
+        case DEAD:
+            result = arg2().isAtomic();
+            break;
+        default:
+            assert false;
+            result = false;
+        }
+        return result;
+    }
 }
