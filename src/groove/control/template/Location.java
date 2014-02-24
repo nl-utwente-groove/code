@@ -23,10 +23,8 @@ import groove.control.Position;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Location in a control template.
@@ -41,7 +39,6 @@ public class Location implements Position<Location,Switch>, Comparable<Location>
         this.nr = nr;
         this.template = template;
         this.depth = depth;
-        this.switches = new LinkedHashSet<Switch>();
     }
 
     /**
@@ -104,26 +101,6 @@ public class Location implements Position<Location,Switch>, Comparable<Location>
     public boolean isTrial() {
         return getType() == Type.TRIAL;
     }
-
-    /**
-     * Adds an outgoing edge to this location.
-     * Should only be invoked if the location is not yet fixed.
-     * @param swit the edge to be added
-     */
-    public void addSwitch(Switch swit) {
-        this.switches.add(swit);
-    }
-
-    /**
-     * Returns the list of all outgoing edges of this location.
-     * Should only be invoked after the location is fixed.
-     */
-    public Set<Switch> getSwitches() {
-        return this.switches;
-    }
-
-    /** The set of all outgoing edges. */
-    private final Set<Switch> switches;
 
     /** 
      * Sets the attempt of this location.
