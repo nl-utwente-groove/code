@@ -34,7 +34,6 @@ import groove.grammar.Recipe;
 import groove.grammar.Rule;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -92,11 +91,17 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     /** Convenience method to return the call stack of the switch of this step. */
     public final SwitchStack getSwitchStack() {
-        return getSwitch().getStack();
+        if (this.switchStack == null) {
+            this.switchStack = new SwitchStack(getSource().getCallStack());
+            this.switchStack.addAll(getSwitch().getStack());
+        }
+        return this.switchStack;
     }
 
+    private SwitchStack switchStack;
+
     public CallStack getCallStack() {
-        return getSwitch().getCallStack();
+        return getSwitchStack().getCallStack();
     }
 
     @Override
@@ -135,7 +140,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     @Override
     public boolean isModifying() {
-        return getSource().getPrime() != target() || getRuleCall().hasOutVars();
+        return getSource().getPrime() != onFinish() || getRuleCall().hasOutVars();
     }
 
     /** Returns the push actions associated with this step. */
@@ -152,10 +157,8 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         List<Assignment> result = new ArrayList<Assignment>();
         // add pop actions for every successive call on the
         // stack of entered calls
-        Iterator<Switch> switchIter = getSwitchStack().iterator();
-        int count = getCallStack().size() - getSource().getCallStack().size();
-        for (int i = 0; i < count; i++) {
-            result.add(enter(switchIter.next()));
+        for (int i = getSource().getCallStack().size(); i < getSwitchStack().size() - 1; i++) {
+            result.add(enter(getSwitchStack().get(i)));
         }
         return result;
     }
@@ -172,12 +175,10 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     private List<Assignment> computeFrameChanges() {
         List<Assignment> result = computeFramePushes();
-        result.add(modify(getSwitch()));
+        result.add(modify(getSwitchStack().peek()));
         // add pop actions for the calls that are finished
-        Iterator<Switch> switchIter = getSwitchStack().descendingIterator();
-        int count = getCallStack().size() - onFinish().getCallStack().size();
-        for (int i = 0; i < count; i++) {
-            result.add(exit(switchIter.next()));
+        for (int i = getSwitchStack().size() - 2; i >= onFinish().getCallStack().size(); i--) {
+            result.add(exit(getSwitchStack().get(i)));
         }
         return result;
     }

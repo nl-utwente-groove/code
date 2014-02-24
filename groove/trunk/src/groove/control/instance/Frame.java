@@ -49,7 +49,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         callStack = new SwitchStack(callStack);
         // pop the call stack until we have a non-final location or empty stack
         while (loc.isFinal() && !callStack.isEmpty()) {
-            loc = callStack.pollLast().onFinish();
+            loc = callStack.pop().onFinish();
         }
         this.callStack = callStack;
         this.location = loc;
@@ -193,7 +193,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
             pastAttempts.add(swit.getCallStack());
             SwitchStack callStack = new SwitchStack(getCallStack());
             callStack.addAll(swit.getStack());
-            Switch topCall = callStack.pollLast();
+            Switch topCall = callStack.pop();
             Frame onFinish = new Frame(getAut(), topCall.onFinish(), callStack);
             steps.add(new Step(this, swit, onFinish.normalise()));
         }

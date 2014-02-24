@@ -201,8 +201,8 @@ public class Template {
                 vars = getOwner().getOutPars().keySet();
             } else if (state.isTrial()) {
                 vars = new HashSet<CtrlVar>();
-                for (Switch n : state.getAttempt()) {
-                    vars.addAll(n.getCall().getInVars().keySet());
+                for (Switch s : state.getAttempt()) {
+                    vars.addAll(s.getCall().getInVars().keySet());
                 }
             } else {
                 vars = Collections.emptySet();
@@ -221,7 +221,9 @@ public class Template {
             boolean modified = sourceVars.addAll(attempt.onSuccess().getVars());
             modified |= sourceVars.addAll(attempt.onFailure().getVars());
             for (Switch swit : attempt) {
-                modified |= sourceVars.addAll(swit.onFinish().getVars());
+                CtrlVarSet targetVars = new CtrlVarSet(swit.onFinish().getVars());
+                targetVars.removeAll(swit.getCall().getOutVars().keySet());
+                modified |= sourceVars.addAll(targetVars);
             }
             if (modified) {
                 loc.setVars(sourceVars);

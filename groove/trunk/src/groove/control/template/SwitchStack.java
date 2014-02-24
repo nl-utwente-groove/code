@@ -18,15 +18,15 @@ package groove.control.template;
 
 import groove.control.CallStack;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Stack;
 
 /**
  * Stack of switches, corresponding to nested procedure calls.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SwitchStack extends ArrayDeque<Switch> {
+public class SwitchStack extends Stack<Switch> {
     /**
      * Constructs the stack consisting of a given (bottom) switch
      * and its recursively nested switches.
@@ -41,7 +41,7 @@ public class SwitchStack extends ArrayDeque<Switch> {
 
     /** Constructs a copy of a given stack. */
     public SwitchStack(SwitchStack other) {
-        super(other);
+        addAll(other);
     }
 
     /** Constructs an initially empty stack. */
