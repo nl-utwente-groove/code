@@ -5,6 +5,7 @@ import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.Timer;
+import groove.io.conceptual.Triple;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
@@ -30,7 +31,6 @@ import groove.io.conceptual.value.RealValue;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
-import groove.io.ecore2groove.Triple;
 import groove.io.external.PortException;
 
 import java.util.Collection;

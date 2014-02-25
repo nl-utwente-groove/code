@@ -15,7 +15,7 @@
  * $Id$
  */
 
-package groove.io.ecore2groove;
+package groove.io.conceptual;
 
 /**
  * Class to represent a Triple of elements, used to compare instances of 
