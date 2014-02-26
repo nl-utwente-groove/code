@@ -57,15 +57,14 @@ public class Version {
 
     /** Tests if a given string represents a known GXL file format. */
     static public boolean isKnownGxlVersion(String version) {
-        return version == null || version.isEmpty()
-            || GXL_VERSION.equals(version);
+        return version == null || version.isEmpty() || GXL_VERSION.equals(version);
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20131210";
+    public static final String BUILD = "20140226";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "10.12.2013";
+    public static final String DATE = "26.02.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -76,7 +75,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "4.9.2+";
+    public static final String NUMBER = "4.9.3+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
