@@ -191,19 +191,19 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports data on the LTS generated. */
     private void reportLTS() {
-        int openTransientStateCount = this.statisticsListener.getOpenTransientStateCount();
-        int closedTransientStateCount = this.statisticsListener.getClosedTransientStateCount();
+        int openRecipeStageCount = this.statisticsListener.getOpenRecipeStageCount();
+        int closedRecipeStageCount = this.statisticsListener.getClosedRecipeStageCount();
         int realStateCount =
-            getGTS().nodeCount() - openTransientStateCount - closedTransientStateCount;
+            getGTS().nodeCount() - openRecipeStageCount - closedRecipeStageCount;
         String formatString = "%-14s%d%n";
         emit(MEDIUM, "%n");
         emit(MEDIUM, formatString, "States:", realStateCount);
-        int openRealStateCount = getGTS().openStateCount() - openTransientStateCount;
+        int openRealStateCount = getGTS().openStateCount() - openRecipeStageCount;
         if (openRealStateCount > 0) {
             emit(MEDIUM, formatString, "Explored:", (realStateCount - openRealStateCount));
         }
-        int partialTransitionCount = this.statisticsListener.getPartialTransitionCount();
-        int realTransitionCount = getGTS().edgeCount() - partialTransitionCount;
+        int recipeStepCount = this.statisticsListener.getRecipeStepCount();
+        int realTransitionCount = getGTS().edgeCount() - recipeStepCount;
         emit(MEDIUM, formatString, "Transitions:", realTransitionCount);
     }
 
@@ -375,11 +375,11 @@ public class StatisticsReporter extends AExplorationReporter {
         public void addUpdate(GTS gts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
-            if (state.isTransient()) {
+            if (state.isRecipeStage()) {
                 if (state.isClosed()) {
-                    this.closedTransientStateCount++;
+                    this.closedRecipeStageCount++;
                 } else {
-                    this.openTransientStateCount++;
+                    this.openRecipeStageCount++;
                 }
             }
         }
@@ -387,7 +387,7 @@ public class StatisticsReporter extends AExplorationReporter {
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
             if (transition.isPartial()) {
-                this.partialTransitionCount++;
+                this.recipeStepCount++;
             }
         }
 
@@ -395,10 +395,10 @@ public class StatisticsReporter extends AExplorationReporter {
         public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
             if (flag == Flag.CLOSED) {
                 if (explored.getPrimeFrame().isTransient()) {
-                    this.openTransientStateCount--;
+                    this.openRecipeStageCount--;
                 }
-                if (explored.isTransient()) {
-                    this.closedTransientStateCount++;
+                if (explored.isRecipeStage()) {
+                    this.closedRecipeStageCount++;
                 }
             }
         }
@@ -413,25 +413,25 @@ public class StatisticsReporter extends AExplorationReporter {
             return this.edgeCount;
         }
 
-        /** Returns the number of closed transient states in the GTS. */
-        public int getClosedTransientStateCount() {
-            return this.closedTransientStateCount;
+        /** Returns the number of closed recipe stages in the GTS. */
+        public int getClosedRecipeStageCount() {
+            return this.closedRecipeStageCount;
         }
 
-        /** Returns the number of open transient states in the GTS. */
-        public int getOpenTransientStateCount() {
-            return this.openTransientStateCount;
+        /** Returns the number of open recipe stages in the GTS. */
+        public int getOpenRecipeStageCount() {
+            return this.openRecipeStageCount;
         }
 
-        /** Returns the number of partial transitions in the GTS. */
-        public int getPartialTransitionCount() {
-            return this.partialTransitionCount;
+        /** Returns the number of recipe steps in the GTS. */
+        public int getRecipeStepCount() {
+            return this.recipeStepCount;
         }
 
         private int nodeCount;
         private int edgeCount;
-        private int closedTransientStateCount;
-        private int openTransientStateCount;
-        private int partialTransitionCount;
+        private int closedRecipeStageCount;
+        private int openRecipeStageCount;
+        private int recipeStepCount;
     }
 }

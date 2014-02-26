@@ -325,7 +325,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public boolean isPartial() {
-        return getRecipe() != null;
+        return getStep().isPartial();
+    }
+
+    @Override
+    public boolean isRecipeStep() {
+        return getStep().isRecipeStep();
     }
 
     @Override

@@ -134,10 +134,10 @@ recipe
   * @B Functions currently can have no parameters. 
   */
 function
-  : //@S FUNCTION name par_list (PRIORITY int)? block
+  : //@S FUNCTION name par_list block
     //@B Declares the function %s, with parameters %s and body %3$s.
     //@B The optional priority %3$s assigns preference in a choice.
-    FUNCTION^ ID par_list (PRIORITY! INT_LIT)? block
+    FUNCTION^ ID par_list block
     { helper.declareCtrlUnit($FUNCTION.tree); }
   ;
 

@@ -35,7 +35,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
         if (state != null) {
             setLook(Look.OPEN, !state.isClosed());
             setLook(Look.ABSENT, state.isAbsent());
-            setLook(Look.TRANSIENT, state.isTransient());
+            setLook(Look.RECIPE, state.isRecipeStage());
             setLook(Look.FINAL, state.getGTS().isFinal(state));
             setLook(Look.RESULT, state.getGTS().isResult(state));
         }
@@ -88,17 +88,17 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     /**
-     * @return true if the state is closed.
+     * Returns {@code true} if the state is closed.
      */
     public boolean isClosed() {
         return getNode().isClosed();
     }
 
     /**
-     * @return true if the state is transient.
+     * Returns {@code true} if the state is a sub-stage.
      */
-    public boolean isTransient() {
-        return getNode().isTransient();
+    public boolean isSubStage() {
+        return getNode().isRecipeStage();
     }
 
     /**

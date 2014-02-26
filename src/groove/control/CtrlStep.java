@@ -36,6 +36,9 @@ public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
      */
     boolean isModifying();
 
+    /** Indicates if this step is part of an atomic block. */
+    boolean isPartial();
+
     /** Method returning supertype of {@link CtrlState} and {@link Frame}. */
     public CtrlFrame target();
 

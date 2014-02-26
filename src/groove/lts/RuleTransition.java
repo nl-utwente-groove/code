@@ -104,10 +104,6 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     @Override
     public RuleTransitionStub toStub();
 
-    /** Indicates if this rule transition is part of a recipe transition. */
-    @Override
-    public boolean isPartial();
-
     /** Returns the (optional) recipe that this rule transition is part of. */
     public Recipe getRecipe();
 }

@@ -385,7 +385,7 @@ public class CtrlHelper {
 
     CtrlPar checkDontCareArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
-        CtrlPar result = new CtrlPar.Wild();
+        CtrlPar result = CtrlPar.wild();
         argTree.setCtrlPar(result);
         return result;
     }
@@ -484,7 +484,7 @@ public class CtrlHelper {
             if (args == null) {
                 result = true;
                 for (int i = 0; result && i < sig.size(); i++) {
-                    result = sig.get(i).compatibleWith(new CtrlPar.Wild());
+                    result = sig.get(i).compatibleWith(CtrlPar.wild());
                 }
                 if (!result) {
                     String message = "%s %s%s not applicable without arguments";

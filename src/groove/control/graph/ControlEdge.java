@@ -74,6 +74,7 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     /** Call wrapped in this edge, if this is a call edge. */
     private final CallStack callStack;
 
+    @Override
     public String text() {
         if (isVerdict()) {
             return isSuccess() ? "succ" : "fail";

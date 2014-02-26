@@ -300,6 +300,8 @@ abstract public class Term implements Position<Term,Derivation> {
             return elsePart;
         } else if (isFinal()) {
             return thenPart.or(alsoPart);
+        } else if (alsoPart.isDead() && elsePart.isDead()) {
+            return seq(thenPart);
         } else {
             Term result = new IfTerm(this, thenPart, alsoPart, elsePart);
             return getPool().canonical(result);

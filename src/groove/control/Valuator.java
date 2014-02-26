@@ -117,8 +117,8 @@ public class Valuator {
     /** 
      * Computes the hash code of a valuation, given a modifier map
      * from host nodes to representative objects from which the hash code is to be taken.
-     * The modifier may be {@code null}, in which case the host nodes are their own
-     * representatives.
+     * The modifier may be {@code null}, in which case only the length of the
+     * valuation is used.
      */
     static public int hashCode(Object[] val, Map<? extends Element,?> modifier) {
         int prime = 31;

@@ -1,6 +1,7 @@
 package groove.control.parse;
 
 import groove.control.Call;
+import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
@@ -15,7 +16,10 @@ import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.RecognitionException;
@@ -232,22 +236,42 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             break;
         case CtrlParser.ANY:
             result = prot.delta();
+            SortedMap<Integer,List<String>> prioMap = new TreeMap<Integer,List<String>>();
             for (String name : getInfo().getTopNames()) {
-                Call part = new Call(getInfo().getCallable(name));
-                result = result.or(prot.call(part));
+                Callable unit = getInfo().getCallable(name);
+                List<String> names = prioMap.get(unit.getPriority());
+                if (names == null) {
+                    prioMap.put(unit.getPriority(), names = new ArrayList<String>());
+                }
+                names.add(name);
+            }
+            result = prot.delta();
+            for (List<String> names : prioMap.values()) {
+                result = or(names).tryElse(result);
             }
             break;
         case CtrlParser.OTHER:
             result = prot.delta();
+            List<String> names = new ArrayList<String>();
             for (String name : getInfo().getTopNames()) {
                 if (!getInfo().getUsedNames().contains(name)) {
-                    Call part = new Call(getInfo().getCallable(name));
-                    result = result.or(prot.call(part));
+                    names.add(name);
                 }
             }
+            result = or(names);
             break;
         default:
             assert false;
+        }
+        return result;
+    }
+
+    private Term or(Collection<String> names) {
+        Term prot = getInfo().getPrototype();
+        Term result = prot.delta();
+        for (String name : names) {
+            Call part = new Call(getInfo().getCallable(name));
+            result = result.or(prot.call(part));
         }
         return result;
     }

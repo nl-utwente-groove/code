@@ -112,6 +112,11 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     }
 
     @Override
+    public boolean isRecipeStage() {
+        return isTransient();
+    }
+
+    @Override
     public boolean isDead() {
         throw new UnsupportedOperationException();
     }
@@ -126,10 +131,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         throw new UnsupportedOperationException();
     }
 
-    /** 
-     * Returns the (optional) name of a recipe of which this
-     * is a transient state. 
-     */
+    @Override
     public Recipe getRecipe() {
         return this.recipe;
     }

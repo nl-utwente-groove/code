@@ -81,7 +81,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
-        if (getStep().isPartial()) {
+        if (getStep().isRecipeStep()) {
             result.append(getStep().getRecipe().getFullName());
             result.append('/');
         }

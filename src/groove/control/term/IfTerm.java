@@ -80,10 +80,10 @@ public class IfTerm extends Term {
             result = Type.TRIAL;
             break;
         case FINAL:
-            result = arg1().getType();
+            result = arg1OrArg2().getType();
             break;
         case DEAD:
-            result = arg2().getType();
+            result = arg3().getType();
             break;
         default:
             assert false;
@@ -100,10 +100,10 @@ public class IfTerm extends Term {
             result = arg0().isAtomic() && arg0().isFinal();
             break;
         case FINAL:
-            result = arg0().isAtomic() && arg1().isAtomic();
+            result = arg1OrArg2().isAtomic();
             break;
         case DEAD:
-            result = arg2().isAtomic();
+            result = arg3().isAtomic();
             break;
         default:
             assert false;

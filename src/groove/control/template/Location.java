@@ -203,6 +203,7 @@ public class Location implements Position<Location,Switch>, Comparable<Location>
         return result + (brackets ? ")" : "");
     }
 
+    @Override
     public int compareTo(Location o) {
         return getNumber() - o.getNumber();
     }

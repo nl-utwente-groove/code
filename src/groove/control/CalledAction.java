@@ -28,11 +28,8 @@ public interface CalledAction {
     /** Returns the rule invoked in this control step. */
     Rule getRule();
 
-    /** 
-     * Indicates if this is a partial step.
-     * A step is partial if it has an enclosing recipe.
-     */
-    boolean isPartial();
+    /** Indicates if this step is part of a recipe. */
+    boolean isRecipeStep();
 
     /** Returns the outermost recipe of which this step is a part, if any. */
     Recipe getRecipe();

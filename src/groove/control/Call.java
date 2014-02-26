@@ -30,7 +30,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Call extends Pair<Callable,List<? extends CtrlPar>> {
+public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comparable<Call> {
     /**
      * Constructs a call of a given unit, with arguments.
      */
@@ -113,10 +113,29 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> {
         return getUnit().getFullName() + Groove.toString(getArgs().toArray(), "(", ")", ", ");
     }
 
+    @Override
+    public int compareTo(Call o) {
+        int result = getUnit().getFullName().compareTo(o.getUnit().getFullName());
+        if (result != 0) {
+            return result;
+        }
+        result = getArgs().size() - o.getArgs().size();
+        if (result != 0) {
+            return result;
+        }
+        for (int i = 0; i < getArgs().size(); i++) {
+            result = getArgs().get(i).toString().compareTo(o.getArgs().get(i).toString());
+            if (result != 0) {
+                return result;
+            }
+        }
+        return result;
+    }
+
     static private List<CtrlPar> createWildArgs(int count) {
         List<CtrlPar> result = new ArrayList<CtrlPar>(count);
         for (int i = 0; i < count; i++) {
-            result.add(new CtrlPar.Wild());
+            result.add(CtrlPar.wild());
         }
         return result;
     }

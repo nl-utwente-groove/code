@@ -31,14 +31,14 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
 
     @Override
     public boolean isCompatible(Edge edge) {
-        return super.isCompatible(edge) && isPartial() == ((GraphTransition) edge).isPartial();
+        return super.isCompatible(edge) && isRecipeStep() == ((GraphTransition) edge).isPartial();
     }
 
     @Override
     public void addEdge(Edge edge) {
         super.addEdge(edge);
         // updates the look on the basis of the edge
-        setLook(Look.TRANSIENT, isPartial());
+        setLook(Look.RECIPE, isRecipeStep());
         setLook(Look.ABSENT, isAbsent());
     }
 
@@ -87,10 +87,10 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     }
 
     /** Indicates that this edge is a partial rule application. */
-    final boolean isPartial() {
+    final boolean isRecipeStep() {
         boolean result = true;
         for (Edge trans : getEdges()) {
-            if (!((GraphTransition) trans).isPartial()) {
+            if (!((GraphTransition) trans).isRecipeStep()) {
                 result = false;
                 break;
             }

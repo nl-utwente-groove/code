@@ -287,7 +287,12 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     @Override
     public boolean isPartial() {
-        return getRecipe() != null;
+        return getStep().isPartial();
+    }
+
+    @Override
+    public boolean isRecipeStep() {
+        return getStep().isRecipeStep();
     }
 
     @Override

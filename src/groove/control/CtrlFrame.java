@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.instance.Frame;
+import groove.grammar.Recipe;
 
 import java.util.List;
 import java.util.Set;
@@ -39,6 +40,16 @@ public interface CtrlFrame {
      * Convenience method for <code>getDepth() > 0</code>
      */
     boolean isTransient();
+
+    /** 
+     * Indicates if this frame is inside a recipe.
+     */
+    boolean isRecipeStage();
+
+    /** 
+     * Returns the recipe to which this stage belongs, if any.
+     */
+    Recipe getRecipe();
 
     /** Indicates if this frame is deadlocked, meaning that it will
      * engender no more behaviour. */

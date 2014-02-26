@@ -59,10 +59,12 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     private final Frame source;
 
+    @Override
     public Frame target() {
         return onFinish();
     }
 
+    @Override
     public Frame onFinish() {
         return this.onFinish;
     }
@@ -70,16 +72,23 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     private final Frame onFinish;
 
     /** Convenience method to return the switch of this step. */
-    public Switch getSwitch() {
+    private Switch getSwitch() {
         return this.swit;
+    }
+
+    /** Convenience method to return the top switch of this step. */
+    public Switch getRuleSwitch() {
+        return getSwitchStack().peek();
     }
 
     private final Switch swit;
 
+    @Override
     public Call getRuleCall() {
         return getSwitch().getRuleCall();
     }
 
+    @Override
     public int getDepth() {
         return getSwitch().getDepth();
     }
@@ -100,13 +109,19 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     private SwitchStack switchStack;
 
+    @Override
     public CallStack getCallStack() {
         return getSwitchStack().getCallStack();
     }
 
     @Override
     public boolean isPartial() {
-        return getCallStack().isPartial();
+        return getSource().isTransient() || onFinish().isTransient();
+    }
+
+    @Override
+    public boolean isRecipeStep() {
+        return getCallStack().isRecipeStep();
     }
 
     @Override

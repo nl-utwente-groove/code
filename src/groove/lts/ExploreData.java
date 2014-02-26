@@ -82,7 +82,7 @@ class ExploreData {
                     parent.one().notifyPartial(partial, parent.two());
                 }
             }
-        } else if (!target.isTransient()) {
+        } else if (!target.isTransient() && initial.isRecipeStep()) {
             // add recipe transition if there was none
             this.state.getGTS().addTransition(new RecipeTransition(this.state, initial, target));
         }
@@ -110,7 +110,7 @@ class ExploreData {
                 fireChanged(child);
             }
         }
-        if (!this.state.isTransient() && !child.isTransient()) {
+        if (!this.state.isTransient() && !child.isTransient() && initial.isRecipeStep()) {
             this.state.getGTS().addTransition(new RecipeTransition(this.state, initial, child));
         }
         if (this.transientOpens.isEmpty() && this.state.isClosed()) {
