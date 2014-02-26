@@ -158,7 +158,12 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
 
     @Override
     public boolean isPartial() {
-        return getRecipe() != null;
+        return getStep().isPartial();
+    }
+
+    @Override
+    public boolean isRecipeStep() {
+        return getStep().isRecipeStep();
     }
 
     @Override

@@ -45,6 +45,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         this(call, 0, target, null);
     }
 
+    @Override
     public Call getRuleCall() {
         return getStack().peekLast().getCall();
     }
@@ -62,10 +63,12 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     /**
      * Returns the target term of this derivation.
      */
+    @Override
     public Term onFinish() {
         return two();
     }
 
+    @Override
     public int getDepth() {
         return this.depth;
     }
@@ -94,6 +97,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     private DerivationStack stack;
 
+    @Override
     public CallStack getCallStack() {
         return getStack().getCallStack();
     }

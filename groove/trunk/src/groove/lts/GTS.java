@@ -179,12 +179,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /** 
-     * Indicates if this GTS has at any point included transient states.
-     * Note that the transient nature may have dissipated when the 
+     * Indicates if this GTS has at any point included recipe sub-stages.
+     * Note that the sub-stage nature may have dissipated when the 
      * state was done.
      */
     public boolean hasTransientStates() {
-        return this.transientStates;
+        return this.transients;
     }
 
     /**
@@ -412,7 +412,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 newState.setError();
             }
             if (newState.isTransient()) {
-                this.transientStates = true;
+                this.transients = true;
             }
         }
 
@@ -548,7 +548,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
-            if (state.isTransient() && !flags.showTransience()) {
+            if (state.isRecipeStage() && !flags.showRecipes()) {
                 continue;
             }
             PlainNode image = result.addNode(state.getNumber());
@@ -570,13 +570,21 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result.addEdge(image, label, image);
             }
             if (flags.showTransience() && state.isTransient()) {
-                String label = flags.getTransienceLabel().replaceAll("#", "1");
+                String label =
+                    flags.getTransienceLabel().replaceAll("#",
+                        "" + state.getActualFrame().getDepth());
+                result.addEdge(image, label, image);
+            }
+            if (flags.showRecipes() && state.isRecipeStage()) {
+                String label =
+                    flags.getRecipeLabel().replaceAll("#",
+                        "" + state.getActualFrame().getRecipe().getFullName());
                 result.addEdge(image, label, image);
             }
         }
         for (GraphTransition transition : edgeSet()) {
             // don't include partial transitions unless forced to
-            if (transition.isPartial() && !flags.showTransience()) {
+            if (transition.isRecipeStep() && !flags.showRecipes()) {
                 continue;
             }
             PlainNode sourceImage = nodeMap.get(transition.source());
@@ -679,7 +687,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /**
      * The number of transient states in the GTS.
      */
-    private boolean transientStates = false;
+    private boolean transients = false;
     /**
      * The number of transitions in the GTS.
      */

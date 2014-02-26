@@ -264,7 +264,7 @@ public enum Look {
         }
     },
     /** Change in look due to transient state/transition status. */
-    TRANSIENT() {
+    RECIPE() {
         @Override
         void init() {
             add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);

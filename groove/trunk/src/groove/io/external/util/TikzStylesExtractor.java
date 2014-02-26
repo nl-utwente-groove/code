@@ -49,7 +49,7 @@ import static groove.gui.look.Look.START;
 import static groove.gui.look.Look.STATE;
 import static groove.gui.look.Look.SUBTYPE;
 import static groove.gui.look.Look.TRANS;
-import static groove.gui.look.Look.TRANSIENT;
+import static groove.gui.look.Look.RECIPE;
 import static groove.gui.look.Look.TYPE;
 import static groove.gui.look.VisualKey.ADORNMENT;
 import static groove.gui.look.VisualKey.BACKGROUND;
@@ -121,7 +121,7 @@ public final class TikzStylesExtractor {
      * Extra enumeration for the additional looks that can modify a main look.
      */
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
-        BIDIRECTIONAL, NO_ARROW, COMPOSITE, OPEN, FINAL, RESULT, TRANSIENT,
+        BIDIRECTIONAL, NO_ARROW, COMPOSITE, OPEN, FINAL, RESULT, RECIPE,
         ABSENT, ACTIVE, GRAYED_OUT);
 
     /**
@@ -271,7 +271,7 @@ public final class TikzStylesExtractor {
         case RESULT:
             Style.writeBackgroundColor(visuals.getBackground(), styles);
             break;
-        case TRANSIENT:
+        case RECIPE:
             Style.writeNodeShape(visuals.getNodeShape(), styles);
             styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, "0pt"));
             Style.writeForegroundColor(visuals.getForeground(), styles);

@@ -143,11 +143,11 @@ public class RecipeTest {
             }
             runExploration(gg, strategyDescr);
             assertEquals(this.highLevelStateCount,
-                counter.getStateCount() - counter.getTransientStateCount());
+                counter.getStateCount() - counter.getRecipeStageCount());
             assertEquals(this.lowLevelStateCount,
                 counter.getStateCount() - counter.getAbsentStateCount());
             assertEquals(this.highLevelTransCount,
-                counter.getTransitionCount() - counter.getPartialTransitionCount());
+                counter.getTransitionCount() - counter.getRecipeStepCount());
             assertEquals(this.lowLevelTransCount,
                 counter.getRuleTransitionCount() - counter.getAbsentTransitionCount());
         } catch (FormatException exc) {

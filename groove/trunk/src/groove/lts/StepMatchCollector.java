@@ -212,7 +212,7 @@ public class StepMatchCollector extends MatchCollector {
         for (Assignment action : step.getFramePushes()) {
             sourceValues = action.apply(sourceValues);
         }
-        loop: for (Pair<Var,Binding> entry : step.getSwitch().getCallBinding()) {
+        loop: for (Pair<Var,Binding> entry : step.getRuleSwitch().getCallBinding()) {
             Binding bind = entry.two();
             HostNode value;
             if (bind == null) {

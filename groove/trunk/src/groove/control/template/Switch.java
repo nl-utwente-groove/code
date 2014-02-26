@@ -25,8 +25,6 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.grammar.Action;
-import groove.graph.ALabel;
-import groove.util.Groove;
 import groove.util.Pair;
 
 import java.util.LinkedList;
@@ -42,7 +40,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
+public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch> {
     /**
      * Constructs a base call switch.
      * @param onFinish target location of the switch
@@ -121,6 +119,7 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
     /** List of callers, from bottom to top. */
     private SwitchStack callStack;
 
+    @Override
     public CallStack getCallStack() {
         return getStack().getCallStack();
     }
@@ -177,6 +176,7 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
      */
     private final Call call;
 
+    @Override
     public Call getRuleCall() {
         return getCallStack().peek();
     }
@@ -243,7 +243,12 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
     }
 
     @Override
-    protected int computeHashCode() {
+    public int hashCode() {
+        return hashCode(true);
+    }
+
+    /** Computes the hash code of this switch, optionally taking the nested switch into account. */
+    public int hashCode(boolean full) {
         final int prime = 31;
         int result = 1;
         result = prime * result + getSourceVars().hashCode();
@@ -251,7 +256,7 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
         result = prime * result + getKind().hashCode();
         result = prime * result + getDepth();
         result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
-        result = prime * result + ((this.nested == null) ? 0 : this.nested.hashCode());
+        result = prime * result + ((!full || this.nested == null) ? 0 : this.nested.hashCode());
         return result;
     }
 
@@ -263,7 +268,20 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
         if (!(obj instanceof Switch)) {
             return false;
         }
-        Switch other = (Switch) obj;
+        return equals((Switch) obj, true);
+    }
+
+    /** 
+     * Compares this switch with another, optionally ignoring the nested switch.
+     * @param full if {@code true}, the nested switch is taken into account
+     */
+    public boolean equals(Switch other, boolean full) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
         if (getKind() != other.getKind()) {
             return false;
         }
@@ -273,13 +291,15 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
         if (!getSourceVars().equals(other.getSourceVars())) {
             return false;
         }
-        if (getNested() == null) {
-            if (other.getNested() != null) {
-                return false;
-            }
-        } else {
-            if (!getNested().equals(other.getNested())) {
-                return false;
+        if (full) {
+            if (getNested() == null) {
+                if (other.getNested() != null) {
+                    return false;
+                }
+            } else {
+                if (!getNested().equals(other.getNested())) {
+                    return false;
+                }
             }
         }
         if (!onFinish().equals(other.onFinish())) {
@@ -292,11 +312,41 @@ public class Switch extends ALabel implements Attempt.Stage<Location,Switch> {
     }
 
     @Override
-    public String text() {
-        String result;
-        result = getName();
-        if (getArgs() != null) {
-            result += Groove.toString(getArgs().toArray(), "(", ")", ",");
+    public int compareTo(Switch o) {
+        int result = onFinish().getNumber() - o.onFinish().getNumber();
+        if (result != 0) {
+            return result;
+        }
+        result = getDepth() - o.getDepth();
+        if (result != 0) {
+            return result;
+        }
+        result = getKind().ordinal() - o.getKind().ordinal();
+        if (result != 0) {
+            return result;
+        }
+        result = getCall().compareTo(o.getCall());
+        if (result != 0) {
+            return result;
+        }
+        result = getSourceVars().size() - o.getSourceVars().size();
+        if (result != 0) {
+            return result;
+        }
+        for (int i = 0; i < getSourceVars().size(); i++) {
+            result = getSourceVars().get(i).compareTo(o.getSourceVars().get(i));
+            if (result != 0) {
+                return result;
+            }
+        }
+        if (hasNested()) {
+            if (o.hasNested()) {
+                result = getNested().compareTo(o.getNested());
+            } else {
+                return 1;
+            }
+        } else if (o.hasNested()) {
+            return -1;
         }
         return result;
     }

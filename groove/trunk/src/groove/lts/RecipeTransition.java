@@ -67,8 +67,13 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
     }
 
     @Override
-    public boolean isPartial() {
+    public boolean isRecipeStep() {
         return false;
+    }
+
+    @Override
+    public boolean isPartial() {
+        return source().getActualFrame().isTransient() || target().getActualFrame().isTransient();
     }
 
     /** Returns the initial rule transition of the recipe transition. */
@@ -131,7 +136,7 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
                 GraphState target = trans.target();
-                if (target.isTransient() || target == target()) {
+                if (target.isRecipeStage() || target == target()) {
                     Set<RuleTransition> inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {

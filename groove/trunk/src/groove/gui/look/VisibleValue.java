@@ -159,7 +159,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         if (!jVertex.getJGraph().isShowPartialTransitions()
-            && jVertex.isTransient() && state.isDone()) {
+            && jVertex.isSubStage() && state.isDone()) {
             return false;
         }
         if (jVertex.getNumber() > jVertex.getJModel().getStateBound()) {

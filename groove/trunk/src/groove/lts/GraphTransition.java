@@ -54,8 +54,11 @@ public interface GraphTransition extends Edge {
     /** Returns the action instance on which this transition is based. */
     public Event getEvent();
 
-    /** Indicates if this transition is part of a recipe transition. */
+    /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
+
+    /** Indicates if this transition is a step in a recipe transition. */
+    public boolean isRecipeStep();
 
     /**
      * Returns the initial rule transition of this graph transition.

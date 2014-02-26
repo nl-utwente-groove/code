@@ -52,9 +52,8 @@ public class SaveLTSAsAction extends SimulatorAction {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
         }
         if (dialog.showDialog(getSimulator())) {
-            doSave(dialog.getDirectory(), dialog.getLtsPattern(),
-                dialog.getStatePattern(), dialog.getExportStates(),
-                dialog.getLTSLabels());
+            doSave(dialog.getDirectory(), dialog.getLtsPattern(), dialog.getStatePattern(),
+                dialog.getExportStates(), dialog.getLTSLabels());
         }
     }
 
@@ -70,7 +69,7 @@ public class SaveLTSAsAction extends SimulatorAction {
         case TOP:
             List<GraphState> states = new ArrayList<GraphState>();
             for (GraphState state : gts.nodeSet()) {
-                if (!state.isTransient()) {
+                if (!state.isRecipeStage()) {
                     states.add(state);
                 }
             }
@@ -87,11 +86,9 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
 
         try {
-            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(),
-                flags);
+            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(), flags);
             for (GraphState state : export) {
-                StateReporter.exportState(state,
-                    new File(dir, statePattern).toString());
+                StateReporter.exportState(state, new File(dir, statePattern).toString());
             }
         } catch (IOException e) {
             showErrorDialog(e, "Error while saving LTS to %s", dir);

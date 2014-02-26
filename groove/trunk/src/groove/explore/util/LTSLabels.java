@@ -33,8 +33,8 @@ import java.util.Map;
  */
 public class LTSLabels {
     /** Constructs a flag object with default values for selected flags. */
-    public LTSLabels(boolean showStart, boolean showOpen, boolean showFinal,
-            boolean showResult, boolean showNumber, boolean showTransience) {
+    public LTSLabels(boolean showStart, boolean showOpen, boolean showFinal, boolean showResult,
+            boolean showNumber, boolean showTransience) {
         try {
             if (showStart) {
                 setDefaultValue(Flag.START);
@@ -102,25 +102,22 @@ public class LTSLabels {
                 throw new FormatException("Unknown flag '%c' in %s", c, spec);
             }
             if (this.flagToLabelMap.containsKey(flag)) {
-                throw new FormatException("Start flag '%c' occurs twice in %s",
-                    flag.getId(), spec);
+                throw new FormatException("Start flag '%c' occurs twice in %s", flag.getId(), spec);
             }
             String value = flag.getDefault();
-            if (charIx < flagPart.length()
-                && flagPart.charAt(charIx) == SINGLE_QUOTE) {
+            if (charIx < flagPart.length() && flagPart.charAt(charIx) == SINGLE_QUOTE) {
                 String arg = argPart.get(argIx);
                 value = arg.substring(1, arg.length() - 1);
                 argIx++;
                 charIx++;
                 if (flag == Flag.NUMBER && value.indexOf(PLACEHOLDER) < 0) {
                     throw new FormatException(
-                        "State number label %s does not contain placeholder '%s'",
-                        value, PLACEHOLDER);
+                        "State number label %s does not contain placeholder '%s'", value,
+                        PLACEHOLDER);
                 }
             }
             if (!setValue(flag, value)) {
-                throw new FormatException("Flag '%c' occurs twice in %s",
-                    flag.getId(), spec);
+                throw new FormatException("Flag '%c' occurs twice in %s", flag.getId(), spec);
             }
         }
     }
@@ -202,11 +199,21 @@ public class LTSLabels {
 
     /**
      * Returns the label to be used for transient states in serialised LTSs, if any.
-     * @return the label to be used for state numbers; if {@code null}, transient states
+     * @return the label to be used for transient states; if {@code null}, transient states
      * are not marked
      */
     public String getTransienceLabel() {
         return getLabel(Flag.TRANSIENT);
+    }
+
+    /** Indicates if the {@link Flag#RECIPE} flag is set. */
+    public boolean showRecipes() {
+        return this.flagToLabelMap.containsKey(Flag.RECIPE);
+    }
+
+    /** Returns the label to be used for recipe sub-stages. */
+    public String getRecipeLabel() {
+        return getLabel(Flag.RECIPE);
     }
 
     /**
@@ -228,8 +235,7 @@ public class LTSLabels {
     private boolean setValue(Flag flag, String value) throws FormatException {
         Flag oldFlag = this.labelToFlagMap.put(value, flag);
         if (oldFlag != null) {
-            throw new FormatException(
-                "Label '%s' used for two different special labels");
+            throw new FormatException("Label '%s' used for two different special labels");
         }
         return this.flagToLabelMap.put(flag, value) == null;
     }
@@ -268,10 +274,8 @@ public class LTSLabels {
         return result.toString();
     }
 
-    private final Map<Flag,String> flagToLabelMap = new EnumMap<Flag,String>(
-        Flag.class);
-    private final Map<String,Flag> labelToFlagMap =
-        new HashMap<String,LTSLabels.Flag>();
+    private final Map<Flag,String> flagToLabelMap = new EnumMap<Flag,String>(Flag.class);
+    private final Map<String,Flag> labelToFlagMap = new HashMap<String,LTSLabels.Flag>();
 
     /** Returns the flag for a given identifying character. */
     private static Flag getFlag(char c) {
@@ -292,8 +296,7 @@ public class LTSLabels {
         FLAG_PARSER = new ExprParser(SINGLE_QUOTE, singleQuoteArray);
     }
 
-    private static final Map<Character,Flag> flagMap =
-        new HashMap<Character,LTSLabels.Flag>();
+    private static final Map<Character,Flag> flagMap = new HashMap<Character,LTSLabels.Flag>();
 
     static {
         for (Flag f : Flag.values()) {
@@ -313,6 +316,8 @@ public class LTSLabels {
         RESULT('r', "result", "Result states"),
         /** Labelling of state numbers. */
         NUMBER('n', "s" + PLACEHOLDER, "State number"),
+        /** Labelling of recipes. */
+        RECIPE('p', PLACEHOLDER, "Recipe"),
         /** Labelling of state numbers. */
         TRANSIENT('t', "t" + PLACEHOLDER, "Transience"), ;
 

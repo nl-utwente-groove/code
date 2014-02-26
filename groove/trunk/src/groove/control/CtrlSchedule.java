@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.instance.Assignment;
+import groove.grammar.Recipe;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -84,12 +85,19 @@ public class CtrlSchedule implements CtrlFrame {
         return isTransient() ? 1 : 0;
     }
 
-    /**
-     * Indicates if this schedule is part of a transaction.
-     */
     @Override
     public boolean isTransient() {
         return this.isTransient;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return isRecipeStage() ? getPrime().getRecipe() : null;
+    }
+
+    @Override
+    public boolean isRecipeStage() {
+        return isTransient();
     }
 
     /** Returns the currently scheduled transition.

@@ -38,14 +38,17 @@ public class CallStack extends Stack<Call> implements CalledAction {
         // empty
     }
 
+    @Override
     public Rule getRule() {
         return peek().getRule();
     }
 
-    public boolean isPartial() {
+    @Override
+    public boolean isRecipeStep() {
         return getRecipe() != null;
     }
 
+    @Override
     public Recipe getRecipe() {
         if (!this.recipeInit) {
             for (Call call : this) {

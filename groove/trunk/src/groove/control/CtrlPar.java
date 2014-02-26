@@ -98,6 +98,13 @@ public abstract class CtrlPar {
         return outVar(name, CtrlType.getType(type));
     }
 
+    /** Returns the singleton wildcard parameter. */
+    public static Wild wild() {
+        return WILD;
+    }
+
+    private static Wild WILD = new Wild();
+
     /** 
      * Variable control parameter.
      * A variable parameter has a name and type,
@@ -325,6 +332,11 @@ public abstract class CtrlPar {
      * Wildcard parameter.
      */
     public static class Wild extends CtrlPar {
+        /** Constructor for the singleton instance. */
+        private Wild() {
+            // empty
+        }
+
         @Override
         public boolean equals(Object obj) {
             return obj instanceof Wild;

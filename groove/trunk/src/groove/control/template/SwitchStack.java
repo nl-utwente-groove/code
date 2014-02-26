@@ -17,8 +17,8 @@
 package groove.control.template;
 
 import groove.control.CallStack;
+import groove.grammar.Recipe;
 
-import java.util.Arrays;
 import java.util.Stack;
 
 /**
@@ -62,9 +62,14 @@ public class SwitchStack extends Stack<Switch> {
 
     private CallStack callStack;
 
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(toArray());
+    /** Indicates if this step is part of a recipe. */
+    public boolean isRecipeStep() {
+        return getCallStack().getRecipe() != null;
+    }
+
+    /** Returns the recipe of which this is a step, if any. */
+    public Recipe getRecipe() {
+        return getCallStack().getRecipe();
     }
 
     @Override
@@ -75,6 +80,26 @@ public class SwitchStack extends Stack<Switch> {
         if (!(obj instanceof SwitchStack)) {
             return false;
         }
-        return Arrays.equals(toArray(), ((SwitchStack) obj).toArray());
+        SwitchStack other = (SwitchStack) obj;
+        if (size() != other.size()) {
+            return false;
+        }
+        for (int i = 0; i < size(); i++) {
+            if (!get(i).equals(other.get(i), false)) {
+                return false;
+            }
+        }
+        return true;
     }
+
+    @Override
+    public int hashCode() {
+        int prime = 31;
+        int result = 1;
+        for (int i = 0; i < size(); i++) {
+            result = prime * result + get(i).hashCode(false);
+        }
+        return result;
+    }
+
 }

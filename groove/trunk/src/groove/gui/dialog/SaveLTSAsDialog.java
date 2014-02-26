@@ -175,6 +175,9 @@ public class SaveLTSAsDialog {
         if (getGTS().hasTransientStates()) {
             labelPanel.add(createFlagPanel(Flag.TRANSIENT));
         }
+        if (getGTS().getGrammar().hasRecipes()) {
+            labelPanel.add(createFlagPanel(Flag.RECIPE));
+        }
         mainPanel.add(labelPanel);
 
         JPanel savePanel = new JPanel(new GridLayout(0, 1));
@@ -289,7 +292,7 @@ public class SaveLTSAsDialog {
             case ALL:
                 text = "All states";
                 if (getGTS().hasTransientStates()) {
-                    text += " (including transient)";
+                    text += " (including recipe stages)";
                 }
                 break;
             case FINAL:
@@ -340,9 +343,8 @@ public class SaveLTSAsDialog {
             case TRANSIENT:
                 text = "Mark transient states with:";
                 tip =
-                    String.format(
-                        "If ticked, transient states will be included and optionally labelled, "
-                            + "with '%s' replaced by the transient depth", PLACEHOLDER);
+                    String.format("If ticked, transient states will be labelled, "
+                        + "with '%s' replaced by the transient depth", PLACEHOLDER);
                 break;
             case OPEN:
                 text = "Mark open states with:";
@@ -351,6 +353,13 @@ public class SaveLTSAsDialog {
             case RESULT:
                 text = "Mark result states with:";
                 tip = "If ticked, all result states will be labelled";
+                break;
+            case RECIPE:
+                text = "Mark recipe stages with:";
+                tip =
+                    String.format(
+                        "If ticked, recipe stages will included and optionally labelled, "
+                            + "with '%s' replaced by the recipe name", PLACEHOLDER);
                 break;
             case START:
                 text = "Mark start state with:";
@@ -394,6 +403,7 @@ public class SaveLTSAsDialog {
             case OPEN:
             case RESULT:
             case START:
+            case TRANSIENT:
                 String message = flag.getDescription() + " label must be non-empty";
                 listener = new EmptyFieldListener(textField, message);
                 break;
@@ -403,7 +413,7 @@ public class SaveLTSAsDialog {
                         PLACEHOLDER);
                 listener = new PlaceholderFieldListener(textField, message);
                 break;
-            case TRANSIENT:
+            case RECIPE:
                 // no listener
                 break;
             default:

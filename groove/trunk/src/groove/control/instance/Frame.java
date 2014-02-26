@@ -25,6 +25,7 @@ import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.SwitchAttempt;
 import groove.control.template.SwitchStack;
+import groove.grammar.Recipe;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
 
@@ -205,6 +206,16 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     }
 
     @Override
+    public boolean isRecipeStage() {
+        return getCallStack().isRecipeStep();
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return getCallStack().getCallStack().getRecipe();
+    }
+
+    @Override
     public boolean isTransient() {
         return getDepth() > 0;
     }
@@ -361,6 +372,6 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private final DefaultFixable fixable = new DefaultFixable();
 
-    private final static boolean RICH_LABELS = true;
+    private final static boolean RICH_LABELS = false;
     private final static boolean VERY_RICH_LABELS = false;
 }

@@ -200,6 +200,11 @@ public interface GraphState extends Node {
     public boolean isDone();
 
     /** 
+     * Indicates if state is part of a recipe.
+     */
+    public boolean isRecipeStage();
+
+    /** 
      * Indicates if this is a transient state.
      * This is the case if and only if the associated control schedule is transient.
      * @see #getActualFrame()
