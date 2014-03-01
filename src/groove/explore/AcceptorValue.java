@@ -50,9 +50,9 @@ public enum AcceptorValue implements ParsableValue {
     /** Acceptor for arbitrary states. */
     ANY("any", "Any State", "This acceptor succeeds whenever a state is added to the LTS."),
     /** Acceptor for cycles. */
-    CYCLE("cycle", "Cycles", "This acceptor listens to pairs of graph states and Büchi states,"
+    CYCLE("cycle", "Cycles", "This acceptor listens to pairs of graph states and Buchi states,"
         + "and succeeds when a pair is added that lies on a cycle with an"
-        + "accepting Büchi state. Should only be used in conjunction with " + "LTL model checking."),
+        + "accepting Buchi state. Should only be used in conjunction with " + "LTL model checking."),
     /** Acceptor that does not accept any states. */
     NONE("none", "No State", "This acceptor always fails whenever a state is added to the LTS.");
 

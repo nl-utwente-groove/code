@@ -40,8 +40,8 @@ public enum GraphRole {
     RETE("rete", "Rete Network"),
     /** Control automaton role. */
     CTRL("control", "Control Automaton"),
-    /** Büchi automaton role. */
-    BUCHI("büchi", "Büchi Automaton"),
+    /** Buchi automaton role. */
+    BUCHI("buchi", "Buchi Automaton"),
     /** Shape role. */
     SHAPE("shape", "Abstract graph"),
     /** Shape role. */
@@ -92,8 +92,7 @@ public enum GraphRole {
     private final String name;
 
     /** Map from graph role names to graph roles. */
-    static public final Map<String,GraphRole> roles =
-        new HashMap<String,GraphRole>();
+    static public final Map<String,GraphRole> roles = new HashMap<String,GraphRole>();
     static {
         for (GraphRole role : GraphRole.values()) {
             roles.put(role.toString(), role);
@@ -101,6 +100,5 @@ public enum GraphRole {
     }
 
     /** Set of roles that are part of the grammar. */
-    public static final EnumSet<GraphRole> grammarRoles = EnumSet.of(HOST,
-        RULE, TYPE);
+    public static final EnumSet<GraphRole> grammarRoles = EnumSet.of(HOST, RULE, TYPE);
 }
