@@ -154,7 +154,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
     }
 
     /**
-     * Shows a dialog displaying this Büchi graph.
+     * Shows a dialog displaying this BÃ¼chi graph.
      */
     public void display() {
         GraphPreviewDialog.showGraph(this);

@@ -152,7 +152,7 @@ public class LTL2BuchiGraphTest {
             BuchiGraph buchiGraph =
                 this.prototype.newBuchiGraph(FormulaParser.parse(formula).toLtlFormula());
             Set<String> set = new HashSet<String>(Arrays.asList(rules));
-            // check whether the Büchi-graph is the one we expected
+            // check whether the BÃ¼chi-graph is the one we expected
             testAllTransitions(buchiGraph.getInitial(), set,
                 new HashSet<BuchiLocation>());
             printf("Initial location: %s%n", buchiGraph.getInitial());
@@ -178,6 +178,6 @@ public class LTL2BuchiGraphTest {
         }
     }
 
-    /** The ltl2buchi factory for creating  Büchi graphs. */
+    /** The ltl2buchi factory for creating  BÃ¼chi graphs. */
     private final BuchiGraph prototype = BuchiGraph.getPrototype();
 }

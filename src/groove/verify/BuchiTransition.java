@@ -29,7 +29,7 @@ import java.util.Set;
 public class BuchiTransition extends
         AEdge<BuchiLocation,BuchiLabel> {
     /**
-     * Constructor for creating a new Büchi transition
+     * Constructor for creating a new BÃ¼chi transition
      */
     public BuchiTransition(BuchiLocation source,
             BuchiLabel label, BuchiLocation target) {
