@@ -62,8 +62,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         this.stateSet.addListener(this.acceptor);
         this.stateStack = new Stack<ProductState>();
         assert (this.startLocation != null) : "The property automaton should have an initial state";
-        ProductState startState =
-            createState(gts.startState(), null, this.startLocation);
+        ProductState startState = createState(gts.startState(), null, this.startLocation);
         this.startState = startState;
         this.nextState = startState;
         this.stateSet.addState(startState);
@@ -108,14 +107,11 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         assert property != null;
         this.property = property;
         try {
-            Formula<String> formula =
-                FormulaParser.parse(property).toLtlFormula();
-            BuchiGraph buchiGraph =
-                BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
+            Formula<String> formula = FormulaParser.parse(property).toLtlFormula();
+            BuchiGraph buchiGraph = BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
             this.startLocation = buchiGraph.getInitial();
         } catch (ParseException e) {
-            throw new IllegalStateException(String.format(
-                "Error in property '%s'", property), e);
+            throw new IllegalStateException(String.format("Error in property '%s'", property), e);
         }
     }
 
@@ -167,8 +163,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      */
     protected boolean exploreState(ProductState prodState) {
         boolean result = false;
-        Set<? extends GraphTransition> outTransitions =
-            prodState.getGraphState().getTransitions();
+        Set<? extends GraphTransition> outTransitions = prodState.getGraphState().getTransitions();
         Set<String> applicableRules = getLabels(outTransitions);
         trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(applicableRules)) {
@@ -178,8 +173,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
                         finalState = false;
                         ProductTransition prodTrans =
                             addTransition(prodState, trans, buchiTrans.target());
-                        result =
-                            findCounterExample(prodState, prodTrans.target());
+                        result = findCounterExample(prodState, prodTrans.target());
                         if (result) {
                             break trans;
                         }
@@ -248,8 +242,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @param target target state of the potential counterexample
      * @return {@code true} if a counterexample was found
      */
-    protected final boolean findCounterExample(ProductState source,
-            ProductState target) {
+    protected final boolean findCounterExample(ProductState source, ProductState target) {
         boolean result =
             (target.colour() == getRecord().cyan())
                 && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
@@ -276,8 +269,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * otherwise.
      */
     protected ProductState getNextSuccessor(ProductState state) {
-        RandomChooserInSequence<ProductState> chooser =
-            new RandomChooserInSequence<ProductState>();
+        RandomChooserInSequence<ProductState> chooser = new RandomChooserInSequence<ProductState>();
         for (ProductTransition trans : state.outTransitions()) {
             ProductState s = trans.target();
             if (!s.isClosed()) {
@@ -319,17 +311,16 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @param source source of the new transition
      * @param transition the graph-transition component for the
      *        product-transition
-     * @param targetLocation the location of the target Büchi graph-state
+     * @param targetLocation the location of the target Buchi graph-state
      * @see ProductState#addTransition(ProductTransition)
      */
-    private ProductTransition addTransition(ProductState source,
-            GraphTransition transition, BuchiLocation targetLocation) {
+    private ProductTransition addTransition(ProductState source, GraphTransition transition,
+            BuchiLocation targetLocation) {
         ProductTransition result = null;
         if (!source.isClosed()) {
             // we assume that we only add transitions for modifying graph
             // transitions
-            ProductState target =
-                createState(source.getGraphState(), transition, targetLocation);
+            ProductState target = createState(source.getGraphState(), transition, targetLocation);
             ProductState isoTarget = getStateSet().addState(target);
             if (isoTarget == null) {
                 // no isomorphic state found
@@ -345,8 +336,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
             // we do not have to add new transitions.
             for (ProductTransition nextTransition : source.outTransitions()) {
                 if (nextTransition.graphTransition().equals(transition)
-                    && nextTransition.target().getBuchiLocation().equals(
-                        targetLocation)) {
+                    && nextTransition.target().getBuchiLocation().equals(targetLocation)) {
                     result = nextTransition;
                     break;
                 }
@@ -356,10 +346,10 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     }
 
     /** Creates a product state from a graph state or transition, and
-     * a Büchi location.
+     * a Buchi location.
      */
-    private ProductState createState(GraphState state,
-            GraphTransition transition, BuchiLocation targetLocation) {
+    private ProductState createState(GraphState state, GraphTransition transition,
+            BuchiLocation targetLocation) {
         if (transition == null) {
             // the system-state is a final one for which we add an artificial
             // self-loop
@@ -410,7 +400,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     private CycleAcceptor acceptor;
     /** State collector which randomly provides unexplored states. */
     private RandomNewStateChooser collector = new RandomNewStateChooser();
-    /** Initial location of the Büchi graph encoding the property to be verified. */
+    /** Initial location of the Buchi graph encoding the property to be verified. */
     private BuchiLocation startLocation;
     private Stack<ProductState> stateStack;
     private Result result;

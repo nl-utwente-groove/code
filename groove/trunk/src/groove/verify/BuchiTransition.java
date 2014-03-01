@@ -26,13 +26,11 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiTransition extends
-        AEdge<BuchiLocation,BuchiLabel> {
+public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {
     /**
-     * Constructor for creating a new Büchi transition
+     * Constructor for creating a new Buchi transition
      */
-    public BuchiTransition(BuchiLocation source,
-            BuchiLabel label, BuchiLocation target) {
+    public BuchiTransition(BuchiLocation source, BuchiLabel label, BuchiLocation target) {
         super(source, label, target);
     }
 

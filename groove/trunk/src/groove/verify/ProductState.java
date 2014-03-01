@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Composition of a graph-state and a Büchi location.
+ * Composition of a graph-state and a Buchi location.
  * 
  * @author Harmen Kastenberg
  * @version $Revision: 5191 $
@@ -32,7 +32,7 @@ public class ProductState {
     /**
      * Constructs a state with an empty origin transition.
      * @param state the system-state component
-     * @param buchiLocation the Büchi-location component
+     * @param buchiLocation the Buchi-location component
      */
     public ProductState(GraphState state, BuchiLocation buchiLocation) {
         this.state = state;
@@ -42,10 +42,10 @@ public class ProductState {
     }
 
     /**
-     * Constructs a product state based on a given graph transition and target Büchi location.
+     * Constructs a product state based on a given graph transition and target Buchi location.
      * @param origin the (non-{@code null}) graph transition along which this product state was
      * discovered
-     * @param buchiLocation the Büchi-location component
+     * @param buchiLocation the Buchi-location component
      */
     public ProductState(GraphTransition origin, BuchiLocation buchiLocation) {
         this.state = origin.target();
@@ -172,8 +172,7 @@ public class ProductState {
 
     @Override
     public int hashCode() {
-        return System.identityHashCode(this.state)
-            + System.identityHashCode(this.buchiLocation);
+        return System.identityHashCode(this.state) + System.identityHashCode(this.buchiLocation);
     }
 
     @Override
@@ -185,8 +184,7 @@ public class ProductState {
             return false;
         }
         ProductState other = (ProductState) obj;
-        return this.state == other.state
-            && this.buchiLocation == other.buchiLocation;
+        return this.state == other.state && this.buchiLocation == other.buchiLocation;
     }
 
     @Override
@@ -204,8 +202,7 @@ public class ProductState {
     private final BuchiLocation buchiLocation;
     /** The incoming graph transition along which this product state was found. */
     private final GraphTransition origin;
-    private final List<ProductTransition> outTransitions =
-        new ArrayList<ProductTransition>();
+    private final List<ProductTransition> outTransitions = new ArrayList<ProductTransition>();
     /** the colour of this graph state (used in the nested DFS algorithm) */
     private int colour;
     /**

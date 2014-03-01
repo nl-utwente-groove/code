@@ -152,32 +152,29 @@ public class LTL2BuchiGraphTest {
             BuchiGraph buchiGraph =
                 this.prototype.newBuchiGraph(FormulaParser.parse(formula).toLtlFormula());
             Set<String> set = new HashSet<String>(Arrays.asList(rules));
-            // check whether the Büchi-graph is the one we expected
-            testAllTransitions(buchiGraph.getInitial(), set,
-                new HashSet<BuchiLocation>());
+            // check whether the Buchi-graph is the one we expected
+            testAllTransitions(buchiGraph.getInitial(), set, new HashSet<BuchiLocation>());
             printf("Initial location: %s%n", buchiGraph.getInitial());
         } catch (ParseException e) {
             fail();
         }
     }
 
-    private void testAllTransitions(BuchiLocation location,
-            Set<String> applicableRules, Set<BuchiLocation> done) {
+    private void testAllTransitions(BuchiLocation location, Set<String> applicableRules,
+            Set<BuchiLocation> done) {
         if (!done.contains(location)) {
             done.add(location);
             for (BuchiTransition transition : location.outTransitions()) {
                 if (transition.isEnabled(applicableRules)) {
-                    printf("Transition %s is enabled by %s%n", transition,
-                        applicableRules);
+                    printf("Transition %s is enabled by %s%n", transition, applicableRules);
                 } else {
-                    printf("Transition %s is not enabled by %s%n", transition,
-                        applicableRules);
+                    printf("Transition %s is not enabled by %s%n", transition, applicableRules);
                 }
                 testAllTransitions(transition.target(), applicableRules, done);
             }
         }
     }
 
-    /** The ltl2buchi factory for creating  Büchi graphs. */
+    /** The ltl2buchi factory for creating  Buchi graphs. */
     private final BuchiGraph prototype = BuchiGraph.getPrototype();
 }

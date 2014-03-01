@@ -37,8 +37,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
-        implements Cloneable {
+public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements Cloneable {
     private BuchiGraph(String name) {
         super(name);
     }
@@ -117,8 +116,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
      * Constructs a {@link BuchiGraph} from a (NASA ltl2buchi) graph.
      */
     private void newBuchiGraph(Graph<String> graph, final BuchiGraph result) {
-        Map<Node<String>,BuchiLocation> node2location =
-            new HashMap<Node<String>,BuchiLocation>();
+        Map<Node<String>,BuchiLocation> node2location = new HashMap<Node<String>,BuchiLocation>();
         Node<String> init = graph.getInit();
         if (init == null) {
             // construct fake initial node
@@ -141,12 +139,10 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
             result.addNode(location);
             for (Edge<String> edge : node.getOutgoingEdges()) {
                 assert edge.getSource().equals(node);
-                BuchiLabel label =
-                    new BuchiLabel(edge.getAction(), edge.getGuard());
+                BuchiLabel label = new BuchiLabel(edge.getAction(), edge.getGuard());
                 Node<String> target = edge.getNext();
                 BuchiTransition transition =
-                    new BuchiTransition(location, label, getLocation(
-                        node2location, target));
+                    new BuchiTransition(location, label, getLocation(node2location, target));
                 result.addEdge(transition);
                 newNodes.add(target);
             }
@@ -154,14 +150,14 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
     }
 
     /**
-     * Shows a dialog displaying this Büchi graph.
+     * Shows a dialog displaying this Buchi graph.
      */
     public void display() {
         GraphPreviewDialog.showGraph(this);
     }
 
-    private BuchiLocation getLocation(
-            Map<Node<String>,BuchiLocation> node2location, Node<String> node) {
+    private BuchiLocation getLocation(Map<Node<String>,BuchiLocation> node2location,
+            Node<String> node) {
         BuchiLocation result = node2location.get(node);
         if (result == null) {
             result = new BuchiLocation(node2location.size());
@@ -221,11 +217,9 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
         @Override
         public Iterator<BuchiTransition> iterator() {
             return new NestedIterator<BuchiTransition>(
-                new TransformIterator<BuchiLocation,Iterator<BuchiTransition>>(
-                    nodeSet().iterator()) {
+                new TransformIterator<BuchiLocation,Iterator<BuchiTransition>>(nodeSet().iterator()) {
                     @Override
-                    protected Iterator<BuchiTransition> toOuter(
-                            BuchiLocation from) {
+                    protected Iterator<BuchiTransition> toOuter(BuchiLocation from) {
                         return from.outTransitions().iterator();
                     }
                 });

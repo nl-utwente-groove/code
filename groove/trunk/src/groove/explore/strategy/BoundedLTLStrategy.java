@@ -90,8 +90,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
         for (ProductTransition outTransition : getNextState().outTransitions()) {
             ProductState target = outTransition.target();
             // we only continue with freshly created states
-            if (isUnexplored(target)
-                && target.getGraphState() instanceof RuleTransition) {
+            if (isUnexplored(target) && target.getGraphState() instanceof RuleTransition) {
                 // if the transition does not cross the boundary or its
                 // target-state is already explored in previous
                 // iterations
@@ -111,8 +110,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
      * Process boundary-crossing transitions properly.
      * @param transition the boundary-crossing transition
      */
-    private ProductState processBoundaryCrossingTransition(
-            ProductTransition transition) {
+    private ProductState processBoundaryCrossingTransition(ProductTransition transition) {
         // if the number of boundary-crossing transition on the current path
         if (getBoundary().currentDepth() < getRecord().getIteration() - 1) {
             return transition.target();
@@ -136,7 +134,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
 
     /**
      * If we backtracked from an accepting
-     * state then the Büchi location must be coloured red, otherwise blue.
+     * state then the Buchi location must be coloured red, otherwise blue.
      */
     @Override
     protected void colourState(ProductState state) {
@@ -156,8 +154,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
      */
     protected boolean isUnexplored(ProductState newState) {
         boolean result =
-            newState.colour() != getRecord().cyan()
-                && newState.colour() != getRecord().blue()
+            newState.colour() != getRecord().cyan() && newState.colour() != getRecord().blue()
                 && newState.colour() != getRecord().red();
         return result;
     }
@@ -171,8 +168,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
         for (ProductTransition p : state.outTransitions()) {
             ProductState buchiState = p.target();
             if (isUnexplored(buchiState)) {
-                if (!getBoundary().crossingBoundary(p, false)
-                    || buchiState.isExplored()) {
+                if (!getBoundary().crossingBoundary(p, false) || buchiState.isExplored()) {
                     chooser.show(p);
                 } else {
                     buchiState.setIteration(getRecord().getIteration() + 1);

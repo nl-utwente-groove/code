@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Acceptor that is notified on closing a Büchi graph-state in a
- * {@link groove.verify.ProductStateSet}. If the Büchi graph-state is accepting, a a
+ * Acceptor that is notified on closing a Buchi graph-state in a
+ * {@link groove.verify.ProductStateSet}. If the Buchi graph-state is accepting, a a
  * cycle detection depth-first search is started. If a counter-example is found,
  * the graph-states currently on the search-stack constitute the path
  * representing the counter-example.
