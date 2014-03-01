@@ -40,8 +40,8 @@ public enum GraphRole {
     RETE("rete", "Rete Network"),
     /** Control automaton role. */
     CTRL("control", "Control Automaton"),
-    /** Büchi automaton role. */
-    BUCHI("büchi", "Büchi Automaton"),
+    /** BÃ¼chi automaton role. */
+    BUCHI("bÃ¼chi", "BÃ¼chi Automaton"),
     /** Shape role. */
     SHAPE("shape", "Abstract graph"),
     /** Shape role. */

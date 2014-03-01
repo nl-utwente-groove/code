@@ -136,7 +136,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
 
     /**
      * If we backtracked from an accepting
-     * state then the Büchi location must be coloured red, otherwise blue.
+     * state then the BÃ¼chi location must be coloured red, otherwise blue.
      */
     @Override
     protected void colourState(ProductState state) {

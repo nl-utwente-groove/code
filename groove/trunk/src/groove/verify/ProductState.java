@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Composition of a graph-state and a Büchi location.
+ * Composition of a graph-state and a BÃ¼chi location.
  * 
  * @author Harmen Kastenberg
  * @version $Revision$
@@ -32,7 +32,7 @@ public class ProductState {
     /**
      * Constructs a state with an empty origin transition.
      * @param state the system-state component
-     * @param buchiLocation the Büchi-location component
+     * @param buchiLocation the BÃ¼chi-location component
      */
     public ProductState(GraphState state, BuchiLocation buchiLocation) {
         this.state = state;
@@ -42,10 +42,10 @@ public class ProductState {
     }
 
     /**
-     * Constructs a product state based on a given graph transition and target Büchi location.
+     * Constructs a product state based on a given graph transition and target BÃ¼chi location.
      * @param origin the (non-{@code null}) graph transition along which this product state was
      * discovered
-     * @param buchiLocation the Büchi-location component
+     * @param buchiLocation the BÃ¼chi-location component
      */
     public ProductState(GraphTransition origin, BuchiLocation buchiLocation) {
         this.state = origin.target();

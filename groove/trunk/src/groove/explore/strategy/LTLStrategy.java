@@ -319,7 +319,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @param source source of the new transition
      * @param transition the graph-transition component for the
      *        product-transition
-     * @param targetLocation the location of the target Büchi graph-state
+     * @param targetLocation the location of the target BÃ¼chi graph-state
      * @see ProductState#addTransition(ProductTransition)
      */
     private ProductTransition addTransition(ProductState source,
@@ -356,7 +356,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     }
 
     /** Creates a product state from a graph state or transition, and
-     * a Büchi location.
+     * a BÃ¼chi location.
      */
     private ProductState createState(GraphState state,
             GraphTransition transition, BuchiLocation targetLocation) {
@@ -410,7 +410,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     private CycleAcceptor acceptor;
     /** State collector which randomly provides unexplored states. */
     private RandomNewStateChooser collector = new RandomNewStateChooser();
-    /** Initial location of the Büchi graph encoding the property to be verified. */
+    /** Initial location of the BÃ¼chi graph encoding the property to be verified. */
     private BuchiLocation startLocation;
     private Stack<ProductState> stateStack;
     private Result result;
