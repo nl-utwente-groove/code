@@ -162,16 +162,17 @@ public class TemplateBuilder {
      * @throws IllegalStateException if {@code deriv} has a nested derivation
      * but the procedure does not have an initialised template
      */
-    private Switch addSwitch(Template template, Derivation deriv) throws IllegalStateException {
-        Map<Derivation,Switch> switchMap = getSwitchMap(template);
-        Switch result = switchMap.get(deriv);
+    private SwitchStack addSwitch(Template template, Derivation deriv) throws IllegalStateException {
+        Map<Derivation,SwitchStack> switchMap = getSwitchMap(template);
+        SwitchStack result = switchMap.get(deriv);
         if (result == null) {
+            result = new SwitchStack();
             Location target = addLocation(template, deriv.onFinish());
-            result = new Switch(target, deriv.getCall(), deriv.getDepth());
+            result.add(new Switch(target, deriv.getCall(), deriv.getDepth()));
             if (deriv.hasNested()) {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
-                Switch nested = addSwitch(getTemplate(caller), deriv.getNested());
-                result.setNested(nested);
+                SwitchStack nested = addSwitch(getTemplate(caller), deriv.getNested());
+                result.addAll(nested);
             }
             switchMap.put(deriv, result);
         }
@@ -181,17 +182,17 @@ public class TemplateBuilder {
     /**
      * Returns the mapping from derivations to switches for a given template.
      */
-    private Map<Derivation,Switch> getSwitchMap(Template template) {
-        Map<Derivation,Switch> result = this.switchMapMap.get(template);
+    private Map<Derivation,SwitchStack> getSwitchMap(Template template) {
+        Map<Derivation,SwitchStack> result = this.switchMapMap.get(template);
         if (result == null) {
-            this.switchMapMap.put(template, result = new HashMap<Derivation,Switch>());
+            this.switchMapMap.put(template, result = new HashMap<Derivation,SwitchStack>());
         }
         return result;
     }
 
     /** For each template, a mapping from derivations to switches. */
-    private final Map<Template,Map<Derivation,Switch>> switchMapMap =
-        new HashMap<Template,Map<Derivation,Switch>>();
+    private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
+        new HashMap<Template,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -333,14 +334,14 @@ public class TemplateBuilder {
         Location onFailure = null;
         if (loc.isTrial()) {
             SwitchAttempt attempt = loc.getAttempt();
-            for (Switch swit : attempt) {
+            for (SwitchStack swit : attempt) {
                 CallStack call = swit.getCallStack();
                 Set<Stack<Location>> targets = callMap.get(call);
                 if (targets == null) {
                     callMap.put(call, targets = new HashSet<Stack<Location>>());
                 }
                 Stack<Location> targetStack = new Stack<Location>();
-                for (Switch sub : swit.getStack()) {
+                for (Switch sub : swit) {
                     targetStack.add(sub.onFinish());
                 }
                 targets.add(targetStack);
@@ -402,17 +403,11 @@ public class TemplateBuilder {
             if (!repr.isTrial()) {
                 continue;
             }
-            for (Switch swit : repr.getAttempt()) {
+            for (SwitchStack stack : repr.getAttempt()) {
+                Switch swit = stack.getBottom();
                 Location target = locMap.get(swit.onFinish());
                 Switch imageSwitch = new Switch(target, swit.getCall(), swit.getDepth());
                 switchMap.put(swit, imageSwitch);
-            }
-        }
-        // reconstruct nesting of switch images
-        for (Map.Entry<Switch,Switch> e : switchMap.entrySet()) {
-            Switch key = e.getKey();
-            if (key.hasNested()) {
-                e.getValue().setNested(switchMap.get(key.getNested()));
             }
         }
         // Add attempts to the result
@@ -425,8 +420,12 @@ public class TemplateBuilder {
             Location imageSucc = locMap.get(reprAttempt.onSuccess());
             Location imageFail = locMap.get(reprAttempt.onFailure());
             SwitchAttempt imageAttempt = new SwitchAttempt(image, imageSucc, imageFail);
-            for (Switch swit : reprAttempt) {
-                imageAttempt.add(switchMap.get(swit));
+            for (SwitchStack reprStack : reprAttempt) {
+                SwitchStack imageStack = new SwitchStack();
+                for (Switch swit : reprStack) {
+                    imageStack.add(switchMap.get(swit));
+                }
+                imageAttempt.add(imageStack);
             }
             image.setAttempt(imageAttempt);
         }

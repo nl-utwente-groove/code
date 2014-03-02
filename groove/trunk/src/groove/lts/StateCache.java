@@ -139,17 +139,17 @@ public class StateCache {
     private ExploreData exploreData;
 
     /** 
-     * Returns the lowest known presence depth of the state.
+     * Returns the lowest known absence depth of the state.
      * This is {@link Integer#MAX_VALUE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
      */
-    final int getPresence() {
-        return getExploreData().getPresence();
+    final int getAbsence() {
+        return getExploreData().getAbsence();
     }
 
-    /** Decreases the presence level and fires a changed event. */
-    final void setPresence(int presence) {
-        getExploreData().setPresence(presence);
+    /** Decreases the absence level and fires a changed event. */
+    final void setAbsence(int absence) {
+        getExploreData().setAbsence(absence);
     }
 
     /**

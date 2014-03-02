@@ -158,37 +158,6 @@ public class Program implements Fixable {
         }
     }
 
-    /** Checks that all calls in the program are resolved.
-     * @throws IllegalStateException if there is an unresolved call 
-     */
-    public void checkCalls() throws IllegalStateException {
-        for (Procedure proc : getProcs().values()) {
-            checkCalls(proc.getTemplate());
-        }
-    }
-
-    /** Checks that all calls in a given template are resolved within the program.
-     * @throws IllegalStateException if there is an unresolved call 
-     */
-    public void checkCalls(Template template) throws IllegalStateException {
-        for (Location loc : template.getLocations()) {
-            if (!loc.isTrial()) {
-                continue;
-            }
-            for (Switch swit : loc.getAttempt()) {
-                Callable unit = swit.getUnit();
-                if (unit.getKind() == Kind.RULE) {
-                    continue;
-                }
-                if (!this.procs.containsKey(unit.getFullName())) {
-                    throw new IllegalStateException(String.format(
-                        "'%s' called from '%s' is not defined in this program", unit.getFullName(),
-                        template.getName()));
-                }
-            }
-        }
-    }
-
     /** Returns the set of procedure names with initial recursion. */
     public Set<String> getRecursion() {
         if (this.recursion == null) {

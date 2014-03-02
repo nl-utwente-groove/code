@@ -171,8 +171,8 @@ public class Template {
                 if (!loc.isTrial()) {
                     continue;
                 }
-                for (Switch n : loc.getAttempt()) {
-                    Callable unit = n.getCall().getUnit();
+                for (SwitchStack swit : loc.getAttempt()) {
+                    Callable unit = swit.getBottomCall().getUnit();
                     if (unit instanceof Action) {
                         result.add((Action) unit);
                     } else {
@@ -201,8 +201,8 @@ public class Template {
                 vars = getOwner().getOutPars().keySet();
             } else if (state.isTrial()) {
                 vars = new HashSet<CtrlVar>();
-                for (Switch s : state.getAttempt()) {
-                    vars.addAll(s.getCall().getInVars().keySet());
+                for (SwitchStack s : state.getAttempt()) {
+                    vars.addAll(s.getBottomCall().getInVars().keySet());
                 }
             } else {
                 vars = Collections.emptySet();
@@ -220,9 +220,9 @@ public class Template {
             CtrlVarSet sourceVars = new CtrlVarSet(loc.getVars());
             boolean modified = sourceVars.addAll(attempt.onSuccess().getVars());
             modified |= sourceVars.addAll(attempt.onFailure().getVars());
-            for (Switch swit : attempt) {
+            for (SwitchStack swit : attempt) {
                 CtrlVarSet targetVars = new CtrlVarSet(swit.onFinish().getVars());
-                targetVars.removeAll(swit.getCall().getOutVars().keySet());
+                targetVars.removeAll(swit.getBottomCall().getOutVars().keySet());
                 modified |= sourceVars.addAll(targetVars);
             }
             if (modified) {
@@ -233,8 +233,8 @@ public class Template {
         // initialise the source vars in the switches
         for (Location loc : getLocations()) {
             if (loc.isTrial()) {
-                for (Switch swit : loc.getAttempt()) {
-                    swit.setSourceVars(loc.getVars());
+                for (SwitchStack swit : loc.getAttempt()) {
+                    swit.get(0).setSourceVars(loc.getVars());
                 }
             }
         }
@@ -261,7 +261,7 @@ public class Template {
                 SwitchAttempt attempt = state.getAttempt();
                 result.get(attempt.onSuccess()).add(state);
                 result.get(attempt.onFailure()).add(state);
-                for (Switch swit : state.getAttempt()) {
+                for (SwitchStack swit : state.getAttempt()) {
                     result.get(swit.onFinish()).add(state);
                 }
             }

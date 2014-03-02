@@ -16,6 +16,8 @@
  */
 package groove.control.template;
 
+import groove.control.Attempt;
+import groove.control.Call;
 import groove.control.CallStack;
 import groove.grammar.Recipe;
 
@@ -26,19 +28,8 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SwitchStack extends Stack<Switch> {
-    /**
-     * Constructs the stack consisting of a given (bottom) switch
-     * and its recursively nested switches.
-     * @see Switch#getNested()
-     */
-    public SwitchStack(Switch bottom) {
-        do {
-            add(bottom);
-            bottom = bottom.getNested();
-        } while (bottom != null);
-    }
-
+public class SwitchStack extends Stack<Switch> implements Attempt.Stage<Location,SwitchStack>,
+        Comparable<SwitchStack> {
     /** Constructs a copy of a given stack. */
     public SwitchStack(SwitchStack other) {
         addAll(other);
@@ -49,7 +40,46 @@ public class SwitchStack extends Stack<Switch> {
         // empty
     }
 
+    /** Returns the bottom of the stack. */
+    public Switch getBottom() {
+        return get(0);
+    }
+
+    /** Returns the original call, at the bottom of the stack. */
+    public Call getBottomCall() {
+        return getBottom().getCall();
+    }
+
+    @Override
+    public Call getRuleCall() {
+        return peek().getCall();
+    }
+
+    @Override
+    public Location onFinish() {
+        return getBottom().onFinish();
+    }
+
+    @Override
+    public int getDepth() {
+        if (this.depth < 0) {
+            this.depth = computeDepth();
+        }
+        return this.depth;
+    }
+
+    private int computeDepth() {
+        int result = 0;
+        for (Switch swit : this) {
+            this.depth += swit.getDepth();
+        }
+        return result;
+    }
+
+    private int depth = -1;
+
     /** Returns the call stack corresponding to this switch stack. */
+    @Override
     public CallStack getCallStack() {
         if (this.callStack == null) {
             this.callStack = new CallStack();
@@ -85,7 +115,7 @@ public class SwitchStack extends Stack<Switch> {
             return false;
         }
         for (int i = 0; i < size(); i++) {
-            if (!get(i).equals(other.get(i), false)) {
+            if (!get(i).equals(other.get(i))) {
                 return false;
             }
         }
@@ -102,4 +132,12 @@ public class SwitchStack extends Stack<Switch> {
         return result;
     }
 
+    @Override
+    public int compareTo(SwitchStack o) {
+        int result = size() - o.size();
+        for (int i = 0; result == 0 && i < size(); i++) {
+            result = get(i).compareTo(o.get(i));
+        }
+        return result;
+    }
 }

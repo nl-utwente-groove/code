@@ -184,17 +184,18 @@ public interface GraphState extends Node {
     public boolean isError();
 
     /** 
-     * Declares this state to be done, while also setting its presence.
-     * @param presence flag indicating if the state is present
+     * Declares this state to be done, while also setting its absence.
+     * @param absence level of the state; if positive, the state is absent
      * @return if {@code false}, the state was already known to be done
      * @see Flag#DONE
      */
-    public boolean setDone(int presence);
+    public boolean setDone(int absence);
 
     /** 
      * Indicates if this state is done. 
      * This is the case if
-     * all outgoing paths have been explored up until the first non-transient state.
+     * all outgoing paths have been explored up until a non-transient
+     * or deadlocked state.
      * @see Flag#DONE
      */
     public boolean isDone();
@@ -216,29 +217,28 @@ public interface GraphState extends Node {
      * space. This is the case if the state is done and not present.
      * A special case of absence is if the state is erroneous.
      * @see #isDone()
+     * @see #getAbsence()
      */
     public boolean isAbsent();
 
     /** 
-     * Indicates the transient depth at which this state is known to
-     * be present.
+     * Indicates the absence level, which is defined as the lowest
+     * transient depth of the known reachable states.
      * This is infinite ({@link Integer#MAX_VALUE}) if the state is
-     * erroneous; otherwise it equals the minimum of the transient depths of 
-     * the reachable states.
-     * The state is <i>absent</i> if it is done and not present at 
-     * level 0.
+     * erroneous, and 0 if the state is non-transient (hence present).
+     * The state is <i>absent</i> if it is done has a positive absence level.
      * @see #isDone()
      * @see #isAbsent() 
      */
-    public int getPresence();
+    public int getAbsence();
 
     /** 
      * Indicates if this state is properly part of the state space.
-     * Convenience method for <code>getPresence() == 0</code>.
+     * Convenience method for <code>getAbsence() == 0</code>.
      * If a state is done, it is either present or absent.
      * @see #isDone()
      * @see #isAbsent() 
-     * @see #getPresence()
+     * @see #getAbsence()
      */
     public boolean isPresent();
 
@@ -305,18 +305,18 @@ public interface GraphState extends Node {
             return this.strategy;
         }
 
-        /** Retrieves the presence level from a given status value. */
-        static public int getPresence(int status) {
-            return status >> PRESENCE_SHIFT;
+        /** Retrieves the absence level from a given status value. */
+        static public int getAbsence(int status) {
+            return status >> ABSENCE_SHIFT;
         }
 
-        /** Retrieves the presence level from a given status value. */
-        static public int setPresence(int status, int presence) {
-            if (presence > MAX_PRESENCE) {
+        /** Retrieves the absence level from a given status value. */
+        static public int setAbsence(int status, int absence) {
+            if (absence > MAX_ABSENCE) {
                 throw new IllegalArgumentException(String.format(
-                    "Presence depth %d too large: max. %s", presence, MAX_PRESENCE));
+                    "Absence level %d too large: max. %s", absence, MAX_ABSENCE));
             }
-            return status | (presence << PRESENCE_SHIFT);
+            return status | (absence << ABSENCE_SHIFT);
         }
 
         private final int mask;
@@ -325,8 +325,8 @@ public interface GraphState extends Node {
         /** Number of bits by which a status value has be right-shifted to get 
          * the presence value.
          */
-        private final static int PRESENCE_SHIFT = 25;
-        /** Maximal presence value that will fit into the available bits. */
-        private final static int MAX_PRESENCE = 1 << (31 - PRESENCE_SHIFT);
+        private final static int ABSENCE_SHIFT = 25;
+        /** Maximal absence value that will fit into the available bits. */
+        private final static int MAX_ABSENCE = 1 << (31 - ABSENCE_SHIFT);
     }
 }

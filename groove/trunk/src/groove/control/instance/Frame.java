@@ -52,9 +52,8 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         while (loc.isFinal() && !callStack.isEmpty()) {
             loc = callStack.pop().onFinish();
         }
-        this.callStack = callStack;
+        this.switchStack = callStack;
         this.location = loc;
-        this.depth = -1;
         // assume that this is a prime frame;
         // if not, setPrime should be called afterwards
         this.primeFrame = this;
@@ -85,11 +84,11 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     }
 
     /** Returns the call stack giving rise to this frame. */
-    public SwitchStack getCallStack() {
-        return this.callStack;
+    public SwitchStack getSwitchStack() {
+        return this.switchStack;
     }
 
-    private final SwitchStack callStack;
+    private final SwitchStack switchStack;
 
     /** Returns the top control location instantiated by this frame. */
     public Location getLocation() {
@@ -190,13 +189,14 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         SwitchAttempt locAttempt = getLocation().getAttempt();
         Set<CallStack> pastAttempts = new HashSet<CallStack>(getPastAttempts());
         List<Step> steps = new ArrayList<Step>();
-        for (Switch swit : locAttempt) {
-            pastAttempts.add(swit.getCallStack());
-            SwitchStack callStack = new SwitchStack(getCallStack());
-            callStack.addAll(swit.getStack());
-            Switch topCall = callStack.pop();
-            Frame onFinish = new Frame(getAut(), topCall.onFinish(), callStack);
-            steps.add(new Step(this, swit, onFinish.normalise()));
+        for (SwitchStack locStack : locAttempt) {
+            pastAttempts.add(locStack.getCallStack());
+            SwitchStack targetStack = new SwitchStack();
+            targetStack.addAll(getSwitchStack());
+            targetStack.addAll(locStack);
+            Switch topCall = targetStack.pop();
+            Frame onFinish = new Frame(getAut(), topCall.onFinish(), targetStack);
+            steps.add(new Step(this, locStack, onFinish.normalise()));
         }
         Frame onSuccess = newFrame(locAttempt.onSuccess(), pastAttempts);
         Frame onFailure = newFrame(locAttempt.onFailure(), pastAttempts);
@@ -207,12 +207,12 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     @Override
     public boolean isRecipeStage() {
-        return getCallStack().isRecipeStep();
+        return getSwitchStack().isRecipeStep();
     }
 
     @Override
     public Recipe getRecipe() {
-        return getCallStack().getCallStack().getRecipe();
+        return getSwitchStack().getCallStack().getRecipe();
     }
 
     @Override
@@ -222,21 +222,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     @Override
     public int getDepth() {
-        if (this.depth == -1) {
-            this.depth = computeDepth();
-        }
-        return this.depth;
-    }
-
-    private int depth;
-
-    private int computeDepth() {
-        int result = 0;
-        for (Switch caller : getCallStack()) {
-            result += caller.getDepth();
-        }
-        result += getLocation().getDepth();
-        return result;
+        return getSwitchStack().getDepth() + getLocation().getDepth();
     }
 
     @Override
@@ -254,7 +240,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
      * with the same prime frame and call stack as this frame. 
      */
     private Frame newFrame(Location loc, Set<CallStack> pastAttempts) {
-        Frame result = new Frame(getAut(), loc, getCallStack());
+        Frame result = new Frame(getAut(), loc, getSwitchStack());
         result.setPrime(getPrime(), pastAttempts);
         return result.normalise();
     }
@@ -273,7 +259,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         int result = (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
         result = prime * result + this.pastAttempts.hashCode();
         result = prime * result + this.location.hashCode();
-        result = prime * result + this.callStack.hashCode();
+        result = prime * result + this.switchStack.hashCode();
         return result;
     }
 
@@ -296,7 +282,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         if (!this.location.equals(other.location)) {
             return false;
         }
-        if (!this.callStack.equals(other.callStack)) {
+        if (!this.switchStack.equals(other.switchStack)) {
             return false;
         }
         return true;
@@ -333,7 +319,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     public String getIdString() {
         StringBuilder result = new StringBuilder();
         String callerName = null;
-        for (Switch swit : getCallStack()) {
+        for (Switch swit : getSwitchStack()) {
             if (callerName == null) {
                 result.append("c");
             } else {

@@ -90,7 +90,7 @@ public class AutomatonBuildTest {
         assertEquals(aCall, sFail.get(1).getRuleCall());
         //
         Frame fFailFail = sFail.onFailure();
-        assertEquals(0, fFailFail.getCallStack().size());
+        assertEquals(0, fFailFail.getSwitchStack().size());
         assertTrue(fFailFail.isFinal());
         assertEquals(fFailFail, sFail.onSuccess());
         //
@@ -101,7 +101,7 @@ public class AutomatonBuildTest {
         assertEquals(aCall, sSucc.get(1).getRuleCall());
         //
         Frame fSuccFail = sSucc.onFailure();
-        assertEquals(0, fSuccFail.getCallStack().size());
+        assertEquals(0, fSuccFail.getSwitchStack().size());
         assertTrue(fSuccFail.isDead());
         assertEquals(fSuccFail, sSucc.onSuccess());
         //
@@ -144,7 +144,7 @@ public class AutomatonBuildTest {
         Step s5 = f5.getAttempt().get(0);
         Frame f6 = s5.onFinish();
         //
-        assertEquals(0, s0.getCallDepth());
+        assertEquals(0, s0.getCallDepthChange());
         List<Assignment> change = s0.getFrameChanges();
         assertEquals(1, change.size());
         Assignment a00 = change.get(0);
@@ -154,7 +154,7 @@ public class AutomatonBuildTest {
         assertEquals(Source.CREATOR, b00[0].getSource());
         assertEquals(0, b00[0].getIndex());
         //
-        assertEquals(2, s1.getCallDepth());
+        assertEquals(2, s1.getCallDepthChange());
         change = s1.getFrameChanges();
         assertEquals(3, change.size());
         List<Binding> b = Arrays.asList(Binding.var(0));
@@ -164,7 +164,7 @@ public class AutomatonBuildTest {
         b = Arrays.asList(Binding.anchor(0), Binding.creator(0));
         assertEquals(Assignment.call(b), change.get(2));
         //
-        assertEquals(-1, s2.getCallDepth());
+        assertEquals(-1, s2.getCallDepthChange());
         change = s2.getFrameChanges();
         assertEquals(2, change.size());
         b = Arrays.asList(Binding.var(1));
@@ -172,13 +172,13 @@ public class AutomatonBuildTest {
         b = Arrays.asList(Binding.caller(0), Binding.var(0));
         assertEquals(Assignment.pop(b), change.get(1));
         //
-        assertEquals(0, s3.getCallDepth());
+        assertEquals(0, s3.getCallDepthChange());
         change = s3.getFrameChanges();
         assertEquals(1, change.size());
         b = Arrays.asList(Binding.var(0), Binding.var(1));
         assertEquals(Assignment.call(b), change.get(0));
         //
-        assertEquals(0, s4.getCallDepth());
+        assertEquals(0, s4.getCallDepthChange());
         change = s4.getFrameChanges();
         assertEquals(3, change.size());
         b = Arrays.asList(Binding.var(0));
@@ -188,7 +188,7 @@ public class AutomatonBuildTest {
         b = Arrays.asList(Binding.caller(1));
         assertEquals(Assignment.pop(b), change.get(2));
         //
-        assertEquals(-1, s5.getCallDepth());
+        assertEquals(-1, s5.getCallDepthChange());
         change = s5.getFrameChanges();
         assertEquals(4, change.size());
         b = Arrays.asList(Binding.var(0));
@@ -224,9 +224,9 @@ public class AutomatonBuildTest {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
         SwitchStack stack = new SwitchStack();
-        stack.add(this.prog.getTemplate().getStart().getAttempt().get(0));
-        stack.add(this.prog.getProc("r").getTemplate().getStart().getAttempt().get(0));
-        stack.add(this.prog.getProc("f").getTemplate().getStart().getAttempt().get(0));
+        stack.add(this.prog.getTemplate().getStart().getAttempt().get(0).getBottom());
+        stack.add(this.prog.getProc("r").getTemplate().getStart().getAttempt().get(0).getBottom());
+        stack.add(this.prog.getProc("f").getTemplate().getStart().getAttempt().get(0).getBottom());
         Frame f0 = p.getStart();
         StepAttempt a0 = f0.getAttempt();
         assertEquals(1, a0.size());

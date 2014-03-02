@@ -239,30 +239,30 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public boolean isAbsent() {
-        return isDone() && getPresence() > 0;
+        return isDone() && getAbsence() > 0;
     }
 
     @Override
-    public int getPresence() {
+    public int getAbsence() {
         if (isError()) {
             return Integer.MAX_VALUE;
         } else if (isDone()) {
-            return Flag.getPresence(this.status);
+            return Flag.getAbsence(this.status);
         } else {
-            return getCache().getPresence();
+            return getCache().getAbsence();
         }
     }
 
     @Override
     public boolean isPresent() {
-        return getPresence() == 0;
+        return getAbsence() == 0;
     }
 
     @Override
-    public boolean setDone(int presence) {
+    public boolean setDone(int absence) {
         boolean result = setStatus(DONE, true);
         if (result) {
-            this.status = Flag.setPresence(this.status, presence);
+            this.status = Flag.setAbsence(this.status, absence);
             getCache().notifyDone();
             setCacheCollectable();
             fireStatus(DONE);
