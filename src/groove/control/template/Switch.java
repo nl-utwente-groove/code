@@ -19,7 +19,6 @@ package groove.control.template;
 import groove.control.Attempt;
 import groove.control.Binding;
 import groove.control.Call;
-import groove.control.CallStack;
 import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
@@ -40,7 +39,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch> {
+public class Switch implements Comparable<Switch> {
     /**
      * Constructs a base call switch.
      * @param onFinish target location of the switch
@@ -49,7 +48,6 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
     public Switch(Location onFinish, Call call, int depth) {
         assert onFinish != null;
         this.onFinish = onFinish;
-        this.nested = null;
         this.kind = call.getUnit().getKind();
         this.call = call;
         this.depth = depth;
@@ -71,58 +69,12 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
 
     private List<CtrlVar> sourceVars;
 
-    @Override
+    /** Returns the target position of this switch. */
     public Location onFinish() {
         return this.onFinish;
     }
 
     private final Location onFinish;
-
-    /**
-     * Sets a nested switch called from this one.
-     */
-    public void setNested(Switch nested) {
-        this.nested = nested;
-    }
-
-    /** 
-     * Indicates if this switch has a nested (called) switch.
-     */
-    public boolean hasNested() {
-        return getNested() != null;
-    }
-
-    /**
-     * Returns the switch called from this one, if any.
-     */
-    public Switch getNested() {
-        return this.nested;
-    }
-
-    private Switch nested;
-
-    /** Returns the depth of the call stack of this switch (not including this switch).
-     */
-    public int getCallDepth() {
-        return getStack().size();
-    }
-
-    /** Returns the call stack of this switch.
-     */
-    public SwitchStack getStack() {
-        if (this.callStack == null) {
-            this.callStack = new SwitchStack(this);
-        }
-        return this.callStack;
-    }
-
-    /** List of callers, from bottom to top. */
-    private SwitchStack callStack;
-
-    @Override
-    public CallStack getCallStack() {
-        return getStack().getCallStack();
-    }
 
     /**
      * Returns the kind of switch.
@@ -176,12 +128,7 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
      */
     private final Call call;
 
-    @Override
-    public Call getRuleCall() {
-        return getCallStack().peek();
-    }
-
-    @Override
+    /** Returns the additional transient depth effected by this switch. */
     public int getDepth() {
         return this.depth;
     }
@@ -256,7 +203,6 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
         result = prime * result + getKind().hashCode();
         result = prime * result + getDepth();
         result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
-        result = prime * result + ((!full || this.nested == null) ? 0 : this.nested.hashCode());
         return result;
     }
 
@@ -268,20 +214,7 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
         if (!(obj instanceof Switch)) {
             return false;
         }
-        return equals((Switch) obj, true);
-    }
-
-    /** 
-     * Compares this switch with another, optionally ignoring the nested switch.
-     * @param full if {@code true}, the nested switch is taken into account
-     */
-    public boolean equals(Switch other, boolean full) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null) {
-            return false;
-        }
+        Switch other = (Switch) obj;
         if (getKind() != other.getKind()) {
             return false;
         }
@@ -290,17 +223,6 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
         }
         if (!getSourceVars().equals(other.getSourceVars())) {
             return false;
-        }
-        if (full) {
-            if (getNested() == null) {
-                if (other.getNested() != null) {
-                    return false;
-                }
-            } else {
-                if (!getNested().equals(other.getNested())) {
-                    return false;
-                }
-            }
         }
         if (!onFinish().equals(other.onFinish())) {
             return false;
@@ -339,16 +261,12 @@ public class Switch implements Attempt.Stage<Location,Switch>, Comparable<Switch
                 return result;
             }
         }
-        if (hasNested()) {
-            if (o.hasNested()) {
-                result = getNested().compareTo(o.getNested());
-            } else {
-                return 1;
-            }
-        } else if (o.hasNested()) {
-            return -1;
-        }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "--" + getCall() + "->" + onFinish();
     }
 
     /** Control switch kind. */

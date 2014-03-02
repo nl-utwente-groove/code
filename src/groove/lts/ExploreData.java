@@ -34,7 +34,7 @@ class ExploreData {
     */
     ExploreData(StateCache cache) {
         this.state = cache.getState();
-        this.presence =
+        this.absence =
             this.state.isError() ? Integer.MAX_VALUE : this.state.getActualFrame().getDepth();
     }
 
@@ -45,18 +45,19 @@ class ExploreData {
      * @param partial new outgoing partial rule transition from this state
      */
     void addOutPartial(RuleTransition partial) {
-        notifyPartial(partial, partial);
+        RuleTransition initial = partial.isRecipeStep() ? partial : null;
+        notifyPartial(partial, initial);
         GraphState child = partial.target();
         ExploreData childCache = child.getCache().getExploreData();
-        this.presence = Math.min(this.presence, childCache.presence);
+        this.absence = Math.min(this.absence, childCache.absence);
         if (child.isTransient()) {
             if (!child.isDone()) {
                 // we've reached a transient raw state
-                childCache.rawParents.add(Pair.newPair(this, partial));
+                childCache.rawParents.add(Pair.newPair(this, initial));
             }
             // add the child partials to this cache
             for (RuleTransition childPartial : childCache.partials) {
-                notifyPartial(childPartial, partial);
+                notifyPartial(childPartial, initial);
             }
         }
     }
@@ -64,8 +65,8 @@ class ExploreData {
     /**
      * Notifies the cache of the existence of a reachable partial transition.
      * @param partial partial transition reachable from this state
-     * @param initial initial transition of a potential recipe transition ending
-     * on the new partial transition
+     * @param initial initial transition, from this state, of a potential
+     * recipe transition containing the new partial transition; may be {@code null}
      */
     private void notifyPartial(RuleTransition partial, RuleTransition initial) {
         // maybe add the transition target to the transient open states
@@ -76,13 +77,20 @@ class ExploreData {
         // add the partial if it was not already known
         if (this.state.isTransient()) {
             if (this.partials.add(partial)) {
-                this.presence = Math.min(this.presence, target.getPresence());
+                this.absence = Math.min(this.absence, target.getAbsence());
                 // notify all parents of the new partial
                 for (Pair<ExploreData,RuleTransition> parent : this.rawParents) {
-                    parent.one().notifyPartial(partial, parent.two());
+                    RuleTransition parentInitial = parent.two();
+                    // reuse the parent's initial transition if we are still in the same recipe
+                    if (parentInitial != null && parentInitial.getRecipe() != partial.getRecipe()) {
+                        parentInitial = null;
+                    }
+                    parent.one().notifyPartial(partial, parentInitial);
                 }
             }
-        } else if (!target.isTransient() && initial.isRecipeStep()) {
+        }
+        if (target.getActualFrame().getDepth() == this.state.getActualFrame().getDepth()
+            && initial != null) {
             // add recipe transition if there was none
             this.state.getGTS().addTransition(new RecipeTransition(this.state, initial, target));
         }
@@ -94,20 +102,22 @@ class ExploreData {
     void notifyClosed() {
         if (this.state.isTransient()) {
             // notify all parents of the closure
-            fireChanged(this.state);
+            fireChanged(this.state, Change.CLOSURE);
         }
         if (this.transientOpens.isEmpty()) {
             setStateDone();
         }
     }
 
-    /** Callback method invoked when a child closed or became non-transient. */
-    private void notifyChildChanged(GraphState child, RuleTransition initial) {
-        if (this.transientOpens.remove(child)) {
-            this.presence = Math.min(this.presence, child.getPresence());
+    /** Callback method invoked when a child closed or got a lower absence level. */
+    private void notifyChildChanged(GraphState child, RuleTransition initial, Change change) {
+        int childAbsence = child.getAbsence();
+        if (childAbsence == 0 && this.transientOpens.remove(child)
+            || this.transientOpens.contains(child)) {
+            this.absence = Math.min(this.absence, child.getAbsence());
             if (this.state.isTransient()) {
                 // notify all parents of the change
-                fireChanged(child);
+                fireChanged(child, change);
             }
         }
         if (!this.state.isTransient() && !child.isTransient() && initial.isRecipeStep()) {
@@ -119,26 +129,25 @@ class ExploreData {
     }
 
     private void setStateDone() {
-        this.state.setDone(this.presence);
+        this.state.setDone(this.absence);
         this.rawParents.clear();
     }
 
     /** 
-     * Callback method invoked when the state closed or became non-transient.
-     * Notifies all raw parents.
+     * Callback method invoked when a given (transient) changed. Notifies all raw parents.
      */
-    private void fireChanged(GraphState state) {
+    private void fireChanged(GraphState state, Change change) {
         // notify all parents of the change
         for (Pair<ExploreData,RuleTransition> parent : this.rawParents) {
-            parent.one().notifyChildChanged(state, parent.two());
+            parent.one().notifyChildChanged(state, parent.two(), change);
         }
     }
 
-    /** Decreases the presence level and fires a changed event. */
-    final void setPresence(int presence) {
-        if (presence < this.presence) {
-            this.presence = presence;
-            fireChanged(this.state);
+    /** Decreases the absence level and fires a changed event. */
+    final void setAbsence(int absence) {
+        if (absence < this.absence) {
+            this.absence = absence;
+            fireChanged(this.state, Change.ABSENCE);
         }
     }
 
@@ -147,20 +156,30 @@ class ExploreData {
      * This is {@link Integer#MAX_VALUE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
      */
-    final int getPresence() {
-        return this.presence;
+    final int getAbsence() {
+        return this.absence;
     }
 
     /** Flag indicating if the associated state is known to be present. */
-    private int presence;
+    private int absence;
 
     /** 
      * Set of incoming transitions from raw parent states.
      */
     private final List<Pair<ExploreData,RuleTransition>> rawParents =
         new ArrayList<Pair<ExploreData,RuleTransition>>();
-    /** Set of reachable transient open states. */
+    /** Set of reachable transient open states (transitively closed). */
     private final Set<GraphState> transientOpens = new HashSet<GraphState>();
     /** Set of reachable partial rule transitions. */
     private final Set<RuleTransition> partials = new HashSet<RuleTransition>();
+
+    /** Type of propagated change. */
+    enum Change {
+        /** The absence level got lower because a child was found with lower transience. */
+        ABSENCE,
+        /** The transience level got lower because an atomic block was exited. */
+        TRANSIENCE,
+        /** The state closed. */
+        CLOSURE;
+    }
 }

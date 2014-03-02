@@ -103,7 +103,7 @@ public class FrameStateMatches extends StateMatches {
                     allAbsent = false;
                 } else {
                     GraphState target = t.target();
-                    if (target.getPresence() <= frame.getDepth()) {
+                    if (target.getAbsence() <= frame.getDepth()) {
                         somePresent = true;
                         break;
                     } else if (target.isAbsent()) {
@@ -157,8 +157,8 @@ public class FrameStateMatches extends StateMatches {
             addAll(outstanding);
             result = true;
         }
-        if (frame.getDepth() < getState().getPresence()) {
-            getCache().setPresence(frame.getDepth());
+        if (frame.getDepth() < getState().getAbsence()) {
+            getCache().setAbsence(frame.getDepth());
         }
         return result;
     }

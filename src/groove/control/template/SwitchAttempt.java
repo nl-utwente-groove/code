@@ -23,7 +23,7 @@ import groove.control.Attempt;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SwitchAttempt extends Attempt<Location,Switch> {
+public class SwitchAttempt extends Attempt<Location,SwitchStack> {
     /** Constructs a switch attempt for a given source location. */
     public SwitchAttempt(Location source, Location onSuccess, Location onFailure) {
         this.source = source;

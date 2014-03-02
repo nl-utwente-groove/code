@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Location implements Position<Location,Switch>, Comparable<Location> {
+public class Location implements Position<Location,SwitchStack>, Comparable<Location> {
     /**
      * Constructs a numbered location for a given automaton.
      */

@@ -152,7 +152,7 @@ public class StateMatches extends MatchResultSet {
             result = true;
         }
         if (isTransient && !getState().isTransient()) {
-            getCache().setPresence(0);
+            getCache().setAbsence(0);
         }
         return result;
     }

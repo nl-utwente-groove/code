@@ -45,9 +45,14 @@ import java.util.Map;
 public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     /**
      * Constructs a step from the given parameters.
+     * @param source source frame for the step
+     * @param newSwitches stack of new switches invoked from the source frame
+     * @param onFinish target frame for the step
      */
-    public Step(Frame source, Switch swit, Frame onFinish) {
-        this.swit = swit;
+    public Step(Frame source, SwitchStack newSwitches, Frame onFinish) {
+        this.stack = new SwitchStack();
+        this.stack.addAll(source.getSwitchStack());
+        this.stack.addAll(newSwitches);
         this.onFinish = onFinish;
         this.source = source;
     }
@@ -71,43 +76,33 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     private final Frame onFinish;
 
-    /** Convenience method to return the switch of this step. */
-    private Switch getSwitch() {
-        return this.swit;
-    }
-
     /** Convenience method to return the top switch of this step. */
     public Switch getRuleSwitch() {
         return getSwitchStack().peek();
     }
 
-    private final Switch swit;
-
     @Override
     public Call getRuleCall() {
-        return getSwitch().getRuleCall();
+        return getSwitchStack().getRuleCall();
     }
 
     @Override
     public int getDepth() {
-        return getSwitch().getDepth();
+        return getSwitchStack().getDepth() - getSource().getDepth();
     }
 
-    /** Returns the number of levels by which the call stack depth changes. */
-    public int getCallDepth() {
-        return onFinish().getCallStack().size() - getSource().getCallStack().size();
+    /** Returns the number of levels by which the call stack depth changes from source
+     * to target frame. */
+    public int getCallDepthChange() {
+        return onFinish().getSwitchStack().size() - getSource().getSwitchStack().size();
     }
 
-    /** Convenience method to return the call stack of the switch of this step. */
+    /** Returns the stack of switches in this step. */
     public final SwitchStack getSwitchStack() {
-        if (this.switchStack == null) {
-            this.switchStack = new SwitchStack(getSource().getCallStack());
-            this.switchStack.addAll(getSwitch().getStack());
-        }
-        return this.switchStack;
+        return this.stack;
     }
 
-    private SwitchStack switchStack;
+    private SwitchStack stack;
 
     @Override
     public CallStack getCallStack() {
@@ -145,7 +140,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
      * a given target variable position.
      */
     public boolean mayAssign(int targetVar) {
-        if (getCallDepth() != 0) {
+        if (getCallDepthChange() != 0) {
             return true;
         }
         // the target frame has the same depth as the source frame
@@ -172,7 +167,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         List<Assignment> result = new ArrayList<Assignment>();
         // add pop actions for every successive call on the
         // stack of entered calls
-        for (int i = getSource().getCallStack().size(); i < getSwitchStack().size() - 1; i++) {
+        for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {
             result.add(enter(getSwitchStack().get(i)));
         }
         return result;
@@ -192,7 +187,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         List<Assignment> result = computeFramePushes();
         result.add(modify(getSwitchStack().peek()));
         // add pop actions for the calls that are finished
-        for (int i = getSwitchStack().size() - 2; i >= onFinish().getCallStack().size(); i--) {
+        for (int i = getSwitchStack().size() - 2; i >= onFinish().getSwitchStack().size(); i--) {
             result.add(exit(getSwitchStack().get(i)));
         }
         return result;
@@ -296,7 +291,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         if (result != 0) {
             return result;
         }
-        result = getSwitch().compareTo(other.getSwitch());
+        result = getSwitchStack().compareTo(other.getSwitchStack());
         if (result != 0) {
             return result;
         }

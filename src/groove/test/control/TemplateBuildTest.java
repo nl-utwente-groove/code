@@ -29,6 +29,7 @@ import groove.control.template.Location;
 import groove.control.template.Program;
 import groove.control.template.Switch;
 import groove.control.template.SwitchAttempt;
+import groove.control.template.SwitchStack;
 import groove.control.template.Template;
 
 import java.util.Arrays;
@@ -218,35 +219,30 @@ public class TemplateBuildTest extends CtrlTester {
         SwitchAttempt s = this.template.getStart().getAttempt();
         assertEquals(4, s.size());
         assertTrue(s.sameVerdict());
-        Switch s0 = s.get(0);
-        assertEquals(this.dCall, s0.getCall());
+        SwitchStack s0 = s.get(0);
+        assertEquals(this.dCall, s0.getBottomCall());
         //
-        Switch s1 = s.get(1);
-        Procedure f = (Procedure) s1.getCall().getUnit();
+        SwitchStack s1 = s.get(1);
+        Procedure f = (Procedure) s1.getBottomCall().getUnit();
         assertEquals("f", f.getFullName());
-        assertTrue(s1.hasNested());
-        Switch s1N = s1.getNested();
+        Switch s1N = s1.get(1);
         assertEquals(this.aCall, s1N.getCall());
         assertEquals(getNext(f.getTemplate().getStart(), this.aCall), s1N.onFinish());
         //
-        Switch s2 = s.get(2);
-        assertEquals(f, s2.getCall().getUnit());
-        assertTrue(s2.hasNested());
-        Switch s2N = s2.getNested();
+        SwitchStack s2 = s.get(2);
+        assertEquals(f, s2.getBottomCall().getUnit());
+        Switch s2N = s2.get(1);
         Procedure g = (Procedure) s2N.getCall().getUnit();
         assertEquals("g", g.getFullName());
-        assertTrue(s2N.hasNested());
-        Switch s2NN = s2N.getNested();
+        Switch s2NN = s2.get(2);
         assertEquals(this.bCall, s2NN.getCall());
         assertEquals(getNext(g.getTemplate().getStart(), this.bCall), s2NN.onFinish());
         //
-        Switch s3 = s.get(3);
-        assertEquals(f, s3.getCall().getUnit());
-        assertTrue(s3.hasNested());
-        Switch s3N = s3.getNested();
+        SwitchStack s3 = s.get(3);
+        assertEquals(f, s3.getBottomCall().getUnit());
+        Switch s3N = s3.get(1);
         assertEquals(g, s3N.getCall().getUnit());
-        assertTrue(s3N.hasNested());
-        Switch s3NN = s3N.getNested();
+        Switch s3NN = s3.get(2);
         assertEquals(this.cCall, s3NN.getCall());
     }
 
@@ -273,8 +269,8 @@ public class TemplateBuildTest extends CtrlTester {
 
     private Set<Location> getNexts(Location loc, Call call) {
         Set<Location> result = new HashSet<Location>();
-        for (Switch swit : loc.getAttempt()) {
-            if (swit.getCall().equals(call)) {
+        for (SwitchStack swit : loc.getAttempt()) {
+            if (swit.getBottomCall().equals(call)) {
                 result.add(swit.onFinish());
             }
         }
