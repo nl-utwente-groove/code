@@ -56,7 +56,9 @@ public class GrooveFileChooser extends JFileChooser {
         setFileView(createFileView());
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
-        setFileSelectionMode(FILES_ONLY);
+        // EZ says: attempt to fix SF bug #418.
+        //setFileSelectionMode(FILES_ONLY);
+        setFileSelectionMode(FILES_AND_DIRECTORIES);
     }
 
     /**
@@ -66,8 +68,7 @@ public class GrooveFileChooser extends JFileChooser {
      */
     @Override
     public boolean isTraversable(File file) {
-        return super.isTraversable(file)
-            && !(hasFileType() && getFileType().hasExtension(file));
+        return super.isTraversable(file) && !(hasFileType() && getFileType().hasExtension(file));
     }
 
     /* Makes sure the file name is set in the UI. */
@@ -124,9 +125,9 @@ public class GrooveFileChooser extends JFileChooser {
             // When saving, check if file already exists. If so, ask for overwrite confirmation
             if (f.exists()) {
                 int result =
-                    JOptionPane.showConfirmDialog(this, f.getName()
-                        + " already exists, overwrite?",
-                        "Overwrite existing file", JOptionPane.YES_NO_OPTION);
+                    JOptionPane.showConfirmDialog(this,
+                        f.getName() + " already exists, overwrite?", "Overwrite existing file",
+                        JOptionPane.YES_NO_OPTION);
                 switch (result) {
                 case JOptionPane.YES_OPTION:
                     super.approveSelection();
