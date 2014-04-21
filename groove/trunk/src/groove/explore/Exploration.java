@@ -56,19 +56,20 @@ public class Exploration {
     private GraphState lastState;
 
     /** List of currently active exploration listeners. */
-    private List<ExplorationListener> listeners =
-        new ArrayList<ExplorationListener>();
+    private List<ExplorationListener> listeners = new ArrayList<ExplorationListener>();
 
     private boolean interrupted;
 
     /**
      * Initialise to a given exploration. 
-     * @param strategy strategy component of the exploration
-     * @param acceptor acceptor component of the exploration
+     * @param strategy strategy component of the exploration; non-{@code null}
+     * @param acceptor acceptor component of the exploration; non-{@code null}
      * @param nrResults number of results: {@code 0} means unbounded
      */
     public Exploration(Serialized strategy, Serialized acceptor, int nrResults) {
+        assert strategy != null;
         this.strategy = strategy;
+        assert acceptor != null;
         this.acceptor = acceptor;
         this.nrResults = nrResults;
         this.lastResult = new Result(0);
@@ -90,8 +91,7 @@ public class Exploration {
      * @param acceptor acceptor component value
      * @param nrResults number of results: {@code 0} means unbounded
      */
-    public Exploration(StrategyValue strategy, AcceptorValue acceptor,
-            int nrResults) {
+    public Exploration(StrategyValue strategy, AcceptorValue acceptor, int nrResults) {
         this(strategy.toSerialized(), acceptor.toSerialized(), nrResults);
     }
 
@@ -278,8 +278,7 @@ public class Exploration {
     public String toParsableString() {
         String result =
             StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " "
-                + this.nrResults;
+                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.nrResults;
         return result;
     }
 
@@ -323,8 +322,7 @@ public class Exploration {
         int resultCount = 0;
         if (parts.length == 3) {
             String countMessage =
-                String.format(
-                    "Result count '%s' must be a non-negative number", parts[2]);
+                String.format("Result count '%s' must be a non-negative number", parts[2]);
             try {
                 resultCount = Integer.parseInt(parts[2]);
             } catch (NumberFormatException e) {
@@ -350,14 +348,11 @@ public class Exploration {
     static public final String SYNTAX_MESSAGE =
         "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Static instance of the strategy enumerator. */
-    static private final StrategyEnumerator strategies =
-        StrategyEnumerator.instance();
+    static private final StrategyEnumerator strategies = StrategyEnumerator.instance();
     /** Static instance of the acceptor enumerator. */
-    static private final AcceptorEnumerator acceptors =
-        AcceptorEnumerator.instance();
+    static private final AcceptorEnumerator acceptors = AcceptorEnumerator.instance();
     /** Reporter for profiling information. */
-    static private final Reporter reporter =
-        Reporter.register(Exploration.class);
+    static private final Reporter reporter = Reporter.register(Exploration.class);
     /** Handle for profiling {@link #play(GTS, GraphState)}. */
     static final Reporter playReporter = reporter.register("playScenario()");
 }

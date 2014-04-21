@@ -21,8 +21,8 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 
 /**
- * An <code>EncodedInt</code> describes an encoding of a number (in a given
- * range) by means of a String.
+ * An <code>EncodedInt</code> describes an encoding of a positive number
+ * (in a given range) by means of a String.
  * <p>
  * @see EncodedType
  * @author Maarten de Mol
@@ -36,11 +36,12 @@ public class EncodedInt implements EncodedType<Integer,String> {
     private int upperBound;
 
     /**
-     * Default constructor. Creates local store only.
-     * @param lowerBound - smallest number allowed (also the initial value)
-     * @param upperBound - biggest number allowed (ignored if negative)  
+     * Constructs a positive number encoding.
+     * @param lowerBound smallest number allowed (also the initial value)
+     * @param upperBound biggest number allowed (ignored if negative)  
      */
     public EncodedInt(int lowerBound, int upperBound) {
+        assert lowerBound >= 0;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
