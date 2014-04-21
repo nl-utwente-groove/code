@@ -37,6 +37,7 @@ import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.LinearStrategy;
+import groove.explore.strategy.MinimaxStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.RemoteStrategy;
 import groove.explore.strategy.ReteLinearStrategy;
@@ -119,6 +120,9 @@ public enum StrategyValue implements ParsableValue {
     /** Shape exploration strategy. */
     SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
             "This strategy is used for abstract state space exploration."),
+    /** Minimax strategy. */
+    MINIMAX("minimax", "Minimax Strategy Generation",
+            "This strategy generates a strategy for a two-player game."),
     /** Remote strategy. */
     REMOTE("remote", "Remote Exploration",
             "This strategy sends the result as an STS to a remote server.");
@@ -344,6 +348,17 @@ public enum StrategyValue implements ParsableValue {
                     return strategy;
                 }
             };
+        case MINIMAX:
+            return new MyTemplate2<Integer,Integer>(new PSequence(new PNumber(
+                "heuristic-parameter-index"), new PNumber("maximum-search-depth")),
+                "heuristic-parameter-index", new EncodedInt(0, Integer.MAX_VALUE),
+                "maximum-search-depth", new EncodedInt(0, Integer.MAX_VALUE)) {
+
+                @Override
+                public Strategy create(Integer param, Integer maxdepth) {
+                    return new MinimaxStrategy(param, maxdepth);
+                }
+            };
 
         default:
             // we can't come here
@@ -362,7 +377,7 @@ public enum StrategyValue implements ParsableValue {
     public final static EnumSet<StrategyValue> DIALOG_STRATEGIES;
     /** Special mask for development strategies only. Treated specially. */
     public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES = EnumSet.of(RETE,
-        RETE_LINEAR, RETE_RANDOM, SHAPE_DFS, SHAPE_BFS);
+        RETE_LINEAR, RETE_RANDOM, SHAPE_DFS, SHAPE_BFS, MINIMAX);
     /** Set of strategies for abstract exploration. */
     public final static EnumSet<StrategyValue> ABSTRACT_STRATEGIES = EnumSet.of(SHAPE_DFS,
         SHAPE_BFS);
