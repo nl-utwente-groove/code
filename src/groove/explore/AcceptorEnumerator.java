@@ -23,6 +23,10 @@ import groove.explore.result.Acceptor;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <!=========================================================================>
  * AcceptorEnumerator enumerates all acceptors that are available in GROOVE.
@@ -38,9 +42,9 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      * Enumerates the available acceptors one by one. An acceptor is defined
      * by means of a Template<Acceptor> instance.
      */
-    private AcceptorEnumerator() {
+    private AcceptorEnumerator(EnumSet<AcceptorValue> acceptors) {
         super("acceptor", ACCEPTOR_TOOLTIP);
-        for (AcceptorValue value : AcceptorValue.values()) {
+        for (AcceptorValue value : acceptors) {
             Template<Acceptor> template = value.getTemplate();
             addTemplate(template);
         }
@@ -51,8 +55,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      * represents an acceptor.
      * @throws FormatException if the argument cannot be parsed
      */
-    public static Serialized parseCommandLineAcceptor(String text)
-        throws FormatException {
+    public static Serialized parseCommandLineAcceptor(String text) throws FormatException {
         Serialized result = instance().parseCommandline(text);
         if (result == null) {
             throw new FormatException("No such acceptor '%s'", text);
@@ -70,18 +73,28 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Acceptor parseAcceptor(Grammar rules, Serialized source)
-        throws FormatException {
+    public static Acceptor parseAcceptor(Grammar rules, Serialized source) throws FormatException {
         return instance().parse(rules, source);
     }
 
-    /** Returns the singleton instance of this class. */
+    /** Returns the instance of this class that enumerates all acceptors. */
     public static AcceptorEnumerator instance() {
-        return INSTANCE;
+        return instance(EnumSet.allOf(AcceptorValue.class));
     }
 
-    /** Singleton instance of this class. */
-    private static final AcceptorEnumerator INSTANCE = new AcceptorEnumerator();
+    /** Returns an instance of this class enumerating a given (sub)set of acceptors. */
+    public static AcceptorEnumerator instance(EnumSet<AcceptorValue> acceptors) {
+        AcceptorEnumerator result = instanceMap.get(acceptors);
+        if (result == null) {
+            result = new AcceptorEnumerator(acceptors);
+            instanceMap.put(acceptors, result);
+        }
+        return result;
+    }
+
+    /** Map from parsable strategies to the corresponding instance of this class. */
+    private final static Map<EnumSet<AcceptorValue>,AcceptorEnumerator> instanceMap =
+        new HashMap<EnumSet<AcceptorValue>,AcceptorEnumerator>();
 
     private static final String ACCEPTOR_TOOLTIP = "<HTML>"
         + "An acceptor is a predicate that is applied each time the LTS is "

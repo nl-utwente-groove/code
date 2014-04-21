@@ -69,7 +69,7 @@ public enum StrategyValue implements ParsableValue {
     RANDOM("random", "Random Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition is chosen randomly."),
-    /** Random linear strategy. */
+    /** Single-state strategy. */
     STATE("state", "Single-State Exploration", "This strategy fully explores the current state."),
     /** Depth-first RETE strategy. */
     RETE("rete", "Rete Strategy (DFS based)",
