@@ -24,6 +24,8 @@ import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <!=========================================================================>
@@ -53,8 +55,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      * represents a strategy.
      * @throws FormatException if the argument cannot be parsed
      */
-    public static Serialized parseCommandLineStrategy(String text)
-        throws FormatException {
+    public static Serialized parseCommandLineStrategy(String text) throws FormatException {
         Serialized result = instance().parseCommandline(text);
         if (result == null) {
             throw new FormatException("No such strategy '%s'", text);
@@ -72,23 +73,30 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Strategy parseStrategy(Grammar rules, Serialized source)
-        throws FormatException {
+    public static Strategy parseStrategy(Grammar rules, Serialized source) throws FormatException {
         return instance().parse(rules, source);
     }
 
-    /** Returns the singleton instance of this class. */
+    /** Returns the instance of this class that enumerates all strategies. */
     public static StrategyEnumerator instance() {
-        return INSTANCE;
+        return instance(EnumSet.allOf(StrategyValue.class));
     }
 
-    /** The singleton instance of this class. */
-    private final static StrategyEnumerator INSTANCE = new StrategyEnumerator(
-        EnumSet.allOf(StrategyValue.class));
+    /** Returns an instance of this class enumerating a given (sub)set of strategies. */
+    public static StrategyEnumerator instance(EnumSet<StrategyValue> strategies) {
+        StrategyEnumerator result = instanceMap.get(strategies);
+        if (result == null) {
+            result = new StrategyEnumerator(strategies);
+            instanceMap.put(strategies, result);
+        }
+        return result;
+    }
+
+    /** Map from parsable strategies to the corresponding instance of this class. */
+    private final static Map<EnumSet<StrategyValue>,StrategyEnumerator> instanceMap =
+        new HashMap<EnumSet<StrategyValue>,StrategyEnumerator>();
     private static final String STRATEGY_TOOLTIP = "<HTML>"
         + "The exploration strategy determines at each state:<BR>"
-        + "<B>1.</B> Which of the applicable transitions will be taken; "
-        + "and<BR>"
-        + "<B>2.</B> In which order the reached states will be explored."
-        + "</HTML>";
+        + "<B>1.</B> Which of the applicable transitions will be taken; " + "and<BR>"
+        + "<B>2.</B> In which order the reached states will be explored." + "</HTML>";
 }

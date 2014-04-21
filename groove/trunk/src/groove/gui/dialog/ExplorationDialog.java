@@ -45,9 +45,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -146,17 +144,15 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         // Create the strategy editor.
-        StrategyEnumerator strategyEnumerator = StrategyEnumerator.instance();
-        strategyEnumerator.setMask(StrategyValue.DIALOG_STRATEGIES);
+        StrategyEnumerator strategyEnumerator =
+            StrategyEnumerator.instance(StrategyValue.DIALOG_STRATEGIES);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
         Serialized defaultStrategy = getSimulatorModel().getExploration().getStrategy();
 
         // Create the acceptor editor.
-        AcceptorEnumerator acceptorEnumerator = AcceptorEnumerator.instance();
-        Set<AcceptorValue> acceptorMask =
-            new HashSet<AcceptorValue>(EnumSet.allOf(AcceptorValue.class));
+        EnumSet<AcceptorValue> acceptorMask = EnumSet.allOf(AcceptorValue.class);
         acceptorMask.remove(AcceptorValue.CYCLE);
-        acceptorEnumerator.setMask(acceptorMask);
+        AcceptorEnumerator acceptorEnumerator = AcceptorEnumerator.instance(acceptorMask);
         this.acceptorEditor = acceptorEnumerator.createEditor(getGrammar());
         Serialized defaultAcceptor = getSimulatorModel().getExploration().getAcceptor();
 

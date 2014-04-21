@@ -30,7 +30,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,19 +82,6 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * Setter for the mask.
-     */
-    public void setMask(Set<? extends ParsableValue> mask) {
-        this.mask = mask;
-        Iterator<Template<A>> iter = this.templates.iterator();
-        while (iter.hasNext()) {
-            if (!mask.contains(iter.next().getValue())) {
-                iter.remove();
-            }
-        }
-    }
-
-    /**
      * Adds a template. The keyword of the template is assumed to be unique
      * with respect to the already stored templates.
      */
@@ -127,8 +113,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         StringBuffer error = new StringBuffer();
-        error.append("Unknown keyword '" + source.getKeyword() + "' for the "
-            + this.typeIdentifier + ".\n");
+        error.append("Unknown keyword '" + source.getKeyword() + "' for the " + this.typeIdentifier
+            + ".\n");
         error.append("Expected one of the following keywords:");
         for (Template<A> template : this.templates) {
             error.append(" '");
@@ -191,8 +177,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * templates. 
      * <!--------------------------------------------------------------------->
      */
-    private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized>
-            implements ListSelectionListener {
+    private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized> implements
+            ListSelectionListener {
 
         private final Map<String,EncodedTypeEditor<A,Serialized>> editors =
             new TreeMap<String,EncodedTypeEditor<A,Serialized>>();
@@ -218,13 +204,10 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int nrTemplates = TemplateList.this.templates.size();
             List<String> templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if (Version.isDevelopmentVersion()
-                    || !template.getValue().isDevelopment()) {
+                if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
                     String templateName = template.getName();
                     if (template.getValue().isDefault(getGrammar())) {
-                        templateName =
-                            HTML_TAG.on(STRONG_TAG.on(templateName
-                                + " (default)"));
+                        templateName = HTML_TAG.on(STRONG_TAG.on(templateName + " (default)"));
                     }
                     templateNames.add(templateName);
                 }
@@ -242,19 +225,16 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int nrTemplates = TemplateList.this.templates.size();
             this.templateKeywords = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if (Version.isDevelopmentVersion()
-                    || !template.getValue().isDevelopment()) {
+                if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
                     this.templateKeywords.add(template.getKeyword());
-                    this.editors.put(template.getKeyword(),
-                        template.createEditor(getGrammar()));
+                    this.editors.put(template.getKeyword(), template.createEditor(getGrammar()));
                 }
             }
         }
 
         private void addHeaderText() {
             JLabel headerText =
-                new JLabel("<HTML><B><FONT color="
-                    + ExplorationDialog.HEADER_COLOR + ">Select "
+                new JLabel("<HTML><B><FONT color=" + ExplorationDialog.HEADER_COLOR + ">Select "
                     + TemplateList.this.typeIdentifier + ":");
             headerText.setToolTipText(TemplateList.this.typeToolTip);
             add(headerText);
@@ -272,8 +252,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         private void addInfoPanel() {
             this.infoPanel = new JPanel(new CardLayout());
             this.infoPanel.setPreferredSize(new Dimension(350, 200));
-            this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(
-                150, 150, 255)));
+            this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 255)));
             for (String keyword : this.templateKeywords) {
                 this.infoPanel.add(this.editors.get(keyword), keyword);
             }
@@ -310,8 +289,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             Serialized result = null;
             int selectedIndex = this.nameSelector.getSelectedIndex();
             if (selectedIndex >= 0) {
-                String selectedKeyword =
-                    this.templateKeywords.get(selectedIndex);
+                String selectedKeyword = this.templateKeywords.get(selectedIndex);
                 result = this.editors.get(selectedKeyword).getCurrentValue();
             }
             return result;
