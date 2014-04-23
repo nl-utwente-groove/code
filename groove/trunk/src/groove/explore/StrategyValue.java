@@ -350,9 +350,9 @@ public enum StrategyValue implements ParsableValue {
             };
         case MINIMAX:
             return new MyTemplate2<Integer,Integer>(new PSequence(new PNumber(
-                "heuristic-parameter-index"), new PNumber("maximum-search-depth")),
-                "heuristic-parameter-index", new EncodedInt(0, Integer.MAX_VALUE),
-                "maximum-search-depth", new EncodedInt(0, Integer.MAX_VALUE)) {
+                "heuristic-parameter-index"), new PLiteral(","),
+                new PNumber("maximum-search-depth")), "heuristic-parameter-index", new EncodedInt(
+                0, Integer.MAX_VALUE), "maximum-search-depth", new EncodedInt(0, Integer.MAX_VALUE)) {
 
                 @Override
                 public Strategy create(Integer param, Integer maxdepth) {
