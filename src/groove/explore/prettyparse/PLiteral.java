@@ -21,7 +21,7 @@ import groove.explore.encode.Serialized;
 /**
  * A <code>PLiteral</code> is a <code>SerializedParser</code> that reads a
  * specific literal from a <code>StringConsumer</code>. If the literal is
- * present, it is appended to an argument of a <code>Serialized</code>.
+ * present, it is optionally appended to an argument of a <code>Serialized</code>.
  * 
  * @see SerializedParser
  * @see Serialized
@@ -36,8 +36,19 @@ public class PLiteral implements SerializedParser {
     private final String argumentName;
 
     /**
+     * Constructs a <code>POptional</code> out of a literal to search for.
+     * @param literal the literal to look for
+     */
+    public PLiteral(String literal) {
+        this(literal, null);
+    }
+
+    /**
      * Constructs a <code>POptional</code> out of a literal to search for and
-     * an argument name of a <code>Serialized</code>.
+     * an optional argument name of a <code>Serialized</code>.
+     * @param literal the literal to look for
+     * @param argumentName if not {@code null}, the argument name of the {@link Serialized}
+     * that the value (if found) is appended to
      */
     public PLiteral(String literal, String argumentName) {
         this.literal = literal;
@@ -48,7 +59,9 @@ public class PLiteral implements SerializedParser {
     public boolean parse(StringConsumer stream, Serialized serialized) {
         boolean foundLiteral = stream.consumeLiteral(this.literal);
         if (foundLiteral) {
-            serialized.appendArgument(this.argumentName, this.literal);
+            if (this.argumentName != null) {
+                serialized.appendArgument(this.argumentName, this.literal);
+            }
             return true;
         } else {
             return false;
@@ -58,10 +71,14 @@ public class PLiteral implements SerializedParser {
     @Override
     public String toParsableString(Serialized serialized) {
         String result = null;
-        String value = serialized.getArgument(this.argumentName);
-        if (value.startsWith(this.literal)) {
+        if (this.argumentName == null) {
             result = this.literal;
-            serialized.setArgument(this.argumentName, value.substring(result.length()));
+        } else {
+            String value = serialized.getArgument(this.argumentName);
+            if (value.startsWith(this.literal)) {
+                result = this.literal;
+                serialized.setArgument(this.argumentName, value.substring(result.length()));
+            }
         }
         return result;
     }
