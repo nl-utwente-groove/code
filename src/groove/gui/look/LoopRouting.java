@@ -39,7 +39,7 @@ import org.jgraph.graph.VertexView;
 final class LoopRouting implements Routing {
     @Override
     public int getPreferredLineStyle(EdgeView edge) {
-        if (edge.isLoop()) {
+        if (isRoutable(edge)) {
             return GraphConstants.STYLE_SPLINE;
         } else {
             return Edge.Routing.NO_PREFERENCE;
