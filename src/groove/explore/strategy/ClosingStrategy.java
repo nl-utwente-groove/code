@@ -95,7 +95,9 @@ abstract public class ClosingStrategy extends GTSStrategy {
         }
     }
 
-    /** Callback method to retrieve the next element from the pool. */
+    /** Callback method to retrieve the next element from the pool. 
+     * @return the next element, or {@code null} when the exploration is done.
+     */
     abstract protected GraphState getFromPool();
 
     /** Callback method to add a non-transient graph state to the pool. */
