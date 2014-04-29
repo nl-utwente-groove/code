@@ -132,9 +132,13 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Returns the statistics report, at a given verbosity level. */
     public String getReport(Verbosity verbosity) {
-        // build the report if that has not yet been done
-        if (this.sb == null || this.sbVerbosity != verbosity) {
-            createReport(verbosity);
+        if (getExploration() != null) {
+            // build the report if that has not yet been done
+            if (this.sb == null || this.sbVerbosity != verbosity) {
+                createReport(verbosity);
+            }
+        } else {
+            return "*** No exploration performed since the current grammar was opened. ***";
         }
         return this.sb.toString();
     }
@@ -193,8 +197,7 @@ public class StatisticsReporter extends AExplorationReporter {
     private void reportLTS() {
         int openRecipeStageCount = this.statisticsListener.getOpenRecipeStageCount();
         int closedRecipeStageCount = this.statisticsListener.getClosedRecipeStageCount();
-        int realStateCount =
-            getGTS().nodeCount() - openRecipeStageCount - closedRecipeStageCount;
+        int realStateCount = getGTS().nodeCount() - openRecipeStageCount - closedRecipeStageCount;
         String formatString = "%-14s%d%n";
         emit(MEDIUM, "%n");
         emit(MEDIUM, formatString, "States:", realStateCount);
