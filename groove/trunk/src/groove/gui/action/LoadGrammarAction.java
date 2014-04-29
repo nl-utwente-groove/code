@@ -71,8 +71,7 @@ public class LoadGrammarAction extends SimulatorAction {
     public boolean load(File grammarFile) throws IOException {
         boolean result = false;
         // Load the grammar.
-        final SystemStore store =
-            SystemStoreFactory.newStore(grammarFile, false);
+        final SystemStore store = SystemStoreFactory.newStore(grammarFile, false);
         result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files
@@ -100,8 +99,7 @@ public class LoadGrammarAction extends SimulatorAction {
         store.reload();
         GrammarProperties props = store.getProperties();
         if (store.isEmpty()) {
-            showErrorDialog(null, store.getLocation()
-                + " is not a GROOVE production system.");
+            showErrorDialog(null, store.getLocation() + " is not a GROOVE production system.");
             return false;
         }
         String fileGrammarVersion = props.getGrammarVersion();
@@ -144,8 +142,7 @@ public class LoadGrammarAction extends SimulatorAction {
             newGrammarFile = null;
         }
         // store.reload(); - MdM - moved to version check code
-        if (Version.compareGrammarVersions(fileGrammarVersion,
-            Version.GRAMMAR_VERSION_3_1) == -1) {
+        if (Version.compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_1) == -1) {
             boolean success = makeIdentifiersValid(store);
             if (!success) {
                 return false;
@@ -221,8 +218,7 @@ public class LoadGrammarAction extends SimulatorAction {
                     confirmed = true;
                     String newName = legal.toString();
                     // make sure the modified name is fresh
-                    while (oldNames.contains(newName)
-                        || newNames.contains(newName)) {
+                    while (oldNames.contains(newName) || newNames.contains(newName)) {
                         newName = newName + "_";
                     }
                     newNames.add(newName);
@@ -241,8 +237,8 @@ public class LoadGrammarAction extends SimulatorAction {
         return result;
     }
 
-    private void replaceGraphs(SystemStore store, ResourceKind kind,
-            Map<String,String> renameMap) throws IOException {
+    private void replaceGraphs(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
+        throws IOException {
         Map<String,AspectGraph> oldGraphMap = store.getGraphs(kind);
         List<AspectGraph> newGraphs = new ArrayList<AspectGraph>();
         for (Map.Entry<String,String> e : renameMap.entrySet()) {
@@ -266,8 +262,8 @@ public class LoadGrammarAction extends SimulatorAction {
         store.putGraphs(kind, newGraphs, false);
     }
 
-    private void replaceTexts(SystemStore store, ResourceKind kind,
-            Map<String,String> renameMap) throws IOException {
+    private void replaceTexts(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
+        throws IOException {
         Map<String,String> oldTextMap = store.getTexts(kind);
         Map<String,String> newTextMap = new HashMap<String,String>();
         for (Map.Entry<String,String> e : renameMap.entrySet()) {
@@ -285,8 +281,7 @@ public class LoadGrammarAction extends SimulatorAction {
         return JOptionPane.showOptionDialog(getFrame(),
             "Warning: the grammar contains resources with "
                 + "invalid (since grammar version 3.1) names.\n"
-                + "These will be renamed automatically.",
-            "Warning: invalid identifiers", JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE, null, options, "Continue") == JOptionPane.OK_OPTION;
+                + "These will be renamed automatically.", "Warning: invalid identifiers",
+            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, "Continue") == JOptionPane.OK_OPTION;
     }
 }

@@ -52,13 +52,11 @@ public class SimulatorModel implements Cloneable {
      * @param names the names of the resources to be deleted
      * @throws IOException if the action failed due to an IO error
      */
-    public void doDelete(ResourceKind resource, Set<String> names)
-        throws IOException {
+    public void doDelete(ResourceKind resource, Set<String> names) throws IOException {
         start();
         try {
             boolean change =
-                new HashSet<String>(names).removeAll(getGrammar().getActiveNames(
-                    resource));
+                new HashSet<String>(names).removeAll(getGrammar().getActiveNames(resource));
             switch (resource) {
             case CONTROL:
             case PROLOG:
@@ -88,8 +86,8 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doRename(ResourceKind resource, String oldName,
-            String newName) throws IOException {
+    public boolean doRename(ResourceKind resource, String oldName, String newName)
+        throws IOException {
         boolean result = false;
         start();
         try {
@@ -111,8 +109,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doEnable(ResourceKind resource, Set<String> names)
-        throws IOException {
+    public boolean doEnable(ResourceKind resource, Set<String> names) throws IOException {
         start();
         boolean result = true;
         try {
@@ -126,15 +123,12 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Enables a collection of named resources of a given kind. */
-    private void setEnabled(ResourceKind kind, Set<String> names)
-        throws IOException {
+    private void setEnabled(ResourceKind kind, Set<String> names) throws IOException {
         switch (kind) {
         case RULE:
-            Collection<AspectGraph> newRules =
-                new ArrayList<AspectGraph>(names.size());
+            Collection<AspectGraph> newRules = new ArrayList<AspectGraph>(names.size());
             for (String ruleName : names) {
-                AspectGraph oldRule =
-                    getStore().getGraphs(ResourceKind.RULE).get(ruleName);
+                AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE).get(ruleName);
                 AspectGraph newRule = oldRule.clone();
                 GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
                 newRule.setFixed();
@@ -146,10 +140,8 @@ public class SimulatorModel implements Cloneable {
         case TYPE:
         case PROLOG:
         case CONTROL:
-            GrammarProperties newProperties =
-                getGrammar().getProperties().clone();
-            List<String> actives =
-                new ArrayList<String>(newProperties.getActiveNames(kind));
+            GrammarProperties newProperties = getGrammar().getProperties().clone();
+            List<String> actives = new ArrayList<String>(newProperties.getActiveNames(kind));
             for (String typeName : names) {
                 if (!actives.remove(typeName)) {
                     actives.add(typeName);
@@ -170,8 +162,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doEnableUniquely(ResourceKind kind, String name)
-        throws IOException {
+    public boolean doEnableUniquely(ResourceKind kind, String name) throws IOException {
         start();
         boolean result = true;
         try {
@@ -185,15 +176,13 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Uniquely enables a named resource of a given kind. */
-    private void setEnabledUniquely(ResourceKind kind, String name)
-        throws IOException {
+    private void setEnabledUniquely(ResourceKind kind, String name) throws IOException {
         switch (kind) {
         case HOST:
         case TYPE:
         case PROLOG:
         case CONTROL:
-            GrammarProperties newProperties =
-                getGrammar().getProperties().clone();
+            GrammarProperties newProperties = getGrammar().getProperties().clone();
             newProperties.setActiveNames(kind, Collections.singleton(name));
             getStore().putProperties(newProperties);
             break;
@@ -211,8 +200,8 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph,
-            boolean layout) throws IOException {
+    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph, boolean layout)
+        throws IOException {
         assert newGraph.isFixed();
         start();
         try {
@@ -245,8 +234,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddText(ResourceKind kind, String name, String program)
-        throws IOException {
+    public boolean doAddText(ResourceKind kind, String name, String program) throws IOException {
         start();
         try {
             GrammarModel grammar = getGrammar();
@@ -267,14 +255,12 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doSetPriority(Map<String,Integer> priorityMap)
-        throws IOException {
+    public boolean doSetPriority(Map<String,Integer> priorityMap) throws IOException {
         start();
         ResourceKind resource = ResourceKind.RULE;
         Set<AspectGraph> newGraphs = new HashSet<AspectGraph>();
         for (Map.Entry<String,Integer> entry : priorityMap.entrySet()) {
-            AspectGraph oldGraph =
-                getStore().getGraphs(resource).get(entry.getKey());
+            AspectGraph oldGraph = getStore().getGraphs(resource).get(entry.getKey());
             AspectGraph newGraph = oldGraph.clone();
             GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();
@@ -296,8 +282,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
-    public boolean doSetDefaultExploration(Exploration exploration)
-        throws IOException {
+    public boolean doSetDefaultExploration(Exploration exploration) throws IOException {
         GrammarProperties properties = getGrammar().getProperties();
         GrammarProperties newProperties = properties.clone();
         newProperties.setExploration(exploration.toParsableString());
@@ -310,8 +295,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
-    public boolean doSetProperties(GrammarProperties newProperties)
-        throws IOException {
+    public boolean doSetProperties(GrammarProperties newProperties) throws IOException {
         start();
         try {
             getStore().putProperties(newProperties);
@@ -382,8 +366,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the relabel action failed 
      */
-    public boolean doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
-        throws IOException {
+    public boolean doRelabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
         start();
         try {
             getStore().relabel(oldLabel, newLabel);
@@ -423,14 +406,12 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the transition or state was really changed
      * @see #setMatch(GraphState,MatchResult)
      */
-    public final boolean doSetStateAndMatch(GraphState state,
-            RuleTransition trans) {
+    public final boolean doSetStateAndMatch(GraphState state, RuleTransition trans) {
         assert state != null;
         start();
         if (trans != null) {
             assert state == trans.target();
-            assert this.old.match != null
-                && this.old.match.equals(trans.getKey());
+            assert this.old.match != null && this.old.match.equals(trans.getKey());
             // fake the history: the previously selected match is supposed
             // to have been this transition already
             this.old.trans = trans;
@@ -616,8 +597,7 @@ public class SimulatorModel implements Cloneable {
      */
     private final boolean changeState(GraphState state) {
         // never reset the active state as long as there is a GTS
-        boolean result =
-            state != this.state || this.changes.contains(Change.GTS);
+        boolean result = state != this.state || this.changes.contains(Change.GTS);
         if (result) {
             this.state = state;
             this.changes.add(Change.STATE);
@@ -661,8 +641,7 @@ public class SimulatorModel implements Cloneable {
             }
         }
         if (matchChanged) {
-            changeSelected(ResourceKind.RULE, match == null ? null
-                    : match.getRule().getFullName());
+            changeSelected(ResourceKind.RULE, match == null ? null : match.getRule().getFullName());
         }
         return finish();
     }
@@ -753,11 +732,11 @@ public class SimulatorModel implements Cloneable {
             changeMatch(null);
             changeTransition(null);
             changeExploration();
+            clearExplorationStats();
             for (ResourceKind resource : ResourceKind.all(false)) {
                 changeSelected(resource, null);
             }
-            if (getExploration() != null && grammar != null
-                && !grammar.hasErrors()) {
+            if (getExploration() != null && grammar != null && !grammar.hasErrors()) {
                 try {
                     getExploration().test(grammar.toGrammar());
                 } catch (FormatException e) {
@@ -833,8 +812,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final GraphBasedModel<?> getGraphResource(ResourceKind resource) {
         String name = getSelected(resource);
-        return name == null ? null : getGrammar().getGraphResource(resource,
-            name);
+        return name == null ? null : getGrammar().getGraphResource(resource, name);
     }
 
     /** 
@@ -845,8 +823,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final TextBasedModel<?> getTextResource(ResourceKind resource) {
         String name = getSelected(resource);
-        return name == null ? null : getGrammar().getTextResource(resource,
-            name);
+        return name == null ? null : getGrammar().getTextResource(resource, name);
     }
 
     /** Returns a list of search results for the given label. */
@@ -857,8 +834,7 @@ public class SimulatorModel implements Cloneable {
                 continue;
             }
             for (String name : getGrammar().getNames(kind)) {
-                AspectGraph graph =
-                    getGrammar().getGraphResource(kind, name).getSource();
+                AspectGraph graph = getGrammar().getGraphResource(kind, name).getSource();
                 graph.getSearchResults(label, searchResults);
             }
         }
@@ -928,10 +904,8 @@ public class SimulatorModel implements Cloneable {
      * Changes the selected value of a given resource kind.
      */
     private boolean changeSelected(ResourceKind kind, String name) {
-        return changeSelectedSet(
-            kind,
-            name == null ? Collections.<String>emptySet()
-                    : Collections.singleton(name));
+        return changeSelectedSet(kind,
+            name == null ? Collections.<String>emptySet() : Collections.singleton(name));
     }
 
     /** 
@@ -939,8 +913,7 @@ public class SimulatorModel implements Cloneable {
      * if the new resource set differs from the old.
      * @return {@code true} if a change was actually made
      */
-    private final boolean changeSelectedSet(ResourceKind resource,
-            Collection<String> names) {
+    private final boolean changeSelectedSet(ResourceKind resource, Collection<String> names) {
         boolean result = false;
         Set<String> newSelection = new LinkedHashSet<String>(names);
         Set<String> allNames = getGrammar().getNames(resource);
@@ -1069,12 +1042,20 @@ public class SimulatorModel implements Cloneable {
         return this.explorationStats;
     }
 
+    /**
+     * Unlinks the exploration stats object to force it to be reconstructed.
+     * This is done, for instance, when a new grammar is loaded, to avoid
+     * having the stats from a previously loaded grammar lingering around.
+     */
+    public void clearExplorationStats() {
+        this.explorationStats = null;
+    }
+
     @Override
     public String toString() {
-        return "GuiState [gts=" + this.gts + ", state=" + this.state
-            + ", match=" + this.match + ", grammar=" + this.grammar
-            + ", resources=" + this.resources + ", changes=" + this.changes
-            + "]";
+        return "GuiState [gts=" + this.gts + ", state=" + this.state + ", match=" + this.match
+            + ", grammar=" + this.grammar + ", resources=" + this.resources + ", changes="
+            + this.changes + "]";
     }
 
     /** 
@@ -1148,11 +1129,10 @@ public class SimulatorModel implements Cloneable {
         SimulatorModel result = null;
         try {
             result = (SimulatorModel) super.clone();
-            result.resources =
-                new EnumMap<ResourceKind,Set<String>>(ResourceKind.class);
+            result.resources = new EnumMap<ResourceKind,Set<String>>(ResourceKind.class);
             for (ResourceKind resource : ResourceKind.all(false)) {
-                result.resources.put(resource, new LinkedHashSet<String>(
-                    this.resources.get(resource)));
+                result.resources.put(resource,
+                    new LinkedHashSet<String>(this.resources.get(resource)));
             }
         } catch (CloneNotSupportedException e) {
             assert false;
@@ -1191,8 +1171,8 @@ public class SimulatorModel implements Cloneable {
     /** Currently selected trace (set of transitions). */
     private final Set<RuleTransition> trace = new HashSet<RuleTransition>();
     /** Mapping from resource kinds to sets of selected resources of that kind. */
-    private Map<ResourceKind,Set<String>> resources =
-        new EnumMap<ResourceKind,Set<String>>(ResourceKind.class);
+    private Map<ResourceKind,Set<String>> resources = new EnumMap<ResourceKind,Set<String>>(
+        ResourceKind.class);
     {
         for (ResourceKind resource : ResourceKind.all(false)) {
             this.resources.put(resource, Collections.<String>emptySet());
