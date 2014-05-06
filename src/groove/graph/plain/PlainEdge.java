@@ -34,8 +34,7 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
      * @ensure <tt>source()==source</tt>, <tt>label()==label</tt>,
      *         <tt>target()==target </tt>
      */
-    PlainEdge(PlainNode source, PlainLabel label, PlainNode target,
-            int nr) {
+    PlainEdge(PlainNode source, PlainLabel label, PlainNode target, int nr) {
         super(source, label, target);
         this.nr = nr;
     }
@@ -46,11 +45,11 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
         // test that the result is the same as number equality
         // or source-label-target equality
         assert result == (obj instanceof PlainEdge && this.nr == ((PlainEdge) obj).nr) : String.format(
-            "Distinct %s and %s %s with the same number %d",
-            getClass().getName(), obj.getClass().getName(), this, this.nr);
+            "Distinct %s and %s %s with the same number %d", getClass().getName(),
+            obj.getClass().getName(), this, this.nr);
         assert result == (obj instanceof PlainEdge && super.equals(obj)) : String.format(
-            "Distinct %s and %s %s with the same content",
-            getClass().getName(), obj.getClass().getName(), this);
+            "Distinct %s and %s %s with the same content", getClass().getName(),
+            obj.getClass().getName(), this);
         return result;
     }
 
@@ -64,12 +63,6 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
 
     /** The (unique) number of this edge. */
     private final int nr;
-
-    /** Factory constructor. */
-    PlainEdge newEdge(PlainNode source, PlainLabel label,
-            PlainNode target, int nr) {
-        return new PlainEdge(source, label, target, nr);
-    }
 
     /**
      * Creates an default edge from a given source node, label text and target
@@ -85,14 +78,12 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
      *         <code>target</code>; the label is a {@link PlainLabel}
      * @see #createEdge(PlainNode, PlainLabel, PlainNode)
      */
-    static public PlainEdge createEdge(PlainNode source, String text,
-            PlainNode target) {
+    static public PlainEdge createEdge(PlainNode source, String text, PlainNode target) {
         return PlainFactory.instance().createEdge(source, text, target);
     }
 
     /** Default method that uses the DefaultEdge constructor. */
-    static public PlainEdge createEdge(PlainNode source,
-            PlainLabel label, PlainNode target) {
+    static public PlainEdge createEdge(PlainNode source, PlainLabel label, PlainNode target) {
         return PlainFactory.instance().createEdge(source, label, target);
     }
 

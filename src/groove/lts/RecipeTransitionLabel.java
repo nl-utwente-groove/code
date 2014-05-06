@@ -17,20 +17,18 @@
 package groove.lts;
 
 import groove.grammar.Recipe;
-import groove.graph.ALabel;
 import groove.graph.Label;
+import groove.graph.TextLabel;
 
-/** Class of labels that can appear on rule transitions. */
-public class RecipeTransitionLabel extends ALabel implements ActionLabel {
+/** Class of labels that can appear on recipe transitions. */
+public class RecipeTransitionLabel extends TextLabel implements ActionLabel {
     /** 
-     * Constructs a new label on the basis of a given recipe and initial rule transition.
-     * The subsequent rule transitions are optionally passed in; if {@code null},
-     * they can be computed.
+     * Constructs a new label on the basis of a given initial rule transition.
      */
     public RecipeTransitionLabel(RuleTransition initial) {
+        super(initial.getRecipe().getFullName());
         this.recipe = initial.getRecipe();
         this.initial = initial;
-        this.text = getLabelText();
     }
 
     @Override
@@ -41,16 +39,6 @@ public class RecipeTransitionLabel extends ALabel implements ActionLabel {
     /** Returns the initial rule transition of the recipe transition. */
     public RuleTransition getInitial() {
         return this.initial;
-    }
-
-    /** Constructs the label text. */
-    private String getLabelText() {
-        return this.recipe.getFullName();
-    }
-
-    @Override
-    public String text() {
-        return this.text;
     }
 
     @Override
@@ -72,7 +60,7 @@ public class RecipeTransitionLabel extends ALabel implements ActionLabel {
     }
 
     @Override
-    protected int computeHashCode() {
+    public int hashCode() {
         final int prime = 31;
         int result = this.recipe.hashCode();
         result = prime * result + this.initial.hashCode();
@@ -82,8 +70,8 @@ public class RecipeTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
-            throw new IllegalArgumentException(String.format(
-                "Can't compare %s and %s", this.getClass(), obj.getClass()));
+            throw new IllegalArgumentException(String.format("Can't compare %s and %s",
+                this.getClass(), obj.getClass()));
         }
         if (obj instanceof RuleTransitionLabel) {
             return -obj.compareTo(this);
@@ -100,7 +88,6 @@ public class RecipeTransitionLabel extends ALabel implements ActionLabel {
         return getInitial().label().compareTo(other.getInitial().label());
     }
 
-    private final String text;
     private final Recipe recipe;
     private final RuleTransition initial;
 }

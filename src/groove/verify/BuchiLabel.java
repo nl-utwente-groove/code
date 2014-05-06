@@ -18,16 +18,16 @@ package groove.verify;
 
 import gov.nasa.ltl.graph.Guard;
 import gov.nasa.ltl.graph.Literal;
-import groove.graph.ALabel;
+import groove.graph.TextLabel;
 
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiLabel extends ALabel {
-    private String action;
+public class BuchiLabel extends TextLabel {
+    private final String action;
 
-    private Guard<String> guard;
+    private final Guard<String> guard;
 
     /**
      * Constructor.
@@ -38,6 +38,7 @@ public class BuchiLabel extends ALabel {
      *          the guard for the label
      */
     public BuchiLabel(String action, Guard<String> guard) {
+        super(computeText(action, guard));
         this.action = action;
         this.guard = guard;
     }
@@ -60,13 +61,12 @@ public class BuchiLabel extends ALabel {
         return this.guard;
     }
 
-    @Override
-    public String text() {
+    private static String computeText(String action, Guard<String> guard) {
         StringBuilder result = new StringBuilder();
-        result.append(this.action());
+        result.append(action);
         result.append("/[");
         boolean first = true;
-        for (Literal<String> literal : guard()) {
+        for (Literal<String> literal : guard) {
             if (!first) {
                 result.append(",");
                 first = false;

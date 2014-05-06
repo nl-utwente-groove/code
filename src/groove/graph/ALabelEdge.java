@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.gui.look.Line;
+
 /**
  * Abstract edge class that is its own label.
  * @author Arend Rensink
@@ -27,6 +29,30 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> 
      */
     public ALabelEdge(N source, N target) {
         super(source, target);
+    }
+
+    @Override
+    final public String text() {
+        return toLine().toFlatString();
+    }
+
+    @Override
+    final public Line toLine() {
+        if (this.line == null) {
+            this.line = computeLine();
+        }
+        return this.line;
+    }
+
+    private Line line;
+
+    /** Callback method to compute the line returned by {@link #toLine()}. */
+    abstract protected Line computeLine();
+
+    /** In general, we do not expect labels to be reconstructable from a string. */
+    @Override
+    public String toParsableString() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     @Override

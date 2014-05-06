@@ -16,7 +16,7 @@
  */
 package groove.graph;
 
-import groove.util.Fixable;
+import groove.gui.look.Line;
 
 /**
  * Provides a partial implementation of the Label interface, consisting only of
@@ -24,7 +24,31 @@ import groove.util.Fixable;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
-public abstract class ALabel implements Cloneable, Label, Fixable {
+public abstract class ALabel implements Cloneable, Label {
+    @Override
+    final public String text() {
+        return toLine().toFlatString();
+    }
+
+    @Override
+    final public Line toLine() {
+        if (this.line == null) {
+            this.line = computeLine();
+        }
+        return this.line;
+    }
+
+    private Line line;
+
+    /** Callback method to compute the line returned by {@link #toLine()}. */
+    abstract protected Line computeLine();
+
+    /** In general, we do not expect labels to be reconstructable from a string. */
+    @Override
+    public String toParsableString() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
+
     /** Labels are binary by default. */
     @Override
     public EdgeRole getRole() {
@@ -42,27 +66,6 @@ public abstract class ALabel implements Cloneable, Label, Fixable {
             result = text().compareTo(obj.text());
         }
         return result;
-    }
-
-    @Override
-    public boolean setFixed() {
-        boolean result = !isFixed();
-        if (result) {
-            hashCode();
-        }
-        return result;
-    }
-
-    @Override
-    public boolean isFixed() {
-        return this.hashCode != 0;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != isFixed()) {
-            throw new IllegalStateException();
-        }
     }
 
     /**
@@ -97,7 +100,7 @@ public abstract class ALabel implements Cloneable, Label, Fixable {
         return this.hashCode;
     }
 
-    /** This implementation delegates to to {@link #text()}. */
+    /** This implementation delegates to {@link #text()}. */
     @Override
     public String toString() {
         return text();

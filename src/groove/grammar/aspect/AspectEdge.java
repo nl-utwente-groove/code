@@ -335,7 +335,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return result;
     }
 
-    /** Returns the inner text of this label, i.e., the label text without preceding aspects. */
+    /** Returns the inner text of the edge label, i.e.,
+     * the aspect label text without preceding aspects.
+     */
     public String getInnerText() {
         return label().getInnerText();
     }
@@ -345,11 +347,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
      * edge in the plain graph view.
      */
     public PlainLabel getPlainLabel() {
-        return PlainLabel.createLabel(label().toString());
+        return PlainLabel.parseLabel(label().toString());
     }
 
     /** 
-     * Returns the rule label or the type label, whichever is appropriate.
+     * Returns the rule label or the type label, whichever is appropriate
+     * depending on the graph role of this edge.
      * @see #getRuleLabel()
      * @see #getTypeLabel()
      */

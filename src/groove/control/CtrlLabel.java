@@ -17,8 +17,8 @@
 package groove.control;
 
 import groove.grammar.Recipe;
-import groove.graph.ALabel;
 import groove.graph.Label;
+import groove.graph.TextLabel;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlLabel extends ALabel {
+public class CtrlLabel extends TextLabel {
     /** 
      * Constructs a control label from a call and
      * a guard.
@@ -49,6 +49,7 @@ public class CtrlLabel extends ALabel {
      * @param start flag indicating if this is the first call of a new action
      */
     private CtrlLabel(int number, CtrlCall call, CtrlGuard guard, boolean start) {
+        super(computeText(number, call, guard, start));
         assert start || !call.isOmega();
         assert start || call.hasContext();
         this.call = call;
@@ -57,44 +58,6 @@ public class CtrlLabel extends ALabel {
         this.guard.addAll(guard);
         this.number = number;
     }
-
-    @Override
-    public String text() {
-        if (this.text == null) {
-            this.text = computeText();
-        }
-        return this.text;
-    }
-
-    private String computeText() {
-        StringBuilder result = new StringBuilder();
-        result.append('t');
-        result.append(getNumber());
-        result.append(':');
-        if (hasRecipe()) {
-            result.append(getRecipe().getFullName());
-            result.append('/');
-        }
-        if (!this.guard.isEmpty()) {
-            result.append('[');
-            boolean first = true;
-            for (CtrlTransition guard : this.guard) {
-                if (first) {
-                    first = false;
-                } else {
-                    result.append(',');
-                }
-                result.append('t');
-                result.append(guard.getNumber());
-            }
-            result.append(']');
-        }
-        result.append(getCall().toString());
-        return result.toString();
-    }
-
-    /** The text of the control label. */
-    private String text;
 
     /** Returns the rule wrapped into this label. */
     public final CtrlCall getCall() {
@@ -213,12 +176,39 @@ public class CtrlLabel extends ALabel {
      * and the additional guards are transformed
      * @param guard optional additional guarding transitions
      */
-    public CtrlLabel newLabel(Map<CtrlTransition,CtrlTransition> map,
-            CtrlGuard guard) {
+    public CtrlLabel newLabel(Map<CtrlTransition,CtrlTransition> map, CtrlGuard guard) {
         CtrlGuard newGuard = getGuard().newGuard(map);
         if (guard != null) {
             newGuard.addAll(guard);
         }
         return new CtrlLabel(getNumber(), getCall(), newGuard, isStart());
+    }
+
+    private static String computeText(int number, CtrlCall call, CtrlGuard guard, boolean start) {
+        StringBuilder result = new StringBuilder();
+        result.append('t');
+        result.append(number);
+        result.append(':');
+        Recipe recipe = call.getContext();
+        if (recipe != null) {
+            result.append(recipe.getFullName());
+            result.append('/');
+        }
+        if (!guard.isEmpty()) {
+            result.append('[');
+            boolean first = true;
+            for (CtrlTransition trans : guard) {
+                if (first) {
+                    first = false;
+                } else {
+                    result.append(',');
+                }
+                result.append('t');
+                result.append(trans.getNumber());
+            }
+            result.append(']');
+        }
+        result.append(call.toString());
+        return result.toString();
     }
 }

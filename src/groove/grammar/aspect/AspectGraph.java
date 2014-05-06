@@ -563,7 +563,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     }
                 }
             } else if (oldLabel.equals(edge.getTypeLabel())) {
-                replacement = newLabel.toPrefixedString();
+                replacement = newLabel.toParsableString();
             }
             AspectLabel edgeLabel = edge.label();
             AspectLabel newEdgeLabel = edgeLabel.relabel(oldLabel, newLabel);

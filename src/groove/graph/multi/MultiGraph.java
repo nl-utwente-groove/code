@@ -14,47 +14,46 @@
  * 
  * $Id: DefaultGraph.java,v 1.8 2008-01-30 09:32:51 iovka Exp $
  */
-package groove.graph.plain;
+package groove.graph.multi;
 
 import groove.graph.EdgeMapGraph;
 import groove.graph.GraphRole;
 
 /**
- * Simple graph with plain nodes and edges.
+ * Plain graph with parallel (equi-labelled) edges.
  * @author Arend Rensink
- * @version $Revision$ $Date: 2008-01-30 09:32:51 $
+ * @version $Revision: 5110 $ $Date: 2008-01-30 09:32:51 $
  */
-public class PlainGraph extends EdgeMapGraph<PlainNode,PlainEdge> implements Cloneable {
+public class MultiGraph extends EdgeMapGraph<MultiNode,MultiEdge> implements Cloneable {
     /**
-     * Constructs a new, empty Graph with a given graph role.
+     * Constructs a new, empty graph.
      * @param name the (non-{@code null}) name of the graph.
-     * @param role the (non-{@code null}) role of the graph.
+     * @param role the (non-{@code null}) graph role of the new graph.
      */
-    public PlainGraph(String name, GraphRole role) {
+    public MultiGraph(String name, GraphRole role) {
         super(name, role);
     }
 
     /**
-     * Constructs a clone of a given {@link PlainGraph}.
+     * Constructs a clone of a given {@link MultiGraph}.
      * @param graph the (non-{@code null}) graph to be cloned
      */
-    protected PlainGraph(PlainGraph graph) {
+    protected MultiGraph(MultiGraph graph) {
         super(graph);
     }
 
     @Override
-    public PlainGraph clone() {
-        PlainGraph result = new PlainGraph(this);
-        return result;
+    public MultiGraph clone() {
+        return new MultiGraph(this);
     }
 
     @Override
-    public PlainGraph newGraph(String name) {
-        return new PlainGraph(name, getRole());
+    public MultiGraph newGraph(String name) {
+        return new MultiGraph(name, getRole());
     }
 
     @Override
-    public PlainFactory getFactory() {
-        return PlainFactory.instance();
+    public MultiFactory getFactory() {
+        return MultiFactory.instance();
     }
 }

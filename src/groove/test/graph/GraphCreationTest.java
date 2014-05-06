@@ -172,13 +172,13 @@ public class GraphCreationTest extends TestCase {
         edges.add(this.e[5]);
 
         for (PlainEdge edge : labelEdgeSet(this.g,
-            PlainLabel.createLabel(new String("a")))) {
+            PlainLabel.parseLabel(new String("a")))) {
             assertTrue(edges.contains(edge));
             edges.remove(edge);
         }
         assertEquals(new HashSet<PlainEdge>(), edges);
 
-        assertTrue(labelEdgeSet(this.g, PlainLabel.createLabel("c")).isEmpty());
+        assertTrue(labelEdgeSet(this.g, PlainLabel.parseLabel("c")).isEmpty());
     }
 
     private Set<PlainEdge> labelEdgeSet(PlainGraph g, Label label) {

@@ -1865,7 +1865,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             return oldLabel.equals(toTypeLabel())
-                    ? newInstance(newLabel.toPrefixedString()) : this;
+                    ? newInstance(newLabel.toParsableString()) : this;
         }
 
         @Override

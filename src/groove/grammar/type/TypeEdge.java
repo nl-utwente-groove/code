@@ -20,6 +20,7 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.grammar.AnchorKind;
 import groove.graph.AEdge;
 import groove.graph.Label;
+import groove.gui.look.Line;
 
 import java.util.Set;
 
@@ -28,8 +29,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements
-        TypeElement {
+public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
     /**
      * Constructs a new type edge, with explicit multiplicity.
      * Don't call directly; use {@link TypeFactory} methods instead.
@@ -99,6 +99,16 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements
             return true;
         }
         return isAbstract() && getGraph().isSubtype(other, this);
+    }
+
+    @Override
+    public Line toLine() {
+        return label().toLine();
+    }
+
+    @Override
+    public String toParsableString() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     @Override

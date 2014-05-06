@@ -65,7 +65,7 @@ public class GraphConverter {
         for (TypeNode node : type.nodeSet()) {
             AspectNode nodeImage = target.addNode(node.getNumber());
             result.putNode(node, nodeImage);
-            target.addEdge(nodeImage, node.label().toPrefixedString(),
+            target.addEdge(nodeImage, node.label().toParsableString(),
                 nodeImage);
             if (node.isAbstract()) {
                 target.addEdge(nodeImage, ABSTRACT.getPrefix(), nodeImage);

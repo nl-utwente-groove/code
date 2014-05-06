@@ -454,7 +454,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
             text.append(Options.EMPTY_LABEL_TEXT);
             specialLabelColour = true;
         } else {
-            text.append(TypeLabel.toHtmlString(label));
+            text.append(label.toLine().toHTMLString());
         }
         if (specialLabelColour) {
             HTMLConverter.createColorTag(SPECIAL_COLOR).on(text);

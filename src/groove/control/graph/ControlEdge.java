@@ -20,6 +20,7 @@ import groove.control.CallStack;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
+import groove.gui.look.Line;
 
 /**
  * @author rensink
@@ -75,12 +76,14 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     private final CallStack callStack;
 
     @Override
-    public String text() {
+    protected Line computeLine() {
+        String result;
         if (isVerdict()) {
-            return isSuccess() ? "succ" : "fail";
+            result = isSuccess() ? "succ" : "fail";
         } else {
-            return getCallStack().toString();
+            result = getCallStack().toString();
         }
+        return Line.atom(result);
     }
 
     @Override
