@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.lts.GraphState.Flag;
 import groove.util.Pair;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ class ExploreData {
     ExploreData(StateCache cache) {
         this.state = cache.getState();
         this.absence =
-            this.state.isError() ? Integer.MAX_VALUE : this.state.getActualFrame().getDepth();
+            this.state.isError() ? Flag.MAX_ABSENCE : this.state.getActualFrame().getDepth();
     }
 
     private final AbstractGraphState state;
