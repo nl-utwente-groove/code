@@ -21,6 +21,7 @@ import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.graph.ALabel;
 import groove.graph.Label;
+import groove.gui.look.Line;
 import groove.transform.AbstractRuleEvent;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
@@ -66,8 +67,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     private final HostNode[] addedNodes;
 
     @Override
-    public String text() {
-        return text(false);
+    protected Line computeLine() {
+        return Line.atom(text(false));
     }
 
     /** Returns the label text, with optionally the rule parameters

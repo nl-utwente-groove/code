@@ -14,20 +14,20 @@
  * 
  * $Id: DefaultLabel.java,v 1.14 2008-01-30 09:32:52 iovka Exp $
  */
-package groove.graph.plain;
+package groove.graph.multi;
 
 import groove.graph.TextLabel;
 
 /**
- * Simple textual label, for use in {@link PlainGraph}s.
+ * Simple textual label, for use in {@link MultiGraph}s.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 5110 $
  */
-public final class PlainLabel extends TextLabel {
+public final class MultiLabel extends TextLabel {
     /**
      * Constructor for a label with given text.
      */
-    private PlainLabel(String text) {
+    MultiLabel(String text) {
         super(text);
     }
 
@@ -36,10 +36,8 @@ public final class PlainLabel extends TextLabel {
         return text();
     }
 
-    /**
-     * Constructs a plain label with a given text.
-     */
-    public static PlainLabel parseLabel(String text) {
-        return new PlainLabel(text);
+    /** Constructs a label with a given text. */
+    public static MultiLabel parseLabel(String text) {
+        return new MultiLabel(text);
     }
 }

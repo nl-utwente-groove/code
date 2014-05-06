@@ -481,7 +481,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         for (AspectLabel label : this.nodeLabels) {
             String text = label.toString();
             if (text.length() > 0) {
-                result.add(PlainLabel.createLabel(text));
+                result.add(PlainLabel.parseLabel(text));
             }
         }
         return result;

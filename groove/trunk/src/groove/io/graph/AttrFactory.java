@@ -39,7 +39,7 @@ public class AttrFactory extends ElementFactory<AttrNode,AttrEdge> {
 
     @Override
     public Label createLabel(String text) {
-        return PlainLabel.createLabel(text);
+        return PlainLabel.parseLabel(text);
     }
 
     @Override

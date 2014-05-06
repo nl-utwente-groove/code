@@ -47,7 +47,7 @@ public class BinaryEdgeTest {
     @Test
     public void testQueries() {
         assertEquals(n1, e.source());
-        assertEquals(PlainLabel.createLabel(new String("a")), e.label());
+        assertEquals(PlainLabel.parseLabel(new String("a")), e.label());
         assertEquals(n2, e.target());
     }
 

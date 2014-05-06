@@ -25,6 +25,8 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
+import groove.gui.look.Line;
+import groove.gui.look.Line.Style;
 
 import java.util.List;
 import java.util.Set;
@@ -55,7 +57,7 @@ public class RuleLabel extends ALabel {
      * an atom; may not be <tt>null</tt>
      */
     public RuleLabel(TypeLabel label) {
-        this(RegExpr.atom(label.toPrefixedString()));
+        this(RegExpr.atom(label.toParsableString()));
     }
 
     /**
@@ -97,11 +99,26 @@ public class RuleLabel extends ALabel {
      * Returns the textual description of the underlying regular expression.
      */
     @Override
-    public String text() {
-        String result;
-        result = getMatchExpr().toString();
+    protected Line computeLine() {
+        Line result;
+        String text = getMatchExpr().toString();
         if (isAtom() || isSharp() || isWildcard()) {
-            result = EdgeRole.parseLabel(result).two();
+            text = EdgeRole.parseLabel(text).two();
+        }
+        Line atomText = Line.atom(text);
+        switch (getRole()) {
+        case BINARY:
+            result = isAtom() ? atomText : atomText.style(Style.ITALIC);
+            break;
+        case FLAG:
+            result = atomText.style(Style.ITALIC);
+            break;
+        case NODE_TYPE:
+            result = atomText.style(Style.BOLD);
+            break;
+        default:
+            assert false;
+            result = null;
         }
         return result;
     }

@@ -334,7 +334,7 @@ public class FindReplaceDialog {
             public Component getListCellRendererComponent(JList list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof TypeLabel) {
-                    value = HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
+                    value = HTMLConverter.HTML_TAG.on(((TypeLabel) value).toLine().toHTMLString());
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected,
                     cellHasFocus);

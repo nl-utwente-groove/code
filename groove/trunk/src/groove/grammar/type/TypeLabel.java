@@ -24,6 +24,8 @@ import groove.grammar.rule.RuleLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
+import groove.gui.look.Line;
+import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
 import groove.util.ExprParser;
 
@@ -44,19 +46,41 @@ public final class TypeLabel extends ALabel {
      * @param kind indicator of the type of label (normal, node type or flag).
      */
     TypeLabel(String text, EdgeRole kind) {
-        this.text = text;
         this.role = kind;
+        this.text = text;
     }
 
     @Override
-    public String text() {
-        return this.text;
+    protected Line computeLine() {
+        Line result = Line.atom(this.text);
+        switch (getRole()) {
+        case BINARY:
+            break;
+        case FLAG:
+            result = result.style(Style.ITALIC);
+            break;
+        case NODE_TYPE:
+            result = result.style(Style.BOLD);
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the text of the label string, prefixed by the node type 
+     * or flag aspect if the label is a node type or flag.
+     */
+    @Override
+    public String toParsableString() {
+        return getRole().getPrefix() + text();
     }
 
     /** Returns the prefixed text. */
     @Override
     public String toString() {
-        return getRole().getPrefix() + text();
+        return toParsableString();
     }
 
     @Override
@@ -66,7 +90,7 @@ public final class TypeLabel extends ALabel {
 
     /** Indicates if this label stands for a data type. */
     public boolean isDataType() {
-        return getRole() == NODE_TYPE && SignatureKind.getNames().contains(text());
+        return getRole() == NODE_TYPE && sigLabelMap.values().contains(this);
     }
 
     /** The label text. */
@@ -109,9 +133,9 @@ public final class TypeLabel extends ALabel {
     }
 
     /**
-     * Returns the unique representative of a {@link TypeLabel} for a given
+     * Returns the unique binary {@link TypeLabel} for a given
      * string. The string is used as-is, and is guaranteed to equal the text of
-     * the resulting label. The returned label is binary.
+     * the resulting label.
      * @param text the text of the label; non-null
      * @return an existing or new label with the given text; non-null
      */
@@ -178,14 +202,6 @@ public final class TypeLabel extends ALabel {
             }
         }
         return result;
-    }
-
-    /**
-     * Returns the text of the label string, prefixed by the node type 
-     * or flag aspect if the label is a node type or flag.
-     */
-    public String toPrefixedString() {
-        return getRole().getPrefix() + text();
     }
 
     static private final Map<SignatureKind,TypeLabel> sigLabelMap =

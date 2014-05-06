@@ -27,8 +27,8 @@ import groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
-        extends ElementFactory<N,E> {
+abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label> extends
+        ElementFactory<N,E> {
     /** Constructor for a fresh factory. */
     @SuppressWarnings("unchecked")
     protected StoreFactory() {
@@ -77,8 +77,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
         assert !isUsed(nr);
         if (nr >= this.nodes.length) {
             // extend the nodes array
-            int newSize =
-                Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
+            int newSize = Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
             @SuppressWarnings("unchecked")
             N[] newNodes = (N[]) new Node[newSize];
             System.arraycopy(this.nodes, 0, newNodes, 0, this.nodes.length);
@@ -121,8 +120,8 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
 
     @Override
     public E createEdge(N source, Label label, N target) {
-        assert source != null : "Source node of host edge should not be null";
-        assert target != null : "Target node of host edge should not be null";
+        assert source != null : "Source node " + label.text() + "-edge should not be null";
+        assert target != null : "Target node " + label.text() + "-edge should not be null";
         E edge = newEdge(source, label, target, getEdgeCount());
         return storeEdge(edge);
     }
@@ -165,8 +164,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
              */
             @Override
             final protected boolean areEqual(E o1, E o2) {
-                return o1.source().equals(o2.source())
-                    && o1.target().equals(o2.target())
+                return o1.source().equals(o2.source()) && o1.target().equals(o2.target())
                     && o1.label().equals(o2.label());
             }
 
@@ -185,8 +183,8 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     private final TreeHashSet<E> edgeStore;
 
     /** Initial capacity of the nodes array. */
-    static private final int INIT_CAPACITY = 100;
+    static protected final int INIT_CAPACITY = 100;
 
     /** Growth factor of the nodes array. */
-    static private final float GROWTH_FACTOR = 2.0f;
+    static protected final float GROWTH_FACTOR = 2.0f;
 }

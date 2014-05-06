@@ -23,7 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Generic representation of a label line.
+ * Generic representation of a formatted line of text,
+ * typically used to represent a node or edge label.
  * The representation can be converted to a String by providing
  * an appropriate {@link LineFormat}.
  * @author Arend Rensink
@@ -33,10 +34,31 @@ public abstract class Line {
     /** Converts this object to a string representation by applying a given renderer. */
     abstract public <R extends Builder<R>> R toString(LineFormat<R> renderer);
 
-    /** Returns a flattened string rendering of this line. */
+    /**
+     * Returns a flattened string rendering of this line.
+     * Convenience method for {@code toString(StringFormat.instance()).toString()}.
+     */
     public String toFlatString() {
-        return toString(StringFormat.instance()).toString();
+        if (this.flatString == null) {
+            this.flatString = toString(StringFormat.instance()).toString();
+        }
+        return this.flatString;
     }
+
+    private String flatString;
+
+    /**
+     * Returns an HTML string rendering of this line.
+     * Convenience method for {@code toString(HTMLLineFormat.instance()).toString()}.
+     */
+    public String toHTMLString() {
+        if (this.htmlString == null) {
+            this.htmlString = toString(HTMLLineFormat.instance()).toString();
+        }
+        return this.htmlString;
+    }
+
+    private String htmlString;
 
     /** Returns a coloured version of this line,
      * where the colour is specified as a logical colour type. 
@@ -83,10 +105,8 @@ public abstract class Line {
         } else if (this instanceof Composed) {
             Line[] oldFragments = ((Composed) this).fragments;
             Line[] newFragments = new Line[oldFragments.length + args.length];
-            System.arraycopy(oldFragments, 0, newFragments, 0,
-                oldFragments.length);
-            System.arraycopy(args, 0, newFragments, oldFragments.length,
-                args.length);
+            System.arraycopy(oldFragments, 0, newFragments, 0, oldFragments.length);
+            System.arraycopy(args, 0, newFragments, oldFragments.length, args.length);
             result = new Composed(newFragments);
         } else {
             Line[] newFragments = new Line[args.length + 1];
@@ -107,8 +127,7 @@ public abstract class Line {
         } else if (this instanceof Composed) {
             Line[] oldFragments = ((Composed) this).fragments;
             Line[] newFragments = new Line[oldFragments.length + 1];
-            System.arraycopy(oldFragments, 0, newFragments, 0,
-                oldFragments.length);
+            System.arraycopy(oldFragments, 0, newFragments, 0, oldFragments.length);
             newFragments[oldFragments.length] = Line.atom(atom);
             result = new Composed(newFragments);
         } else {

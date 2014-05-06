@@ -20,7 +20,6 @@ import groove.automaton.NodeRelation;
 import groove.automaton.RegExpr;
 import groove.automaton.RelationCalculator;
 import groove.grammar.model.FormatException;
-import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -497,7 +496,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
             putValue(NAME, label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
-                    : HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
+                    : HTMLConverter.HTML_TAG.on(label.toLine().toHTMLString()));
             this.label = label;
         }
 

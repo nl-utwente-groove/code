@@ -22,6 +22,9 @@ import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.gui.look.Line;
+import groove.util.DefaultFixable;
+import groove.util.Fixable;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -33,7 +36,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectLabel extends ALabel {
+public class AspectLabel extends ALabel implements Fixable {
     /**
      * Constructs an initially empty label, for a graph with a particular role.
      */
@@ -52,12 +55,6 @@ public class AspectLabel extends ALabel {
     }
 
     @Override
-    public String text() {
-        setFixed();
-        return toString();
-    }
-
-    @Override
     public EdgeRole getRole() {
         return EdgeRole.parseLabel(getInnerText()).one();
     }
@@ -69,13 +66,10 @@ public class AspectLabel extends ALabel {
             // Labels starting with letters precede all other labels
             String myText = EdgeRole.parseLabel(getInnerText()).two();
             boolean myTextIsAlpha =
-                myText.length() > 0
-                    && Character.isJavaIdentifierStart(myText.charAt(0));
-            String hisText =
-                EdgeRole.parseLabel(((AspectLabel) obj).getInnerText()).two();
+                myText.length() > 0 && Character.isJavaIdentifierStart(myText.charAt(0));
+            String hisText = EdgeRole.parseLabel(((AspectLabel) obj).getInnerText()).two();
             boolean hisTextIsAlpha =
-                hisText.length() > 0
-                    && Character.isJavaIdentifierStart(hisText.charAt(0));
+                hisText.length() > 0 && Character.isJavaIdentifierStart(hisText.charAt(0));
             if (myTextIsAlpha != hisTextIsAlpha) {
                 result = myTextIsAlpha ? -1 : +1;
             }
@@ -92,20 +86,34 @@ public class AspectLabel extends ALabel {
     }
 
     @Override
+    public boolean isFixed() {
+        return this.fixable.isFixed();
+    }
+
+    @Override
+    public void testFixed(boolean fixed) {
+        this.fixable.testFixed(fixed);
+    }
+
+    @Override
     public boolean setFixed() {
-        boolean result = super.setFixed();
+        boolean result = this.fixable.setFixed();
         if (result && this.innerText == null) {
             this.innerText = "";
         }
+        hashCode();
         return result;
     }
+
+    private final DefaultFixable fixable = new DefaultFixable();
 
     /**
      * Reconstructs the original plain label text from the list of aspect
      * values, the end flag, and the actual label text.
      */
     @Override
-    public String toString() {
+    public String toParsableString() {
+        setFixed();
         StringBuffer result = new StringBuffer();
         for (Aspect value : this.aspects) {
             result.append(value.toString());
@@ -115,6 +123,22 @@ public class AspectLabel extends ALabel {
             result.append(getInnerText());
         }
         return result.toString();
+    }
+
+    /**
+     * Wraps the {@link #toParsableString()} using {@link Line#atom(String)}.
+     */
+    @Override
+    protected Line computeLine() {
+        return Line.atom(toParsableString());
+    }
+
+    /**
+     * Delegates to {@link #toParsableString()}.
+     */
+    @Override
+    public String toString() {
+        return toParsableString();
     }
 
     /**
@@ -129,8 +153,8 @@ public class AspectLabel extends ALabel {
         boolean notForEdge = !value.isForEdge(this.role);
         if (notForNode) {
             if (notForEdge) {
-                addError("Aspect %s not allowed in %s", value,
-                    roleDescription.get(this.role), this.role);
+                addError("Aspect %s not allowed in %s", value, roleDescription.get(this.role),
+                    this.role);
             } else {
                 this.edgeOnly = value;
             }
@@ -138,8 +162,7 @@ public class AspectLabel extends ALabel {
             this.nodeOnly = value;
         }
         if (this.nodeOnly != null && this.edgeOnly != null) {
-            addError("Conflicting aspects %s and %s", this.nodeOnly,
-                this.edgeOnly);
+            addError("Conflicting aspects %s and %s", this.nodeOnly, this.edgeOnly);
         }
     }
 
@@ -178,8 +201,7 @@ public class AspectLabel extends ALabel {
     /** Tests if the aspects and text of this object equal those of another. */
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof AspectLabel
-            && equalsAspects((AspectLabel) obj)
+        return this == obj || obj instanceof AspectLabel && equalsAspects((AspectLabel) obj)
             && equalsText((AspectLabel) obj);
     }
 
@@ -222,8 +244,7 @@ public class AspectLabel extends ALabel {
      * suited for nodes, or the label text is non-empty.
      */
     public final boolean isEdgeOnly() {
-        return this.edgeOnly != null || this.innerText != null
-            && this.innerText.length() > 0;
+        return this.edgeOnly != null || this.innerText != null && this.innerText.length() > 0;
     }
 
     /** 
@@ -232,8 +253,8 @@ public class AspectLabel extends ALabel {
      * for edges, or if the label text is empty and the label is not edge-only.
      */
     public final boolean isNodeOnly() {
-        return this.nodeOnly != null || this.edgeOnly == null
-            && this.innerText != null && this.innerText.length() == 0;
+        return this.nodeOnly != null || this.edgeOnly == null && this.innerText != null
+            && this.innerText.length() == 0;
     }
 
     /** Returns an aspect of this label that makes it suitable for edges only.
@@ -305,8 +326,8 @@ public class AspectLabel extends ALabel {
     /** List of errors detected while building this label. */
     private final FormatErrorSet errors = new FormatErrorSet();
     /** The set of all allowed nesting labels. */
-    private static final Map<GraphRole,String> roleDescription =
-        new EnumMap<GraphRole,String>(GraphRole.class);
+    private static final Map<GraphRole,String> roleDescription = new EnumMap<GraphRole,String>(
+        GraphRole.class);
     static {
         roleDescription.put(GraphRole.HOST, "host graph");
         roleDescription.put(GraphRole.TYPE, "type graph");

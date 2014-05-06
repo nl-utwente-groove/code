@@ -16,23 +16,36 @@
  */
 package groove.graph;
 
+import groove.gui.look.Line;
+
 /**
  * Interface for edge labels.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
+    /** Returns the formatted display line for this label. */
+    public Line toLine();
+
     /**
-     * Returns the text that this Label carries. 
-     * The <tt>compareTo</tt> method of
-     * <tt>Comparable</tt> will, in a standard implementation, be delegated to
-     * {@link #text()}.
-     * @return the (non-{@code null}) text of the label
+     * Returns the (plain, unformatted) text that this label carries. 
+     * Convenience method for {@code toLine().toFlatString()}.
+     * @see Line#toFlatString()
      */
-    String text();
+    public String text();
+
+    /**
+     * Returns a string that can be parsed to reconstruct this label.
+     * Only valid for labels that can be (re)constructed from a string
+     * representation.
+     * @return A parsable string representation for this label.
+     * @throws UnsupportedOperationException if this label type
+     * cannot be constructed from a string representation.
+     */
+    public String toParsableString() throws UnsupportedOperationException;
 
     /**
      * Returns the edge role of this label.
      */
-    EdgeRole getRole();
+    public EdgeRole getRole();
 }

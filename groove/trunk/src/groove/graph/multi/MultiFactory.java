@@ -14,48 +14,53 @@
  *
  * $Id$
  */
-package groove.graph.plain;
+package groove.graph.multi;
 
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
-import groove.graph.StoreFactory;
+import groove.util.DefaultDispenser;
+import groove.util.Dispenser;
 
-/** Factory class for graph elements. */
-public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
+/** Factory class for {@link MultiGraph} elements. */
+public class MultiFactory extends ElementFactory<MultiNode,MultiEdge> {
     /** Private constructor. */
-    protected PlainFactory() {
-        // empty
+    private MultiFactory() {
+        this.edgeNrs = new DefaultDispenser();
     }
 
     @Override
-    protected PlainNode newNode(int nr) {
-        return new PlainNode(nr);
+    protected MultiNode newNode(int nr) {
+        return new MultiNode(nr);
     }
 
     @Override
-    public PlainLabel createLabel(String text) {
-        return PlainLabel.parseLabel(text);
+    public MultiEdge createEdge(MultiNode source, Label label, MultiNode target) {
+        return new MultiEdge(source, (MultiLabel) label, target, this.edgeNrs.getNext());
+    }
+
+    /** Dispenser for edge numbers. */
+    private final Dispenser edgeNrs;
+
+    @Override
+    public MultiLabel createLabel(String text) {
+        return MultiLabel.parseLabel(text);
     }
 
     @Override
-    public Morphism<PlainNode,PlainEdge> createMorphism() {
-        return new Morphism<PlainNode,PlainEdge>(this);
-    }
-
-    @Override
-    protected PlainEdge newEdge(PlainNode source, Label label, PlainNode target, int nr) {
-        return new PlainEdge(source, (PlainLabel) label, target, nr);
+    public Morphism<MultiNode,MultiEdge> createMorphism() {
+        return new Morphism<MultiNode,MultiEdge>(this);
     }
 
     /** Returns the singleton instance of this factory. */
-    public static PlainFactory instance() {
+    public static MultiFactory instance() {
         // initialise lazily to avoid initialisation circularities
         if (instance == null) {
-            instance = new PlainFactory();
+            instance = new MultiFactory();
         }
         return instance;
     }
 
     /** Singleton instance of this factory. */
-    private static PlainFactory instance;
+    private static MultiFactory instance;
 }

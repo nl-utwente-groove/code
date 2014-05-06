@@ -51,7 +51,7 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
      */
     public TypeEdge(int nr, TypeNode source, TypeNode target,
             SimpleMorphism morph) {
-        super(nr, source, PlainLabel.createLabel(PREFIX + nr), target);
+        super(nr, source, PlainLabel.parseLabel(PREFIX + nr), target);
         assert morph.getSource().equals(source)
             && morph.getTarget().equals(target);
         this.morph = morph;
