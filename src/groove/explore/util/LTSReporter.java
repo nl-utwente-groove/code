@@ -16,7 +16,7 @@
  */
 package groove.explore.util;
 
-import groove.graph.plain.PlainGraph;
+import groove.graph.multi.MultiGraph;
 import groove.io.FileType;
 import groove.io.external.Exportable;
 import groove.io.external.Exporter;
@@ -63,10 +63,9 @@ public class LTSReporter extends AExplorationReporter {
      * @return the output file name
      * @throws IOException if any error occurred during export
      */
-    static public File exportLTS(GTS lts, String filePattern, LTSLabels labels)
-        throws IOException {
+    static public File exportLTS(GTS lts, String filePattern, LTSLabels labels) throws IOException {
         // Create the LTS view to be exported.
-        PlainGraph ltsGraph = lts.toPlainGraph(labels);
+        MultiGraph ltsGraph = lts.toPlainGraph(labels);
         // Export GTS.
         String ltsName;
         File dir = new File(filePattern);
@@ -78,12 +77,10 @@ public class LTSReporter extends AExplorationReporter {
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
         File outFile = new File(dir, ltsName);
-        Pair<FileType,Exporter> gtsFormat =
-            Exporters.getAcceptingFormat(ltsGraph, outFile);
+        Pair<FileType,Exporter> gtsFormat = Exporters.getAcceptingFormat(ltsGraph, outFile);
         if (gtsFormat != null) {
             try {
-                gtsFormat.two().doExport(new Exportable(ltsGraph), outFile,
-                    gtsFormat.one());
+                gtsFormat.two().doExport(new Exportable(ltsGraph), outFile, gtsFormat.one());
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

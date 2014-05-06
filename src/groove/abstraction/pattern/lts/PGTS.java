@@ -33,8 +33,8 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
-import groove.graph.plain.PlainGraph;
-import groove.graph.plain.PlainNode;
+import groove.graph.multi.MultiGraph;
+import groove.graph.multi.MultiNode;
 import groove.lts.GTS;
 import groove.lts.LTSFactory;
 import groove.util.collect.NestedIterator;
@@ -333,11 +333,11 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
     }
 
     /** Exports the GTS to a plain graph representation. */
-    public PlainGraph toPlainGraph() {
-        PlainGraph result = new PlainGraph(getName(), GraphRole.LTS);
-        Map<PatternState,PlainNode> nodeMap = new HashMap<PatternState,PlainNode>();
+    public MultiGraph toPlainGraph() {
+        MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
+        Map<PatternState,MultiNode> nodeMap = new HashMap<PatternState,MultiNode>();
         for (PatternState state : nodeSet()) {
-            PlainNode image = result.addNode(state.getNumber());
+            MultiNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
         }
         for (PatternTransition transition : edgeSet()) {

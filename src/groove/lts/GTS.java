@@ -39,8 +39,8 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
-import groove.graph.plain.PlainGraph;
-import groove.graph.plain.PlainNode;
+import groove.graph.multi.MultiGraph;
+import groove.graph.multi.MultiNode;
 import groove.gui.jgraph.LTSJModel;
 import groove.lts.GraphState.Flag;
 import groove.transform.Record;
@@ -543,15 +543,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.
      */
-    public PlainGraph toPlainGraph(LTSLabels flags) {
-        PlainGraph result = new PlainGraph(getName(), GraphRole.LTS);
-        Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
+    public MultiGraph toPlainGraph(LTSLabels flags) {
+        MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
+        Map<GraphState,MultiNode> nodeMap = new HashMap<GraphState,MultiNode>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
             if (state.isRecipeStage() && !flags.showRecipes()) {
                 continue;
             }
-            PlainNode image = result.addNode(state.getNumber());
+            MultiNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
             if (flags.showResult() && isResult(state)) {
                 result.addEdge(image, flags.getResultLabel(), image);
@@ -587,8 +587,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (transition.isRecipeStep() && !flags.showRecipes()) {
                 continue;
             }
-            PlainNode sourceImage = nodeMap.get(transition.source());
-            PlainNode targetImage = nodeMap.get(transition.target());
+            MultiNode sourceImage = nodeMap.get(transition.source());
+            MultiNode targetImage = nodeMap.get(transition.target());
             result.addEdge(sourceImage, transition.label().text(), targetImage);
         }
         return result;

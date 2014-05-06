@@ -323,10 +323,10 @@ public interface GraphState extends Node {
         /** Indicates if this flag is exploration-related. */
         private final boolean strategy;
         /** Number of bits by which a status value has be right-shifted to get 
-         * the presence value.
+         * the absence value.
          */
         private final static int ABSENCE_SHIFT = 25;
-        /** Maximal absence value that will fit into the available bits. */
-        private final static int MAX_ABSENCE = 1 << (31 - ABSENCE_SHIFT);
+        /** Maximal absence value. */
+        public final static int MAX_ABSENCE = 1 << (31 - ABSENCE_SHIFT);
     }
 }
