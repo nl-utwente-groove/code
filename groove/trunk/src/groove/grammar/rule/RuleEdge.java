@@ -40,16 +40,12 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
                 guard.isNamed() ? Collections.singletonList(guard)
                         : Collections.<TypeGuard>emptyList();
             TypeGraph typeGraph = source.getType().getGraph();
-            if (typeGraph == null) {
-                this.matchingTypes = Collections.emptySet();
-            } else {
-                this.matchingTypes = new HashSet<TypeEdge>();
-                for (TypeEdge typeEdge : typeGraph.edgeSet()) {
-                    if (typeEdge.source().getSubtypes().contains(source.getType())
-                        && typeEdge.target().getSubtypes().contains(target.getType())
-                        && guard.isSatisfied(typeEdge)) {
-                        this.matchingTypes.add(typeEdge);
-                    }
+            this.matchingTypes = new HashSet<TypeEdge>();
+            for (TypeEdge typeEdge : typeGraph.edgeSet()) {
+                if (typeEdge.source().getSubtypes().contains(source.getType())
+                    && typeEdge.target().getSubtypes().contains(target.getType())
+                    && guard.isSatisfied(typeEdge)) {
+                    this.matchingTypes.add(typeEdge);
                 }
             }
         } else if (type == null) {
