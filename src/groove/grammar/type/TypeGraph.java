@@ -527,8 +527,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 matchingTypes.retainAll(result.addVarTypes(guard.getVar(), matchingTypes));
             }
             if (image.getMatchingTypes().isEmpty()) {
-                errors.add("Inconsistent %s type %s",
-                    image.label().getRole().getDescription(false), image.label(), varEdge);
+                errors.add("%s wildcard %s cannot match anything",
+                    image.label().getRole().getDescription(true), image.label(), varEdge);
             }
             result.putEdge(varEdge, image);
         }
