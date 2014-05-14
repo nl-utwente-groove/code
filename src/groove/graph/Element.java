@@ -18,12 +18,16 @@ package groove.graph;
 
 /**
  * Common interface for graph elements. The direct subinterfaces are:
- * {@link Node} and {@link Edge}. {@link Edge}s are essentially labelled
- * hyper-edges consisting of a number of <i>end points</i> (at least one),
- * which are {@link Node}s.
+ * {@link Node} and {@link Edge}.
  * @author Arend Rensink
  * @version $Revision$
  */
 public interface Element extends java.io.Serializable {
-    // empty
+    /**
+     * Returns the element number.
+     * Within a given graph, the element number, together
+     * with its actual type, uniquely defines
+     * the element.
+     */
+    public int getNumber();
 }

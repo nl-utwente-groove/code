@@ -19,14 +19,16 @@ package groove.abstraction.pattern.lts;
 import groove.graph.AEdge;
 
 /** Transitions occurring in a PGTS. */
-public class PatternGraphTransition extends
-        AEdge<PatternState,PatternTransitionLabel> implements
+public class PatternGraphTransition extends AEdge<PatternState,PatternTransitionLabel> implements
         PatternTransition {
 
     /** Default constructor. */
-    public PatternGraphTransition(PatternState source, MatchResult match,
-            PatternState target) {
+    public PatternGraphTransition(PatternState source, MatchResult match, PatternState target) {
         super(source, new PatternTransitionLabel(match), target);
     }
 
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
 }

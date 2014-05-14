@@ -20,7 +20,6 @@ import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AEdge;
-import groove.graph.EdgeRole;
 
 /**
  * Class that implements the edges of a host graph.
@@ -29,12 +28,9 @@ import groove.graph.EdgeRole;
 public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEdge {
     /** Constructor for a typed edge. */
     protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
-        super(source, type.label(), target);
-        assert label().getRole() == EdgeRole.BINARY || source == target : String.format(
-            "Can't create %s label %s between distinct nodes %s and %s",
-            label().getRole().getDescription(false), label(), source, target);
-        this.nr = nr;
+        super(source, type.label(), target, nr);
         this.type = type;
+        assert type != null;
     }
 
     // ------------------------------------------------------------------------
@@ -42,36 +38,30 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEd
     // ------------------------------------------------------------------------
 
     @Override
+    public boolean isSimple() {
+        return true;
+    }
+
+    @Override
+    protected boolean isTypeEqual(Object obj) {
+        return obj instanceof DefaultHostEdge;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof DefaultHostEdge)) {
+        if (!super.equals(obj)) {
             return false;
         }
         DefaultHostEdge other = (DefaultHostEdge) obj;
         if (getType() != other.getType()) {
             return false;
         }
-        if (getNumber() != other.getNumber()) {
-            return false;
-        }
-        return source().equals(other.source()) && target().equals(other.target());
+        return true;
     }
 
-    /** 
-     * Returns the number of this edge.
-     * The number is guaranteed to be unique for each canonical edge representative.
-     */
-    @Override
-    public int getNumber() {
-        return this.nr;
-    }
-
-    /** 
-     * Returns the (possibly {@code null}) type of this edge.
-     * The number is guaranteed to be unique for each canonical edge representative.
-     */
     @Override
     public TypeEdge getType() {
         return this.type;
@@ -82,8 +72,6 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEd
         return AnchorKind.EDGE;
     }
 
-    /** The (unique) number of this edge. */
-    private final int nr;
-    /** Possibly {@code null} type of this edge. */
+    /** Non-{@code null} type of this edge. */
     private final TypeEdge type;
 }

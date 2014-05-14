@@ -30,4 +30,9 @@ public class RegEdge extends AEdge<RegNode,RuleLabel> {
     public RegEdge(RegNode source, RuleLabel label, RegNode target) {
         super(source, label, target);
     }
+
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
 }

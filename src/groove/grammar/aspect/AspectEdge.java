@@ -89,6 +89,11 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         this.graphRole = label.getGraphRole();
     }
 
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
+
     /** Returns the graph role set for this aspect edge. */
     public GraphRole getGraphRole() {
         return this.graphRole;

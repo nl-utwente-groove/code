@@ -23,17 +23,27 @@ package groove.graph;
  */
 public abstract class AEdge<N extends Node,L extends Label> implements Edge {
     /**
-     * Creates an edge with a given source and target node and label.
+     * Creates a numbered edge with a given source and target node and label.
      */
-    protected AEdge(N source, L label, N target) {
+    protected AEdge(N source, L label, N target, int number) {
         assert source != null && label != null && target != null;
         this.source = source;
         this.label = label;
         this.target = target;
+        this.number = number;
     }
 
     /**
-     * Creates an edge with a given source and target node.
+     * Creates an unnumbered edge with a given source and target node and label.
+     * (Unnumbered means that the edge number will be 0.)
+     */
+    protected AEdge(N source, L label, N target) {
+        this(source, label, target, 0);
+        assert isSimple() : "Non-simple edges should have a proper edge number";
+    }
+
+    /**
+     * Creates an unnumbered edge with a given source and target node.
      * Only for subclasses that overwrite {@link #label()} to
      * return a non-{@code null} value
      */
@@ -42,6 +52,8 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
         this.source = source;
         this.target = target;
         this.label = null;
+        this.number = 0;
+        assert isSimple() : "Non-simple edges should have a proper edge number";
         assert label() != null;
     }
 
@@ -73,6 +85,22 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
      * @invariant label != null
      */
     protected final L label;
+
+    /** Indicates if this edge is uniquely
+     * identified by source, target and label.
+     * If the edge is simple, the edge number is ignored
+     * in hash code and equality test; if it is not simple,
+     * then the edge number is also taken into account.
+     * @return {@code true} if this edge is simple.
+     */
+    public abstract boolean isSimple();
+
+    @Override
+    public int getNumber() {
+        return this.number;
+    }
+
+    private final int number;
 
     @Override
     public boolean isLoop() {
@@ -126,9 +154,14 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
         int labelCode = label().hashCode();
         int sourceCode = 3 * this.source.hashCode();
         int targetCode = (labelCode + 2) * this.target.hashCode();
-        return labelCode // + 3 * sourceCode - 2 * targetCode;
-            ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
-            + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
+        int result =
+            labelCode // + 3 * sourceCode - 2 * targetCode;
+                ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
+                + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
+        if (!isSimple()) {
+            result = 31 * result + getNumber();
+        }
+        return result;
     }
 
     /**
@@ -144,7 +177,14 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
         if (this == obj) {
             return true;
         }
-        return isTypeEqual(obj) && isEndEqual((Edge) obj) && isLabelEqual((Edge) obj);
+        if (!isTypeEqual(obj)) {
+            return false;
+        }
+        Edge other = (Edge) obj;
+        if (!isSimple() && other.getNumber() != getNumber()) {
+            return false;
+        }
+        return isEndEqual(other) && isLabelEqual(other);
     }
 
     // -------------------- Object and related methods --------------------

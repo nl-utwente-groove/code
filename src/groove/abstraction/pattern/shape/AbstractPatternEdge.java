@@ -19,7 +19,6 @@ package groove.abstraction.pattern.shape;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
 import groove.graph.AEdge;
-import groove.graph.EdgeRole;
 import groove.graph.plain.PlainLabel;
 import groove.util.Fixable;
 
@@ -28,26 +27,15 @@ import groove.util.Fixable;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
-        extends AEdge<N,PlainLabel> implements Fixable {
-
-    // ------------------------------------------------------------------------
-    // Object Fields
-    // ------------------------------------------------------------------------
-
-    /** The number of this edge. */
-    private final int nr;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
+public abstract class AbstractPatternEdge<N extends AbstractPatternNode> extends
+        AEdge<N,PlainLabel> implements Fixable {
     /** 
      * Constructs a new pattern edge, with the given number, source and target.
+     * Pattern edges have a number for identification purposes,
+     * but the number is not meant to distinguish edges.
      */
     public AbstractPatternEdge(int nr, N source, PlainLabel label, N target) {
-        super(source, label, target);
-        this.nr = nr;
+        super(source, label, target, nr);
     }
 
     // ------------------------------------------------------------------------
@@ -55,14 +43,13 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     // ------------------------------------------------------------------------
 
     @Override
-    public EdgeRole getRole() {
-        return EdgeRole.BINARY;
+    public String toString() {
+        return source().toString() + "--" + getIdStr() + "-->" + target().toString();
     }
 
     @Override
-    public String toString() {
-        return source().toString() + "--" + getIdStr() + "-->"
-            + target().toString();
+    public boolean isSimple() {
+        return true;
     }
 
     @Override
@@ -91,14 +78,9 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     /** Return the simple graph morphism associated with this edge. */
     abstract public SimpleMorphism getMorphism();
 
-    /** Returns the unique identifier of this edge. */
-    public int getNumber() {
-        return this.nr;
-    }
-
     /** Returns the Id of this edge as a string. */
     public String getIdStr() {
-        return getToStringPrefix() + this.nr;
+        return getToStringPrefix() + getNumber();
     }
 
     /** Returns the image of the given node in the morphism. */

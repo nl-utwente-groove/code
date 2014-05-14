@@ -35,8 +35,12 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
      *         <tt>target()==target </tt>
      */
     PlainEdge(PlainNode source, PlainLabel label, PlainNode target, int nr) {
-        super(source, label, target);
-        this.nr = nr;
+        super(source, label, target, nr);
+    }
+
+    @Override
+    public boolean isSimple() {
+        return true;
     }
 
     @Override
@@ -44,25 +48,14 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
         boolean result = this == obj;
         // test that the result is the same as number equality
         // or source-label-target equality
-        assert result == (obj instanceof PlainEdge && this.nr == ((PlainEdge) obj).nr) : String.format(
+        assert result == (obj instanceof PlainEdge && getNumber() == ((PlainEdge) obj).getNumber()) : String.format(
             "Distinct %s and %s %s with the same number %d", getClass().getName(),
-            obj.getClass().getName(), this, this.nr);
+            obj.getClass().getName(), this, getNumber());
         assert result == (obj instanceof PlainEdge && super.equals(obj)) : String.format(
             "Distinct %s and %s %s with the same content", getClass().getName(),
             obj.getClass().getName(), this);
         return result;
     }
-
-    /** 
-     * Returns the number of this edge.
-     * The number is guaranteed to be unique for each canonical edge representative.
-     */
-    public int getNumber() {
-        return this.nr;
-    }
-
-    /** The (unique) number of this edge. */
-    private final int nr;
 
     /**
      * Creates an default edge from a given source node, label text and target
