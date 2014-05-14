@@ -24,7 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * An attributed edge
+ * An attributed edge.
  * This is an ordinary edge extended with a sting-to-string mapping
  * holding additional edge attributes.
  * @author Arend Rensink
@@ -32,15 +32,20 @@ import java.util.Map;
  */
 public class AttrEdge extends AEdge<AttrNode,PlainLabel> {
     /** Construct a new edge. */
-    public AttrEdge(AttrNode source, PlainLabel label, AttrNode target) {
-        super(source, label, target);
+    AttrEdge(AttrNode source, PlainLabel label, AttrNode target, int number) {
+        super(source, label, target, number);
         this.attributeMap = new LinkedHashMap<String,String>();
+    }
+
+    @Override
+    public boolean isSimple() {
+        return false;
     }
 
     /** Returns a deep copy of this edge. */
     @Override
     public AttrEdge clone() {
-        AttrEdge result = new AttrEdge(source(), label(), target());
+        AttrEdge result = new AttrEdge(source(), label(), target(), getNumber());
         result.attributeMap.putAll(this.attributeMap);
         return result;
     }

@@ -49,6 +49,11 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
     }
 
     @Override
+    public boolean isSimple() {
+        return true;
+    }
+
+    @Override
     public String text(boolean anchored) {
         return label().text();
     }

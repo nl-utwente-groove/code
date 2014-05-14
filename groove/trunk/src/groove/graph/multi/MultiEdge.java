@@ -26,22 +26,18 @@ import groove.graph.AEdge;
  */
 public class MultiEdge extends AEdge<MultiNode,MultiLabel> {
     /**
-     * Constructs a new edge on the basis of a given source, label and target.
+     * Constructs a new, numbered edge on the basis of a given source, label and target.
      * @param source source node of the new edge
      * @param label label of the new edge
      * @param target target node of the new edge
-     * @require <tt>source != null && target != null</tt>
-     * @ensure <tt>source()==source</tt>, <tt>label()==label</tt>,
-     *         <tt>target()==target </tt>
      */
-    MultiEdge(MultiNode source, MultiLabel label, MultiNode target, int nr) {
-        super(source, label, target);
-        this.nr = nr;
+    MultiEdge(MultiNode source, MultiLabel label, MultiNode target, int number) {
+        super(source, label, target, number);
     }
 
     @Override
-    protected int computeHashCode() {
-        return 31 * super.computeHashCode() + getNumber();
+    public boolean isSimple() {
+        return false;
     }
 
     @Override
@@ -54,15 +50,4 @@ public class MultiEdge extends AEdge<MultiNode,MultiLabel> {
         }
         return ((MultiEdge) obj).getNumber() == getNumber();
     }
-
-    /** 
-     * Returns the number of this edge.
-     * The number uniquely identifies the edge.
-     */
-    public int getNumber() {
-        return this.nr;
-    }
-
-    /** The (unique) number of this edge. */
-    private final int nr;
 }

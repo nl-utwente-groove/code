@@ -44,6 +44,11 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
         this.graph = graph;
     }
 
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
+
     /** Indicates if this edge type is abstract. */
     public final boolean isAbstract() {
         return this.abstractType;

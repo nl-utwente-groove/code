@@ -20,6 +20,8 @@ import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.plain.PlainLabel;
+import groove.util.DefaultDispenser;
+import groove.util.Dispenser;
 
 /**
  * Factory for elements of {@link AttrGraph}s.
@@ -44,13 +46,15 @@ public class AttrFactory extends ElementFactory<AttrNode,AttrEdge> {
 
     @Override
     public AttrEdge createEdge(AttrNode source, Label label, AttrNode target) {
-        return new AttrEdge(source, (PlainLabel) label, target);
+        return new AttrEdge(source, (PlainLabel) label, target, this.edgeNrDispenser.getNext());
     }
 
     @Override
     public Morphism<AttrNode,AttrEdge> createMorphism() {
         throw new UnsupportedOperationException();
     }
+
+    private final Dispenser edgeNrDispenser = new DefaultDispenser();
 
     /** Returns the singleton instance of this class. */
     public static AttrFactory instance() {
