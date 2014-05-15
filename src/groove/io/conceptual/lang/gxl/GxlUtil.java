@@ -103,8 +103,7 @@ public class GxlUtil {
         private String m_type;
 
         private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
-        private List<EdgeWrapper> m_incomingEdges =
-            new ArrayList<EdgeWrapper>();
+        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
 
         public NodeWrapper(NodeType node) {
             this.m_node = node;
@@ -140,6 +139,7 @@ public class GxlUtil {
 
         public void sortEdges() {
             Collections.sort(this.m_edges, new Comparator<EdgeWrapper>() {
+                @Override
                 public int compare(EdgeWrapper ew1, EdgeWrapper ew2) {
                     int stringCompare = ew1.getType().compareTo(ew2.getType());
                     if (stringCompare == 0) {
@@ -172,8 +172,7 @@ public class GxlUtil {
         private EdgeWrapper m_edgeTo;
 
         private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
-        private List<EdgeWrapper> m_incomingEdges =
-            new ArrayList<EdgeWrapper>();
+        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
 
         // True if connecting nodes, false if connecting edges
         private boolean m_nodeEdge;
@@ -243,19 +242,16 @@ public class GxlUtil {
         }
     }
 
-    public static String g_gxlTypeGraphURI =
-        "http://www.gupro.de/GXL/gxl-1.0.gxl";
+    public static String g_gxlTypeGraphURI = "http://www.gupro.de/GXL/gxl-1.0.gxl";
 
     public static final JAXBContext g_context;
     public static final Marshaller g_marshaller;
     public static final Unmarshaller g_unmarshaller;
     static {
         try {
-            g_context =
-                JAXBContext.newInstance(GxlType.class.getPackage().getName());
+            g_context = JAXBContext.newInstance(GxlType.class.getPackage().getName());
             g_marshaller = g_context.createMarshaller();
-            g_marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
-                Boolean.TRUE);
+            g_marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             g_unmarshaller = g_context.createUnmarshaller();
         } catch (JAXBException e) {
             throw new RuntimeException(e);
@@ -267,14 +263,12 @@ public class GxlUtil {
         String type = null;
         Map<QName,String> attrMap = elem.getType().getOtherAttributes();
         for (QName attr : attrMap.keySet()) {
-            if (attr.getPrefix().equals("xlink")
-                && attr.getLocalPart().equals("href")) {
+            if (attr.getPrefix().equals("xlink") && attr.getLocalPart().equals("href")) {
                 if (attrMap.get(attr).startsWith(g_gxlTypeGraphURI)) {
                     //Found a type attribute
                     String fullType = attrMap.get(attr);
                     if (fullType.startsWith(g_gxlTypeGraphURI + "#")) {
-                        type =
-                            fullType.substring(g_gxlTypeGraphURI.length() + 1);
+                        type = fullType.substring(g_gxlTypeGraphURI.length() + 1);
                         break;
                     }
                 } else if (attrMap.get(attr).startsWith("#")) {
@@ -298,8 +292,7 @@ public class GxlUtil {
     public static void setElemType(TypedElementType elem, String type) {
         TypeType typeType = new TypeType();
         Map<QName,String> attrMap = typeType.getOtherAttributes();
-        attrMap.put(new QName("http://www.w3.org/1999/xlink", "href", "xlink"),
-            type);
+        attrMap.put(new QName("http://www.w3.org/1999/xlink", "href", "xlink"), type);
 
         elem.setType(typeType);
     }
@@ -318,8 +311,7 @@ public class GxlUtil {
         return nodes;
     }
 
-    private static NodeWrapper getWrapper(Map<NodeType,NodeWrapper> nodes,
-            NodeType node) {
+    private static NodeWrapper getWrapper(Map<NodeType,NodeWrapper> nodes, NodeType node) {
         if (nodes.containsKey(node)) {
             return nodes.get(node);
         }
@@ -367,8 +359,7 @@ public class GxlUtil {
         STRING, BOOL, INT, FLOAT, LOCATOR, ENUM, BAG, SET, SEQ, TUP, AUTO //automatically try to determine the correct type when applicable
     }
 
-    public static Object getAttribute(TypedElementType elem, String name,
-            AttrTypeEnum type) {
+    public static Object getAttribute(TypedElementType elem, String name, AttrTypeEnum type) {
         List<AttrType> attrs = elem.getAttr();
         Object value = null;
         for (AttrType attr : attrs) {
@@ -435,8 +426,8 @@ public class GxlUtil {
         return null;
     }
 
-    public static void setAttribute(TypedElementType elem, String name,
-            Object value, AttrTypeEnum type) {
+    public static void setAttribute(TypedElementType elem, String name, Object value,
+            AttrTypeEnum type) {
         List<AttrType> attrs = elem.getAttr();
         AttrType attr = null;
         // If attr already exists, use that instead
@@ -544,8 +535,7 @@ public class GxlUtil {
         }
         // Wrap in JAXBElement for getTypedValue
         @SuppressWarnings({"rawtypes", "unchecked"})
-        JAXBElement<?> elem =
-            new JAXBElement(new QName("attr"), o.getClass(), o);
+        JAXBElement<?> elem = new JAXBElement(new QName("attr"), o.getClass(), o);
         return getTypedValue(elem, type);
     }
 
@@ -590,8 +580,7 @@ public class GxlUtil {
                 }
                 break;
             case ORD:
-                throw new IllegalArgumentException(
-                    "ORD not supported as GXL import type");
+                throw new IllegalArgumentException("ORD not supported as GXL import type");
             }
 
             CompositeValueType gxlContainer = (CompositeValueType) o;
@@ -624,8 +613,7 @@ public class GxlUtil {
                 values.add(v);
             }
 
-            TupleValue tv =
-                new TupleValue(tup, values.toArray(new Value[values.size()]));
+            TupleValue tv = new TupleValue(tup, values.toArray(new Value[values.size()]));
             return tv;
         }
         return null;
@@ -640,8 +628,7 @@ public class GxlUtil {
             return g_objectFactory.createString(((StringValue) val).getValue());
         } else if (val instanceof RealValue) {
             // the GXL representation can only take floats
-            return g_objectFactory.createFloat(new Float(
-                ((RealValue) val).getValue()));
+            return g_objectFactory.createFloat(new Float(((RealValue) val).getValue()));
         } else if (val instanceof EnumValue) {
             return GxlUtil.g_objectFactory.createEnum(((EnumValue) val).getValue().toString());
         } else if (val instanceof CustomDataValue) {
