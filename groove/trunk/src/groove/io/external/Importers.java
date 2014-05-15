@@ -55,10 +55,8 @@ public class Importers {
      * Perform import. Show open dialog, and based on selected format import file.
      * @param simulator Parent of open dialog.
      */
-    public static void doImport(Simulator simulator, GrammarModel grammar)
-        throws IOException {
-        int approve =
-            getFormatChooser().showDialog(simulator.getFrame(), "Import");
+    public static void doImport(Simulator simulator, GrammarModel grammar) throws IOException {
+        int approve = getFormatChooser().showDialog(simulator.getFrame(), "Import");
         // now load, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
             try {
@@ -78,8 +76,7 @@ public class Importers {
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
             Map<ResourceKind,Collection<AspectGraph>> newGraphs =
-                new EnumMap<ResourceKind,Collection<AspectGraph>>(
-                    ResourceKind.class);
+                new EnumMap<ResourceKind,Collection<AspectGraph>>(ResourceKind.class);
             Map<ResourceKind,Map<String,String>> newTexts =
                 new EnumMap<ResourceKind,Map<String,String>>(ResourceKind.class);
             for (Resource resource : resources) {
@@ -91,16 +88,14 @@ public class Importers {
                         AspectGraph graph = resource.getGraphResource();
                         Collection<AspectGraph> graphs = newGraphs.get(kind);
                         if (graphs == null) {
-                            newGraphs.put(kind, graphs =
-                                new ArrayList<AspectGraph>());
+                            newGraphs.put(kind, graphs = new ArrayList<AspectGraph>());
                         }
                         graphs.add(graph);
                     } else {
                         String text = resource.getTextResource();
                         Map<String,String> texts = newTexts.get(kind);
                         if (texts == null) {
-                            newTexts.put(kind, texts =
-                                new HashMap<String,String>());
+                            newTexts.put(kind, texts = new HashMap<String,String>());
                         }
                         texts.put(name, text);
                         grammar.getStore().putTexts(resource.getKind(),
@@ -109,8 +104,7 @@ public class Importers {
                 }
             }
             for (Map.Entry<ResourceKind,Collection<AspectGraph>> entry : newGraphs.entrySet()) {
-                grammar.getStore().putGraphs(entry.getKey(), entry.getValue(),
-                    true);
+                grammar.getStore().putGraphs(entry.getKey(), entry.getValue(), true);
             }
             for (Map.Entry<ResourceKind,Map<String,String>> entry : newTexts.entrySet()) {
                 grammar.getStore().putTexts(entry.getKey(), entry.getValue());
@@ -122,13 +116,10 @@ public class Importers {
      * Asks whether a given existing resource, of a given kind,
      * should be replaced by a newly loaded one.
      */
-    private static boolean confirmOverwrite(Component parent,
-            ResourceKind resource, String name) {
+    private static boolean confirmOverwrite(Component parent, ResourceKind resource, String name) {
         int response =
-            JOptionPane.showConfirmDialog(
-                parent,
-                String.format("Replace existing %s '%s'?",
-                    resource.getDescription(), name), null,
+            JOptionPane.showConfirmDialog(parent,
+                String.format("Replace existing %s '%s'?", resource.getDescription(), name), null,
                 JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
@@ -170,8 +161,7 @@ public class Importers {
 
     /** Creates the mapping from file types to importers supporting them. */
     private static Map<FileType,Importer> createImporterMap() {
-        Map<FileType,Importer> result =
-            new EnumMap<FileType,Importer>(FileType.class);
+        Map<FileType,Importer> result = new EnumMap<FileType,Importer>(FileType.class);
         for (Importer ri : getImporters()) {
             for (FileType fileType : ri.getSupportedFileTypes()) {
                 result.put(fileType, ri);
@@ -186,8 +176,7 @@ public class Importers {
     /** Returns the file chooser for all importers. */
     private static GrooveFileChooser getFormatChooser() {
         if (formatChooser == null) {
-            formatChooser =
-                GrooveFileChooser.getInstance(getImporterMap().keySet());
+            formatChooser = GrooveFileChooser.getInstance(getImporterMap().keySet());
         }
         return formatChooser;
     }
