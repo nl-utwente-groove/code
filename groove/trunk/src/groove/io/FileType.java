@@ -28,6 +28,7 @@ import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -124,11 +125,11 @@ public enum FileType {
     private FileType(String description, String extension) {
         assert description != null && description.length() > 0 : String.format(
             "Badly formatted file type description: %s", description);
-        assert extension != null && extension.length() > 1
-            && extension.charAt(0) == SEPARATOR : String.format(
+        assert extension != null && extension.length() > 1 && extension.charAt(0) == SEPARATOR : String.format(
             "Badly formatted file type extension: %s", extension);
         this.extension = extension;
         this.description = description;
+        this.subTypes = new ArrayList<FileType>();
     }
 
     /** 
@@ -138,7 +139,7 @@ public enum FileType {
      */
     private FileType(String description, FileType... subTypes) {
         this(description, subTypes[0].getExtension());
-        this.subTypes = subTypes;
+        this.subTypes.addAll(Arrays.asList(subTypes));
     }
 
     /** Returns the primary extension of this file type,
@@ -161,7 +162,7 @@ public enum FileType {
         if (result == null) {
             if (isMultiple()) {
                 result = new ArrayList<String>();
-                for (FileType subType : this.subTypes) {
+                for (FileType subType : getSubTypes()) {
                     result.add(subType.getExtension());
                 }
                 result = Collections.unmodifiableList(result);
@@ -193,16 +194,14 @@ public enum FileType {
     public String stripExtension(String filename) {
         String result = filename;
         if (isMultiple()) {
-            for (FileType subType : this.subTypes) {
+            for (FileType subType : getSubTypes()) {
                 if (subType.hasExtension(filename)) {
                     result = subType.stripExtension(filename);
                     break;
                 }
             }
         } else if (filename.endsWith(this.getExtension())) {
-            result =
-                filename.substring(0, filename.length()
-                    - getExtension().length());
+            result = filename.substring(0, filename.length() - getExtension().length());
         }
         return result;
     }
@@ -244,7 +243,7 @@ public enum FileType {
     public boolean hasExtension(String filename) {
         boolean result = false;
         if (isMultiple()) {
-            for (FileType subType : this.subTypes) {
+            for (FileType subType : getSubTypes()) {
                 if (subType.hasExtension(filename)) {
                     result = true;
                     break;
@@ -294,23 +293,17 @@ public enum FileType {
         case COL:
             return new ColIO();
         case GXL_META:
-            return new ConceptualIO(GxlPorter.instance(), GXL_META,
-                GraphRole.TYPE);
+            return new ConceptualIO(GxlPorter.instance(), GXL_META, GraphRole.TYPE);
         case GXL_MODEL:
-            return new ConceptualIO(GxlPorter.instance(), GXL_META,
-                GraphRole.HOST);
+            return new ConceptualIO(GxlPorter.instance(), GXL_META, GraphRole.HOST);
         case ECORE_META:
-            return new ConceptualIO(EcorePorter.instance(), GXL_META,
-                GraphRole.TYPE);
+            return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.TYPE);
         case ECORE_MODEL:
-            return new ConceptualIO(EcorePorter.instance(), GXL_META,
-                GraphRole.HOST);
+            return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.HOST);
         case DOT_META:
-            return new ConceptualIO(DotPorter.instance(), GXL_META,
-                GraphRole.TYPE);
+            return new ConceptualIO(DotPorter.instance(), GXL_META, GraphRole.TYPE);
         case DOT_MODEL:
-            return new ConceptualIO(DotPorter.instance(), GXL_META,
-                GraphRole.HOST);
+            return new ConceptualIO(DotPorter.instance(), GXL_META, GraphRole.HOST);
         case GXL:
         case RULE:
         case TYPE:
@@ -323,8 +316,16 @@ public enum FileType {
     private GraphIO<?> io;
 
     /** Tests if this is a file type with multiple extensions. */
-    private boolean isMultiple() {
-        return this.subTypes != null;
+    public boolean isMultiple() {
+        return !getSubTypes().isEmpty();
+    }
+
+    /** Returns the sub-file types of this {@link FileType}, or {@code null}
+     * if this is not a multiple file type.
+     * @see #isMultiple()
+     */
+    public List<FileType> getSubTypes() {
+        return this.subTypes;
     }
 
     // Fields and methods.
@@ -334,7 +335,7 @@ public enum FileType {
     /** Description of the file type. */
     private final String description;
     /** Set of sub-file types, if this is a collective file type. */
-    private FileType[] subTypes;
+    private final List<FileType> subTypes;
     /** List of all file extensions. */
     private List<String> extensions;
     /** Extension filter for this file type. */

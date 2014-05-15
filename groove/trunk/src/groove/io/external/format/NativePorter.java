@@ -22,6 +22,7 @@ import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.TextBasedModel;
+import groove.graph.GraphRole;
 import groove.io.FileType;
 import groove.io.external.AbstractExporter;
 import groove.io.external.Exportable;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -48,6 +50,8 @@ public class NativePorter extends AbstractExporter implements Importer {
         super(Kind.RESOURCE);
         register(ResourceKind.TYPE);
         register(ResourceKind.HOST);
+        register(ResourceKind.HOST, FileType.RULE);
+        register(ResourceKind.HOST, FileType.TYPE);
         register(ResourceKind.RULE);
         register(ResourceKind.CONTROL);
         register(ResourceKind.PROLOG);
@@ -56,8 +60,26 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType,
-            GrammarModel grammar) throws PortException {
+    public Set<FileType> getFileTypes(Exportable exportable) {
+        Set<FileType> result = EnumSet.noneOf(FileType.class);
+        if (exportable.containsKind(getFormatKind())) {
+            ResourceKind resourceKind = exportable.getModel().getKind();
+            if (resourceKind == ResourceKind.HOST) {
+                // host graphs can be exported to any known graph resource type
+                result.addAll(FileType.GRAPHS.getSubTypes());
+            } else {
+                FileType fileType = getFileType(resourceKind);
+                if (fileType != null) {
+                    result.add(fileType);
+                }
+            }
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
+    @Override
+    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
+        throws PortException {
         Resource result;
         try {
             String name = fileType.stripExtension(file.getName());
@@ -79,8 +101,8 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream,
-            FileType fileType, GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(String name, InputStream stream, FileType fileType,
+            GrammarModel grammar) throws PortException {
         ResourceKind kind = getResourceKind(fileType);
         if (kind.isGraphBased()) {
             throw new PortException("Cannot import from stream");
@@ -97,13 +119,17 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public void doExport(Exportable exportable, File file, FileType fileType)
-        throws PortException {
+    public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
         ResourceModel<?> model = exportable.getModel();
         ResourceKind kind = model.getKind();
         if (kind.isGraphBased()) {
             GraphBasedModel<?> graphModel = (GraphBasedModel<?>) model;
             AspectGraph graph = graphModel.getSource();
+            if (graph.getRole() == GraphRole.HOST && fileType != FileType.STATE) {
+                // we are converting a host graph to a rule or type graph
+                // so unwrap any literal labels
+                graph = graph.unwrap();
+            }
             try {
                 GxlIO.instance().saveGraph(graph.toPlainGraph(), file);
             } catch (IOException e) {
