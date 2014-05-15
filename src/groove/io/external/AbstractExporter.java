@@ -33,10 +33,8 @@ public abstract class AbstractExporter implements Exporter {
     protected AbstractExporter(Kind formatKind) {
         this.formatKind = formatKind;
         this.fileTypes = EnumSet.noneOf(FileType.class);
-        this.fileTypeMap =
-            new EnumMap<ResourceKind,FileType>(ResourceKind.class);
-        this.resourceKindMap =
-            new EnumMap<FileType,ResourceKind>(FileType.class);
+        this.fileTypeMap = new EnumMap<ResourceKind,FileType>(ResourceKind.class);
+        this.resourceKindMap = new EnumMap<FileType,ResourceKind>(FileType.class);
     }
 
     @Override
@@ -100,8 +98,7 @@ public abstract class AbstractExporter implements Exporter {
     public boolean exports(Exportable exportable) {
         boolean result = exportable.containsKind(getFormatKind());
         if (result && getFormatKind() == Kind.RESOURCE) {
-            result =
-                this.fileTypeMap.containsKey(exportable.getModel().getKind());
+            result = this.fileTypeMap.containsKey(exportable.getModel().getKind());
         }
         return result;
     }
@@ -111,8 +108,7 @@ public abstract class AbstractExporter implements Exporter {
         Set<FileType> result = EnumSet.noneOf(FileType.class);
         if (exportable.containsKind(getFormatKind())) {
             if (getFormatKind() == Kind.RESOURCE) {
-                FileType fileType =
-                    getFileType(exportable.getModel().getKind());
+                FileType fileType = getFileType(exportable.getModel().getKind());
                 if (fileType != null) {
                     result.add(fileType);
                 }

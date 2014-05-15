@@ -28,6 +28,7 @@ import groove.util.Fixable;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -325,6 +326,23 @@ public class AspectLabel extends ALabel implements Fixable {
 
     /** List of errors detected while building this label. */
     private final FormatErrorSet errors = new FormatErrorSet();
+
+    /**
+     * Returns a fixed copy of this label minus any {@link AspectKind#LITERAL}
+     * aspect.
+     */
+    public AspectLabel unwrap() {
+        AspectLabel result = new AspectLabel(this);
+        Iterator<Aspect> aspects = result.getAspects().iterator();
+        while (aspects.hasNext()) {
+            if (aspects.next().getKind() == AspectKind.LITERAL) {
+                aspects.remove();
+            }
+        }
+        result.setFixed();
+        return result;
+    }
+
     /** The set of all allowed nesting labels. */
     private static final Map<GraphRole,String> roleDescription = new EnumMap<GraphRole,String>(
         GraphRole.class);

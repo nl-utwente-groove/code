@@ -23,8 +23,8 @@ public final class SaveStateAction extends SimulatorAction {
      * a file outside the grammar.
      */
     public SaveStateAction(Simulator simulator, boolean saveAs) {
-        super(simulator, Options.getSaveStateActionName(saveAs), saveAs
-                ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON, null, ResourceKind.HOST);
+        super(simulator, Options.getSaveStateActionName(saveAs), saveAs ? Icons.SAVE_AS_ICON
+                : Icons.SAVE_ICON, null, ResourceKind.HOST);
         if (!saveAs) {
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
@@ -50,12 +50,10 @@ public final class SaveStateAction extends SimulatorAction {
         String newName = askNewName(graph.getName(), true);
         if (newName != null) {
             try {
-                getSimulatorModel().doAddGraph(getResourceKind(),
-                    graph.rename(newName), false);
+                getSimulatorModel().doAddGraph(getResourceKind(), graph.rename(newName), false);
                 result = true;
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error while saving state '%s'",
-                    graph.getName());
+                showErrorDialog(exc, "Error while saving state '%s'", graph.getName());
             }
         }
         return result;
@@ -74,17 +72,14 @@ public final class SaveStateAction extends SimulatorAction {
                 if (nameInGrammar == null) {
                     // save in external file
                     String newName =
-                        getResourceKind().getFileType().stripExtension(
-                            selectedFile.getName());
-                    GxlIO.instance().saveGraph(
-                        graph.rename(newName).toPlainGraph(), selectedFile);
+                        getResourceKind().getFileType().stripExtension(selectedFile.getName());
+                    GxlIO.instance().saveGraph(graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar
                     result = doSave(graph.rename(nameInGrammar));
                 }
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error while writing state to '%s'",
-                    selectedFile);
+                showErrorDialog(exc, "Error while writing state to '%s'", selectedFile);
             }
         }
         return result;
