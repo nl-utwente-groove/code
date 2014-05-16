@@ -147,8 +147,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * Create a parse error message for a specific argument.
      */
     String argumentError(String argName) {
-        return "Unable to parse the " + argName + " argument of "
-            + getKeyword() + ".";
+        return "Unable to parse the " + argName + " argument of " + getKeyword() + ".";
     }
 
     /**
@@ -234,8 +233,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                 addArgument(argName);
             }
             add(Box.createRigidArea(new Dimension(0, 400)));
-            SpringUtilities.makeCompactGrid(this,
-                7 + Template.this.argumentNames.length, 1, 2, 2, 0, 0);
+            SpringUtilities.makeCompactGrid(this, 7 + Template.this.argumentNames.length, 1, 2, 2,
+                0, 0);
             refresh();
         }
 
@@ -247,9 +246,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         private void addName() {
-            add(new JLabel("<HTML><B><U><FONT color="
-                + ExplorationDialog.INFO_COLOR + ">" + Template.this.getName()
-                + ":</FONT></U></B></HTML>"));
+            add(new JLabel("<HTML><B><U><FONT color=" + ExplorationDialog.INFO_COLOR + ">"
+                + Template.this.getName() + ":</FONT></U></B></HTML>"));
         }
 
         private void addExplanation() {
@@ -507,5 +505,69 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Typed version of the parse method. To be implemented by subclass.
          */
         public abstract X create(P1 arg1, P2 arg2);
+    }
+
+    /**
+    * <!---------------------------------------------------------------------->
+    * A TemplateN<X> describes the encoding of values of type X by means 
+    * of a Serialized that starts with a given keyword and has n arguments, of
+    * n types EncodedType<Object,String>.
+    * Implements the method parse, but in turns requires the method create
+    * to be defined by any concrete subclass.
+    * <!---------------------------------------------------------------------->
+    * This class does not perform any typing checks
+     */
+    public static abstract class TemplateN<X> extends Template<X> {
+        private final String[] typenames;
+        private final EncodedType<? extends Object,String>[] encodedtypes;
+
+        /**
+         * Localized creation of the template class (with argumentNames.length arguments)
+         * It is required that argumentTypes.length==argumentNames.length 
+         */
+        public TemplateN(ParsableValue value, SerializedParser commandlineParser,
+                String[] argumentNames, EncodedType<? extends Object,String>... argumentTypes) {
+            super(value, commandlineParser, argumentNames);
+            this.typenames = argumentNames;
+            this.encodedtypes = argumentTypes;
+            assert this.typenames.length == this.encodedtypes.length;
+            for (int i = 0; i < this.typenames.length; i++) {
+                setArgumentType(this.typenames[i], this.encodedtypes[i]);
+            }
+        }
+
+        @Override
+        public X parse(Grammar rules, Serialized source) throws FormatException {
+            Object[] v = new Object[this.typenames.length];
+
+            if (!source.getKeyword().equals(getKeyword())) {
+                throw new FormatException("Type mismatch between '" + source.getKeyword()
+                    + "' and '" + getKeyword() + "'.");
+            }
+            for (int i = 0; i < v.length; i++) {
+                try {
+                    v[i] = this.encodedtypes[i].parse(rules, source.getArgument(this.typenames[i]));
+                } catch (FormatException exc) {
+                    exc.insert(new FormatException(argumentError(this.typenames[i])));
+                    throw exc;
+                }
+            }
+            return create(v);
+        }
+
+        @Override
+        public Serialized toSerialized(Object... args) {
+            assert args.length == this.typenames.length;
+            Serialized result = getValue().toSerialized();
+            for (int i = 0; i < this.typenames.length; i++) {
+                result.setArgument(this.typenames[i], args[i].toString());
+            }
+            return result;
+        }
+
+        /**
+         * Typed version of the parse method. To be implemented by subclass.
+         */
+        public abstract X create(Object[] arguments);
     }
 }

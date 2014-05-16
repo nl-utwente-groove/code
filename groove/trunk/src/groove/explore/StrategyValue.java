@@ -3,11 +3,13 @@ package groove.explore;
 import groove.abstraction.neigh.explore.strategy.ShapeBFSStrategy;
 import groove.abstraction.neigh.explore.strategy.ShapeDFSStrategy;
 import groove.explore.encode.EncodedBoundary;
+import groove.explore.encode.EncodedEdgeList;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedHostName;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedLtlProperty;
+import groove.explore.encode.EncodedMinMaxMode;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.EncodedType;
 import groove.explore.encode.Serialized;
@@ -15,6 +17,7 @@ import groove.explore.encode.Template;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.encode.Template.TemplateN;
 import groove.explore.prettyparse.PAll;
 import groove.explore.prettyparse.PChoice;
 import groove.explore.prettyparse.PIdentifier;
@@ -49,6 +52,7 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.type.TypeLabel;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 
 /** Symbolic values for the implemented strategies. */
@@ -349,14 +353,25 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
         case MINIMAX:
-            return new MyTemplate2<Integer,Integer>(new PSequence(new PNumber(
+            return new MyTemplate4<Integer,Integer,List<String>,Boolean>(new PSequence(new PNumber(
                 "heuristic-parameter-index"), new PLiteral(","),
-                new PNumber("maximum-search-depth")), "heuristic-parameter-index", new EncodedInt(
-                0, Integer.MAX_VALUE), "maximum-search-depth", new EncodedInt(0, Integer.MAX_VALUE)) {
+                new PNumber("maximum-search-depth"), new PLiteral(","), new PSeparated(
+                    new PIdentifier("enabled-rule-labes"), /*whitespace and delimiter */
+                    new PChoice(new PLiteral(";", "enabled-rule-names"), /*whitespace*/
+                        new PSequence(new PLiteral(";", "enabled-rule-names"), new PLiteral("\\ ",
+                            "enabled-rule-names")))), new PLiteral(","), new PIdentifier(
+                    "start-max")), "heuristic-parameter-index",
+                new EncodedInt(0, Integer.MAX_VALUE), "maximum-search-depth", new EncodedInt(0,
+                    Integer.MAX_VALUE), "enabled-rule-labels", new EncodedEdgeList(), "start-max",
+                new EncodedMinMaxMode()) {
 
                 @Override
-                public Strategy create(Integer param, Integer maxdepth) {
-                    return new MinimaxStrategy(param, maxdepth);
+                public Strategy create(Object[] arguments) {
+                    Integer parindex = (Integer) arguments[0];
+                    Integer searchdepth = (Integer) arguments[1];
+                    List<String> labels = (List<String>) arguments[2];
+                    Boolean max = (Boolean) arguments[3];
+                    return new MinimaxStrategy(parindex, searchdepth, labels, max);
                 }
             };
 
@@ -408,6 +423,19 @@ public enum StrategyValue implements ParsableValue {
         public MyTemplate2(SerializedParser parser, String name1, EncodedType<T1,String> type1,
                 String name2, EncodedType<T2,String> type2) {
             super(StrategyValue.this, parser, name1, type1, name2, type2);
+        }
+    }
+
+    /** Specialised 4-parameter template that uses the strategy value's keyword, name and description. */
+    abstract private class MyTemplate4<T1,T2,T3,T4> extends TemplateN<Strategy> {
+        @SuppressWarnings("unchecked")
+        //cast to Object won't go wrong
+        public MyTemplate4(SerializedParser parser, String name1, EncodedType<T1,String> type1,
+                String name2, EncodedType<T2,String> type2, String name3,
+                EncodedType<T3,String> type3, String name4, EncodedType<T4,String> type4) {
+            super(StrategyValue.this, parser, new String[] {name1, name2, name3, name4}, type1,
+                type2, type3, type4);
+
         }
     }
 }
