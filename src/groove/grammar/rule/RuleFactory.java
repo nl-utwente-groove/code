@@ -45,25 +45,22 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     @Override
     protected boolean isAllowed(RuleNode node) {
-        return node.getType().isTopType() && !node.isSharp()
-            && node.getTypeGuards() == null;
+        return node.getType().isTopType() && !node.isSharp() && node.getTypeGuards() == null;
     }
 
     /** Returns the fixed node factory for the top type. */
     private RuleNodeFactory getTopNodeFactory() {
         if (this.topNodeFactory == null) {
             this.topNodeFactory =
-                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), true,
-                    null);
+                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), true, null);
         }
         return this.topNodeFactory;
     }
 
     private RuleNodeFactory topNodeFactory;
 
-    /** Returns a node factory for typed default host nodes. */
-    public NodeFactory<RuleNode> nodes(TypeNode type, boolean sharp,
-            List<TypeGuard> typeGuards) {
+    /** Returns a node factory for typed default rule nodes. */
+    public NodeFactory<RuleNode> nodes(TypeNode type, boolean sharp, List<TypeGuard> typeGuards) {
         return new RuleNodeFactory(type, sharp, typeGuards);
     }
 
@@ -76,8 +73,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     }
 
     /** Creates an operator node for a given node number and arity. */
-    public RuleNode createOperatorNode(int nr, Operator operator,
-            List<VariableNode> arguments, VariableNode target) {
+    public RuleNode createOperatorNode(int nr, Operator operator, List<VariableNode> arguments,
+            VariableNode target) {
         RuleNode result = new OperatorNode(nr, operator, arguments, target);
         registerNode(result);
         return result;
@@ -95,8 +92,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
         RuleLabel ruleLabel = (RuleLabel) label;
         TypeLabel typeLabel = ruleLabel.getTypeLabel();
         TypeEdge type =
-            typeLabel == null ? null : getTypeFactory().createEdge(
-                source.getType(), typeLabel, target.getType(), false);
+            typeLabel == null ? null : getTypeFactory().createEdge(source.getType(), typeLabel,
+                target.getType(), false);
         return new RuleEdge(source, ruleLabel, type, target);
     }
 
@@ -126,8 +123,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     /** Factory for (typed) {@link DefaultHostNode}s. */
     protected class RuleNodeFactory extends DependentNodeFactory {
         /** Constructor for subclassing. */
-        protected RuleNodeFactory(TypeNode type, boolean sharp,
-                List<TypeGuard> typeGuards) {
+        protected RuleNodeFactory(TypeNode type, boolean sharp, List<TypeGuard> typeGuards) {
             this.type = type;
             this.sharp = sharp;
             this.typeGuards = typeGuards;
@@ -141,8 +137,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
         @Override
         protected RuleNode newNode(int nr) {
-            return new DefaultRuleNode(nr, this.type, this.sharp,
-                this.typeGuards);
+            return new DefaultRuleNode(nr, this.type, this.sharp, this.typeGuards);
         }
 
         /** Returns the type wrapped into this factory. */
