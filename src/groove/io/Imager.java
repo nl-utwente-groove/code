@@ -239,7 +239,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
                 (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two().toString());
-            Exportable exportable = toExportable(resourceModel, exporter.getFormatKind());
+            Exportable exportable = toExportable(resourceModel, exporter.getFormatKinds());
             try {
                 exporter.doExport(exportable, outFile, fileType);
             } catch (PortException e1) {
@@ -249,15 +249,16 @@ public class Imager extends GrooveCmdLineTool<Object> {
     }
 
     /** Converts a resource model to an exportable object of the right kind. */
-    private Exportable toExportable(GraphBasedModel<?> resourceModel, Porter.Kind outFormat) {
+    private Exportable toExportable(GraphBasedModel<?> resourceModel, Set<Porter.Kind> outFormats) {
         Exportable result;
         AspectGraph aspectGraph = resourceModel.getSource();
         // find out what we have to export
-        switch (outFormat) {
-        case GRAPH:
+        if (outFormats.contains(Porter.Kind.GRAPH)) {
             result = new Exportable(aspectGraph);
-            break;
-        case JGRAPH:
+        } else if (outFormats.contains(Porter.Kind.RESOURCE)) {
+            result = new Exportable(resourceModel);
+        } else {
+            assert outFormats.contains(Porter.Kind.JGRAPH);
             Options options = new Options();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
@@ -276,13 +277,6 @@ public class Imager extends GrooveCmdLineTool<Object> {
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
             result = new Exportable(jGraph);
-            break;
-        case RESOURCE:
-            result = new Exportable(resourceModel);
-            break;
-        default:
-            assert false;
-            result = null;
         }
         return result;
     }
@@ -418,7 +412,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (result == null) {
             result = formatMap = new HashMap<String,FileType>();
             for (Exporter exporter : Exporters.getExporters()) {
-                if (exporter.getFormatKind() == Kind.RESOURCE) {
+                if (exporter.getFormatKinds().contains(Kind.RESOURCE)) {
                     continue;
                 }
                 for (FileType fileType : exporter.getSupportedFileTypes()) {
