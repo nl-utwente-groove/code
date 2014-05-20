@@ -1882,8 +1882,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             FormatErrorSet errors = createErrors();
             for (RuleNode node : rhs.nodeSet()) {
                 TypeNode nodeType = node.getType();
-                if (nodeType != null && nodeType.isAbstract() && !lhs.containsNode(node)) {
-                    errors.add("Creation of abstract %s-edge not allowed", nodeType.label().text(),
+                if (nodeType.isAbstract() && !lhs.containsNode(node)
+                    && node.getTypeGuards().isEmpty()) {
+                    errors.add("Creation of abstract %s-node not allowed", nodeType.label().text(),
                         node);
                 }
             }
