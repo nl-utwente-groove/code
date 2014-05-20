@@ -58,8 +58,7 @@ public class Exporters {
      */
     public static void doExport(Exportable exportable, Simulator simulator) {
         // determine the set of suitable file types and exporters
-        Map<FileType,Exporter> exporters =
-            new EnumMap<FileType,Exporter>(FileType.class);
+        Map<FileType,Exporter> exporters = new EnumMap<FileType,Exporter>(FileType.class);
         for (Exporter exporter : getExporters()) {
             for (FileType fileType : exporter.getFileTypes(exportable)) {
                 exporters.put(fileType, exporter);
@@ -67,12 +66,10 @@ public class Exporters {
         }
         assert !exporters.isEmpty();
         // choose a file and exporter
-        GrooveFileChooser chooser =
-            GrooveFileChooser.getInstance(exporters.keySet());
+        GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
         chooser.setSelectedFile(new File(exportable.getName()));
         File selectedFile =
-            SaveDialog.show(chooser,
-                simulator == null ? null : simulator.getFrame(), null);
+            SaveDialog.show(chooser, simulator == null ? null : simulator.getFrame(), null);
         // now save, if so required
         if (selectedFile != null) {
             try {
@@ -82,8 +79,7 @@ public class Exporters {
                 e.setSimulator(simulator);
                 e.doExport(exportable, selectedFile, fileType);
             } catch (PortException e) {
-                showErrorDialog(
-                    simulator == null ? null : simulator.getFrame(), e,
+                showErrorDialog(simulator == null ? null : simulator.getFrame(), e,
                     "Error while exporting to " + selectedFile);
             }
         }
@@ -93,8 +89,8 @@ public class Exporters {
      * Creates and shows an {@link ErrorDialog} for a given message and
      * exception.
      */
-    private static void showErrorDialog(Component parent, Throwable exc,
-            String message, Object... args) {
+    private static void showErrorDialog(Component parent, Throwable exc, String message,
+            Object... args) {
         new ErrorDialog(parent, String.format(message, args), exc).setVisible(true);
     }
 
@@ -102,11 +98,10 @@ public class Exporters {
      * Get suitable exporter for a given file.
      * Backwards compatibility function for now.
      */
-    static public Pair<FileType,Exporter> getAcceptingFormat(Graph graph,
-            File file) {
+    static public Pair<FileType,Exporter> getAcceptingFormat(Graph graph, File file) {
         Pair<FileType,Exporter> result = null;
         outer: for (Exporter exporter : getExporters()) {
-            if (exporter.getFormatKind() != Kind.GRAPH) {
+            if (!exporter.getFormatKinds().contains(Kind.GRAPH)) {
                 continue;
             }
             for (FileType fileType : exporter.getSupportedFileTypes()) {
@@ -160,13 +155,12 @@ public class Exporters {
 
     /** Creates the list of all known dedicated exporters. */
     private static Map<FileType,Exporter> createExporterMap() {
-        Map<FileType,Exporter> result =
-            new EnumMap<FileType,Exporter>(FileType.class);
+        Map<FileType,Exporter> result = new EnumMap<FileType,Exporter>(FileType.class);
         for (Exporter exporter : getExporters()) {
             for (FileType fileType : exporter.getSupportedFileTypes()) {
                 Exporter oldValue = result.put(fileType, exporter);
-                assert oldValue == null : String.format(
-                    "Duplicate exporter for file type: %s", fileType.name());
+                assert oldValue == null : String.format("Duplicate exporter for file type: %s",
+                    fileType.name());
             }
         }
         return Collections.unmodifiableMap(result);

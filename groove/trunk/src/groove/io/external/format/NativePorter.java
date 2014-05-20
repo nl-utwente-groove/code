@@ -17,12 +17,10 @@
 package groove.io.external.format;
 
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
 import groove.grammar.model.TextBasedModel;
-import groove.graph.GraphRole;
 import groove.io.FileType;
 import groove.io.external.AbstractExporter;
 import groove.io.external.Exportable;
@@ -47,7 +45,7 @@ import java.util.Set;
  */
 public class NativePorter extends AbstractExporter implements Importer {
     private NativePorter() {
-        super(Kind.RESOURCE);
+        super(Kind.GRAPH, Kind.RESOURCE);
         register(ResourceKind.TYPE);
         register(ResourceKind.HOST);
         register(ResourceKind.HOST, FileType.RULE);
@@ -62,16 +60,19 @@ public class NativePorter extends AbstractExporter implements Importer {
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
         Set<FileType> result = EnumSet.noneOf(FileType.class);
-        if (exportable.containsKind(getFormatKind())) {
-            ResourceKind resourceKind = exportable.getModel().getKind();
-            if (resourceKind == ResourceKind.HOST) {
-                // host graphs can be exported to any known graph resource type
-                result.addAll(FileType.GRAPHS.getSubTypes());
-            } else {
-                FileType fileType = getFileType(resourceKind);
-                if (fileType != null) {
-                    result.add(fileType);
-                }
+        ResourceKind resourceKind = null;
+        if (exportable.containsKind(Kind.GRAPH)) {
+            resourceKind = ResourceKind.toResource(exportable.getGraph().getRole());
+        } else if (exportable.containsKind(Kind.RESOURCE)) {
+            resourceKind = exportable.getModel().getKind();
+        }
+        if (resourceKind == ResourceKind.HOST) {
+            // host graphs can be exported to any known graph resource type
+            result.addAll(FileType.GRAPHS.getSubTypes());
+        } else if (resourceKind != null) {
+            FileType fileType = getFileType(resourceKind);
+            if (fileType != null) {
+                result.add(fileType);
             }
         }
         return Collections.unmodifiableSet(result);
@@ -120,12 +121,10 @@ public class NativePorter extends AbstractExporter implements Importer {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        ResourceModel<?> model = exportable.getModel();
-        ResourceKind kind = model.getKind();
+        ResourceKind kind = exportable.getKind();
         if (kind.isGraphBased()) {
-            GraphBasedModel<?> graphModel = (GraphBasedModel<?>) model;
-            AspectGraph graph = graphModel.getSource();
-            if (graph.getRole() == GraphRole.HOST && fileType != FileType.STATE) {
+            AspectGraph graph = GraphConverter.toAspect(exportable.getGraph());
+            if (kind == ResourceKind.HOST && fileType != FileType.STATE) {
                 // we are converting a host graph to a rule or type graph
                 // so unwrap any literal labels
                 graph = graph.unwrap();
@@ -136,7 +135,7 @@ public class NativePorter extends AbstractExporter implements Importer {
                 throw new PortException(e);
             }
         } else {
-            TextBasedModel<?> textModel = (TextBasedModel<?>) model;
+            TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel();
             Writer writer = null;
             try {
                 writer = new FileWriter(file);

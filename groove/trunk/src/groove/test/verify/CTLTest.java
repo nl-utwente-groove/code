@@ -113,6 +113,7 @@ public class CTLTest {
             this.gtsGraph = Groove.loadGraph(tmp);
             tmp.delete();
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
     }

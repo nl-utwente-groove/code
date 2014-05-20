@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public interface Porter {
     /** Indicates what kind of objects this porter handles. */
-    public Kind getFormatKind();
+    public Set<Kind> getFormatKinds();
 
     /** Sets the parent component to use in orienting dialogs. */
     public void setSimulator(Simulator simulator);

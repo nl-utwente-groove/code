@@ -40,7 +40,7 @@ public class Exportable {
     private final JGraph<?> jGraph;
     private final ResourceModel<?> model;
 
-    /** Constructs an exportable for a given {@link JGraph}. */
+    /** Constructs an exportable for a given {@link Graph}. */
     public Exportable(Graph graph) {
         this.porterKinds = EnumSet.of(Kind.GRAPH);
         this.name = graph.getName();
@@ -55,8 +55,7 @@ public class Exportable {
         this.jGraph = jGraph;
         this.graph = jGraph.getModel().getGraph();
         this.model =
-            jGraph instanceof AspectJGraph
-                    ? ((AspectJGraph) jGraph).getModel().getResourceModel()
+            jGraph instanceof AspectJGraph ? ((AspectJGraph) jGraph).getModel().getResourceModel()
                     : null;
         if (this.model != null) {
             this.porterKinds.add(Kind.RESOURCE);
@@ -110,7 +109,13 @@ public class Exportable {
 
     /** Returns the resource kind of the model wrapped by this exportable, if any. */
     public ResourceKind getKind() {
-        return getModel() == null ? null : getModel().getKind();
+        ResourceKind result = null;
+        if (getModel() != null) {
+            result = getModel().getKind();
+        } else if (getGraph() != null) {
+            result = ResourceKind.toResource(getGraph().getRole());
+        }
+        return result;
     }
 
     /** Returns the {@link ResourceModel} wrapped by this exportable, if any. */

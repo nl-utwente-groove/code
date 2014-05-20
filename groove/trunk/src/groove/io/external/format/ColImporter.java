@@ -62,21 +62,20 @@ public class ColImporter implements Importer {
     private final Set<FileType> fileTypes;
 
     @Override
-    public Kind getFormatKind() {
-        return Kind.RESOURCE;
+    public Set<Kind> getFormatKinds() {
+        return EnumSet.of(Kind.RESOURCE);
     }
 
     // Methods from FileFormat.
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType,
-            GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
+        throws PortException {
         Set<Resource> resources;
         try {
             FileInputStream stream = new FileInputStream(file);
             resources =
-                doImport(fileType.stripExtension(file.getName()), stream,
-                    fileType, grammar);
+                doImport(fileType.stripExtension(file.getName()), stream, fileType, grammar);
             stream.close();
         } catch (IOException e) {
             throw new PortException(e);
@@ -85,8 +84,8 @@ public class ColImporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream,
-            FileType fileType, GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(String name, InputStream stream, FileType fileType,
+            GrammarModel grammar) throws PortException {
         try {
             this.io.setGraphName(name);
             HostGraph graph = this.io.loadGraph(stream);
