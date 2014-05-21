@@ -115,6 +115,13 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     }
 
     @Override
+    public boolean isInitial() {
+        // if a step starts in a non-transient frame, it must be
+        // the initial step of an atomic sequence
+        return isRecipeStep() && !getSource().isTransient();
+    }
+
+    @Override
     public boolean isRecipeStep() {
         return getCallStack().isRecipeStep();
     }

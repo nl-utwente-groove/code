@@ -167,7 +167,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
             if (label.getCall().isOmega()) {
                 getAut().addOmega(result);
             }
-            if (label.isStart() && isTransient()) {
+            if (label.isInitial() && isTransient()) {
                 setExitGuard(label.getGuard());
             }
         }
@@ -472,8 +472,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
             }
         }
         if (result == 0) {
-            int myStart = one.isStart() ? 1 : 0;
-            int hisStart = two.isStart() ? 1 : 0;
+            int myStart = one.isInitial() ? 1 : 0;
+            int hisStart = two.isInitial() ? 1 : 0;
             result = myStart - hisStart;
         }
         if (result == 0) {

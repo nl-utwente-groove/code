@@ -162,7 +162,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
             Recipe newRecipe = recipe == null || call.isOmega() ? trans.getRecipe() : recipe;
             CtrlCall newCall = call.embed(newRecipe);
             boolean newStart =
-                recipe == null ? trans.isStart() : newSource == result.getStart() || call.isOmega();
+                recipe == null ? trans.isInitial() : newSource == result.getStart() || call.isOmega();
             CtrlLabel newLabel = new CtrlLabel(newCall, newGuard, newStart);
             CtrlTransition newTrans = newSource.addTransition(newLabel, newTarget);
             assert newTrans != null;
@@ -424,7 +424,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
             for (Map.Entry<CtrlCall,CtrlTransition> iOutEntry : iOutMap.entrySet()) {
                 CtrlTransition iOut = iOutEntry.getValue();
                 CtrlTransition jOut = jOutMap.get(iOutEntry.getKey());
-                if (iOut.isStart() != jOut.isStart()) {
+                if (iOut.isInitial() != jOut.isInitial()) {
                     distinct = true;
                     break;
                 }
