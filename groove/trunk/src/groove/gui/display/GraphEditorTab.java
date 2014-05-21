@@ -79,6 +79,7 @@ import javax.swing.TransferHandler;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.UndoableEditEvent;
+import javax.swing.undo.UndoableEdit;
 
 import org.jgraph.event.GraphLayoutCacheEvent.GraphLayoutCacheChange;
 import org.jgraph.event.GraphModelEvent;
@@ -418,46 +419,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private GraphUndoManager getUndoManager() {
         if (this.undoManager == null) {
             // Create a GraphUndoManager which also Updates the ToolBar
-            this.undoManager = new GraphUndoManager() {
-                @Override
-                public void undoableEditHappened(UndoableEditEvent e) {
-                    boolean relevant = true;
-                    boolean minor = true;
-                    // only process edits that really changed anything
-                    if (GraphEditorTab.this.refreshing || getJGraph().isModelRefreshing()) {
-                        relevant = false;
-                    } else if (e.getEdit() instanceof GraphLayoutCacheChange) {
-                        GraphModelChange edit = (GraphModelChange) e.getEdit();
-                        Object[] inserted = edit.getInserted();
-                        Object[] removed = edit.getRemoved();
-                        Object[] changed = edit.getChanged();
-                        ConnectionSet connections = edit.getConnectionSet();
-                        relevant =
-                            inserted != null && inserted.length > 0 || removed != null
-                                && removed.length > 0 || changed != null && changed.length > 0;
-                        minor =
-                            (connections == null || connections.isEmpty())
-                                && (inserted == null || inserted.length == 0)
-                                && (removed == null || removed.length == 0);
-                        if (minor && changed != null) {
-                            for (Object in : changed) {
-                                AttributeMap attrs = (AttributeMap) edit.getAttributes().get(in);
-                                if (GraphConstants.getValue(attrs) != null) {
-                                    minor = false;
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        minor = false;
-                    }
-                    if (relevant) {
-                        super.undoableEditHappened(e);
-                        setDirty(minor);
-                        updateHistoryButtons();
-                    }
-                }
-            };
+            this.undoManager = new GraphTabUndoManager();
         }
         return this.undoManager;
     }
@@ -748,7 +710,6 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private void undoLastEdit() {
         setSelectInsertedCells(false);
         getUndoManager().undo();
-        this.dirtCount--;
         setSelectInsertedCells(true);
         updateHistoryButtons();
     }
@@ -757,7 +718,6 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private void redoLastEdit() {
         setSelectInsertedCells(false);
         getUndoManager().redo();
-        this.dirtCount++;
         setSelectInsertedCells(true);
         updateHistoryButtons();
     }
@@ -912,6 +872,81 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
 
     /** Action to delete the selected elements. */
     private Action deleteAction;
+
+    /**
+     * @author rensink
+     * @version $Revision $
+     */
+    private final class GraphTabUndoManager extends GraphUndoManager {
+        @Override
+        public void undoableEditHappened(UndoableEditEvent e) {
+            boolean relevant = true;
+            // only process edits that really changed anything
+            if (GraphEditorTab.this.refreshing || getJGraph().isModelRefreshing()) {
+                relevant = false;
+            } else if (e.getEdit() instanceof GraphLayoutCacheChange) {
+                GraphModelChange edit = (GraphModelChange) e.getEdit();
+                Object[] inserted = edit.getInserted();
+                Object[] removed = edit.getRemoved();
+                Object[] changed = edit.getChanged();
+                relevant =
+                    inserted != null && inserted.length > 0 || removed != null
+                        && removed.length > 0 || changed != null && changed.length > 0;
+            }
+            if (relevant) {
+                super.undoableEditHappened(e);
+                setDirty(isMinor(e.getEdit()));
+                updateHistoryButtons();
+            }
+        }
+
+        @Override
+        public void undo() {
+            GraphEditorTab.this.dirtMinor &= isMinor(editToBeUndone());
+            GraphEditorTab.this.dirtCount--;
+            super.undo();
+            updateHistoryButtons();
+        }
+
+        @Override
+        public void redo() {
+            GraphEditorTab.this.dirtMinor &= isMinor(editToBeRedone());
+            GraphEditorTab.this.dirtCount++;
+            super.redo();
+            updateHistoryButtons();
+        }
+
+        /** Checks if a given edit event is minor, such as a layout action.
+         * A minor edit causes fewer refresh actions to to be done as a consequence.
+         */
+        private boolean isMinor(UndoableEdit e) {
+            boolean minor = true;
+            // only process edits that really changed anything
+            if (e instanceof GraphLayoutCacheChange) {
+                GraphModelChange edit = (GraphModelChange) e;
+                Object[] inserted = edit.getInserted();
+                Object[] removed = edit.getRemoved();
+                Object[] changed = edit.getChanged();
+                ConnectionSet connections = edit.getConnectionSet();
+                minor =
+                    (connections == null || connections.isEmpty())
+                        && (inserted == null || inserted.length == 0)
+                        && (removed == null || removed.length == 0);
+                if (minor && changed != null) {
+                    for (Object in : changed) {
+                        AttributeMap attrs = (AttributeMap) edit.getAttributes().get(in);
+                        if (GraphConstants.getValue(attrs) != null) {
+                            minor = false;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                minor = false;
+            }
+            return minor;
+        }
+    }
 
     /**
      * Action to delete the selected elements.
