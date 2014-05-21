@@ -359,7 +359,7 @@ public class JVertexView extends VertexView {
                         (int) (background.getBlue() * darken), 0), background.getAlpha());
             }
             setBackground(background);
-            Font font = Options.LABEL_FONT.deriveFont(visuals.getFont());
+            Font font = Options.getLabelFont().deriveFont(visuals.getFont());
             setFont((font != null) ? font : graph.getFont());
             setBorder(createEmptyBorder());
             setText(this.view.getText());

@@ -63,14 +63,13 @@ public class JAttr {
     /**
      * The standard bounds used for nodes.
      */
-    public static final Rectangle DEFAULT_NODE_BOUNDS = new Rectangle(10, 10,
-        19, 19);
+    public static final Rectangle DEFAULT_NODE_BOUNDS = new Rectangle(10, 10, 19, 19);
 
     /**
      * The standard size used for nodes.
      */
-    public static final Dimension DEFAULT_NODE_SIZE = new Dimension(
-        DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
+    public static final Dimension DEFAULT_NODE_SIZE = new Dimension(DEFAULT_NODE_BOUNDS.width,
+        DEFAULT_NODE_BOUNDS.height);
 
     /** Space left outside the borders of nodes to enable larger
      * error or emphasis overlays to be painted correctly.
@@ -85,7 +84,7 @@ public class JAttr {
     /** The height of the adornment text box. */
     public static final int ADORNMENT_HEIGHT = 12;
     /** The font used for adornment text. */
-    public static final Font ADORNMENT_FONT = Options.LABEL_FONT;
+    public static final Font ADORNMENT_FONT = Options.getLabelFont();
     /** Foreground (= border) colour of the rubber band selector. */
     static public final Color RUBBER_FOREGROUND = new Color(150, 150, 150);
     /** Foreground (= border) colour of the rubber band selector. */
@@ -108,13 +107,11 @@ public class JAttr {
     public static Stroke createStroke(float width, float[] dash) {
         Stroke result;
         if (dash == null) {
-            result =
-                new BasicStroke(width, BasicStroke.CAP_SQUARE,
-                    BasicStroke.JOIN_MITER);
+            result = new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
         } else {
             result =
-                new BasicStroke(width, BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f);
+                new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash,
+                    1.0f);
         }
         return result;
     }
@@ -135,8 +132,8 @@ public class JAttr {
             int ry = b.height - fy;
             float r = (float) Math.sqrt(rx * rx + ry * ry);
             Paint newPaint =
-                new RadialGradientPaint(cx, cy, r, fx, fy,
-                    new float[] {0f, 1f}, getGradient(c), CycleMethod.NO_CYCLE);
+                new RadialGradientPaint(cx, cy, r, fx, fy, new float[] {0f, 1f}, getGradient(c),
+                    CycleMethod.NO_CYCLE);
             return newPaint;
         }
     }
@@ -147,12 +144,10 @@ public class JAttr {
         if (result == null) {
             float factor = .9f;
             Color inC =
-                new Color((int) Math.min(c.getRed() / factor, 255),
-                    (int) Math.min(c.getGreen() / factor, 255), (int) Math.min(
-                        c.getBlue() / factor, 255), c.getAlpha());
+                new Color((int) Math.min(c.getRed() / factor, 255), (int) Math.min(c.getGreen()
+                    / factor, 255), (int) Math.min(c.getBlue() / factor, 255), c.getAlpha());
             Color outC =
-                new Color((int) (c.getRed() * factor),
-                    (int) (c.getGreen() * factor),
+                new Color((int) (c.getRed() * factor), (int) (c.getGreen() * factor),
                     (int) (c.getBlue() * factor), c.getAlpha());
             gradientMap.put(c, result = new Color[] {inC, outC});
         }
@@ -160,6 +155,5 @@ public class JAttr {
     }
 
     /** Mapping from colours to colour gradients for {@link #createPaint(Rectangle, Color)}. */
-    static private Map<Color,Color[]> gradientMap =
-        new HashMap<Color,Color[]>();
+    static private Map<Color,Color[]> gradientMap = new HashMap<Color,Color[]>();
 }

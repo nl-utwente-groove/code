@@ -111,7 +111,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
             JTextArea result = getEditorComponent();
             // scale with the jGraph
-            Font font = Options.LABEL_FONT.deriveFont(jCell.getVisuals().getFont());
+            Font font = Options.getLabelFont().deriveFont(jCell.getVisuals().getFont());
             font = (font != null) ? font : graph.getFont();
             if (graph.getScale() != 1) {
                 double scale = graph.getScale();

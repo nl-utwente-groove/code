@@ -180,38 +180,34 @@ public class VisualAttributeMap extends AttributeMap {
             // convert those values for which this is necessary
             switch (vKey) {
             case EDGE_SOURCE_LABEL:
-                assert value instanceof Object[] : String.format(
-                    "Incorrect value %s", value);
+                assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format(
-                    "Incorrect value array", Arrays.toString(vValues));
+                assert vValues.length == 2 : String.format("Incorrect value array",
+                    Arrays.toString(vValues));
                 vValue = vValues[0];
                 this.visuals.put(VisualKey.EDGE_TARGET_LABEL, vValues[1], false);
                 break;
             case EDGE_SOURCE_POS:
-                assert value instanceof Object[] : String.format(
-                    "Incorrect value %s", value);
+                assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format(
-                    "Incorrect value array", Arrays.toString(vValues));
+                assert vValues.length == 2 : String.format("Incorrect value array",
+                    Arrays.toString(vValues));
                 vValue = vValues[0];
                 this.visuals.put(VisualKey.EDGE_TARGET_POS, vValues[1], false);
                 break;
             case EDGE_TARGET_LABEL:
-                assert value instanceof Object[] : String.format(
-                    "Incorrect value %s", value);
+                assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format(
-                    "Incorrect value array", Arrays.toString(vValues));
+                assert vValues.length == 2 : String.format("Incorrect value array",
+                    Arrays.toString(vValues));
                 vValue = vValues[1];
                 this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, vValues[0], false);
                 break;
             case EDGE_TARGET_POS:
-                assert value instanceof Object[] : String.format(
-                    "Incorrect value %s", value);
+                assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format(
-                    "Incorrect value array", Arrays.toString(vValues));
+                assert vValues.length == 2 : String.format("Incorrect value array",
+                    Arrays.toString(vValues));
                 vValue = vValues[1];
                 this.visuals.put(VisualKey.EDGE_SOURCE_POS, vValues[0], false);
                 break;
@@ -220,8 +216,7 @@ public class VisualAttributeMap extends AttributeMap {
                 break;
             case NODE_POS:
                 Rectangle2D bounds = (Rectangle2D) value;
-                vValue =
-                    new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+                vValue = new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
                 break;
             default:
                 vValue = value;
@@ -294,18 +289,14 @@ public class VisualAttributeMap extends AttributeMap {
             if (value == null) {
                 super.remove(GraphConstants.EXTRALABELPOSITIONS);
             } else {
-                value =
-                    new String[] {(String) value,
-                        this.visuals.getEdgeTargetLabel()};
+                value = new String[] {(String) value, this.visuals.getEdgeTargetLabel()};
                 if (!super.containsKey(GraphConstants.EXTRALABELPOSITIONS)) {
-                    super.put(GraphConstants.EXTRALABELPOSITIONS,
-                        EXTRA_LABEL_POSITIONS);
+                    super.put(GraphConstants.EXTRALABELPOSITIONS, EXTRA_LABEL_POSITIONS);
                 }
             }
             break;
         case EDGE_SOURCE_POS:
-            value =
-                new Point2D[] {(Point2D) value, this.visuals.getEdgeTargetPos()};
+            value = new Point2D[] {(Point2D) value, this.visuals.getEdgeTargetPos()};
             break;
         case EDGE_SOURCE_SHAPE:
             EdgeEnd sourceShape = (EdgeEnd) value;
@@ -318,18 +309,14 @@ public class VisualAttributeMap extends AttributeMap {
             if (value == null) {
                 super.remove(GraphConstants.EXTRALABELPOSITIONS);
             } else {
-                value =
-                    new String[] {this.visuals.getEdgeSourceLabel(),
-                        (String) value};
+                value = new String[] {this.visuals.getEdgeSourceLabel(), (String) value};
                 if (!super.containsKey(GraphConstants.EXTRALABELPOSITIONS)) {
-                    super.put(GraphConstants.EXTRALABELPOSITIONS,
-                        EXTRA_LABEL_POSITIONS);
+                    super.put(GraphConstants.EXTRALABELPOSITIONS, EXTRA_LABEL_POSITIONS);
                 }
             }
             break;
         case EDGE_TARGET_POS:
-            value =
-                new Point2D[] {this.visuals.getEdgeSourcePos(), (Point2D) value};
+            value = new Point2D[] {this.visuals.getEdgeSourcePos(), (Point2D) value};
             break;
         case EDGE_TARGET_SHAPE:
             EdgeEnd targetShape = (EdgeEnd) value;
@@ -339,7 +326,7 @@ public class VisualAttributeMap extends AttributeMap {
             super.put(GraphConstants.ENDFILL, targetShape.isFilled());
             break;
         case FONT:
-            value = Options.LABEL_FONT.deriveFont((Integer) value);
+            value = Options.getLabelFont().deriveFont((Integer) value);
             break;
         case COLOR:
         case FOREGROUND:
@@ -363,8 +350,8 @@ public class VisualAttributeMap extends AttributeMap {
             }
             Point2D pos = (Point2D) value;
             pos =
-                new Point2D.Double(pos.getX() - size.getWidth() / 2, pos.getY()
-                    - size.getHeight() / 2);
+                new Point2D.Double(pos.getX() - size.getWidth() / 2, pos.getY() - size.getHeight()
+                    / 2);
             b = new Rectangle();
             b.setFrame(pos, size);
             value = b;
@@ -401,23 +388,19 @@ public class VisualAttributeMap extends AttributeMap {
     }
 
     /** Permille fractional distance of in multiplicity label from source node. */
-    private static final double IN_MULT_DIST =
-        GraphConstants.PERMILLE * 90 / 100;
+    private static final double IN_MULT_DIST = GraphConstants.PERMILLE * 90 / 100;
     /** Permille fractional distance of out multiplicity label from target node. */
-    private static final double OUT_MULT_DIST =
-        GraphConstants.PERMILLE * 10 / 100;
+    private static final double OUT_MULT_DIST = GraphConstants.PERMILLE * 10 / 100;
     /** x-position of multiplicity labels. */
     private static final double MULT_X = -11;
     private static final Point2D[] EXTRA_LABEL_POSITIONS = {
-        new Point2D.Double(IN_MULT_DIST, MULT_X),
-        new Point2D.Double(OUT_MULT_DIST, MULT_X)};
+        new Point2D.Double(IN_MULT_DIST, MULT_X), new Point2D.Double(OUT_MULT_DIST, MULT_X)};
 
     private final static Map<Object,VisualKey> attrToVisualKeyMap;
     private final static Map<VisualKey,String> visualToAttrKeyMap;
     static {
         Map<Object,VisualKey> a2v = new HashMap<Object,VisualKey>();
-        Map<VisualKey,String> v2a =
-            new EnumMap<VisualKey,String>(VisualKey.class);
+        Map<VisualKey,String> v2a = new EnumMap<VisualKey,String>(VisualKey.class);
         for (VisualKey vKey : VisualKey.values()) {
             String aKey;
             switch (vKey) {
