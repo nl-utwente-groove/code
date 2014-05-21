@@ -40,28 +40,25 @@ import javax.swing.JFileChooser;
 public class EcorePorter extends ConceptualPorter {
     private EcorePorter() {
         super(FileType.ECORE_META, FileType.ECORE_MODEL);
-        this.typemodelChooser =
-            GrooveFileChooser.getInstance(FileType.ECORE_META);
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importTypeModel(File file,
-            GrammarModel grammar) throws ImportException {
+    protected Pair<TypeModel,InstanceModel> importTypeModel(File file, GrammarModel grammar)
+        throws ImportException {
         EcoreToType ett = new EcoreToType(file.toString());
         TypeModel tm = ett.getTypeModel();
         return Pair.newPair(tm, null);
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importInstanceModel(File file,
-            GrammarModel grammar) throws ImportException {
+    protected Pair<TypeModel,InstanceModel> importInstanceModel(File file, GrammarModel grammar)
+        throws ImportException {
         //Request ecore type model file
-        int approve =
-            this.typemodelChooser.showDialog(null, "Import Ecore type model");
+        int approve = getTypeModelChooser().showDialog(null, "Import Ecore type model");
         if (approve != JFileChooser.APPROVE_OPTION) {
             return null;
         }
-        File typeFile = this.typemodelChooser.getSelectedFile();
+        File typeFile = getTypeModelChooser().getSelectedFile();
 
         EcoreToType ett = new EcoreToType(typeFile.toString());
         EcoreToInstance eti = new EcoreToInstance(ett, file.toString());
@@ -71,18 +68,22 @@ public class EcorePorter extends ConceptualPorter {
         return Pair.newPair(tm, im);
     }
 
+    private GrooveFileChooser getTypeModelChooser() {
+        GrooveFileChooser typeModelChooser = GrooveFileChooser.getInstance(FileType.ECORE_META);
+        return typeModelChooser;
+    }
+
     @Override
-    protected ExportableResource getResource(File file, boolean isHost,
-            TypeModel tm, InstanceModel im) throws PortException {
+    protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
+            InstanceModel im) throws PortException {
         File typeFile = file;
         File instanceFile = file;
         if (isHost) {
             //Request ecore type model file to specify schemaLocation
             //This is optional and may be commented out, but leave typeFile to null when doing so
-            int approve =
-                this.typemodelChooser.showDialog(null, "Pick Ecore model");
+            int approve = getTypeModelChooser().showDialog(null, "Pick Ecore model");
             if (approve == JFileChooser.APPROVE_OPTION) {
-                typeFile = this.typemodelChooser.getSelectedFile();
+                typeFile = getTypeModelChooser().getSelectedFile();
             } else {
                 typeFile = null;
             }
@@ -100,8 +101,6 @@ public class EcorePorter extends ConceptualPorter {
         }
         return result;
     }
-
-    private final GrooveFileChooser typemodelChooser;
 
     /** Returns the singleton instance of this class. */
     public static final EcorePorter instance() {
