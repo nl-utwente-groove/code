@@ -46,7 +46,7 @@ class ExploreData {
      * @param partial new outgoing partial rule transition from this state
      */
     void addOutPartial(RuleTransition partial) {
-        RuleTransition initial = partial.isRecipeStep() ? partial : null;
+        RuleTransition initial = partial.getStep().isInitial() ? partial : null;
         notifyPartial(partial, initial);
         GraphState child = partial.target();
         ExploreData childCache = child.getCache().getExploreData();

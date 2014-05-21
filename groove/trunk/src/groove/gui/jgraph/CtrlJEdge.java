@@ -27,7 +27,7 @@ public class CtrlJEdge extends
     @Override
     public boolean isCompatible(Edge edge) {
         return super.isCompatible(edge)
-            && ((CtrlTransition) edge).isStart() == getEdge().isStart();
+            && ((CtrlTransition) edge).isInitial() == getEdge().isInitial();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class CtrlJEdge extends
         Look result;
         boolean omega = getEdge().getCall().isOmega();
         boolean exitsRecipe =
-            getEdge().isStart() && getEdge().source().isTransient();
+            getEdge().isInitial() && getEdge().source().isTransient();
         if (exitsRecipe) {
             result = omega ? Look.CTRL_OMEGA_EXIT_TRANS : Look.CTRL_EXIT_TRANS;
         } else {

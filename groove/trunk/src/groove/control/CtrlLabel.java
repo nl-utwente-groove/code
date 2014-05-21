@@ -34,10 +34,10 @@ public class CtrlLabel extends TextLabel {
      * a guard.
      * @param call the (non-{@code null}) control call in the label
      * @param guard the (non-{@code null}) guard of the control call
-     * @param start flag indicating if this is the first call of a new action
+     * @param initial flag indicating if this is the first call of a new action
      */
-    public CtrlLabel(CtrlCall call, CtrlGuard guard, boolean start) {
-        this(0, call, guard, start);
+    public CtrlLabel(CtrlCall call, CtrlGuard guard, boolean initial) {
+        this(0, call, guard, initial);
     }
 
     /** 
@@ -46,15 +46,15 @@ public class CtrlLabel extends TextLabel {
      * @param number number of the label
      * @param call the (non-{@code null}) control call in the label
      * @param guard the (non-{@code null}) guard of the control call
-     * @param start flag indicating if this is the first call of a new action
+     * @param initial flag indicating if this is the first call of a new action
      */
-    private CtrlLabel(int number, CtrlCall call, CtrlGuard guard, boolean start) {
-        super(computeText(number, call, guard, start));
-        assert start || !call.isOmega();
-        assert start || call.hasContext();
+    private CtrlLabel(int number, CtrlCall call, CtrlGuard guard, boolean initial) {
+        super(computeText(number, call, guard, initial));
+        assert initial || !call.isOmega();
+        assert initial || call.hasContext();
         this.call = call;
         this.recipe = call.getContext();
-        this.start = start;
+        this.initial = initial;
         this.guard.addAll(guard);
         this.number = number;
     }
@@ -78,14 +78,14 @@ public class CtrlLabel extends TextLabel {
     /** 
      * Indicates whether this label starts a new action.
      */
-    public boolean isStart() {
-        return this.start;
+    public boolean isInitial() {
+        return this.initial;
     }
 
     /** 
      * Flag indicating that this transition leaves a transient phase.
      */
-    private final boolean start;
+    private final boolean initial;
 
     /** Returns the name of the recipe of which this label is part, if any. */
     public Recipe getRecipe() {
@@ -112,7 +112,7 @@ public class CtrlLabel extends TextLabel {
 
     /** Returns a renumbered copy of this label. */
     public CtrlLabel newLabel(int number) {
-        return new CtrlLabel(number, getCall(), getGuard(), isStart());
+        return new CtrlLabel(number, getCall(), getGuard(), isInitial());
     }
 
     @Override
@@ -181,7 +181,7 @@ public class CtrlLabel extends TextLabel {
         if (guard != null) {
             newGuard.addAll(guard);
         }
-        return new CtrlLabel(getNumber(), getCall(), newGuard, isStart());
+        return new CtrlLabel(getNumber(), getCall(), newGuard, isInitial());
     }
 
     private static String computeText(int number, CtrlCall call, CtrlGuard guard, boolean start) {
