@@ -39,8 +39,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
     }
 
     @Override
-    public HTMLBuilder applyColored(ColorType type, Color color,
-            HTMLBuilder subline) {
+    public HTMLBuilder applyColored(ColorType type, Color color, HTMLBuilder subline) {
         HTMLTag colorTag = HTMLConverter.createColorTag(color);
         colorTag.on(subline.getResult());
         return subline;
@@ -86,8 +85,13 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
 
     /** Returns the singleton instance of this renderer. */
     public static HTMLLineFormat instance() {
+        if (instance == null) {
+            instance = new HTMLLineFormat();
+        }
         return instance;
     }
+
+    private static HTMLLineFormat instance;
 
     /** Puts an optional colour tag, font tag and an HTML tag around a given text. */
     public static String toHtml(StringBuilder text, Color color) {
@@ -95,28 +99,28 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
             if (color != null && !color.equals(Color.BLACK)) {
                 createColorTag(color).on(text);
             }
-            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(fontTag.on(text))).toString();
+            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(getFontTag().on(text))).toString();
         } else {
             return "";
         }
     }
 
-    /** HTML tag for the text display font. */
-    public static final HTMLTag fontTag;
-
-    static {
-        Font font = Options.LABEL_FONT;
-        String face = font.getFamily();
-        int size = font.getSize() - 2;
-        // actually a slightly smaller font is more in line with
-        // the edge font size, but then the forall symbol is not
-        // available
-        String argument =
-            String.format("font-family:%s; font-size:%dpx", face, size);
-        fontTag = createSpanTag(argument);
+    private static HTMLTag getFontTag() {
+        if (fontTag == null) {
+            Font font = Options.getLabelFont();
+            String face = font.getFamily();
+            int size = font.getSize() - 2;
+            // actually a slightly smaller font is more in line with
+            // the edge font size, but then the forall symbol is not
+            // available
+            String argument = String.format("font-family:%s; font-size:%dpx", face, size);
+            fontTag = createSpanTag(argument);
+        }
+        return fontTag;
     }
 
-    private static final HTMLLineFormat instance = new HTMLLineFormat();
+    /** HTML tag for the text display font. */
+    private static HTMLTag fontTag;
 
     static class HTMLBuilder implements LineFormat.Builder<HTMLBuilder> {
         @Override

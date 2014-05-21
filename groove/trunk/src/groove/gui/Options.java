@@ -332,12 +332,6 @@ public class Options implements Cloneable {
         return result;
     }
 
-    /** The default font set in the look-and-feel. */
-    public static final Font DEFAULT_FONT;
-    /** The default font used for node and edge labels. */
-    public static final Font LABEL_FONT;
-    /** The font for special (arrow-like) characters. */
-    public static final Font SYMBOL_FONT;
     // Menus
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
@@ -960,40 +954,55 @@ public class Options implements Cloneable {
         }
     }
 
-    static {
-        initLookAndFeel();
-        // set default font to LAF font
-        DEFAULT_FONT = getDefaultFont();
-        LABEL_FONT = getLabelFont();
-        SYMBOL_FONT = getSymbolFont();
+    /** Returns the default font set in the look-and-feel. */
+    public static Font getDefaultFont() {
+        if (DEFAULT_FONT == null) {
+            initLookAndFeel();
+            DEFAULT_FONT = MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+        }
+        return DEFAULT_FONT;
     }
 
-    private static Font getDefaultFont() {
-        return MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+    /** The default font set in the look-and-feel. */
+    private static Font DEFAULT_FONT;
+
+    /** Returns the default font used for node and edge labels. */
+    public static Font getLabelFont() {
+        if (LABEL_FONT == null) {
+            initLookAndFeel();
+            LABEL_FONT = GraphConstants.DEFAULTFONT;
+            if (LABEL_FONT == null) {
+                LABEL_FONT = UIManager.getDefaults().getFont("SansSerif");
+            }
+            // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+        }
+        return LABEL_FONT;
     }
 
-    private static Font getLabelFont() {
-        Font result = GraphConstants.DEFAULTFONT;
-        if (result == null) {
-            result = UIManager.getDefaults().getFont("SansSerif");
+    /** The default font used for node and edge labels. */
+    private static Font LABEL_FONT;
+
+    /** Returns the font for special (arrow-like) characters. */
+    public static Font getSymbolFont() {
+        if (SYMBOL_FONT == null) {
+            initLookAndFeel();
+            Font result = getLabelFont();
+            if (!result.canDisplay(Util.DT)) {
+                result = UIManager.getDefaults().getFont("SansSerif");
+            }
+            if (result == null || !result.canDisplay(Util.DT)) {
+                result = loadFont("stixgeneralregular.ttf").deriveFont(getLabelFont().getSize2D());
+            }
+            SYMBOL_FONT = result;
         }
-        // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
-        return result;
+        return SYMBOL_FONT;
     }
 
-    private static Font getSymbolFont() {
-        Font result = getLabelFont();
-        if (!result.canDisplay(Util.DT)) {
-            result = UIManager.getDefaults().getFont("SansSerif");
-        }
-        if (result == null || !result.canDisplay(Util.DT)) {
-            result = loadFont("stixgeneralregular.ttf").deriveFont(getLabelFont().getSize2D());
-        }
-        return result;
-    }
+    /** The font for special (arrow-like) characters. */
+    private static Font SYMBOL_FONT;
 
     /** Loads in a TrueType font of a given name. */
-    public static Font loadFont(String name) {
+    private static Font loadFont(String name) {
         Font result = null;
         try {
             result = Font.createFont(Font.TRUETYPE_FONT, Groove.getResource(name).openStream());

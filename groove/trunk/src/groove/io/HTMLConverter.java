@@ -92,16 +92,14 @@ public class HTMLConverter {
 
     static {
         HTMLTag symbolTag = null;
-        if (Options.SYMBOL_FONT != null
-            && Options.SYMBOL_FONT != Options.LABEL_FONT) {
-            Font font = Options.SYMBOL_FONT;
+        if (Options.getSymbolFont() != null && Options.getSymbolFont() != Options.getLabelFont()) {
+            Font font = Options.getSymbolFont();
             String face = font.getFamily();
             int size = font.getSize();
             // actually a slightly smaller font is more in line with
             // the edge font size, but then the forall symbol is not
             // available
-            String argument =
-                String.format("font-family:%s; font-size:%dpx", face, size);
+            String argument = String.format("font-family:%s; font-size:%dpx", face, size);
             symbolTag = createSpanTag(argument);
         }
         HTML_UT = tagOn(symbolTag, Util.UT);
@@ -135,8 +133,7 @@ public class HTMLConverter {
     /**
      * Returns an HTML tag embedded with an argument string.
      */
-    static public HTMLTag createHtmlTag(String tag, String attribute,
-            String arguments) {
+    static public HTMLTag createHtmlTag(String tag, String attribute, String arguments) {
         return new HTMLTag(tag, attribute, arguments);
     }
 
@@ -278,27 +275,21 @@ public class HTMLConverter {
     /** The <code>html</code> tag to insert a line break. */
     static public final String HTML_LINEBREAK = createHtmlTag("br").tagBegin;
     /** The <code>html</code> tag to insert a horizontal line. */
-    static public final String HTML_HORIZONTAL_LINE =
-        createHtmlTag("hr").tagBegin;
+    static public final String HTML_HORIZONTAL_LINE = createHtmlTag("hr").tagBegin;
 
     /** Map from colours to HTML tags imposing the colour on a text. */
-    private static final Map<Color,HTMLTag> colorTagMap =
-        new HashMap<Color,HTMLTag>();
+    private static final Map<Color,HTMLTag> colorTagMap = new HashMap<Color,HTMLTag>();
     /** The maximum alpha value according to {@link Color#getAlpha()}. */
     private static final int MAX_ALPHA = 255;
 
     /** Blue colour tag. */
-    public static final HTMLTag ERASER_TAG =
-        createColorTag(Values.ERASER_FOREGROUND);
+    public static final HTMLTag ERASER_TAG = createColorTag(Values.ERASER_FOREGROUND);
     /** Green colour tag. */
-    public static final HTMLTag CREATOR_TAG =
-        createColorTag(Values.CREATOR_FOREGROUND);
+    public static final HTMLTag CREATOR_TAG = createColorTag(Values.CREATOR_FOREGROUND);
     /** Red colour tag. */
-    public static final HTMLTag EMBARGO_TAG =
-        createColorTag(Values.EMBARGO_FOREGROUND);
+    public static final HTMLTag EMBARGO_TAG = createColorTag(Values.EMBARGO_FOREGROUND);
     /** Remark colour tag. */
-    public static final HTMLTag REMARK_TAG =
-        createColorTag(Values.REMARK_FOREGROUND);
+    public static final HTMLTag REMARK_TAG = createColorTag(Values.REMARK_FOREGROUND);
 
     /**
      * Class that allows some handling of HTML text.
@@ -312,9 +303,7 @@ public class HTMLConverter {
 
         /** Constructs a tag with a given name and attribute name/value. */
         public HTMLTag(String tag, String attrName, String attrValue) {
-            this.tagBegin =
-                String.format("<%s %s=\"%s\">", tag, attrName,
-                    toHtml(attrValue));
+            this.tagBegin = String.format("<%s %s=\"%s\">", tag, attrName, toHtml(attrValue));
             this.tagEnd = String.format("</%s>", tag);
         }
 
