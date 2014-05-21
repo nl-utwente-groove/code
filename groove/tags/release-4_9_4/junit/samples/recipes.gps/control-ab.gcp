@@ -1,0 +1,14 @@
+recipe ab() {
+  a;
+  b;
+}
+
+recipe cd() {
+  c;
+  d;
+}
+
+alap {
+  ab;
+}
+

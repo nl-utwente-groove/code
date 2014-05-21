@@ -1,0 +1,9 @@
+recipe ab() {
+  a;
+  b;
+}
+
+recipe cd() {
+  c;
+  d | d1;
+}
