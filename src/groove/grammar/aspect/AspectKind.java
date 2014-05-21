@@ -1258,11 +1258,14 @@ public enum AspectKind {
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
-                        throw new FormatException("Invalid node name '%s'", text);
+                        throw new FormatException("Invalid node id '%s'", text);
                     }
                 }
+                if (text.length() == 0) {
+                    throw new FormatException("Node id cannot be empty", text);
+                }
                 if (text.charAt(0) == '$' || text.equals(Keywords.SELF)) {
-                    throw new FormatException("Reserved node name '%s'", text);
+                    throw new FormatException("Reserved node id '%s'", text);
                 }
                 return text;
             }
