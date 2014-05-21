@@ -31,8 +31,7 @@ public enum NodeShape {
     ELLIPSE {
         /* Overridden for ellipses. */
         @Override
-        Point2D getPerimeterPoint(Rectangle2D bounds, double px, double py,
-                Point2D q) {
+        Point2D getPerimeterPoint(Rectangle2D bounds, double px, double py, Point2D q) {
             // ellipse given by (x-cx)^2*w^2 + (y-cy)^2*h^2 = h^2*w^2
             // with (cx,cy) the centre, w the width and h the height
             double cx = bounds.getCenterX();
@@ -53,7 +52,7 @@ public enum NodeShape {
             if (dx == 0) {
                 if (dy == 0) {
                     x = cx + w;
-                    y = 0;
+                    y = cy;
                 } else {
                     x = dc / dy;
                     // we solve an equation A*y^2 + B*y + C = 0
@@ -134,8 +133,7 @@ public enum NodeShape {
     DIAMOND {
         /* Overridden for diamond shapes. */
         @Override
-        Point2D getPerimeterPoint(Rectangle2D bounds, double px, double py,
-                Point2D q) {
+        Point2D getPerimeterPoint(Rectangle2D bounds, double px, double py, Point2D q) {
             double cx = bounds.getCenterX();
             double cy = bounds.getCenterY();
             // angles from p to top, right, bottom and left diamond point
@@ -172,15 +170,13 @@ public enum NodeShape {
                 endY = cy;
             }
             Point2D result =
-                lineIntersection(px, py, dx, dy, startX, startY, endX - startX,
-                    endY - startY);
+                lineIntersection(px, py, dx, dy, startX, startY, endX - startX, endY - startY);
             return result;
         }
 
         /* Overridden for diamond shapes. */
         @Override
-        public Point2D getPerimeterPoint(double w, double h, double dx,
-                double dy) {
+        public Point2D getPerimeterPoint(double w, double h, double dx, double dy) {
             double x, y;
             if (dx == 0) {
                 x = 0;
@@ -228,8 +224,7 @@ public enum NodeShape {
      * may be {@code null}, in which case the centre of the bounds is used
      * @param q target point
      */
-    final public Point2D getPerimeterPoint(Rectangle2D bounds, Point2D p,
-            Point2D q) {
+    final public Point2D getPerimeterPoint(Rectangle2D bounds, Point2D p, Point2D q) {
         Point2D result;
         double cx = bounds.getCenterX();
         double cy = bounds.getCenterY();
@@ -251,8 +246,7 @@ public enum NodeShape {
      * @param py y-coordinate of source point;
      * @param q target point
      */
-    Point2D getPerimeterPoint(Rectangle2D bounds, double px, double py,
-            Point2D q) {
+    Point2D getPerimeterPoint(Rectangle2D bounds, double px, double py, Point2D q) {
         // distances from source point to left, right, top and bottom edge
         double dxRight = bounds.getMaxX() - px;
         double dxLeft = px - bounds.getMinX();
@@ -389,8 +383,8 @@ public enum NodeShape {
      * @return Intersection point of the two lines, of <code>null</code> if they
      *         are parallel
      */
-    public static Point2D lineIntersection(double x1, double y1, double dx1,
-            double dy1, double x2, double y2, double dx2, double dy2) {
+    public static Point2D lineIntersection(double x1, double y1, double dx1, double dy1, double x2,
+            double y2, double dx2, double dy2) {
         double above = dx1 * (y2 - y1) - dy1 * (x2 - x1);
         double below = dx2 * dy1 - dx1 * dy2;
         if (below == 0) {
