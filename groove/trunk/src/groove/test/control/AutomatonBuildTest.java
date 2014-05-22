@@ -26,6 +26,7 @@ import groove.control.Callable;
 import groove.control.CtrlLoader;
 import groove.control.CtrlPar;
 import groove.control.Position;
+import groove.control.Procedure;
 import groove.control.instance.Assignment;
 import groove.control.instance.Automaton;
 import groove.control.instance.Frame;
@@ -225,8 +226,8 @@ public class AutomatonBuildTest {
         }
         SwitchStack stack = new SwitchStack();
         stack.add(this.prog.getTemplate().getStart().getAttempt().get(0).getBottom());
-        stack.add(this.prog.getProc("r").getTemplate().getStart().getAttempt().get(0).getBottom());
-        stack.add(this.prog.getProc("f").getTemplate().getStart().getAttempt().get(0).getBottom());
+        stack.add(proc("r").getTemplate().getStart().getAttempt().get(0).getBottom());
+        stack.add(proc("f").getTemplate().getStart().getAttempt().get(0).getBottom());
         Frame f0 = p.getStart();
         StepAttempt a0 = f0.getAttempt();
         assertEquals(1, a0.size());
@@ -248,6 +249,44 @@ public class AutomatonBuildTest {
         assertEquals(f1, s2.onFinish());
         assertTrue(a2.onSuccess().isDead());
         assertTrue(a2.onFailure().isFinal());
+    }
+
+    /** Builds an automaton consisting of a single non-trivial recipe. */
+    @Test
+    public void testSingleRecipe() {
+        Automaton p = build("control", "recipe f() { a; #b; c; } alap f;");
+        Frame f0 = p.getStart();
+        StepAttempt a0 = f0.getAttempt();
+        assertEquals(1, a0.size());
+        assertTrue(a0.onSuccess().isDead());
+        assertTrue(a0.onFailure().isFinal());
+        Step s0 = a0.get(0);
+        assertEquals(2, s0.getCallStack().size());
+        assertEquals(proc("f"), s0.getCallStack().get(0).getUnit());
+        assertEquals(rule("a"), s0.getCallStack().get(1).getUnit());
+        Frame f1 = s0.onFinish();
+        StepAttempt a1 = f1.getAttempt();
+        assertEquals(1, a1.size());
+        assertTrue(a1.onSuccess().isDead());
+        Step s1 = a1.get(0);
+        assertEquals(f1, s1.onFinish());
+        assertEquals(2, s1.getCallStack().size());
+        assertEquals(proc("f"), s1.getCallStack().get(0).getUnit());
+        assertEquals(rule("b"), s1.getCallStack().get(1).getUnit());
+        Frame f2 = a1.onFailure();
+        StepAttempt a2 = f2.getAttempt();
+        assertEquals(1, a2.size());
+        assertTrue(a2.onSuccess().isDead());
+        Step s2 = a2.get(0);
+        assertEquals(f0, s2.onFinish());
+        assertEquals(2, s2.getCallStack().size());
+        assertEquals(proc("f"), s2.getCallStack().get(0).getUnit());
+        assertEquals(rule("c"), s2.getCallStack().get(1).getUnit());
+        p.explore();
+        if (DEBUG) {
+            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
+        }
+
     }
 
     /** Loads the grammar to be used for testing. */
@@ -282,6 +321,11 @@ public class AutomatonBuildTest {
     /** Returns the rule with a given name. */
     protected Rule rule(String name) {
         return this.testGrammar.getRule(name);
+    }
+
+    /** Returns the procedure with a given name, from the latest built program. */
+    protected Procedure proc(String name) {
+        return this.prog.getProc(name);
     }
 
     /** Builds a program object from a control expression.
