@@ -68,15 +68,15 @@ abstract class AbstractSearchItem implements SearchItem {
         return Collections.emptySet();
     }
 
-    /**
-     * This implementation returns the empty set.
+    /*
+     * The default implementation returns the empty set.
      */
     @Override
     public Collection<LabelVar> needsVars() {
         return Collections.emptySet();
     }
 
-    /** This implementation returns {@code false}. */
+    /* The default implementation returns {@code false}. */
     @Override
     public boolean isTestsNodes() {
         return false;
