@@ -17,8 +17,8 @@
 package groove.lts;
 
 import groove.control.instance.Frame;
-import groove.control.instance.StepAttempt;
 import groove.control.instance.Step;
+import groove.control.instance.StepAttempt;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -88,6 +88,8 @@ public class FrameStateMatches extends StateMatches {
     private boolean trySchedule() {
         boolean result = false;
         Frame frame = (Frame) getState().getActualFrame();
+        // depth of the frame at the start of the method
+        int depth = frame.getDepth();
         if (hasOutstanding()) {
             // the schedule has been tried and has yielded matches; 
             // now see if at least one match has resulted
@@ -157,8 +159,8 @@ public class FrameStateMatches extends StateMatches {
             addAll(outstanding);
             result = true;
         }
-        if (frame.getDepth() < getState().getAbsence()) {
-            getCache().setAbsence(frame.getDepth());
+        if (frame.getDepth() < depth) {
+            getCache().notifyDepth(frame.getDepth());
         }
         return result;
     }

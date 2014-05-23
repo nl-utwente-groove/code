@@ -83,6 +83,15 @@ public class ProgramBuildTest {
     }
 
     @Test
+    public void testEndAmbiguous() {
+        // termination of a function or recipe may be ambiguous
+        build("ambiguous", "function f() { a; choice b; or {} }");
+        build("ambiguous", "recipe f() { a; choice b; or {} }");
+        // it's OK to terminate after failure
+        build("fine", "recipe f() { a; try b; }");
+    }
+
+    @Test
     public void testNonTermination() {
         build("nonterminating", "function f() { while (true) { a; } }");
         buildWrong("nonterminating", "recipe f() { while (true) { a; } }");

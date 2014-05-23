@@ -60,7 +60,7 @@ public class StateCache {
         if (trans instanceof RuleTransition) {
             getMatches().remove(trans.getKey());
             if (trans.isPartial()) {
-                getExploreData().addOutPartial((RuleTransition) trans);
+                getExploreData().notifyOutPartial((RuleTransition) trans);
             }
         }
         if (getMatches().isFinished()) {
@@ -147,9 +147,9 @@ public class StateCache {
         return getExploreData().getAbsence();
     }
 
-    /** Decreases the absence level and fires a changed event. */
-    final void setAbsence(int absence) {
-        getExploreData().setAbsence(absence);
+    /** Notifies the cache of a decrease in transient depth of the control frame. */
+    final void notifyDepth(int depth) {
+        getExploreData().notifyDepth(depth);
     }
 
     /**

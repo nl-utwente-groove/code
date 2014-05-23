@@ -230,6 +230,13 @@ public class ExplorationTest {
         testExploration("leader-election.gps", "start-2", "rete", 21, 29);
     }
 
+    /** tests recipes */
+    @Test
+    public void testSubsets() {
+        testExploration("subsets.gps", "start-small", "bfs", 8, 10);
+        testExploration("subsets.gps", "start", "bfs", 306, 712);
+    }
+
     /** Tests various parameters settable through the system properties. */
     @Test
     public void testSystemProperties() {

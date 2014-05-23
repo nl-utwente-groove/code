@@ -245,7 +245,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public int getAbsence() {
         if (isError()) {
-            return Integer.MAX_VALUE;
+            return Flag.MAX_ABSENCE;
         } else if (isDone()) {
             return Flag.getAbsence(this.status);
         } else {

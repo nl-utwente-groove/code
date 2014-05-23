@@ -46,6 +46,7 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
      */
     public RecipeTransition(GraphState source, RuleTransition initial, GraphState target) {
         super(source, new RecipeTransitionLabel(initial), target);
+        assert source == initial.source();
     }
 
     @Override
