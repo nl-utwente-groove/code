@@ -160,6 +160,8 @@ public interface GraphState extends Node {
      * be generated. The return value indicates if the state was already closed.
      * @ensure <tt>isClosed()</tt>
      * @param finished indicates that all transitions for this state have been added.
+     * This might fail to be the case in an incomplete exploration strategy; e.g.,
+     * linear exploration.
      * @return <code>true</code> if the state was closed as a result of this
      *         call; <code>false</code> if it was already closed
      * @see #isClosed()
@@ -224,7 +226,7 @@ public interface GraphState extends Node {
     /** 
      * Indicates the absence level, which is defined as the lowest
      * transient depth of the known reachable states.
-     * This is infinite ({@link Integer#MAX_VALUE}) if the state is
+     * This is maximal ({@link Flag#MAX_ABSENCE}) if the state is
      * erroneous, and 0 if the state is non-transient (hence present).
      * The state is <i>absent</i> if it is done has a positive absence level.
      * @see #isDone()
