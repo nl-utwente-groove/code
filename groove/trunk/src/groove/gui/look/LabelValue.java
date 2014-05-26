@@ -305,7 +305,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.getJGraph().isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
-            CtrlFrame frame = state.getPrimeFrame();
+            CtrlFrame frame = state.getActualFrame();
             if (!frame.isStart()) {
                 id.append("|" + frame.toString());
             }

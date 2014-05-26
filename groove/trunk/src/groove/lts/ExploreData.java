@@ -81,8 +81,7 @@ class ExploreData {
                     childCache.rawParents.add(this);
                 }
             }
-        } else {
-            assert partial.getStep().isInitial();
+        } else if (partial.getStep().isInitial()) {
             // immediately add recipe transitions to the 
             // previously found surface descendants of the child
             for (GraphState target : childCache.getRecipeTargets()) {
@@ -128,7 +127,7 @@ class ExploreData {
 
     /**
      * Adds a reachable graph state to this cache.
-     * @param target graph state reachable through a sequence of partial transitions.
+     * @param target graph state reachable through a non-empty sequence of partial transitions.
      */
     private void addReachable(GraphState target) {
         assert this.state.isTransient();
@@ -143,7 +142,7 @@ class ExploreData {
                 this.transientOpens.add(target);
             }
         }
-        if (!target.isRecipeState()) {
+        if (this.inRecipe && !target.isRecipeState()) {
             addRecipeTarget(target);
         }
     }
@@ -253,10 +252,10 @@ class ExploreData {
     private final List<ExploreData> rawParents = new ArrayList<ExploreData>();
     /** Set of reachable transient open states (transitively closed). */
     private final Set<GraphState> transientOpens = new HashSet<GraphState>();
-    /** Set of reachable partial rule transitions (transitively closed. */
+    /** Set of states reachable through a non-empty sequence of partial transitions. */
     private final Set<GraphState> reachables = new HashSet<GraphState>();
 
-    private final static boolean DEBUG = false;
+    private final static boolean DEBUG = true;
 
     /**
      * Helper class to reconstruct the top-level reachable fields

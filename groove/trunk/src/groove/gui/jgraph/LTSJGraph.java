@@ -17,7 +17,7 @@
 package groove.gui.jgraph;
 
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
+import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
@@ -68,7 +68,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     protected void installListeners() {
         super.installListeners();
         addOptionListener(SHOW_STATE_IDS_OPTION);
-        addOptionListener(SHOW_PARTIAL_GTS_OPTION);
+        addOptionListener(SHOW_RECIPE_STEPS_OPTION);
     }
 
     @Override
@@ -104,9 +104,9 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
     }
 
-    /** Indicates if partial transitions and transient states should be shown. */
-    public boolean isShowPartialTransitions() {
-        return getOptionValue(Options.SHOW_PARTIAL_GTS_OPTION);
+    /** Indicates if in-recipe states and transitions should be shown. */
+    public boolean isShowRecipeSteps() {
+        return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
     }
 
     /**

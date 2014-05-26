@@ -95,13 +95,6 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     /**
-     * Returns {@code true} if the state is a sub-stage.
-     */
-    public boolean inRecipe() {
-        return getNode().isRecipeState();
-    }
-
-    /**
      * @return true if the state is final.
      */
     public boolean isFinal() {
