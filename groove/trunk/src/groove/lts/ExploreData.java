@@ -20,8 +20,10 @@ import groove.lts.GraphState.Flag;
 import groove.util.Pair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +43,15 @@ class ExploreData {
         GraphState state = this.state = cache.getState();
         this.absence =
             this.state.isError() ? Flag.MAX_ABSENCE : this.state.getActualFrame().getDepth();
+        this.inRecipe = state.isRecipeState();
         if (!state.isClosed()) {
-            this.surfaceDescendants = new ArrayList<GraphState>();
-            if (!state.isTransient()) {
-                this.surfaceDescendants.add(state);
+            this.recipeTargets = new ArrayList<GraphState>();
+            if (!state.isRecipeState()) {
+                this.recipeTargets.add(state);
             }
         }
+        this.recipeInits =
+            state.isRecipeState() ? new ArrayList<Pair<ExploreData,RuleTransition>>() : null;
     }
 
     private final AbstractGraphState state;
@@ -62,16 +67,15 @@ class ExploreData {
         }
         assert partial.isPartial();
         assert partial.source() == this.state;
-        GraphState source = this.state;
         GraphState child = partial.target();
         ExploreData childCache = child.getCache().getExploreData();
         this.absence = Math.min(this.absence, childCache.absence);
-        if (source.isTransient()) {
-            addReachablePartial(partial);
+        if (this.state.isTransient()) {
+            addReachable(child);
             if (child.isTransient()) {
-                // add the child partials to this cache
-                for (RuleTransition childPartial : childCache.partials) {
-                    addReachablePartial(childPartial);
+                // add the child's reachable states to this cache
+                for (GraphState childReachable : childCache.reachables) {
+                    addReachable(childReachable);
                 }
                 if (!child.isDone()) {
                     childCache.rawParents.add(this);
@@ -81,11 +85,11 @@ class ExploreData {
             assert partial.getStep().isInitial();
             // immediately add recipe transitions to the 
             // previously found surface descendants of the child
-            for (GraphState target : childCache.getSurfaceDescendants()) {
+            for (GraphState target : childCache.getRecipeTargets()) {
                 addRecipeTransition(this.state, partial, target);
             }
             if (child.isTransient() && !child.isDone()) {
-                childCache.surfaceParents.add(Pair.newPair(this, partial));
+                childCache.recipeInits.add(Pair.newPair(this, partial));
             }
         }
     }
@@ -114,35 +118,33 @@ class ExploreData {
         if (depth < this.absence) {
             this.absence = depth;
         }
-        fireChanged(this.state, Change.TRANSIENCE);
+        Change change = Change.TRANSIENCE;
+        if (this.inRecipe && !this.state.isRecipeState()) {
+            this.inRecipe = false;
+            change = Change.TOP_LEVEL;
+        }
+        fireChanged(this.state, change);
     }
 
     /**
-     * Adds a reachable partial transition to this cache.
-     * @param partial partial transition reachable from this state
+     * Adds a reachable graph state to this cache.
+     * @param target graph state reachable through a sequence of partial transitions.
      */
-    private void addReachablePartial(RuleTransition partial) {
+    private void addReachable(GraphState target) {
         assert this.state.isTransient();
-        // maybe add the transition target to the transient open states
-        GraphState target = partial.target();
         // add the partial if it was not already known
-        if (this.partials.add(partial)) {
+        if (this.reachables.add(target)) {
             this.absence = Math.min(this.absence, target.getAbsence());
             // notify all parents of the new partial
             for (ExploreData parent : this.rawParents) {
-                parent.addReachablePartial(partial);
+                parent.addReachable(target);
             }
-        }
-        if (target.isTransient()) {
-            if (!target.isClosed()) {
+            if (target.isTransient() && !target.isClosed()) {
                 this.transientOpens.add(target);
             }
-        } else {
-            getSurfaceDescendants().add(target);
-            if (DEBUG) {
-                System.out.printf("Surface descendents of %s augmented by %s%n", this.state, target);
-            }
-            addRecipeTransitions(target);
+        }
+        if (!target.isRecipeState()) {
+            addRecipeTarget(target);
         }
     }
 
@@ -155,12 +157,11 @@ class ExploreData {
         for (ExploreData parent : this.rawParents) {
             parent.notifyChildChanged(child, change);
         }
-        if (change == Change.TRANSIENCE && !child.isTransient()) {
+        if (change == Change.TOP_LEVEL) {
             if (DEBUG) {
-                System.out.printf("Surface descendents of %s augmented by %s%n", this.state, child);
+                System.out.printf("Top-level reachables of %s augmented by %s%n", this.state, child);
             }
-            getSurfaceDescendants().add(child);
-            addRecipeTransitions(child);
+            addRecipeTarget(child);
         }
     }
 
@@ -188,9 +189,13 @@ class ExploreData {
     }
 
     /** Adds recipe transitions from the surface parents to a given (surface) target. */
-    private void addRecipeTransitions(GraphState target) {
-        assert !target.isTransient();
-        for (Pair<ExploreData,RuleTransition> parent : this.surfaceParents) {
+    private void addRecipeTarget(GraphState target) {
+        assert !target.isRecipeState();
+        if (DEBUG) {
+            System.out.printf("Recipe targets of %s augmented by %s%n", this.state, target);
+        }
+        getRecipeTargets().add(target);
+        for (Pair<ExploreData,RuleTransition> parent : this.recipeInits) {
             addRecipeTransition(parent.one().state, parent.two(), target);
         }
     }
@@ -219,27 +224,29 @@ class ExploreData {
      */
     private int absence;
 
+    /** Flag indicating if this state is known to be a recipe state. */
+    private boolean inRecipe;
+
     /** Returns the list of reachable surface states.
      * Only non-{@code null} for states that started their existence as transient.
      */
-    private List<GraphState> getSurfaceDescendants() {
-        if (this.surfaceDescendants == null) {
-            initSurfaceDescendants(this);
+    private List<GraphState> getRecipeTargets() {
+        if (this.recipeTargets == null) {
+            new TopLevelRecord(this).run();
         }
-        return this.surfaceDescendants;
+        return this.recipeTargets;
     }
 
-    /** List of reachable surface states.
-     * Only non-{@code null} for states that started their existence as transient.
+    /** List of reachable top-level states, which can serve as recipe targets
+     * if this state appears as target of an in-recipe transition.
      */
-    private List<GraphState> surfaceDescendants = new ArrayList<GraphState>();
+    private List<GraphState> recipeTargets = new ArrayList<GraphState>();
 
     /** 
-     * Collection of direct parent surface states, with transitions from parent to this.
-     * Only non-{@code null} for states that started their existence as transient.
+     * Collection of direct parent top-level states, with transitions from parent to this.
+     * Only non-{@code null} for states whose prime frame is in-recipe.
      */
-    private final List<Pair<ExploreData,RuleTransition>> surfaceParents =
-        new ArrayList<Pair<ExploreData,RuleTransition>>();
+    private final List<Pair<ExploreData,RuleTransition>> recipeInits;
     /** 
      * Collection of direct parent transient states.
      */
@@ -247,82 +254,115 @@ class ExploreData {
     /** Set of reachable transient open states (transitively closed). */
     private final Set<GraphState> transientOpens = new HashSet<GraphState>();
     /** Set of reachable partial rule transitions (transitively closed. */
-    private final Set<RuleTransition> partials = new HashSet<RuleTransition>();
-
-    /**
-     * Goes over the part of the already explored transition system reachable from start,
-     * and sets the {@link #surfaceDescendants} fields of all non-transient states in that part. 
-     * This needs to be done when state caches are rebuilt.
-     */
-    private static void initSurfaceDescendants(ExploreData start) {
-        assert start.state.isClosed();
-        // build the transitive closure of the existing transitions between states 
-        // reachable from start, stopping at the first surface state
-        // transitive and reflexive forward map from states to successors
-        Map<ExploreData,Set<ExploreData>> forward = new HashMap<ExploreData,Set<ExploreData>>();
-        // transitive and reflexive backward map from states to predecessors
-        Map<ExploreData,Set<ExploreData>> backward = new HashMap<ExploreData,Set<ExploreData>>();
-        // queue of outstanding states to be explored
-        Queue<ExploreData> queue = new LinkedList<ExploreData>();
-        addData(start, forward, backward, queue);
-        while (!queue.isEmpty()) {
-            ExploreData source = queue.poll();
-            for (GraphTransition trans : source.state.getTransitions()) {
-                if (trans instanceof RuleTransition
-                    && !((RuleTransition) trans).getStep().isInitial()) {
-                    ExploreData target = trans.target().getCache().getExploreData();
-                    if (!forward.containsKey(target)) {
-                        addData(target, forward, backward, queue);
-                    }
-                    if (!backward.get(target).contains(source)) {
-                        Set<ExploreData> targetForward = forward.get(target);
-                        Set<ExploreData> sourceBackward = backward.get(source);
-                        for (ExploreData d : targetForward) {
-                            backward.get(d).addAll(sourceBackward);
-                        }
-                        for (ExploreData d : sourceBackward) {
-                            forward.get(d).addAll(targetForward);
-                        }
-                    }
-                }
-            }
-        }
-        // store the result in the surfaceDescendents fields
-        for (Map.Entry<ExploreData,Set<ExploreData>> entry : forward.entrySet()) {
-            List<GraphState> surfaceDescendents = new ArrayList<GraphState>();
-            for (ExploreData target : entry.getValue()) {
-                GraphState state = target.state;
-                if (!state.isTransient()) {
-                    surfaceDescendents.add(state);
-                }
-            }
-            entry.getKey().surfaceDescendants = surfaceDescendents;
-            if (DEBUG) {
-                System.out.printf("Surface descendents of %s determined at %s", entry.getKey(),
-                    surfaceDescendents);
-            }
-        }
-    }
-
-    /** Adds an {@link ExploreData} item to the data structures used in {@link #initSurfaceDescendants(ExploreData)}. */
-    private static void addData(ExploreData data, Map<ExploreData,Set<ExploreData>> forward,
-            Map<ExploreData,Set<ExploreData>> backward, Queue<ExploreData> queue) {
-        queue.add(data);
-        Set<ExploreData> targetForward = new HashSet<ExploreData>();
-        forward.put(data, targetForward);
-        targetForward.add(data);
-        Set<ExploreData> targetBackward = new HashSet<ExploreData>();
-        backward.put(data, targetBackward);
-        targetBackward.add(data);
-    }
+    private final Set<GraphState> reachables = new HashSet<GraphState>();
 
     private final static boolean DEBUG = false;
+
+    /**
+     * Helper class to reconstruct the top-level reachable fields
+     * of collected caches (of done states).
+     */
+    private static class TopLevelRecord {
+        TopLevelRecord(ExploreData start) {
+            addData(start);
+        }
+
+        /** Runs the reconstruction algorithm. */
+        void run() {
+            build();
+            propagate();
+            fill();
+        }
+
+        /**
+         * Builds the backwards map and result map.
+         */
+        private void build() {
+            while (!this.queue.isEmpty()) {
+                ExploreData source = this.queue.poll();
+                for (GraphTransition trans : source.state.getTransitions()) {
+                    assert trans.target().isDone();
+                    ExploreData target = trans.target().getCache().getExploreData();
+                    addData(target);
+                    this.backward.get(target).add(source);
+                }
+            }
+        }
+
+        /**
+         * Propagates the reachables backward.
+         */
+        private void propagate() {
+            Set<ExploreData> changed = new LinkedHashSet<ExploreData>(this.resultMap.keySet());
+            while (!changed.isEmpty()) {
+                Iterator<ExploreData> it = changed.iterator();
+                ExploreData next = it.next();
+                it.remove();
+                Set<GraphState> reachables = this.resultMap.get(next);
+                for (ExploreData pred : this.backward.get(next)) {
+                    if (this.resultMap.get(pred).addAll(reachables)) {
+                        changed.add(pred);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Stores the computed results in the topLevelReachable fields.
+         */
+        private void fill() {
+            for (Pair<ExploreData,Set<GraphState>> entry : this.resultList) {
+                List<GraphState> topLevelReachables = new ArrayList<GraphState>(entry.two());
+                entry.one().recipeTargets = topLevelReachables;
+                if (DEBUG) {
+                    System.out.printf("Top-level reachables of %s determined at %s", entry.one(),
+                        topLevelReachables);
+                }
+            }
+        }
+
+        /** Adds an {@link ExploreData} item to the data structures}. */
+        private void addData(ExploreData data) {
+            if (!this.backward.containsKey(data)) {
+                Set<ExploreData> targetBackward = new HashSet<ExploreData>();
+                this.backward.put(data, targetBackward);
+                Set<GraphState> resultEntry = new LinkedHashSet<GraphState>();
+                this.resultMap.put(data, resultEntry);
+                if (data.recipeTargets == null) {
+                    // we're going to traverse further
+                    this.resultList.add(Pair.newPair(data, resultEntry));
+                    if (data.state.isRecipeState()) {
+                        this.queue.add(data);
+                    } else {
+                        resultEntry.add(data.state);
+                    }
+                } else {
+                    // this state still has its cache, no need to explore
+                    resultEntry.addAll(data.recipeTargets);
+                }
+            }
+        }
+
+        /** backward map from states to direct predecessors. */
+        private final Map<ExploreData,Set<ExploreData>> backward =
+            new LinkedHashMap<ExploreData,Set<ExploreData>>();
+        /** map from states to top level reachables. */
+        private final Map<ExploreData,Set<GraphState>> resultMap =
+            new LinkedHashMap<ExploreData,Set<GraphState>>();
+        /** List of pairs that are actually being built. */
+        private final List<Pair<ExploreData,Set<GraphState>>> resultList =
+            new ArrayList<Pair<ExploreData,Set<GraphState>>>();
+        // queue of outstanding states to be explored
+        private final Queue<ExploreData> queue = new LinkedList<ExploreData>();
+    }
 
     /** Type of propagated change. */
     enum Change {
         /** The transient depth decreased because an atomic block was exited. */
         TRANSIENCE,
         /** The state closed. */
-        CLOSURE;
+        CLOSURE,
+        /** The state became top-level. */
+        TOP_LEVEL, ;
     }
 }
