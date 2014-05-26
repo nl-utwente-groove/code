@@ -548,7 +548,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         Map<GraphState,MultiNode> nodeMap = new HashMap<GraphState,MultiNode>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
-            if (state.isRecipeStage() && !flags.showRecipes()) {
+            if (state.isRecipeState() && !flags.showRecipes()) {
                 continue;
             }
             MultiNode image = result.addNode(state.getNumber());
@@ -575,7 +575,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                         "" + state.getActualFrame().getDepth());
                 result.addEdge(image, label, image);
             }
-            if (flags.showRecipes() && state.isRecipeStage()) {
+            if (flags.showRecipes() && state.isRecipeState()) {
                 String label =
                     flags.getRecipeLabel().replaceAll("#",
                         "" + state.getActualFrame().getRecipe().getFullName());

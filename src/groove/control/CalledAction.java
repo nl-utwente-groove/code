@@ -28,10 +28,16 @@ public interface CalledAction {
     /** Returns the rule invoked in this control step. */
     Rule getRule();
 
-    /** Indicates if this step is part of a recipe. */
-    boolean isRecipeStep();
+    /** Indicates if this step is part of a recipe.
+     * @return {@code true} if and only if {@link #getRecipe()} is non-{@code null}
+     * @see #getRecipe()
+     */
+    boolean inRecipe();
 
-    /** Returns the outermost recipe of which this step is a part, if any. */
+    /**
+     * Returns the outermost recipe of which this step is a part, if any.
+     * @see #inRecipe()
+     */
     Recipe getRecipe();
 
 }

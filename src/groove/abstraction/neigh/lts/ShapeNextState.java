@@ -18,7 +18,6 @@ package groove.abstraction.neigh.lts;
 
 import groove.abstraction.neigh.shape.Shape;
 import groove.control.CtrlStep;
-import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
@@ -163,12 +162,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
 
     @Override
     public boolean isRecipeStep() {
-        return getStep().isRecipeStep();
-    }
-
-    @Override
-    public Recipe getRecipe() {
-        return getStep().getRecipe();
+        return getStep().inRecipe();
     }
 
     // ------------------------------------------------------------------------

@@ -44,7 +44,7 @@ public class CallStack extends Stack<Call> implements CalledAction {
     }
 
     @Override
-    public boolean isRecipeStep() {
+    public boolean inRecipe() {
         return getRecipe() != null;
     }
 

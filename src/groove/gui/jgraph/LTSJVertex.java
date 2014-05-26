@@ -35,7 +35,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
         if (state != null) {
             setLook(Look.OPEN, !state.isClosed());
             setLook(Look.ABSENT, state.isAbsent());
-            setLook(Look.RECIPE, state.isRecipeStage());
+            setLook(Look.RECIPE, state.isRecipeState());
             setLook(Look.FINAL, state.getGTS().isFinal(state));
             setLook(Look.RESULT, state.getGTS().isResult(state));
         }
@@ -97,8 +97,8 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     /**
      * Returns {@code true} if the state is a sub-stage.
      */
-    public boolean isSubStage() {
-        return getNode().isRecipeStage();
+    public boolean inRecipe() {
+        return getNode().isRecipeState();
     }
 
     /**

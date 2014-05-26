@@ -79,7 +79,7 @@ public class GTSCounter implements GTSListener {
         }
         if (!state.isDone()) {
             this.inTransMap.put(state, new ArrayList<RuleTransition>());
-        } else if (state.isRecipeStage()) {
+        } else if (state.isRecipeState()) {
             this.recipeStageCount++;
         }
     }
@@ -107,7 +107,7 @@ public class GTSCounter implements GTSListener {
     @Override
     public void statusUpdate(GTS gts, GraphState state, Flag flag) {
         this.count[flag.ordinal()]++;
-        if (flag == Flag.CLOSED && state.isRecipeStage()) {
+        if (flag == Flag.CLOSED && state.isRecipeState()) {
             this.recipeStageCount++;
         } else if (flag == Flag.DONE) {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);

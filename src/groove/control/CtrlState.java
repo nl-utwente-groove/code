@@ -112,7 +112,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     }
 
     @Override
-    public boolean isRecipeStage() {
+    public boolean inRecipe() {
         return isTransient();
     }
 

@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.grammar.Recipe;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
@@ -103,7 +102,4 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      */
     @Override
     public RuleTransitionStub toStub();
-
-    /** Returns the (optional) recipe that this rule transition is part of. */
-    public Recipe getRecipe();
 }

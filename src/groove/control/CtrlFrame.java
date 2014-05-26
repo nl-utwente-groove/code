@@ -43,11 +43,19 @@ public interface CtrlFrame {
 
     /** 
      * Indicates if this frame is inside a recipe.
+     * This is the case if and only if the recipe has started
+     * and not yet terminated.
+     * A frame can only be inside a recipe if it is transient.
+     * @see #getRecipe()
+     * @see #isTransient()
      */
-    boolean isRecipeStage();
+    boolean inRecipe();
 
     /** 
-     * Returns the recipe to which this stage belongs, if any.
+     * Returns the outer recipe to which this frame belongs, if any.
+     * @return the recipe to this this frame belongs, or {@code null}
+     * if it is not inside a recipe
+     * @see #inRecipe()
      */
     Recipe getRecipe();
 

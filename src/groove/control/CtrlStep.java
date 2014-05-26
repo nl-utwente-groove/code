@@ -36,7 +36,7 @@ public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
      */
     boolean isModifying();
 
-    /** Indicates if this step is the initial step of an atomic block. */
+    /** Indicates if this step is the initial step of a recipe. */
     boolean isInitial();
 
     /** Indicates if this step is part of an atomic block. */

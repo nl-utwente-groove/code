@@ -15,7 +15,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostGraphMorphism;
@@ -330,12 +329,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public boolean isRecipeStep() {
-        return getStep().isRecipeStep();
-    }
-
-    @Override
-    public Recipe getRecipe() {
-        return getStep().getRecipe();
+        return getStep().inRecipe();
     }
 
     /** Keeps track of bound variables */

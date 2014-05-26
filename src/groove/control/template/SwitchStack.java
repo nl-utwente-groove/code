@@ -93,8 +93,8 @@ public class SwitchStack extends Stack<Switch> implements Attempt.Stage<Location
     private CallStack callStack;
 
     /** Indicates if this step is part of a recipe. */
-    public boolean isRecipeStep() {
-        return getCallStack().getRecipe() != null;
+    public boolean inRecipe() {
+        return getCallStack().inRecipe();
     }
 
     /** Returns the recipe of which this is a step, if any. */

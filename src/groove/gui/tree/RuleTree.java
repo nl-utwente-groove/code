@@ -423,7 +423,7 @@ public class RuleTree extends AbstractResourceTree {
         Set<Duo<String>> triedPairs = new HashSet<Duo<String>>();
         for (CalledAction t : pastAttempts) {
             String ruleName = t.getRule().getFullName();
-            String recipeName = t.isRecipeStep() ? t.getRecipe().getFullName() : null;
+            String recipeName = t.inRecipe() ? t.getRecipe().getFullName() : null;
             triedPairs.add(Duo.newDuo(ruleName, recipeName));
         }
         Collection<RuleTreeNode> treeNodes = new ArrayList<RuleTreeNode>();
