@@ -26,8 +26,8 @@ public class RecipeTransitionLabel extends TextLabel implements ActionLabel {
      * Constructs a new label on the basis of a given initial rule transition.
      */
     public RecipeTransitionLabel(RuleTransition initial) {
-        super(initial.getRecipe().getFullName());
-        this.recipe = initial.getRecipe();
+        super(initial.getStep().getRecipe().getFullName());
+        this.recipe = initial.getStep().getRecipe();
         this.initial = initial;
     }
 

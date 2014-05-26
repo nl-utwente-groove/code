@@ -228,8 +228,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    final public boolean isRecipeStage() {
-        return getActualFrame().isRecipeStage();
+    final public boolean isRecipeState() {
+        return getActualFrame().inRecipe();
     }
 
     @Override

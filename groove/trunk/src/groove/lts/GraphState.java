@@ -202,10 +202,14 @@ public interface GraphState extends Node {
      */
     public boolean isDone();
 
-    /** 
-     * Indicates if state is part of a recipe.
+    /** Indicates if this state is inside a recipe.
+     * This is the case if and only if the recipe has started
+     * and not yet terminated.
+     * A state can only be inside a recipe if it is transient.
+     * @see #isTransient()
+
      */
-    public boolean isRecipeStage();
+    public boolean isRecipeState();
 
     /** 
      * Indicates if this is a transient state.

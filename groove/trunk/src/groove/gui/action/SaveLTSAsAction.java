@@ -69,7 +69,7 @@ public class SaveLTSAsAction extends SimulatorAction {
         case TOP:
             List<GraphState> states = new ArrayList<GraphState>();
             for (GraphState state : gts.nodeSet()) {
-                if (!state.isRecipeStage()) {
+                if (!state.isRecipeState()) {
                     states.add(state);
                 }
             }

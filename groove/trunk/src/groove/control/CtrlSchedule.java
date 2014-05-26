@@ -92,11 +92,11 @@ public class CtrlSchedule implements CtrlFrame {
 
     @Override
     public Recipe getRecipe() {
-        return isRecipeStage() ? getPrime().getRecipe() : null;
+        return inRecipe() ? getPrime().getRecipe() : null;
     }
 
     @Override
-    public boolean isRecipeStage() {
+    public boolean inRecipe() {
         return isTransient();
     }
 

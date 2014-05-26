@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.CtrlStep;
-import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
@@ -297,12 +296,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     @Override
     public boolean isRecipeStep() {
-        return getStep().isRecipeStep();
-    }
-
-    @Override
-    public Recipe getRecipe() {
-        return getStep().getRecipe();
+        return getStep().inRecipe();
     }
 
     /**

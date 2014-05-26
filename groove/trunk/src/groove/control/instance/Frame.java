@@ -206,13 +206,13 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     }
 
     @Override
-    public boolean isRecipeStage() {
-        return getSwitchStack().isRecipeStep();
+    public boolean inRecipe() {
+        return getSwitchStack().inRecipe();
     }
 
     @Override
     public Recipe getRecipe() {
-        return getSwitchStack().getCallStack().getRecipe();
+        return getSwitchStack().getRecipe();
     }
 
     @Override

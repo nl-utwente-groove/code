@@ -378,7 +378,7 @@ public class StatisticsReporter extends AExplorationReporter {
         public void addUpdate(GTS gts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
-            if (state.isRecipeStage()) {
+            if (state.isRecipeState()) {
                 if (state.isClosed()) {
                     this.closedRecipeStageCount++;
                 } else {
@@ -400,7 +400,7 @@ public class StatisticsReporter extends AExplorationReporter {
                 if (explored.getPrimeFrame().isTransient()) {
                     this.openRecipeStageCount--;
                 }
-                if (explored.isRecipeStage()) {
+                if (explored.isRecipeState()) {
                     this.closedRecipeStageCount++;
                 }
             }

@@ -111,7 +111,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 }
                 jCell.setLook(Look.ABSENT, true);
             }
-            if (explored.isRecipeStage()) {
+            if (explored.isRecipeState()) {
                 for (JEdge<GTS> jEdge : jCell.getContext()) {
                     jEdge.setLook(Look.RECIPE, true);
                 }

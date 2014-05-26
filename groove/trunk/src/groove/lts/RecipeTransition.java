@@ -142,7 +142,7 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
                 GraphState target = trans.target();
-                if (target.isRecipeStage() || target == target()) {
+                if (target.isRecipeState() || target == target()) {
                     Set<RuleTransition> inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {

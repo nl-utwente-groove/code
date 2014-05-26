@@ -57,7 +57,12 @@ public interface GraphTransition extends Edge {
     /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
 
-    /** Indicates if this transition is a step in a recipe transition. */
+    /** 
+     * Indicates if this transition is a step in a recipe transition.
+     * If this is the case, then either the step is partial or it represents
+     * an atomic recipe execution.
+     * @see #isPartial()
+     */
     public boolean isRecipeStep();
 
     /**
