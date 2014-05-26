@@ -81,7 +81,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_ANCHORS_OPTION);
         addCheckbox(SHOW_ASPECTS_OPTION);
         addCheckbox(SHOW_VALUE_NODES_OPTION);
-        addCheckbox(SHOW_PARTIAL_GTS_OPTION);
+        addCheckbox(SHOW_RECIPE_STEPS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
@@ -840,8 +840,8 @@ public class Options implements Cloneable {
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
-    /** Show partial transitions option */
-    static public final String SHOW_PARTIAL_GTS_OPTION = "Show partial transitions";
+    /** Show recipe steps option */
+    static public final String SHOW_RECIPE_STEPS_OPTION = "Show recipe steps";
     /** Show unfiltered edges to filtered nodes. */
     static public final String SHOW_UNFILTERED_EDGES_OPTION = "Show all unfiltered edges";
     /** Show data values as nodes rather than assignments. */
@@ -865,7 +865,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
-        boolOptionDefaults.put(SHOW_PARTIAL_GTS_OPTION, true);
+        boolOptionDefaults.put(SHOW_RECIPE_STEPS_OPTION, true);
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);

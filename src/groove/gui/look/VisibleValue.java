@@ -54,8 +54,7 @@ public class VisibleValue implements VisualValue<Boolean> {
                         : getAspectEdgeValue((AspectJEdge) cell);
         } else if (cell instanceof LTSJCell) {
             result =
-                isVertex ? getLTSVertexValue((LTSJVertex) cell)
-                        : getLTSEdgeValue((LTSJEdge) cell);
+                isVertex ? getLTSVertexValue((LTSJVertex) cell) : getLTSEdgeValue((LTSJEdge) cell);
         } else if (cell instanceof JVertex) {
             result =
                 isVertex ? getBasicVertexValue((JVertex<?>) cell)
@@ -158,8 +157,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jVertex.hasVisibleFlag()) {
             return false;
         }
-        if (!jVertex.getJGraph().isShowPartialTransitions()
-            && jVertex.inRecipe() && state.isDone()) {
+        if (!jVertex.getJGraph().isShowRecipeSteps() && state.isRecipeState() && state.isDone()) {
             return false;
         }
         if (jVertex.getNumber() > jVertex.getJModel().getStateBound()) {
@@ -179,7 +177,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jEdge.hasVisibleFlag()) {
             return false;
         }
-        if (!jEdge.getJGraph().isShowPartialTransitions() && trans.isPartial()
+        if (!jEdge.getJGraph().isShowRecipeSteps() && trans.isRecipeStep()
             && trans.source().isDone()) {
             return false;
         }

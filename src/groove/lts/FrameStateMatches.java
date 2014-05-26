@@ -159,8 +159,9 @@ public class FrameStateMatches extends StateMatches {
             addAll(outstanding);
             result = true;
         }
-        if (frame.getDepth() < depth) {
-            getCache().notifyDepth(frame.getDepth());
+        int actualDepth = getState().getActualFrame().getDepth();
+        if (actualDepth < depth) {
+            getCache().notifyDepth(actualDepth);
         }
         return result;
     }
