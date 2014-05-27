@@ -18,10 +18,18 @@ package groove.control.instance;
 
 import groove.control.Binding;
 import groove.control.Binding.Source;
+import groove.control.CtrlPar;
+import groove.control.CtrlPar.Const;
+import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
+import groove.control.Procedure;
 import groove.control.Valuator;
+import groove.control.template.Switch;
+import groove.control.template.SwitchStack;
+import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -148,6 +156,106 @@ public class Assignment {
     @Override
     public String toString() {
         return this.kind.name() + Arrays.toString(this.bindings);
+    }
+
+    /**
+     * Returns bindings for a list of target variables of a
+     * control step, using the source variables
+     * combined with the output parameters of the call.
+     */
+    static Assignment modify(Switch swit) {
+        assert swit.getKind() == Switch.Kind.RULE;
+        List<Binding> result = new ArrayList<Binding>();
+        List<CtrlVar> sourceVars = swit.getSourceVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
+        for (CtrlVar var : swit.onFinish().getVars()) {
+            Integer ix = outVars.get(var);
+            Binding rhs;
+            if (ix == null) {
+                // the value comes from the source
+                int pos = sourceVars.indexOf(var);
+                assert pos >= 0;
+                rhs = Binding.var(pos);
+            } else {
+                // the value is an output parameter of the rule
+                Rule rule = (Rule) swit.getUnit();
+                rhs = rule.getParBinding(ix);
+            }
+            result.add(rhs);
+        }
+        return call(result);
+    }
+
+    /**
+     * Computes the variable assignment for the initial location of a called template
+     * from the variables of the caller location and the arguments of the call.
+     * @param swit the template call
+     */
+    static Assignment enter(Switch swit) {
+        assert swit.getKind().isProcedure();
+        List<Binding> result = new ArrayList<Binding>();
+        List<CtrlVar> sourceVars = swit.getSourceVars();
+        Procedure proc = (Procedure) swit.getUnit();
+        Map<CtrlVar,Integer> sig = proc.getInPars();
+        for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
+            // all initial state variables are formal input parameters 
+            Integer ix = sig.get(var);
+            assert ix != null;
+            // look up the corresponding argument in the call
+            CtrlPar arg = swit.getArgs().get(ix);
+            Binding rhs;
+            if (arg instanceof Const) {
+                rhs = Binding.value((Const) arg);
+            } else {
+                rhs = Binding.var(sourceVars.indexOf(((Var) arg).getVar()));
+            }
+            result.add(rhs);
+        }
+        return push(result);
+    }
+
+    /**
+     * Computes the variable assignment for the location where control returns 
+     * after a template call, from the variables in the final state of the 
+     * template and the source state of the call.
+     * @param swit the template call
+     */
+    static Assignment exit(Switch swit) {
+        assert swit.getKind().isProcedure();
+        List<Binding> result = new ArrayList<Binding>();
+        List<CtrlPar.Var> sig = swit.getUnit().getSignature();
+        List<CtrlVar> callerVars = swit.getSourceVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
+        Map<CtrlVar,Integer> finalVars =
+            ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
+        for (CtrlVar var : swit.onFinish().getVars()) {
+            Integer ix = outVars.get(var);
+            Binding rhs;
+            if (ix == null) {
+                // the value comes from the caller
+                rhs = Binding.caller(callerVars.indexOf(var));
+            } else {
+                // the value comes from an output parameter of the call
+                // find the corresponding formal parameter
+                CtrlVar par = sig.get(ix).getVar();
+                // look it up in the final location variables
+                rhs = Binding.var(finalVars.get(par));
+            }
+            assert rhs != null;
+            result.add(rhs);
+        }
+        return pop(result);
+    }
+
+    /** Computes the pop actions between two frames. */
+    static public List<Assignment> computePops(Frame source, Frame target) {
+        List<Assignment> result = new ArrayList<Assignment>();
+        SwitchStack sourceSwitches = source.getSwitchStack();
+        int targetSwitchCount = target.getSwitchStack().size();
+        for (int i = sourceSwitches.size(); i >= targetSwitchCount; i--) {
+            result.add(Assignment.exit(sourceSwitches.get(i)));
+        }
+        return result;
     }
 
     /** Creates a new {@link PUSH} action with a given assignment. */
