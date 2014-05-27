@@ -147,6 +147,19 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private Set<Call> pastCalls;
 
+    /**
+     * Returns the list of frame pop actions corresponding to 
+     * procedure exits due to verdict transitions between the prime frame and this frame.
+     */
+    public List<Assignment> getVerdictPops() {
+        if (this.verdictPops == null) {
+            this.verdictPops = Assignment.computePops(getPrime(), this);
+        }
+        return this.verdictPops;
+    }
+
+    private List<Assignment> verdictPops;
+
     @Override
     public Type getType() {
         if (this.type == null) {

@@ -37,7 +37,6 @@ import groove.transform.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -186,20 +185,6 @@ public class StepMatchCollector extends MatchCollector {
             return true;
         }
         return false;
-        //        for (Pair<Var,Binding> inArg : swit.getCallBinding()) {
-        //            if (inArg.two() == null || inArg.two().getSource() == Source.CONST) {
-        //                continue;
-        //            }
-        //            // node values may be deleted 
-        //            if (inArg.one().getType() == CtrlType.NODE && swit.getRule().hasNodeErasers()) {
-        //                return true;
-        //            }
-        //            // the incoming control step may have affected the variable's value
-        //            if (((Step) state.getStep()).mayAssign(inArg.two().getIndex())) {
-        //                return true;
-        //            }
-        //        }
-        //        return false;
     }
 
     /** Extracts the morphism from rule nodes to input graph nodes
@@ -210,7 +195,7 @@ public class StepMatchCollector extends MatchCollector {
     private RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
         Object[] sourceValues = this.state.getFrameValues();
-        for (Assignment action : computePops()) {
+        for (Assignment action : step.getSource().getVerdictPops()) {
             sourceValues = action.apply(sourceValues);
         }
         for (Assignment action : step.getFramePushes()) {
@@ -242,15 +227,6 @@ public class StepMatchCollector extends MatchCollector {
             result.putNode(entry.one().getRuleNode(), value);
         }
         return result;
-    }
-
-    /**
-     * Computes the pop actions triggered by the procedures
-     * exited between the prime and actual control frame.
-     */
-    private List<Assignment> computePops() {
-        return Assignment.computePops((Frame) this.state.getPrimeFrame(),
-            (Frame) this.state.getActualFrame());
     }
 
     /** 
