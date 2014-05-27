@@ -27,7 +27,7 @@ public class StepAttempt extends Attempt<Frame,Step> {
     /**
      * Creates a multi-step, initialised with success and failure alternates.
      */
-    public StepAttempt(Frame onSuccess, Frame onFailure) {
+    StepAttempt(Frame onSuccess, Frame onFailure) {
         setSuccess(onSuccess);
         setFailure(onFailure);
     }

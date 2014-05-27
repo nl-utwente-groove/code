@@ -37,6 +37,7 @@ import groove.transform.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -209,6 +210,9 @@ public class StepMatchCollector extends MatchCollector {
     private RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
         Object[] sourceValues = this.state.getFrameValues();
+        for (Assignment action : computePops()) {
+            sourceValues = action.apply(sourceValues);
+        }
         for (Assignment action : step.getFramePushes()) {
             sourceValues = action.apply(sourceValues);
         }
@@ -238,6 +242,15 @@ public class StepMatchCollector extends MatchCollector {
             result.putNode(entry.one().getRuleNode(), value);
         }
         return result;
+    }
+
+    /**
+     * Computes the pop actions triggered by the procedures
+     * exited between the prime and actual control frame.
+     */
+    private List<Assignment> computePops() {
+        return Assignment.computePops((Frame) this.state.getPrimeFrame(),
+            (Frame) this.state.getActualFrame());
     }
 
     /** 
