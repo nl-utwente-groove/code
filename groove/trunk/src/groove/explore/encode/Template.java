@@ -269,19 +269,16 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         private void addNrArguments() {
-            add(new JLabel("<HTML><FONT color="
-                + ExplorationDialog.INFO_COLOR
+            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
                 + ">Additional arguments: <B>"
-                + Integer.toString(Template.this.argumentNames.length)
-                + "</B>"
-                + ((Template.this.argumentNames.length == 0) ? "."
-                        : " (select values below).") + "</FONT></HTML>"));
+                + Integer.toString(Template.this.argumentNames.length) + "</B>"
+                + ((Template.this.argumentNames.length == 0) ? "." : " (select values below).")
+                + "</FONT></HTML>"));
         }
 
         private void addArgument(String argName) {
             EncodedTypeEditor<?,String> editor =
-                Template.this.argumentTypes.get(argName).createEditor(
-                    getGrammar());
+                Template.this.argumentTypes.get(argName).createEditor(getGrammar());
             JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             line.setBackground(ExplorationDialog.INFO_BG_COLOR);
             if (editor != null) {
@@ -289,9 +286,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                 line.add(editor);
             }
             line.add(Box.createRigidArea(new Dimension(5, 0)));
-            line.add(new JLabel("<HTML><B><FONT color="
-                + ExplorationDialog.INFO_COLOR + ">(" + argName
-                + ")</B></HTML>"));
+            line.add(new JLabel("<HTML><B><FONT color=" + ExplorationDialog.INFO_COLOR + ">("
+                + argName + ")</B></HTML>"));
             add(line);
         }
 
@@ -314,8 +310,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                 return;
             }
             for (String argName : Template.this.argumentNames) {
-                this.editors.get(argName).setCurrentValue(
-                    value.getArgument(argName));
+                this.editors.get(argName).setCurrentValue(value.getArgument(argName));
             }
         }
 
@@ -356,8 +351,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         @Override
         public X parse(Grammar rules, Serialized source) throws FormatException {
             if (!source.getKeyword().equals(getKeyword())) {
-                throw new FormatException("Type mismatch between '"
-                    + source.getKeyword() + "' and '" + getKeyword() + "'.");
+                throw new FormatException("Type mismatch between '" + source.getKeyword()
+                    + "' and '" + getKeyword() + "'.");
             }
             return create();
         }
@@ -391,8 +386,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         /**
          * Localized creation of the Template class (with 1 argument).
          */
-        public Template1(ParsableValue value,
-                SerializedParser commandlineParser, String arg1Name,
+        public Template1(ParsableValue value, SerializedParser commandlineParser, String arg1Name,
                 EncodedType<P1,String> arg1Type) {
             super(value, commandlineParser, arg1Name);
             this.type1 = arg1Type;
@@ -405,8 +399,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             P1 v1;
 
             if (!source.getKeyword().equals(getKeyword())) {
-                throw new FormatException("Type mismatch between '"
-                    + source.getKeyword() + "' and '" + getKeyword() + "'.");
+                throw new FormatException("Type mismatch between '" + source.getKeyword()
+                    + "' and '" + getKeyword() + "'.");
             }
 
             try {
@@ -452,10 +446,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         /**
          * Localized creation of the Template class (with 1 argument).
          */
-        public Template2(ParsableValue value,
-                SerializedParser commandlineParser, String arg1Name,
-                EncodedType<P1,String> arg1Type, String arg2Name,
-                EncodedType<P2,String> arg2Type) {
+        public Template2(ParsableValue value, SerializedParser commandlineParser, String arg1Name,
+                EncodedType<P1,String> arg1Type, String arg2Name, EncodedType<P2,String> arg2Type) {
             super(value, commandlineParser, arg1Name, arg2Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
@@ -471,8 +463,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             P2 v2;
 
             if (!source.getKeyword().equals(getKeyword())) {
-                throw new FormatException("Type mismatch between '"
-                    + source.getKeyword() + "' and '" + getKeyword() + "'.");
+                throw new FormatException("Type mismatch between '" + source.getKeyword()
+                    + "' and '" + getKeyword() + "'.");
             }
 
             try {
