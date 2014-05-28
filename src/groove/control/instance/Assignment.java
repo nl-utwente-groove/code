@@ -252,7 +252,7 @@ public class Assignment {
         List<Assignment> result = new ArrayList<Assignment>();
         SwitchStack sourceSwitches = source.getSwitchStack();
         int targetSwitchCount = target.getSwitchStack().size();
-        for (int i = sourceSwitches.size(); i >= targetSwitchCount; i--) {
+        for (int i = sourceSwitches.size() - 1; i >= targetSwitchCount; i--) {
             result.add(Assignment.exit(sourceSwitches.get(i)));
         }
         return result;

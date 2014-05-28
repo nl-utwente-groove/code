@@ -255,7 +255,7 @@ class ExploreData {
     /** Set of states reachable through a non-empty sequence of partial transitions. */
     private final Set<GraphState> reachables = new HashSet<GraphState>();
 
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 
     /**
      * Helper class to reconstruct the top-level reachable fields
