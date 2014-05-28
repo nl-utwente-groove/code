@@ -20,6 +20,7 @@ import static groove.io.HTMLConverter.HTML_LINEBREAK;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import static groove.io.HTMLConverter.toHtml;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.util.Pair;
@@ -61,8 +62,7 @@ public class Help {
      */
     public void setSyntax(String syntax, boolean parse) {
         if (parse) {
-            Pair<String,List<String>> parsed =
-                processTokensAndArgs(syntax, this.tokenMap);
+            Pair<String,List<String>> parsed = processTokensAndArgs(syntax, this.tokenMap);
             this.syntax = html(parsed.one());
             for (String parName : parsed.two()) {
                 this.parNames.add(it(parName));
@@ -93,8 +93,8 @@ public class Help {
     /** Sets to the tool tip main body. */
     public void setBody(List<String> text) {
         if (this.body.length() > 0) {
-            throw new IllegalStateException(String.format(
-                "Tool tip body already set to %s", this.body));
+            throw new IllegalStateException(String.format("Tool tip body already set to %s",
+                this.body));
         }
         for (String line : text) {
             addBody(line);
@@ -125,8 +125,8 @@ public class Help {
     /** Adds a documentation line for the next parameter. */
     public void addPar(String parDoc) {
         if (!isFormatSyntax()) {
-            throw new IllegalStateException(String.format(
-                "Parameter name for %s must be provided", parDoc));
+            throw new IllegalStateException(String.format("Parameter name for %s must be provided",
+                parDoc));
         }
         this.parDocs.add(parDoc);
     }
@@ -143,7 +143,7 @@ public class Help {
     public String getTip() {
         StringBuilder result = new StringBuilder();
         if (this.header != null) {
-            result.append(bf(this.header));
+            result.append(bf(toHtml(this.header)));
             result.append(HTML_LINEBREAK);
         }
         if (this.body.length() > 0) {
@@ -151,10 +151,9 @@ public class Help {
         }
         if (!this.parDocs.isEmpty()) {
             if (this.parNames.size() != this.parDocs.size()) {
-                throw new IllegalStateException(
-                    String.format(
-                        "Parameter count error: %s documentation lines for %s parameters",
-                        this.parDocs.size(), this.parNames.size()));
+                throw new IllegalStateException(String.format(
+                    "Parameter count error: %s documentation lines for %s parameters",
+                    this.parDocs.size(), this.parNames.size()));
             }
             StringBuilder paramText = new StringBuilder();
             for (int p = 0; p < this.parNames.size(); p++) {
@@ -186,8 +185,8 @@ public class Help {
 
     @Override
     public String toString() {
-        return "Help [syntax=" + this.syntax + ", header=" + this.header
-            + ", body=" + this.body + ", parDocs=" + this.parDocs + "]";
+        return "Help [syntax=" + this.syntax + ", header=" + this.header + ", body=" + this.body
+            + ", parDocs=" + this.parDocs + "]";
     }
 
     /**
@@ -204,8 +203,7 @@ public class Help {
     /**
      * Creates a syntax help object from the annotations of a reflection object.
      */
-    public static Help createHelp(AccessibleObject source,
-            Map<String,String> tokenMap) {
+    public static Help createHelp(AccessibleObject source, Map<String,String> tokenMap) {
         Syntax syntax = source.getAnnotation(Syntax.class);
         ToolTipHeader header = source.getAnnotation(ToolTipHeader.class);
         ToolTipBody body = source.getAnnotation(ToolTipBody.class);
@@ -213,15 +211,13 @@ public class Help {
         return createHelp(source, syntax, header, body, pars, tokenMap);
     }
 
-    private static Help createHelp(Object source, Syntax syntax,
-            ToolTipHeader header, ToolTipBody body, ToolTipPars pars,
-            Map<String,String> tokenMap) {
+    private static Help createHelp(Object source, Syntax syntax, ToolTipHeader header,
+            ToolTipBody body, ToolTipPars pars, Map<String,String> tokenMap) {
         Help result = null;
         if (syntax != null) {
             result = new Help(tokenMap);
             String syntaxText =
-                String.format(syntax.value(), getReflectionName(source),
-                    getContextName(source));
+                String.format(syntax.value(), getReflectionName(source), getContextName(source));
             result.setSyntax(syntaxText);
             if (header != null) {
                 result.setHeader(header.value());
@@ -386,14 +382,13 @@ public class Help {
             } else if (Character.isJavaIdentifierStart(first)) {
                 int start = i;
                 int end = i + 1;
-                while (end < result.length()
-                    && Character.isJavaIdentifierPart(result.charAt(end))) {
+                while (end < result.length() && Character.isJavaIdentifierPart(result.charAt(end))) {
                     end++;
                 }
                 String id = result.substring(start, end);
                 String token = tokenMap.get(id);
                 if (token != null) {
-                    id = source(bf(token));
+                    id = source(bf(toHtml(token)));
                 } else if (getArgs) {
                     id = source(it(id));
                     args.add(id);
@@ -405,10 +400,8 @@ public class Help {
         return Pair.newPair(result.toString(), args);
     }
 
-    private static HTMLTag DIV_TAG =
-        HTMLConverter.createDivTag("width: 250px;");
+    private static HTMLTag DIV_TAG = HTMLConverter.createDivTag("width: 250px;");
     static private final HTMLTag TABLE_TAG = HTMLConverter.createHtmlTag(
         HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
-    static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag(
-        "font", "color", "green");
+    static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag("font", "color", "green");
 }
