@@ -180,10 +180,10 @@ stat
 	  //@B The body %s is repeated as long as it remains enabled.
 	  //@B Enabledness is determined by the first rule of the statement.
 	  ALAP^ stat
-	// | //@S ATOM stat
-	  //@B The body %s is evaluated atomically, meaning that it is only
-	  //@B added to the transition system if it finishes successfully
-	  // ATOM^ stat
+	// | //@ S ATOM stat
+	//  //@ B The body %s is evaluated atomically, meaning that it is only
+	//  //@ B added to the transition system if it finishes successfully
+	// ATOM^ stat
 	| //@S LANGLE stat* RANGLE
 	  //@B Atomically evaluated sequence of statements, surrounded by angle brackets.
 	  //@B The transitions in the body are only added to the transition system if
