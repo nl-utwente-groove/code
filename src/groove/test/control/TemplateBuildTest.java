@@ -124,7 +124,7 @@ public class TemplateBuildTest extends CtrlTester {
         assertTrue(locs.contains(pos));
         assertTrue(locs.contains(getNext(pos, this.cCall)));
         //
-        build("atomic { a;b; } c;");
+        build("< a;b; > c;");
         loc = getInit(this.aCall);
         assertEquals(1, loc.getDepth());
         loc = getNext(loc, this.bCall);
@@ -132,7 +132,7 @@ public class TemplateBuildTest extends CtrlTester {
         assertFalse(loc.isFinal());
         assertTrue(getNext(loc, this.cCall).isFinal());
         //
-        build("atomic { atomic { a;b; } c; }");
+        build("< < a;b; > c; >");
         loc = getInit(this.aCall);
         assertEquals(2, loc.getDepth());
         loc = getNext(loc, this.bCall);
