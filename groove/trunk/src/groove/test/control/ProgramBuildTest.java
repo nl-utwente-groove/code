@@ -74,9 +74,9 @@ public class ProgramBuildTest {
         buildWrong("empty", "function f() { }");
         build("empty", "function f() { choice a; or {} }");
         build("empty", "function f() { try a; }");
-        build("empty", "atomic { }");
-        build("empty", "atomic { choice a; or {} }");
-        build("empty", "atomic { try a; }");
+        build("empty", "< >");
+        build("empty", "< choice a; or {} >");
+        build("empty", "< try a; >");
         buildWrong("empty", "recipe f() { }");
         buildWrong("empty", "recipe f() { choice a; or {} }");
         buildWrong("empty", "recipe f() { try a; }");
