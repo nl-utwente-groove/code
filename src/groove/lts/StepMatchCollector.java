@@ -195,11 +195,8 @@ public class StepMatchCollector extends MatchCollector {
     private RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
         Object[] sourceValues = this.state.getFrameValues();
-        for (Assignment action : step.getSource().getVerdictPops()) {
-            sourceValues = action.apply(sourceValues);
-        }
-        for (Assignment action : step.getFramePushes()) {
-            sourceValues = action.apply(sourceValues);
+        for (Assignment assign : step.getPrepareAssignments()) {
+            sourceValues = assign.apply(sourceValues);
         }
         loop: for (Pair<Var,Binding> entry : step.getRuleSwitch().getCallBinding()) {
             Binding bind = entry.two();

@@ -46,9 +46,13 @@ public interface CtrlStep extends Comparable<CtrlStep>, CalledAction {
     public CtrlFrame target();
 
     /**
-     * Returns the list of frame value changes caused by this step.
+     * Returns the list of frame value assignments involved in applying this step.
+     * These consist of outstanding stack pops due to verdict transitions of the source frame,
+     * insofar they have caused procedures to be exited, followed by pushes due to fresh
+     * procedure calls, followed by the action of this step, followed by pops due to
+     * procedures explicitly exited by this step.
      */
-    public List<Assignment> getFrameChanges();
+    public List<Assignment> getApplyAssignments();
 
     /** Returns the mapping of output variables to argument positions of the called unit. */
     public Map<CtrlVar,Integer> getOutVars();

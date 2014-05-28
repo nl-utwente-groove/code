@@ -146,7 +146,7 @@ public class AutomatonBuildTest {
         Frame f6 = s5.onFinish();
         //
         assertEquals(0, s0.getCallDepthChange());
-        List<Assignment> change = s0.getFrameChanges();
+        List<Assignment> change = s0.getApplyAssignments();
         assertEquals(1, change.size());
         Assignment a00 = change.get(0);
         assertEquals(Assignment.Kind.MODIFY, a00.getKind());
@@ -156,7 +156,7 @@ public class AutomatonBuildTest {
         assertEquals(0, b00[0].getIndex());
         //
         assertEquals(2, s1.getCallDepthChange());
-        change = s1.getFrameChanges();
+        change = s1.getApplyAssignments();
         assertEquals(3, change.size());
         List<Binding> b = Arrays.asList(Binding.var(0));
         assertEquals(Assignment.push(b), change.get(0));
@@ -166,7 +166,7 @@ public class AutomatonBuildTest {
         assertEquals(Assignment.call(b), change.get(2));
         //
         assertEquals(-1, s2.getCallDepthChange());
-        change = s2.getFrameChanges();
+        change = s2.getApplyAssignments();
         assertEquals(2, change.size());
         b = Arrays.asList(Binding.var(1));
         assertEquals(Assignment.call(b), change.get(0));
@@ -174,13 +174,13 @@ public class AutomatonBuildTest {
         assertEquals(Assignment.pop(b), change.get(1));
         //
         assertEquals(0, s3.getCallDepthChange());
-        change = s3.getFrameChanges();
+        change = s3.getApplyAssignments();
         assertEquals(1, change.size());
         b = Arrays.asList(Binding.var(0), Binding.var(1));
         assertEquals(Assignment.call(b), change.get(0));
         //
         assertEquals(0, s4.getCallDepthChange());
-        change = s4.getFrameChanges();
+        change = s4.getApplyAssignments();
         assertEquals(3, change.size());
         b = Arrays.asList(Binding.var(0));
         assertEquals(Assignment.push(b), change.get(0));
@@ -190,7 +190,7 @@ public class AutomatonBuildTest {
         assertEquals(Assignment.pop(b), change.get(2));
         //
         assertEquals(-1, s5.getCallDepthChange());
-        change = s5.getFrameChanges();
+        change = s5.getApplyAssignments();
         assertEquals(4, change.size());
         b = Arrays.asList(Binding.var(0));
         assertEquals(Assignment.push(b), change.get(0));
