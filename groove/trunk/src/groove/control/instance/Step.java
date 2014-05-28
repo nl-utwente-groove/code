@@ -17,7 +17,6 @@
 package groove.control.instance;
 
 import groove.control.Attempt;
-import groove.control.Binding.Source;
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.CtrlStep;
@@ -139,37 +138,30 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         return getRuleCall().getOutVars();
     }
 
-    /**
-     * Indicates if this step assigns a new value to
-     * a given target variable position.
-     */
-    public boolean mayAssign(int targetVar) {
-        if (getCallDepthChange() != 0) {
-            return true;
-        }
-        // the target frame has the same depth as the source frame
-        Assignment lastAction = getFrameChanges().get(getFrameChanges().size() - 1);
-        return lastAction.getBinding(targetVar).getSource() != Source.VAR;
-    }
-
     @Override
     public boolean isModifying() {
         return getSource().getPrime() != onFinish() || getRuleCall().hasOutVars();
     }
 
-    /** Returns the push actions associated with this step. */
-    public List<Assignment> getFramePushes() {
-        if (this.pushes == null) {
-            this.pushes = computeFramePushes();
+    /**
+     * Returns the assignments necessary to prepare for the actual action
+     * of this step. These consist of stack pops for the outstanding verdict
+     * transitions of the source frame, insofar they have caused a procedure to
+     * exit, followed by stack pushes for the procedures that are entered.
+     */
+    public List<Assignment> getPrepareAssignments() {
+        if (this.prepares == null) {
+            this.prepares = computePrepareAssignments();
         }
-        return this.pushes;
+        return this.prepares;
     }
 
-    private List<Assignment> pushes;
+    private List<Assignment> prepares;
 
-    private List<Assignment> computeFramePushes() {
+    private List<Assignment> computePrepareAssignments() {
         List<Assignment> result = new ArrayList<Assignment>();
-        // add pop actions for every successive call on the
+        result.addAll(getSource().getVerdictPops());
+        // add push actions for every successive call on the
         // stack of entered calls
         for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {
             result.add(Assignment.enter(getSwitchStack().get(i)));
@@ -178,17 +170,17 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     }
 
     @Override
-    public List<Assignment> getFrameChanges() {
-        if (this.changes == null) {
-            this.changes = computeFrameChanges();
+    public List<Assignment> getApplyAssignments() {
+        if (this.applyAssignments == null) {
+            this.applyAssignments = computeApplyAssignments();
         }
-        return this.changes;
+        return this.applyAssignments;
     }
 
-    private List<Assignment> changes;
+    private List<Assignment> applyAssignments;
 
-    private List<Assignment> computeFrameChanges() {
-        List<Assignment> result = computeFramePushes();
+    private List<Assignment> computeApplyAssignments() {
+        List<Assignment> result = computePrepareAssignments();
         result.add(Assignment.modify(getSwitchStack().peek()));
         // add pop actions for the calls that are finished
         for (int i = getSwitchStack().size() - 2; i >= onFinish().getSwitchStack().size(); i--) {
