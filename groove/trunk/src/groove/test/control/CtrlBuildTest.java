@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -61,9 +61,9 @@ public class CtrlBuildTest extends CtrlTester {
     public void testRegression() {
         buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 3, 7);
         CtrlAut aut =
-            buildCorrect(
-                "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);",
-                6, 6);
+                buildCorrect(
+                    "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);",
+                    6, 6);
         CtrlTransition t1 = aut.getStart().getTransitions().iterator().next();
         CtrlTransition t2 = t1.target().getTransitions().iterator().next();
         CtrlTransition t3 = t2.target().getTransitions().iterator().next();
@@ -76,8 +76,8 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlAut aut = null;
         try {
             aut =
-                CtrlFactory.instance().buildDefault(this.prioGrammar.getActions(),
-                    AlgebraFamily.DEFAULT);
+                    CtrlFactory.instance().buildDefault(this.prioGrammar.getActions(),
+                        AlgebraFamily.DEFAULT);
         } catch (FormatException e) {
             fail();
         }
@@ -98,8 +98,8 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlCall callC1 = new CtrlCall(c1, null);
         CtrlState first = expected.getStart();
         CtrlGuard emptyGuard = new CtrlGuard();
-        CtrlTransition transM3 = first.addTransition(createLabel(callM3, emptyGuard), first);
         CtrlTransition transC3 = first.addTransition(createLabel(callC3, emptyGuard), first);
+        CtrlTransition transM3 = first.addTransition(createLabel(callM3, emptyGuard), first);
         CtrlGuard level2AllGuard = new CtrlGuard();
         level2AllGuard.add(transM3);
         level2AllGuard.add(transC3);
@@ -114,10 +114,10 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlGuard omegaGuard = new CtrlGuard();
         omegaGuard.addAll(Arrays.asList(transM1, transM2, transM3, transC1, transC2, transC3));
         Set<CtrlLabel> expectedSelfLabels =
-            new HashSet<CtrlLabel>(Arrays.asList(transM1.label(), transM2.label(), transM3.label(),
-                transC1.label(), transC2.label(), transC3.label()));
+                new HashSet<CtrlLabel>(Arrays.asList(transM1.label(), transM2.label(), transM3.label(),
+                    transC1.label(), transC2.label(), transC3.label()));
         CtrlTransition omega =
-            first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard), expected.getFinal());
+                first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard), expected.getFinal());
         Set<CtrlLabel> expectedOmegaLabels = new HashSet<CtrlLabel>(Arrays.asList(omega.label()));
         Set<CtrlLabel> actualSelfLabels = new HashSet<CtrlLabel>();
         Set<CtrlLabel> actualOmegaLabels = new HashSet<CtrlLabel>();
@@ -216,8 +216,8 @@ public class CtrlBuildTest extends CtrlTester {
     @Test
     public void testVarBinding() {
         CtrlAut aut =
-            buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
-                5, 4);
+                buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
+                    5, 4);
         CtrlTransition first = aut.getStart().getTransitions().iterator().next();
         CtrlTransition second = first.target().getTransitions().iterator().next();
         CtrlTransition third = second.target().getTransitions().iterator().next();

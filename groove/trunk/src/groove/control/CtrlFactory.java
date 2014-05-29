@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class for constructing control automata.
@@ -48,7 +49,7 @@ public class CtrlFactory {
         // empty
     }
 
-    /** 
+    /**
      * Closes a given control automaton under the <i>as long as possible</i>
      * operator.
      */
@@ -56,7 +57,7 @@ public class CtrlFactory {
         return buildLoop(aut, aut.getInitGuard());
     }
 
-    /** 
+    /**
      * Closes a given control automaton under arbitrary repetition
      */
     public CtrlAut buildStar(CtrlAut aut) {
@@ -97,7 +98,7 @@ public class CtrlFactory {
      * The result is constructed by modifying the first parameter.
      * The second parameter is also modified.
      * @param first the body of the loop; contains the result upon return
-     * @param second the condition of the loop; modified in the course 
+     * @param second the condition of the loop; modified in the course
      * of the construction
      */
     public CtrlAut buildDoUntil(CtrlAut first, CtrlAut second) {
@@ -110,7 +111,7 @@ public class CtrlFactory {
      * The result is constructed by modifying the first parameter.
      * The second parameter is also modified.
      * @param first the body of the loop; contains the result upon return
-     * @param second the condition of the loop; modified in the course 
+     * @param second the condition of the loop; modified in the course
      * of the construction
      */
     public CtrlAut buildDoWhile(CtrlAut first, CtrlAut second) {
@@ -118,7 +119,7 @@ public class CtrlFactory {
         return buildSeq(first, second);
     }
 
-    /** 
+    /**
      * Builds an <i>if-then-else</i> construct out of three automata,
      * by modifying the first of the three.
      */
@@ -161,7 +162,7 @@ public class CtrlFactory {
         return result;
     }
 
-    /** Adds a second control automaton sequentially after a given automaton. 
+    /** Adds a second control automaton sequentially after a given automaton.
      * The result is constructed by modifying the first parameter.
      * @param first the automaton to be executed first; contains the result upon return
      * @param second the automaton to be executed second
@@ -206,7 +207,7 @@ public class CtrlFactory {
         return result;
     }
 
-    /** 
+    /**
      * Adds a second control automaton as <i>else</i> parameter in
      * a <i>try</i> construct with the first automaton as try block.
      */
@@ -218,7 +219,7 @@ public class CtrlFactory {
     }
 
     /**
-     * Constructs an until automaton using a given automaton as condition 
+     * Constructs an until automaton using a given automaton as condition
      * and adding a second automaton as until body.
      * @param first the condition automaton; contains the result upon return
      * @param second the until body automaton
@@ -241,7 +242,7 @@ public class CtrlFactory {
     }
 
     /**
-     * Constructs a while automaton using a given automaton as condition 
+     * Constructs a while automaton using a given automaton as condition
      * and adding a second automaton as while body.
      * The result is constructed by modifying the first parameter.
      * @param first the condition automaton; contains the result upon return
@@ -255,8 +256,8 @@ public class CtrlFactory {
         return buildLoop(first, firstGuard);
     }
 
-    /** 
-     * Loops a given control automaton, while terminating under a 
+    /**
+     * Loops a given control automaton, while terminating under a
      * predefined guard.
      * The result is constructed by modifying the parameter.
      */
@@ -281,8 +282,8 @@ public class CtrlFactory {
         return aut;
     }
 
-    /** 
-     * Adds a second control automaton as alternative, reachable 
+    /**
+     * Adds a second control automaton as alternative, reachable
      * under a given guard. The guard may be {@code null}, meaning that
      * the second automaton is unreachable.
      */
@@ -304,7 +305,7 @@ public class CtrlFactory {
         return first;
     }
 
-    /** 
+    /**
      * Copies all non-start and non-final states of a given automaton to
      * another, and returns the mapping from original to new states.
      * @param fromAut the automaton from which states are copied
@@ -314,8 +315,7 @@ public class CtrlFactory {
      * states of the target automaton
      * @return a map from states in {@code fromAut} to new states in {@code toAut}
      */
-    private CtrlMorphism copyStates(CtrlAut fromAut, CtrlAut toAut,
-            boolean shareOmegaOnlyState) {
+    private CtrlMorphism copyStates(CtrlAut fromAut, CtrlAut toAut, boolean shareOmegaOnlyState) {
         CtrlMorphism secondToFirstMap = new CtrlMorphism();
         CtrlState toAutOmegaOnlyState = toAut.getOmegaOnlyState();
         for (CtrlState state : fromAut.nodeSet()) {
@@ -324,8 +324,7 @@ public class CtrlFactory {
                 image = toAut.getStart();
             } else if (state.equals(fromAut.getFinal())) {
                 image = toAut.getFinal();
-            } else if (shareOmegaOnlyState && state.isOmegaOnly()
-                && toAutOmegaOnlyState != null) {
+            } else if (shareOmegaOnlyState && state.isOmegaOnly() && toAutOmegaOnlyState != null) {
                 image = toAutOmegaOnlyState;
             } else {
                 image = toAut.addState(state, null);
@@ -337,8 +336,7 @@ public class CtrlFactory {
 
     /** Removes and returns the set of omega transitions from a given automaton. */
     private Set<CtrlTransition> removeOmegas(CtrlAut aut) {
-        Set<CtrlTransition> omegas =
-            new HashSet<CtrlTransition>(aut.getOmegas());
+        Set<CtrlTransition> omegas = new HashSet<CtrlTransition>(aut.getOmegas());
         for (CtrlTransition o : omegas) {
             o.source().removeOmega(o);
         }
@@ -360,16 +358,15 @@ public class CtrlFactory {
         return createLabel(CtrlCall.OMEGA_CALL);
     }
 
-    /** 
-     * Builds the default control automaton for a set of actions. 
+    /**
+     * Builds the default control automaton for a set of actions.
      * @param family the algebra family to be used
      */
-    public CtrlAut buildDefault(Collection<? extends Action> actions,
-            AlgebraFamily family) throws FormatException {
+    public CtrlAut buildDefault(Collection<? extends Action> actions, AlgebraFamily family)
+            throws FormatException {
         CtrlAut result = new CtrlAut("none (arbitrary rule application)");
         FormatErrorSet errors = new FormatErrorSet();
-        SortedMap<Integer,Set<Action>> priorityMap =
-            new TreeMap<Integer,Set<Action>>();
+        SortedMap<Integer,Set<Action>> priorityMap = new TreeMap<Integer,Set<Action>>();
         Namespace namespace = new Namespace(family, true);
         // first add the names and signatures to the namespace
         for (Action action : actions) {
@@ -384,8 +381,7 @@ public class CtrlFactory {
             if (needsInput) {
                 errors.add(
                     "Error in %s %s: input parameters require explicit control (use %s algebra for symbolic exploration)",
-                    action.getKind(), action.getFullName(),
-                    AlgebraFamily.POINT.getName(), action);
+                    action.getKind(), action.getFullName(), AlgebraFamily.POINT.getName(), action);
                 continue;
             }
             switch (action.getKind()) {
@@ -395,15 +391,13 @@ public class CtrlFactory {
             case RECIPE:
                 Recipe recipe = (Recipe) action;
                 namespace.addRecipe(action.getFullName(), action.getPriority(),
-                    action.getSignature(), recipe.getControlName(),
-                    recipe.getStartLine());
+                    action.getSignature(), recipe.getControlName(), recipe.getStartLine());
                 namespace.addBody(action.getFullName(), recipe.getBody());
             }
             int priority = action.getPriority();
             Set<Action> priorityActions = priorityMap.get(priority);
             if (priorityActions == null) {
-                priorityMap.put(priority, priorityActions =
-                    new HashSet<Action>());
+                priorityMap.put(priority, priorityActions = new TreeSet<Action>());
             }
             priorityActions.add(action);
         }
@@ -414,7 +408,7 @@ public class CtrlFactory {
         List<CtrlAut> prioAutList = new ArrayList<CtrlAut>();
         for (Set<Action> priorityActions : priorityMap.values()) {
             // collect the names
-            Set<String> actionNames = new HashSet<String>();
+            Set<String> actionNames = new TreeSet<String>();
             for (Action action : priorityActions) {
                 actionNames.add(action.getFullName());
             }
@@ -423,8 +417,7 @@ public class CtrlFactory {
         if (prioAutList.isEmpty()) {
             addOmega(result);
         } else {
-            ListIterator<CtrlAut> levelIter =
-                prioAutList.listIterator(prioAutList.size());
+            ListIterator<CtrlAut> levelIter = prioAutList.listIterator(prioAutList.size());
             while (levelIter.hasPrevious()) {
                 result = buildTryElse(result, levelIter.previous());
             }
@@ -436,7 +429,7 @@ public class CtrlFactory {
         return result;
     }
 
-    /** Constructs an empty control automaton. 
+    /** Constructs an empty control automaton.
      * @param name name of the new automaton
      */
     private CtrlAut createCtrlAut(String name) {
