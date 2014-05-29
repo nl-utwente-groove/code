@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -49,7 +49,7 @@ import java.util.Set;
  */
 public abstract class SearchItem implements Comparable<SearchItem> {
 
-    /** 
+    /**
      * Flag indicating the relevance of this search item.
      * Default value is <code>true</code>
      * @see #isRelevant()
@@ -107,7 +107,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
         return this.relevant;
     }
 
-    /** 
+    /**
      * Changes the relevance status of this search item.
      * @see #isRelevant()
      */
@@ -349,6 +349,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
             default:
                 assert false;
             }
+            assert nextState != null; // all cases covered
             assert this.state.getNext().contains(nextState) : String.format(
                 "Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
@@ -445,7 +446,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
          */
         @Override
         public final boolean next() {
-            State nextState;
+            State nextState = null;
             switch (this.state) {
             case EMPTY:
                 nextState = State.EMPTY;
@@ -507,8 +508,8 @@ public abstract class SearchItem implements Comparable<SearchItem> {
                 break;
             default:
                 assert false;
-                nextState = null;
             }
+            assert nextState != null; // all cases covered
             assert this.state.getNext().contains(nextState) : String.format(
                 "Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
@@ -533,7 +534,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
         }
 
         /**
-         * Callback method from {@link #next()} to find and install an image. 
+         * Callback method from {@link #next()} to find and install an image.
          * The return value is the image found, or {@code null} if the find
          * has not succeeded
          */

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -39,7 +39,7 @@ import java.util.Set;
 
 /**
  * Implementation of a quasi-shape.
- *  
+ *
  * @author Eduardo Zambon
  */
 public final class QuasiShape extends PatternGraph {
@@ -144,10 +144,9 @@ public final class QuasiShape extends PatternGraph {
     }
 
     @Override
-    public Pair<PatternNode,Duo<PatternEdge>> addEdgePattern(TypeEdge m1,
-            TypeEdge m2, PatternNode p1, PatternNode p2) {
-        Pair<PatternNode,Duo<PatternEdge>> pair =
-            super.addEdgePattern(m1, m2, p1, p2);
+    public Pair<PatternNode,Duo<PatternEdge>> addEdgePattern(TypeEdge m1, TypeEdge m2,
+            PatternNode p1, PatternNode p2) {
+        Pair<PatternNode,Duo<PatternEdge>> pair = super.addEdgePattern(m1, m2, p1, p2);
         PatternEdge d1 = pair.two().one();
         PatternEdge d2 = pair.two().two();
         addEdgeConstraint(d1, Multiplicity.ONE_EDGE_MULT);
@@ -169,10 +168,9 @@ public final class QuasiShape extends PatternGraph {
     }
 
     @Override
-    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1,
-            TypeEdge m2, PatternNode p1, PatternNode p2) {
-        Pair<PatternNode,Duo<PatternEdge>> pair =
-            super.closePattern(m1, m2, p1, p2);
+    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1, TypeEdge m2,
+            PatternNode p1, PatternNode p2) {
+        Pair<PatternNode,Duo<PatternEdge>> pair = super.closePattern(m1, m2, p1, p2);
         PatternEdge d1 = pair.two().one();
         PatternEdge d2 = pair.two().two();
         addEdgeConstraint(d1, Multiplicity.ZERO_PLUS_EDGE_MULT);
@@ -203,16 +201,14 @@ public final class QuasiShape extends PatternGraph {
         }
 
         // Create the new nodes.
-        Map<PatternEdge,PatternNode> origEdgeMap =
-            new MyHashMap<PatternEdge,PatternNode>();
+        Map<PatternEdge,PatternNode> origEdgeMap = new MyHashMap<PatternEdge,PatternNode>();
         for (PatternEdge inEdge : getInEdgesWithType(p, m)) {
             PatternNode newNode = createNode(p.getType());
             addNode(newNode);
             origEdgeMap.put(inEdge, newNode);
         }
 
-        Collection<PatternEdge> newEdges =
-            new ArrayList<PatternEdge>(origEdgeMap.values().size());
+        Collection<PatternEdge> newEdges = new ArrayList<PatternEdge>(origEdgeMap.values().size());
 
         // Create the new incoming edges.
         for (PatternEdge d : inEdgeSet(p)) {
@@ -247,8 +243,7 @@ public final class QuasiShape extends PatternGraph {
         if (origOutConstrs == null) {
             origOutConstrs = Collections.emptySet();
         }
-        Map<PatternEdge,PatternEdge> replacingMap =
-            new MyHashMap<PatternEdge,PatternEdge>();
+        Map<PatternEdge,PatternEdge> replacingMap = new MyHashMap<PatternEdge,PatternEdge>();
 
         // Create the new outgoing edges.
         for (PatternNode newSrc : origEdgeMap.values()) {
@@ -267,8 +262,7 @@ public final class QuasiShape extends PatternGraph {
                 Iterator<MultVar> varsIter = origOutConstr.vars.iterator();
                 PatternEdge origEdge = varsIter.next().edge;
                 PatternEdge newEdge = replacingMap.get(origEdge);
-                Constraint newOutConstr =
-                    addEdgeConstraint(newEdge, origOutConstr.mult);
+                Constraint newOutConstr = addEdgeConstraint(newEdge, origOutConstr.mult);
                 while (varsIter.hasNext()) {
                     origEdge = varsIter.next().edge;
                     newEdge = replacingMap.get(origEdge);
@@ -285,8 +279,7 @@ public final class QuasiShape extends PatternGraph {
     }
 
     private Iterable<Constraint> getConstraints() {
-        Collection<Iterator<Constraint>> iters =
-            new ArrayList<Iterator<Constraint>>();
+        Collection<Iterator<Constraint>> iters = new ArrayList<Iterator<Constraint>>();
         for (Set<Constraint> set : this.nodeConstrMap.values()) {
             iters.add(set.iterator());
         }
@@ -297,8 +290,7 @@ public final class QuasiShape extends PatternGraph {
     }
 
     private Iterable<Constraint> getNodeConstraints() {
-        Collection<Iterator<Constraint>> iters =
-            new ArrayList<Iterator<Constraint>>();
+        Collection<Iterator<Constraint>> iters = new ArrayList<Iterator<Constraint>>();
         for (Set<Constraint> set : this.nodeConstrMap.values()) {
             iters.add(set.iterator());
         }
@@ -306,8 +298,7 @@ public final class QuasiShape extends PatternGraph {
     }
 
     private Iterable<Constraint> getEdgeConstraints() {
-        Collection<Iterator<Constraint>> iters =
-            new ArrayList<Iterator<Constraint>>();
+        Collection<Iterator<Constraint>> iters = new ArrayList<Iterator<Constraint>>();
         for (Set<Constraint> set : this.edgeConstrMap.values()) {
             iters.add(set.iterator());
         }
@@ -376,8 +367,7 @@ public final class QuasiShape extends PatternGraph {
     // Iterables
     // ---------
 
-    private static final class ConstraintIterable implements
-            Iterable<Constraint> {
+    private static final class ConstraintIterable implements Iterable<Constraint> {
 
         Collection<Iterator<Constraint>> iters;
 
@@ -439,8 +429,7 @@ public final class QuasiShape extends PatternGraph {
         final Multiplicity mult;
 
         Constraint(Multiplicity mult, PatternNode srcNode) {
-            assert (srcNode == null && mult.isNodeKind())
-                || (srcNode != null && mult.isEdgeKind());
+            assert (srcNode == null && mult.isNodeKind()) || (srcNode != null && mult.isEdgeKind());
             this.srcNode = srcNode;
             this.vars = new MyHashSet<MultVar>();
             this.mult = mult;
@@ -531,6 +520,7 @@ public final class QuasiShape extends PatternGraph {
             } else {
                 assert false : "Implement proper solving!";
             }
+            assert currSol != null; // partialSols does not contain null
 
             if (isTrivial()) {
                 MultVar singleVar = this.vars.iterator().next();
@@ -592,15 +582,13 @@ public final class QuasiShape extends PatternGraph {
             for (PatternNode pNode : qShape.getLayerNodes(0)) {
                 MultVar nodeVar = getVar(pNode);
                 Multiplicity nodeMult = this.varToValues.get(nodeVar);
-                assert nodeMult != null : String.format(
-                    "Node %s has no image.", pNode);
+                assert nodeMult != null : String.format("Node %s has no image.", pNode);
                 result.setMult(pNode, nodeMult);
             }
             for (PatternEdge pEdge : qShape.edgeSet()) {
                 MultVar edgeVar = getVar(pEdge);
                 Multiplicity edgeMult = this.varToValues.get(edgeVar);
-                assert edgeMult != null : String.format(
-                    "Edge %s has no image.", pEdge);
+                assert edgeMult != null : String.format("Edge %s has no image.", pEdge);
                 result.setMult(pEdge, edgeMult);
             }
             result.propagateMults();

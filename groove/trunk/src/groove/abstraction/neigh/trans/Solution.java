@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 /**
  * Class representing a possible solution for the equation system.
  * This is the only dynamic part of the system, the remaining structures
  * are all fixed when trying to solve the system. Objects of this class
  * are cloned during the solution search, so we try to keep the objects
- * as small as possible. 
+ * as small as possible.
  */
 final class Solution {
     private final List<Duo<Var>> vars;
@@ -30,8 +32,7 @@ final class Solution {
     boolean invalid;
 
     /** Basic constructor. */
-    Solution(List<Duo<Var>> vars, int bound, MyHashSet<Equation> lbEqs,
-            MyHashSet<Equation> ubEqs) {
+    Solution(List<Duo<Var>> vars, int bound, MyHashSet<Equation> lbEqs, MyHashSet<Equation> ubEqs) {
         this.vars = vars;
         int varsCount = vars.size();
         this.values = new Value[varsCount];
@@ -188,11 +189,10 @@ final class Solution {
      * Returns true if this solution is finished. This is the case if
      * both equation sets are empty or this solution is marked as invalid.
      * Special case for first stage: if the solution only has equations
-     * with nodes then it is also considered finished. 
+     * with nodes then it is also considered finished.
      */
     boolean isFinished() {
-        boolean result =
-            this.lbEqs.isEmpty() && this.ubEqs.isEmpty() || this.invalid;
+        boolean result = this.lbEqs.isEmpty() && this.ubEqs.isEmpty() || this.invalid;
         if (!result) {
             result = allEqsHaveNodes(this.ubEqs) && allEqsHaveNodes(this.lbEqs);
         }
@@ -216,6 +216,7 @@ final class Solution {
      * the least amount of branching in the search. Upper bound equations
      * always have preference.
      */
+    @NonNull
     Equation getBestBranchingEquation() {
         Equation result = null;
         for (Equation eq : this.ubEqs) {
@@ -230,7 +231,7 @@ final class Solution {
                 }
             }
         }
-        assert !result.hasNode();
+        assert result != null && !result.hasNode();
         return result;
     }
 
@@ -277,7 +278,7 @@ final class Solution {
         boolean result = true;
         for (int varNum = 0; varNum < this.size(); varNum++) {
             if (this.values[varNum].i > other.values[varNum].i
-                || this.values[varNum].j < other.values[varNum].j) {
+                    || this.values[varNum].j < other.values[varNum].j) {
                 result = false;
                 break;
             }
