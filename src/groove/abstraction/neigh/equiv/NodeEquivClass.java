@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -20,9 +20,8 @@ import groove.grammar.host.HostElement;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 
-import java.lang.reflect.Array;
+import java.util.AbstractSet;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -31,25 +30,11 @@ import java.util.Iterator;
  * efficiency. Node numbers are used as indices in the bit set, so in order to
  * keep the objects of this class small, it is necessary that the number of
  * nodes in the store also be small.
- * 
+ *
  * @author Eduardo Zambon
  */
-public final class NodeEquivClass<T extends HostNode> extends BitSet implements
+public final class NodeEquivClass<T extends HostNode> extends AbstractSet<T> implements
         EquivClass<T> {
-
-    // ------------------------------------------------------------------------
-    // Object Fields
-    // ------------------------------------------------------------------------
-
-    /** Flag for indicating if the equivalence class is fixed. */
-    private boolean fixed;
-    /**
-     * Simple counter to avoid the need to go over the whole set to discover
-     * its size.
-     */
-    private int elemCount;
-    /** Factory reference used to retrieve node objects. */
-    private final HostFactory factory;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -57,9 +42,8 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
 
     /** Basic constructor. */
     public NodeEquivClass(HostFactory factory) {
-        super();
+        this.bitset = new BitSet();
         this.factory = factory;
-        this.elemCount = 0;
     }
 
     // ------------------------------------------------------------------------
@@ -80,22 +64,15 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return this.fixed;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (this.isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
-    }
-
     /**
      * Specialises the return type of the super method.
-     * Shallow clone. Clones the equivalence class but not the elements. 
+     * Shallow clone. Clones the equivalence class but not the elements.
      * The clone is not fixed, even if the original is.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public NodeEquivClass<T> clone() {
-        NodeEquivClass<T> clone = (NodeEquivClass<T>) super.clone();
+        NodeEquivClass<T> clone = new NodeEquivClass<>(this.factory);
+        clone.bitset.or(this.bitset);
         clone.fixed = false;
         return clone;
     }
@@ -112,88 +89,19 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         boolean result = false;
         if (o instanceof HostElement) {
             int idx = ((HostElement) o).getNumber();
-            result = this.get(idx);
+            result = this.bitset.get(idx);
         }
         return result;
     }
 
-    /** Creates and returns a new array with all elements of this class. */
     @Override
-    public Object[] toArray() {
-        Object result[] = new Object[this.elemCount];
-        int i = 0;
-        for (Object obj : this) {
-            result[i] = obj;
-            i++;
-        }
-        return result;
+    public boolean isEmpty() {
+        return this.bitset.isEmpty();
     }
 
-    /**
-     * Stores the elements of this class in the given array, if possible.
-     * Otherwise creates and returns a new array.
-     */
     @Override
-    @SuppressWarnings({"hiding", "unchecked"})
-    public <T> T[] toArray(T[] a) {
-        if (a.length < this.elemCount) {
-            a =
-                (T[]) Array.newInstance(a.getClass().getComponentType(),
-                    this.elemCount);
-        }
-        int i = 0;
-        for (Object obj : this) {
-            a[i] = (T) obj;
-            i++;
-        }
-        return a;
-    }
-
-    /** Checks the containment for all elements of the given collection. */
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        boolean result = true;
-        for (Object obj : c) {
-            result &= this.contains(obj);
-            if (!result) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Adds all elements of the given collection to the equivalence class.
-     * Fails in an assertion if the class is fixed.
-     */
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        assert !this.isFixed();
-        boolean changed = false;
-        for (T obj : c) {
-            changed |= this.add(obj);
-        }
-        return changed;
-    }
-
-    /** Throws an UnsupportedOperationException. */
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Removes all elements of the given collection from the equivalence class.
-     * Fails in an assertion if the class is fixed.
-     */
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        assert !this.isFixed();
-        boolean changed = false;
-        for (Object obj : c) {
-            changed |= this.remove(obj);
-        }
-        return changed;
+    public void clear() {
+        this.bitset.clear();
     }
 
     /**
@@ -204,9 +112,8 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     public boolean add(T obj) {
         assert !this.isFixed();
         int idx = obj.getNumber();
-        if (!this.get(idx)) {
-            this.set(idx);
-            this.elemCount++;
+        if (!this.bitset.get(idx)) {
+            this.bitset.set(idx);
             return true;
         }
         return false;
@@ -221,9 +128,8 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         assert !this.isFixed();
         assert obj instanceof HostElement;
         int idx = ((HostElement) obj).getNumber();
-        if (this.get(idx)) {
-            this.clear(idx);
-            this.elemCount--;
+        if (this.bitset.get(idx)) {
+            this.bitset.clear(idx);
             return true;
         }
         return false;
@@ -231,27 +137,38 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
 
     @Override
     public int size() {
-        return this.elemCount;
+        return this.bitset.cardinality();
     }
 
     @Override
     public boolean isSingleton() {
-        return this.elemCount == 1;
+        return size() == 1;
     }
+
+    // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
+    /** Flag for indicating if the equivalence class is fixed. */
+    private boolean fixed;
+    /** Factory reference used to retrieve node objects. */
+    private final HostFactory factory;
+    /** The actual underlying set. */
+    private final BitSet bitset;
 
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
 
     /**
-     * Dedicated iterator for node equivalence classes. 
-     * 
+     * Dedicated iterator for node equivalence classes.
+     *
      * @author Eduardo Zambon
      */
     private class MyIterator implements Iterator<T> {
 
         /** The number of the node that should be returned by next(). */
-        private int curr = NodeEquivClass.this.nextSetBit(0);
+        private int curr = NodeEquivClass.this.bitset.nextSetBit(0);
 
         @Override
         public boolean hasNext() {
@@ -263,7 +180,7 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         @SuppressWarnings("unchecked")
         public T next() {
             T elem = (T) NodeEquivClass.this.factory.getNode(this.curr);
-            this.curr = NodeEquivClass.this.nextSetBit(this.curr + 1);
+            this.curr = NodeEquivClass.this.bitset.nextSetBit(this.curr + 1);
             return elem;
         }
 
