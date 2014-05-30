@@ -34,7 +34,7 @@ import java.util.Iterator;
  * @author Eduardo Zambon
  */
 public final class NodeEquivClass<T extends HostNode> extends AbstractSet<T> implements
-        EquivClass<T> {
+EquivClass<T> {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -64,6 +64,13 @@ public final class NodeEquivClass<T extends HostNode> extends AbstractSet<T> imp
         return this.fixed;
     }
 
+    @Override
+    public void testFixed(boolean fixed) {
+        if (this.isFixed() != fixed) {
+            throw new IllegalStateException();
+        }
+    }
+
     /**
      * Specialises the return type of the super method.
      * Shallow clone. Clones the equivalence class but not the elements.
@@ -71,7 +78,7 @@ public final class NodeEquivClass<T extends HostNode> extends AbstractSet<T> imp
      */
     @Override
     public NodeEquivClass<T> clone() {
-        NodeEquivClass<T> clone = new NodeEquivClass<>(this.factory);
+        NodeEquivClass<T> clone = new NodeEquivClass<T>(this.factory);
         clone.bitset.or(this.bitset);
         clone.fixed = false;
         return clone;
