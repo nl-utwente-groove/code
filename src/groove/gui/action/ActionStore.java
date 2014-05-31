@@ -1,21 +1,22 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: Simulator.java,v 1.92 2008/03/18 15:34:40 iovka Exp $
  */
 package groove.gui.action;
 
+import groove.explore.StrategyValue;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
@@ -54,8 +55,7 @@ public class ActionStore implements SimulatorListener {
     private final Simulator simulator;
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         refreshActions();
     }
 
@@ -125,8 +125,7 @@ public class ActionStore implements SimulatorListener {
      */
     public Action getBackAction() {
         if (this.backAction == null) {
-            this.backAction =
-                this.simulator.getSimulationHistory().getBackAction();
+            this.backAction = this.simulator.getSimulationHistory().getBackAction();
         }
         return this.backAction;
     }
@@ -158,8 +157,7 @@ public class ActionStore implements SimulatorListener {
      * space.
      */
     public Action getCheckCTLAction(boolean full) {
-        CheckCTLAction result =
-            full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
+        CheckCTLAction result = full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
         if (result == null) {
             result = new CheckCTLAction(this.simulator, full);
             if (full) {
@@ -185,8 +183,7 @@ public class ActionStore implements SimulatorListener {
     public CopyAction getCopyAction(ResourceKind resource) {
         CopyAction result = this.copyActionMap.get(resource);
         if (result == null) {
-            this.copyActionMap.put(resource, result =
-                new CopyAction(this.simulator, resource));
+            this.copyActionMap.put(resource, result = new CopyAction(this.simulator, resource));
         }
         return result;
     }
@@ -237,8 +234,7 @@ public class ActionStore implements SimulatorListener {
     public EditRulePropertiesAction getEditRulePropertiesAction() {
         // lazily create the action
         if (this.editRulePropertiesAction == null) {
-            this.editRulePropertiesAction =
-                new EditRulePropertiesAction(this.simulator);
+            this.editRulePropertiesAction = new EditRulePropertiesAction(this.simulator);
         }
         return this.editRulePropertiesAction;
     }
@@ -253,8 +249,7 @@ public class ActionStore implements SimulatorListener {
     public SimulatorAction getEditSystemPropertiesAction() {
         // lazily create the action
         if (this.editSystemPropertiesAction == null) {
-            this.editSystemPropertiesAction =
-                new EditSystemPropertiesAction(this.simulator);
+            this.editSystemPropertiesAction = new EditSystemPropertiesAction(this.simulator);
         }
         return this.editSystemPropertiesAction;
     }
@@ -296,6 +291,27 @@ public class ActionStore implements SimulatorListener {
      */
     private ExploreAction exploreAction;
 
+    /**
+     * Returns the 'default exploration' action that is associated with the
+     * simulator.
+     */
+    public CheckLTLAction getCheckLTLAction(StrategyValue strategy, String name) {
+        // lazily create the action
+        CheckLTLAction result = this.checkLTLMap.get(strategy);
+        if (result == null) {
+            this.checkLTLMap.put(strategy, result =
+                new CheckLTLAction(this.simulator, strategy, name));
+        }
+
+        return result;
+    }
+
+    /**
+     * The 'default exploration' action (variable).
+     */
+    private Map<StrategyValue,CheckLTLAction> checkLTLMap =
+            new EnumMap<StrategyValue,CheckLTLAction>(StrategyValue.class);
+
     /** Returns the filter LTS action that is associated with the simulator. */
     public FilterLTSAction getFilterLTSAction() {
         if (this.filterLTSAction == null) {
@@ -313,8 +329,7 @@ public class ActionStore implements SimulatorListener {
     public ExplorationDialogAction getExplorationDialogAction() {
         // lazily create the action
         if (this.explorationDialogAction == null) {
-            this.explorationDialogAction =
-                new ExplorationDialogAction(this.simulator);
+            this.explorationDialogAction = new ExplorationDialogAction(this.simulator);
         }
         return this.explorationDialogAction;
     }
@@ -331,8 +346,7 @@ public class ActionStore implements SimulatorListener {
     public ExplorationStatsDialogAction getExplorationStatsDialogAction() {
         // lazily create the action
         if (this.explorationStatsDialogAction == null) {
-            this.explorationStatsDialogAction =
-                new ExplorationStatsDialogAction(this.simulator);
+            this.explorationStatsDialogAction = new ExplorationStatsDialogAction(this.simulator);
         }
         return this.explorationStatsDialogAction;
     }
@@ -361,8 +375,7 @@ public class ActionStore implements SimulatorListener {
     public ExportAction getExportStateAction() {
         if (this.exportStateAction == null) {
             StateDisplay display =
-                (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(
-                    DisplayKind.STATE);
+                (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.STATE);
             this.exportStateAction = display.getJGraph().getExportAction();
         }
         return this.exportStateAction;
@@ -376,8 +389,7 @@ public class ActionStore implements SimulatorListener {
      */
     public Action getForwardAction() {
         if (this.forwardAction == null) {
-            this.forwardAction =
-                this.simulator.getSimulationHistory().getForwardAction();
+            this.forwardAction = this.simulator.getSimulationHistory().getForwardAction();
         }
         return this.forwardAction;
     }
@@ -393,8 +405,7 @@ public class ActionStore implements SimulatorListener {
     public GotoFinalStateAction getGotoFinalStateAction() {
         // lazily create the action
         if (this.gotoFinalStateAction == null) {
-            this.gotoFinalStateAction =
-                new GotoFinalStateAction(this.simulator, false);
+            this.gotoFinalStateAction = new GotoFinalStateAction(this.simulator, false);
         }
 
         return this.gotoFinalStateAction;
@@ -412,8 +423,7 @@ public class ActionStore implements SimulatorListener {
     public GotoStartStateAction getGotoStartStateAction() {
         // lazily create the action
         if (this.gotoStartStateAction == null) {
-            this.gotoStartStateAction =
-                new GotoStartStateAction(this.simulator);
+            this.gotoStartStateAction = new GotoStartStateAction(this.simulator);
         }
         return this.gotoStartStateAction;
     }
@@ -457,8 +467,7 @@ public class ActionStore implements SimulatorListener {
     public Action getLoadGrammarFromURLAction() {
         // lazily create the action
         if (this.loadGrammarFromURLAction == null) {
-            this.loadGrammarFromURLAction =
-                new LoadGrammarFromURLAction(this.simulator);
+            this.loadGrammarFromURLAction = new LoadGrammarFromURLAction(this.simulator);
         }
         return this.loadGrammarFromURLAction;
     }
@@ -503,8 +512,7 @@ public class ActionStore implements SimulatorListener {
      */
     public PreviewControlAction getPreviewControlAction() {
         if (this.previewControlAction == null) {
-            this.previewControlAction =
-                new PreviewControlAction(this.simulator);
+            this.previewControlAction = new PreviewControlAction(this.simulator);
         }
         return this.previewControlAction;
     }
@@ -530,8 +538,7 @@ public class ActionStore implements SimulatorListener {
     public PrologFirstResultAction getPrologFirstResultAction() {
         // lazily create the action
         if (this.prologFirstResultAction == null) {
-            this.prologFirstResultAction =
-                new PrologFirstResultAction(this.simulator);
+            this.prologFirstResultAction = new PrologFirstResultAction(this.simulator);
         }
         return this.prologFirstResultAction;
     }
@@ -545,8 +552,7 @@ public class ActionStore implements SimulatorListener {
     public PrologNextResultAction getPrologNextResultAction() {
         // lazily create the action
         if (this.prologNexttResultAction == null) {
-            this.prologNexttResultAction =
-                new PrologNextResultAction(this.simulator);
+            this.prologNexttResultAction = new PrologNextResultAction(this.simulator);
         }
         return this.prologNexttResultAction;
     }
@@ -593,8 +599,7 @@ public class ActionStore implements SimulatorListener {
     public RefreshGrammarAction getRefreshGrammarAction() {
         // lazily create the action
         if (this.refreshGrammarAction == null) {
-            this.refreshGrammarAction =
-                new RefreshGrammarAction(this.simulator);
+            this.refreshGrammarAction = new RefreshGrammarAction(this.simulator);
         }
         return this.refreshGrammarAction;
     }
@@ -678,8 +683,8 @@ public class ActionStore implements SimulatorListener {
     /**
      * Mapping from graph roles to corresponding save actions.
      */
-    private Map<ResourceKind,SaveAction> saveActionMap =
-        new EnumMap<ResourceKind,SaveAction>(ResourceKind.class);
+    private Map<ResourceKind,SaveAction> saveActionMap = new EnumMap<ResourceKind,SaveAction>(
+            ResourceKind.class);
 
     /** Returns the save action for a given resource kind. */
     public SaveAction getSaveAsAction(ResourceKind resource) {
@@ -695,8 +700,8 @@ public class ActionStore implements SimulatorListener {
     /**
      * Mapping from graph roles to corresponding save actions.
      */
-    private Map<ResourceKind,SaveAction> saveAsActionMap =
-        new EnumMap<ResourceKind,SaveAction>(ResourceKind.class);
+    private Map<ResourceKind,SaveAction> saveAsActionMap = new EnumMap<ResourceKind,SaveAction>(
+            ResourceKind.class);
 
     /** Returns the state save action. */
     public SaveStateAction getSaveStateAction() {
@@ -767,8 +772,7 @@ public class ActionStore implements SimulatorListener {
      * Returns the priority up- or down-shifting action permanently associated with the simulator.
      */
     public ShiftPriorityAction getShiftPriorityAction(boolean up) {
-        ShiftPriorityAction result =
-            up ? this.raisePriorityAction : this.lowerPriorityAction;
+        ShiftPriorityAction result = up ? this.raisePriorityAction : this.lowerPriorityAction;
         if (result == null) {
             result = new ShiftPriorityAction(this.simulator, up);
             if (up) {
@@ -827,8 +831,7 @@ public class ActionStore implements SimulatorListener {
     public StartSimulationAction getStartSimulationAction() {
         // lazily create the action
         if (this.startSimulationAction == null) {
-            this.startSimulationAction =
-                new StartSimulationAction(this.simulator);
+            this.startSimulationAction = new StartSimulationAction(this.simulator);
         }
         return this.startSimulationAction;
     }
@@ -842,8 +845,7 @@ public class ActionStore implements SimulatorListener {
      */
     public Action getToggleExplorationStateAction() {
         if (this.toggleExplorationStateAction == null) {
-            this.toggleExplorationStateAction =
-                new ToggleExplorationStateAction(this.simulator);
+            this.toggleExplorationStateAction = new ToggleExplorationStateAction(this.simulator);
         }
         return this.toggleExplorationStateAction;
     }
@@ -897,7 +899,7 @@ public class ActionStore implements SimulatorListener {
         return this.execGroovyAction;
     }
 
-    /** 
+    /**
      * Method to bypass the lazy initialisation of some actions that are not
      * included in any menu of the simulator and therefore are not added to
      * the refreshables list in time.
