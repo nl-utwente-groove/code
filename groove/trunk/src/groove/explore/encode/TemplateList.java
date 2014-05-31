@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -155,7 +155,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     /**
      * Returns a description of the grammar that is used to parse this template
      * list on the command line. The grammar is displayed as a (pretty-printed)
-     * array of regular expressions, one for each available template. 
+     * array of regular expressions, one for each available template.
      */
     public String[] describeCommandlineGrammar() {
         String[] desc = new String[this.templates.size()];
@@ -174,7 +174,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the TemplateList. It consists of two components: a listPanel,
      * which displays a list of the names of the available templates, and an
      * infoPanel, which is a CardLayout of the editors belonging to the
-     * templates. 
+     * templates.
      * <!--------------------------------------------------------------------->
      */
     private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized> implements
@@ -198,9 +198,6 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
         @Override
         public void refresh() {
-            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
-                editor.refresh();
-            }
             int nrTemplates = TemplateList.this.templates.size();
             List<String> templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
@@ -251,12 +248,14 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
         private void addInfoPanel() {
             this.infoPanel = new JPanel(new CardLayout());
-            this.infoPanel.setPreferredSize(new Dimension(350, 200));
             this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 255)));
+            JScrollPane infoScroller = new JScrollPane(this.infoPanel);
+            infoScroller.setPreferredSize(new Dimension(350, 200));
             for (String keyword : this.templateKeywords) {
                 this.infoPanel.add(this.editors.get(keyword), keyword);
             }
-            add(this.infoPanel);
+            //TODO limit infoPanel size
+            add(infoScroller);
         }
 
         @Override
@@ -264,6 +263,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int selectedIndex = this.nameSelector.getSelectedIndex();
             String selectedKeyword = this.templateKeywords.get(selectedIndex);
             CardLayout cards = (CardLayout) (this.infoPanel.getLayout());
+            this.editors.get(selectedKeyword).refresh();
             cards.show(this.infoPanel, selectedKeyword);
             notifyTemplateListeners();
         }
