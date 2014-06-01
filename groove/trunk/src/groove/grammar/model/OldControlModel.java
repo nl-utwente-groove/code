@@ -1,22 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: ControlView.java,v 1.10 2008-03-18 12:17:29 fladder Exp $
  */
 package groove.grammar.model;
 
 import groove.control.CtrlAut;
+import groove.control.CtrlFrame;
 import groove.control.CtrlLoader;
 import groove.graph.GraphInfo;
 
@@ -25,7 +26,7 @@ import groove.graph.GraphInfo;
  * automata.
  * @author Arend Rensink
  */
-public class ControlModel extends TextBasedModel<CtrlAut> {
+public class OldControlModel extends TextBasedModel<CtrlAut> {
     /**
      * Constructs a control view from a given control program.
      * @param grammar the grammar view to which this control view belongs.
@@ -33,12 +34,12 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
      * @param name the name of the control program
      * @param program the control program; non-null
      */
-    public ControlModel(GrammarModel grammar, String name, String program) {
+    public OldControlModel(GrammarModel grammar, String name, String program) {
         super(grammar, ResourceKind.CONTROL, name, program);
     }
 
     /**
-     * Returns the control automaton for a given grammar. 
+     * Returns the control automaton for a given grammar.
      */
     public CtrlAut toCtrlAut() throws FormatException {
         return toResource();
@@ -48,12 +49,11 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     public CtrlAut compute() throws FormatException {
         CtrlAut result;
         if (isEnabled()) {
-            CompositeControlModel model = getGrammar().getControlModel();
+            OldCompositeControlModel model = getGrammar().getControlModel();
             if (model.hasErrors()) {
                 model.getPartErrors(this).throwException();
                 // there were errors in the composite model but not in this particular part
-                throw new FormatException(
-                    "The composite control model cannot be built");
+                throw new FormatException("The composite control model cannot be built");
             } else {
                 result = getGrammar().getControlModel().toResource();
             }
@@ -71,7 +71,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         return result;
     }
 
-    /** 
+    /**
      * Indicates if the control automaton is the default automaton,
      * i.e., without explicit control.
      */
@@ -90,8 +90,8 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     public CtrlLoader getLoader() {
         if (this.loader == null) {
             this.loader =
-                new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(),
-                    getRules(), true);
+                    new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(), getRules(),
+                    !CtrlFrame.NEW_CONTROL);
         }
         return this.loader;
     }

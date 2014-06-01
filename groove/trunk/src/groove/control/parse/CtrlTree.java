@@ -33,7 +33,7 @@ import org.antlr.runtime.Token;
 public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     /**
      * Empty constructor for prototype construction.
-     * Keep visibility protected to allow constructions from {@link ParseTree}. 
+     * Keep visibility protected to allow constructions from {@link ParseTree}.
      */
     public CtrlTree() {
         // empty
@@ -278,14 +278,17 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /**
      * Checks the suitability of a given term as body of an atomic block
-     * @throws FormatException if the given term is not suitable to be used 
+     * @throws FormatException if the given term is not suitable to be used
      * within an atomic block
      */
     private void checkSuitableForAtom(Term term) throws FormatException {
         // currently no limiting factors are imposed
     }
 
-    /** Constructs a control program from a top-level control tree. */
+    /**
+     * Constructs a control program from a top-level control tree.
+     * The program is not yet fixed, as it may contain unresolved procedure calls.
+     */
     public Program toProgram() throws FormatException {
         assert getType() == CtrlParser.PROGRAM && isChecked();
         Program result = new Program(getControlName());
@@ -293,9 +296,9 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         CtrlTree recipes = getChild(3);
         CtrlTree body = getChild(4);
         if (body.getChildCount() == 0) {
-            result.setTerm(getInfo().getPrototype().delta());
+            result.setMain(getInfo().getPrototype().delta());
         } else {
-            result.setTerm(body.toTerm());
+            result.setMain(body.toTerm());
         }
         for (int i = 0; i < functions.getChildCount(); i++) {
             CtrlTree funcTree = functions.getChild(i);

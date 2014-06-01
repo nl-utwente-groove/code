@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -57,7 +57,7 @@ public class ProgramBuildTest {
     @Test
     public void testNoProcedures() {
         Program p = build("ab", "a; b;");
-        assertEquals(call("a").seq(call("b")), p.getTerm());
+        assertEquals(call("a").seq(call("b")), p.getMain());
         assertEquals(0, p.getProcs().size());
     }
 
@@ -83,6 +83,31 @@ public class ProgramBuildTest {
     }
 
     @Test
+    public void testUndefinedCall() {
+        buildWrong("main", "a; b; Idontexist;");
+        buildWrong("nested", "function f() { g() }");
+        // direction of rule parameters
+        build("rulepars", "int x; bInt(out x);");
+        buildWrong("rulepars", "int x; iInt(out x)");
+        build("rulepars", "node x; oNode(out x);");
+        build("rulepars", "node x; oNode(out x); bNode(x);");
+        build("rulepars", "node x; bNode(out x); bNode(x);");
+        buildWrong("rulepars", "node x; oNode(out x); oNode(x);");
+        // typing of rule parameters
+        buildWrong("rulepars", "iInt(1.0)");
+        // direction of function parameters
+        build("funpars", "function f(out node x) { oNode(out x); } node y; f(out y);");
+        buildWrong("funpars",
+                "function f(out node x) { oNode(out x); } node y; oNode(out y); f(y);");
+        buildWrong("funpars", "function f(node x) { iNode(x); } node y; f(out y);");
+        build("funpars", "function f(node x) { iNode(x); } node y; oNode(out y); f(y);");
+        // typing of function parameters
+        build("funpars", "function f(int x) { iInt(x); } f(1);");
+        buildWrong("funpars", "function f(int x) { iInt(x); } f(1.0);");
+        buildWrong("funpars", "function f(int x) { iInt(x); } node y; oNode(out y); f(y);");
+    }
+
+    @Test
     public void testEndAmbiguous() {
         // termination of a function or recipe may be ambiguous
         build("ambiguous", "function f() { a; choice b; or {} }");
@@ -105,7 +130,7 @@ public class ProgramBuildTest {
     @Test
     public void testRecursion() {
         Program p = build("recurse", "function f() { a; r; } function r() { if (b) f; }");
-        assertEquals(prot.delta(), p.getTerm());
+        assertEquals(prot.delta(), p.getMain());
         assertEquals(2, p.getProcs().size());
         Procedure fProc = p.getProc("f");
         Term fTerm = fProc.getTerm();
@@ -121,7 +146,7 @@ public class ProgramBuildTest {
         //
         p = build("forward call", "f; function f() { a;f; }");
         fProc = p.getProc("f");
-        assertEquals(call(fProc), p.getTerm());
+        assertEquals(call(fProc), p.getMain());
         assertEquals(call("a").seq(call("f")), fProc.getTerm());
     }
 
@@ -156,7 +181,7 @@ public class ProgramBuildTest {
         Program p = build();
         Procedure fProc = p.getProc("sub.f");
         Procedure gProc = p.getProc("sub.g");
-        assertEquals(call(fProc, CtrlPar.outVar("n", "int")), p.getTerm());
+        assertEquals(call(fProc, CtrlPar.outVar("n", "int")), p.getMain());
         CtrlPar xIn = CtrlPar.inVar("sub.f.x", "int");
         CtrlPar xOut = CtrlPar.outVar("sub.f.x", "int");
         assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());

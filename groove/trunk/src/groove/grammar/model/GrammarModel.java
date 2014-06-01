@@ -242,8 +242,8 @@ public class GrammarModel implements Observer {
      * @return the corresponding control program model, or <code>null</code> if
      *         no program by that name exists
      */
-    public ControlModel getControlModel(String name) {
-        return (ControlModel) getResource(CONTROL, name);
+    public OldControlModel getControlModel(String name) {
+        return (OldControlModel) getResource(CONTROL, name);
     }
 
     /**
@@ -287,9 +287,9 @@ public class GrammarModel implements Observer {
     /**
      * Lazily creates the composite control model for this grammar.
      */
-    public CompositeControlModel getControlModel() {
+    public OldCompositeControlModel getControlModel() {
         if (this.controlModel == null) {
-            this.controlModel = new CompositeControlModel(this);
+            this.controlModel = new OldCompositeControlModel(this);
         }
         return this.controlModel;
     }
@@ -607,7 +607,7 @@ public class GrammarModel implements Observer {
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
-                    result = new ControlModel(this, name, text);
+                    result = new OldControlModel(this, name, text);
                     break;
                 case PROLOG:
                     result = new PrologModel(this, name, text);
@@ -701,7 +701,7 @@ public class GrammarModel implements Observer {
     /** The type model composed from the individual elements. */
     private CompositeTypeModel typeModel;
     /** The control model composed from the individual control programs. */
-    private CompositeControlModel controlModel;
+    private OldCompositeControlModel controlModel;
     {
         for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());

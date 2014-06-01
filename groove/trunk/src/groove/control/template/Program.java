@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -52,15 +52,19 @@ public class Program implements Fixable {
         this.names = new TreeSet<String>();
     }
 
-    /** Constructs a named, initially empty program. */
+    /**
+     * Constructs a singular, initially empty program.
+     * @param name name of the program fragment; non-{@code null}
+     */
     public Program(String name) {
         this();
+        assert name != null;
         this.names.add(name);
     }
 
     /**
      * Returns the name of this program, which is the concatenation
-     * of the names of the constituent fragments, alphabetically ordered.
+     * of the names of the fragments, alphabetically ordered.
      */
     public String getName() {
         StringBuilder result = new StringBuilder();
@@ -73,32 +77,61 @@ public class Program implements Fixable {
         return result.toString();
     }
 
+    /** Indicates if this program consists of a single fragment. */
+    public boolean isSingular() {
+        return this.names.size() == 1;
+    }
+
     private final Set<String> names;
 
-    /** Sets the body of this program to a given term. */
-    public void setTerm(Term term) {
-        assert term != null && this.term == null;
+    /**
+     * Sets the main body of this program to a given term.
+     * Should only be invoked on singular programs, i.e., if {@link #isSingular()} holds,
+     * and only if the program is not fixed.
+     * @param main the main (non-{@code null}) body; if {@link Term#isDead()},
+     * it is not counted as a proper main.
+     */
+    public void setMain(Term main) {
+        assert main != null && this.main == null;
         assert !isFixed();
-        this.term = term;
+        assert isSingular();
+        this.main = main;
+        if (!main.isDead()) {
+            this.mainName = getName();
+        }
     }
 
     /**
      * Indicates if the program has a non-trivial main body.
-     * Should only be invoked after the program is fixed.
+     * This is the case if and only if {@link #getMain()} is non-{@code null} and
+     * not deadlocked.
      */
-    public boolean hasBody() {
-        return getTerm() != null && !getTerm().isDead();
+    public boolean hasMain() {
+        return this.mainName != null;
     }
 
-    /** Returns the main block of this program, if any.
-     * Should only be invoked after the program is fixed.
-     * May be {@code null} if this program has no main body.
+    /**
+     * Returns the main block of this program.
+     * This is never {@code null} if the program is fixed; however, it
+     * may be a deadlocked term, in which case it is not counted as a proper main.
      */
-    public Term getTerm() {
-        return this.term;
+    public Term getMain() {
+        return this.main;
     }
 
-    private Term term;
+    /**
+     * Returns the name of the fragment containing the main body, if any.
+     * @return the name of the fragment containing the main body, of {@code null} if
+     * this program has no (non-trivial) main body
+     */
+    public String getMainName() {
+        return this.mainName;
+    }
+
+    /** The name of the sub-program containing the main body, if any. */
+    private String mainName;
+    /** The main body of this program, if any. */
+    private Term main;
 
     /** Returns the main template of this program, if any.
      * Should only be invoked after the program is fixed.
@@ -111,16 +144,23 @@ public class Program implements Fixable {
 
     private Template template;
 
-    /** Adds a procedure to this program. */
-    public void addProc(Procedure proc) {
-        assert !isFixed();
+    /**
+     * Adds a procedure to this program.
+     * @throws FormatException if a procedure with the same name has already been defined
+     */
+    public void addProc(Procedure proc) throws FormatException {
+        assert proc != null;
+        String procName = proc.getFullName();
         Procedure oldProc = this.procs.put(proc.getFullName(), proc);
-        assert oldProc == null : String.format("Procedure %s already defined", proc.getFullName());
+        if (oldProc != null) {
+            throw new FormatException("Duplicate procedure %s in %s and %s", procName,
+                oldProc.getControlName(), proc.getControlName());
+        }
     }
 
     /** Returns an unmodifiable view on the map from names to procedures
      * defined in this program.
-     * Should only be invoked after the program is fixed. 
+     * Should only be invoked after the program is fixed.
      */
     public Map<String,Procedure> getProcs() {
         assert isFixed();
@@ -128,7 +168,7 @@ public class Program implements Fixable {
     }
 
     /** Returns the procedure for a given name.
-     * Should only be invoked after the program is fixed. 
+     * Should only be invoked after the program is fixed.
      */
     public Procedure getProc(String name) {
         assert isFixed();
@@ -137,24 +177,31 @@ public class Program implements Fixable {
 
     private final Map<String,Procedure> procs = new TreeMap<String,Procedure>();
 
-    /** 
-     * Adds all procedures of another program to this one.
-     * At most one of the programs may have a main template,
-     * and the procedure names may not overlap.
+    /**
+     * Adds all procedures of another, disjoint program to this one.
      * This program may not be fixed.
+     * @param other the program to be added
+     * @throws FormatException if both {@code this} and {@code other} have a non-trivial main body,
+     * or the defined procedures overlap
      */
-    public void add(Program other) {
+    public void add(Program other) throws FormatException {
         assert !isFixed();
         this.names.addAll(other.names);
-        if (hasBody()) {
-            if (other.hasBody()) {
-                throw new IllegalArgumentException("Both programs have a main template");
+        FormatErrorSet errors = new FormatErrorSet();
+        if (hasMain()) {
+            if (other.hasMain()) {
+                errors.add("Duplicate main in %s and %s", getMainName(), other.getMainName());
             }
         } else {
-            this.term = other.term;
+            this.mainName = other.mainName;
+            this.main = other.main;
         }
         for (Procedure proc : other.procs.values()) {
-            addProc(proc);
+            try {
+                addProc(proc);
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
         }
     }
 
@@ -276,19 +323,19 @@ public class Program implements Fixable {
         return result;
     }
 
-    /** Indicates, for a given term, if it can potentially 
+    /** Indicates, for a given term, if it can potentially
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean mayFinalise(Term term) {
         return getFinality(term, getFinalityMap()).may();
     }
 
-    /** Indicates, for a given procedure, if it can potentially 
+    /** Indicates, for a given procedure, if it can potentially
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean mayFinalise(Procedure proc) {
         return getFinalityMap().get(proc).may();
     }
 
-    /** Indicates, for a given term, if it can potentially 
+    /** Indicates, for a given term, if it can potentially
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean willFinalise(Term term) {
         return getFinality(term, getFinalityMap()).will();
@@ -440,7 +487,7 @@ public class Program implements Fixable {
     private Set<Procedure> terminationSet;
 
     /** Computes the set of procedures that will certainly terminate,
-     * through a smallest fixpoint computation. 
+     * through a smallest fixpoint computation.
      */
     private Set<Procedure> computeTerminationSet() {
         Set<Procedure> result = new HashSet<Procedure>();
@@ -522,6 +569,10 @@ public class Program implements Fixable {
         if (!result) {
             this.fixed = true;
             FormatErrorSet errors = new FormatErrorSet();
+            // check that there is a (possibly trivial) main
+            if (this.main == null) {
+                errors.add("Program does not have a main body");
+            }
             // check that procedure bodies satisfy their requirements
             for (Procedure proc : this.procs.values()) {
                 String name = proc.getFullName();

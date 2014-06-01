@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -21,6 +21,7 @@ import groove.algebra.syntax.Expression;
 import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
+import groove.control.CtrlFrame;
 import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
@@ -70,7 +71,7 @@ public class CtrlHelper {
     }
 
     /**
-     * Creates a new tree with a CtrlParser#ID} token at the root, and 
+     * Creates a new tree with a CtrlParser#ID} token at the root, and
      * an empty text.
      */
     CtrlTree emptyPackage() {
@@ -148,7 +149,7 @@ public class CtrlHelper {
         return new CtrlTree(token);
     }
 
-    /** 
+    /**
      * Tests if the rule name is qualified;
      * if not, first tries to look it up in the import map, and if that fails,
      * prefixes it with the package name.
@@ -175,7 +176,7 @@ public class CtrlHelper {
         return QualName.extend(this.namespace.getParentName(), name);
     }
 
-    /** 
+    /**
      * Looks up a name in the import map,
      * returning either the imported qualified name if there is any,
      * or the package-prefixed qualification of the looked-up name otherwise.
@@ -202,7 +203,7 @@ public class CtrlHelper {
         programTree.setControlName(this.namespace.getControlName());
     }
 
-    /** 
+    /**
      * Attempts to add a function or recipe declaration with a given name.
      * Checks for overlap with the previously declared names.
      * @return {@code true} if no rule, function or recipe with the name of this one was
@@ -211,7 +212,7 @@ public class CtrlHelper {
     boolean declareCtrlUnit(CtrlTree unitTree) {
         boolean result = false;
         assert (unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
-            && unitTree.getChildCount() <= 4;
+        && unitTree.getChildCount() <= 4;
         String fullName = qualify(unitTree.getChild(0).getText());
         Callable unit = this.namespace.getCallable(fullName);
         if (unit != null) {
@@ -219,11 +220,11 @@ public class CtrlHelper {
                 unit.getKind().getName(true), fullName);
         } else {
             int priority =
-                unitTree.getChildCount() == 3 ? 0
-                        : Integer.parseInt(unitTree.getChild(2).getText());
+                    unitTree.getChildCount() == 3 ? 0
+                            : Integer.parseInt(unitTree.getChild(2).getText());
             if (this.namespace.isCheckDependencies() && priority > 0) {
                 emitErrorMessage(unitTree.getChild(2),
-                    "Priorities are not supported in this version.");
+                        "Priorities are not supported in this version.");
             }
             List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
@@ -256,7 +257,7 @@ public class CtrlHelper {
             String name = toLocalName(procName, parTree.getChild(out ? 2 : 1).getText());
             result.add(CtrlPar.var(name, type, !out));
         }
-        if (this.namespace.isCheckDependencies() && !result.isEmpty()) {
+        if (this.namespace.isCheckDependencies() && !result.isEmpty() && !CtrlFrame.NEW_CONTROL) {
             emitErrorMessage(parListTree, "Parameters are not supported in this version.");
         }
         return result;
@@ -347,7 +348,7 @@ public class CtrlHelper {
     /**
      * Checks whether a given variable has been declared and
      * (optionally) initialised.
-     * 
+     *
      * @param nameTree the variable to be checked
      * @param checkInit if {@code true}, the variable should also be checked for initialisation
      * @return the type of the variable, if it was declared
@@ -396,8 +397,8 @@ public class CtrlHelper {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getAlgebraFamily();
             CtrlPar result =
-                new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
-                    family.toValue(constant));
+                    new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
+                        family.toValue(constant));
             argTree.setCtrlPar(result);
             return result;
         } catch (FormatException e) {
@@ -405,7 +406,7 @@ public class CtrlHelper {
             // by the control parser
             assert false : String.format("%s is not a parsable constant",
                 argTree.getChild(0).getText());
-            return null;
+        return null;
         }
     }
 
@@ -469,7 +470,7 @@ public class CtrlHelper {
         }
     }
 
-    /** 
+    /**
      * Tests if a call with a given argument list is compatible with
      * the declared signature.
      */
@@ -540,7 +541,7 @@ public class CtrlHelper {
     /** Reorders the functions according to their dependencies. */
     void reorderFunctions(CtrlTree functionsTree) {
         assert functionsTree.getType() == CtrlChecker.FUNCTIONS
-            || functionsTree.getType() == CtrlChecker.RECIPES;
+                || functionsTree.getType() == CtrlChecker.RECIPES;
         int functionsCount = functionsTree.getChildCount();
         Map<String,CtrlTree> functionMap = new LinkedHashMap<String,CtrlTree>();
         for (int i = 0; i < functionsCount; i++) {
@@ -591,8 +592,8 @@ public class CtrlHelper {
         this.namespace.addError(message, line, column);
     }
 
-    /** 
-     * Tests if a given control automaton is suitable as body of a 
+    /**
+     * Tests if a given control automaton is suitable as body of a
      * recipe.
      */
     boolean checkRecipeBody(CtrlTree actionTree, String name, CtrlAut aut) {

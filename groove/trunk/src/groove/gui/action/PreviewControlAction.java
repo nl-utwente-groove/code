@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import groove.control.CtrlAut;
 import groove.grammar.Grammar;
-import groove.grammar.model.ControlModel;
+import groove.grammar.model.OldControlModel;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -70,8 +70,8 @@ public class PreviewControlAction extends SimulatorAction {
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
             Grammar grammar = grammarModel.toGrammar();
-            ControlModel controlModel =
-                (ControlModel) getSimulatorModel().getTextResource(
+            OldControlModel controlModel =
+                (OldControlModel) getSimulatorModel().getTextResource(
                     getResourceKind());
             result =
                 controlModel == null || controlModel.isEnabled()

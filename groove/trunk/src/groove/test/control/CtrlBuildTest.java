@@ -26,6 +26,7 @@ import groove.control.Binding;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
+import groove.control.CtrlFrame;
 import groove.control.CtrlGuard;
 import groove.control.CtrlLabel;
 import groove.control.CtrlSchedule;
@@ -61,9 +62,9 @@ public class CtrlBuildTest extends CtrlTester {
     public void testRegression() {
         buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 3, 7);
         CtrlAut aut =
-                buildCorrect(
-                    "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);",
-                    6, 6);
+            buildCorrect(
+                "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);",
+                6, 6);
         CtrlTransition t1 = aut.getStart().getTransitions().iterator().next();
         CtrlTransition t2 = t1.target().getTransitions().iterator().next();
         CtrlTransition t3 = t2.target().getTransitions().iterator().next();
@@ -76,8 +77,8 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlAut aut = null;
         try {
             aut =
-                    CtrlFactory.instance().buildDefault(this.prioGrammar.getActions(),
-                        AlgebraFamily.DEFAULT);
+                CtrlFactory.instance().buildDefault(this.prioGrammar.getActions(),
+                    AlgebraFamily.DEFAULT);
         } catch (FormatException e) {
             fail();
         }
@@ -114,10 +115,10 @@ public class CtrlBuildTest extends CtrlTester {
         CtrlGuard omegaGuard = new CtrlGuard();
         omegaGuard.addAll(Arrays.asList(transM1, transM2, transM3, transC1, transC2, transC3));
         Set<CtrlLabel> expectedSelfLabels =
-                new HashSet<CtrlLabel>(Arrays.asList(transM1.label(), transM2.label(), transM3.label(),
-                    transC1.label(), transC2.label(), transC3.label()));
+            new HashSet<CtrlLabel>(Arrays.asList(transM1.label(), transM2.label(), transM3.label(),
+                transC1.label(), transC2.label(), transC3.label()));
         CtrlTransition omega =
-                first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard), expected.getFinal());
+            first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard), expected.getFinal());
         Set<CtrlLabel> expectedOmegaLabels = new HashSet<CtrlLabel>(Arrays.asList(omega.label()));
         Set<CtrlLabel> actualSelfLabels = new HashSet<CtrlLabel>();
         Set<CtrlLabel> actualOmegaLabels = new HashSet<CtrlLabel>();
@@ -208,7 +209,9 @@ public class CtrlBuildTest extends CtrlTester {
         buildCorrect("function f() { a; } f(); ", 3, 2);
         buildCorrect("function f() { choice a; or {b;c;} } f(); f(); ", 6, 7);
         buildCorrect("function f() { node x; bNode(out x); } f(); ", 3, 2);
-        buildWrong("function f() { g(); } function g() { f(); }");
+        if (!CtrlFrame.NEW_CONTROL) {
+            buildWrong("function f() { g(); } function g() { f(); }");
+        }
         buildCorrect("function g() { b; c; } function f() { a | g(); } f(); ", 4, 4);
     }
 
@@ -216,8 +219,8 @@ public class CtrlBuildTest extends CtrlTester {
     @Test
     public void testVarBinding() {
         CtrlAut aut =
-                buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
-                    5, 4);
+            buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
+                5, 4);
         CtrlTransition first = aut.getStart().getTransitions().iterator().next();
         CtrlTransition second = first.target().getTransitions().iterator().next();
         CtrlTransition third = second.target().getTransitions().iterator().next();

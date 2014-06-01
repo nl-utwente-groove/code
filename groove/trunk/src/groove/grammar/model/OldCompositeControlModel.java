@@ -17,16 +17,20 @@
 package groove.grammar.model;
 
 import static groove.grammar.model.ResourceKind.CONTROL;
+import groove.control.CtrlAut;
+import groove.control.CtrlFrame;
 import groove.control.CtrlLoader;
 import groove.control.instance.Automaton;
 import groove.control.template.Program;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,9 +39,9 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CompositeControlModel extends ResourceModel<Automaton> {
+public class OldCompositeControlModel extends ResourceModel<CtrlAut> {
     /** Constructs an instance for a given grammar model. */
-    CompositeControlModel(GrammarModel grammar) {
+    OldCompositeControlModel(GrammarModel grammar) {
         super(grammar, ResourceKind.CONTROL, "control");
     }
 
@@ -52,7 +56,8 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     @Override
-    Automaton compute() throws FormatException {
+    CtrlAut compute() throws FormatException {
+        FormatErrorSet errors = createErrors();
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         for (String controlName : controlNames) {
             OldControlModel controlModel = getGrammar().getControlModel(controlName);
@@ -69,6 +74,57 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             }
         }
         getAllPartErrors().throwException();
+        CtrlAut result = null;
+        List<String> programNames = new ArrayList<String>();
+        for (String controlName : controlNames) {
+            try {
+                CtrlAut aut = getLoader().buildAutomaton(controlName);
+                if (aut != null) {
+                    result = aut;
+                    programNames.add(controlName);
+                }
+            } catch (FormatException exc) {
+                OldControlModel controlModel = getGrammar().getControlModel(controlName);
+                for (FormatError error : exc.getErrors()) {
+                    addPartError(controlModel, error);
+                }
+            }
+        }
+        getAllPartErrors().throwException();
+        if (programNames.size() > 1) {
+            errors.add("Duplicate control programs %s", programNames);
+        }
+        try {
+            if (result == null) {
+                result = getLoader().buildDefaultAutomaton();
+            } else {
+                result = result.normalise();
+            }
+        } catch (FormatException e) {
+            for (FormatError error : e.getErrors()) {
+                errors.add("Error in composite control program: %s", error);
+            }
+        }
+        errors.throwException();
+        result.setFixed();
+        this.automaton = computeAutomaton();
+        return result;
+    }
+
+    /** Returns the control automaton constructed at the last call to {@link #compute()}.
+     * TODO this is a stopgap solution: as soon as the new control is fully integrated,
+     * {@link #compute()} should be rewritten so as to generate only the {@link Automaton}.
+     */
+    public Automaton getAutomaton() {
+        assert this.automaton != null;
+        return this.automaton;
+    }
+
+    private Automaton automaton;
+
+    private Automaton computeAutomaton() throws FormatException {
+        // look for the control program with the main loop
+        Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         Program program = getLoader().buildProgram(controlNames);
         return new Automaton(program.getTemplate());
     }
@@ -83,7 +139,8 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     public CtrlLoader getLoader() {
         if (this.loader == null) {
             this.loader =
-                    new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(), getRules(), false);
+                    new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(), getRules(),
+                    !CtrlFrame.NEW_CONTROL);
         }
         return this.loader;
     }
