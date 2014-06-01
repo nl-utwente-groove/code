@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -26,7 +26,6 @@ import groove.control.term.Term;
 import groove.util.Duo;
 import groove.util.Pair;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +49,7 @@ public class TemplateBuilder {
         // empty
     }
 
-    /** 
+    /**
      * Construct an automata template for a given program.
      * As a side effect, all procedure templates are also constructed.
      */
@@ -58,24 +57,17 @@ public class TemplateBuilder {
         for (Procedure proc : prog.getProcs().values()) {
             build(proc.getTerm(), getTemplate(proc));
         }
-        assert this.freshProcs.isEmpty();
-        return build(prog.getName(), prog.getTerm());
+        return build(prog.getName(), prog.getMain());
     }
 
-    /** 
+    /**
      * Constructs an automata template for a given term.
-     * As a side effect, all templates of procedures 
+     * As a side effect, all templates of procedures
      * recursively called from the term are also constructed.
      */
     public Template build(String name, Term init) throws IllegalStateException {
         Template result = new Template(name);
         build(init, result);
-        while (!this.freshProcs.isEmpty()) {
-            Procedure proc = this.freshProcs.poll();
-            // do not yet assign the template to the procedure,
-            // as it may be changed during normalisation
-            build(proc.getTerm(), getTemplate(proc));
-        }
         result = normalise(result);
         for (Map.Entry<Procedure,Template> e : this.templateMap.entrySet()) {
             e.getKey().setTemplate(e.getValue());
@@ -84,8 +76,8 @@ public class TemplateBuilder {
         return result;
     }
 
-    /** 
-     * Constructs a template from a term. 
+    /**
+     * Constructs a template from a term.
      * @param result the template to be built
      * @param init the term for which the template should be built
      * @throws IllegalStateException if {@code init} contains procedure
@@ -119,7 +111,7 @@ public class TemplateBuilder {
         }
     }
 
-    /** 
+    /**
      * Adds a control location corresponding to a given symbolic term to the
      * template and auxiliary data structures, if it does not yet exist.
      * @param template the template to which the location should be added
@@ -151,9 +143,9 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from terms to locations. */
     private final Map<Template,Map<Term,Location>> locMapMap =
-        new HashMap<Template,Map<Term,Location>>();
+            new HashMap<Template,Map<Term,Location>>();
 
-    /** 
+    /**
      * Adds a switch corresponding to a given derivation to the
      * template and auxiliary data structures, if it does not yet exist.
      * @param template the template to which the location should be added
@@ -192,7 +184,7 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from derivations to switches. */
     private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
-        new HashMap<Template,Map<Derivation,SwitchStack>>();
+            new HashMap<Template,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -224,20 +216,16 @@ public class TemplateBuilder {
     /** Map from procedures to corresponding templates. */
     private final Map<Procedure,Template> templateMap = new HashMap<Procedure,Template>();
 
-    /** Queue of procedures with uninitialised templates. */
-    private final Deque<Procedure> freshProcs = new ArrayDeque<Procedure>();
-
     /** Clears the auxiliary data structures. */
     private void clearBuildData() {
         this.locMapMap.clear();
         this.switchMapMap.clear();
         this.freshMap.clear();
         this.templateMap.clear();
-        this.freshProcs.clear();
         this.recordMap.clear();
     }
 
-    /** 
+    /**
      * Computes and returns a normalised version of a given template.
      * Normalisation implies minimisation w.r.t. bisimilarity.
      */
@@ -273,7 +261,7 @@ public class TemplateBuilder {
         return result;
     }
 
-    /** 
+    /**
      * Creates an initial partition for the locations in {@link #recordMap}
      * with distinguished cells for the initial location and all locations
      * of a given transient depth.
@@ -304,7 +292,7 @@ public class TemplateBuilder {
         return result;
     }
 
-    /** 
+    /**
      * Refines a given partition and returns the result.
      * The refinement is done by splitting every cell into new cells in
      * which all locations have the same success and failure targets
@@ -434,7 +422,7 @@ public class TemplateBuilder {
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
-        new HashMap<Location,Record<Location>>();
+            new HashMap<Location,Record<Location>>();
 
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -70,7 +70,7 @@ abstract public class CtrlTester {
         return result;
     }
 
-    /** 
+    /**
      * Builds a control automaton that should contain an error.
      * @param program control expression; non-{@code null}
      */
@@ -78,7 +78,7 @@ abstract public class CtrlTester {
         buildWrong("dummy", program);
     }
 
-    /** 
+    /**
      * Builds a named control automaton that should contain an error.
      * @param name automaton name, or file name if there is no program
      * @param program control expression; may be {@code null}
@@ -99,7 +99,7 @@ abstract public class CtrlTester {
         }
     }
 
-    /** 
+    /**
      * Builds a control automaton of a certain expected size.
      * @param program control expression; non-{@code null}
      * @param nodeCount expected node count
@@ -109,7 +109,7 @@ abstract public class CtrlTester {
         return buildCorrect("dummy", program, nodeCount, edgeCount);
     }
 
-    /** 
+    /**
      * Builds a named control automaton of a certain expected size.
      * @param name automaton name, or file name if there is no program
      * @param program control expression; may be {@code null}
@@ -157,7 +157,7 @@ abstract public class CtrlTester {
         return this.testGrammar.getRule(name);
     }
 
-    /** 
+    /**
      * Builds a symbolic term from a function or recipe in a control program.
      * @param program control expression; non-{@code null}
      * @param procName name of the recipe or function
@@ -181,15 +181,15 @@ abstract public class CtrlTester {
         }
     }
 
-    /** 
+    /**
      * Builds a symbolic term from a control program.
      * @param program control expression; non-{@code null}
      */
     protected Term buildTerm(String program) {
-        return buildProgram(program).getTerm();
+        return buildProgram(program).getMain();
     }
 
-    /** 
+    /**
      * Builds a symbolic term from a control program.
      * @param program control expression; non-{@code null}
      */
@@ -204,7 +204,7 @@ abstract public class CtrlTester {
         return result;
     }
 
-    /** 
+    /**
      * Builds a symbolic term from a control program.
      * @param program control expression; non-{@code null}
      */

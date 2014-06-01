@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -66,7 +66,7 @@ public class AutomatonBuildTest {
     public void testNesting() {
         add("f", "function f() { node arg; choice try r(1,out arg); or b; }");
         add("r",
-            "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
+                "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
         add("main", "f|a; ");
         Automaton p = build();
         p.explore();
@@ -363,15 +363,13 @@ public class AutomatonBuildTest {
 
     /** Returns the program build in successive calls to {@link #add(String, String)}. */
     protected Automaton build() {
-        Program prog = new Program();
         Automaton result = null;
         try {
-            prog = this.loader.buildProgram(this.controlNames);
-            result = new Automaton(prog.getTemplate());
+            this.prog = this.loader.buildProgram(this.controlNames);
+            result = new Automaton(this.prog.getTemplate());
         } catch (FormatException e) {
             fail(e.toString());
         }
-        this.prog = prog;
         // reset the loader so we get a fresh one next time
         this.loader = null;
         this.controlNames.clear();
@@ -400,8 +398,8 @@ public class AutomatonBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
-                this.testGrammar.getAllRules(), false);
+                new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
+                    this.testGrammar.getAllRules(), false);
         return result;
     }
 

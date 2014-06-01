@@ -65,8 +65,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             this.graph = (AspectGraph) par;
             this.resourceName = this.graph.getName();
             this.resourceKind = ResourceKind.toResource(this.graph.getRole());
-        } else if (par instanceof ControlModel) {
-            this.control = (ControlModel) par;
+        } else if (par instanceof OldControlModel) {
+            this.control = (OldControlModel) par;
             this.resourceName = this.control.getFullName();
             this.resourceKind = ResourceKind.CONTROL;
         } else if (par instanceof PrologModel) {
@@ -147,7 +147,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** Returns the control view in which the error occurs. May be {@code null}. */
-    public final ControlModel getControl() {
+    public final OldControlModel getControl() {
         return this.control;
     }
 
@@ -238,7 +238,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The prolog view in which the error occurs. */
     private PrologModel prolog;
     /** The control view in which the error occurs. */
-    private ControlModel control;
+    private OldControlModel control;
     /** The graph in which the error occurs. */
     private AspectGraph graph;
     /** The resource kind for which the error occurs. May be {@code null}. */
