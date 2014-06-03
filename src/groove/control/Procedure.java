@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -21,6 +21,7 @@ import groove.control.template.Switch.Kind;
 import groove.control.template.Template;
 import groove.control.term.Term;
 import groove.grammar.QualName;
+import groove.grammar.Recipe;
 import groove.util.Fixable;
 import groove.util.Groove;
 
@@ -37,6 +38,7 @@ public abstract class Procedure implements Callable, Fixable {
     /**
      * Constructor for subclassing.
      * @param fullName name of the unit
+     * @param kind procedure kind
      * @param priority priority of the unit
      * @param signature signature of the unit
      * @param controlName control program in which the unit has
@@ -44,13 +46,14 @@ public abstract class Procedure implements Callable, Fixable {
      * @param startLine first line in the control program at
      * which the unit declaration starts
      */
-    protected Procedure(String fullName, int priority, List<Var> signature, String controlName,
-            int startLine) {
+    protected Procedure(String fullName, Kind kind, int priority, List<Var> signature,
+            String controlName, int startLine) {
         this.fullName = fullName;
         this.priority = priority;
         this.signature = signature;
         this.controlName = controlName;
         this.startLine = startLine;
+        this.kind = kind;
     }
 
     @Override
@@ -93,7 +96,15 @@ public abstract class Procedure implements Callable, Fixable {
 
     private final int startLine;
 
-    /** Sets the body of the procedure. 
+    /** Returns the kind of this procedure (either {@link Kind#FUNCTION} or {@link Kind#RECIPE}). */
+    @Override
+    public final Kind getKind() {
+        return this.kind;
+    }
+
+    private final Kind kind;
+
+    /** Sets the body of the procedure.
      * Should only be invoked once, before the procedure is fixed.
      * The call fixes the procedure.
      */
@@ -205,7 +216,7 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getFullName()
-            + Groove.toString(getSignature().toArray(), "(", ")", ", ");
+                + Groove.toString(getSignature().toArray(), "(", ")", ", ");
     }
 
     @Override
@@ -223,5 +234,34 @@ public abstract class Procedure implements Callable, Fixable {
         }
         Procedure other = (Procedure) obj;
         return getFullName().equals(other.getFullName());
+    }
+
+    /**
+     * Returns a function or recipe with the given signature.
+     * @param fullName name of the unit
+     * @param kind procedure kind; wither {@link Kind#RECIPE} or {@link Kind#FUNCTION}
+     * @param priority priority of the unit
+     * @param signature signature of the unit
+     * @param controlName control program in which the unit has
+     * been declared
+     * @param startLine first line in the control program at
+     * which the unit declaration starts
+     */
+    public static Procedure newInstance(String fullName, Kind kind, int priority,
+            List<Var> signature, String controlName, int startLine) {
+        assert kind.isProcedure();
+        Procedure result;
+        switch (kind) {
+        case FUNCTION:
+            result = new Function(fullName, priority, signature, controlName, startLine);
+            break;
+        case RECIPE:
+            result = new Recipe(fullName, priority, signature, controlName, startLine);
+            break;
+        default:
+            assert false;
+            result = null;
+        }
+        return result;
     }
 }

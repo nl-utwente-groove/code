@@ -55,7 +55,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     Automaton compute() throws FormatException {
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         for (String controlName : controlNames) {
-            OldControlModel controlModel = getGrammar().getControlModel(controlName);
+            ControlModel controlModel = getGrammar().getControlModel(controlName);
             if (controlModel == null) {
                 addPartError(controlModel, new FormatError("Control program cannot be found"));
             } else {
@@ -69,11 +69,19 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             }
         }
         getAllPartErrors().throwException();
-        Program program = getLoader().buildProgram(controlNames);
-        return new Automaton(program.getTemplate());
+        this.program = getLoader().buildProgram(controlNames);
+        return new Automaton(this.program);
     }
 
-    /** Returns the set of all top-level actions of the enabled control programs. */
+    /** Returns the control program. */
+    public Program getProgram() {
+        synchronise();
+        return this.program;
+    }
+
+    private Program program;
+
+    /** Returns the set of all top-level recipes of the enabled control programs. */
     public Collection<Recipe> getRecipes() {
         synchronise();
         return getLoader().getRecipes();
@@ -130,18 +138,19 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         this.ruleRecipeMap = null;
         this.loader = null;
         this.partErrorsMap = null;
+        this.program = null;
         super.notifyWillRebuild();
     }
 
     /** Adds an error for a particular control program. */
-    private void addPartError(OldControlModel part, FormatError error) {
+    private void addPartError(ControlModel part, FormatError error) {
         getPartErrorsMap().get(part).add(error);
     }
 
     /** Collects and returns all errors found in the partial control models. */
     private FormatErrorSet getAllPartErrors() {
         FormatErrorSet result = createErrors();
-        for (Map.Entry<OldControlModel,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
+        for (Map.Entry<ControlModel,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
             for (FormatError error : entry.getValue()) {
                 result.add("Error in control program '%s': %s", entry.getKey().getFullName(),
                     error, entry.getKey());
@@ -151,13 +160,13 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     /** Returns the errors found in a given partial control model. */
-    FormatErrorSet getPartErrors(OldControlModel part) {
+    FormatErrorSet getPartErrors(ControlModel part) {
         return getPartErrorsMap().get(part);
     }
 
-    private Map<OldControlModel,FormatErrorSet> getPartErrorsMap() {
+    private Map<ControlModel,FormatErrorSet> getPartErrorsMap() {
         if (this.partErrorsMap == null) {
-            this.partErrorsMap = new HashMap<OldControlModel,FormatErrorSet>();
+            this.partErrorsMap = new HashMap<ControlModel,FormatErrorSet>();
             for (String name : getGrammar().getActiveNames(CONTROL)) {
                 this.partErrorsMap.put(getGrammar().getControlModel(name), createErrors());
             }
@@ -165,5 +174,5 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         return this.partErrorsMap;
     }
 
-    private Map<OldControlModel,FormatErrorSet> partErrorsMap;
+    private Map<ControlModel,FormatErrorSet> partErrorsMap;
 }

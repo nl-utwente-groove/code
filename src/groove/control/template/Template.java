@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,6 +24,7 @@ import groove.control.Position.Type;
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
 import groove.grammar.Action;
+import groove.grammar.host.HostFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +46,7 @@ import java.util.Set;
  * call attempts and success/failure verdicts; however, since the graphs are
  * intended only for visualisation, some nodes and edges are suppressed.
  * This is especially true for verdict edges to dead locations, as well
- * as for the (unique) final state if it is unreachable. 
+ * as for the (unique) final state if it is unreachable.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -82,7 +83,7 @@ public class Template {
 
     private final String name;
 
-    /** 
+    /**
      * Indicates if this automaton is the body of a procedure.
      * @see #getOwner()
      */
@@ -156,7 +157,7 @@ public class Template {
 
     private final List<Location> locations;
 
-    /** 
+    /**
      * Returns the set of actions occurring on control edges,
      * either on this level or recursively within function calls.
      */
@@ -274,6 +275,17 @@ public class Template {
         return new Template(parent);
     }
 
+    /** Computes and inserts the host nodes to be used for constant value arguments. */
+    public void initialise(HostFactory factory) {
+        for (Location loc : getLocations()) {
+            if (loc.isTrial()) {
+                for (SwitchStack sw : loc.getAttempt()) {
+                    sw.initialise(factory);
+                }
+            }
+        }
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -319,6 +331,6 @@ public class Template {
      * to the same node).
      */
     public ControlGraph toGraph(boolean full) {
-        return ControlGraph.newGraph(getName(), getStart(), full);
+        return ControlGraph.newGraph(this, full);
     }
 }

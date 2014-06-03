@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -54,7 +54,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /**
-     * Attempts to set a context value ({@link #graph}, {@link #control}, 
+     * Attempts to set a context value ({@link #graph}, {@link #control},
      * {@link #elements}) from a given object.
      */
     private void addContext(Object par) {
@@ -65,8 +65,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             this.graph = (AspectGraph) par;
             this.resourceName = this.graph.getName();
             this.resourceKind = ResourceKind.toResource(this.graph.getRole());
-        } else if (par instanceof OldControlModel) {
-            this.control = (OldControlModel) par;
+        } else if (par instanceof ControlModel) {
+            this.control = (ControlModel) par;
             this.resourceName = this.control.getFullName();
             this.resourceKind = ResourceKind.CONTROL;
         } else if (par instanceof PrologModel) {
@@ -126,9 +126,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return this.message;
     }
 
-    /** 
+    /**
      * Compares only the error element and message.
-     * This means that identically worded errors with the same element but for different graphs will be collapsed. 
+     * This means that identically worded errors with the same element but for different graphs will be collapsed.
      */
     @Override
     public int compareTo(FormatError other) {
@@ -147,7 +147,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** Returns the control view in which the error occurs. May be {@code null}. */
-    public final OldControlModel getControl() {
+    public final ControlModel getControl() {
         return this.control;
     }
 
@@ -238,7 +238,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The prolog view in which the error occurs. */
     private PrologModel prolog;
     /** The control view in which the error occurs. */
-    private OldControlModel control;
+    private ControlModel control;
     /** The graph in which the error occurs. */
     private AspectGraph graph;
     /** The resource kind for which the error occurs. May be {@code null}. */

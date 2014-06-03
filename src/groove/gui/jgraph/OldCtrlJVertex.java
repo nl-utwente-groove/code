@@ -1,7 +1,7 @@
 package groove.gui.jgraph;
 
-import groove.control.graph.ControlGraph;
-import groove.control.graph.ControlNode;
+import groove.control.CtrlAut;
+import groove.control.CtrlState;
 import groove.gui.look.Look;
 
 /**
@@ -9,13 +9,14 @@ import groove.gui.look.Look;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<ControlGraph>,CtrlJEdge> {
+public class OldCtrlJVertex extends
+        AJVertex<CtrlAut,OldCtrlJGraph,JModel<CtrlAut>,OldCtrlJEdge> {
     /**
      * Creates a new instance.
      * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)}
      * to initialise.
      */
-    private CtrlJVertex() {
+    private OldCtrlJVertex() {
         // empty
     }
 
@@ -28,23 +29,25 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
     }
 
     @Override
-    public ControlNode getNode() {
-        return (ControlNode) super.getNode();
+    public CtrlState getNode() {
+        return (CtrlState) super.getNode();
     }
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isStart() {
-        return getNode() != null && getNode().getNumber() == 0;
+        return getNode() != null
+            && getNode().getAut().getStart().equals(getNode());
     }
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isFinal() {
-        return getNode() != null && getNode().getPosition().isFinal();
+        return getNode() != null
+            && getNode().getAut().getFinal().equals(getNode());
     }
 
     /** Indicates if this jVertex corresponds to a transient control state. */
     public boolean isTransient() {
-        return getNode() != null && getNode().getPosition().getDepth() > 0;
+        return getNode() != null && getNode().isTransient();
     }
 
     @Override
@@ -59,9 +62,9 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
     }
 
     /** Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)} to initialise.
+     * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)} to initialise. 
      */
-    public static CtrlJVertex newInstance() {
-        return new CtrlJVertex();
+    public static OldCtrlJVertex newInstance() {
+        return new OldCtrlJVertex();
     }
 }

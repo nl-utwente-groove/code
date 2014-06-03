@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -86,7 +86,7 @@ public class Assignment {
     /**
      * Applies this assignment to a given frame valuation.
      * {@link Source#ANCHOR}
-     * and {@link Source#CREATOR} are ignored, meaning that the corresponding 
+     * and {@link Source#CREATOR} are ignored, meaning that the corresponding
      * values are set to {@code null}.
      */
     public HostNode[] apply(Object[] val) {
@@ -95,7 +95,6 @@ public class Assignment {
         Object[] parentValues = Valuator.pop(val);
         for (int i = 0; i < bindings.length; i++) {
             Binding bind = bindings[i];
-            int index = bind.getIndex();
             HostNode value;
             switch (bind.getSource()) {
             case ANCHOR:
@@ -106,13 +105,13 @@ public class Assignment {
                 assert parentValues != null : String.format(
                     "Can't apply %s: valuation %s does not have parent level", this,
                     Valuator.toString(val));
-                value = Valuator.get(parentValues, index);
+                value = Valuator.get(parentValues, bind.getIndex());
                 break;
             case CONST:
                 value = bind.getValue().getNode();
                 break;
             case VAR:
-                value = Valuator.get(val, index);
+                value = Valuator.get(val, bind.getIndex());
                 break;
             default:
                 assert false;
@@ -198,7 +197,7 @@ public class Assignment {
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
         for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
-            // all initial state variables are formal input parameters 
+            // all initial state variables are formal input parameters
             Integer ix = sig.get(var);
             assert ix != null;
             // look up the corresponding argument in the call
@@ -215,8 +214,8 @@ public class Assignment {
     }
 
     /**
-     * Computes the variable assignment for the location where control returns 
-     * after a template call, from the variables in the final state of the 
+     * Computes the variable assignment for the location where control returns
+     * after a template call, from the variables in the final state of the
      * template and the source state of the call.
      * @param swit the template call
      */
@@ -227,7 +226,7 @@ public class Assignment {
         List<CtrlVar> callerVars = swit.getSourceVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         Map<CtrlVar,Integer> finalVars =
-            ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
+                ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
         for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;

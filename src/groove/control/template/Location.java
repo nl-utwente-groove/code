@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -102,7 +102,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         return getType() == Type.TRIAL;
     }
 
-    /** 
+    /**
      * Sets the attempt of this location.
      */
     public void setAttempt(SwitchAttempt attempt) {
@@ -121,15 +121,12 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     /** The set of outgoing call edges. */
     private SwitchAttempt attempt;
 
-    /** Indicates if this location has a non-empty set of control variables. */
+    @Override
     public boolean hasVars() {
         return !getVars().isEmpty();
     }
 
-    /**
-     * Returns the list of control variables in this location,
-     * ordered alphabetically according to their names.
-     */
+    @Override
     public List<CtrlVar> getVars() {
         if (this.vars == null) {
             getTemplate().initVars();

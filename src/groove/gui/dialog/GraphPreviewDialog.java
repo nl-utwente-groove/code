@@ -1,6 +1,7 @@
 package groove.gui.dialog;
 
 import groove.control.CtrlAut;
+import groove.control.graph.ControlGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -15,6 +16,7 @@ import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.OldCtrlJGraph;
 import groove.gui.jgraph.PlainJGraph;
 
 import java.awt.Dialog;
@@ -34,7 +36,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Dialog showing an given graph in the most appropriate
- * GUI component. 
+ * GUI component.
  */
 public class GraphPreviewDialog<G extends Graph> extends JDialog {
     /** Constructs a new dialog, for a given graph. */
@@ -108,8 +110,10 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         Graph shownGraph = this.graph;
         switch (this.graph.getRole()) {
         case CTRL:
-            if (shownGraph instanceof CtrlAut) {
+            if (shownGraph instanceof ControlGraph) {
                 jGraph = new CtrlJGraph(this.simulator);
+            } else if (shownGraph instanceof CtrlAut) {
+                jGraph = new OldCtrlJGraph(this.simulator);
             }
             break;
         case HOST:
@@ -166,7 +170,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     /**
-     * Creates a dialog for the given graph and (possibly {@code null}) 
+     * Creates a dialog for the given graph and (possibly {@code null})
      * simulator, and sets it to visible.
      */
     public static <G extends Graph> void showGraph(Simulator simulator, G graph) {

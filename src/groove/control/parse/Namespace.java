@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: Namespace.java,v 1.4 2008-02-05 13:27:53 rensink Exp $
  */
 package groove.control.parse;
@@ -19,9 +19,8 @@ package groove.control.parse;
 import groove.algebra.AlgebraFamily;
 import groove.control.Callable;
 import groove.control.CtrlAut;
-import groove.control.CtrlPar;
-import groove.control.Function;
 import groove.control.Procedure;
+import groove.control.template.Switch.Kind;
 import groove.control.term.Term;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
@@ -48,7 +47,7 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class Namespace implements ParseInfo {
-    /** Constructs a new name space, on the basis of a given algebra family. 
+    /** Constructs a new name space, on the basis of a given algebra family.
      * @param checkDependencies flag to determine whether the name space
      * should check for circular dependencies and forward references.
      */
@@ -65,7 +64,7 @@ public class Namespace implements ParseInfo {
     private final AlgebraFamily family;
 
     /** Indicates if the name space should check for circular
-     * dependencies ({@link #addDependency}) and
+     * dependencies ({@link #addCall}) and
      * call resolution ({@link #isResolved} and
      * {@link #resolveFunctions}.
      */
@@ -76,43 +75,16 @@ public class Namespace implements ParseInfo {
     private final boolean checkDependencies;
 
     /**
-     * Adds a function or recipe name to the set of declared names.
+     * Adds a function or recipe to the set of declared procedures.
      * @return {@code true} if the name is new.
      */
-    public boolean addFunction(String fullName, int priority,
-            List<CtrlPar.Var> sig, String controlName, int startLine) {
-        boolean result = !hasCallable(fullName);
-        if (result) {
-            addProcedure(new Function(fullName, priority, sig, controlName,
-                startLine));
-        }
-        return result;
-    }
-
-    /**
-     * Adds a function or recipe name to the set of declared names.
-     * @return {@code true} if the name is new.
-     */
-    public boolean addRecipe(String fullName, int priority,
-            List<CtrlPar.Var> sig, String controlName, int startLine) {
-        boolean result = !hasCallable(fullName);
-        if (result) {
-            this.topNames.add(fullName);
-            addProcedure(new Recipe(fullName, priority, sig, controlName,
-                startLine));
-        }
-        return result;
-    }
-
-    private void addProcedure(Procedure proc) {
+    public boolean addProcedure(Procedure proc) {
         String fullName = proc.getFullName();
-        this.callableMap.put(fullName, proc);
-        Set<String> callers = new HashSet<String>();
-        this.callerMap.put(fullName, callers);
-        callers.add(fullName);
-        Set<String> callees = new HashSet<String>();
-        callees.add(fullName);
-        this.calleeMap.put(fullName, callees);
+        boolean result = !hasCallable(fullName);
+        if (result) {
+            this.callableMap.put(fullName, proc);
+        }
+        return result;
     }
 
     /**
@@ -123,7 +95,6 @@ public class Namespace implements ParseInfo {
         boolean result = !hasCallable(ruleName);
         if (result) {
             this.callableMap.put(ruleName, rule);
-            this.topNames.add(ruleName);
         }
         return result;
     }
@@ -137,8 +108,7 @@ public class Namespace implements ParseInfo {
     public void addBody(String name, CtrlAut body) {
         Callable unit = getCallable(name);
         assert unit != null : String.format("Unknown name %s", name);
-        assert unit instanceof Procedure : String.format(
-            "Non-procedure name %s", name);
+        assert unit instanceof Procedure : String.format("Non-procedure name %s", name);
         if (unit instanceof Recipe) {
             Recipe recipe = (Recipe) unit;
             body = body.clone(recipe);
@@ -167,9 +137,45 @@ public class Namespace implements ParseInfo {
         return this.callableMap.values();
     }
 
+    /** Tries to add a dependency from a caller to a callee.
+     * @return {@code false} if this call an illegal circular dependency.
+     */
+    public boolean addCall(String caller, String callee) {
+        boolean result = true;
+        if (caller != null) {
+            Set<String> parentCallers = getFromMap(this.callerMap, caller);
+            Set<String> callees = getFromMap(this.calleeMap, caller);
+            result = !isCheckDependencies() || !parentCallers.contains(callee);
+            if (callees.add(callee)) {
+                Set<String> childCallees = getFromMap(this.calleeMap, callee);
+                for (String parentCaller : parentCallers) {
+                    getFromMap(this.calleeMap, parentCaller).addAll(childCallees);
+                }
+                for (String childCallee : childCallees) {
+                    getFromMap(this.callerMap, childCallee).addAll(parentCallers);
+                }
+            }
+        }
+        this.usedNames.add(callee);
+        return result;
+    }
+
+    private Set<String> getFromMap(Map<String,Set<String>> map, String key) {
+        Set<String> result = map.get(key);
+        if (result == null) {
+            map.put(key, result = new HashSet<String>());
+            result.add(key);
+        }
+        return result;
+    }
+
     /** Mapping from declared callable unit names to the units. */
-    private final Map<String,Callable> callableMap =
-        new TreeMap<String,Callable>();
+    private final Map<String,Callable> callableMap = new TreeMap<String,Callable>();
+
+    /** Mapping from function names to other functions being invoked from it. */
+    private final Map<String,Set<String>> calleeMap = new HashMap<String,Set<String>>();
+    /** Mapping from function names to other functions invoking it. */
+    private final Map<String,Set<String>> callerMap = new HashMap<String,Set<String>>();
 
     /** Sets the full name of the control program currently being explored. */
     public void setControlName(String controlName) {
@@ -194,66 +200,43 @@ public class Namespace implements ParseInfo {
 
     /**
      * Returns the set of all top-level rule and recipe names.
-     * Rules and recipes invoked from (other) recipes are 
+     * Rules and recipes directly or indirectly invoked from (other) procedures are
      * excluded from this set.
      */
     public Set<String> getTopNames() {
+        if (this.topNames == null) {
+            this.topNames = new TreeSet<String>();
+            Set<String> calledNames = new HashSet<String>();
+            for (Map.Entry<String,Callable> entry : this.callableMap.entrySet()) {
+                String name = entry.getKey();
+                Kind kind = entry.getValue().getKind();
+                if (kind.isAction()) {
+                    this.topNames.add(name);
+                    if (kind.isProcedure()) {
+                        Set<String> newCalledNames = new HashSet<String>(this.calleeMap.get(name));
+                        newCalledNames.remove(name);
+                        calledNames.addAll(newCalledNames);
+                    }
+                }
+            }
+            this.topNames.removeAll(calledNames);
+        }
         return this.topNames;
     }
 
     /** Set of top-level rule and recipe names. */
-    private final Set<String> topNames = new TreeSet<String>();
+    private Set<String> topNames;
 
-    /** 
-     * Signals that a given name should be added to the used names.
-     * The name should be a known rule or recipe name. 
-     */
-    public void addUsedName(String name) {
-        this.usedNames.add(name);
-    }
-
-    /** Returns the set of all used rules,
-     * i.e., all rules for which {@link Namespace#addUsedName(String)}
+    /** Returns the set of all used names,
+     * i.e., all rules for which {@link #addCall(String, String)}
      * has been invoked.
      */
     public Set<String> getUsedNames() {
         return this.usedNames;
     }
 
-    /** Set of used rule names. */
+    /** Set of callable names appearing explicitly in the control program. */
     private final Set<String> usedNames = new HashSet<String>();
-
-    /** 
-     * Indicates if a certain procedure name has been resolved. 
-     */
-    public boolean isResolved(String name) {
-        return !isCheckDependencies() || this.resolved.contains(name);
-    }
-
-    private Set<String> resolved = new HashSet<String>();
-
-    /** Tries to add a dependency from a caller to a callee.
-     * @return {@code true} if the dependency was added; {@code false} if this
-     * was prevented by a circularity
-     */
-    public boolean addDependency(String caller, String callee) {
-        boolean result = true;
-        if (isCheckDependencies()) {
-            Set<String> parentCallers = this.callerMap.get(caller);
-            Set<String> callees = this.calleeMap.get(caller);
-            result = !parentCallers.contains(callee);
-            if (result && callees.add(callee)) {
-                Set<String> childCallees = this.calleeMap.get(callee);
-                for (String parentCaller : parentCallers) {
-                    this.calleeMap.get(parentCaller).addAll(childCallees);
-                }
-                for (String childCallee : childCallees) {
-                    this.callerMap.get(childCallee).addAll(parentCallers);
-                }
-            }
-        }
-        return result;
-    }
 
     /**
      * Returns a set of function names in an order in which there are no
@@ -274,7 +257,7 @@ public class Namespace implements ParseInfo {
                 while (remainingIter.hasNext()) {
                     candidate = remainingIter.next();
                     resolved.add(candidate);
-                    if (resolved.containsAll(this.calleeMap.get(candidate))) {
+                    if (isAllResolved(candidate, resolved)) {
                         remainingIter.remove();
                         break;
                     } else {
@@ -295,13 +278,26 @@ public class Namespace implements ParseInfo {
         return result;
     }
 
-    /** Mapping from function names to other functions being invoked from it. */
-    private final Map<String,Set<String>> calleeMap =
-        new HashMap<String,Set<String>>();
+    /** Tests if all the called procedures from a given procedure have been resolved. */
+    private boolean isAllResolved(String candidate, Set<String> resolved) {
+        boolean result = true;
+        for (String callee : this.calleeMap.get(candidate)) {
+            if (getCallable(callee).getKind().isProcedure() && !resolved.contains(callee)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
 
-    /** Mapping from function names to other functions invoking it. */
-    private final Map<String,Set<String>> callerMap =
-        new HashMap<String,Set<String>>();
+    /**
+     * Indicates if a certain procedure name has been resolved.
+     */
+    public boolean isResolved(String name) {
+        return !isCheckDependencies() || this.resolved.contains(name);
+    }
+
+    private Set<String> resolved = new HashSet<String>();
 
     @Override
     public String toString() {

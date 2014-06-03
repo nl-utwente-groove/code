@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -23,7 +23,6 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.control.CtrlFrame;
 import groove.grammar.Grammar;
-import groove.grammar.host.HostGraph;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -48,7 +47,7 @@ import java.util.Set;
 /**
  * The graph transition system for abstract exploration. All states of this
  * GTS are of type ShapeState or ShapeNextState.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class AGTS extends GTS {
@@ -107,7 +106,7 @@ public final class AGTS extends GTS {
     // ------------------------------------------------------------------------
 
     /**
-     * Adds the given state to the abstract GTS. 
+     * Adds the given state to the abstract GTS.
      * The given state must be of type ShapeState or ShapeNextState.
      * While trying to add the new state, subsumption is computed in both
      * directions. If the state is fresh, this method goes over the subsumed
@@ -173,17 +172,16 @@ public final class AGTS extends GTS {
     }
 
     @Override
-    protected Shape createStartGraph(HostGraph startGraph) {
-        Shape result = Shape.createShape(startGraph);
-        return result;
+    protected Shape createStartGraph() {
+        return Shape.createShape(getGrammar().getStartGraph());
     }
 
     @Override
-    protected ShapeState createStartState(HostGraph startGraph) {
+    protected ShapeState createStartState() {
         CtrlFrame startFrame =
             CtrlFrame.NEW_CONTROL ? getGrammar().getControl().getStart()
                     : getGrammar().getCtrlAut().getStart();
-        ShapeState result = new ShapeState(this, (Shape) startGraph, startFrame, 0);
+        ShapeState result = new ShapeState(this, createStartGraph(), startFrame, 0);
         return result;
     }
 
@@ -389,7 +387,7 @@ public final class AGTS extends GTS {
 
         /**
          * Compares the given states both for (in)equality and subsumption.
-         * Bear in mind that this method has side-effects. 
+         * Bear in mind that this method has side-effects.
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
