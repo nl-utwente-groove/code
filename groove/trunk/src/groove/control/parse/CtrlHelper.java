@@ -27,7 +27,7 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.control.template.Switch;
+import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
@@ -228,19 +228,19 @@ public class CtrlHelper {
             }
             List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
-            if (unitTree.getType() == CtrlParser.FUNCTION) {
-                // it's a function
-                this.namespace.addFunction(fullName, priority, parList, controlName,
-                    unitTree.getLine());
-                result = true;
-            } else {
-                // it's a recipe
-                this.namespace.addRecipe(fullName, priority, parList, controlName,
-                    unitTree.getLine());
-            }
+            Kind kind = toProcKind(unitTree);
+            this.namespace.addProcedure(Procedure.newInstance(fullName, kind, priority, parList,
+                controlName, unitTree.getLine()));
             result = true;
         }
         return result;
+    }
+
+    /**
+     * Converts a tree token type to a procedure kind.
+     */
+    private Kind toProcKind(CtrlTree tree) {
+        return tree.getType() == CtrlParser.FUNCTION ? Kind.FUNCTION : Kind.RECIPE;
     }
 
     /**
@@ -263,35 +263,22 @@ public class CtrlHelper {
         return result;
     }
 
-    /** Starts a function or recipe declaration. */
+    /** Starts a procedure declaration. */
     void startBody(CtrlTree unitTree) {
-        assert this.procName == null;
-        this.procName = qualify(unitTree.getChild(0).getText());
-        switch (unitTree.getType()) {
-        case CtrlChecker.RECIPE:
-            this.procKind = Kind.RECIPE;
-            break;
-        case CtrlChecker.FUNCTION:
-            this.procKind = Kind.FUNCTION;
-            break;
-        default:
-            assert false;
-        }
+        setContext(unitTree);
         this.initVars.clear();
         openScope();
     }
 
-    /** Sets the current function name to {@code null}. */
+    /** Ends a procedure declaration. */
     void endBody(CtrlTree bodyTree) {
-        assert this.procName != null;
         for (String outPar : this.symbolTable.getOutPars()) {
             if (!this.initVars.contains(outPar)) {
                 emitErrorMessage(bodyTree, "Output parameter %s may fail to be initialised", outPar);
             }
         }
         closeScope();
-        this.procName = null;
-        this.procKind = null;
+        resetContext();
     }
 
     /** Prefixes a given name with the current procedure name, if any. */
@@ -299,10 +286,36 @@ public class CtrlHelper {
         return procName == null ? name : procName + "." + name;
     }
 
-    /** The function or transaction name currently processed. */
+    /** Sets the context being processed to a given procedure. */
+    void setContext(CtrlTree unitTree) {
+        assert this.procName == null;
+        String procName = qualify(unitTree.getChild(0).getText());
+        this.procName = procName;
+        this.procKind = toProcKind(unitTree);
+    }
+
+    /** Resets the context being processed. */
+    void resetContext() {
+        assert this.procName != null;
+        this.procName = null;
+        this.procKind = null;
+    }
+
+    /** The procedure name currently processed. */
     private String procName;
     /** The kind of {@link #procName}. */
-    private Switch.Kind procKind;
+    private Kind procKind;
+
+    /**
+     * Registers a call dependency.
+     */
+    void registerCall(CtrlTree callTree) {
+        String from = this.procName;
+        String to = callTree.getText();
+        if (!this.namespace.addCall(from, to)) {
+            emitErrorMessage(callTree, "Call from %s to %s causes a circular dependency", from, to);
+        }
+    }
 
     /** Adds a formal parameter to the symbol table. */
     boolean declarePar(CtrlTree nameTree, CtrlTree typeTree, CtrlTree out) {
@@ -397,8 +410,8 @@ public class CtrlHelper {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getAlgebraFamily();
             CtrlPar result =
-                    new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
-                        family.toValue(constant));
+                new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
+                    family.toValue(constant));
             argTree.setCtrlPar(result);
             return result;
         } catch (FormatException e) {
@@ -406,7 +419,7 @@ public class CtrlHelper {
             // by the control parser
             assert false : String.format("%s is not a parsable constant",
                 argTree.getChild(0).getText());
-        return null;
+            return null;
         }
     }
 
@@ -434,12 +447,8 @@ public class CtrlHelper {
             }
             if (checkCall(callTree, unitName, args)) {
                 // create the call
-                this.namespace.addUsedName(unitName);
                 Callable unit = this.namespace.getCallable(unitName);
                 result = new CtrlCall(unit, args);
-                if (unit.getKind().isProcedure() && this.procName != null) {
-                    addDependency(callTree, this.procName, unitName);
-                }
                 callTree.setCtrlCall(result);
             }
         }
@@ -450,9 +459,7 @@ public class CtrlHelper {
         if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
-        Set<String> anyNames = new HashSet<String>(this.namespace.getTopNames());
-        anyNames.removeAll(this.namespace.getUsedNames());
-        checkGroupCall(anyTree, anyNames);
+        checkGroupCall(anyTree, this.namespace.getTopNames());
     }
 
     void checkOther(CtrlTree otherTree) {
@@ -541,7 +548,7 @@ public class CtrlHelper {
     /** Reorders the functions according to their dependencies. */
     void reorderFunctions(CtrlTree functionsTree) {
         assert functionsTree.getType() == CtrlChecker.FUNCTIONS
-                || functionsTree.getType() == CtrlChecker.RECIPES;
+            || functionsTree.getType() == CtrlChecker.RECIPES;
         int functionsCount = functionsTree.getChildCount();
         Map<String,CtrlTree> functionMap = new LinkedHashMap<String,CtrlTree>();
         for (int i = 0; i < functionsCount; i++) {
@@ -557,17 +564,6 @@ public class CtrlHelper {
                 functionsTree.setChild(i, functionMap.get(name));
                 i++;
             }
-        }
-    }
-
-    /**
-     * Registers that the control unit named {@code from} depends on (i.e., calls) the
-     * control unit named {@code to}.
-     */
-    private void addDependency(CtrlTree marker, String from, String to) {
-        if (!this.namespace.addDependency(from, to)) {
-            emitErrorMessage(marker, "Function %s calling %s causes a circular dependency", from,
-                to);
         }
     }
 

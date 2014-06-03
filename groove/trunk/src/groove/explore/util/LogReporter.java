@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,6 +17,7 @@
 package groove.explore.util;
 
 import static groove.explore.Verbosity.HIGH;
+import groove.control.CtrlFrame;
 import groove.explore.Exploration;
 import groove.explore.Verbosity;
 import groove.io.FileType;
@@ -109,21 +110,17 @@ public class LogReporter extends AExplorationReporter {
                 this.log.append(getExploration().getLastMessage());
             }
             String logId =
-                getGTS().getGrammar().getId()
-                    + "-"
-                    + this.startTime.toString().replace(' ', '_').replace(':',
-                        '-');
+                    getGTS().getGrammar().getId() + "-"
+                    + this.startTime.toString().replace(' ', '_').replace(':', '-');
             String logFileName = FileType.LOG.addExtension(logId);
-            PrintWriter logFile =
-                new PrintWriter(new File(this.logDir, logFileName));
+            PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName));
             try {
                 // copy the initial messages
                 logFile.print(this.log.toString());
                 // copy the garbage collector log, if any, to the log file
                 File gcLogFile = new File(GC_LOG_NAME);
                 if (gcLogFile.exists()) {
-                    BufferedReader gcLog =
-                        new BufferedReader(new FileReader(gcLogFile));
+                    BufferedReader gcLog = new BufferedReader(new FileReader(gcLogFile));
                     List<String> gcList = new ArrayList<String>();
                     String nextLine = gcLog.readLine();
                     while (nextLine != null) {
@@ -148,9 +145,12 @@ public class LogReporter extends AExplorationReporter {
     /** Emits the message announcing the parameters of the exploration. */
     protected void emitStartMessage() {
         emit("Grammar:\t%s%n", getGTS().getGrammar().getName());
-        emit("Start graph:\t%s%n",
-            getGTS().getGrammar().getStartGraph().getName());
-        emit("Control:\t%s%n", getGTS().getGrammar().getCtrlAut().getName());
+        emit("Start graph:\t%s%n", getGTS().getGrammar().getStartGraph().getName());
+        if (CtrlFrame.NEW_CONTROL) {
+            emit("Control:\t%s%n", getGTS().getGrammar().getControl().getName());
+        } else {
+            emit("Control:\t%s%n", getGTS().getGrammar().getCtrlAut().getName());
+        }
         emit("Exploration:\t%s%n", getExploration().getIdentifier());
         emit("Timestamp:\t%s%n", this.startTime);
     }

@@ -31,6 +31,8 @@ import groove.grammar.model.FormatException;
 import groove.util.Duo;
 import groove.util.Fixable;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -176,6 +178,40 @@ public class Program implements Fixable {
     }
 
     private final Map<String,Procedure> procs = new TreeMap<String,Procedure>();
+
+    /** Returns the (main and procedural) templates defined in a given control program. */
+    public Collection<Template> getTemplates(String controlName) {
+        assert isFixed();
+        return getTemplateMap().get(controlName);
+    }
+
+    /**
+     * Lazily constructs and returns a mapping from control program names
+     * to templates defined therein.
+     */
+    private Map<String,Collection<Template>> getTemplateMap() {
+        assert isFixed();
+        if (this.templateMap == null) {
+            this.templateMap = new HashMap<String,Collection<Template>>();
+            for (String name : this.names) {
+                getTemplateEntry(name).add(getTemplate());
+            }
+            for (Procedure proc : getProcs().values()) {
+                getTemplateEntry(proc.getControlName()).add(proc.getTemplate());
+            }
+        }
+        return this.templateMap;
+    }
+
+    private Collection<Template> getTemplateEntry(String controlName) {
+        Collection<Template> result = this.templateMap.get(controlName);
+        if (result == null) {
+            this.templateMap.put(controlName, result = new ArrayList<Template>());
+        }
+        return result;
+    }
+
+    private Map<String,Collection<Template>> templateMap;
 
     /**
      * Adds all procedures of another, disjoint program to this one.

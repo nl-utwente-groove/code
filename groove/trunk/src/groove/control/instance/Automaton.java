@@ -1,24 +1,27 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.control.instance;
 
+import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
+import groove.control.template.Program;
 import groove.control.template.SwitchStack;
 import groove.control.template.Template;
+import groove.grammar.host.HostFactory;
 import groove.util.collect.Pool;
 
 import java.util.HashSet;
@@ -33,17 +36,33 @@ import java.util.Set;
  */
 public class Automaton {
     /**
-     * Instantiates a given template.
+     * Instantiates a given (fixed) control program.
      */
-    public Automaton(Template template) {
-        this.template = template;
+    public Automaton(Program program) {
+        assert program.isFixed();
+        this.program = program;
+        this.template = program.getTemplate();
         this.framePool = new Pool<Frame>();
         Frame start = new Frame(this, getTemplate().getStart(), new SwitchStack());
         start.setFixed();
         this.start = addFrame(start);
     }
 
-    /** Returns the template from which this control instance has been created. */
+    /** Returns the name of the automaton.
+     * This equals the automaton template's name.
+     */
+    public String getName() {
+        return getTemplate().getName();
+    }
+
+    /** Returns the program from which this control automaton has been created. */
+    public Program getProgram() {
+        return this.program;
+    }
+
+    private final Program program;
+
+    /** Returns the template from which this control automaton has been created. */
     public Template getTemplate() {
         return this.template;
     }
@@ -52,13 +71,12 @@ public class Automaton {
 
     /** Returns the start frame of the automaton. */
     public Frame getStart() {
-
         return this.start;
     }
 
     private final Frame start;
 
-    /** 
+    /**
      * Adds the canonical version of a frame to this automaton.
      * @param frame the frame to be added; non-{@code null}
      * @return either {@code frame} or an equal copy that was already in the automaton
@@ -88,6 +106,14 @@ public class Automaton {
     }
 
     private final Pool<Frame> framePool;
+
+    /** Computes and inserts the host nodes to be used for constant value arguments. */
+    public void initialise(HostFactory factory) {
+        getProgram().getTemplate().initialise(factory);
+        for (Procedure proc : getProgram().getProcs().values()) {
+            proc.getTemplate().initialise(factory);
+        }
+    }
 
     /** Fully explores this automaton. */
     public void explore() {

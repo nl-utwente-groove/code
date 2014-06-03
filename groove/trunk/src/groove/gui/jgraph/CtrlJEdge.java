@@ -1,9 +1,8 @@
 package groove.gui.jgraph;
 
-import groove.control.CtrlAut;
 import groove.control.CtrlTransition;
-import groove.graph.Edge;
-import groove.gui.look.Look;
+import groove.control.graph.ControlEdge;
+import groove.control.graph.ControlGraph;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
 
@@ -12,22 +11,15 @@ import groove.util.Groove;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJEdge extends
-        AJEdge<CtrlAut,CtrlJGraph,JModel<CtrlAut>,CtrlJVertex> {
+public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGraph>,CtrlJVertex> {
     /** Constructor for a prototype object. */
     private CtrlJEdge() {
         // empty
     }
 
     @Override
-    public CtrlTransition getEdge() {
-        return (CtrlTransition) super.getEdge();
-    }
-
-    @Override
-    public boolean isCompatible(Edge edge) {
-        return super.isCompatible(edge)
-            && ((CtrlTransition) edge).isInitial() == getEdge().isInitial();
+    public ControlEdge getEdge() {
+        return (ControlEdge) super.getEdge();
     }
 
     @Override
@@ -44,34 +36,18 @@ public class CtrlJEdge extends
             CtrlTransition trans = (CtrlTransition) part;
             String description;
             description = trans.label().text();
-            displayedLabels[labelIndex] =
-                HTMLConverter.STRONG_TAG.on(description, true);
+            displayedLabels[labelIndex] = HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
         }
         if (displayedLabels.length == 1) {
             result.append(displayedLabels[0]);
         } else {
-            result.append(Groove.toString(displayedLabels, "<br>- ", "",
-                "<br>- "));
+            result.append(Groove.toString(displayedLabels, "<br>- ", "", "<br>- "));
         }
         return result.toString();
     }
 
-    @Override
-    protected Look getStructuralLook() {
-        Look result;
-        boolean omega = getEdge().getCall().isOmega();
-        boolean exitsRecipe =
-            getEdge().isInitial() && getEdge().source().isTransient();
-        if (exitsRecipe) {
-            result = omega ? Look.CTRL_OMEGA_EXIT_TRANS : Look.CTRL_EXIT_TRANS;
-        } else {
-            result = omega ? Look.CTRL_OMEGA_TRANS : Look.BASIC;
-        }
-        return result;
-    }
-
-    /** 
+    /**
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} to initialise.
      */

@@ -338,7 +338,7 @@ public class AutomatonBuildTest {
         try {
             prog = createLoader().parse(controlName, program).check().toProgram();
             prog.setFixed();
-            result = new Automaton(prog.getTemplate());
+            result = new Automaton(prog);
         } catch (FormatException e) {
             fail(e.toString());
         }
@@ -366,7 +366,7 @@ public class AutomatonBuildTest {
         Automaton result = null;
         try {
             this.prog = this.loader.buildProgram(this.controlNames);
-            result = new Automaton(this.prog.getTemplate());
+            result = new Automaton(this.prog);
         } catch (FormatException e) {
             fail(e.toString());
         }

@@ -21,6 +21,7 @@ import groove.algebra.SignatureKind;
 import groove.control.CtrlFrame;
 import groove.control.CtrlState;
 import groove.control.CtrlVar;
+import groove.control.Position;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectKind;
@@ -43,6 +44,7 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
+import groove.gui.jgraph.OldCtrlJVertex;
 import groove.gui.look.Line.Style;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
@@ -95,7 +97,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = getLTSJVertexLabel((LTSJVertex) jVertex);
             break;
         case CTRL:
-            result = getCtrlJVertexLabel((CtrlJVertex) jVertex);
+            result =
+            jVertex instanceof OldCtrlJVertex
+            ? getOldCtrlJVertexLabel((OldCtrlJVertex) jVertex)
+                    : getCtrlJVertexLabel((CtrlJVertex) jVertex);
             break;
         default:
             result = getBasicVertexLabel(jVertex);
@@ -325,7 +330,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /**
      * Appends the bound variables to the lines, if this list is not empty
      */
-    private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
+    private MultiLabel getOldCtrlJVertexLabel(OldCtrlJVertex jVertex) {
         MultiLabel result = getBasicVertexLabel(jVertex);
         CtrlState state = jVertex.getNode();
         List<CtrlVar> boundVars = state.getVars();
@@ -340,6 +345,20 @@ public class LabelValue implements VisualValue<MultiLabel> {
             action.append(state.getRecipe().getFullName());
             action.append('>');
             result.add(Line.atom(action.toString()), Direct.NONE);
+        }
+        return result;
+    }
+
+    /**
+     * Appends the bound variables to the lines, if this list is not empty
+     */
+    private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
+        MultiLabel result = getBasicVertexLabel(jVertex);
+        Position<?,?> state = jVertex.getNode().getPosition();
+        if (state.hasVars()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(state.getVars().toString());
+            result.add(Line.atom(sb.toString()), Direct.NONE);
         }
         return result;
     }

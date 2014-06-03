@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.model;
@@ -21,7 +21,6 @@ import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.PROLOG;
 import static groove.grammar.model.ResourceKind.RULE;
 import static groove.grammar.model.ResourceKind.TYPE;
-import groove.control.CtrlAut;
 import groove.explore.Exploration;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
@@ -72,7 +71,7 @@ public class GrammarModel implements Observer {
         String grammarVersion = store.getProperties().getGrammarVersion();
         boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
         if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
-            && noActiveStartGraphs) {
+                && noActiveStartGraphs) {
             setLocalActiveNames(HOST, Groove.DEFAULT_START_GRAPH_NAME);
         }
         for (ResourceKind resource : ResourceKind.all(false)) {
@@ -108,7 +107,7 @@ public class GrammarModel implements Observer {
         return result;
     }
 
-    /** 
+    /**
      * Sets a local properties object.
      * This circumvents the stored properties.
      * @param properties a local properties object; if {@code null}, the
@@ -201,14 +200,14 @@ public class GrammarModel implements Observer {
         return Collections.unmodifiableSet(result);
     }
 
-    /** 
+    /**
      * Convenience method for calling {@link #setLocalActiveNames(ResourceKind, Collection)}.
      */
     public void setLocalActiveNames(ResourceKind kind, String... names) {
         setLocalActiveNames(kind, Arrays.asList(names));
     }
 
-    /** 
+    /**
      * Locally sets the active names of a given resource kind in the grammar model.
      * This overrides (but does not change) the stored names.
      * @param kind the kind for which to set the active names
@@ -242,8 +241,8 @@ public class GrammarModel implements Observer {
      * @return the corresponding control program model, or <code>null</code> if
      *         no program by that name exists
      */
-    public OldControlModel getControlModel(String name) {
-        return (OldControlModel) getResource(CONTROL, name);
+    public ControlModel getControlModel(String name) {
+        return (ControlModel) getResource(CONTROL, name);
     }
 
     /**
@@ -287,9 +286,9 @@ public class GrammarModel implements Observer {
     /**
      * Lazily creates the composite control model for this grammar.
      */
-    public OldCompositeControlModel getControlModel() {
+    public CompositeControlModel getControlModel() {
         if (this.controlModel == null) {
-            this.controlModel = new OldCompositeControlModel(this);
+            this.controlModel = new CompositeControlModel(this);
         }
         return this.controlModel;
     }
@@ -354,14 +353,14 @@ public class GrammarModel implements Observer {
         return !getErrors().isEmpty();
     }
 
-    /** 
+    /**
      * Returns a fresh change tracker for the overall grammar model.
      */
     public Tracker createChangeTracker() {
         return this.changeCount.createTracker();
     }
 
-    /** 
+    /**
      * Returns a fresh change tracker for a given resource kind.
      */
     public Tracker createChangeTracker(ResourceKind kind) {
@@ -416,7 +415,7 @@ public class GrammarModel implements Observer {
             for (ResourceModel<?> model : getResourceSet(kind)) {
                 if (!QualName.isValid(model.getFullName(), null, null)) {
                     this.errors.add(new FormatError(kind.getName() + " name '"
-                        + model.getFullName() + "' " + "is an illegal identifier", model));
+                            + model.getFullName() + "' " + "is an illegal identifier", model));
                 }
             }
         }
@@ -453,12 +452,10 @@ public class GrammarModel implements Observer {
         }
         try {
             // set control
-            CtrlAut control = getControlModel().toResource();
             if (result.hasMultiplePriorities() && !getActiveNames(CONTROL).isEmpty()) {
                 errors.add("Rule priorities and explicit control cannot be used simultaneously");
             }
-            result.setCtrlAut(control);
-            result.setControl(getControlModel().getAutomaton());
+            result.setControl(getControlModel().toResource());
         } catch (FormatException e) {
             errors.addAll(e.getErrors());
         }
@@ -488,12 +485,12 @@ public class GrammarModel implements Observer {
         // Set the Prolog environment.
         result.setPrologEnvironment(this.getPrologEnvironment());
         errors.throwException();
-        assert result.getCtrlAut() != null : "Grammar must have control";
+        assert result.getControl() != null : "Grammar must have control";
         result.setFixed();
         return result;
     }
 
-    /** 
+    /**
      * Creates a Prolog environment that produces its standard output
      * on a the default {@link GrooveEnvironment} output stream.
      */
@@ -607,7 +604,7 @@ public class GrammarModel implements Observer {
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
-                    result = new OldControlModel(this, name, text);
+                    result = new ControlModel(this, name, text);
                     break;
                 case PROLOG:
                     result = new PrologModel(this, name, text);
@@ -665,7 +662,7 @@ public class GrammarModel implements Observer {
 
     /** Mapping from resource kinds and names to resource models. */
     private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
-        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
+            new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
@@ -673,19 +670,19 @@ public class GrammarModel implements Observer {
      * @see #localActiveNamesMap
      */
     private final Map<ResourceKind,SortedSet<String>> storedActiveNamesMap =
-        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+            new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * Where non-{@code null}, the values in this map override the {@link #storedActiveNamesMap}.
      */
     private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
-        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+            new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private final ChangeCount changeCount;
     private final Map<ResourceKind,ChangeCount> resourceChangeCounts =
-        new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
+            new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
     /** Local properties; if {@code null}, the stored properties are used. */
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
@@ -701,7 +698,7 @@ public class GrammarModel implements Observer {
     /** The type model composed from the individual elements. */
     private CompositeTypeModel typeModel;
     /** The control model composed from the individual control programs. */
-    private OldCompositeControlModel controlModel;
+    private CompositeControlModel controlModel;
     {
         for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
@@ -757,7 +754,7 @@ public class GrammarModel implements Observer {
      * @throws IOException if a store can be created but not loaded
      */
     static public GrammarModel newInstance(String location) throws IllegalArgumentException,
-        IOException {
+    IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {
@@ -786,7 +783,7 @@ public class GrammarModel implements Observer {
         /** Add elements that are not part of the set, and removes others. */
         TOGGLE;
 
-        /** 
+        /**
          * Apply a manipulation action. The boolean return value indicates if
          * the set was changed as a result of this operation.
          */

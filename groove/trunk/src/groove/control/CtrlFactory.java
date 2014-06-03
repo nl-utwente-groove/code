@@ -390,8 +390,7 @@ public class CtrlFactory {
                 break;
             case RECIPE:
                 Recipe recipe = (Recipe) action;
-                namespace.addRecipe(action.getFullName(), action.getPriority(),
-                    action.getSignature(), recipe.getControlName(), recipe.getStartLine());
+                namespace.addProcedure(recipe);
                 namespace.addBody(action.getFullName(), recipe.getBody());
             }
             int priority = action.getPriority();

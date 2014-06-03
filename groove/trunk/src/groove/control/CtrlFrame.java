@@ -89,5 +89,5 @@ public interface CtrlFrame {
     public List<CtrlVar> getVars();
 
     /** Flag determining if the new control implementation should be used. */
-    public final static boolean NEW_CONTROL = false;
+    public final static boolean NEW_CONTROL = true;
 }
