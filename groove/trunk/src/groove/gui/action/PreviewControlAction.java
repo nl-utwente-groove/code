@@ -91,8 +91,10 @@ public class PreviewControlAction extends SimulatorAction {
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
             ControlModel controlModel =
-                    (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
-            result = controlModel.toResource();
+                (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
+            if (controlModel != null) {
+                result = controlModel.toResource();
+            }
         }
         return result;
     }
