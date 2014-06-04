@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Supertype of {@link CtrlState} and {@link Frame}, used for the
+ * Supertype of the old {@code CtrlState} and {@link Frame}, used for the
  * purpose of a smooth transition to the new control implementation.
  * @author Arend Rensink
  * @version $Revision $
