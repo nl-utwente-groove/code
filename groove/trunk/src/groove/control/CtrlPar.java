@@ -107,7 +107,7 @@ public abstract class CtrlPar {
 
     /** Store of wildcard variables. */
     private static Map<CtrlType,List<Var>> wildMap =
-            new EnumMap<CtrlType,List<Var>>(CtrlType.class);
+        new EnumMap<CtrlType,List<Var>>(CtrlType.class);
 
     /** Returns the single untyped wildcard argument. */
     public static Wild wild() {
@@ -155,7 +155,8 @@ public abstract class CtrlPar {
                 return false;
             }
             Var other = (Var) obj;
-            return isInOnly() == other.isInOnly() && getVar().equals(other.getVar());
+            return isOutOnly() == other.isOutOnly() && isInOnly() == other.isInOnly()
+                && getVar().equals(other.getVar());
         }
 
         @Override
@@ -171,7 +172,7 @@ public abstract class CtrlPar {
         @Override
         public int hashCode() {
             int result = isInOnly() ? 0 : isOutOnly() ? 1 : 2;
-            result += getVar().hashCode();
+            result = result * 31 + getVar().hashCode();
             return result;
         }
 
