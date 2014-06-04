@@ -32,10 +32,11 @@ import java.util.Set;
  * @version $Revision $
  */
 public class Recipe extends Procedure implements Action {
-    /** Constructs a recipe from a control automaton, given a priority. */
+    /** Constructs a recipe. */
     public Recipe(String fullName, int priority, List<CtrlPar.Var> signature, String controlName,
-            int startLine) {
-        super(fullName, Kind.RECIPE, priority, signature, controlName, startLine);
+            int startLine, GrammarProperties grammarProperties) {
+        super(fullName, Kind.RECIPE, signature, controlName, startLine, grammarProperties);
+        this.priority = priority;
     }
 
     /**
@@ -59,6 +60,23 @@ public class Recipe extends Procedure implements Action {
             }
         }
         return result;
+    }
+
+    @Override
+    public int getPriority() {
+        return this.priority;
+    }
+
+    private final int priority;
+
+    @Override
+    public String getTransitionLabel() {
+        return getFullName();
+    }
+
+    @Override
+    public String getFormatString() {
+        return "";
     }
 
     /**

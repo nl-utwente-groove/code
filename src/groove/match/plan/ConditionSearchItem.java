@@ -53,7 +53,7 @@ class ConditionSearchItem extends AbstractSearchItem {
      */
     public ConditionSearchItem(Condition condition) {
         this.condition = condition;
-        GrammarProperties properties = condition.getSystemProperties();
+        GrammarProperties properties = condition.getGrammarProperties();
         this.matcher = MatcherFactory.instance().createMatcher(condition);
         if (condition.hasPattern()) {
             this.intAlgebra = properties.getAlgebraFamily().getAlgebra(SignatureKind.INT);

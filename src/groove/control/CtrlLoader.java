@@ -17,13 +17,13 @@
 package groove.control;
 
 import static groove.io.FileType.CONTROL;
-import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
 import groove.control.template.Program;
 import groove.grammar.Action;
 import groove.grammar.Grammar;
+import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -50,15 +50,15 @@ import org.antlr.runtime.TokenRewriteStream;
  */
 public class CtrlLoader {
     /**
-     * Constructs a control loader for a given set of rules and algebra family.
-     * @param algebraFamily name of the algebra family to compute constant data values
+     * Constructs a control loader for a given set of rules and grammar properties.
+     * @param grammarProperties name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
      * @param checkDependencies flag to determine whether the name space
      * should check for circular dependencies and forward references.
      */
-    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules, boolean checkDependencies) {
-        this.family = algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
-        this.namespace = new Namespace(this.family, checkDependencies);
+    public CtrlLoader(GrammarProperties grammarProperties, Collection<Rule> rules,
+            boolean checkDependencies) {
+        this.namespace = new Namespace(grammarProperties, checkDependencies);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
         }
@@ -117,7 +117,7 @@ public class CtrlLoader {
                 actions.add((Action) unit);
             }
         }
-        return CtrlFactory.instance().buildDefault(actions, this.family);
+        return CtrlFactory.instance().buildDefault(actions, this.grammarProperties);
     }
 
     /** Returns a control program constructed from a set of program names. */
@@ -184,7 +184,7 @@ public class CtrlLoader {
     /** Namespace of this loader. */
     private Namespace namespace;
     /** Algebra family for this control loader. */
-    private AlgebraFamily family;
+    private GrammarProperties grammarProperties;
     /** Mapping from program names to corresponding syntax trees. */
     private final Map<String,CtrlTree> treeMap = new TreeMap<String,CtrlTree>();
 
@@ -207,8 +207,7 @@ public class CtrlLoader {
     public static CtrlAut run(Grammar grammar, String programName, String program)
         throws FormatException {
         CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties().getAlgebraFamily(), grammar.getAllRules(),
-                !CtrlFrame.NEW_CONTROL);
+            new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), !CtrlFrame.NEW_CONTROL);
         instance.parse(programName, program);
         return instance.buildAutomaton(programName).normalise();
     }
@@ -217,8 +216,7 @@ public class CtrlLoader {
     public static CtrlAut run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
         CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties().getAlgebraFamily(), grammar.getAllRules(),
-                    !CtrlFrame.NEW_CONTROL);
+            new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), !CtrlFrame.NEW_CONTROL);
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {

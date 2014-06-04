@@ -20,6 +20,7 @@ import groove.control.CtrlPar.Var;
 import groove.control.template.Switch.Kind;
 import groove.control.template.Template;
 import groove.control.term.Term;
+import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.util.Fixable;
@@ -39,21 +40,21 @@ public abstract class Procedure implements Callable, Fixable {
      * Constructor for subclassing.
      * @param fullName name of the unit
      * @param kind procedure kind
-     * @param priority priority of the unit
      * @param signature signature of the unit
      * @param controlName control program in which the unit has
      * been declared
      * @param startLine first line in the control program at
      * which the unit declaration starts
+     * @param grammarProperties grammar properties for this procedure
      */
-    protected Procedure(String fullName, Kind kind, int priority, List<Var> signature,
-            String controlName, int startLine) {
+    protected Procedure(String fullName, Kind kind, List<Var> signature, String controlName,
+            int startLine, GrammarProperties grammarProperties) {
         this.fullName = fullName;
-        this.priority = priority;
         this.signature = signature;
         this.controlName = controlName;
         this.startLine = startLine;
         this.kind = kind;
+        this.grammarProperties = grammarProperties;
     }
 
     @Override
@@ -67,13 +68,6 @@ public abstract class Procedure implements Callable, Fixable {
     }
 
     private final String fullName;
-
-    @Override
-    public int getPriority() {
-        return this.priority;
-    }
-
-    private final int priority;
 
     @Override
     public List<Var> getSignature() {
@@ -136,6 +130,14 @@ public abstract class Procedure implements Callable, Fixable {
     }
 
     private Template template;
+
+    /** Returns the grammar properties for this procedure. */
+    public GrammarProperties getGrammarProperties() {
+        return this.grammarProperties;
+    }
+
+    /** The grammar properties for this procedure. */
+    private final GrammarProperties grammarProperties;
 
     /** Sets the control automaton of the procedure. */
     public void setBody(CtrlAut body) {
@@ -216,7 +218,7 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getFullName()
-                + Groove.toString(getSignature().toArray(), "(", ")", ", ");
+            + Groove.toString(getSignature().toArray(), "(", ")", ", ");
     }
 
     @Override
@@ -246,17 +248,22 @@ public abstract class Procedure implements Callable, Fixable {
      * been declared
      * @param startLine first line in the control program at
      * which the unit declaration starts
+     * @param grammarProperties grammar properties for the new procedure
      */
     public static Procedure newInstance(String fullName, Kind kind, int priority,
-            List<Var> signature, String controlName, int startLine) {
+            List<Var> signature, String controlName, int startLine,
+            GrammarProperties grammarProperties) {
         assert kind.isProcedure();
         Procedure result;
         switch (kind) {
         case FUNCTION:
-            result = new Function(fullName, priority, signature, controlName, startLine);
+            result =
+                new Function(fullName, priority, signature, controlName, startLine,
+                    grammarProperties);
             break;
         case RECIPE:
-            result = new Recipe(fullName, priority, signature, controlName, startLine);
+            result =
+                new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
             break;
         default:
             assert false;

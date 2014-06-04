@@ -117,8 +117,9 @@ public class Rule implements Action, Fixable {
     }
 
     /** Returns the system properties. */
-    public GrammarProperties getSystemProperties() {
-        return getCondition().getSystemProperties();
+    @Override
+    public GrammarProperties getGrammarProperties() {
+        return getCondition().getGrammarProperties();
     }
 
     /**
@@ -160,10 +161,7 @@ public class Rule implements Action, Fixable {
         this.formatString = properties.getProperty(Key.FORMAT);
     }
 
-    /** 
-     * Returns the label to be used in the LTS when this rule is applied.
-     * Defaults to the rule name, if the property is undefined.  
-     */
+    @Override
     public String getTransitionLabel() {
         String result = this.transitionLabel;
         if (result.isEmpty()) {
@@ -172,11 +170,7 @@ public class Rule implements Action, Fixable {
         return result;
     }
 
-    /** 
-     * Returns a format string for the standard output.
-     * Whenever a transition with this rule is added to a GTS, a 
-     * corresponding string is sent to the standard output.
-     */
+    @Override
     public String getFormatString() {
         return this.formatString;
     }

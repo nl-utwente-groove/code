@@ -398,8 +398,7 @@ public class AutomatonBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
-                this.testGrammar.getAllRules(), false);
+            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
         return result;
     }
 

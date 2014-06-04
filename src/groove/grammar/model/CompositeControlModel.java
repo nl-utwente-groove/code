@@ -90,8 +90,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Returns the control loader used in this composite control model. */
     public CtrlLoader getLoader() {
         if (this.loader == null) {
-            this.loader =
-                    new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(), getRules(), false);
+            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules(), false);
         }
         return this.loader;
     }

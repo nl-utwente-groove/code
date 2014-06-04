@@ -115,7 +115,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        boolean brackets = getAction().getSystemProperties().isShowTransitionBrackets();
+        boolean brackets = getAction().getGrammarProperties().isShowTransitionBrackets();
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
@@ -123,13 +123,25 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(getStep().getRecipe().getFullName());
             result.append('/');
         }
-        result.append(getAction().getTransitionLabel());
         if (anchored) {
+            result.append(getAction().getTransitionLabel());
             result.append(getEvent().getAnchorImageString());
-        } else if (getAction().getSystemProperties().isUseParameters()) {
+        } else {
+            result.append(computeText(this));
+        }
+        if (brackets) {
+            result.append(END_CHAR);
+        }
+        return result.toString();
+    }
+
+    static StringBuilder computeText(ActionLabel label) {
+        StringBuilder result = new StringBuilder();
+        result.append(label.getAction().getTransitionLabel());
+        if (label.getAction().getGrammarProperties().isUseParameters()) {
             result.append('(');
             boolean first = true;
-            for (HostNode arg : getArguments()) {
+            for (HostNode arg : label.getArguments()) {
                 if (!first) {
                     result.append(',');
                 }
@@ -144,10 +156,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             }
             result.append(')');
         }
-        if (brackets) {
-            result.append(END_CHAR);
-        }
-        return result.toString();
+        return result;
     }
 
     @Override

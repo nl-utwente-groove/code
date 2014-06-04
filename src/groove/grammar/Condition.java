@@ -123,7 +123,7 @@ public class Condition implements Fixable {
     }
 
     /** Returns the secondary properties of this graph condition. */
-    public GrammarProperties getSystemProperties() {
+    public GrammarProperties getGrammarProperties() {
         return this.systemProperties;
     }
 
@@ -303,7 +303,7 @@ public class Condition implements Fixable {
             this.fixed = true;
             if (hasPattern()) {
                 getPattern().setFixed();
-                if (!getSystemProperties().getAlgebraFamily().supportsSymbolic()) {
+                if (!getGrammarProperties().getAlgebraFamily().supportsSymbolic()) {
                     checkResolution();
                 }
                 if (getRule() != null) {
@@ -613,7 +613,7 @@ public class Condition implements Fixable {
 
     /** Indicates if this condition should be matched injectively. */
     public boolean isInjective() {
-        return getSystemProperties() != null && getSystemProperties().isInjective();
+        return getGrammarProperties() != null && getGrammarProperties().isInjective();
     }
 
     /** Sets the associated rule of this condition. */
@@ -653,7 +653,7 @@ public class Condition implements Fixable {
         assert getOp() == Op.NOT;
         Condition result =
             new Condition(getName() + "-reverse", Op.FORALL, getPattern(), getRoot(),
-                getSystemProperties());
+                getGrammarProperties());
         result.addSubCondition(True);
         if (getTypeGraph() != null) {
             result.setTypeGraph(getTypeGraph());

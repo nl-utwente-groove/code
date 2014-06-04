@@ -21,7 +21,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
@@ -33,6 +32,7 @@ import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.grammar.Grammar;
+import groove.grammar.GrammarProperties;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
 
@@ -78,7 +78,7 @@ public class CtrlBuildTest extends CtrlTester {
         try {
             aut =
                 CtrlFactory.instance().buildDefault(this.prioGrammar.getActions(),
-                    AlgebraFamily.DEFAULT);
+                    new GrammarProperties());
         } catch (FormatException e) {
             fail();
         }

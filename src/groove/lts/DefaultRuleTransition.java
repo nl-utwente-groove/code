@@ -90,6 +90,11 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
+    public GTS getGTS() {
+        return source().getGTS();
+    }
+
+    @Override
     public RuleTransition getInitial() {
         return this;
     }
@@ -334,11 +339,12 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     static private int anchorImageCount = 0;
 
     /**
-     * Returns the instantiated output string for this rule, if any.
+     * Returns the instantiated output string for a given transition, if any.
+     * @return the instantiated output string, or {@code null} if there is none
      * @throws FormatException if the format string of the rule
      * does not correspond to the actual rule parameters.
      */
-    public static String getOutputString(RuleTransition trans) throws FormatException {
+    public static String getOutputString(GraphTransition trans) throws FormatException {
         String result = null;
         String formatString = trans.getAction().getFormatString();
         if (formatString != null && !formatString.isEmpty()) {

@@ -16,12 +16,12 @@
  */
 package groove.control.parse;
 
-import groove.algebra.AlgebraFamily;
 import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
 import groove.control.term.Term;
+import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -51,17 +51,17 @@ public class Namespace implements ParseInfo {
      * @param checkDependencies flag to determine whether the name space
      * should check for circular dependencies and forward references.
      */
-    public Namespace(AlgebraFamily family, boolean checkDependencies) {
-        this.family = family;
+    public Namespace(GrammarProperties grammarProperties, boolean checkDependencies) {
+        this.grammarProperties = grammarProperties;
         this.checkDependencies = checkDependencies;
     }
 
     /** Returns the algebra family of this name space. */
-    public AlgebraFamily getAlgebraFamily() {
-        return this.family;
+    public GrammarProperties getGrammarProperties() {
+        return this.grammarProperties;
     }
 
-    private final AlgebraFamily family;
+    private final GrammarProperties grammarProperties;
 
     /** Indicates if the name space should check for circular
      * dependencies ({@link #addCall}) and
