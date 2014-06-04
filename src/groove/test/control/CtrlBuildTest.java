@@ -17,18 +17,13 @@
 package groove.test.control;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.control.Binding;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
-import groove.control.CtrlFrame;
 import groove.control.CtrlGuard;
 import groove.control.CtrlLabel;
-import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.grammar.Grammar;
@@ -36,10 +31,8 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -60,15 +53,13 @@ public class CtrlBuildTest extends CtrlTester {
     /** Regression test for errors found in old control programs. */
     @Test
     public void testRegression() {
-        buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 3, 7);
-        CtrlAut aut =
-            buildCorrect(
-                "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);",
-                6, 6);
-        CtrlTransition t1 = aut.getStart().getTransitions().iterator().next();
-        CtrlTransition t2 = t1.target().getTransitions().iterator().next();
-        CtrlTransition t3 = t2.target().getTransitions().iterator().next();
-        assertEquals(2, t3.target().getVars().size());
+        buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 2, 6);
+        buildCorrect(
+            "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);", 5,
+            5);
+        buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);", 4, 3);
+        buildCorrect("choice { try a; } or { if (e|c) c; else d; } or { b;b;}", 4, 7);
+
     }
 
     /** Tests the default automaton construction. */
@@ -164,124 +155,51 @@ public class CtrlBuildTest extends CtrlTester {
     /** Tests building various loop structures. */
     @Test
     public void testLoops() {
-        buildCorrect("while (a|b) { c; d; }", 4, 5);
-        buildCorrect("until (a|b) { c; d; }", 4, 5);
-        buildCorrect("alap { choice { a; b; } or c; } d;", 4, 5);
-        buildCorrect("(a|b)*;", 2, 3);
+        buildCorrect("while (a|b) { c; d; }", 3, 4);
+        buildCorrect("until (a|b) { c; d; }", 3, 4);
+        buildCorrect("alap { choice { a; b; } or c; } d;", 3, 4);
+        buildCorrect("(a|b)*;", 1, 2);
     }
 
     /** Sequences of rule calls. */
     @Test
     public void testSeq() {
-        buildCorrect("a;", 3, 2);
-        buildCorrect("a; b; a;", 5, 4);
-        buildCorrect("bNode(_); bNode-oNode(_,_);", 4, 3);
-        buildCorrect("node x; bNode(out x); bNode-oNode(x, out x);", 4, 3);
+        buildCorrect("a;", 2, 1);
+        buildCorrect("a; b; a;", 4, 3);
+        buildCorrect("bNode(_); bNode-oNode(_,_);", 3, 2);
+        buildCorrect("node x; bNode(out x); bNode-oNode(x, out x);", 3, 2);
     }
 
     /** Tests building if statements. */
     @Test
     public void testIf() {
         buildWrong("a|a");
-        buildCorrect("if (a|b) c;", 4, 5);
-        buildCorrect("if (a|b) c; d;", 5, 6);
-        buildCorrect("if (a|b) c; else d;", 4, 5);
+        buildCorrect("if (a|b) c;", 3, 3);
+        buildCorrect("if (a|b) c; d;", 4, 5);
+        buildCorrect("if (a|b) c; else d;", 3, 4);
     }
 
     /** Tests building try statements. */
     @Test
     public void testTry() {
-        buildCorrect("try { a;b; } d;", 5, 5);
-        buildCorrect("try { a; b; } else { c; } d;", 5, 5);
+        buildCorrect("try { a;b; } d;", 4, 4);
+        buildCorrect("try { a; b; } else { c; } d;", 4, 4);
     }
 
     /** Tests the {@code any} and {@code other} statements. */
     @Test
     public void testAnyOther() {
         buildWrong("any;");
-        buildCorrect("node x; bNode(out x); iNode(x); iInt(3); iString-oNode(\"a\",_); other;", 7,
-            15);
+        buildCorrect("node x; bNode(out x); iNode(x); iInt(3); iString-oNode(\"a\",_); other;", 6,
+            14);
     }
 
     /** Tests function calls. */
     @Test
     public void testFunctions() {
-        buildCorrect("function f() { a; } f(); ", 3, 2);
-        buildCorrect("function f() { choice a; or {b;c;} } f(); f(); ", 6, 7);
-        buildCorrect("function f() { node x; bNode(out x); } f(); ", 3, 2);
-        if (!CtrlFrame.NEW_CONTROL) {
-            buildWrong("function f() { g(); } function g() { f(); }");
-        }
-        buildCorrect("function g() { b; c; } function f() { a | g(); } f(); ", 4, 4);
-    }
-
-    /** Tests the variable binding. */
-    @Test
-    public void testVarBinding() {
-        CtrlAut aut =
-            buildCorrect("node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
-                5, 4);
-        CtrlTransition first = aut.getStart().getTransitions().iterator().next();
-        CtrlTransition second = first.target().getTransitions().iterator().next();
-        CtrlTransition third = second.target().getTransitions().iterator().next();
-        CtrlTransition fourth = third.target().getTransitions().iterator().next();
-        assertEquals(1, first.target().getVars().size());
-        assertEquals(2, second.target().getVars().size());
-        assertEquals(0, third.target().getVars().size());
-        assertEquals(0, fourth.target().getVars().size());
-        Binding[] targetVarBind = second.getAssignment().getBindings();
-        assertEquals(2, targetVarBind.length);
-        assertEquals(Binding.Source.VAR, targetVarBind[0].getSource());
-        assertEquals(0, targetVarBind[0].getIndex());
-        assertEquals(Binding.Source.CREATOR, targetVarBind[1].getSource());
-        assertEquals(0, targetVarBind[1].getIndex());
-        Binding[] parBind = second.getCallBinding();
-        assertEquals(2, parBind.length);
-        assertEquals(Binding.Source.VAR, parBind[0].getSource());
-        assertEquals(0, parBind[0].getIndex());
-        assertEquals(null, parBind[1]);
-    }
-
-    /** Tests the transition scheduling. */
-    @Test
-    public void testSchedule() {
-        CtrlAut aut = buildCorrect("choice { try a; } or { if (e|c) c; else d; } or { b;b;}", 5, 9);
-        CtrlSchedule s0 = aut.getStart().getSchedule();
-        assertEquals("b", getName(s0));
-        CtrlSchedule s1 = s0.next(false);
-        assertEquals("a", getName(s1));
-        assertTrue(s1 == s0.next(true));
-        CtrlSchedule s1f = s1.next(false);
-        assertTrue(s1f.isFinal());
-        assertEquals(Arrays.asList("c", "e"), getNames(s1f));
-        CtrlSchedule s1ff = s1f.next(false);
-        assertEquals("d", getName(s1ff));
-        assertTrue(s1ff.isFinal());
-        assertSame(s1ff.next(false), s1ff.next(true));
-        assertTrue(s1ff.next(false).isFinal());
-        CtrlSchedule s1ft = s1f.next(true);
-        assertTrue(s1ft.isFinal());
-        CtrlSchedule s1t = s1.next(true);
-        assertEquals(Arrays.asList("c", "e"), getNames(s1t));
-        CtrlSchedule s1tf = s1t.next(false);
-        assertEquals("d", getName(s1tf));
-        assertSame(s1tf.next(false), s1tf.next(true));
-        assertTrue(s1tf.next(false).isDead());
-        assertFalse(s1tf.next(false).isFinal());
-        CtrlSchedule s1tt = s1t.next(true);
-        assertTrue(s1tt.isDead());
-        assertFalse(s1tt.isFinal());
-    }
-
-    private String getName(CtrlSchedule s) {
-        return s.getTransitions().get(0).getCall().getName();
-    }
-
-    private List<String> getNames(CtrlSchedule s) {
-        List<String> result = new ArrayList<String>();
-        for (CtrlTransition trans : s.getTransitions()) {
-            result.add(trans.getCall().getName());
-        }
-        return result;
+        buildCorrect("function f() { a; } f(); ", 2, 1);
+        buildCorrect("function f() { choice a; or {b;c;} } f(); f(); ", 5, 6);
+        buildCorrect("function f() { node x; bNode(out x); } f(); ", 2, 1);
+        buildCorrect("function g() { b; c; } function f() { a | g(); } f(); ", 3, 3);
     }
 }

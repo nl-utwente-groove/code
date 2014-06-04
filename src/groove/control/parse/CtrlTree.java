@@ -1,7 +1,6 @@
 package groove.control.parse;
 
 import groove.control.Call;
-import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -413,27 +412,6 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     /** Creates a checker for this tree. */
     public CtrlChecker createChecker() {
         return createTreeParser(CtrlChecker.class, getInfo());
-    }
-
-    /**
-     * Runs the builder on this tree.
-     * Checks the tree first, if this has not yet been done.
-     * @return the resulting control automaton
-     */
-    public CtrlAut build() throws FormatException {
-        try {
-            CtrlBuilder builder = check().createBuilder();
-            CtrlAut result = builder.program().aut;
-            getInfo().getErrors().throwException();
-            return result == null ? null : result.clone(getControlName());
-        } catch (RecognitionException e) {
-            throw new FormatException(e);
-        }
-    }
-
-    /** Creates a builder for this tree */
-    public CtrlBuilder createBuilder() {
-        return createTreeParser(CtrlBuilder.class, getInfo());
     }
 
     @Override

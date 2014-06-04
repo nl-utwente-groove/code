@@ -18,19 +18,16 @@ package groove.test.control;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.control.instance.Automaton;
 import groove.control.parse.CtrlTree;
 import groove.control.template.Program;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
+import groove.graph.Graph;
 import groove.util.Groove;
-
-import java.io.File;
-import java.io.IOException;
-
 import junit.framework.Assert;
 
 /**
@@ -85,13 +82,8 @@ abstract public class CtrlTester {
      */
     protected void buildWrong(String name, String program) {
         try {
-            CtrlAut aut;
-            if (program == null) {
-                aut = buildFile(name);
-            } else {
-                aut = buildString(name, program);
-            }
-            fail(String.format("%s builds without errors: %n%s%n", name, aut.toString()));
+            buildString(name, program);
+            fail(String.format("%s builds without errors%n", name));
         } catch (FormatException e) {
             if (DEBUG) {
                 System.out.println(e.getMessage());
@@ -105,7 +97,7 @@ abstract public class CtrlTester {
      * @param nodeCount expected node count
      * @param edgeCount expected edge count
      */
-    protected CtrlAut buildCorrect(String program, int nodeCount, int edgeCount) {
+    protected Graph buildCorrect(String program, int nodeCount, int edgeCount) {
         return buildCorrect("dummy", program, nodeCount, edgeCount);
     }
 
@@ -116,10 +108,11 @@ abstract public class CtrlTester {
      * @param nodeCount expected node count
      * @param edgeCount expected edge count
      */
-    protected CtrlAut buildCorrect(String name, String program, int nodeCount, int edgeCount) {
-        CtrlAut result = null;
+    protected Graph buildCorrect(String name, String program, int nodeCount, int edgeCount) {
+        Graph result = null;
         try {
-            result = program == null ? buildFile(name) : buildString(name, program);
+            Program prog = buildString(name, program);
+            result = new Automaton(prog).toGraph(false);
             assertEquals(nodeCount, result.nodeCount());
             assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
@@ -128,26 +121,12 @@ abstract public class CtrlTester {
         return result;
     }
 
-    /** Builds a control automaton from a file with a given name. */
-    protected CtrlAut buildFile(String programName) throws FormatException {
-        CtrlAut result = null;
-        try {
-            result = CtrlLoader.run(this.testGrammar, programName, new File(CONTROL_DIR));
-            if (DEBUG) {
-                System.out.printf("Control automaton for %s:%n%s%n", programName, result);
-            }
-        } catch (IOException e) {
-            fail(e.getMessage());
-        }
-        return result;
-    }
-
     /** Builds a control automaton from a given program. */
-    protected CtrlAut buildString(String programName, String program) throws FormatException {
-        CtrlAut result = null;
+    protected Program buildString(String programName, String program) throws FormatException {
+        Program result = null;
         result = CtrlLoader.run(this.testGrammar, programName, program);
         if (DEBUG) {
-            System.out.printf("Control automaton for \'%s\':%n%s%n", program, result);
+            System.out.printf("Control program for \'%s\':%n%s%n", program, result);
         }
         return result;
     }
@@ -166,7 +145,7 @@ abstract public class CtrlTester {
     protected Term buildProcTerm(String program, String procName, boolean function) {
         try {
             CtrlTree tree =
-                createLoader().parse("dummy", program).check().getChild(function ? 2 : 3);
+                    createLoader().parse("dummy", program).check().getChild(function ? 2 : 3);
             CtrlTree body = null;
             for (int i = 0; i < tree.getChildCount(); i++) {
                 CtrlTree functionTree = tree.getChild(i);
