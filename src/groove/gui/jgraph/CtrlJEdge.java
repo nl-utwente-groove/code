@@ -1,8 +1,8 @@
 package groove.gui.jgraph;
 
-import groove.control.CtrlTransition;
 import groove.control.graph.ControlEdge;
 import groove.control.graph.ControlGraph;
+import groove.control.instance.Step;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
 
@@ -33,9 +33,9 @@ public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGrap
         String[] displayedLabels = new String[getEdges().size()];
         int labelIndex = 0;
         for (Object part : getEdges()) {
-            CtrlTransition trans = (CtrlTransition) part;
+            Step trans = (Step) part;
             String description;
-            description = trans.label().text();
+            description = trans.toString();
             displayedLabels[labelIndex] = HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
         }

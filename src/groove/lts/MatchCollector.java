@@ -1,49 +1,51 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.lts;
 
+import groove.algebra.Constant;
 import groove.control.Binding;
-import groove.control.Binding.Source;
-import groove.control.CtrlCall;
-import groove.control.CtrlPar;
-import groove.control.CtrlSchedule;
+import groove.control.Call;
+import groove.control.CtrlPar.Var;
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.control.Valuator;
+import groove.control.instance.Assignment;
+import groove.control.instance.Frame;
+import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.VariableNode;
 import groove.transform.CompositeEvent;
 import groove.transform.Proof;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
+import groove.util.Pair;
 import groove.util.Visitor;
 import groove.util.collect.KeySet;
 
-import java.util.List;
 import java.util.Set;
 
 /**
- * Algorithm to create a mapping from enabled rules to collections of events for
- * those rules, matching to a given state.
+ * Algorithm to create the set of current match results for a given state.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -73,27 +75,33 @@ public class MatchCollector {
     }
 
     /**
-     * Returns the set of matching events for a given control transition.
-     * @param step the transition for which matches are to be found; non-{@code null}
+     * Returns the set of matching events for a given control switch.
+     * @param ctrlStep the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches(final CtrlStep step) {
-        final CtrlTransition ct = (CtrlTransition) step;
+    public MatchResultSet computeMatches(CtrlStep ctrlStep) {
+        final Step step = (Step) ctrlStep;
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
         }
-        assert ct != null;
+        assert step != null;
         // there are three reasons to want to use the parent matches: to
-        // save matching time, to reuse added nodes, and to find confluent 
+        // save matching time, to reuse added nodes, and to find confluent
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
-        final boolean isDisabled = isDisabled(ct.getCall());
+        final boolean isDisabled = isDisabled(step.getRuleCall());
+        boolean isModifying = step.isModifying();
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition) {
                     RuleTransition ruleTrans = (RuleTransition) trans;
-                    if (ruleTrans.getEvent().getRule().equals(ct.getRule())) {
-                        result.add(ruleTrans.getKey());
+                    if (ruleTrans.getEvent().getRule().equals(step.getRule())) {
+                        MatchResult match = ruleTrans.getKey();
+                        if (isModifying) {
+                            // we can reuse the event but not the control step
+                            match = new MatchResult(match.getEvent(), step);
+                        }
+                        result.add(match);
                         if (DEBUG) {
                             System.out.print(" T" + System.identityHashCode(trans.getEvent()));
                         }
@@ -101,10 +109,10 @@ public class MatchCollector {
                 }
             }
         }
-        if (isDisabled || isEnabled(ct.getCall())) {
+        if (isDisabled || isEnabled(step.getRuleCall())) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
-            RuleToHostMap boundMap = extractBinding(ct);
+            RuleToHostMap boundMap = extractBinding(step);
             if (boundMap != null) {
                 final Record record = this.record;
                 Visitor<Proof,Boolean> eventCollector = new Visitor<Proof,Boolean>(false) {
@@ -114,12 +122,9 @@ public class MatchCollector {
                         // only look up the event in the parent map if
                         // the rule was disabled, as otherwise the result
                         // already contains all relevant parent results
-                        MatchResult match = null;
+                        MatchResult match = new MatchResult(event, step);
                         if (isDisabled) {
-                            match = getParentTrans(event, ct);
-                        }
-                        if (match == null) {
-                            match = new MatchResult(event, ct);
+                            match = getParentTrans(match);
                         }
                         result.add(match);
                         if (DEBUG) {
@@ -130,7 +135,7 @@ public class MatchCollector {
                         return true;
                     }
                 };
-                ct.getRule().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
+                step.getRule().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
             }
         }
         if (DEBUG) {
@@ -171,7 +176,7 @@ public class MatchCollector {
      * Indicates if new matches of a given control call might have been enabled
      * with respect to the parent state.
      */
-    private boolean isEnabled(CtrlCall call) {
+    private boolean isEnabled(Call call) {
         if (this.enabledRules == null || this.enabledRules.contains(call.getRule())) {
             return true;
         }
@@ -182,15 +187,15 @@ public class MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<CtrlCall> triedCalls = ((CtrlSchedule) state.source().getActualFrame()).getTriedCalls();
+        Set<Call> triedCalls = ((Frame) state.source().getActualFrame()).getPastCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 
-    /** 
+    /**
      * Indicates if matches of a given control call might have been disabled
      * since the parent state.
      */
-    private boolean isDisabled(CtrlCall call) {
+    private boolean isDisabled(Call call) {
         if (this.disabledRules == null || this.disabledRules.contains(call.getRule())) {
             return true;
         }
@@ -207,49 +212,70 @@ public class MatchCollector {
      * @return if {@code null}, the binding cannot be constructed and
      * so the rule cannot match
      */
-    private RuleToHostMap extractBinding(CtrlTransition ctrlTrans) {
+    private RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
-        List<CtrlPar> args = ctrlTrans.getCall().getArgs();
-        if (args != null && args.size() > 0) {
-            Binding[] parBind = ctrlTrans.getCallBinding();
-            List<CtrlPar.Var> ruleSig = ctrlTrans.getRule().getSignature();
-            Object[] frameValues = this.state.getFrameValues();
-            for (int i = 0; i < args.size(); i++) {
-                CtrlPar arg = args.get(i);
-                HostNode image = null;
-                if (arg instanceof CtrlPar.Const) {
-                    CtrlPar.Const constArg = (CtrlPar.Const) arg;
-                    image = constArg.getNode();
-                    assert image != null : String.format(
-                        "Constant argument %s not initialised properly", arg);
-                } else if (arg.isInOnly()) {
-                    assert parBind[i].getSource() == Source.VAR;
-                    image = Valuator.get(frameValues, parBind[i]);
-                    // test if the bound node is not deleted by a previous rule
-                    if (image == null) {
-                        result = null;
-                        break;
-                    }
-                } else {
-                    // non-input arguments are ignored
-                    continue;
-                }
-                result.putNode(ruleSig.get(i).getRuleNode(), image);
+        Object[] sourceValues = this.state.getFrameValues();
+        for (Assignment assign : step.getPrepareAssignments()) {
+            sourceValues = assign.apply(sourceValues);
+        }
+        for (Pair<Var,Binding> entry : step.getRuleSwitch().getCallBinding()) {
+            Binding bind = entry.two();
+            HostNode value;
+            if (bind == null) {
+                // this corresponds to an output parameter of the call
+                continue;
+            }
+            switch (bind.getSource()) {
+            case CONST:
+                value = bind.getValue().getNode();
+                break;
+            case VAR:
+                value = Valuator.get(sourceValues, bind);
+                break;
+            default:
+                assert false;
+                value = null;
+            }
+            RuleNode ruleNode = entry.one().getRuleNode();
+            if (isCompatible(ruleNode, value)) {
+                result.putNode(ruleNode, value);
+            } else {
+                result = null;
+                break;
             }
         }
         return result;
     }
 
-    /** 
+    /** Tests if a given host node can match a given rule node. */
+    private boolean isCompatible(RuleNode ruleNode, HostNode hostNode) {
+        if (hostNode == null) {
+            return false;
+        }
+        if (!ruleNode.getType().subsumes(hostNode.getType(), ruleNode.isSharp())) {
+            return false;
+        }
+        if (ruleNode instanceof VariableNode && ((VariableNode) ruleNode).hasConstant()) {
+            Constant constant = ((VariableNode) ruleNode).getConstant();
+            Object value = this.record.getFamily().toValue(constant);
+            if (!value.equals(((ValueNode) hostNode).getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the parent state's out-transition for a given event, if any,
      * or otherwise the event itself.
      */
-    private MatchResult getParentTrans(RuleEvent event, CtrlTransition ct) {
-        MatchResult result = null;
+    private MatchResult getParentTrans(MatchResult key) {
+        MatchResult result;
         if (this.parentTransMap != null) {
-            RuleTransition trans =
-                (RuleTransition) this.parentTransMap.get(new MatchResult(event, ct));
-            return trans == null ? null : trans.getKey();
+            RuleTransition trans = (RuleTransition) this.parentTransMap.get(key);
+            result = trans == null ? key : trans.getKey();
+        } else {
+            result = key;
         }
         return result;
     }
