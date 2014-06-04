@@ -33,13 +33,16 @@ public interface CtrlFrame {
     boolean isStart();
 
     /** Returns the transient depth of the frame. */
-    int getDepth();
+    int getTransience();
 
     /**
      * Indicates if this frame is inside an atomic block.
-     * Convenience method for <code>getDepth() > 0</code>
+     * Convenience method for <code>getTransience() > 0</code>
      */
     boolean isTransient();
+
+    /** Indicates if this frame is nested inside a procedure. */
+    boolean isNested();
 
     /**
      * Indicates if this frame is inside a recipe.

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: CompositeEvent.java,v 1.10 2008-03-03 21:27:40 rensink Exp $
  */
 package groove.transform;
@@ -195,7 +195,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     }
 
     @Override
-    HostNode[] getArguments(HostNode[] addedNodes) {
+    public HostNode[] getArguments(HostNode[] addedNodes) {
         return this.eventArray[0].getArguments(addedNodes);
     }
 
@@ -221,10 +221,10 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     final BasicEvent[] eventArray;
     /** Cache reference instance for initialisation. */
     static private final CacheReference<CompositeEventCache> reference =
-        CacheReference.<CompositeEventCache>newInstance(false);
+            CacheReference.<CompositeEventCache>newInstance(false);
 
     class CompositeEventCache extends
-            AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
+    AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
         /**
          * Reconstructs a set of events from the array stored in the composite
          * event.
@@ -232,7 +232,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
         SortedSet<BasicEvent> getEventSet() {
             if (this.eventSet == null) {
                 this.eventSet =
-                    new TreeSet<BasicEvent>(Arrays.asList(CompositeEvent.this.eventArray));
+                        new TreeSet<BasicEvent>(Arrays.asList(CompositeEvent.this.eventArray));
             }
             return this.eventSet;
         }

@@ -194,19 +194,19 @@ public class ProgramBuildTest {
         build("atomic", "function f() { a; b; } recipe r() { a; b; }");
         Template f = this.prog.getProc("f").getTemplate();
         Location start = f.getStart();
-        assertEquals(0, start.getDepth());
+        assertEquals(0, start.getTransience());
         Location next = start.getAttempt().get(0).onFinish();
-        assertEquals(0, next.getDepth());
+        assertEquals(0, next.getTransience());
         Location finish = next.getAttempt().get(0).onFinish();
-        assertEquals(0, finish.getDepth());
+        assertEquals(0, finish.getTransience());
         assertTrue(finish.isFinal());
         Template r = this.prog.getProc("r").getTemplate();
         start = r.getStart();
-        assertEquals(0, start.getDepth());
+        assertEquals(0, start.getTransience());
         next = start.getAttempt().get(0).onFinish();
-        assertEquals(1, next.getDepth());
+        assertEquals(1, next.getTransience());
         finish = next.getAttempt().get(0).onFinish();
-        assertEquals(0, finish.getDepth());
+        assertEquals(0, finish.getTransience());
         assertTrue(finish.isFinal());
     }
 

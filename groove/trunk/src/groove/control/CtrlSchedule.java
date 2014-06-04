@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -27,7 +27,7 @@ import java.util.Set;
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule implements CtrlFrame {
     /**
-     * Constructs an untried schedule. 
+     * Constructs an untried schedule.
      * @param state control state on which this schedule is based
      * @param trans transition to be tried at this point of the schedule; may be {@code null}
      * @param previous set of control transitions tried out before this schedule was reached
@@ -81,7 +81,7 @@ public class CtrlSchedule implements CtrlFrame {
     }
 
     @Override
-    public int getDepth() {
+    public int getTransience() {
         return isTransient() ? 1 : 0;
     }
 
@@ -100,9 +100,14 @@ public class CtrlSchedule implements CtrlFrame {
         return isTransient();
     }
 
+    @Override
+    public boolean isNested() {
+        return false;
+    }
+
     /** Returns the currently scheduled transition.
      * May be {@code null} if this is the end of the schedule.
-      */
+     */
     public List<CtrlTransition> getTransitions() {
         return this.transitions;
     }
@@ -126,7 +131,7 @@ public class CtrlSchedule implements CtrlFrame {
      * Returns the set of rules that have been tried at this point
      * of the schedule.
      * These are the rules occurring in {@link #getTriedCalls()}
-     * @return a set of tried control calls, or {@code null} if {@link #isDead()} 
+     * @return a set of tried control calls, or {@code null} if {@link #isDead()}
      * yields {@code false}.
      */
     public Set<String> getTriedRules() {
@@ -241,7 +246,7 @@ public class CtrlSchedule implements CtrlFrame {
     private CtrlSchedule failNext;
     /** Flag indicating if this schedule represents a success state. */
     private final boolean success;
-    /** 
+    /**
      * Flag indicating if this schedule is part of a transaction.
      */
     private final boolean isTransient;

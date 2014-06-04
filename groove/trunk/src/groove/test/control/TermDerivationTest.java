@@ -253,7 +253,7 @@ public class TermDerivationTest {
 
     /** Predicts the final nature and transition depth of the current state. */
     private void assertDepth(int depth) {
-        Assert.assertEquals(depth, source().getDepth());
+        Assert.assertEquals(depth, source().getTransience());
     }
 
     private Term delta() {
@@ -276,7 +276,7 @@ public class TermDerivationTest {
         }
         // make sure the other values are properly computed
         this.source.isFinal();
-        this.source.getDepth();
+        this.source.getTransience();
         if (DEBUG) {
             System.out.println(this.source.toDebugString());
             System.out.println();

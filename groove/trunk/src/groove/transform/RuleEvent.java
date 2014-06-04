@@ -19,6 +19,7 @@ package groove.transform;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.grammar.rule.RuleToHostMap;
 
 /**
@@ -41,19 +42,27 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
      */
     public String getAnchorImageString();
 
-    /** 
+    /**
      * Returns the anchor map of the event.
-     * The anchor map maps the rule anchor nodes and edges to 
+     * The anchor map maps the rule anchor nodes and edges to
      * host elements.
-     * This always refers to the top level existential event. 
+     * This always refers to the top level existential event.
      */
     public RuleToHostMap getAnchorMap();
 
-    /** 
+    /**
      * Returns the anchor image at a given position.
-     * This always refers to the anchor of the top level existential event. 
+     * This always refers to the anchor of the top level existential event.
      */
     public AnchorValue getAnchorImage(int i);
+
+    /**
+     * Constructs an argument array for this event, with respect to
+     *  given array of added nodes (which are the images of the creator nodes).
+     * @param addedNodes the added nodes; if {@code null}, the creator
+     * node images will be set to {@code null}
+     */
+    public abstract HostNode[] getArguments(HostNode[] addedNodes);
 
     /**
      * Returns a proof of this event's rule condition in a given host graph,
@@ -98,7 +107,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
     /** Returns the reuse policy of rule events. */
     public Reuse getReuse();
 
-    /** 
+    /**
      * Event reuse mode.
      * The values are ordered in increasing event reuse.
      */

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstractEvent.java,v 1.8 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.transform;
@@ -42,7 +42,7 @@ import java.util.MissingFormatArgumentException;
  * @version $Revision $
  */
 public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
-        extends AbstractCacheHolder<C> implements RuleEvent {
+extends AbstractCacheHolder<C> implements RuleEvent {
     /** Constructs an event for a given rule. */
     protected AbstractRuleEvent(CacheReference<C> template, R rule) {
         super(template);
@@ -57,8 +57,8 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         return result;
     }
 
-    /** 
-     * Returns a string showing this event as a rule call. 
+    /**
+     * Returns a string showing this event as a rule call.
      * @param anchored if {@code true}, append the anchor images rather than the parameters
      */
     public String getLabelText(HostNode[] addedNodes, boolean anchored) {
@@ -88,9 +88,9 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     }
 
     /**
-     * Returns the instantiated output string for this rule, if any. 
+     * Returns the instantiated output string for this rule, if any.
      * @throws FormatException if the format string of the rule
-     * does not correspond to the actual rule parameters. 
+     * does not correspond to the actual rule parameters.
      */
     public String getOutputString(HostNode[] addedNodes) throws FormatException {
         String result = null;
@@ -112,14 +112,6 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         }
         return result;
     }
-
-    /**
-     * Constructs an argument array for this event, with respect to
-     *  given array of added nodes (which are the images of the creator nodes).
-     * @param addedNodes the added nodes; if {@code null}, the creator
-     * node images will be set to {@code null}
-     */
-    abstract HostNode[] getArguments(HostNode[] addedNodes);
 
     @Override
     public R getAction() {
@@ -272,7 +264,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         return correct;
     }
 
-    /** 
+    /**
      * Extracts a proof corresponding to this event from a given match.
      * @return a proof constructed from {@code match} whose events equals this one,
      * or {@code null} if there is no such proof

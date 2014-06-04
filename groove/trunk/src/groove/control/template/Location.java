@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class Location implements Position<Location,SwitchStack>, Comparable<Location> {
     /**
-     * Constructs a numbered location for a given automaton.
+     * Constructs a numbered location for a given template.
      */
     public Location(Template template, int nr, int depth) {
         this.nr = nr;
@@ -56,7 +56,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     }
 
     @Override
-    public int getDepth() {
+    public int getTransience() {
         return this.depth;
     }
 

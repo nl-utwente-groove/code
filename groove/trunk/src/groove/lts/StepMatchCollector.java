@@ -1,21 +1,22 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.lts;
 
+import groove.algebra.Constant;
 import groove.control.Binding;
 import groove.control.Call;
 import groove.control.CtrlPar.Var;
@@ -29,7 +30,9 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.VariableNode;
 import groove.transform.CompositeEvent;
 import groove.transform.Proof;
 import groove.transform.Record;
@@ -66,7 +69,7 @@ public class StepMatchCollector extends MatchCollector {
         }
         assert step != null;
         // there are three reasons to want to use the parent matches: to
-        // save matching time, to reuse added nodes, and to find confluent 
+        // save matching time, to reuse added nodes, and to find confluent
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
         final boolean isDisabled = isDisabled(step.getRuleCall());
@@ -171,7 +174,7 @@ public class StepMatchCollector extends MatchCollector {
         return triedCalls == null || !triedCalls.contains(call);
     }
 
-    /** 
+    /**
      * Indicates if matches of a given control call might have been disabled
      * since the parent state.
      */
@@ -198,7 +201,7 @@ public class StepMatchCollector extends MatchCollector {
         for (Assignment assign : step.getPrepareAssignments()) {
             sourceValues = assign.apply(sourceValues);
         }
-        loop: for (Pair<Var,Binding> entry : step.getRuleSwitch().getCallBinding()) {
+        for (Pair<Var,Binding> entry : step.getRuleSwitch().getCallBinding()) {
             Binding bind = entry.two();
             HostNode value;
             if (bind == null) {
@@ -211,22 +214,41 @@ public class StepMatchCollector extends MatchCollector {
                 break;
             case VAR:
                 value = Valuator.get(sourceValues, bind);
-                // test if the value is not deleted by a previous rule
-                if (value == null) {
-                    result = null;
-                    break loop;
-                }
                 break;
             default:
                 assert false;
                 value = null;
             }
-            result.putNode(entry.one().getRuleNode(), value);
+            RuleNode ruleNode = entry.one().getRuleNode();
+            if (isCompatible(ruleNode, value)) {
+                result.putNode(ruleNode, value);
+            } else {
+                result = null;
+                break;
+            }
         }
         return result;
     }
 
-    /** 
+    /** Tests if a given host node can match a given rule node. */
+    private boolean isCompatible(RuleNode ruleNode, HostNode hostNode) {
+        if (hostNode == null) {
+            return false;
+        }
+        if (!ruleNode.getType().subsumes(hostNode.getType(), ruleNode.isSharp())) {
+            return false;
+        }
+        if (ruleNode instanceof VariableNode && ((VariableNode) ruleNode).hasConstant()) {
+            Constant constant = ((VariableNode) ruleNode).getConstant();
+            Object value = this.record.getFamily().toValue(constant);
+            if (!value.equals(((ValueNode) hostNode).getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the parent state's out-transition for a given event, if any,
      * or otherwise the event itself.
      */

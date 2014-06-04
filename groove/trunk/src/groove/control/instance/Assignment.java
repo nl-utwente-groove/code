@@ -24,6 +24,7 @@ import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.Valuator;
+import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.SwitchStack;
 import groove.grammar.Rule;
@@ -214,19 +215,19 @@ public class Assignment {
     }
 
     /**
-     * Computes the variable assignment for the location where control returns
-     * after a template call, from the variables in the final state of the
-     * template and the source state of the call.
+     * Computes the variable assignment for the location to where control returns
+     * after a procedure call, from the variables in the final location of the
+     * procedure template and the source state of the call.
+     * @param top final location of the template
      * @param swit the template call
      */
-    static Assignment exit(Switch swit) {
+    static Assignment exit(Location top, Switch swit) {
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
         List<CtrlVar> callerVars = swit.getSourceVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
-        Map<CtrlVar,Integer> finalVars =
-                ((Procedure) swit.getUnit()).getTemplate().getFinal().getVarIxMap();
+        Map<CtrlVar,Integer> finalVars = top.getVarIxMap();
         for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
@@ -246,13 +247,18 @@ public class Assignment {
         return pop(result);
     }
 
-    /** Computes the pop actions between two frames. */
-    static public List<Assignment> computePops(Frame source, Frame target) {
+    /**
+     * Computes the pop actions between two frames.
+     * @param stack switch stack of the source frame
+     * @param top template location of the source frame
+     * @param remaining number of switches in the target frame switch stack
+     */
+    static public List<Assignment> computePops(SwitchStack stack, Location top, int remaining) {
         List<Assignment> result = new ArrayList<Assignment>();
-        SwitchStack sourceSwitches = source.getSwitchStack();
-        int targetSwitchCount = target.getSwitchStack().size();
-        for (int i = sourceSwitches.size() - 1; i >= targetSwitchCount; i--) {
-            result.add(Assignment.exit(sourceSwitches.get(i)));
+        for (int i = stack.size() - 1; i >= remaining; i--) {
+            assert top.isFinal();
+            result.add(Assignment.exit(top, stack.get(i)));
+            top = stack.get(i).onFinish();
         }
         return result;
     }

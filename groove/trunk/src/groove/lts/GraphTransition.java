@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package groove.lts;
 
+import groove.control.template.Switch;
 import groove.grammar.Action;
 import groove.grammar.host.HostGraphMorphism;
 import groove.graph.Edge;
@@ -42,7 +43,7 @@ public interface GraphTransition extends Edge {
     /**
      * Returns the transition label text as shown in the transition
      * system, taking into account whether anchors should be shown.
-     * @param anchored if {@code true}, anchors should be shown in 
+     * @param anchored if {@code true}, anchors should be shown in
      * the transition label
      * @return the text to be displayed in the transition system
      */
@@ -57,7 +58,13 @@ public interface GraphTransition extends Edge {
     /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
 
-    /** 
+    /** Returns the corresponding switch from the control template.
+     * For rule transitions, this is the top switch in the call stack of the step;
+     * for recipe transitions, it is the recipe call switch in the main template.
+     * */
+    public Switch getSwitch();
+
+    /**
      * Indicates if this transition is a step in a recipe transition.
      * If this is the case, then either the step is partial or it represents
      * an atomic recipe execution.
@@ -73,7 +80,7 @@ public interface GraphTransition extends Edge {
      */
     public RuleTransition getInitial();
 
-    /** 
+    /**
      * Returns an iterator over the steps comprising this transition.
      * The steps are returned in arbitrary order.
      */
@@ -111,7 +118,7 @@ public interface GraphTransition extends Edge {
             }
         },
         /**
-         * Only complete transitions, be they rule- or recipe-triggered. 
+         * Only complete transitions, be they rule- or recipe-triggered.
          * @see GraphTransition#isPartial()
          */
         COMPLETE {

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -83,8 +83,8 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     }
 
     @Override
-    public int getDepth() {
-        return getSwitchStack().getDepth() - getSource().getDepth();
+    public int getTransience() {
+        return getSwitchStack().getTransience() - getSource().getTransience();
     }
 
     /** Returns the number of levels by which the call stack depth changes from source
@@ -160,7 +160,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     private List<Assignment> computePrepareAssignments() {
         List<Assignment> result = new ArrayList<Assignment>();
-        result.addAll(getSource().getVerdictPops());
+        result.addAll(getSource().getPops());
         // add push actions for every successive call on the
         // stack of entered calls
         for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {
@@ -181,10 +181,11 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     private List<Assignment> computeApplyAssignments() {
         List<Assignment> result = computePrepareAssignments();
-        result.add(Assignment.modify(getSwitchStack().peek()));
+        SwitchStack stack = getSwitchStack();
+        result.add(Assignment.modify(stack.peek()));
         // add pop actions for the calls that are finished
-        for (int i = getSwitchStack().size() - 2; i >= onFinish().getSwitchStack().size(); i--) {
-            result.add(Assignment.exit(getSwitchStack().get(i)));
+        for (int i = stack.size() - 2; i >= onFinish().getSwitchStack().size(); i--) {
+            result.add(Assignment.exit(stack.get(i + 1).onFinish(), stack.get(i)));
         }
         return result;
     }

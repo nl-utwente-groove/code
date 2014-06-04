@@ -49,7 +49,7 @@ public class TransitTerm extends Term {
         if (arg0().isFinal()) {
             return 0;
         } else {
-            return arg0().getDepth() + 1;
+            return arg0().getTransience() + 1;
         }
     }
 

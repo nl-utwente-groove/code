@@ -53,7 +53,7 @@ public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> 
     public abstract boolean isTrial();
 
     /** Returns the transient depth of this position. */
-    public abstract int getDepth();
+    public abstract int getTransience();
 
     /**
      * Returns the attempt of this position.

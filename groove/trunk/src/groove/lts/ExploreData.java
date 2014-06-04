@@ -42,7 +42,7 @@ class ExploreData {
     ExploreData(StateCache cache) {
         GraphState state = this.state = cache.getState();
         this.absence =
-            this.state.isError() ? Flag.MAX_ABSENCE : this.state.getActualFrame().getDepth();
+            this.state.isError() ? Flag.MAX_ABSENCE : this.state.getActualFrame().getTransience();
         this.inRecipe = state.isRecipeState();
         if (!state.isClosed()) {
             this.recipeTargets = new ArrayList<GraphState>();
@@ -200,7 +200,7 @@ class ExploreData {
     }
 
     private void addRecipeTransition(GraphState source, RuleTransition partial, GraphState target) {
-        RecipeTransition trans = new RecipeTransition(source, partial, target);
+        RecipeTransition trans = new RecipeTransition(source, target, partial);
         this.state.getGTS().addTransition(trans);
         if (DEBUG) {
             System.out.printf("Recipe transition added: %s--%s-->%s%n", source, trans.label(),

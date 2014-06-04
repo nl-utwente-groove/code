@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -33,8 +33,8 @@ import groove.control.template.SwitchStack;
 import groove.control.template.Template;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import junit.framework.Assert;
@@ -126,17 +126,17 @@ public class TemplateBuildTest extends CtrlTester {
         //
         build("< a;b; > c;");
         loc = getInit(this.aCall);
-        assertEquals(1, loc.getDepth());
+        assertEquals(1, loc.getTransience());
         loc = getNext(loc, this.bCall);
-        assertEquals(0, loc.getDepth());
+        assertEquals(0, loc.getTransience());
         assertFalse(loc.isFinal());
         assertTrue(getNext(loc, this.cCall).isFinal());
         //
         build("< < a;b; > c; >");
         loc = getInit(this.aCall);
-        assertEquals(2, loc.getDepth());
+        assertEquals(2, loc.getTransience());
         loc = getNext(loc, this.bCall);
-        assertEquals(1, loc.getDepth());
+        assertEquals(1, loc.getTransience());
         assertFalse(loc.isFinal());
         assertTrue(getNext(loc, this.cCall).isFinal());
     }
@@ -179,27 +179,34 @@ public class TemplateBuildTest extends CtrlTester {
     @Test
     public void testVars() {
         initGrammar("emptyrules");
-        Call call = new Call(getRule("bInt"), Arrays.asList(this.xIntOut));
+        Call bIntXCall = new Call(getRule("bInt"), Arrays.asList(this.xIntOut));
+        Call bIntWildCall = new Call(getRule("bInt"), Arrays.asList(CtrlPar.wild()));
+        List<CtrlVar> xList = Arrays.asList(this.xInt);
         //
         build("int x; bInt(out x);");
-        Location loc = getInit(call);
+        Location loc = getInit(bIntXCall);
+        assertEquals(xList, loc.getVars());
+        assertTrue(loc.isFinal());
+        //
+        build("bInt(_);");
+        loc = getInit(bIntWildCall);
         assertTrue(loc.getVars().isEmpty());
         assertTrue(loc.isFinal());
         //
-        build("int x; bInt(out x); a;");
-        loc = getInit(call);
+        build("int x; bInt(_); a;");
+        loc = getInit(bIntWildCall);
         assertTrue(loc.getVars().isEmpty());
         assertFalse(loc.isFinal());
         //
         build("int x; bInt(out x); bInt(x);");
-        loc = getInit(call);
-        assertEquals(Collections.singletonList(this.xInt), loc.getVars());
+        loc = getInit(bIntXCall);
+        assertEquals(xList, loc.getVars());
         assertFalse(loc.isFinal());
         //
         build("int x; bInt(out x); bInt(_);");
-        loc = getInit(call);
-        assertEquals(Collections.emptyList(), loc.getVars());
-        // 
+        loc = getInit(bIntXCall);
+        assertEquals(xList, loc.getVars());
+        //
         buildWrong("node x; if (a) bNode(out x); bNode(x);");
     }
 
@@ -207,12 +214,12 @@ public class TemplateBuildTest extends CtrlTester {
     public void testProcedure() {
         buildFunction("function f() { a; b; }", "f");
         Location loc = getInit(this.aCall);
-        assertEquals(0, loc.getDepth());
+        assertEquals(0, loc.getTransience());
         assertTrue(getNext(loc, this.bCall).isFinal());
         //
         buildFunction("recipe r() { a; b; }", "r");
         loc = getInit(this.aCall);
-        assertEquals(1, loc.getDepth());
+        assertEquals(1, loc.getTransience());
         assertTrue(getNext(loc, this.bCall).isFinal());
         //
         build("function f() { (a|g); c; } function g() { (b|c); } (d|f);");

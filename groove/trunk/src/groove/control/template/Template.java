@@ -20,7 +20,6 @@ import groove.control.Callable;
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
 import groove.control.Function;
-import groove.control.Position.Type;
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
 import groove.grammar.Action;
@@ -107,38 +106,6 @@ public class Template {
     }
 
     private final Location start;
-
-    /**
-     * Returns the final location of this automaton.
-     * The final location always exist, but may fail to be a node
-     * of the template.
-     * Should only be called after the automaton is fixed.
-     */
-    public Location getFinal() {
-        if (this.finalLoc == null) {
-            this.finalLoc = computeFinal();
-        }
-        return this.finalLoc;
-    }
-
-    private Location finalLoc;
-
-    /**
-     * Computes the final location of this template.
-     */
-    private Location computeFinal() {
-        Location result = null;
-        for (Location loc : this.locations) {
-            if (loc.isFinal()) {
-                result = loc;
-            }
-        }
-        if (result == null) {
-            result = addLocation(0);
-            result.setType(Type.FINAL);
-        }
-        return result;
-    }
 
     /** Creates and adds a control location to this automaton. */
     public Location addLocation(int depth) {
