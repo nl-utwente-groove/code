@@ -1,23 +1,24 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.lts;
 
-import groove.control.CtrlSchedule;
-import groove.control.CtrlTransition;
+import groove.control.instance.Frame;
+import groove.control.instance.Step;
+import groove.control.instance.StepAttempt;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -56,7 +57,7 @@ public class StateMatches extends MatchResultSet {
 
     /**
      * Returns all unexplored matches of the state, insofar they can be determined
-     * without exploring any currently raw successor states. 
+     * without exploring any currently raw successor states.
      * @return set of unexplored matches
      */
     MatchResultSet getAll() {
@@ -83,10 +84,11 @@ public class StateMatches extends MatchResultSet {
 
     private boolean trySchedule() {
         boolean result = false;
-        CtrlSchedule schedule = (CtrlSchedule) getState().getActualFrame();
-        boolean isTransient = schedule.isTransient();
+        Frame frame = (Frame) getState().getActualFrame();
+        // depth of the frame at the start of the method
+        int depth = frame.getTransience();
         if (hasOutstanding()) {
-            // the schedule has been tried and has yielded matches; 
+            // the schedule has been tried and has yielded matches;
             // now see if at least one match has resulted
             // in a transition to a present state, or all matches
             // have resulted in transitions to absent states
@@ -100,7 +102,7 @@ public class StateMatches extends MatchResultSet {
                     allAbsent = false;
                 } else {
                     GraphState target = t.target();
-                    if (target.isPresent()) {
+                    if (target.getAbsence() <= frame.getTransience()) {
                         somePresent = true;
                         break;
                     } else if (target.isAbsent()) {
@@ -113,46 +115,50 @@ public class StateMatches extends MatchResultSet {
             if (somePresent || allAbsent) {
                 // yes, there is a present outgoing transition
                 // or all outgoing transitions are absent
-                schedule = schedule.next(somePresent);
-                getState().setFrame(schedule);
+                StepAttempt step = frame.getAttempt();
+                frame = somePresent ? step.onSuccess() : step.onFailure();
+                getState().setFrame(frame);
                 this.outstanding = EMPTY_MATCH_SET;
             }
         }
-        if (!schedule.isTrial()) {
+        if (!frame.isTrial()) {
             if (isEmpty()) {
                 assert isFinished();
                 getState().setClosed(true);
             }
         } else if (!hasOutstanding()) {
-            // flag collecting if none of the transitions in this schedule
-            // have a transient target
-            boolean noTransientTargets = true;
-            List<MatchResult> latestMatches = new LinkedList<MatchResult>();
-            for (CtrlTransition ct : schedule.getTransitions()) {
-                latestMatches.addAll(getMatchCollector().computeMatches(ct));
-                noTransientTargets &= !ct.target().isTransient();
+            StepAttempt step = frame.getAttempt();
+            // Collect the new matches
+            // Keep track of increases in transient depth
+            boolean depthIncreases = false;
+            List<MatchResult> outstanding = new LinkedList<MatchResult>();
+            for (Step ct : step) {
+                outstanding.addAll(getMatchCollector().computeMatches(ct));
+                depthIncreases |= ct.onFinish().getTransience() > frame.getTransience();
             }
-            CtrlSchedule nextSchedule;
-            if (latestMatches.isEmpty()) {
+            Frame nextFrame;
+            if (outstanding.isEmpty()) {
                 // no transitions will be generated
-                nextSchedule = schedule.next(false);
-            } else if (schedule.next(true) == schedule.next(false)) {
+                nextFrame = step.onFailure();
+            } else if (step.sameVerdict()) {
                 // it does not matter whether a transition is generated or not
-                nextSchedule = schedule.next(false);
-            } else if (schedule.isTransient() || noTransientTargets) {
-                // the control transition is atomic
+                nextFrame = step.onSuccess();
+            } else if (!depthIncreases) {
+                // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
-                nextSchedule = schedule.next(true);
+                // to a state that is present on the level of the frame
+                nextFrame = step.onSuccess();
             } else {
-                nextSchedule = schedule;
-                this.outstanding = latestMatches;
+                nextFrame = frame;
+                this.outstanding = outstanding;
             }
-            getState().setFrame(nextSchedule);
-            addAll(latestMatches);
+            getState().setFrame(nextFrame);
+            addAll(outstanding);
             result = true;
         }
-        if (isTransient && !getState().isTransient()) {
-            getCache().notifyDepth(0);
+        int actualDepth = getState().getActualFrame().getTransience();
+        if (actualDepth < depth) {
+            getCache().notifyDepth(actualDepth);
         }
         return result;
     }
@@ -164,7 +170,7 @@ public class StateMatches extends MatchResultSet {
         return this.matcher;
     }
 
-    /** 
+    /**
      * Indicates that there are no more matches, and the schedule is finished.
      * If this is the case, the state can be closed.
      */

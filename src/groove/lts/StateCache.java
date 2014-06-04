@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlFrame;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostElement;
@@ -82,14 +81,14 @@ public class StateCache {
         }
     }
 
-    /** 
+    /**
      * Callback method invoked when the state has been closed.
      */
     void notifyClosed() {
         getExploreData().notifyClosed();
     }
 
-    /** 
+    /**
      * Callback method invoked when the state has become done.
      */
     void notifyDone() {
@@ -118,7 +117,7 @@ public class StateCache {
         return this.graph != null;
     }
 
-    /** 
+    /**
      * Lazily creates and returns the delta with respect to the
      * parent state.
      */
@@ -138,7 +137,7 @@ public class StateCache {
 
     private ExploreData exploreData;
 
-    /** 
+    /**
      * Returns the lowest known absence depth of the state.
      * This is {@link Integer#MAX_VALUE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
@@ -174,11 +173,11 @@ public class StateCache {
         DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
-                this.graphFactory.newGraph(getState().toString(), frozenGraph,
-                    this.record.getFactory());
+                    this.graphFactory.newGraph(getState().toString(), frozenGraph,
+                        this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
-                "Underlying state does not have information to reconstruct the graph");
+                    "Underlying state does not have information to reconstruct the graph");
         } else {
             int depth = 0; // depth of reconstruction
             DefaultGraphNextState state = (DefaultGraphNextState) this.state;
@@ -187,7 +186,7 @@ public class StateCache {
             AbstractGraphState backward = state.source();
             List<DefaultGraphNextState> stateChain = new LinkedList<DefaultGraphNextState>();
             while (backward instanceof GraphNextState && !backward.hasCache()
-                && backward.getFrozenGraph() == null) {
+                    && backward.getFrozenGraph() == null) {
                 stateChain.add(0, (DefaultGraphNextState) backward);
                 backward = ((DefaultGraphNextState) backward).source();
                 depth++;
@@ -211,7 +210,7 @@ public class StateCache {
 
     /**
      * Decides whether the underlying graph should be frozen. The decision is
-     * taken on the basis of the <i>freeze count</i>, passed in as a 
+     * taken on the basis of the <i>freeze count</i>, passed in as a
      * parameter; the graph is frozen if the freeze count
      * exceeds {@link #FREEZE_BOUND}.
      * @return <code>true</code> if the graph should be frozen
@@ -244,7 +243,7 @@ public class StateCache {
     }
 
     /**
-     * Lazily creates and returns a mapping from the events to 
+     * Lazily creates and returns a mapping from the events to
      * outgoing transitions of this state.
      */
     KeySet<GraphTransitionKey,GraphTransition> getTransitionMap() {
@@ -255,17 +254,17 @@ public class StateCache {
     }
 
     /**
-     * Computes a mapping from the events to the 
+     * Computes a mapping from the events to the
      * outgoing transitions of this state.
      */
     private KeySet<GraphTransitionKey,GraphTransition> computeTransitionMap() {
         KeySet<GraphTransitionKey,GraphTransition> result =
-            new KeySet<GraphTransitionKey,GraphTransition>() {
-                @Override
-                protected GraphTransitionKey getKey(Object value) {
-                    return ((GraphTransition) value).getKey();
-                }
-            };
+                new KeySet<GraphTransitionKey,GraphTransition>() {
+            @Override
+            protected GraphTransitionKey getKey(Object value) {
+                return ((GraphTransition) value).getKey();
+            }
+        };
         for (GraphTransitionStub stub : getStubSet()) {
             GraphTransition trans = stub.toTransition(this.state);
             result.add(trans);
@@ -329,8 +328,7 @@ public class StateCache {
 
     StateMatches getMatches() {
         if (this.stateMatches == null) {
-            this.stateMatches =
-                CtrlFrame.NEW_CONTROL ? new FrameStateMatches(this) : new StateMatches(this);
+            this.stateMatches = new StateMatches(this);
         }
         return this.stateMatches;
     }
@@ -339,8 +337,7 @@ public class StateCache {
 
     /** Factory method for a match collector. */
     protected MatchCollector createMatchCollector() {
-        return CtrlFrame.NEW_CONTROL ? new StepMatchCollector(getState()) : new MatchCollector(
-            getState());
+        return new StepMatchCollector(getState());
     }
 
     @Override

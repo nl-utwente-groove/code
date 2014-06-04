@@ -16,7 +16,6 @@
  */
 package groove.gui.tree;
 
-import groove.control.CtrlFrame;
 import groove.grammar.Recipe;
 import groove.gui.Icons;
 import groove.io.HTMLConverter;
@@ -53,8 +52,7 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
 
     @Override
     public boolean isError() {
-        return CtrlFrame.NEW_CONTROL ? getRecipe().getTemplate() == null
-                : getRecipe().getBody() == null;
+        return getRecipe().getTemplate() == null;
     }
 
     @Override

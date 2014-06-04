@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,9 +17,8 @@
 package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
-import groove.abstraction.pattern.explore.util.PatternGraphFrameMatchCollector;
-import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
+import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
@@ -50,8 +49,8 @@ import java.util.Set;
 
 /**
  * Pattern Graph Transition System.
- * 
- * Complete re-implementation (AKA copy-paste :P) of the functionality in {@link GTS}. 
+ *
+ * Complete re-implementation (AKA copy-paste :P) of the functionality in {@link GTS}.
  */
 public class PGTS extends AGraph<PatternState,PatternTransition> {
 
@@ -117,7 +116,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
         addState(this.startState);
     }
 
-    /** 
+    /**
      * Returns a copy of the given graph with a fresh element factory.
      * The resulting graph will be used as start graph state.
      */
@@ -125,14 +124,12 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
         return startGraph.clone();
     }
 
-    /** 
+    /**
      * Creates the start state for this GTS.
      * Makes sure that the start state graph has a fresh factory.
      */
     protected PatternState createStartState(PatternGraph startGraph) {
-        return new PatternGraphState(startGraph, CtrlFrame.NEW_CONTROL
-                ? this.grammar.getControl().getStart() : this.grammar.getCtrlAut().getStart(), 0,
-            this);
+        return new PatternGraphState(startGraph, this.grammar.getControl().getStart(), 0, this);
     }
 
     /**
@@ -152,9 +149,9 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
         return this.grammar;
     }
 
-    /** 
+    /**
      * Returns the host element factory associated with this GTS.
-     * This is taken from the start state graph. 
+     * This is taken from the start state graph.
      */
     public PatternFactory getHostFactory() {
         if (this.hostFactory == null) {
@@ -264,9 +261,9 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
     public PatternState addState(PatternState newState) {
         // see if isomorphic graph is already in the LTS
         PatternState result = getStateSet().put(newState);
-        // if not ... 
+        // if not ...
         if (result == null) {
-            // and then add it to the GTS 
+            // and then add it to the GTS
             fireAddNode(newState);
         }
         return result;
@@ -354,8 +351,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
 
     /** Returns a fresh match collector for the given state. */
     public PatternGraphMatchSetCollector createMatchCollector(PatternState state) {
-        return CtrlFrame.NEW_CONTROL ? new PatternGraphFrameMatchCollector(state)
-                : new PatternGraphMatchSetCollector(state);
+        return new PatternGraphMatchSetCollector(state);
     }
 
     /** Returns the number of not fully explored states. */
@@ -486,13 +482,13 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
         @Override
         public Iterator<PatternTransition> iterator() {
             Iterator<Iterator<? extends PatternTransition>> stateOutTransitionIter =
-                new TransformIterator<PatternState,Iterator<? extends PatternTransition>>(
-                    nodeSet().iterator()) {
-                    @Override
-                    public Iterator<? extends PatternTransition> toOuter(PatternState state) {
-                        return outEdgeSet(state).iterator();
-                    }
-                };
+                    new TransformIterator<PatternState,Iterator<? extends PatternTransition>>(
+                            nodeSet().iterator()) {
+                @Override
+                public Iterator<? extends PatternTransition> toOuter(PatternState state) {
+                    return outEdgeSet(state).iterator();
+                }
+            };
             return new NestedIterator<PatternTransition>(stateOutTransitionIter);
         }
 

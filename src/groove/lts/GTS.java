@@ -109,11 +109,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public GraphState startState() {
         if (this.startState == null) {
             this.startState = createStartState();
-            if (CtrlFrame.NEW_CONTROL) {
-                getGrammar().getControl().initialise(this.startState.getGraph().getFactory());
-            } else {
-                getGrammar().getCtrlAut().initialise(this.startState.getGraph().getFactory());
-            }
+            getGrammar().getControl().initialise(this.startState.getGraph().getFactory());
             addState(this.startState);
         }
         return this.startState;
@@ -574,14 +570,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             if (flags.showTransience() && state.isTransient()) {
                 String label =
-                        flags.getTransienceLabel().replaceAll("#",
-                            "" + state.getActualFrame().getTransience());
+                    flags.getTransienceLabel().replaceAll("#",
+                        "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isRecipeState()) {
                 String label =
-                        flags.getRecipeLabel().replaceAll("#",
-                            "" + state.getActualFrame().getRecipe().getFullName());
+                    flags.getRecipeLabel().replaceAll("#",
+                        "" + state.getActualFrame().getRecipe().getFullName());
                 result.addEdge(image, label, image);
             }
         }
@@ -765,7 +761,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 Set<?> myNodeSet = new HostNodeSet(myGraph.nodeSet());
                 Set<?> myEdgeSet = new HostEdgeSet(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
-                        && myEdgeSet.equals(otherGraph.edgeSet());
+                    && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
                 return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
                     otherBoundNodes);
@@ -791,14 +787,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 }
             } else {
                 CertificateStrategy certifier =
-                        this.checker.getCertifier(stateKey.getGraph(), true);
+                    this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
                 CtrlFrame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     result +=
-                            Valuator.hashCode(stateKey.getFrameValues(), certifier.getCertificateMap());
+                        Valuator.hashCode(stateKey.getFrameValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {
@@ -890,13 +886,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         @Override
         public Iterator<GraphTransition> iterator() {
             Iterator<Iterator<? extends GraphTransition>> stateOutTransitionIter =
-                    new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
-                            nodeSet().iterator()) {
-                @Override
-                public Iterator<? extends GraphTransition> toOuter(GraphState state) {
-                    return outEdgeSet(state).iterator();
-                }
-            };
+                new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
+                    nodeSet().iterator()) {
+                    @Override
+                    public Iterator<? extends GraphTransition> toOuter(GraphState state) {
+                        return outEdgeSet(state).iterator();
+                    }
+                };
             return new NestedIterator<GraphTransition>(stateOutTransitionIter);
         }
 

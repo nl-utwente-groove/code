@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -22,10 +22,10 @@ import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.control.CtrlFrame;
-import groove.control.CtrlSchedule;
-import groove.control.CtrlState;
 import groove.control.CtrlStep;
+import groove.control.instance.Frame;
+import groove.control.instance.Step;
+import groove.control.instance.StepAttempt;
 
 import java.util.Collection;
 import java.util.List;
@@ -42,7 +42,7 @@ public class PatternGraphMatchSetCollector {
     /** The host graph we are working on. */
     private final PatternState state;
     /** The control state of the graph state, if any. */
-    private final CtrlFrame ctrlState;
+    private final Frame frame;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -51,8 +51,8 @@ public class PatternGraphMatchSetCollector {
     /** Constructs a match collector for the given state. */
     public PatternGraphMatchSetCollector(PatternState state) {
         this.state = state;
-        this.ctrlState = state.getFrame();
-        assert this.ctrlState != null;
+        this.frame = (Frame) state.getFrame();
+        assert this.frame != null;
     }
 
     // ------------------------------------------------------------------------
@@ -65,10 +65,10 @@ public class PatternGraphMatchSetCollector {
      */
     public Collection<MatchResult> getMatchSet() {
         Collection<MatchResult> result = new MyHashSet<MatchResult>();
-        CtrlStep ctrlTrans = firstCall();
-        while (ctrlTrans != null) {
-            boolean hasMatches = collectEvents(ctrlTrans, result);
-            ctrlTrans = nextCall(hasMatches);
+        CtrlStep step = firstCall();
+        while (step != null) {
+            boolean hasMatches = collectEvents(step, result);
+            step = nextCall(hasMatches);
         }
         return result;
     }
@@ -79,13 +79,13 @@ public class PatternGraphMatchSetCollector {
     }
 
     /** Returns the first rule of the state's control schedule. */
-    private CtrlStep firstCall() {
-        CtrlStep result;
-        CtrlSchedule schedule = ((CtrlState) this.ctrlState).getSchedule();
-        this.state.setFrame(schedule);
-        if (schedule.isTrial()) {
-            result = schedule.getTransitions().get(0);
-            this.transIx = 1;
+    private Step firstCall() {
+        Step result;
+        Frame frame = this.frame;
+        this.state.setFrame(frame);
+        if (frame.isTrial()) {
+            result = frame.getAttempt().get(0);
+            this.stepIx = 1;
             this.matchFound = false;
         } else {
             result = null;
@@ -94,20 +94,21 @@ public class PatternGraphMatchSetCollector {
     }
 
     /** Increments the rule iterator, and returns the next rule. */
-    private CtrlStep nextCall(boolean matchFound) {
-        CtrlStep result;
-        CtrlSchedule schedule = (CtrlSchedule) this.state.getCurrentFrame();
+    private Step nextCall(boolean matchFound) {
+        Step result;
+        Frame frame = (Frame) this.state.getCurrentFrame();
         this.matchFound |= matchFound;
-        if (!schedule.isTrial()) {
+        if (!frame.isTrial()) {
             result = null;
-        } else if (this.transIx < schedule.getTransitions().size()) {
-            result = schedule.getTransitions().get(this.transIx);
-            this.transIx++;
+        } else if (this.stepIx < frame.getAttempt().size()) {
+            result = frame.getAttempt().get(this.stepIx);
+            this.stepIx++;
         } else {
-            this.state.setFrame(schedule = schedule.next(this.matchFound));
-            if (schedule.isTrial()) {
-                result = schedule.getTransitions().get(0);
-                this.transIx = 1;
+            StepAttempt step = frame.getAttempt();
+            this.state.setFrame(frame = this.matchFound ? step.onSuccess() : step.onFailure());
+            if (frame.isTrial()) {
+                result = frame.getAttempt().get(0);
+                this.stepIx = 1;
                 this.matchFound = false;
             } else {
                 result = null;
@@ -126,6 +127,7 @@ public class PatternGraphMatchSetCollector {
         return !matches.isEmpty();
     }
 
-    private int transIx;
     private boolean matchFound;
+    /** Index of the last step within the current frame's attempt. */
+    private int stepIx;
 }

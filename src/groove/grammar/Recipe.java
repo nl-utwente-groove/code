@@ -16,7 +16,6 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlFrame;
 import groove.control.CtrlPar;
 import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
@@ -46,16 +45,10 @@ public class Recipe extends Procedure implements Action {
     public Set<Rule> getRules() {
         Set<Rule> result = this.rules;
         if (result == null) {
-            if (CtrlFrame.NEW_CONTROL) {
-                result = new HashSet<Rule>();
-                for (Action action : getTemplate().getActions()) {
-                    if (action instanceof Rule) {
-                        result.add((Rule) action);
-                    }
-                }
-            } else {
-                if (getBody() != null) {
-                    result = this.rules = getBody().getRules();
+            result = new HashSet<Rule>();
+            for (Action action : getTemplate().getActions()) {
+                if (action instanceof Rule) {
+                    result.add((Rule) action);
                 }
             }
         }

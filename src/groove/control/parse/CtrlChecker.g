@@ -91,7 +91,7 @@ par_decl
     { helper.declarePar($ID, $type.tree, $OUT); }
   ;
   
-block returns [ CtrlAut aut ]
+block
   : ^( BLOCK
        { helper.openScope(); }
        stat*
