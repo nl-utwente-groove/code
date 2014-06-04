@@ -25,7 +25,7 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
-import groove.control.CtrlStep;
+import groove.control.instance.Step;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,7 +89,7 @@ public final class Matcher {
     }
 
     /** Returns a list of all matches found on the given graph. */
-    public List<MatchResult> findMatches(PatternGraph pGraph, CtrlStep ctrlTrans) {
+    public List<MatchResult> findMatches(PatternGraph pGraph, Step ctrlTrans) {
         List<MatchResult> result = new ArrayList<MatchResult>();
         this.search.initialise(pGraph);
         while (this.search.find()) {

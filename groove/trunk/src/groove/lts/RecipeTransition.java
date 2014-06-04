@@ -22,7 +22,6 @@ import groove.control.CtrlPar.Var;
 import groove.control.CtrlPar.Wild;
 import groove.control.Valuator;
 import groove.control.instance.Assignment;
-import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Recipe;
@@ -63,7 +62,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
         super(source, target);
         assert source == initial.source();
         this.initial = initial;
-        Step initialStep = (Step) initial.getStep();
+        Step initialStep = initial.getStep();
         this.recipeSwitch = initialStep.getSwitchStack().getBottom();
     }
 
@@ -240,7 +239,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                     assert arg.isOutOnly();
                     int varIndex = getSwitch().onFinish().getVarIxMap().get(((Var) arg).getVar());
                     Object[] values = target().getFrameValues();
-                    for (Assignment pop : ((Frame) target().getActualFrame()).getPops()) {
+                    for (Assignment pop : target().getActualFrame().getPops()) {
                         values = pop.apply(values);
                     }
                     node = Valuator.get(values, varIndex);

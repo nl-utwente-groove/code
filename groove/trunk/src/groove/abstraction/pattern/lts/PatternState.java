@@ -18,7 +18,7 @@ package groove.abstraction.pattern.lts;
 
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
-import groove.control.CtrlFrame;
+import groove.control.instance.Frame;
 import groove.graph.Node;
 import groove.lts.GraphState;
 
@@ -38,15 +38,15 @@ public interface PatternState extends Node {
     public PatternGraph getGraph();
 
     /** Returns the (non-{@code null}) control state associated with this state. */
-    public CtrlFrame getFrame();
+    public Frame getFrame();
 
     /** Returns the (non-{@code null}) control schedule associated with this state. */
-    public CtrlFrame getCurrentFrame();
+    public Frame getCurrentFrame();
 
     /** 
      * Sets or changes the control frame.
      */
-    public void setFrame(CtrlFrame frame);
+    public void setFrame(Frame frame);
 
     /**
      * Closes this state. This announces that no more outgoing transitions will

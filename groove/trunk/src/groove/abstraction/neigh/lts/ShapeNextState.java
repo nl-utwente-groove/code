@@ -17,7 +17,7 @@
 package groove.abstraction.neigh.lts;
 
 import groove.abstraction.neigh.shape.Shape;
-import groove.control.CtrlStep;
+import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraphMorphism;
@@ -61,7 +61,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
      * @param number the number of the state to be created; non-negative
      */
     public ShapeNextState(int number, Shape shape, ShapeState source, MatchResult match) {
-        super(source.getCacheReference(), shape, match.getStep().target(), number);
+        super(source.getCacheReference(), shape, match.getStep().onFinish(), number);
         this.transition = new ShapeTransition(source, match, this);
     }
 
@@ -149,7 +149,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
     }
 
     @Override
-    public CtrlStep getStep() {
+    public Step getStep() {
         return this.transition.getStep();
     }
 

@@ -84,7 +84,7 @@ public class StateMatches extends MatchResultSet {
 
     private boolean trySchedule() {
         boolean result = false;
-        Frame frame = (Frame) getState().getActualFrame();
+        Frame frame = getState().getActualFrame();
         // depth of the frame at the start of the method
         int depth = frame.getTransience();
         if (hasOutstanding()) {

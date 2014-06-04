@@ -17,9 +17,9 @@
 package groove.lts;
 
 import groove.control.Binding;
-import groove.control.CtrlStep;
 import groove.control.Valuator;
 import groove.control.instance.Assignment;
+import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.transform.CompositeEvent;
@@ -75,13 +75,13 @@ public class MatchApplier {
                 boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
-                        && !match.getEvent().conflicts(sourceKey.getEvent())) {
+                    && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
-                                createTransition(source, match, siblingOut.getTarget(sibling),
-                                    siblingOut.isSymmetry());
+                            createTransition(source, match, siblingOut.getTarget(sibling),
+                                siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
                 }
@@ -96,8 +96,8 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                        new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
-                            isoTarget, true);
+                    new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
+                        isoTarget, true);
             }
         }
         // add transition to gts
@@ -114,8 +114,8 @@ public class MatchApplier {
         HostNode[] addedNodes;
         Object[] frameValues;
         RuleEvent event = match.getEvent();
-        CtrlStep ctrlStep = match.getStep();
-        boolean hasFrameValues = ctrlStep.target().hasVars();
+        Step ctrlStep = match.getStep();
+        boolean hasFrameValues = ctrlStep.onFinish().hasVars();
         RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getRuleTransition();
@@ -130,7 +130,7 @@ public class MatchApplier {
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        if (hasFrameValues || ctrlStep.target().isNested()) {
+        if (hasFrameValues || ctrlStep.onFinish().isNested()) {
             // only compute the effect if it has not yet been done
             if (effectRecord == null) {
                 effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
@@ -194,7 +194,7 @@ public class MatchApplier {
         return sourceEvent != matchEvent;
     }
 
-    private Object[] computeFrameValues(CtrlStep step, GraphState source, RuleEvent event,
+    private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
             RuleEffect record) {
         Object[] result = source.getFrameValues();
         for (Assignment assign : step.getApplyAssignments()) {

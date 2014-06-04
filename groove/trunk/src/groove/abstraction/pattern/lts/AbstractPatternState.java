@@ -18,7 +18,7 @@ package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternGraph;
-import groove.control.CtrlFrame;
+import groove.control.instance.Frame;
 import groove.lts.AbstractGraphState;
 
 import java.util.Set;
@@ -34,7 +34,7 @@ public abstract class AbstractPatternState implements PatternState {
     /** The number of this state */
     private final int nr;
     /** The underlying control state, if any. */
-    private CtrlFrame frame;
+    private Frame frame;
     /** Flag to indicated if the state has been closed. */
     private boolean closed;
     /** Set of outgoing transitions from this state. */
@@ -70,17 +70,17 @@ public abstract class AbstractPatternState implements PatternState {
     abstract public PatternGraph getGraph();
 
     @Override
-    public final CtrlFrame getFrame() {
+    public final Frame getFrame() {
         return this.frame.getPrime();
     }
 
     @Override
-    public final void setFrame(CtrlFrame frame) {
+    public final void setFrame(Frame frame) {
         this.frame = frame;
     }
 
     @Override
-    public final CtrlFrame getCurrentFrame() {
+    public final Frame getCurrentFrame() {
         return this.frame;
     }
 

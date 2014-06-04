@@ -20,10 +20,8 @@ import groove.algebra.Constant;
 import groove.control.Binding;
 import groove.control.Call;
 import groove.control.CtrlPar.Var;
-import groove.control.CtrlStep;
 import groove.control.Valuator;
 import groove.control.instance.Assignment;
-import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -76,10 +74,9 @@ public class MatchCollector {
 
     /**
      * Returns the set of matching events for a given control switch.
-     * @param ctrlStep the transition for which matches are to be found; non-{@code null}
+     * @param step the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches(CtrlStep ctrlStep) {
-        final Step step = (Step) ctrlStep;
+    public MatchResultSet computeMatches(final Step step) {
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
@@ -187,7 +184,7 @@ public class MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<Call> triedCalls = ((Frame) state.source().getActualFrame()).getPastCalls();
+        Set<Call> triedCalls = state.source().getActualFrame().getPastCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 

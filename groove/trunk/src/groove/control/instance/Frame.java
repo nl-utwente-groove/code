@@ -18,7 +18,6 @@ package groove.control.instance;
 
 import groove.control.Call;
 import groove.control.CallStack;
-import groove.control.CtrlFrame;
 import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.control.template.Location;
@@ -39,7 +38,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
+public class Frame implements Position<Frame,Step>, Fixable {
     /** Constructs a new frame.
      * @param ctrl the control automaton being built
      * @param loc top template location of the frame
@@ -94,7 +93,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private final int nr;
 
-    @Override
+    /** Indicates that this is the initial frame of the automaton. */
     public boolean isStart() {
         return getAut().getStart() == this;
     }
@@ -113,7 +112,11 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private final Location location;
 
-    @Override
+    /**
+     * Returns the prime frame of this frame.
+     * The prime frame is the initial frame from which this one was
+     * reached after a sequence of verdicts.
+     */
     public Frame getPrime() {
         return this.primeFrame;
     }
@@ -125,10 +128,10 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private final Frame primeFrame;
 
-    /** Returns the set of attempts made since the
-     * prime frame.
+    /**
+     * Returns the set of called actions that have been tried at this point
+     * of the frame.
      */
-    @Override
     public Set<CallStack> getPastAttempts() {
         return this.pastAttempts;
     }
@@ -216,17 +219,32 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         return result;
     }
 
-    @Override
+    /**
+     * Indicates if this frame is inside a recipe.
+     * This is the case if and only if the recipe has started
+     * and not yet terminated.
+     * A frame can only be inside a recipe if it is transient.
+     * @see #getRecipe()
+     * @see #isTransient()
+     */
     public boolean inRecipe() {
         return getSwitchStack().inRecipe();
     }
 
-    @Override
+    /**
+     * Returns the outer recipe to which this frame belongs, if any.
+     * @return the recipe to this this frame belongs, or {@code null}
+     * if it is not inside a recipe
+     * @see #inRecipe()
+     */
     public Recipe getRecipe() {
         return getSwitchStack().getRecipe();
     }
 
-    @Override
+    /**
+     * Indicates if this frame is inside an atomic block.
+     * Convenience method for <code>getTransience() > 0</code>
+     */
     public boolean isTransient() {
         return getTransience() > 0;
     }
@@ -236,7 +254,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         return getSwitchStack().getTransience() + getLocation().getTransience();
     }
 
-    @Override
+    /** Indicates if this frame is nested inside a procedure. */
     public boolean isNested() {
         return !getSwitchStack().isEmpty();
     }

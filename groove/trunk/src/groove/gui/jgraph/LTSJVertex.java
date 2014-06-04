@@ -1,6 +1,6 @@
 package groove.gui.jgraph;
 
-import groove.control.CtrlFrame;
+import groove.control.instance.Frame;
 import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
@@ -56,7 +56,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
         result.append(HTMLConverter.UNDERLINE_TAG.on(getNode()));
-        CtrlFrame frame = getNode().getPrimeFrame();
+        Frame frame = getNode().getPrimeFrame();
         if (!frame.isStart()) {
             result.append(" with control state ");
             result.append(HTMLConverter.UNDERLINE_TAG.on(frame));
@@ -105,7 +105,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     @Override
     public String getNodeIdString() {
         String result = super.getNodeIdString();
-        CtrlFrame frame = getNode().getPrimeFrame();
+        Frame frame = getNode().getPrimeFrame();
         if (!frame.isStart()) {
             result += "|" + frame.toString();
         }
@@ -136,7 +136,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
 
     private boolean visibleFlag;
 
-    /** 
+    /**
      * Returns a fresh instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
      */

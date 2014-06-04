@@ -19,8 +19,8 @@ package groove.abstraction.neigh.lts;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.control.CtrlFrame;
-import groove.control.CtrlStep;
+import groove.control.instance.Frame;
+import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -80,7 +80,7 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    protected ShapeState(CacheReference<StateCache> reference, Shape shape, CtrlFrame frame,
+    protected ShapeState(CacheReference<StateCache> reference, Shape shape, Frame frame,
             int number) {
         super(reference, number);
         this.shape = shape;
@@ -100,7 +100,7 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    public ShapeState(AGTS gts, Shape shape, CtrlFrame frame, int number) {
+    public ShapeState(AGTS gts, Shape shape, Frame frame, int number) {
         this(StateReference.newInstance(gts), shape, frame, number);
     }
 
@@ -284,7 +284,7 @@ public class ShapeState extends AbstractGraphState {
         }
 
         @Override
-        public MatchResultSet computeMatches(CtrlStep step) {
+        public MatchResultSet computeMatches(Step step) {
             final MatchResultSet result = new MatchResultSet();
             Rule rule = step.getRule();
             for (Proof preMatch : PreMatch.getPreMatches(ShapeState.this.getGraph(), rule)) {

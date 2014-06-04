@@ -17,13 +17,13 @@
 package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
-import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
+import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
-import groove.control.CtrlFrame;
+import groove.control.instance.Frame;
 import groove.graph.AGraph;
 import groove.graph.ElementFactory;
 import groove.graph.GGraph;
@@ -435,7 +435,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
             CertificateStrategy certifier = this.checker.getCertifier(stateKey.getGraph(), true);
             Object certificate = certifier.getGraphCertificate();
             result = certificate.hashCode();
-            CtrlFrame frame = stateKey.getFrame();
+            Frame frame = stateKey.getFrame();
             if (frame != null) {
                 result += frame.hashCode();
             }
@@ -482,13 +482,13 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
         @Override
         public Iterator<PatternTransition> iterator() {
             Iterator<Iterator<? extends PatternTransition>> stateOutTransitionIter =
-                    new TransformIterator<PatternState,Iterator<? extends PatternTransition>>(
-                            nodeSet().iterator()) {
-                @Override
-                public Iterator<? extends PatternTransition> toOuter(PatternState state) {
-                    return outEdgeSet(state).iterator();
-                }
-            };
+                new TransformIterator<PatternState,Iterator<? extends PatternTransition>>(
+                    nodeSet().iterator()) {
+                    @Override
+                    public Iterator<? extends PatternTransition> toOuter(PatternState state) {
+                        return outEdgeSet(state).iterator();
+                    }
+                };
             return new NestedIterator<PatternTransition>(stateOutTransitionIter);
         }
 
