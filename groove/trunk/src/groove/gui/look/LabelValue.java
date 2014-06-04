@@ -19,8 +19,6 @@ package groove.gui.look;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
 import groove.control.CtrlFrame;
-import groove.control.CtrlState;
-import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
@@ -44,7 +42,6 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
-import groove.gui.jgraph.OldCtrlJVertex;
 import groove.gui.look.Line.Style;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
@@ -54,7 +51,6 @@ import groove.lts.GraphTransition;
 import groove.util.Colors;
 
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -97,10 +93,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = getLTSJVertexLabel((LTSJVertex) jVertex);
             break;
         case CTRL:
-            result =
-            jVertex instanceof OldCtrlJVertex
-            ? getOldCtrlJVertexLabel((OldCtrlJVertex) jVertex)
-                    : getCtrlJVertexLabel((CtrlJVertex) jVertex);
+            result = getCtrlJVertexLabel((CtrlJVertex) jVertex);
             break;
         default:
             result = getBasicVertexLabel(jVertex);
@@ -323,28 +316,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 String text = ((GraphTransition) edge).text(isShowAnchors);
                 result.add(Line.atom(text), Direct.NONE);
             }
-        }
-        return result;
-    }
-
-    /**
-     * Appends the bound variables to the lines, if this list is not empty
-     */
-    private MultiLabel getOldCtrlJVertexLabel(OldCtrlJVertex jVertex) {
-        MultiLabel result = getBasicVertexLabel(jVertex);
-        CtrlState state = jVertex.getNode();
-        List<CtrlVar> boundVars = state.getVars();
-        if (boundVars.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(boundVars.toString());
-            result.add(Line.atom(sb.toString()), Direct.NONE);
-        }
-        if (jVertex.isTransient()) {
-            StringBuilder action = new StringBuilder();
-            action.append('<');
-            action.append(state.getRecipe().getFullName());
-            action.append('>');
-            result.add(Line.atom(action.toString()), Direct.NONE);
         }
         return result;
     }

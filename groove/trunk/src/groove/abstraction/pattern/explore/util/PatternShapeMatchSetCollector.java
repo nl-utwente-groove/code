@@ -24,7 +24,7 @@ import groove.abstraction.pattern.lts.PatternState;
  * @author Eduardo Zambon
  */
 public final class PatternShapeMatchSetCollector extends
-        PatternGraphFrameMatchCollector {
+        PatternGraphMatchSetCollector {
 
     // ------------------------------------------------------------------------
     // Constructors

@@ -1,8 +1,6 @@
 /* $Id: StartGraphState.java,v 1.7 2008-01-30 09:32:19 iovka Exp $ */
 package groove.lts;
 
-import groove.control.CtrlAut;
-import groove.control.CtrlFrame;
 import groove.control.instance.Automaton;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostGraph;
@@ -17,13 +15,8 @@ public class StartGraphState extends AbstractGraphState {
      */
     public StartGraphState(GTS gts, HostGraph graph) {
         super(StateReference.newInstance(gts), 0);
-        if (CtrlFrame.NEW_CONTROL) {
-            Automaton aut = gts.getGrammar().getControl();
-            setFrame(aut.getStart());
-        } else {
-            CtrlAut ctrlAut = gts.getGrammar().getCtrlAut();
-            setFrame(ctrlAut.getStart());
-        }
+        Automaton aut = gts.getGrammar().getControl();
+        setFrame(aut.getStart());
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
     }

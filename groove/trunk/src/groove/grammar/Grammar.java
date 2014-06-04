@@ -16,7 +16,6 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlAut;
 import groove.control.instance.Automaton;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
@@ -310,32 +309,6 @@ public class Grammar {
      * @throws IllegalStateException if the grammar is already fixed
      * @see #isFixed()
      */
-    public void setCtrlAut(CtrlAut aut) {
-        testFixed(false);
-        assert aut.isFixed();
-        this.ctrlAut = aut;
-    }
-
-    /**
-     * Returns the control automaton of this grammar, or <code>null</code> if
-     * there is none.
-     */
-    public CtrlAut getCtrlAut() {
-        return this.ctrlAut;
-    }
-
-    /**
-     * The control automaton of this grammar; <code>null</code> if there is
-     * none.
-     */
-    private CtrlAut ctrlAut;
-
-    /**
-     * Sets a control automaton for this grammar. This is only allowed if the
-     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
-     * @throws IllegalStateException if the grammar is already fixed
-     * @see #isFixed()
-     */
     public void setControl(Automaton control) {
         testFixed(false);
         this.control = control;
@@ -377,7 +350,7 @@ public class Grammar {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof Grammar) && getStartGraph().equals(((Grammar) obj).getStartGraph())
-            && super.equals(obj);
+                && super.equals(obj);
     }
 
     /** Combines the hash codes of the rule system and the start graph. */
@@ -415,7 +388,7 @@ public class Grammar {
      * ordering is from high to low priority.
      */
     private final SortedMap<Integer,Set<Action>> priorityActionMap =
-        new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
+            new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
     /**
      * Set of all actions, collected separately for purposes of speedup.
      * @see #getActions()

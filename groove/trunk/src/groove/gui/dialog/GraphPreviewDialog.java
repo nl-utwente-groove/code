@@ -1,6 +1,5 @@
 package groove.gui.dialog;
 
-import groove.control.CtrlAut;
 import groove.control.graph.ControlGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.GrammarModel;
@@ -16,7 +15,6 @@ import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
-import groove.gui.jgraph.OldCtrlJGraph;
 import groove.gui.jgraph.PlainJGraph;
 
 import java.awt.Dialog;
@@ -80,7 +78,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                 @Override
                 public void hierarchyChanged(HierarchyEvent e) {
                     Window window =
-                        SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
+                            SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
                     if (window instanceof Dialog) {
                         Dialog dialog = (Dialog) window;
                         if (!dialog.isResizable()) {
@@ -112,8 +110,6 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         case CTRL:
             if (shownGraph instanceof ControlGraph) {
                 jGraph = new CtrlJGraph(this.simulator);
-            } else if (shownGraph instanceof CtrlAut) {
-                jGraph = new OldCtrlJGraph(this.simulator);
             }
             break;
         case HOST:
@@ -122,7 +118,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
             if (this.simulator != null || this.grammar != null) {
                 shownGraph = GraphConverter.toAspect(this.graph);
                 DisplayKind kind =
-                    DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+                        DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
                 AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
                 if (this.simulator == null) {
                     aspectJGraph.setGrammar(this.grammar);
@@ -202,7 +198,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
 
     private static Simulator globalSimulator;
     private static Map<GraphRole,Set<String>> recentPreviews = new EnumMap<GraphRole,Set<String>>(
-        GraphRole.class);
+            GraphRole.class);
     static {
         for (GraphRole role : GraphRole.values()) {
             recentPreviews.put(role, new HashSet<String>());

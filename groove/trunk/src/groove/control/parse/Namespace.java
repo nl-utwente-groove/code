@@ -17,13 +17,11 @@
 package groove.control.parse;
 
 import groove.control.Callable;
-import groove.control.CtrlAut;
 import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
 import groove.control.term.Term;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
-import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
@@ -97,29 +95,6 @@ public class Namespace implements ParseInfo {
             this.callableMap.put(ruleName, rule);
         }
         return result;
-    }
-
-    /**
-     * Adds a function or recipe body to the namespace.
-     * The function or transaction name should have been defined already.
-     * If this concerns a recipe, the body is cloned and the rules appearing
-     * in the recipe are removed from the set of known rules.
-     */
-    public void addBody(String name, CtrlAut body) {
-        Callable unit = getCallable(name);
-        assert unit != null : String.format("Unknown name %s", name);
-        assert unit instanceof Procedure : String.format("Non-procedure name %s", name);
-        if (unit instanceof Recipe) {
-            Recipe recipe = (Recipe) unit;
-            body = body.clone(recipe);
-            // the rules in a transaction body are no longer available
-            for (Rule rule : body.getRules()) {
-                this.topNames.remove(rule.getFullName());
-            }
-        } else {
-            body = body.clone(name);
-        }
-        ((Procedure) unit).setBody(body);
     }
 
     /** Checks if a callable unit with a given name has been declared. */

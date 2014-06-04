@@ -139,20 +139,6 @@ public abstract class Procedure implements Callable, Fixable {
     /** The grammar properties for this procedure. */
     private final GrammarProperties grammarProperties;
 
-    /** Sets the control automaton of the procedure. */
-    public void setBody(CtrlAut body) {
-        assert this.body == null : String.format("%s body of %s already set to %s",
-            getKind().getName(true), getFullName(), body);
-        this.body = body;
-    }
-
-    /** Returns the control automaton of this procedure, if set. */
-    public CtrlAut getBody() {
-        return this.body;
-    }
-
-    private CtrlAut body;
-
     /**
      * Returns a mapping from input variables occurring in the signature of this procedure
      * to their corresponding indices in the signature.
@@ -218,7 +204,7 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getFullName()
-            + Groove.toString(getSignature().toArray(), "(", ")", ", ");
+                + Groove.toString(getSignature().toArray(), "(", ")", ", ");
     }
 
     @Override
@@ -258,12 +244,12 @@ public abstract class Procedure implements Callable, Fixable {
         switch (kind) {
         case FUNCTION:
             result =
-                new Function(fullName, priority, signature, controlName, startLine,
-                    grammarProperties);
+            new Function(fullName, priority, signature, controlName, startLine,
+                grammarProperties);
             break;
         case RECIPE:
             result =
-                new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
+            new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
             break;
         default:
             assert false;

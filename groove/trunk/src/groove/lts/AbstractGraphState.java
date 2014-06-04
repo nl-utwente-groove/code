@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstractGraphState.java,v 1.17 2008-02-20 09:25:29 kastenberg Exp $
  */
 package groove.lts;
@@ -20,7 +20,6 @@ import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
 import groove.control.CtrlFrame;
-import groove.control.CtrlState;
 import groove.control.Valuator;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -40,12 +39,12 @@ import java.util.Set;
 /**
  * Combination of graph and node functionality, used to store the state of a
  * graph transition system.
- * 
+ *
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-        GraphState {
+GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -90,7 +89,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                && ((RuleTransitionStub) stub).getKey(this) == match) {
+                    && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -199,7 +198,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (result) {
             setStoredTransitionStubs(getCachedTransitionStubs());
             updateClosed();
-            // reset the schedule to the beginning if the state was not 
+            // reset the schedule to the beginning if the state was not
             // completely explored
             if (!complete) {
                 setFrame(getPrimeFrame());
@@ -286,8 +285,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return setStatus(flag, value);
     }
 
-    /** 
-     * Sets a given flag in this state's status. 
+    /**
+     * Sets a given flag in this state's status.
      * @param value the new value of the flag
      * @return if {@code true}, the status value for the flag was changed
      */
@@ -299,7 +298,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return result;
     }
 
-    /** 
+    /**
      * Notifies the observers of a change in this state's status with respect
      * to a given status flag.
      */
@@ -343,7 +342,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
      * Returns a name for this state, rather than a full description. To get the
      * full description, use <tt>DefaultGraph.toString(Graph)</tt>.
-     * 
+     *
      * @see groove.graph.AGraph#toString(Graph)
      */
     @Override
@@ -422,11 +421,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         // AR: the assertion below fails to hold in one of the tests because
         // the frame is artificially set again for a start state
         // assert this.currentFrame == null || frame.getPrime() == getPrimeFrame();
-        if (frame instanceof CtrlState) {
-            this.currentFrame = ((CtrlState) frame).getSchedule();
-        } else {
-            this.currentFrame = frame;
-        }
+        this.currentFrame = frame;
     }
 
     @Override
@@ -438,7 +433,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     /**
      * The number of this Node.
-     * 
+     *
      * @invariant nr < nrNodes
      */
     private final int nr;
