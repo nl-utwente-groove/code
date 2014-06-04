@@ -19,8 +19,8 @@ package groove.lts;
 import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
-import groove.control.CtrlFrame;
 import groove.control.Valuator;
+import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
@@ -44,7 +44,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-GraphState {
+        GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -89,7 +89,7 @@ GraphState {
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                    && ((RuleTransitionStub) stub).getKey(this) == match) {
+                && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -411,12 +411,12 @@ GraphState {
     }
 
     @Override
-    public CtrlFrame getPrimeFrame() {
+    public Frame getPrimeFrame() {
         return getActualFrame().getPrime();
     }
 
     @Override
-    public void setFrame(CtrlFrame frame) {
+    public void setFrame(Frame frame) {
         assert frame != null;
         // AR: the assertion below fails to hold in one of the tests because
         // the frame is artificially set again for a start state
@@ -425,11 +425,11 @@ GraphState {
     }
 
     @Override
-    public final CtrlFrame getActualFrame() {
+    public final Frame getActualFrame() {
         return this.currentFrame;
     }
 
-    private CtrlFrame currentFrame;
+    private Frame currentFrame;
 
     /**
      * The number of this Node.

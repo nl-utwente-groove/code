@@ -14,7 +14,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlStep;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Rule;
@@ -51,7 +50,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
         this.event = match.getEvent();
         this.addedNodes = addedNodes;
         this.step = match.getStep();
-        setFrame(this.step.target());
+        setFrame(this.step.onFinish());
         this.frameValues = frameValues;
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
@@ -319,13 +318,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-    public CtrlStep getStep() {
+    public Step getStep() {
         return this.step;
     }
 
     @Override
     public Switch getSwitch() {
-        return ((Step) getStep()).getRuleSwitch();
+        return getStep().getRuleSwitch();
     }
 
     @Override
@@ -358,7 +357,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      * The incoming control step with which this state was
      * created.
      */
-    private final CtrlStep step;
+    private final Step step;
     /**
      * The identities of the nodes added with respect to the source state.
      */

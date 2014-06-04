@@ -1,22 +1,21 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: GraphState.java,v 1.11 2008-02-22 13:02:44 rensink Exp $
  */
 package groove.lts;
 
-import groove.control.CtrlFrame;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
 import groove.graph.Node;
@@ -36,10 +35,10 @@ import java.util.Set;
  * <li> <b>Cooked:</b> A graph state is done if it is closed and all reachable states up
  * until the first non-transient states are also closed. This means that all outgoing
  * transitions (including recipe transitions) are known.
- * <li> <b>Transient:</b> A graph state is transient if it is an intermediate state in 
+ * <li> <b>Transient:</b> A graph state is transient if it is an intermediate state in
  * the execution of a recipe.
- * <li> <b>Absent:</b> A graph state is absent if it is done and transient and does not 
- * have a path to a non-transient state, or violates a right 
+ * <li> <b>Absent:</b> A graph state is absent if it is done and transient and does not
+ * have a path to a non-transient state, or violates a right
  * application condition.
  * <li> <b>Error:</b> A graph state is erroneous if it fails to satisfy an invariant
  * </ul>
@@ -59,31 +58,31 @@ public interface GraphState extends Node {
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 
-    /** 
+    /**
      * Sets a new actual frame for this state.
      * This also initialises the prime frame, if that has not been done yet.
      * If the prime frame has been initialised, it should equal the prime of
      * the new actual frame.
      */
-    public void setFrame(CtrlFrame frame);
+    public void setFrame(Frame frame);
 
     /**
      * Returns the prime control frame associated with this state.
      * The prime frame is the frame with which the state is initialised;
      * it is fixed for the lifetime of the state.
      * This is in contrast with the actual frame, which may change as
-     * the state is explored. 
+     * the state is explored.
      */
-    public CtrlFrame getPrimeFrame();
+    public Frame getPrimeFrame();
 
-    /** 
+    /**
      * Returns the actual control frame associated with this state.
      * The actual control frame evolves as the state is explored, whereas the
      * prime frame is fixed at creation time.
      * The prime frame is always the prime of the actual frame.
-     * @see Frame#getPrime() 
+     * @see Frame#getPrime()
      */
-    public CtrlFrame getActualFrame();
+    public Frame getActualFrame();
 
     /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
@@ -121,14 +120,14 @@ public interface GraphState extends Node {
      */
     public boolean addTransition(GraphTransition transition);
 
-    /** 
+    /**
      * Returns the first unexplored match found for this state, insofar one can
      * currently be computed.
      */
     public MatchResult getMatch();
 
-    /** 
-     * Returns the set of all unexplored matches for this state, insofar they can 
+    /**
+     * Returns the set of all unexplored matches for this state, insofar they can
      * currently be computed.
      */
     public List<MatchResult> getMatches();
@@ -146,11 +145,11 @@ public interface GraphState extends Node {
      * Returns a list of values for the bound variables of
      * the prime control frame.
      * @see #getPrimeFrame()
-     * @see CtrlFrame#getVars()
+     * @see Frame#getVars()
      */
     public Object[] getFrameValues();
 
-    /** 
+    /**
      * Returns the current state cache, or a fresh one if the cache is cleared.
      */
     public StateCache getCache();
@@ -174,7 +173,7 @@ public interface GraphState extends Node {
      */
     public boolean isClosed();
 
-    /** 
+    /**
      * Declares this state to be an error state.
      * The return value indicates if the error status was changed as
      * a result of this call.
@@ -185,7 +184,7 @@ public interface GraphState extends Node {
     /** Indicates if this is an error state. */
     public boolean isError();
 
-    /** 
+    /**
      * Declares this state to be done, while also setting its absence.
      * @param absence level of the state; if positive, the state is absent
      * @return if {@code false}, the state was already known to be done
@@ -193,8 +192,8 @@ public interface GraphState extends Node {
      */
     public boolean setDone(int absence);
 
-    /** 
-     * Indicates if this state is done. 
+    /**
+     * Indicates if this state is done.
      * This is the case if
      * all outgoing paths have been explored up until a non-transient
      * or deadlocked state.
@@ -211,15 +210,15 @@ public interface GraphState extends Node {
      */
     public boolean isRecipeState();
 
-    /** 
+    /**
      * Indicates if this is a transient state.
      * This is the case if and only if the associated control schedule is transient.
      * @see #getActualFrame()
      */
     public boolean isTransient();
 
-    /** 
-     * Indicates if this state is known to be not properly part of the state 
+    /**
+     * Indicates if this state is known to be not properly part of the state
      * space. This is the case if the state is done and not present.
      * A special case of absence is if the state is erroneous.
      * @see #isDone()
@@ -227,23 +226,23 @@ public interface GraphState extends Node {
      */
     public boolean isAbsent();
 
-    /** 
+    /**
      * Indicates the absence level, which is defined as the lowest
      * transient depth of the known reachable states.
      * This is maximal ({@link Flag#MAX_ABSENCE}) if the state is
      * erroneous, and 0 if the state is non-transient (hence present).
      * The state is <i>absent</i> if it is done has a positive absence level.
      * @see #isDone()
-     * @see #isAbsent() 
+     * @see #isAbsent()
      */
     public int getAbsence();
 
-    /** 
+    /**
      * Indicates if this state is properly part of the state space.
      * Convenience method for <code>getAbsence() == 0</code>.
      * If a state is done, it is either present or absent.
      * @see #isDone()
-     * @see #isAbsent() 
+     * @see #isAbsent()
      * @see #getAbsence()
      */
     public boolean isPresent();
@@ -251,7 +250,7 @@ public interface GraphState extends Node {
     /** Tests if a given status flag is set. */
     public boolean hasFlag(Flag flag);
 
-    /** 
+    /**
      * Changes the value of a given status flag.
      * This is only allowed for exploration strategy-related flags;
      * for others, (re)setting is done internally.
@@ -265,13 +264,13 @@ public interface GraphState extends Node {
 
     /** Changeable status flags of a graph state. */
     public enum Flag {
-        /** 
+        /**
          * Flag indicating that the state has been closed.
          * This is the case if and only if no more outgoing transitions will be added.
          */
         CLOSED(false),
         /**
-         * Flag indicating that exploration of the graph state is done. 
+         * Flag indicating that exploration of the graph state is done.
          * This is the case if and only if it is closed, and all outgoing transition
          * sequences eventually lead to non-transient or absent states.
          */
@@ -328,7 +327,7 @@ public interface GraphState extends Node {
         private final int mask;
         /** Indicates if this flag is exploration-related. */
         private final boolean strategy;
-        /** Number of bits by which a status value has be right-shifted to get 
+        /** Number of bits by which a status value has be right-shifted to get
          * the absence value.
          */
         private final static int ABSENCE_SHIFT = 25;

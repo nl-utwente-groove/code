@@ -22,7 +22,6 @@ import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.control.CtrlStep;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.control.instance.StepAttempt;
@@ -51,7 +50,7 @@ public class PatternGraphMatchSetCollector {
     /** Constructs a match collector for the given state. */
     public PatternGraphMatchSetCollector(PatternState state) {
         this.state = state;
-        this.frame = (Frame) state.getFrame();
+        this.frame = state.getFrame();
         assert this.frame != null;
     }
 
@@ -65,7 +64,7 @@ public class PatternGraphMatchSetCollector {
      */
     public Collection<MatchResult> getMatchSet() {
         Collection<MatchResult> result = new MyHashSet<MatchResult>();
-        CtrlStep step = firstCall();
+        Step step = firstCall();
         while (step != null) {
             boolean hasMatches = collectEvents(step, result);
             step = nextCall(hasMatches);
@@ -96,7 +95,7 @@ public class PatternGraphMatchSetCollector {
     /** Increments the rule iterator, and returns the next rule. */
     private Step nextCall(boolean matchFound) {
         Step result;
-        Frame frame = (Frame) this.state.getCurrentFrame();
+        Frame frame = this.state.getCurrentFrame();
         this.matchFound |= matchFound;
         if (!frame.isTrial()) {
             result = null;
@@ -118,7 +117,7 @@ public class PatternGraphMatchSetCollector {
     }
 
     /** Adds the matching events for a given rule into an existing set. */
-    private boolean collectEvents(CtrlStep ctrlTrans, final Collection<MatchResult> result) {
+    private boolean collectEvents(Step ctrlTrans, final Collection<MatchResult> result) {
         String ruleName = ctrlTrans.getRule().getLastName();
         PatternRule pRule = this.state.getPGTS().getGrammar().getRule(ruleName);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, isInjective());

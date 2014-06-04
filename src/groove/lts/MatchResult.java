@@ -1,28 +1,28 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.lts;
 
-import groove.control.CtrlStep;
+import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.transform.RuleEvent;
 
 import java.util.Comparator;
 
-/** 
+/**
  * Class encoding the result of matching the rule in a control transition.
  * This essentially consists of a rule event and the control transition.
  */
@@ -35,14 +35,14 @@ public class MatchResult implements GraphTransitionKey {
     }
 
     /** Constructs a result from a given event and control step. */
-    public MatchResult(RuleEvent event, CtrlStep step) {
+    public MatchResult(RuleEvent event, Step step) {
         this.ruleTrans = null;
         this.event = event;
         this.step = step;
     }
 
-    /** 
-     * Indicates if this match result corresponds to an 
+    /**
+     * Indicates if this match result corresponds to an
      * already explored rule transition from a given source state.
      * @param state the source state for which the test is carried out
      * @see #hasRuleTransition()
@@ -51,7 +51,7 @@ public class MatchResult implements GraphTransitionKey {
         return hasRuleTransition() && getRuleTransition().source() == state;
     }
 
-    /** 
+    /**
      * Indicates if this match result is based on an already explored rule transition.
      * Note that, in case the match is reused from a parent state,
      * the source of this transition (if any) may differ from
@@ -77,11 +77,11 @@ public class MatchResult implements GraphTransitionKey {
     private final RuleEvent event;
 
     /** Returns the control transition wrapped by this transition key. */
-    public CtrlStep getStep() {
+    public Step getStep() {
         return this.step;
     }
 
-    private final CtrlStep step;
+    private final Step step;
 
     /** Returns the underlying rule of this match. */
     public Rule getRule() {
@@ -138,8 +138,8 @@ public class MatchResult implements GraphTransitionKey {
     /** The precomputed hashcode; 0 if it has not yet been not initialised. */
     private int hashcode;
 
-    /** Fixed comparator for match results, which compares results for their 
-     * rule events and then their control transitions. 
+    /** Fixed comparator for match results, which compares results for their
+     * rule events and then their control transitions.
      */
     public static final Comparator<MatchResult> COMPARATOR = new Comparator<MatchResult>() {
         @Override

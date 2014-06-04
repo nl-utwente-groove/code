@@ -19,7 +19,7 @@ package groove.control.instance;
 import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CallStack;
-import groove.control.CtrlStep;
+import groove.control.CalledAction;
 import groove.control.CtrlVar;
 import groove.control.template.Switch;
 import groove.control.template.Switch.Kind;
@@ -36,7 +36,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
+public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step>, CalledAction {
     /**
      * Constructs a step from the given parameters.
      * @param source source frame for the step
@@ -58,11 +58,6 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     }
 
     private final Frame source;
-
-    @Override
-    public Frame target() {
-        return onFinish();
-    }
 
     @Override
     public Frame onFinish() {
@@ -104,12 +99,12 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         return getSwitchStack().getCallStack();
     }
 
-    @Override
+    /** Indicates if this step is part of an atomic block. */
     public boolean isPartial() {
         return getSource().isTransient() || onFinish().isTransient();
     }
 
-    @Override
+    /** Indicates if this step is the initial step of a recipe. */
     public boolean isInitial() {
         // if a recipe step starts in a non-recipe frame, it must be
         // the initial step of a recipe
@@ -132,12 +127,16 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         return getRuleCall().getRule();
     }
 
-    @Override
+    /** Returns the mapping of output variables to argument positions of the called unit. */
     public Map<CtrlVar,Integer> getOutVars() {
         return getRuleCall().getOutVars();
     }
 
-    @Override
+    /**
+     * Indicates if the step may cause modifications in the control state.
+     * This is the case if the (prime) source and target of this step differ,
+     * or the call has out-parameters.
+     */
     public boolean isModifying() {
         return getSource().getPrime() != onFinish() || getRuleCall().hasOutVars();
     }
@@ -168,7 +167,13 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
         return result;
     }
 
-    @Override
+    /**
+     * Returns the list of frame value assignments involved in applying this step.
+     * These consist of outstanding stack pops due to verdict transitions of the source frame,
+     * insofar they have caused procedures to be exited, followed by pushes due to fresh
+     * procedure calls, followed by the action of this step, followed by pops due to
+     * procedures explicitly exited by this step.
+     */
     public List<Assignment> getApplyAssignments() {
         if (this.applyAssignments == null) {
             this.applyAssignments = computeApplyAssignments();
@@ -190,8 +195,7 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
     }
 
     @Override
-    public int compareTo(CtrlStep o) {
-        Step other = (Step) o;
+    public int compareTo(Step other) {
         int result = getSource().getNumber() - other.getSource().getNumber();
         if (result != 0) {
             return result;

@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.control.CtrlStep;
+import groove.control.instance.Step;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.transform.Proof;
@@ -53,7 +53,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     public RuleApplication createRuleApplication();
 
     /** Returns the control step associated with this transition. */
-    CtrlStep getStep();
+    Step getStep();
 
     @Override
     public MatchResult getKey();

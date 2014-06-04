@@ -18,7 +18,7 @@ package groove.abstraction.pattern.lts;
 
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
-import groove.control.CtrlFrame;
+import groove.control.instance.Frame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class PatternGraphState extends AbstractPatternState {
     private List<PatternState> subsumedStates;
 
     /** Default constructor. */
-    public PatternGraphState(PatternGraph graph, CtrlFrame frame, int number, PGTS pgts) {
+    public PatternGraphState(PatternGraph graph, Frame frame, int number, PGTS pgts) {
         super(number);
         this.graph = graph;
         this.graph.setName(toString());

@@ -40,7 +40,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     private RuleTransitionLabel(GraphState source, MatchResult match, HostNode[] addedNodes) {
         this.event = match.getEvent();
-        this.step = (Step) match.getStep();
+        this.step = match.getStep();
         this.addedNodes = addedNodes;
     }
 
