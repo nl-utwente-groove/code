@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -84,7 +84,7 @@ public class StatisticsReporter extends AExplorationReporter {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructs a exploration statistics object at a 
+     * Constructs a exploration statistics object at a
      * given verbosity level.
      */
     public StatisticsReporter(Verbosity verbosity) {
@@ -163,7 +163,7 @@ public class StatisticsReporter extends AExplorationReporter {
             this.sb.append(sw.toString());
         }
         emit(HIGH,
-            "===============================================================================%n");
+                "===============================================================================%n");
     }
 
     private void reportStatistics() {
@@ -239,7 +239,7 @@ public class StatisticsReporter extends AExplorationReporter {
         int predicted = IsoChecker.getTotalCheckCount();
         int falsePos2 = IsoChecker.getDistinctSimCount();
         int falsePos1 =
-            falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
+                falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
         int equalGraphCount = IsoChecker.getEqualGraphsCount();
         int equalCertsCount = IsoChecker.getEqualCertsCount();
         int equalSimCount = IsoChecker.getEqualSimCount();
@@ -357,9 +357,9 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(MEDIUM, format, "Space (kB):", (usedMemory - this.startUsedMemory) / BYTES_PER_KB);
     }
 
-    /** 
+    /**
      * Prints a formatted string to the output stream,
-     * at a given minimum verbosity. 
+     * at a given minimum verbosity.
      */
     private void emit(Verbosity at, String text, Object... args) {
         if (at.compareTo(this.sbVerbosity) <= 0) {

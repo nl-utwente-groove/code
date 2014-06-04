@@ -20,7 +20,6 @@ import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.CtrlStep;
-import groove.control.CtrlTransition;
 import groove.control.CtrlVar;
 import groove.control.template.Switch;
 import groove.control.template.Switch.Kind;
@@ -192,9 +191,6 @@ public class Step implements Attempt.Stage<Frame,Step>, CtrlStep {
 
     @Override
     public int compareTo(CtrlStep o) {
-        if (o instanceof CtrlTransition) {
-            return -1;
-        }
         Step other = (Step) o;
         int result = getSource().getNumber() - other.getSource().getNumber();
         if (result != 0) {

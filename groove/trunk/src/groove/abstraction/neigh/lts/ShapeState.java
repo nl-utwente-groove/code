@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstrGraphStateImpl.java,v 1.3 2008-01-31 08:22:52 rensink Exp $
  */
 package groove.abstraction.neigh.lts;
@@ -28,13 +28,12 @@ import groove.lts.AbstractGraphState;
 import groove.lts.ActionLabel;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.MatchCollector;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
 import groove.lts.StateReference;
-import groove.lts.StepMatchCollector;
+import groove.lts.MatchCollector;
 import groove.transform.Proof;
 import groove.util.cache.CacheReference;
 
@@ -45,7 +44,7 @@ import java.util.Set;
 
 /**
  * A state of the abstract GTS that stores a shape as the state configuration.
- * 
+ *
  * @author Eduardo Zambon
  */
 public class ShapeState extends AbstractGraphState {
@@ -133,8 +132,8 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition || transition instanceof ShapeNextState : "Invalid transition type.";
-        this.transitions.add(transition);
-        return true;
+    this.transitions.add(transition);
+    return true;
     }
 
     @Override
@@ -215,7 +214,7 @@ public class ShapeState extends AbstractGraphState {
     /**
      * Clear references to expensive structures such as the state shape. This
      * method can only be called when this state is marked as subsumed.
-     * It is easier to keep the reference to this state around and just clear 
+     * It is easier to keep the reference to this state around and just clear
      * the internal references so garbage collection will free some memory.
      */
     public void disconnectState() {
@@ -272,8 +271,7 @@ public class ShapeState extends AbstractGraphState {
 
         @Override
         protected MatchCollector createMatchCollector() {
-            return CtrlFrame.NEW_CONTROL ? new ShapeStepMatchCollector()
-                    : new ShapeMatchSetCollector();
+            return new ShapeMatchSetCollector();
         }
     }
 
@@ -282,25 +280,6 @@ public class ShapeState extends AbstractGraphState {
          * Constructs a match collector for this shape.
          */
         public ShapeMatchSetCollector() {
-            super(ShapeState.this);
-        }
-
-        @Override
-        public MatchResultSet computeMatches(CtrlStep step) {
-            final MatchResultSet result = new MatchResultSet();
-            Rule rule = step.getRule();
-            for (Proof preMatch : PreMatch.getPreMatches(ShapeState.this.getGraph(), rule)) {
-                result.add(new MatchResult(getRecord().getEvent(preMatch), step));
-            }
-            return result;
-        }
-    }
-
-    private class ShapeStepMatchCollector extends StepMatchCollector {
-        /**
-         * Constructs a match collector for this shape.
-         */
-        public ShapeStepMatchCollector() {
             super(ShapeState.this);
         }
 
