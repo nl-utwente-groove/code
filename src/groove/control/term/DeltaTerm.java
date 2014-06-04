@@ -57,7 +57,7 @@ public class DeltaTerm extends Term {
     @Override
     public int hashCode() {
         int prime = 31;
-        return prime * super.hashCode() + getDepth();
+        return prime * super.hashCode() + getTransience();
     }
 
     @Override
@@ -68,8 +68,8 @@ public class DeltaTerm extends Term {
     @Override
     public String toString() {
         String result = super.toString();
-        if (getDepth() > 0) {
-            result += "(" + getDepth() + ")";
+        if (getTransience() > 0) {
+            result += "(" + getTransience() + ")";
         }
         return result;
     }

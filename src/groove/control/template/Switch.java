@@ -1,22 +1,21 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.control.template;
 
-import groove.control.Attempt;
 import groove.control.Binding;
 import groove.control.Call;
 import groove.control.Callable;
@@ -31,26 +30,22 @@ import java.util.List;
 
 /**
  * Transition between control locations, bearing either a call or a verdict.
- * A switch can either be <i>base</i>, meaning that it is used as an edge in a template,
- * or <i>derived</i>, meaning that it is used as the {@link Attempt} of a control 
- * step between frames in an actual control automaton. Derived switches may have a 
- * caller switch.
- * Only base switches can be verdicts.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class Switch implements Comparable<Switch> {
     /**
-     * Constructs a base call switch.
-     * @param onFinish target location of the switch
+     * Constructs a new switch.
      * @param call call to be used as label
+     * @param transience the additional transient depth entered by this switch
+     * @param onFinish target location of the switch
      */
-    public Switch(Location onFinish, Call call, int depth) {
+    public Switch(Call call, int transience, Location onFinish) {
         assert onFinish != null;
         this.onFinish = onFinish;
         this.kind = call.getUnit().getKind();
         this.call = call;
-        this.depth = depth;
+        this.transience = transience;
     }
 
     /** Initialises the control variables of the source location of the switch. */
@@ -94,7 +89,7 @@ public class Switch implements Comparable<Switch> {
         return getUnit().getFullName();
     }
 
-    /** 
+    /**
      * Convenience method to return the arguments of the call of this switch.
      * Only valid if this is a call switch.
      * @return the list of arguments
@@ -103,7 +98,7 @@ public class Switch implements Comparable<Switch> {
         return getCall().getArgs();
     }
 
-    /** 
+    /**
      * Convenience method to return the called unit of this switch.
      * Only valid if this is a call switch.
      * @see #getKind()
@@ -114,28 +109,26 @@ public class Switch implements Comparable<Switch> {
 
     /**
      * Returns the rule or procedure call wrapped in this switch.
-     * The call is a procedure call if and only if the switch has a nested
-     * switch.
      */
     public final Call getCall() {
         assert getKind().isCallable() : "" + this + " is not a call switch";
         return this.call;
     }
 
-    /** 
+    /**
      * The invoked unit of this call.
      * Is {@code null} if this is not a call switch.
      */
     private final Call call;
 
     /** Returns the additional transient depth effected by this switch. */
-    public int getDepth() {
-        return this.depth;
+    public int getTransience() {
+        return this.transience;
     }
 
-    private final int depth;
+    private final int transience;
 
-    /** 
+    /**
      * Returns pairs of input parameters of this call and corresponding
      * bindings to source location variables and constant values.
      * This is only valid for rule calls.
@@ -151,7 +144,7 @@ public class Switch implements Comparable<Switch> {
     /** Binding of in-parameter positions to source variables and constant arguments. */
     private List<Pair<Var,Binding>> callBinding;
 
-    /** 
+    /**
      * Computes the binding of call parameter positions to source location
      * variables and constant values.
      * @return a list of pairs of call parameter variables and bindings.
@@ -201,7 +194,7 @@ public class Switch implements Comparable<Switch> {
         result = prime * result + getSourceVars().hashCode();
         result = prime * result + onFinish().hashCode();
         result = prime * result + getKind().hashCode();
-        result = prime * result + getDepth();
+        result = prime * result + getTransience();
         result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
         return result;
     }
@@ -218,7 +211,7 @@ public class Switch implements Comparable<Switch> {
         if (getKind() != other.getKind()) {
             return false;
         }
-        if (getDepth() != other.getDepth()) {
+        if (getTransience() != other.getTransience()) {
             return false;
         }
         if (!getSourceVars().equals(other.getSourceVars())) {
@@ -239,7 +232,7 @@ public class Switch implements Comparable<Switch> {
         if (result != 0) {
             return result;
         }
-        result = getDepth() - o.getDepth();
+        result = getTransience() - o.getTransience();
         if (result != 0) {
             return result;
         }
@@ -286,7 +279,7 @@ public class Switch implements Comparable<Switch> {
             this.name = name;
         }
 
-        /** 
+        /**
          * Indicates if this kind of name denotes a procedure.
          */
         public boolean isProcedure() {
@@ -303,7 +296,7 @@ public class Switch implements Comparable<Switch> {
             return this == RECIPE || this == RULE;
         }
 
-        /** 
+        /**
          * Returns the description of this kind,
          * with the initial letter optionally capitalised.
          */

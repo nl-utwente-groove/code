@@ -96,7 +96,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     /** The factory for fresh host nodes. */
     private final HostFactory hostFactory;
 
-    /** 
+    /**
      * Returns the store of previously created fresh nodes.
      */
     private List<List<HostNode>> getFreshNodeList() {
@@ -109,7 +109,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     private final List<List<HostNode>> freshNodeList;
 
     /**
-     * Returns a map from the rule anchors to elements of the host graph. 
+     * Returns a map from the rule anchors to elements of the host graph.
      * @see Rule#getAnchor()
      */
     @Override
@@ -189,14 +189,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         return true;
     }
 
-    /**
-     * Constructs an argument array for this event, with respect to
-     *  given array of added nodes (which are the images of the creator nodes).
-     * @param addedNodes the added nodes; if {@code null}, the creator
-     * node images will be set to {@code null}
-     */
     @Override
-    HostNode[] getArguments(HostNode[] addedNodes) {
+    public HostNode[] getArguments(HostNode[] addedNodes) {
         HostNode[] result;
         int size = getRule().getSignature().size();
         if (size == 0) {
@@ -326,7 +320,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      * Indicates if this rule event removes a part of the anchor image of
      * another. If so, it means that the other event will not match in any graph
      * reached after this one.
-     * 
+     *
      * @param other the event that we want to establish conflict with
      * @return <code>true</code> if this event disables the other
      */
@@ -402,7 +396,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         }
     }
 
-    /** 
+    /**
      * Adds the created edges to the application record.
      * This should be called only after any nodes have been created.
      */
@@ -903,7 +897,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         /**
          * Callback factory method to create the merge map object for
          * {@link #computeMergeMap()}.
-         * 
+         *
          * @return a fresh instance of {@link MergeMap}
          */
         private MergeMap createMergeMap() {

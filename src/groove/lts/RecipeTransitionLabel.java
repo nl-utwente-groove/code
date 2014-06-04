@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,16 +17,16 @@
 package groove.lts;
 
 import groove.grammar.Recipe;
+import groove.graph.ALabel;
 import groove.graph.Label;
-import groove.graph.TextLabel;
+import groove.gui.look.Line;
 
 /** Class of labels that can appear on recipe transitions. */
-public class RecipeTransitionLabel extends TextLabel implements ActionLabel {
-    /** 
+public class RecipeTransitionLabel extends ALabel implements ActionLabel {
+    /**
      * Constructs a new label on the basis of a given initial rule transition.
      */
     public RecipeTransitionLabel(RuleTransition initial) {
-        super(initial.getStep().getRecipe().getFullName());
         this.recipe = initial.getStep().getRecipe();
         this.initial = initial;
     }
@@ -39,6 +39,40 @@ public class RecipeTransitionLabel extends TextLabel implements ActionLabel {
     /** Returns the initial rule transition of the recipe transition. */
     public RuleTransition getInitial() {
         return this.initial;
+    }
+
+    @Override
+    protected Line computeLine() {
+        return Line.atom(text(false));
+    }
+
+    /** Returns the label text, with optionally the rule parameters
+     * replaced by anchor images.
+     * @param anchored if {@code true}, the anchor images are used
+     * instead of the rule parameters
+     */
+    public String text(boolean anchored) {
+        StringBuilder result = new StringBuilder();
+        result.append(getAction().getFullName());
+        //        if (getInitial().source().getGTS().getGrammar().getProperties().isUseParameters()) {
+        //            result.append('(');
+        //            boolean first = true;
+        //            for (HostNode arg : getArguments(addedNodes)) {
+        //                if (!first) {
+        //                    result.append(',');
+        //                }
+        //                first = false;
+        //                if (arg == null) {
+        //                    result.append('_');
+        //                } else if (arg instanceof ValueNode) {
+        //                    result.append(((ValueNode) arg).getTerm().toDisplayString());
+        //                } else {
+        //                    result.append(arg);
+        //                }
+        //            }
+        //            result.append(')');
+        //        }
+        return result.toString();
     }
 
     @Override
@@ -60,7 +94,7 @@ public class RecipeTransitionLabel extends TextLabel implements ActionLabel {
     }
 
     @Override
-    public int hashCode() {
+    protected int computeHashCode() {
         final int prime = 31;
         int result = this.recipe.hashCode();
         result = prime * result + this.initial.hashCode();

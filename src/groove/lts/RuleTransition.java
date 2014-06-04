@@ -12,9 +12,11 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package groove.lts;
+
+import java.util.List;
 
 import groove.control.CtrlStep;
 import groove.grammar.host.HostGraphMorphism;
@@ -25,7 +27,7 @@ import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 
 /**
- * 
+ *
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -51,9 +53,9 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      */
     public RuleApplication createRuleApplication();
 
-    /** 
+    /**
      * Returns a string to be sent to the standard output
-     * on adding a transition with this event to a GTS. 
+     * on adding a transition with this event to a GTS.
      * @return a standard output string, or {@code null} if
      * there is no standard output for the rule of this event.
      * @throws FormatException if the format string of the rule
@@ -66,6 +68,11 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
 
     @Override
     public MatchResult getKey();
+
+    /**
+     * Returns the list of concrete arguments of this transition.
+     */
+    public List<HostNode> getArguments();
 
     /**
      * Returns the nodes added by this transition, in coanchor order.

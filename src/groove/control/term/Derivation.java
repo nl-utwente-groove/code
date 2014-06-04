@@ -69,7 +69,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     }
 
     @Override
-    public int getDepth() {
+    public int getTransience() {
         return this.depth;
     }
 
@@ -104,7 +104,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     /** Creates a new derivation, with the call and derivation stack of this one but another target term. */
     public Derivation newInstance(Term target, boolean enterAtom) {
-        int depth = getDepth() + (enterAtom ? 1 : 0);
+        int depth = getTransience() + (enterAtom ? 1 : 0);
         return new Derivation(getCall(), depth, target, getNested());
     }
 
@@ -116,9 +116,9 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         Derivation result;
         if (hasNested()) {
             result =
-                new Derivation(getCall(), getDepth(), onFinish(), getNested().newInstance(nested));
+                new Derivation(getCall(), getTransience(), onFinish(), getNested().newInstance(nested));
         } else {
-            result = new Derivation(getCall(), getDepth(), onFinish(), nested);
+            result = new Derivation(getCall(), getTransience(), onFinish(), nested);
         }
         return result;
     }

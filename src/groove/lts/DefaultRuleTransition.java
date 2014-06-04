@@ -16,7 +16,12 @@
  */
 package groove.lts;
 
+import groove.control.CtrlPar;
+import groove.control.CtrlPar.Const;
+import groove.control.CtrlPar.Var;
 import groove.control.CtrlStep;
+import groove.control.instance.Step;
+import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
@@ -33,7 +38,9 @@ import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Models a transition built upon a rule application
@@ -113,6 +120,11 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public HostNode[] getAddedNodes() {
         return label().getAddedNodes();
+    }
+
+    @Override
+    public List<HostNode> getArguments() {
+        return getArguments(this);
     }
 
     @Override
@@ -290,6 +302,11 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
+    public Switch getSwitch() {
+        return ((Step) getStep()).getRuleSwitch();
+    }
+
+    @Override
     public boolean isPartial() {
         return getStep().isPartial();
     }
@@ -315,4 +332,33 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
 
+    /** Computes the list of call arguments for a given graph transition. */
+    public static List<HostNode> getArguments(GraphTransition trans) {
+        List<HostNode> result;
+        List<CtrlPar.Var> actionSig = trans.getAction().getSignature();
+        if (actionSig.isEmpty()) {
+            result = EMPTY_ARGS;
+        } else {
+            List<? extends CtrlPar> args = trans.getSwitch().getArgs();
+            result = new ArrayList<HostNode>();
+            for (int i = 0; i < args.size(); i++) {
+                CtrlPar par = args.get(i);
+                if (par instanceof Var) {
+                    Var var = (Var) par;
+                    if (var.isInOnly()) {
+                        // look up value in source state
+                    } else {
+                        assert var.isOutOnly();
+                        // look up value in target state
+                    }
+                } else {
+                    assert par instanceof Const;
+                    result.add(((Const) par).getNode());
+                }
+            }
+        }
+        return result;
+    }
+
+    private static final List<HostNode> EMPTY_ARGS = Collections.emptyList();
 }

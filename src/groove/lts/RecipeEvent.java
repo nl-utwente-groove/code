@@ -1,21 +1,22 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.lts;
 
+import groove.control.template.Switch;
 import groove.grammar.Recipe;
 import groove.transform.Event;
 
@@ -23,7 +24,7 @@ import groove.transform.Event;
 public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionKey {
     /** Constructs an instance from a recipe transition. */
     public RecipeEvent(RecipeTransition trans) {
-        this.recipe = trans.getAction();
+        this.recipeSwitch = trans.getSwitch();
         this.initial = trans.getInitial().toStub();
         this.target = trans.target();
     }
@@ -31,15 +32,15 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     /**
      * Constructs an event for a given recipe, initial transition and target state.
      */
-    public RecipeEvent(Recipe recipe, RuleTransition initial, GraphState target) {
-        this.recipe = recipe;
+    public RecipeEvent(Switch recipeSwitch, RuleTransition initial, GraphState target) {
+        this.recipeSwitch = recipeSwitch;
         this.initial = initial.toStub();
         this.target = target;
     }
 
     @Override
     public Recipe getAction() {
-        return this.recipe;
+        return (Recipe) this.recipeSwitch.getUnit();
     }
 
     @Override
@@ -55,14 +56,14 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
 
     @Override
     public RecipeTransition toTransition(GraphState source) {
-        return new RecipeTransition(source, this.initial.toTransition(source), this.target);
+        return new RecipeTransition(source, this.target, this.initial.toTransition(source));
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.recipe.hashCode();
+        result = prime * result + this.recipeSwitch.hashCode();
         result = prime * result + this.initial.hashCode();
         result = prime * result + this.target.hashCode();
         return result;
@@ -80,7 +81,7 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
             return false;
         }
         RecipeEvent other = (RecipeEvent) obj;
-        if (!this.recipe.equals(other.recipe)) {
+        if (!this.recipeSwitch.equals(other.recipeSwitch)) {
             return false;
         }
         if (!this.initial.equals(other.initial)) {
@@ -93,7 +94,7 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     }
 
     /** Source state of the rule transition. */
-    private final Recipe recipe;
+    private final Switch recipeSwitch;
     /** Initial rule transition of the event. */
     private final RuleTransitionStub initial;
     /** Target state of the event. */

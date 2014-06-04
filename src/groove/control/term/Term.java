@@ -192,12 +192,12 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Indicates if this is a top-revel term, i.e., with transient depth 0. */
     public final boolean isTopLevel() {
-        return getDepth() == 0;
+        return getTransience() == 0;
     }
 
     /** Returns the transient depth of this symbolic location. */
     @Override
-    public final int getDepth() {
+    public final int getTransience() {
         if (this.depth == null) {
             this.depth = computeDepth();
         }
@@ -252,7 +252,7 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Yields an extensive description of the term. */
     public String toDebugString() {
-        String result = toString() + ": transient depth " + getDepth();
+        String result = toString() + ": transient depth " + getTransience();
         switch (getType()) {
         case DEAD:
             result = result + ", deadlocked";
@@ -393,7 +393,7 @@ abstract public class Term implements Position<Term,Derivation> {
         if (isFinal()) {
             return epsilon();
         } else if (isDead()) {
-            return delta(getDepth() + 1);
+            return delta(getTransience() + 1);
         } else {
             TransitTerm result = new TransitTerm(this);
             return getPool().canonical(result);
@@ -428,7 +428,7 @@ abstract public class Term implements Position<Term,Derivation> {
         if (inner.isFinal()) {
             return epsilon();
         } else if (inner.isDead()) {
-            return delta(inner.getDepth());
+            return delta(inner.getTransience());
         } else {
             BodyTerm result = new BodyTerm(inner, caller);
             return getPool().canonical(result);

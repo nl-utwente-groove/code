@@ -52,7 +52,7 @@ public class BodyTerm extends Term {
 
     @Override
     protected int computeDepth() {
-        return arg0().getDepth();
+        return arg0().getTransience();
     }
 
     @Override

@@ -89,7 +89,7 @@ public class FrameStateMatches extends StateMatches {
         boolean result = false;
         Frame frame = (Frame) getState().getActualFrame();
         // depth of the frame at the start of the method
-        int depth = frame.getDepth();
+        int depth = frame.getTransience();
         if (hasOutstanding()) {
             // the schedule has been tried and has yielded matches; 
             // now see if at least one match has resulted
@@ -105,7 +105,7 @@ public class FrameStateMatches extends StateMatches {
                     allAbsent = false;
                 } else {
                     GraphState target = t.target();
-                    if (target.getAbsence() <= frame.getDepth()) {
+                    if (target.getAbsence() <= frame.getTransience()) {
                         somePresent = true;
                         break;
                     } else if (target.isAbsent()) {
@@ -137,7 +137,7 @@ public class FrameStateMatches extends StateMatches {
             List<MatchResult> outstanding = new LinkedList<MatchResult>();
             for (Step ct : step) {
                 outstanding.addAll(getMatchCollector().computeMatches(ct));
-                depthIncreases |= ct.onFinish().getDepth() > frame.getDepth();
+                depthIncreases |= ct.onFinish().getTransience() > frame.getTransience();
             }
             Frame nextFrame;
             if (outstanding.isEmpty()) {
@@ -159,7 +159,7 @@ public class FrameStateMatches extends StateMatches {
             addAll(outstanding);
             result = true;
         }
-        int actualDepth = getState().getActualFrame().getDepth();
+        int actualDepth = getState().getActualFrame().getTransience();
         if (actualDepth < depth) {
             getCache().notifyDepth(actualDepth);
         }

@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import groove.control.instance.Step;
+import groove.control.template.Switch;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
@@ -41,12 +43,15 @@ import java.util.Stack;
 public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> implements
         GraphTransition {
     /**
-     * Constructs a GraphTransition on the basis of a given rule event, between
-     * a given source and target state.
+     * Constructs a transition between
+     * a given source and target state, on the basis of a (recipe) control step and
+     * an initial underlying rule transition.
      */
-    public RecipeTransition(GraphState source, RuleTransition initial, GraphState target) {
+    public RecipeTransition(GraphState source, GraphState target, RuleTransition initial) {
         super(source, new RecipeTransitionLabel(initial), target);
         assert source == initial.source();
+        Step initialStep = (Step) initial.getStep();
+        this.recipeSwitch = initialStep.getSwitchStack().getBottom();
     }
 
     @Override
@@ -240,6 +245,13 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
     protected boolean isTypeEqual(Object obj) {
         return obj instanceof RecipeTransition;
     }
+
+    @Override
+    public Switch getSwitch() {
+        return this.recipeSwitch;
+    }
+
+    private final Switch recipeSwitch;
 
     /**
      * The underlying morphism of this transition. Computed lazily (using the

@@ -44,7 +44,7 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
 
     /** Indicates if this jVertex corresponds to a transient control state. */
     public boolean isTransient() {
-        return getNode() != null && getNode().getPosition().getDepth() > 0;
+        return getNode() != null && getNode().getPosition().getTransience() > 0;
     }
 
     @Override

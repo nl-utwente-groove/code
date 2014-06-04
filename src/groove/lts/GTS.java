@@ -575,7 +575,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (flags.showTransience() && state.isTransient()) {
                 String label =
                         flags.getTransienceLabel().replaceAll("#",
-                            "" + state.getActualFrame().getDepth());
+                            "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isRecipeState()) {

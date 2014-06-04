@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: StateGenerator.java,v 1.32 2008/03/04 14:48:00 kastenberg Exp $
  */
 package groove.lts;
@@ -75,13 +75,13 @@ public class MatchApplier {
                 boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
-                    && !match.getEvent().conflicts(sourceKey.getEvent())) {
+                        && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
-                            createTransition(source, match, siblingOut.getTarget(sibling),
-                                siblingOut.isSymmetry());
+                                createTransition(source, match, siblingOut.getTarget(sibling),
+                                    siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
                 }
@@ -96,8 +96,8 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                    new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
-                        isoTarget, true);
+                        new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
+                            isoTarget, true);
             }
         }
         // add transition to gts
@@ -130,7 +130,7 @@ public class MatchApplier {
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        if (hasFrameValues) {
+        if (hasFrameValues || ctrlStep.target().isNested()) {
             // only compute the effect if it has not yet been done
             if (effectRecord == null) {
                 effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
@@ -217,8 +217,8 @@ public class MatchApplier {
     }
 
     /** Computes the frame values for the target of a rule application. */
-    private HostNode[] apply(Assignment assign, Object[] sourceValues,
-            RuleEvent event, RuleEffect record) {
+    private HostNode[] apply(Assignment assign, Object[] sourceValues, RuleEvent event,
+            RuleEffect record) {
         Binding[] bindings = assign.getBindings();
         int valueCount = bindings.length;
         HostNode[] result = new HostNode[valueCount];

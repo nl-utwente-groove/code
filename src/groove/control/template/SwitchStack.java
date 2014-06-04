@@ -62,7 +62,7 @@ Comparable<SwitchStack> {
     }
 
     @Override
-    public int getDepth() {
+    public int getTransience() {
         if (this.depth < 0) {
             this.depth = computeDepth();
         }
@@ -72,7 +72,7 @@ Comparable<SwitchStack> {
     private int computeDepth() {
         int result = 0;
         for (Switch swit : this) {
-            this.depth += swit.getDepth();
+            this.depth += swit.getTransience();
         }
         return result;
     }

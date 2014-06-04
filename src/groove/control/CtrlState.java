@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: ControlState.java,v 1.10 2008-01-30 12:37:39 fladder Exp $
  */
 package groove.control;
@@ -98,11 +98,11 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     }
 
     @Override
-    public int getDepth() {
+    public int getTransience() {
         return isTransient() ? 1 : 0;
     }
 
-    /** 
+    /**
      * Indicates if this is a transient control state.
      * A control state is transient if there is a transaction underway.
      */
@@ -114,6 +114,11 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     @Override
     public boolean inRecipe() {
         return isTransient();
+    }
+
+    @Override
+    public boolean isNested() {
+        return false;
     }
 
     @Override
@@ -154,7 +159,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
             // just don't add the transition
             if (!label.getGuard().contains(oldTrans)) {
                 FormatErrorSet errors =
-                    new FormatErrorSet("Nondeterministic '%s'-call", label.getCall());
+                        new FormatErrorSet("Nondeterministic '%s'-call", label.getCall());
                 GraphInfo.addErrors(getAut(), errors);
             }
         } else {
@@ -211,9 +216,9 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         return result;
     }
 
-    /** 
+    /**
      * Returns the set of rule names of outgoing transitions, or
-     * {@code null} if there is an outgoing omega transition. 
+     * {@code null} if there is an outgoing omega transition.
      */
     public CtrlGuard getInit() {
         CtrlGuard result = new CtrlGuard();
@@ -263,8 +268,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
             assert this.disabledMap == null;
             this.disabledMap = computeDisabledMap();
             this.schedule =
-                getSchedule(new CtrlTransitionSet(getTransitions()), new CtrlTransitionSet(),
-                    new CtrlTransitionSet());
+                    getSchedule(new CtrlTransitionSet(getTransitions()), new CtrlTransitionSet(),
+                        new CtrlTransitionSet());
             // discard the map to save space
             this.scheduleMap = null;
         }
@@ -285,7 +290,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         return getExitGuard() != null;
     }
 
-    /** 
+    /**
      * An optional guard under which the transient status of this
      * control state is lifted; i.e., the transaction is completed.
      */
@@ -296,7 +301,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         }
     }
 
-    /** 
+    /**
      * Copies all outgoing transitions of this state to another.
      * Both the source state and the target states are mapped, as are
      * the guard transitions.
@@ -308,7 +313,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     public void copyTransitions(Map<CtrlState,CtrlState> stateMap, CtrlGuard guard) {
         CtrlState sourceImage = stateMap.get(this);
         Map<CtrlTransition,CtrlTransition> transMap = new HashMap<CtrlTransition,CtrlTransition>();
-        // copy the transitions to avoid concurrent modification 
+        // copy the transitions to avoid concurrent modification
         // in case the source image equals this
         for (CtrlTransition key : new ArrayList<CtrlTransition>(this.transitions)) {
             CtrlState targetImage = stateMap.get(key.target());
@@ -324,7 +329,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     private Map<CtrlTransition,CtrlTransitionSet> computeDisabledMap() {
         // look for the transition that appears in the fewest guards
         Map<CtrlTransition,CtrlTransitionSet> result =
-            new HashMap<CtrlTransition,CtrlTransitionSet>();
+                new HashMap<CtrlTransition,CtrlTransitionSet>();
         for (CtrlTransition trans : getTransitions()) {
             for (CtrlTransition call : trans.label().getGuard()) {
                 CtrlTransitionSet disablings = result.get(call);
@@ -337,10 +342,10 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
         return result;
     }
 
-    /** 
+    /**
      * Lazily creates a schedule for
      * a given set of remaining outgoing transitions, a set of calls that have been tried,
-     * and a subset of the tried calls that have failed  
+     * and a subset of the tried calls that have failed
      * @param transSet the set of remaining transitions
      * @param triedCalls the set of calls that have been tried before arriving at this
      * schedule
@@ -421,8 +426,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
             isTransient = !guard.isEmpty();
         }
         CtrlSchedule result =
-            new CtrlSchedule(this, chosenTrans == null ? null : new ArrayList<CtrlTransition>(
-                chosenTrans), tried, success, isTransient);
+                new CtrlSchedule(this, chosenTrans == null ? null : new ArrayList<CtrlTransition>(
+                        chosenTrans), tried, success, isTransient);
         if (chosenTrans != null) {
             CtrlTransitionSet newTried = new CtrlTransitionSet(tried);
             newTried.addAll(chosenTrans);
@@ -488,7 +493,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition>, CtrlFrame {
     private final List<CtrlTransition> transitions = new ArrayList<CtrlTransition>();
     /** Mapping from rules to outgoing transitions. */
     private final Map<CtrlCall,CtrlTransition> transitionMap =
-        new HashMap<CtrlCall,CtrlTransition>();
+            new HashMap<CtrlCall,CtrlTransition>();
     /** The collection of bound variables of this control state. */
     private final List<CtrlVar> vars = new ArrayList<CtrlVar>();
     /** Optional name of a recipe of which this is a transient state. */

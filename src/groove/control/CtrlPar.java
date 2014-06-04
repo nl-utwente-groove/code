@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -22,15 +22,20 @@ import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.RuleNode;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Class representing a control parameter. 
+ * Class representing a control parameter.
  * Control parameters are used as arguments and formal parameters
  * in rules and functions.
  * A control parameter has two properties:
  * <ul>
  * <li>Its direction: input-only, output-only or don't care
- * <li>Its content: <i>variable</i>, <i>constant</i> or <i>wildcard</i>. 
- * A constant can be virtual 
+ * <li>Its content: <i>variable</i>, <i>constant</i> or <i>wildcard</i>.
+ * A constant can be virtual
  * (only given by a string representation) or instantiated to a {@link ValueNode}.
  * </ul>
  * @author Arend Rensink
@@ -38,25 +43,25 @@ import groove.grammar.rule.RuleNode;
  */
 public abstract class CtrlPar {
 
-    /** 
+    /**
      * Indicates whether this parameter is input-only.
-     * A parameter is either input-only, output-only, or don't care. 
+     * A parameter is either input-only, output-only, or don't care.
      */
     public abstract boolean isInOnly();
 
-    /** 
+    /**
      * Indicates whether this parameter is output-only.
-     * A parameter is either input-only, output-only, or don't care. 
+     * A parameter is either input-only, output-only, or don't care.
      */
     public abstract boolean isOutOnly();
 
-    /** 
-     * Indicates if this parameter is a don't care; i.e., its direction is irrelevant. 
-     * A parameter is either input-only, output-only, or don't care. 
+    /**
+     * Indicates if this parameter is a don't care; i.e., its direction is irrelevant.
+     * A parameter is either input-only, output-only, or don't care.
      */
     public abstract boolean isDontCare();
 
-    /** 
+    /**
      * Returns the control type of this parameter.
      * @return {@code null} if the parameter is a wildcard, and
      * the type derived from the variable or constant otherwise.
@@ -79,33 +84,40 @@ public abstract class CtrlPar {
     }
 
     /** Convenience method to construct an input parameter with a given name and type. */
-    public static Var inVar(String name, CtrlType type) {
-        return var(name, type, true);
-    }
-
-    /** Convenience method to construct an input parameter with a given name and type. */
     public static Var inVar(String name, String type) {
-        return inVar(name, CtrlType.getType(type));
-    }
-
-    /** Convenience method to construct an output parameter with a given name and type. */
-    public static Var outVar(String name, CtrlType type) {
-        return var(name, type, false);
+        return var(name, CtrlType.getType(type), true);
     }
 
     /** Convenience method to construct an output parameter with a given name and type. */
     public static Var outVar(String name, String type) {
-        return outVar(name, CtrlType.getType(type));
+        return var(name, CtrlType.getType(type), false);
     }
 
-    /** Returns the singleton wildcard parameter. */
+    /** Returns a wildcard parameter with a given type and number. */
+    public static Var wild(CtrlType type, int nr) {
+        List<Var> typeVars = wildMap.get(type);
+        if (typeVars == null) {
+            wildMap.put(type, typeVars = new ArrayList<Var>());
+        }
+        for (int i = typeVars.size(); i <= nr; i++) {
+            typeVars.add(new Var(CtrlVar.wild(type, i), false));
+        }
+        return typeVars.get(nr);
+    }
+
+    /** Store of wildcard variables. */
+    private static Map<CtrlType,List<Var>> wildMap =
+            new EnumMap<CtrlType,List<Var>>(CtrlType.class);
+
+    /** Returns the single untyped wildcard argument. */
     public static Wild wild() {
         return WILD;
     }
 
+    /** The singleton instance of the untyped wildcard argument. */
     private static Wild WILD = new Wild();
 
-    /** 
+    /**
      * Variable control parameter.
      * A variable parameter has a name and type,
      * and an optional direction.
@@ -185,7 +197,7 @@ public abstract class CtrlPar {
             return result;
         }
 
-        /** 
+        /**
          * Tests whether this variable parameter,
          * when used as a formal parameter, is compatible with a given
          * control argument.
@@ -213,7 +225,7 @@ public abstract class CtrlPar {
             return this.ruleNode;
         }
 
-        /** 
+        /**
          * Sets the rule node of this parameter.
          * Also indicates if it is a creator node.
          */
@@ -239,7 +251,7 @@ public abstract class CtrlPar {
         private final boolean outOnly;
     }
 
-    /** 
+    /**
      * Constant control parameter.
      * A constant parameter van be virtual or instantiated;
      * in the first case it is represented as a string.

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -40,24 +40,40 @@ import java.util.Set;
  * @version $Revision $
  */
 public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
-    /**
-     * Possibly nested frame instantiating a given control stage.
+    /** Constructs a new frame.
+     * @param ctrl the control automaton being built
+     * @param loc top template location of the frame
+     * @param stack underlying call stack
+     * @param pred predecessor in a verdict transition; if {@code null}, this is
+     * a prime frame
      */
-    Frame(Automaton ctrl, Location loc, SwitchStack callStack) {
+    Frame(Automaton ctrl, Location loc, SwitchStack stack, Frame pred) {
         this.aut = ctrl;
         this.nr = ctrl.getFrames().size();
+        List<Assignment> pops = new ArrayList<Assignment>();
+        Set<CallStack> attempts = new HashSet<CallStack>();
         // avoid sharing
-        callStack = new SwitchStack(callStack);
-        // pop the call stack until we have a non-final location or empty stack
-        while (loc.isFinal() && !callStack.isEmpty()) {
-            loc = callStack.pop().onFinish();
+        stack = new SwitchStack(stack);
+        if (pred == null) {
+            this.primeFrame = this;
+        } else {
+            this.primeFrame = pred.getPrime();
+            pops.addAll(pred.getPops());
+            attempts.addAll(pred.getPastAttempts());
         }
-        this.switchStack = callStack;
+        // pop the call stack until we have a non-final location or empty stack
+        while (loc.isFinal() && !stack.isEmpty()) {
+            Switch done = stack.pop();
+            // add pop actions if we are not a prime frame
+            if (pred != null) {
+                pops.add(Assignment.exit(loc, done));
+            }
+            loc = done.onFinish();
+        }
+        this.pastAttempts = attempts;
+        this.pops = pops;
+        this.switchStack = stack;
         this.location = loc;
-        // assume that this is a prime frame;
-        // if not, setPrime should be called afterwards
-        this.primeFrame = this;
-        this.pastAttempts = new HashSet<CallStack>();
     }
 
     /** Returns the containing control automaton. */
@@ -67,9 +83,9 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private final Automaton aut;
 
-    /** 
+    /**
      * Returns the number of this frame.
-     * After a frame has been added to the automaton, 
+     * After a frame has been added to the automaton,
      * the frame number uniquely identifies the frame.
      */
     public int getNumber() {
@@ -97,21 +113,6 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     private final Location location;
 
-    /** 
-     * Sets the prime frame of this frame, as well as the set of attempts
-     * since that frame.
-     * The prime frame is the one from which this one was derived through
-     * a sequence of verdict transitions.
-     * @param prime the prime frame
-     * @param pastAttempts the set of attempts since the prime
-     */
-    private void setPrime(Frame prime, Set<CallStack> pastAttempts) {
-        assert !isFixed();
-        assert this.primeFrame == this;
-        this.primeFrame = prime;
-        this.pastAttempts.addAll(pastAttempts);
-    }
-
     @Override
     public Frame getPrime() {
         return this.primeFrame;
@@ -122,7 +123,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         return getPrime() == this;
     }
 
-    private Frame primeFrame;
+    private final Frame primeFrame;
 
     /** Returns the set of attempts made since the
      * prime frame.
@@ -132,7 +133,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         return this.pastAttempts;
     }
 
-    private Set<CallStack> pastAttempts;
+    private final Set<CallStack> pastAttempts;
 
     /** Returns the set of rule calls that have been tried since the prime frame. */
     public Set<Call> getPastCalls() {
@@ -148,17 +149,14 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     private Set<Call> pastCalls;
 
     /**
-     * Returns the list of frame pop actions corresponding to 
+     * Returns the list of frame pop actions corresponding to
      * procedure exits due to verdict transitions between the prime frame and this frame.
      */
-    public List<Assignment> getVerdictPops() {
-        if (this.verdictPops == null) {
-            this.verdictPops = Assignment.computePops(getPrime(), this);
-        }
-        return this.verdictPops;
+    public List<Assignment> getPops() {
+        return this.pops;
     }
 
-    private List<Assignment> verdictPops;
+    private final List<Assignment> pops;
 
     @Override
     public Type getType() {
@@ -208,7 +206,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
             targetStack.addAll(getSwitchStack());
             targetStack.addAll(locStack);
             Switch topCall = targetStack.pop();
-            Frame onFinish = new Frame(getAut(), topCall.onFinish(), targetStack);
+            Frame onFinish = new Frame(getAut(), topCall.onFinish(), targetStack, null);
             steps.add(new Step(this, locStack, onFinish.normalise()));
         }
         Frame onSuccess = newFrame(locAttempt.onSuccess(), pastAttempts);
@@ -230,12 +228,17 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     @Override
     public boolean isTransient() {
-        return getDepth() > 0;
+        return getTransience() > 0;
     }
 
     @Override
-    public int getDepth() {
-        return getSwitchStack().getDepth() + getLocation().getDepth();
+    public int getTransience() {
+        return getSwitchStack().getTransience() + getLocation().getTransience();
+    }
+
+    @Override
+    public boolean isNested() {
+        return !getSwitchStack().isEmpty();
     }
 
     @Override
@@ -250,11 +253,10 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
 
     /**
      * Constructs a frame for a given control location,
-     * with the same prime frame and call stack as this frame. 
+     * with the same prime frame and call stack as this frame.
      */
     private Frame newFrame(Location loc, Set<CallStack> pastAttempts) {
-        Frame result = new Frame(getAut(), loc, getSwitchStack());
-        result.setPrime(getPrime(), pastAttempts);
+        Frame result = new Frame(getAut(), loc, getSwitchStack(), this);
         return result.normalise();
     }
 
@@ -272,6 +274,7 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         int result = (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
         result = prime * result + this.pastAttempts.hashCode();
         result = prime * result + this.location.hashCode();
+        result = prime * result + this.pops.hashCode();
         result = prime * result + this.switchStack.hashCode();
         return result;
     }
@@ -292,6 +295,9 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
         if (!this.pastAttempts.equals(other.pastAttempts)) {
             return false;
         }
+        if (!this.pops.equals(other.pops)) {
+            return false;
+        }
         if (!this.location.equals(other.location)) {
             return false;
         }
@@ -305,8 +311,8 @@ public class Frame implements Position<Frame,Step>, Fixable, CtrlFrame {
     public String toString() {
         String result = getIdString();
         if (RICH_LABELS) {
-            if (getDepth() > 0) {
-                result += ", d" + getDepth();
+            if (getTransience() > 0) {
+                result += ", d" + getTransience();
             }
             if (isFinal()) {
                 result += ", final";

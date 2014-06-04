@@ -22,7 +22,7 @@ import groove.util.Groove;
 import groove.util.Pair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +44,7 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
      * This will construct wildcard arguments for the call.
      */
     public Call(Callable unit) {
-        this(unit, createWildArgs(unit.getSignature().size()));
+        this(unit, createWildArgs(unit.getSignature()));
     }
 
     /** Returns the called unit. */
@@ -85,8 +85,8 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
 
     /** Initialises the input and output variables of this call. */
     private void initVars() {
-        Map<CtrlVar,Integer> outVars = new HashMap<CtrlVar,Integer>();
-        Map<CtrlVar,Integer> inVars = new HashMap<CtrlVar,Integer>();
+        Map<CtrlVar,Integer> outVars = new LinkedHashMap<CtrlVar,Integer>();
+        Map<CtrlVar,Integer> inVars = new LinkedHashMap<CtrlVar,Integer>();
         if (getArgs() != null && !getArgs().isEmpty()) {
             int size = getArgs().size();
             for (int i = 0; i < size; i++) {
@@ -142,7 +142,8 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
         return result;
     }
 
-    static private List<CtrlPar> createWildArgs(int count) {
+    static private List<CtrlPar> createWildArgs(List<CtrlPar.Var> sig) {
+        int count = sig.size();
         List<CtrlPar> result = new ArrayList<CtrlPar>(count);
         for (int i = 0; i < count; i++) {
             result.add(CtrlPar.wild());

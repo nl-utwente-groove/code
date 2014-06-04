@@ -66,7 +66,7 @@ public class AutomatonBuildTest {
     public void testNesting() {
         add("f", "function f() { node arg; choice try r(1,out arg); or b; }");
         add("r",
-                "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
+            "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
         add("main", "f|a; ");
         Automaton p = build();
         p.explore();
@@ -198,7 +198,7 @@ public class AutomatonBuildTest {
         assertEquals(Assignment.call(b), change.get(1));
         b = Arrays.asList(Binding.caller(0));
         assertEquals(Assignment.pop(b), change.get(2));
-        b = Arrays.asList();
+        b = Arrays.asList(Binding.var(0));
         assertEquals(Assignment.pop(b), change.get(3));
         //
         assertTrue(f6.isFinal());
@@ -398,8 +398,8 @@ public class AutomatonBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-                new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
-                    this.testGrammar.getAllRules(), false);
+            new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
+                this.testGrammar.getAllRules(), false);
         return result;
     }
 

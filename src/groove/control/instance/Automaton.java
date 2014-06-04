@@ -43,7 +43,7 @@ public class Automaton {
         this.program = program;
         this.template = program.getTemplate();
         this.framePool = new Pool<Frame>();
-        Frame start = new Frame(this, getTemplate().getStart(), new SwitchStack());
+        Frame start = new Frame(this, getTemplate().getStart(), new SwitchStack(), null);
         start.setFixed();
         this.start = addFrame(start);
     }
