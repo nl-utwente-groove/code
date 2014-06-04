@@ -1,21 +1,22 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.test.control;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.control.Call;
 import groove.control.Callable;
@@ -169,6 +170,7 @@ public class TermDerivationTest {
         // while (true) {}
         setSource(epsilon().whileDo(epsilon()));
         assertDepth(0);
+        assertTrue(source().isDead());
         // while (a|b) {}
         setSource(a.or(b).whileDo(epsilon()));
         assertEdge(this.aCall, a.or(b).whileDo(epsilon()));
@@ -185,6 +187,27 @@ public class TermDerivationTest {
         setSource(a.ifOnly(epsilon()).whileDo(epsilon()));
         assertEdge(this.aCall, source());
         assertSuccFail(delta(), this.source);
+        assertDepth(0);
+    }
+
+    @Test
+    public void testUntilDo() {
+        Term a = this.a;
+        Term b = this.b;
+        Term c = this.c;
+        // while (true) {}
+        setSource(epsilon().untilDo(epsilon()));
+        assertDepth(0);
+        assertTrue(source().isFinal());
+        // until (a|b) { c }
+        setSource(a.or(b).untilDo(c));
+        assertEdge(this.aCall, epsilon());
+        assertEdge(this.bCall, epsilon());
+        assertSuccFail(delta(), c.seq(source()));
+        // until (if a) { c }
+        setSource(a.ifOnly(epsilon()).untilDo(c));
+        assertEdge(this.aCall, epsilon());
+        assertSuccFail(delta(), epsilon());
         assertDepth(0);
     }
 
@@ -247,8 +270,8 @@ public class TermDerivationTest {
     private void assertSuccFail(Term success, Term failure) {
         Assert.assertEquals(Collections.emptyList(), this.edges);
         DerivationAttempt attempt = source().getAttempt();
-        Assert.assertEquals(success == null ? attempt : attempt.onSuccess(), success);
-        Assert.assertEquals(failure == null ? attempt : attempt.onFailure(), failure);
+        Assert.assertEquals(success, success == null ? attempt : attempt.onSuccess());
+        Assert.assertEquals(failure, failure == null ? attempt : attempt.onFailure());
     }
 
     /** Predicts the final nature and transition depth of the current state. */
