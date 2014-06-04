@@ -26,16 +26,15 @@ import groove.match.MatcherFactory;
  * @author Arend Rensink
  * 
  */
-public abstract class GTSStrategy extends Strategy implements
-        ExploreIterator {
+public abstract class GTSStrategy extends Strategy implements ExploreIterator {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         this.gts = gts;
-        this.nextState =
-            this.startState = state == null ? gts.startState() : state;
+        this.nextState = this.startState = state == null ? gts.startState() : state;
         this.acceptor = acceptor;
         if (acceptor != null) {
             gts.addLTSListener(acceptor);
+            acceptor.addUpdate(gts, this.startState);
         }
         MatcherFactory.instance().setDefaultEngine();
     }
