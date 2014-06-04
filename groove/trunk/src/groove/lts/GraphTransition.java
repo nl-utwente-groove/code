@@ -19,6 +19,7 @@ package groove.lts;
 import groove.control.template.Switch;
 import groove.grammar.Action;
 import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.transform.Event;
 
@@ -55,6 +56,9 @@ public interface GraphTransition extends Edge {
     /** Returns the action instance on which this transition is based. */
     public Event getEvent();
 
+    /** Returns the GTS in which this transition occurs. */
+    public GTS getGTS();
+
     /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
 
@@ -85,6 +89,16 @@ public interface GraphTransition extends Edge {
      * The steps are returned in arbitrary order.
      */
     public Iterable<RuleTransition> getSteps();
+
+    /**
+     * Returns a string to be sent to the standard output
+     * on adding a transition with this event to a GTS.
+     * @return a standard output string, or {@code null} if
+     * there is no standard output for the rule of this event.
+     * @throws FormatException if the format string of the rule
+     * does not correspond to the actual rule parameters
+     */
+    public String getOutputString() throws FormatException;
 
     /** Extracts the key ingredients from this graph transition. */
     public GraphTransitionKey getKey();

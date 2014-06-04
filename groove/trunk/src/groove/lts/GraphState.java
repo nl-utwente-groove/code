@@ -144,7 +144,7 @@ public interface GraphState extends Node {
 
     /**
      * Returns a list of values for the bound variables of
-     * the control frame.
+     * the prime control frame.
      * @see #getPrimeFrame()
      * @see CtrlFrame#getVars()
      */

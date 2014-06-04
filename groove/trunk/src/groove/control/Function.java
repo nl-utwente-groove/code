@@ -18,6 +18,7 @@ package groove.control;
 
 import groove.control.CtrlPar.Var;
 import groove.control.template.Switch.Kind;
+import groove.grammar.GrammarProperties;
 import groove.util.Fixable;
 
 import java.util.List;
@@ -29,10 +30,10 @@ import java.util.List;
  */
 public class Function extends Procedure implements Fixable {
     /**
-     * Constructs a function with a given name, priority and signature.
+     * Constructs a function with the given parameters.
      */
     public Function(String fullName, int priority, List<Var> signature, String controlName,
-            int startLine) {
-        super(fullName, Kind.FUNCTION, priority, signature, controlName, startLine);
+            int startLine, GrammarProperties grammarProperties) {
+        super(fullName, Kind.FUNCTION, signature, controlName, startLine, grammarProperties);
     }
 }

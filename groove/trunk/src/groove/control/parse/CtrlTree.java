@@ -1,7 +1,6 @@
 package groove.control.parse;
 
 import groove.control.Call;
-import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
@@ -10,6 +9,7 @@ import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.template.Program;
 import groove.control.term.Term;
+import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
@@ -238,7 +238,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = prot.delta();
             SortedMap<Integer,List<String>> prioMap = new TreeMap<Integer,List<String>>();
             for (String name : getInfo().getTopNames()) {
-                Callable unit = getInfo().getCallable(name);
+                Action unit = (Action) getInfo().getCallable(name);
                 List<String> names = prioMap.get(unit.getPriority());
                 if (names == null) {
                     prioMap.put(unit.getPriority(), names = new ArrayList<String>());

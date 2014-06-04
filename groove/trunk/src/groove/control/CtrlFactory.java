@@ -20,6 +20,7 @@ import groove.algebra.AlgebraFamily;
 import groove.control.parse.Namespace;
 import groove.control.template.Switch.Kind;
 import groove.grammar.Action;
+import groove.grammar.GrammarProperties;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatErrorSet;
@@ -360,20 +361,20 @@ public class CtrlFactory {
 
     /**
      * Builds the default control automaton for a set of actions.
-     * @param family the algebra family to be used
+     * @param grammarProperties the algebra family to be used
      */
-    public CtrlAut buildDefault(Collection<? extends Action> actions, AlgebraFamily family)
-            throws FormatException {
+    public CtrlAut buildDefault(Collection<? extends Action> actions,
+            GrammarProperties grammarProperties) throws FormatException {
         CtrlAut result = new CtrlAut("none (arbitrary rule application)");
         FormatErrorSet errors = new FormatErrorSet();
         SortedMap<Integer,Set<Action>> priorityMap = new TreeMap<Integer,Set<Action>>();
-        Namespace namespace = new Namespace(family, true);
+        Namespace namespace = new Namespace(grammarProperties, true);
         // first add the names and signatures to the namespace
         for (Action action : actions) {
             boolean needsInput = false;
             for (CtrlPar.Var var : action.getSignature()) {
                 if (var.isInOnly()
-                    && (var.getType() == CtrlType.NODE || !family.supportsSymbolic())) {
+                    && (var.getType() == CtrlType.NODE || !grammarProperties.getAlgebraFamily().supportsSymbolic())) {
                     needsInput = true;
                     break;
                 }

@@ -27,6 +27,27 @@ import java.util.Comparator;
  * @version $Revision $
  */
 public interface Action extends Callable, Comparable<Action> {
+    /**
+     * Returns the priority of the action.
+     */
+    public int getPriority();
+
+    /** 
+     * Returns the label to be used in the LTS when this rule is applied.
+     * Defaults to the rule name, if the property is undefined.  
+     */
+    public String getTransitionLabel();
+
+    /** 
+     * Returns a format string for the standard output.
+     * Whenever a transition with this action is added to a GTS, a 
+     * corresponding string is sent to the standard output.
+     */
+    public String getFormatString();
+
+    /** Returns the grammar properties for this action. */
+    public GrammarProperties getGrammarProperties();
+
     /** 
      * Returns the action kind of this action.
      * @return the action kind; can only be {@link Kind#RECIPE} or {@link Kind#RULE}.

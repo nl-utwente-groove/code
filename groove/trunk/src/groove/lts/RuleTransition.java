@@ -16,15 +16,14 @@
  */
 package groove.lts;
 
-import java.util.List;
-
 import groove.control.CtrlStep;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
+
+import java.util.List;
 
 /**
  *
@@ -52,16 +51,6 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      * graph transition.
      */
     public RuleApplication createRuleApplication();
-
-    /**
-     * Returns a string to be sent to the standard output
-     * on adding a transition with this event to a GTS.
-     * @return a standard output string, or {@code null} if
-     * there is no standard output for the rule of this event.
-     * @throws FormatException if the format string of the rule
-     * does not correspond to the actual rule parameters
-     */
-    public String getOutputString() throws FormatException;
 
     /** Returns the control step associated with this transition. */
     CtrlStep getStep();

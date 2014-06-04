@@ -212,7 +212,7 @@ public class CtrlHelper {
     boolean declareCtrlUnit(CtrlTree unitTree) {
         boolean result = false;
         assert (unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
-        && unitTree.getChildCount() <= 4;
+            && unitTree.getChildCount() <= 4;
         String fullName = qualify(unitTree.getChild(0).getText());
         Callable unit = this.namespace.getCallable(fullName);
         if (unit != null) {
@@ -220,17 +220,17 @@ public class CtrlHelper {
                 unit.getKind().getName(true), fullName);
         } else {
             int priority =
-                    unitTree.getChildCount() == 3 ? 0
-                            : Integer.parseInt(unitTree.getChild(2).getText());
+                unitTree.getChildCount() == 3 ? 0
+                        : Integer.parseInt(unitTree.getChild(2).getText());
             if (this.namespace.isCheckDependencies() && priority > 0) {
                 emitErrorMessage(unitTree.getChild(2),
-                        "Priorities are not supported in this version.");
+                    "Priorities are not supported in this version.");
             }
             List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
             this.namespace.addProcedure(Procedure.newInstance(fullName, kind, priority, parList,
-                controlName, unitTree.getLine()));
+                controlName, unitTree.getLine(), this.namespace.getGrammarProperties()));
             result = true;
         }
         return result;
@@ -408,7 +408,7 @@ public class CtrlHelper {
         assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
         try {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
-            AlgebraFamily family = this.namespace.getAlgebraFamily();
+            AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
             CtrlPar result =
                 new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
                     family.toValue(constant));

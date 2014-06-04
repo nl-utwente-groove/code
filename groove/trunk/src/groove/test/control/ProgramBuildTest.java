@@ -98,7 +98,7 @@ public class ProgramBuildTest {
         // direction of function parameters
         build("funpars", "function f(out node x) { oNode(out x); } node y; f(out y);");
         buildWrong("funpars",
-                "function f(out node x) { oNode(out x); } node y; oNode(out y); f(y);");
+            "function f(out node x) { oNode(out x); } node y; oNode(out y); f(y);");
         buildWrong("funpars", "function f(node x) { iNode(x); } node y; f(out y);");
         build("funpars", "function f(node x) { iNode(x); } node y; oNode(out y); f(y);");
         // typing of function parameters
@@ -324,8 +324,7 @@ public class ProgramBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
-                this.testGrammar.getAllRules(), false);
+            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
         prot = result.getNamespace().getPrototype();
         return result;
     }

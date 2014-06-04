@@ -16,8 +16,8 @@
  */
 package groove.control;
 
-import groove.control.template.Switch.Kind;
 import groove.control.CtrlPar.Var;
+import groove.control.template.Switch.Kind;
 
 import java.util.List;
 
@@ -41,11 +41,6 @@ public interface Callable {
      * @see #getLastName()
      */
     String getFullName();
-
-    /**
-     * Returns the priority of the action.
-     */
-    public int getPriority();
 
     /** Returns the signature of the action. */
     public List<Var> getSignature();

@@ -16,13 +16,25 @@
  */
 package groove.lts;
 
+import groove.control.CtrlPar;
+import groove.control.CtrlPar.Const;
+import groove.control.CtrlPar.Var;
+import groove.control.CtrlPar.Wild;
+import groove.control.Valuator;
+import groove.control.instance.Assignment;
+import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
-import groove.graph.AEdge;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
+import groove.graph.ALabelEdge;
+import groove.graph.Edge;
 import groove.graph.EdgeRole;
+import groove.graph.Label;
+import groove.gui.look.Line;
 import groove.transform.RuleApplication;
 
 import java.util.ArrayList;
@@ -40,18 +52,29 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
-public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> implements
-        GraphTransition {
+public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
+        ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
      * an initial underlying rule transition.
      */
     public RecipeTransition(GraphState source, GraphState target, RuleTransition initial) {
-        super(source, new RecipeTransitionLabel(initial), target);
+        super(source, target);
         assert source == initial.source();
+        this.initial = initial;
         Step initialStep = (Step) initial.getStep();
         this.recipeSwitch = initialStep.getSwitchStack().getBottom();
+    }
+
+    @Override
+    public RecipeTransition label() {
+        return this;
+    }
+
+    @Override
+    public GTS getGTS() {
+        return source().getGTS();
     }
 
     @Override
@@ -61,13 +84,21 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
 
     @Override
     public String text(boolean anchored) {
-        return label().text();
+        return text();
     }
 
     @Override
     public Recipe getAction() {
-        return label().getAction();
+        return (Recipe) getSwitch().getUnit();
     }
+
+    /** Returns the control switch instantiated by this transition. */
+    @Override
+    public Switch getSwitch() {
+        return this.recipeSwitch;
+    }
+
+    private final Switch recipeSwitch;
 
     @Override
     public RecipeEvent getEvent() {
@@ -76,6 +107,8 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
         }
         return this.event;
     }
+
+    private RecipeEvent event;
 
     @Override
     public boolean isRecipeStep() {
@@ -90,8 +123,10 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
     /** Returns the initial rule transition of the recipe transition. */
     @Override
     public RuleTransition getInitial() {
-        return label().getInitial();
+        return this.initial;
     }
+
+    private final RuleTransition initial;
 
     /** Returns the collection of rule transitions comprising this label. */
     @Override
@@ -105,6 +140,8 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
         }
         return result;
     }
+
+    private Set<RuleTransition> steps;
 
     /** Returns a shortest rule transition sequence from source to target. */
     public List<RuleTransition> getPath() {
@@ -179,6 +216,42 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
     }
 
     @Override
+    public String getOutputString() throws FormatException {
+        return DefaultRuleTransition.getOutputString(this);
+    }
+
+    @Override
+    public HostNode[] getArguments() {
+        List<? extends CtrlPar> args = getSwitch().getArgs();
+        HostNode[] result = new HostNode[args.size()];
+        for (int i = 0; i < args.size(); i++) {
+            CtrlPar arg = args.get(i);
+            HostNode node;
+            if (arg instanceof Const) {
+                node = ((Const) arg).getNode();
+            } else if (arg instanceof Wild) {
+                node = null;
+            } else {
+                assert arg instanceof Var;
+                if (arg.isInOnly()) {
+                    int varIndex = getSwitch().getSourceVars().indexOf(arg);
+                    node = Valuator.get(source().getFrameValues(), varIndex);
+                } else {
+                    assert arg.isOutOnly();
+                    int varIndex = getSwitch().onFinish().getVarIxMap().get(arg);
+                    Object[] values = target().getFrameValues();
+                    for (Assignment pop : ((Frame) target().getActualFrame()).getPops()) {
+                        values = pop.apply(values);
+                    }
+                    node = Valuator.get(values, varIndex);
+                }
+            }
+            result[i] = node;
+        }
+        return result;
+    }
+
+    @Override
     public EdgeRole getRole() {
         return EdgeRole.BINARY;
     }
@@ -194,6 +267,12 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
         }
         return this.morphism;
     }
+
+    /**
+     * The underlying morphism of this transition. Computed lazily (using the
+     * footprint) using {@link #computeMorphism()}.
+     */
+    private HostGraphMorphism morphism;
 
     @Override
     public RecipeEvent getKey() {
@@ -233,12 +312,25 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
         }
     }
 
-    /**
-     * This implementation compares objects on the basis of the source graph,
-     * rule and anchor images.
-     */
-    protected boolean equalsSource(RuleTransition other) {
-        return source() == other.source();
+    @Override
+    public int compareTo(Label obj) {
+        if (!(obj instanceof ActionLabel)) {
+            throw new IllegalArgumentException(String.format("Can't compare %s and %s",
+                this.getClass(), obj.getClass()));
+        }
+        if (obj instanceof RuleTransitionLabel) {
+            return -obj.compareTo(this);
+        }
+        int result = super.compareTo(obj);
+        if (result != 0) {
+            return result;
+        }
+        RecipeTransition other = (RecipeTransition) obj;
+        result = getAction().compareTo(other.getAction());
+        if (result != 0) {
+            return result;
+        }
+        return getInitial().label().compareTo(other.getInitial().label());
     }
 
     @Override
@@ -247,17 +339,20 @@ public class RecipeTransition extends AEdge<GraphState,RecipeTransitionLabel> im
     }
 
     @Override
-    public Switch getSwitch() {
-        return this.recipeSwitch;
+    protected Line computeLine() {
+
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    private final Switch recipeSwitch;
+    @Override
+    protected int computeLabelHash() {
+        return this.initial.hashCode();
+    }
 
-    /**
-     * The underlying morphism of this transition. Computed lazily (using the
-     * footprint) using {@link #computeMorphism()}.
-     */
-    private HostGraphMorphism morphism;
-    private RecipeEvent event;
-    private Set<RuleTransition> steps;
+    @Override
+    protected boolean isLabelEqual(Edge other) {
+        return other instanceof RecipeTransition
+            && ((RecipeTransition) other).initial.equals(this.initial);
+    }
 }

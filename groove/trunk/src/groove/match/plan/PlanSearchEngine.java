@@ -178,7 +178,7 @@ public class PlanSearchEngine extends SearchEngine {
                 // compute the set of remaining (unmatched) edges and variables
                 this.remainingEdges.addAll(graph.edgeSet());
                 this.remainingVars.addAll(graph.varSet());
-                this.algebraFamily = condition.getSystemProperties().getAlgebraFamily();
+                this.algebraFamily = condition.getGrammarProperties().getAlgebraFamily();
             } else {
                 this.algebraFamily = AlgebraFamily.DEFAULT;
             }
@@ -374,7 +374,7 @@ public class PlanSearchEngine extends SearchEngine {
             result.add(new ItemTypeComparator());
             result.add(new ConnectedPartsComparator(this.remainingNodes, this.remainingVars));
             result.add(new IndegreeComparator(this.remainingEdges));
-            GrammarProperties properties = this.condition.getSystemProperties();
+            GrammarProperties properties = this.condition.getGrammarProperties();
             if (properties != null) {
                 List<String> controlLabels = properties.getControlLabels();
                 List<String> commonLabels = properties.getCommonLabels();

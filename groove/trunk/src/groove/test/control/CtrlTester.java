@@ -219,8 +219,8 @@ abstract public class CtrlTester {
 
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
-        return new CtrlLoader(this.testGrammar.getProperties().getAlgebraFamily(),
-            this.testGrammar.getAllRules(), true);
+        return new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(),
+            true);
     }
 
     static private final boolean DEBUG = false;
