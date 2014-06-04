@@ -111,16 +111,6 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         return Outcome.OK;
     }
 
-    /**
-     * This implementation returns a fresh {@link CycleAcceptor}, aliasing the
-     * strategy of this instance.
-     */
-    @Override
-    public Acceptor newInstance() {
-        CycleAcceptor result = new CycleAcceptor();
-        return result;
-    }
-
     @Override
     public String getMessage() {
         String result;

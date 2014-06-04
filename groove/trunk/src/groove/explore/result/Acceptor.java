@@ -24,7 +24,7 @@ import java.util.Collection;
 /**
  * Listens to a GTS and adds accepted elements to a result.
  */
-public class Acceptor extends GTSAdapter {
+public abstract class Acceptor extends GTSAdapter {
     /** Creates an instance with a default {@link Result}. */
     public Acceptor() {
         this(new Result());
@@ -49,14 +49,6 @@ public class Acceptor extends GTSAdapter {
      */
     public Result getResult() {
         return this.result;
-    }
-
-    /**
-     * Factory method to create a fresh instance of this acceptor, with a fresh
-     * result instance.
-     */
-    public Acceptor newInstance() {
-        return new Acceptor(this.result.newInstance());
     }
 
     /** Returns a message describing the accepted result. */
