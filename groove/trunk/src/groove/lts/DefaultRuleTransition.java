@@ -27,13 +27,13 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.graph.AEdge;
 import groove.graph.AGraph;
 import groove.graph.EdgeRole;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
-import groove.transform.AbstractRuleEvent;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
@@ -41,6 +41,7 @@ import groove.transform.RuleEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.MissingFormatArgumentException;
 
 /**
  * Models a transition built upon a rule application
@@ -100,7 +101,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     @Override
     public String getOutputString() throws FormatException {
-        return ((AbstractRuleEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
+        return getOutputString(this);
     }
 
     @Override
@@ -331,6 +332,32 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
+
+    /**
+     * Returns the instantiated output string for this rule, if any.
+     * @throws FormatException if the format string of the rule
+     * does not correspond to the actual rule parameters.
+     */
+    public static String getOutputString(RuleTransition trans) throws FormatException {
+        String result = null;
+        String formatString = trans.getAction().getFormatString();
+        if (formatString != null && !formatString.isEmpty()) {
+            List<Object> args = new ArrayList<Object>();
+            for (HostNode arg : trans.label().getArguments()) {
+                if (arg instanceof ValueNode) {
+                    args.add(((ValueNode) arg).getValue());
+                } else {
+                    args.add(arg.toString());
+                }
+            }
+            try {
+                result = String.format(formatString, args.toArray());
+            } catch (MissingFormatArgumentException e) {
+                throw new FormatException("Error in rule output string: %s", e.getMessage());
+            }
+        }
+        return result;
+    }
 
     /** Computes the list of call arguments for a given graph transition. */
     public static List<HostNode> getArguments(GraphTransition trans) {

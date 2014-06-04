@@ -35,8 +35,16 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
     /**
      * Constructs a call of a given unit, with arguments.
      */
-    public Call(Callable unit, List<? extends CtrlPar> args) {
+    private Call(Callable unit, List<? extends CtrlPar> args, boolean explicitArgs) {
         super(unit, args);
+        this.explicitArgs = explicitArgs;
+    }
+
+    /**
+     * Constructs a call of a given unit, with arguments.
+     */
+    public Call(Callable unit, List<? extends CtrlPar> args) {
+        this(unit, args, true);
     }
 
     /**
@@ -44,8 +52,15 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
      * This will construct wildcard arguments for the call.
      */
     public Call(Callable unit) {
-        this(unit, createWildArgs(unit.getSignature()));
+        this(unit, createWildArgs(unit.getSignature()), false);
     }
+
+    /** Indicates if this call has explicit arguments. */
+    public boolean hasExplicitArgs() {
+        return this.explicitArgs;
+    }
+
+    private final boolean explicitArgs;
 
     /** Returns the called unit. */
     public Callable getUnit() {
