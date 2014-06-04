@@ -23,7 +23,6 @@ import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
-import groove.transform.AbstractRuleEvent;
 import groove.transform.DeltaApplier;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
@@ -57,8 +56,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
             System.out.printf("  Graph: %s%n", source.getGraph());
-            System.out.printf("  Event: %s%n",
-                ((AbstractRuleEvent<?,?>) this.event).getLabelText(addedNodes, true));
+            System.out.printf("  Event: %s%n", this.event.toString());
             System.out.printf("  Event id: %s%n", System.identityHashCode(match));
         }
     }
@@ -90,7 +88,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public String getOutputString() throws FormatException {
-        return ((AbstractRuleEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
+        return DefaultRuleTransition.getOutputString(this);
     }
 
     @Override

@@ -24,17 +24,13 @@ import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.RuleToHostMap;
 import groove.match.TreeMatch;
 import groove.util.Visitor;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.MissingFormatArgumentException;
 
 /**
  * Abstract class providing basic rule event functionality.
@@ -42,7 +38,7 @@ import java.util.MissingFormatArgumentException;
  * @version $Revision $
  */
 public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
-extends AbstractCacheHolder<C> implements RuleEvent {
+        extends AbstractCacheHolder<C> implements RuleEvent {
     /** Constructs an event for a given rule. */
     protected AbstractRuleEvent(CacheReference<C> template, R rule) {
         super(template);
@@ -54,62 +50,6 @@ extends AbstractCacheHolder<C> implements RuleEvent {
         RuleEffect result = new RuleEffect(host);
         recordEffect(result);
         result.setFixed();
-        return result;
-    }
-
-    /**
-     * Returns a string showing this event as a rule call.
-     * @param anchored if {@code true}, append the anchor images rather than the parameters
-     */
-    public String getLabelText(HostNode[] addedNodes, boolean anchored) {
-        StringBuilder result = new StringBuilder();
-        result.append(getRule().getTransitionLabel());
-        if (anchored) {
-            result.append(getAnchorImageString());
-        } else if (getRule().getSystemProperties().isUseParameters()) {
-            result.append('(');
-            boolean first = true;
-            for (HostNode arg : getArguments(addedNodes)) {
-                if (!first) {
-                    result.append(',');
-                }
-                first = false;
-                if (arg == null) {
-                    result.append('_');
-                } else if (arg instanceof ValueNode) {
-                    result.append(((ValueNode) arg).getTerm().toDisplayString());
-                } else {
-                    result.append(arg);
-                }
-            }
-            result.append(')');
-        }
-        return result.toString();
-    }
-
-    /**
-     * Returns the instantiated output string for this rule, if any.
-     * @throws FormatException if the format string of the rule
-     * does not correspond to the actual rule parameters.
-     */
-    public String getOutputString(HostNode[] addedNodes) throws FormatException {
-        String result = null;
-        String formatString = getRule().getFormatString();
-        if (formatString != null && !formatString.isEmpty()) {
-            List<Object> args = new ArrayList<Object>();
-            for (HostNode arg : getArguments(addedNodes)) {
-                if (arg instanceof ValueNode) {
-                    args.add(((ValueNode) arg).getValue());
-                } else {
-                    args.add(arg.toString());
-                }
-            }
-            try {
-                result = String.format(formatString, args.toArray());
-            } catch (MissingFormatArgumentException e) {
-                throw new FormatException("Error in rule output string: %s", e.getMessage());
-            }
-        }
         return result;
     }
 
@@ -130,7 +70,10 @@ extends AbstractCacheHolder<C> implements RuleEvent {
 
     @Override
     public String toString() {
-        return getLabelText(null, false);
+        StringBuilder result = new StringBuilder();
+        result.append(getRule().getTransitionLabel());
+        result.append(getAnchorImageString());
+        return result.toString();
     }
 
     /**

@@ -19,7 +19,6 @@ package groove.transform;
 import static groove.transform.RuleEvent.Reuse.AGGRESSIVE;
 import static groove.transform.RuleEvent.Reuse.EVENT;
 import static groove.transform.RuleEvent.Reuse.NONE;
-import groove.control.Binding;
 import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -187,36 +186,6 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             return false;
         }
         return true;
-    }
-
-    @Override
-    public HostNode[] getArguments(HostNode[] addedNodes) {
-        HostNode[] result;
-        int size = getRule().getSignature().size();
-        if (size == 0) {
-            result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
-        } else {
-            result = new HostNode[size];
-            AnchorValue[] anchorImage = getAnchorImage();
-            for (int i = 0; i < size; i++) {
-                Binding binding = getRule().getParBinding(i);
-                HostNode argument = null;
-                switch (binding.getSource()) {
-                case ANCHOR:
-                    argument = (HostNode) anchorImage[binding.getIndex()];
-                    break;
-                case CREATOR:
-                    if (addedNodes != null) {
-                        argument = addedNodes[binding.getIndex()];
-                    }
-                    break;
-                default:
-                    assert false;
-                }
-                result[i] = argument;
-            }
-        }
-        return result;
     }
 
     @Override
@@ -391,7 +360,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             record.addCreatorNodes(creatorNodes);
         } else {
             HostNode[] createdNodes =
-                getCreatedNodes(record.getSource().nodeSet(), record.getCreatedNodeMap());
+                    getCreatedNodes(record.getSource().nodeSet(), record.getCreatedNodeMap());
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
     }
@@ -421,8 +390,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                     target);
             }
             HostEdge image =
-                getHostFactory().createEdge(sourceImage, anchorMap.mapLabel(edge.label()),
-                    targetImage);
+                    getHostFactory().createEdge(sourceImage, anchorMap.mapLabel(edge.label()),
+                        targetImage);
             record.addCreatedEdge(image);
         }
     }
@@ -560,8 +529,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                 } else {
                     // get the type from the image of the first label variable
                     type =
-                        (TypeNode) getCoanchorMap().getVar(
-                            creatorNodes[i].getTypeGuards().get(0).getVar());
+                            (TypeNode) getCoanchorMap().getVar(
+                                creatorNodes[i].getTypeGuards().get(0).getVar());
                 }
                 result[i] = createNode(i, type, sourceNodes, current);
             }
@@ -712,7 +681,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     static private List<List<HostNode>> AGGRESIVE_REUSE_LIST = new ArrayList<List<HostNode>>();
     /** Template reference to create empty caches. */
     static private final CacheReference<BasicEventCache> reference =
-        CacheReference.<BasicEventCache>newInstance(false);
+            CacheReference.<BasicEventCache>newInstance(false);
 
     /** Cache holding auxiliary data structures for the event. */
     final class BasicEventCache extends AbstractRuleEvent<Rule,BasicEventCache>.AbstractEventCache {
@@ -795,7 +764,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                 if (creatorEnd instanceof ValueNode) {
                     ValueNode node = (ValueNode) creatorEnd;
                     createdValue =
-                        BasicEvent.this.hostFactory.createNode(node.getAlgebra(), node.getValue());
+                            BasicEvent.this.hostFactory.createNode(node.getAlgebra(), node.getValue());
                 } else {
                     createdValue = anchorMap.getNode(creatorEnd);
                     assert creatorEnd != null : String.format(

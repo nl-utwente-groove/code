@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.grammar.Recipe;
+import groove.grammar.host.HostNode;
 import groove.graph.ALabel;
 import groove.graph.Label;
 import groove.gui.look.Line;
@@ -44,6 +45,11 @@ public class RecipeTransitionLabel extends ALabel implements ActionLabel {
     @Override
     protected Line computeLine() {
         return Line.atom(text(false));
+    }
+
+    @Override
+    public HostNode[] getArguments() {
+        throw new UnsupportedOperationException();
     }
 
     /** Returns the label text, with optionally the rule parameters

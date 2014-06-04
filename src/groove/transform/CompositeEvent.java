@@ -18,7 +18,6 @@ package groove.transform;
 
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
-import groove.grammar.host.HostNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.match.TreeMatch;
 import groove.util.cache.CacheReference;
@@ -195,11 +194,6 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     }
 
     @Override
-    public HostNode[] getArguments(HostNode[] addedNodes) {
-        return this.eventArray[0].getArguments(addedNodes);
-    }
-
-    @Override
     protected CompositeEventCache createCache() {
         return new CompositeEventCache();
     }
@@ -221,10 +215,10 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     final BasicEvent[] eventArray;
     /** Cache reference instance for initialisation. */
     static private final CacheReference<CompositeEventCache> reference =
-            CacheReference.<CompositeEventCache>newInstance(false);
+        CacheReference.<CompositeEventCache>newInstance(false);
 
     class CompositeEventCache extends
-    AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
+            AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
         /**
          * Reconstructs a set of events from the array stored in the composite
          * event.
@@ -232,7 +226,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
         SortedSet<BasicEvent> getEventSet() {
             if (this.eventSet == null) {
                 this.eventSet =
-                        new TreeSet<BasicEvent>(Arrays.asList(CompositeEvent.this.eventArray));
+                    new TreeSet<BasicEvent>(Arrays.asList(CompositeEvent.this.eventArray));
             }
             return this.eventSet;
         }

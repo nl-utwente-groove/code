@@ -1,42 +1,46 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.lts;
 
-import groove.control.CtrlStep;
+import groove.control.Binding;
+import groove.control.Call;
+import groove.control.CtrlPar;
+import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.graph.ALabel;
 import groove.graph.Label;
 import groove.gui.look.Line;
-import groove.transform.AbstractRuleEvent;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
 
 import java.util.Arrays;
+import java.util.List;
 
 /** Class of labels that can appear on rule transitions. */
 public class RuleTransitionLabel extends ALabel implements ActionLabel {
-    /** 
+    /**
      * Constructs a new label on the basis of a given match and list
      * of created nodes.
      */
     private RuleTransitionLabel(GraphState source, MatchResult match, HostNode[] addedNodes) {
         this.event = match.getEvent();
-        this.step = match.getStep();
+        this.step = (Step) match.getStep();
         this.addedNodes = addedNodes;
     }
 
@@ -53,11 +57,11 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     private final RuleEvent event;
 
     /** Returns the control step wrapped in this label. */
-    public CtrlStep getStep() {
+    public Step getStep() {
         return this.step;
     }
 
-    private final CtrlStep step;
+    private final Step step;
 
     /** Returns the added nodes of the label. */
     public HostNode[] getAddedNodes() {
@@ -65,6 +69,39 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     }
 
     private final HostNode[] addedNodes;
+
+    @Override
+    public HostNode[] getArguments() {
+        HostNode[] result;
+        Call call = getStep().getRuleCall();
+        if (call.getArgs().isEmpty()) {
+            result = EMPTY_NODE_ARRAY;
+        } else {
+            List<? extends CtrlPar> callArgs = call.getArgs();
+            result = new HostNode[callArgs.size()];
+            for (int i = 0; i < callArgs.size(); i++) {
+                HostNode arg;
+                if (callArgs.get(i).isDontCare()) {
+                    arg = null;
+                } else {
+                    Binding binding = getAction().getParBinding(i);
+                    switch (binding.getSource()) {
+                    case ANCHOR:
+                        arg = (HostNode) getEvent().getAnchorImage(binding.getIndex());
+                        break;
+                    case CREATOR:
+                        arg = getAddedNodes()[binding.getIndex()];
+                        break;
+                    default:
+                        assert false;
+                        arg = null;
+                    }
+                }
+                result[i] = arg;
+            }
+        }
+        return result;
+    }
 
     @Override
     protected Line computeLine() {
@@ -86,7 +123,27 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(getStep().getRecipe().getFullName());
             result.append('/');
         }
-        result.append(((AbstractRuleEvent<?,?>) getEvent()).getLabelText(this.addedNodes, anchored));
+        result.append(getAction().getTransitionLabel());
+        if (anchored) {
+            result.append(getEvent().getAnchorImageString());
+        } else if (getAction().getSystemProperties().isUseParameters()) {
+            result.append('(');
+            boolean first = true;
+            for (HostNode arg : getArguments()) {
+                if (!first) {
+                    result.append(',');
+                }
+                first = false;
+                if (arg == null) {
+                    result.append('_');
+                } else if (arg instanceof ValueNode) {
+                    result.append(((ValueNode) arg).getTerm().toDisplayString());
+                } else {
+                    result.append(arg);
+                }
+            }
+            result.append(')');
+        }
         if (brackets) {
             result.append(END_CHAR);
         }
@@ -146,7 +203,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return result;
     }
 
-    /** 
+    /**
      * Returns the label text for the rule label consisting of a given source state
      * and event. Optionally, the rule parameters are replaced by anchor images.
      */
@@ -154,7 +211,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return createLabel(source, match, null).text(anchored);
     }
 
-    /** 
+    /**
      * Creates a normalised rule label.
      * @see Record#normaliseLabel(RuleTransitionLabel)
      */
@@ -175,4 +232,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     private static final char END_CHAR = '>';
     /** Flag controlling whether transition labels are normalised. */
     public static boolean REUSE_LABELS = true;
+    /** Global empty set of nodes. */
+    static private final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 }
