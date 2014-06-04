@@ -238,7 +238,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                     node = Valuator.get(source().getFrameValues(), varIndex);
                 } else {
                     assert arg.isOutOnly();
-                    int varIndex = getSwitch().onFinish().getVarIxMap().get(arg);
+                    int varIndex = getSwitch().onFinish().getVarIxMap().get(((Var) arg).getVar());
                     Object[] values = target().getFrameValues();
                     for (Assignment pop : ((Frame) target().getActualFrame()).getPops()) {
                         values = pop.apply(values);
@@ -340,9 +340,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
 
     @Override
     protected Line computeLine() {
-
-        // TODO Auto-generated method stub
-        return null;
+        StringBuilder text = RuleTransitionLabel.computeText(this);
+        return Line.atom(text.toString());
     }
 
     @Override
