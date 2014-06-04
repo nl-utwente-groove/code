@@ -21,7 +21,6 @@ import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
 import groove.control.template.Program;
-import groove.grammar.Action;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -67,7 +67,7 @@ public class CtrlLoader {
 
     /**
      * Parses a given, named control program.
-     * The parse result is stored internally; a later call to {@link #buildAutomaton(String)}
+     * The parse result is stored internally; a later call to {@link #buildProgram(Collection)}
      * will collect all parse trees and build a control automaton.
      * The tree is not yet checked.
      * @param controlName the qualified name of the control program to be parsed
@@ -92,32 +92,6 @@ public class CtrlLoader {
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
-    }
-
-    /**
-     * Builds the control automaton for a given named control program.
-     * Should only be called after the {@link #parse} methods.
-     */
-    public CtrlAut buildAutomaton(String name) throws FormatException {
-        this.namespace.setControlName(name);
-        CtrlTree tree = this.treeMap.get(name);
-        return tree.build();
-    }
-
-    /**
-     * Builds a default control automaton out of the actions
-     * parsed in previous calls of the {@link #parse} methods.
-     */
-    public CtrlAut buildDefaultAutomaton() throws FormatException {
-        check();
-        Collection<Action> actions = new ArrayList<Action>();
-        for (String name : this.namespace.getTopNames()) {
-            Callable unit = this.namespace.getCallable(name);
-            if (unit instanceof Action) {
-                actions.add((Action) unit);
-            }
-        }
-        return CtrlFactory.instance().buildDefault(actions, this.grammarProperties);
     }
 
     /** Returns a control program constructed from a set of program names. */
@@ -183,8 +157,6 @@ public class CtrlLoader {
 
     /** Namespace of this loader. */
     private Namespace namespace;
-    /** Algebra family for this control loader. */
-    private GrammarProperties grammarProperties;
     /** Mapping from program names to corresponding syntax trees. */
     private final Map<String,CtrlTree> treeMap = new TreeMap<String,CtrlTree>();
 
@@ -204,19 +176,19 @@ public class CtrlLoader {
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(Grammar grammar, String programName, String program)
+    public static Program run(Grammar grammar, String programName, String program)
         throws FormatException {
-        CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), !CtrlFrame.NEW_CONTROL);
+        CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         instance.parse(programName, program);
-        return instance.buildAutomaton(programName).normalise();
+        Program result = instance.buildProgram(Collections.singleton(programName));
+        result.setFixed();
+        return result;
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(Grammar grammar, String programName, File base)
+    public static Program run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
-        CtrlLoader instance =
-            new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), !CtrlFrame.NEW_CONTROL);
+        CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {
@@ -226,6 +198,8 @@ public class CtrlLoader {
         Scanner scanner = new Scanner(inputFile).useDelimiter("\\A");
         instance.parse(programName, scanner.next());
         scanner.close();
-        return instance.buildAutomaton(programName);
+        Program result = instance.buildProgram(Collections.singleton(programName));
+        result.setFixed();
+        return result;
     }
 }
