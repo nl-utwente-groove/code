@@ -43,7 +43,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Constructor that sets the grammar properties.  
+     * Constructor that sets the grammar properties.
      */
     public GrammarProperties(boolean useCurrentGrooveVersion) {
         super();
@@ -88,15 +88,6 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public void setShowLoopsAsLabels(boolean show) {
         setProperty(Key.LOOPS_AS_LABELS, "" + show);
-    }
-
-    /**
-     * Indicates if the LTS labels should be surrounded by angular brackets.
-     * Default value: <code>false</code>.
-     */
-    public boolean isShowTransitionBrackets() {
-        String property = getProperty(Key.TRANSITION_BRACKETS);
-        return property != null && (Boolean.valueOf(property) || property.equals(NUMERIC_YES));
     }
 
     /**
@@ -269,10 +260,10 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         setProperty(Key.ALGEBRA, family.getName());
     }
 
-    /** 
+    /**
      * Returns the selected algebra family.
      * @return the selected algebra family, or {@link AlgebraFamily#DEFAULT}
-     * if none is selected. 
+     * if none is selected.
      */
     public AlgebraFamily getAlgebraFamily() {
         String property = getProperty(Key.ALGEBRA);
@@ -519,7 +510,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         }
     }
 
-    /** 
+    /**
      * Checks if the stored properties are valid in a given grammar.
      */
     public void check(GrammarModel grammar) throws FormatException {
@@ -762,12 +753,6 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
          */
         EXPLORATION("explorationStrategy", PropertyKind.EXPLORATION,
                 "Default exploration strtategy for this grammar"),
-        /**
-         * Flag that determines if transition parameters are included in the LTS
-         * transition labels
-         */
-        TRANSITION_BRACKETS("transitionBrackets", PropertyKind.EXTENDED_BOOLEAN,
-                "Flag controlling if transition labels should be bracketed"),
         /**
          * Flag that determines if transition parameters are included in the LTS
          * transition labels
