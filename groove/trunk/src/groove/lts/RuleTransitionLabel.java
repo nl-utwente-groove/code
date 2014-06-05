@@ -115,10 +115,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        boolean brackets = getAction().getGrammarProperties().isShowTransitionBrackets();
-        if (brackets) {
-            result.append(BEGIN_CHAR);
-        }
         if (getStep().inRecipe()) {
             result.append(getStep().getRecipe().getFullName());
             result.append('/');
@@ -128,9 +124,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(getEvent().getAnchorImageString());
         } else {
             result.append(computeText(this));
-        }
-        if (brackets) {
-            result.append(END_CHAR);
         }
         return result.toString();
     }
@@ -235,10 +228,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return result;
     }
 
-    /** The obligatory first character of a rule name. */
-    private static final char BEGIN_CHAR = '<';
-    /** The obligatory last character of a rule name. */
-    private static final char END_CHAR = '>';
     /** Flag controlling whether transition labels are normalised. */
     public static boolean REUSE_LABELS = true;
     /** Global empty set of nodes. */
