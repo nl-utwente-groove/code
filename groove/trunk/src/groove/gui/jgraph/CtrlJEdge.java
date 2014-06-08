@@ -3,6 +3,7 @@ package groove.gui.jgraph;
 import groove.control.graph.ControlEdge;
 import groove.control.graph.ControlGraph;
 import groove.control.instance.Step;
+import groove.gui.look.Look;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
 
@@ -45,6 +46,15 @@ public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGrap
             result.append(Groove.toString(displayedLabels, "<br>- ", "", "<br>- "));
         }
         return result.toString();
+    }
+
+    @Override
+    protected Look getStructuralLook() {
+        if (getEdge().isVerdict()) {
+            return Look.CTRL_VERDICT;
+        } else {
+            return Look.TRANS;
+        }
     }
 
     /**

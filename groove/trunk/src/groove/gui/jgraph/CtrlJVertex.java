@@ -54,7 +54,7 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
         } else if (isTransient()) {
             return Look.CTRL_TRANSIENT_STATE;
         } else {
-            return super.getStructuralLook();
+            return Look.STATE;
         }
     }
 

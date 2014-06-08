@@ -50,7 +50,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     private final Template template;
 
-    /** Indicates if this is the template's start locations. */
+    @Override
     public boolean isStart() {
         return getTemplate().getStart() == this;
     }
@@ -175,29 +175,8 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     @Override
     public String toString() {
-        String result = getTemplate().getName() + "." + getNumber();
-        boolean brackets = false;
-        if (isStart()) {
-            result = result + "(start";
-            brackets = true;
-        }
-        if (isDead()) {
-            result = result + (brackets ? "," : "(");
-            result = result + "dead";
-            brackets = true;
-        }
-        if (isFinal()) {
-            result = result + (brackets ? "," : "(");
-            result = result + "final";
-            brackets = true;
-        }
-        if (this.depth > 0) {
-            result = result + (brackets ? "," : "(");
-            result = result + "d" + this.depth;
-            brackets = true;
-        }
-
-        return result + (brackets ? ")" : "");
+        String result = getTemplate().hasOwner() ? getTemplate().getName() + "." : "L";
+        return result + getNumber();
     }
 
     @Override

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -26,9 +26,6 @@ import static groove.gui.look.Look.BIDIRECTIONAL;
 import static groove.gui.look.Look.COMPOSITE;
 import static groove.gui.look.Look.CONNECT;
 import static groove.gui.look.Look.CREATOR;
-import static groove.gui.look.Look.CTRL_EXIT_TRANS;
-import static groove.gui.look.Look.CTRL_OMEGA_EXIT_TRANS;
-import static groove.gui.look.Look.CTRL_OMEGA_TRANS;
 import static groove.gui.look.Look.CTRL_TRANSIENT_STATE;
 import static groove.gui.look.Look.DATA;
 import static groove.gui.look.Look.EMBARGO;
@@ -42,6 +39,7 @@ import static groove.gui.look.Look.NO_ARROW;
 import static groove.gui.look.Look.OPEN;
 import static groove.gui.look.Look.PATTERN;
 import static groove.gui.look.Look.PRODUCT;
+import static groove.gui.look.Look.RECIPE;
 import static groove.gui.look.Look.REGULAR;
 import static groove.gui.look.Look.REMARK;
 import static groove.gui.look.Look.RESULT;
@@ -49,7 +47,6 @@ import static groove.gui.look.Look.START;
 import static groove.gui.look.Look.STATE;
 import static groove.gui.look.Look.SUBTYPE;
 import static groove.gui.look.Look.TRANS;
-import static groove.gui.look.Look.RECIPE;
 import static groove.gui.look.Look.TYPE;
 import static groove.gui.look.VisualKey.ADORNMENT;
 import static groove.gui.look.VisualKey.BACKGROUND;
@@ -96,57 +93,51 @@ import java.util.Set;
 /**
  * Class to automatically create a groove2tikz.sty file from the existing
  * {@link Look} enumeration.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class TikzStylesExtractor {
 
     /** Enumeration of main looks that are defined. */
-    public static final Set<Look> mainLooks = EnumSet.of(BASIC, CREATOR,
-        CONNECT, DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE,
-        ABSTRACT, SUBTYPE, STATE, TRANS, START, CTRL_TRANSIENT_STATE,
-        CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS, CTRL_OMEGA_EXIT_TRANS);
+    public static final Set<Look> mainLooks = EnumSet.of(BASIC, CREATOR, CONNECT, DATA, EMBARGO,
+        ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, SUBTYPE, STATE, TRANS, START,
+        CTRL_TRANSIENT_STATE);
 
     /** Subset of the main looks that are suitable for nodes. */
-    private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC, CREATOR,
-        DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE,
-        START, CTRL_TRANSIENT_STATE);
+    private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC, CREATOR, DATA, EMBARGO,
+        ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE, START, CTRL_TRANSIENT_STATE);
 
     /** Subset of the main looks that are suitable for edges. */
-    private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC, CREATOR,
-        CONNECT, EMBARGO, ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE,
-        TRANS, CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS, CTRL_OMEGA_EXIT_TRANS);
+    private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC, CREATOR, CONNECT, EMBARGO,
+        ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE, TRANS);
 
     /**
      * Extra enumeration for the additional looks that can modify a main look.
      */
-    private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
-        BIDIRECTIONAL, NO_ARROW, COMPOSITE, OPEN, FINAL, RESULT, RECIPE,
-        ABSENT, ACTIVE, GRAYED_OUT);
+    private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED, BIDIRECTIONAL, NO_ARROW,
+        COMPOSITE, OPEN, FINAL, RESULT, RECIPE, ABSENT, ACTIVE, GRAYED_OUT);
 
     /**
      * Set of unused looks. It is required that mainLooks + modifyingLooks +
      * unusedLooks to be equal to the entire Look enum, otherwise an error
      * is raised. This is needed to ensure the consistency of the extractor.
      */
-    private static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER,
-        PATTERN, EQUIV_CLASS);
+    private static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER, PATTERN, EQUIV_CLASS);
 
     /**
      * Set of visual keys that are used in the extractor.
      */
-    private static final Set<VisualKey> usedKeys = EnumSet.of(BACKGROUND, DASH,
-        EDGE_SOURCE_SHAPE, EDGE_TARGET_SHAPE, FOREGROUND, LINE_WIDTH,
-        NODE_SHAPE);
+    private static final Set<VisualKey> usedKeys = EnumSet.of(BACKGROUND, DASH, EDGE_SOURCE_SHAPE,
+        EDGE_TARGET_SHAPE, FOREGROUND, LINE_WIDTH, NODE_SHAPE);
 
     /**
      * Set of visual keys that are not used in the extractor because they are
      * element dependent and hence cannot form a style.
      */
-    private static final Set<VisualKey> unusedKeys = EnumSet.of(ADORNMENT,
-        COLOR, EDGE_SOURCE_LABEL, EDGE_SOURCE_POS, EDGE_TARGET_LABEL,
-        EDGE_TARGET_POS, EMPHASIS, ERROR, FONT, INNER_LINE, INSET, LABEL,
-        LABEL_POS, LINE_STYLE, NODE_POS, NODE_SIZE, OPAQUE, POINTS, VISIBLE);
+    private static final Set<VisualKey> unusedKeys = EnumSet.of(ADORNMENT, COLOR,
+        EDGE_SOURCE_LABEL, EDGE_SOURCE_POS, EDGE_TARGET_LABEL, EDGE_TARGET_POS, EMPHASIS, ERROR,
+        FONT, INNER_LINE, INSET, LABEL, LABEL_POS, LINE_STYLE, NODE_POS, NODE_SIZE, OPAQUE, POINTS,
+        VISIBLE);
 
     /** Main method. */
     public static final void main(String[] args) {
@@ -172,13 +163,11 @@ public final class TikzStylesExtractor {
         if (!allLooks.isEmpty() || !allKeys.isEmpty()) {
             System.err.println("Cowardly refusing to run due to inconsistencies.");
             if (!allLooks.isEmpty()) {
-                System.err.println("Don't know how to handle the following looks: "
-                    + allLooks);
+                System.err.println("Don't know how to handle the following looks: " + allLooks);
                 System.err.println("Did you add new entries in the Look enumeration?");
             }
             if (!allKeys.isEmpty()) {
-                System.err.println("Don't know how to handle the following visual keys: "
-                    + allKeys);
+                System.err.println("Don't know how to handle the following visual keys: " + allKeys);
                 System.err.println("Did you add new entries in the VisualKey enumeration?");
             }
             System.exit(1);
@@ -207,9 +196,8 @@ public final class TikzStylesExtractor {
         for (ColorType cType : ColorType.values()) {
             Color color = cType.getColor();
             if (color != null) {
-                append("\\definecolor{" + cType.name().toLowerCase()
-                    + "_c}{RGB}" + Style.getColorStringDefinition(color)
-                    + NEW_LINE);
+                append("\\definecolor{" + cType.name().toLowerCase() + "_c}{RGB}"
+                        + Style.getColorStringDefinition(color) + NEW_LINE);
             }
         }
     }
@@ -262,8 +250,7 @@ public final class TikzStylesExtractor {
             styles.add(new StyleDuo("-", null));
             break;
         case COMPOSITE:
-            String srcEdgeEnd =
-                Style.getEdgeEndShape(visuals.getEdgeSourceShape());
+            String srcEdgeEnd = Style.getEdgeEndShape(visuals.getEdgeSourceShape());
             styles.add(new StyleDuo(srcEdgeEnd + "-" + defaultEdgeEnd, null));
             break;
         case OPEN:
@@ -348,24 +335,19 @@ public final class TikzStylesExtractor {
             + "% Extra style for parameter adornments."
             + NEW_LINE
             + "\\tikzstyle{par_node}=[draw=black, fill=black, text=white, shape=rectangle, font=\\scriptsize\\sffamily, inner sep=1pt, minimum size=4pt, anchor=east]"
-            + NEW_LINE + NEW_LINE + "% Default colors for TeX strings."
-            + NEW_LINE;
+            + NEW_LINE + NEW_LINE + "% Default colors for TeX strings." + NEW_LINE;
 
-    private static final String MAIN_STYLE_COMMENT =
-        NEW_LINE
-            + "% Main styles. (Should be used first in a node and edge definition.)"
-            + NEW_LINE;
+    private static final String MAIN_STYLE_COMMENT = NEW_LINE
+            + "% Main styles. (Should be used first in a node and edge definition.)" + NEW_LINE;
 
-    private static final String MOD_STYLE_COMMENT =
-        NEW_LINE
-            + "% Modifying styles. (To be used in conjunction - AFTER - a main style.)"
-            + NEW_LINE + NEW_LINE;
+    private static final String MOD_STYLE_COMMENT = NEW_LINE
+            + "% Modifying styles. (To be used in conjunction - AFTER - a main style.)" + NEW_LINE
+            + NEW_LINE;
 
     private static final String FOOTER = NEW_LINE
-        + "% Ugly hack to allow nodes with multiple lines." + NEW_LINE
-        + "\\newcommand{\\ml}[1]{" + NEW_LINE
-        + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE
-        + "}" + NEW_LINE;
+        + "% Ugly hack to allow nodes with multiple lines." + NEW_LINE + "\\newcommand{\\ml}[1]{"
+            + NEW_LINE + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE + "}"
+            + NEW_LINE;
 
     /**
      * Auxiliary class for storing the useful Look information and outputing
@@ -559,8 +541,7 @@ public final class TikzStylesExtractor {
                 break;
             case OVAL:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY,
-                    JAttr.STRONG_ARC_SIZE / 5 + "pt"));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, JAttr.STRONG_ARC_SIZE / 5 + "pt"));
                 break;
             case RECTANGLE:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
@@ -568,8 +549,7 @@ public final class TikzStylesExtractor {
                 break;
             case ROUNDED:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY,
-                    JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -582,8 +562,7 @@ public final class TikzStylesExtractor {
             int g = color.getGreen();
             int b = color.getBlue();
             // {rgb:red,r;green,g;blue,b}
-            return "{rgb,255:red," + r + ";" + "green," + g + ";" + "blue," + b
-                + "}";
+            return "{rgb,255:red," + r + ";" + "green," + g + ";" + "blue," + b + "}";
         }
 
         static String getColorStringDefinition(Color color) {

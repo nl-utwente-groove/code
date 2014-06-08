@@ -93,7 +93,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     private final int nr;
 
-    /** Indicates that this is the initial frame of the automaton. */
+    @Override
     public boolean isStart() {
         return getAut().getStart() == this;
     }
