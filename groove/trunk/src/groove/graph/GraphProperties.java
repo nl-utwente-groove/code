@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.graph;
@@ -55,8 +55,8 @@ public class GraphProperties extends Properties implements Fixable {
     @Override
     public synchronized Object put(Object key, Object value) {
         if (!isValidKey(key)) {
-            throw new IllegalArgumentException(String.format(
-                "User property key '%s' not allowed: use identifier", key));
+            throw new IllegalArgumentException(
+                String.format("User property key '%s' not allowed: use identifier", key));
         }
         return super.put(key, value);
     }
@@ -96,8 +96,7 @@ public class GraphProperties extends Properties implements Fixable {
         Key key = KEYS.get(keyword);
         if (value == null) {
             oldValue = (String) remove(keyword);
-        } else if (key != null && !key.isSystem()
-            && key.getDefaultValue().equals(value)) {
+        } else if (key != null && !key.isSystem() && key.getDefaultValue().equals(value)) {
             oldValue = (String) remove(keyword);
         } else {
             oldValue = (String) super.setProperty(keyword, value);
@@ -149,8 +148,7 @@ public class GraphProperties extends Properties implements Fixable {
      * key.
      */
     static private boolean isValidKey(Object key) {
-        return key instanceof String
-            && (isSystemKey((String) key) || isValidUserKey((String) key));
+        return key instanceof String && (isSystemKey((String) key) || isValidUserKey((String) key));
     }
 
     /** Returns the mapping from string values to property keys. */
@@ -177,27 +175,26 @@ public class GraphProperties extends Properties implements Fixable {
     /** Predefined graph property keys. */
     public static enum Key implements PropertyKey {
         /** Rule priority. */
-        PRIORITY("priority", Integer.toString(Action.DEFAULT_PRIORITY),
-                new Property<String>() {
-                    @Override
-                    public boolean isSatisfied(String value) {
-                        try {
-                            return Integer.parseInt(value) >= 0;
-                        } catch (NumberFormatException exc) {
-                            return false;
-                        }
-                    }
+        PRIORITY("priority", Integer.toString(Action.DEFAULT_PRIORITY), new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                try {
+                    return Integer.parseInt(value) >= 0;
+                } catch (NumberFormatException exc) {
+                    return false;
+                }
+            }
 
-                    @Override
-                    public String getDescription() {
-                        return "Non-negative number; higher priorities have precedence";
-                    }
+            @Override
+            public String getDescription() {
+                return "Non-negative number; higher priorities have precedence";
+            }
 
-                    @Override
-                    public String getComment() {
-                        return "Higher-priority rules are evaluated first";
-                    }
-                }),
+            @Override
+            public String getComment() {
+                return "Higher-priority rules are evaluated first";
+            }
+        }),
         /** Rule enabledness. */
         ENABLED("enabled", Boolean.toString(true), new Property<String>() {
             @Override
@@ -233,23 +230,22 @@ public class GraphProperties extends Properties implements Fixable {
             }
         }),
         /** Output line format. */
-        FORMAT("printFormat", null, "Output format", null,
-                new Property<String>() {
-                    @Override
-                    public boolean isSatisfied(String value) {
-                        return value.trim().length() > 0;
-                    }
+        FORMAT("printFormat", "Output format", null, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.trim().length() > 0;
+            }
 
-                    @Override
-                    public String getDescription() {
-                        return "Format string as in String.format, instantiated by rule parameters";
-                    }
+            @Override
+            public String getDescription() {
+                return "Format string as in String.format, instantiated by rule parameters";
+            }
 
-                    @Override
-                    public String getComment() {
-                        return "If nonempty, rule application prints this (instantiated) string on System.out";
-                    }
-                }, false),
+            @Override
+            public String getComment() {
+                return "If nonempty, rule application prints this (instantiated) string on System.out";
+            }
+        }, false),
         /** Alternative transition label. */
         TRANSITION_LABEL("transitionLabel", new Property<String>() {
             @Override
@@ -265,7 +261,7 @@ public class GraphProperties extends Properties implements Fixable {
             @Override
             public String getComment() {
                 return "A string to be used as the transition label in the "
-                    + "LTS. If empty, defaults to the rule name.";
+                        + "LTS. If empty, defaults to the rule name.";
             }
         }),
         /** Graph version. */
@@ -282,18 +278,15 @@ public class GraphProperties extends Properties implements Fixable {
         }
 
         /** Defines a (system or non-system) property with a given name, default value and format property. */
-        private Key(String name, String defaultValue, Property<String> format,
-                boolean system) {
-            this(name, null, Groove.unCamel(name, false), defaultValue, format,
-                system);
+        private Key(String name, String defaultValue, Property<String> format, boolean system) {
+            this(name, Groove.unCamel(name, false), defaultValue, format, system);
         }
 
-        /** Defines a (system or non-system) property with a given name, default value and format property. */
-        private Key(String name, String category, String description,
-                String defaultValue, Property<String> format, boolean system) {
+        /** Defines a (system or non-system) property with a given name, description, default value and format property. */
+        private Key(String name, String description, String defaultValue, Property<String> format,
+                boolean system) {
             this.name = (system ? SYSTEM_KEY_START : "") + name;
             this.defaultValue = defaultValue == null ? "" : defaultValue;
-            this.category = category;
             this.description = description;
             this.system = system;
             this.format = format;
@@ -307,11 +300,6 @@ public class GraphProperties extends Properties implements Fixable {
         @Override
         public String getDescription() {
             return this.description;
-        }
-
-        @Override
-        public String getCategory() {
-            return this.category;
         }
 
         @Override
@@ -330,7 +318,6 @@ public class GraphProperties extends Properties implements Fixable {
         }
 
         private final String name;
-        private final String category;
         private final String description;
         private final String defaultValue;
         private final boolean system;
