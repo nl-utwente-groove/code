@@ -18,6 +18,7 @@ package groove.gui.look;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
+import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.control.instance.Frame;
 import groove.grammar.aspect.Aspect;
@@ -109,11 +110,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(Line.atom(jVertex.getNode().toString()).style(Style.ITALIC), Direct.NONE);
         }
         // only add edges that have an unfiltered label
-        for (Edge edge : jVertex.getEdges()) {
-            if (!isFiltered(jVertex, edge)) {
-                result.add(Line.atom(edge.label().text()), Direct.NONE);
-            }
-        }
+        addEdgeLabels(jVertex, result);
         return result;
     }
 
@@ -324,13 +321,44 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * Appends the bound variables to the lines, if this list is not empty
      */
     private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
-        MultiLabel result = getBasicVertexLabel(jVertex);
+        MultiLabel result = new MultiLabel();
+        result.add(Line.atom(jVertex.getNode().toString()).style(Style.BOLD), Direct.NONE);
         Position<?,?> state = jVertex.getNode().getPosition();
-        if (state.hasVars()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(state.getVars().toString());
-            result.add(Line.atom(sb.toString()), Direct.NONE);
+        // add start/final/depth qualifiers
+        Line qualifiers = Line.empty();
+        if (state.isStart()) {
+            qualifiers = qualifiers.append(Line.atom("start"));
         }
+        if (state.isDead()) {
+            if (!qualifiers.isEmpty()) {
+                qualifiers = qualifiers.append(Line.atom(", "));
+            }
+            qualifiers = qualifiers.append(Line.atom("dead"));
+        }
+        if (state.isFinal()) {
+            if (!qualifiers.isEmpty()) {
+                qualifiers = qualifiers.append(Line.atom(", "));
+            }
+            qualifiers = qualifiers.append(Line.atom("final"));
+        }
+        if (state.getTransience() > 0) {
+            if (!qualifiers.isEmpty()) {
+                qualifiers = qualifiers.append(Line.atom(", "));
+            }
+            qualifiers = qualifiers.append(Line.atom("transience = " + state.getTransience()));
+        }
+        if (!qualifiers.isEmpty()) {
+            result.add(qualifiers.style(Style.ITALIC), Direct.NONE);
+        }
+        // add location variables
+        for (CtrlVar var : state.getVars()) {
+            Line line =
+                Line.atom(var.getType().toString()).style(Style.BOLD).append(
+                    Line.atom(" " + var.getName()));
+            result.add(line, Direct.NONE);
+        }
+        // add self-edges
+        addEdgeLabels(jVertex, result);
         return result;
     }
 
@@ -354,13 +382,23 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     private MultiLabel getBasicJEdgeLabel(JEdge<?> jEdge) {
         MultiLabel result = new MultiLabel();
+        addEdgeLabels(jEdge, result);
+        return result;
+    }
+
+    /**
+     * Adds the labels of all edges of a given cell to a multi-label.
+     * @param jEdge the cell from which the edges are added
+     * @param result the resulting multi-label; modified by this call
+     */
+    private void addEdgeLabels(JCell<?> jEdge, MultiLabel result) {
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
+            Direct dir = jEdge instanceof JEdge ? ((JEdge<?>) jEdge).getDirect(edge) : Direct.NONE;
             if (!isFiltered(jEdge, edge)) {
-                result.add(Line.atom(edge.label().text()), jEdge.getDirect(edge));
+                result.add(Line.atom(edge.label().text()), dir);
             }
         }
-        return result;
     }
 
     private MultiLabel getAspectJEdgeLabel(AspectJEdge jEdge) {

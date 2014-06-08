@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -28,7 +28,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /** Attribute values for the nodes and edges.
- * 
+ *
  * @author Arend rensink
  * @version $Revision $
  */
@@ -39,6 +39,8 @@ public class Values {
     public static final float[] ABSTRACT_DASH = new float[] {6.0f, 2.0f};
     /** Dash pattern of connect edges. */
     public static final float[] CONNECT_DASH = new float[] {2f, 4f};
+    /** Dash pattern for verdict edges. */
+    public static final float[] VERDICT_DASH = new float[] {4.0f, 3.0f};
     /** No dash pattern. */
     public static final float[] NO_DASH = new float[] {10.f, 0.f};
     /** Foreground colour of creator nodes and edges. */
@@ -52,8 +54,7 @@ public class Values {
     /**
      * The default background colour used for nodes.
      */
-    public static final Color DEFAULT_BACKGROUND =
-        Colors.findColor("243 243 243");
+    public static final Color DEFAULT_BACKGROUND = Colors.findColor("243 243 243");
     /** Dash pattern of embargo nodes and edges. */
     public static final float[] EMBARGO_DASH = new float[] {2f, 2f};
     /** Foreground colour of embargo nodes and edges. */
@@ -65,8 +66,7 @@ public class Values {
     /** Foreground colour of eraser nodes and edges. */
     public static final Color ERASER_FOREGROUND = Color.BLUE;
     /** Background colour of eraser nodes and edges. */
-    public static final Color ERASER_BACKGROUND =
-        Colors.findColor("200 240 255");
+    public static final Color ERASER_BACKGROUND = Colors.findColor("200 240 255");
     /** Dash pattern of nesting nodes and edges. */
     public static final float[] NESTED_DASH = new float[] {2.0f, 3.0f};
     /** Colour used for nesting nodes and states. */
@@ -74,8 +74,7 @@ public class Values {
     /** Foreground colour of remark nodes and edges. */
     public static final Color REMARK_FOREGROUND = Colors.findColor("255 140 0");
     /** Background colour of remark nodes and edges. */
-    public static final Color REMARK_BACKGROUND =
-        Colors.findColor("255 255 180");
+    public static final Color REMARK_BACKGROUND = Colors.findColor("255 255 180");
 
     /** Background colour of (normal) open states. */
     public static final Color OPEN_BACKGROUND = Color.GRAY.brighter();
@@ -92,13 +91,11 @@ public class Values {
     /** Foreground colour for active nodes and edges. */
     public static final Color ACTIVE_COLOR = Color.BLUE;
     /** Foreground colour for the active start node. */
-    public static final Color ACTIVE_START_COLOR =
-        Colors.findColor("30 190 255");
+    public static final Color ACTIVE_START_COLOR = Colors.findColor("30 190 255");
     /** Colour used for transient states. */
     static public final Color TRANSIENT_COLOR = Colors.findColor("165 42 42");
     /** Colour used for transient active states. */
-    static public final Color TRANSIENT_ACTIVE_COLOR =
-        Colors.findColor("165 42 149");
+    static public final Color TRANSIENT_ACTIVE_COLOR = Colors.findColor("165 42 149");
 
     /** Background colour used for selected items in focused lists. */
     static public final Color FOCUS_BACKGROUND = Color.DARK_GRAY;
@@ -123,8 +120,7 @@ public class Values {
     /** Colour used for indicating errors in graphs. */
     static public final Color ERROR_COLOR = new Color(255, 50, 0, 40);
     /** Background colour used for focused error items in lists. */
-    static public final Color ERROR_FOCUS_BACKGROUND =
-        Color.RED.darker().darker();
+    static public final Color ERROR_FOCUS_BACKGROUND = Color.RED.darker().darker();
     /** Text colour used for focused error items in lists. */
     static public final Color ERROR_FOCUS_FOREGROUND = Color.WHITE;
     /** Background colour used for selected, non-focused error items in lists. */
@@ -138,22 +134,16 @@ public class Values {
     /** Text display colours to be used in error mode. */
     static public final Values.ColorSet ERROR_COLORS = new Values.ColorSet();
     static {
-        ERROR_COLORS.putColors(FOCUSED, ERROR_FOCUS_FOREGROUND,
-            ERROR_FOCUS_BACKGROUND);
-        ERROR_COLORS.putColors(SELECTED, ERROR_SELECT_FOREGROUND,
-            ERROR_SELECT_BACKGROUND);
-        ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND,
-            ERROR_NORMAL_BACKGROUND);
+        ERROR_COLORS.putColors(FOCUSED, ERROR_FOCUS_FOREGROUND, ERROR_FOCUS_BACKGROUND);
+        ERROR_COLORS.putColors(SELECTED, ERROR_SELECT_FOREGROUND, ERROR_SELECT_BACKGROUND);
+        ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND, ERROR_NORMAL_BACKGROUND);
     }
 
     /** Text display colours to be used for transient states. */
-    static public final Values.ColorSet TRANSIENT_COLORS =
-        new Values.ColorSet();
+    static public final Values.ColorSet TRANSIENT_COLORS = new Values.ColorSet();
     static {
-        TRANSIENT_COLORS.putColors(FOCUSED, Color.WHITE,
-            TRANSIENT_COLOR.darker());
-        TRANSIENT_COLORS.putColors(SELECTED, TRANSIENT_COLOR.darker(),
-            SELECT_BACKGROUND);
+        TRANSIENT_COLORS.putColors(FOCUSED, Color.WHITE, TRANSIENT_COLOR.darker());
+        TRANSIENT_COLORS.putColors(SELECTED, TRANSIENT_COLOR.darker(), SELECT_BACKGROUND);
         TRANSIENT_COLORS.putColors(NONE, TRANSIENT_COLOR, NORMAL_BACKGROUND);
     }
 
@@ -195,50 +185,47 @@ public class Values {
             }
         }
 
-        /** 
+        /**
          * Returns the foreground colour for the mode indicated by the parameters.
          * @param selected if {@code true}, use selection mode
          * @param focused if {@code true}, use focused mode
-         * @return the colour for the relevant mode 
+         * @return the colour for the relevant mode
          */
         public Color getForeground(boolean selected, boolean focused) {
             return getColor(this.foreColors, selected, focused);
         }
 
-        /** 
+        /**
          * Returns the foreground colour for the given selection mode
-         * @return the colour for the relevant mode 
+         * @return the colour for the relevant mode
          */
         public Color getForeground(Mode mode) {
             return this.foreColors.get(mode);
         }
 
-        /** 
+        /**
          * Returns the background colour for the mode indicated by the parameters.
          * @param selected if {@code true}, use selection mode
          * @param focused if {@code true}, use focused mode
-         * @return the colour for the relevant mode 
+         * @return the colour for the relevant mode
          */
         public Color getBackground(boolean selected, boolean focused) {
             return getColor(this.backColors, selected, focused);
         }
 
-        /** 
+        /**
          * Returns the background colour for the given selection mode
-         * @return the colour for the relevant mode 
+         * @return the colour for the relevant mode
          */
         public Color getBackground(Mode mode) {
             return this.backColors.get(mode);
         }
 
-        private Color getColor(Map<Mode,Color> colors, boolean selected,
-                boolean focused) {
+        private Color getColor(Map<Mode,Color> colors, boolean selected, boolean focused) {
             return colors.get(Mode.toMode(selected, focused));
         }
 
-        private final Map<Mode,Color> foreColors = new EnumMap<Mode,Color>(
-            Mode.class);
-        private final Map<Mode,Color> backColors = new EnumMap<Mode,Color>(
-            Mode.class);
+        private final Map<Mode,Color> foreColors = new EnumMap<Mode,Color>(Mode.class);
+        private final Map<Mode,Color> backColors = new EnumMap<Mode,Color>(Mode.class);
     }
 }

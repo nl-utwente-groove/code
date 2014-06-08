@@ -52,7 +52,7 @@ public class PreviewControlAction extends SimulatorAction {
                 Procedure proc = t.getOwner();
                 text = proc.getKind().getName(true) + " " + proc.getFullName();
             } else {
-                text = "-- main --";
+                text = "Main program";
             }
             final Template template = t;
             result.add(new AbstractAction(text) {
@@ -91,7 +91,7 @@ public class PreviewControlAction extends SimulatorAction {
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
             ControlModel controlModel =
-                (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
+                    (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
             if (controlModel != null) {
                 result = controlModel.toResource();
             }

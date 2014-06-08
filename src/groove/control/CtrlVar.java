@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-
 /**
  * Control variables, consisting of a name and a type.
  * @author Arend Rensink

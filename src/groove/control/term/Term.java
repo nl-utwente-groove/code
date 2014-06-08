@@ -116,6 +116,11 @@ abstract public class Term implements Position<Term,Derivation> {
     }
 
     @Override
+    public boolean isStart() {
+        return false;
+    }
+
+    @Override
     public final Type getType() {
         if (this.type == null) {
             this.type = computeType();

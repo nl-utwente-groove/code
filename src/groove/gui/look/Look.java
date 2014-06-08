@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -21,7 +21,6 @@ import groove.gui.look.VisualKey.Nature;
 import groove.util.Colors;
 import groove.util.NodeShape;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -187,29 +186,6 @@ public enum Look {
             add(VisualKey.NODE_SHAPE, NodeShape.ELLIPSE);
         }
     },
-    /** Transient control state look. */
-    CTRL_TRANSIENT_STATE(true, BASIC) {
-        @Override
-        void init() {
-            add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);
-        }
-    },
-    /** Omega control transition. */
-    CTRL_OMEGA_TRANS(true, BASIC) {
-        @Override
-        void init() {
-            add(VisualKey.FOREGROUND, Color.RED);
-        }
-    },
-    /** Control transition exiting a transient state. */
-    CTRL_EXIT_TRANS(true, BASIC) {
-        @Override
-        void init() {
-            add(VisualKey.EDGE_SOURCE_SHAPE, EdgeEnd.DOUBLE_LINE);
-        }
-    },
-    /** Omega control transition exiting a transient state. */
-    CTRL_OMEGA_EXIT_TRANS(true, CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS),
     /** Closed state look. */
     STATE(true, BASIC) {
         @Override
@@ -244,8 +220,7 @@ public enum Look {
             boolean isStart = (map.getBackground() == Values.START_BACKGROUND);
             super.apply(map);
             if (isStart) {
-                map.put(VisualKey.BACKGROUND, Values.START_OPEN_BACKGROUND,
-                    false);
+                map.put(VisualKey.BACKGROUND, Values.START_OPEN_BACKGROUND, false);
             }
         }
     },
@@ -288,13 +263,11 @@ public enum Look {
 
         @Override
         public void apply(VisualMap map) {
-            boolean isTransient =
-                (map.getForeground() == Values.TRANSIENT_COLOR);
+            boolean isTransient = (map.getForeground() == Values.TRANSIENT_COLOR);
             boolean isStart = (map.getForeground() == Values.START_FOREGROUND);
             super.apply(map);
             if (isTransient || isStart) {
-                map.put(VisualKey.FOREGROUND, isTransient
-                        ? Values.TRANSIENT_ACTIVE_COLOR
+                map.put(VisualKey.FOREGROUND, isTransient ? Values.TRANSIENT_ACTIVE_COLOR
                         : Values.ACTIVE_START_COLOR, false);
             }
         }
@@ -308,6 +281,20 @@ public enum Look {
             add(VisualKey.INSET, 8);
             add(VisualKey.FONT, Font.PLAIN);
             add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
+        }
+    },
+    /** Transient control state look. */
+    CTRL_TRANSIENT_STATE(true, STATE) {
+        @Override
+        void init() {
+            add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);
+        }
+    },
+    /** Transient control state look. */
+    CTRL_VERDICT(true, TRANS) {
+        @Override
+        void init() {
+            add(VisualKey.DASH, Values.VERDICT_DASH);
         }
     },
     /** Equivalence class of a neighbourhood shape. */
@@ -354,8 +341,7 @@ public enum Look {
 
     /** Adds a derived or refreshable key-value pair to the attribute map of this look. */
     void add(VisualKey key, Object value) {
-        assert key.getNature() == Nature.DERIVED
-            || key.getNature() == Nature.REFRESHABLE;
+        assert key.getNature() == Nature.DERIVED || key.getNature() == Nature.REFRESHABLE;
         this.visuals.put(key, value, false);
     }
 
@@ -367,7 +353,7 @@ public enum Look {
     /**
      * Apply this look to a given visual map.
      * Usually this means adding the look's visuals, but some
-     * looks have a more subtle modifying effect. 
+     * looks have a more subtle modifying effect.
      * @param map the visual map to be modified
      */
     public void apply(VisualMap map) {
@@ -407,11 +393,10 @@ public enum Look {
         return result;
     }
 
-    private final static Map<Set<Look>,VisualMap> looksMap =
-        new HashMap<Set<Look>,VisualMap>();
+    private final static Map<Set<Look>,VisualMap> looksMap = new HashMap<Set<Look>,VisualMap>();
 
-    private final static Map<AspectKind,Look> aspectLookMap =
-        new EnumMap<AspectKind,Look>(AspectKind.class);
+    private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<AspectKind,Look>(
+        AspectKind.class);
 
     static {
         aspectLookMap.put(AspectKind.REMARK, REMARK);

@@ -25,6 +25,9 @@ import java.util.List;
  * @version $Revision $
  */
 public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> {
+    /** Indicates if this is a start position. */
+    public abstract boolean isStart();
+
     /** Returns the position type. */
     public abstract Type getType();
 
