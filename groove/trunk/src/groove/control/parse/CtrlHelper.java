@@ -18,8 +18,8 @@ package groove.control.parse;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.syntax.Expression;
+import groove.control.Call;
 import groove.control.Callable;
-import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -208,7 +208,7 @@ public class CtrlHelper {
     boolean declareCtrlUnit(CtrlTree unitTree) {
         boolean result = false;
         assert (unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
-            && unitTree.getChildCount() <= 4;
+        && unitTree.getChildCount() <= 4;
         String fullName = qualify(unitTree.getChild(0).getText());
         Callable unit = this.namespace.getCallable(fullName);
         if (unit != null) {
@@ -216,11 +216,11 @@ public class CtrlHelper {
                 unit.getKind().getName(true), fullName);
         } else {
             int priority =
-                unitTree.getChildCount() == 3 ? 0
-                        : Integer.parseInt(unitTree.getChild(2).getText());
+                    unitTree.getChildCount() == 3 ? 0
+                            : Integer.parseInt(unitTree.getChild(2).getText());
             if (this.namespace.isCheckDependencies() && priority > 0) {
                 emitErrorMessage(unitTree.getChild(2),
-                    "Priorities are not supported in this version.");
+                        "Priorities are not supported in this version.");
             }
             List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
@@ -403,8 +403,8 @@ public class CtrlHelper {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
             CtrlPar result =
-                new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
-                    family.toValue(constant));
+                    new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
+                        family.toValue(constant));
             argTree.setCtrlPar(result);
             return result;
         } catch (FormatException e) {
@@ -412,15 +412,15 @@ public class CtrlHelper {
             // by the control parser
             assert false : String.format("%s is not a parsable constant",
                 argTree.getChild(0).getText());
-            return null;
+        return null;
         }
     }
 
-    CtrlCall checkCall(CtrlTree callTree) {
+    void checkCall(CtrlTree callTree) {
         int childCount = callTree.getChildCount();
         assert callTree.getType() == CtrlChecker.CALL && childCount >= 1;
         String unitName = callTree.getChild(0).getText();
-        CtrlCall result = null;
+        Call result = null;
         testArgs: {
             // get the arguments
             List<CtrlPar> args = null;
@@ -441,11 +441,10 @@ public class CtrlHelper {
             if (checkCall(callTree, unitName, args)) {
                 // create the call
                 Callable unit = this.namespace.getCallable(unitName);
-                result = new CtrlCall(unit, args);
-                callTree.setCtrlCall(result);
+                result = args == null ? new Call(unit) : new Call(unit, args);
+                callTree.setCall(result);
             }
         }
-        return result;
     }
 
     void checkAny(CtrlTree anyTree) {
@@ -541,7 +540,7 @@ public class CtrlHelper {
     /** Reorders the functions according to their dependencies. */
     void reorderFunctions(CtrlTree functionsTree) {
         assert functionsTree.getType() == CtrlChecker.FUNCTIONS
-            || functionsTree.getType() == CtrlChecker.RECIPES;
+                || functionsTree.getType() == CtrlChecker.RECIPES;
         int functionsCount = functionsTree.getChildCount();
         Map<String,CtrlTree> functionMap = new LinkedHashMap<String,CtrlTree>();
         for (int i = 0; i < functionsCount; i++) {

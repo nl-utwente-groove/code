@@ -37,11 +37,12 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
      */
     private Call(Callable unit, List<? extends CtrlPar> args, boolean explicitArgs) {
         super(unit, args);
+        assert args != null;
         this.explicitArgs = explicitArgs;
     }
 
     /**
-     * Constructs a call of a given unit, with arguments.
+     * Constructs a call of a given unit, with (non-{@code null}) arguments.
      */
     public Call(Callable unit, List<? extends CtrlPar> args) {
         this(unit, args, true);
