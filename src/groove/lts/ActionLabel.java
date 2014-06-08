@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.template.Switch;
 import groove.grammar.Action;
 import groove.grammar.host.HostNode;
 import groove.graph.Label;
@@ -28,6 +29,9 @@ import groove.graph.Label;
 public interface ActionLabel extends Label {
     /** Returns the action for which this is a label. */
     public Action getAction();
+
+    /** Returns the control switch underlying this action. */
+    public Switch getSwitch();
 
     /**
      * Returns the arguments for the graph transition.

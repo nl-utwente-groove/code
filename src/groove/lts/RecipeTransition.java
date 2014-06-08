@@ -52,7 +52,7 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
-        ActionLabel {
+ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
@@ -339,7 +339,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
 
     @Override
     protected Line computeLine() {
-        StringBuilder text = RuleTransitionLabel.computeText(this);
+        StringBuilder text = new StringBuilder(getAction().getTransitionLabel());
+        text.append(RuleTransitionLabel.computeParameters(this));
         return Line.atom(text.toString());
     }
 
@@ -351,6 +352,6 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     @Override
     protected boolean isLabelEqual(Edge other) {
         return other instanceof RecipeTransition
-            && ((RecipeTransition) other).initial.equals(this.initial);
+                && ((RecipeTransition) other).initial.equals(this.initial);
     }
 }

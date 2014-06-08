@@ -11,6 +11,7 @@ import groove.gui.dialog.PropertyKey;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
+import groove.util.ThreeValued;
 import groove.util.Version;
 
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public boolean isCurrentVersionProperties() {
         return this.getGrooveVersion().equals(Version.getCurrentGrooveVersion())
-            && this.getGrammarVersion().equals(Version.getCurrentGrammarVersion());
+                && this.getGrammarVersion().equals(Version.getCurrentGrammarVersion());
     }
 
     /**
@@ -94,15 +95,17 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * Indicates if the LTS labels should contain transition parameters. Default
      * value: <code>false</code>.
      */
-    public boolean isUseParameters() {
+    public ThreeValued isUseParameters() {
         String params = getProperty(Key.TRANSITION_PARAMETERS);
-        return params != null && (Boolean.valueOf(params) || params.equals(NUMERIC_YES));
+        return this.paramSelector.toValue(params);
     }
 
     /** Sets the {@link Key#TRANSITION_PARAMETERS} property to the given value * */
-    public void setUseParameters(boolean useParameters) {
-        setProperty(Key.TRANSITION_PARAMETERS, "" + useParameters);
+    public void setUseParameters(ThreeValued useParameters) {
+        setProperty(Key.TRANSITION_PARAMETERS, "" + this.paramSelector.getText(useParameters));
     }
+
+    private final ThreeValued.Selector paramSelector = ThreeValued.selector();
 
     /** Sets the {@link Key#GROOVE_VERSION} property to the given value */
     public void setGrooveVersion(String version) {
@@ -268,8 +271,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
     public AlgebraFamily getAlgebraFamily() {
         String property = getProperty(Key.ALGEBRA);
         AlgebraFamily result =
-            property == null || property.isEmpty() ? AlgebraFamily.DEFAULT
-                    : AlgebraFamily.getInstance(property);
+                property == null || property.isEmpty() ? AlgebraFamily.DEFAULT
+                        : AlgebraFamily.getInstance(property);
         assert result != null;
         return result;
     }
@@ -387,7 +390,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     @Override
     public synchronized void loadFromXML(InputStream in) throws IOException,
-        InvalidPropertiesFormatException {
+    InvalidPropertiesFormatException {
         testFixed(false);
         clear();
         super.loadFromXML(in);
@@ -600,7 +603,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
 
     /** Mapping from resource kinds to corresponding property keys. */
     static private final Map<ResourceKind,Key> resourceKeyMap =
-        new EnumMap<ResourceKind,GrammarProperties.Key>(ResourceKind.class);
+            new EnumMap<ResourceKind,GrammarProperties.Key>(ResourceKind.class);
     static {
         resourceKeyMap.put(ResourceKind.TYPE, Key.TYPE_NAMES);
         resourceKeyMap.put(ResourceKind.CONTROL, Key.CONTROL_NAMES);
@@ -643,8 +646,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
          * Returns an instance of this property, with appropriate description
          * and comment.
          */
-        public IsExplorationString() {
-            super(Exploration.SYNTAX_MESSAGE);
+        public IsExplorationString(String comment) {
+            super(Exploration.SYNTAX_MESSAGE, comment);
         }
 
         @Override
@@ -665,118 +668,119 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
          * Property name for the GROOVE version.
          */
         GROOVE_VERSION("grooveVersion", PropertyKind.UNMODIFIABLE,
-                "The Groove version that created this grammar"),
-        /**
-         * Property name for the Grammar version.
-         */
-        GRAMMAR_VERSION("grammarVersion", PropertyKind.UNMODIFIABLE, "The version of this grammar"),
-        /**
-         * One-line documentation comment on the graph production system.
-         */
-        REMARK("remark", "A one-line description of the graph production system"),
-        /**
-         * Property name for the algebra to be used during simulation.
-         */
-        ALGEBRA("algebraFamily", PropertyKind.ALGEBRA,
-                "Flag controlling if matches should be injective"),
-        /**
-         * Flag determining the injectivity of the rule system. If <code>true</code>,
-         * all rules should be matched injectively. Default is <code>false</code>.
-         */
-        INJECTIVE("matchInjective", PropertyKind.BOOLEAN,
-                "Flag controlling if matches should be injective"),
-        /**
-         * Dangling edge check. If <code>true</code>, all
-         * matches that leave dangling edges are invalid. Default is
-         * <code>false</code>.
-         */
-        DANGLING("checkDangling", PropertyKind.BOOLEAN,
-                "Flag controlling if dangling edges should be forbidden rather than deleted"),
-        /**
-         * Creator edge check. If <code>true</code>, creator
-         * edges are implicitly treated as (individual) NACs. Default is
-         * <code>false</code>.
-         */
-        CREATOR_EDGE("checkCreatorEdges", PropertyKind.BOOLEAN,
-                "Flag controlling if creator edges should be treated as implicit NACs"),
-        /**
-         * RHS-as-NAC property. If <code>true</code>, each RHS
-         * is implicitly treated as a NAC. Default is <code>false</code>.
-         */
+            "The Groove version that created this grammar"),
+                /**
+                 * Property name for the Grammar version.
+                 */
+                GRAMMAR_VERSION("grammarVersion", PropertyKind.UNMODIFIABLE, "The version of this grammar"),
+                /**
+                 * One-line documentation comment on the graph production system.
+                 */
+                REMARK("remark", "A one-line description of the graph production system"),
+                /**
+                 * Property name for the algebra to be used during simulation.
+                 */
+                ALGEBRA("algebraFamily", PropertyKind.ALGEBRA,
+            "Flag controlling if matches should be injective"),
+                        /**
+                         * Flag determining the injectivity of the rule system. If <code>true</code>,
+                         * all rules should be matched injectively. Default is <code>false</code>.
+                         */
+                        INJECTIVE("matchInjective", PropertyKind.BOOLEAN,
+            "Flag controlling if matches should be injective"),
+                                /**
+                                 * Dangling edge check. If <code>true</code>, all
+                                 * matches that leave dangling edges are invalid. Default is
+                                 * <code>false</code>.
+                                 */
+                                DANGLING("checkDangling", PropertyKind.BOOLEAN,
+            "Flag controlling if dangling edges should be forbidden rather than deleted"),
+                                        /**
+                                         * Creator edge check. If <code>true</code>, creator
+                                         * edges are implicitly treated as (individual) NACs. Default is
+                                         * <code>false</code>.
+                                         */
+                                        CREATOR_EDGE("checkCreatorEdges", PropertyKind.BOOLEAN,
+            "Flag controlling if creator edges should be treated as implicit NACs"),
+                                                /**
+                                                 * RHS-as-NAC property. If <code>true</code>, each RHS
+                                                 * is implicitly treated as a NAC. Default is <code>false</code>.
+                                                 */
         RHS_AS_NAC("rhsIsNAC", PropertyKind.BOOLEAN,
-                "Flag controlling if RHSs should be treated as implicit NACs"),
-        /**
-         * Isomorphism check. If <code>true</code>, state
-         * graphs are compared up to isomorphism; otherwise, they are compared up to
-         * equality. Default is <code>true</code>.
-         */
-        ISOMORPHISM("checkIsomorphism", PropertyKind.BOOLEAN,
-                "Flag controlling state graphs are checked up to isomorphism"),
-        /**
-         * Space-separated list of active start graph names.
-         */
-        START_GRAPH_NAMES("startGraph", "Space-separated list of active start graph names"),
-        /**
-         * Name of the active control program.
-         */
-        CONTROL_NAMES("controlProgram", "Space-separated list of enabled control programs"),
-        /**
-         * Space-separated list of active type graph names.
-         */
-        TYPE_NAMES("typeGraph", "Space-separated list of active type graph names"),
-        /**
-         * Space-separated list of active prolog program names.
-         */
-        PROLOG_NAMES("prolog", "Space-separated list of active prolog program names"),
-        /**
-         * Space-separated list of control labels of a graph grammar. The
-         * control labels are those labels which should be matched first for optimal
-         * performance, presumably because they occur infrequently or indicate a
-         * place where rules are likely to be applicable.
-         */
-        CONTROL_LABELS("controlLabels", "A list of rare labels, used to optimise rule matching"),
-        /**
-         * Space-separated list of common labels of a graph grammar. The
-         * control labels are those labels which should be matched last for optimal
-         * performance, presumably because they occur frequently.
-         */
-        COMMON_LABELS("commonLabels", "A list of frequent labels, used to optimise rule matching"),
-        /**
-         * Space-separated list of abstraction node labels of a graph grammar.
-         * These labels are used to define the level zero neighbourhood relation
-         * between nodes.
-         */
-        ABSTRACTION_LABELS("abstractionLabels",
-                "A list of node labels, used by neighbourhood abstraction"),
-        /**
-         * Exploration strategy description.
-         */
-        EXPLORATION("explorationStrategy", PropertyKind.EXPLORATION,
-                "Default exploration strtategy for this grammar"),
-        /**
-         * Flag that determines if transition parameters are included in the LTS
-         * transition labels
-         */
-        TRANSITION_PARAMETERS("transitionParameters", PropertyKind.EXTENDED_BOOLEAN,
-                "Flag controlling if transition labels should include rule parameters"),
-        /**
-         * Flag that determines if (binary) loops can be shown as vertex labels.
-         */
-        LOOPS_AS_LABELS("loopsAsLabels", PropertyKind.BOOLEAN,
-                "Flag controlling if binary self-edges may be shown as vertex labels");
+            "Flag controlling if RHSs should be treated as implicit NACs"),
+                                                        /**
+                                                         * Isomorphism check. If <code>true</code>, state
+                                                         * graphs are compared up to isomorphism; otherwise, they are compared up to
+                                                         * equality. Default is <code>true</code>.
+                                                         */
+                                                        ISOMORPHISM("checkIsomorphism", PropertyKind.BOOLEAN,
+            "Flag controlling whether state graphs are checked up to isomorphism"),
+                                                                /**
+                                                                 * Space-separated list of active start graph names.
+                                                                 */
+                                                                START_GRAPH_NAMES("startGraph", "Space-separated list of active start graph names"),
+                                                                /**
+                                                                 * Name of the active control program.
+                                                                 */
+                                                                CONTROL_NAMES("controlProgram", "Space-separated list of enabled control programs"),
+                                                                /**
+                                                                 * Space-separated list of active type graph names.
+                                                                 */
+                                                                TYPE_NAMES("typeGraph", "Space-separated list of active type graph names"),
+                                                                /**
+                                                                 * Space-separated list of active prolog program names.
+                                                                 */
+                                                                PROLOG_NAMES("prolog", "Space-separated list of active prolog program names"),
+                                                                /**
+                                                                 * Space-separated list of control labels of a graph grammar. The
+                                                                 * control labels are those labels which should be matched first for optimal
+                                                                 * performance, presumably because they occur infrequently or indicate a
+                                                                 * place where rules are likely to be applicable.
+                                                                 */
+                                                                CONTROL_LABELS("controlLabels", "A list of rare labels, used to optimise rule matching"),
+                                                                /**
+                                                                 * Space-separated list of common labels of a graph grammar. The
+                                                                 * control labels are those labels which should be matched last for optimal
+                                                                 * performance, presumably because they occur frequently.
+                                                                 */
+                                                                COMMON_LABELS("commonLabels", "A list of frequent labels, used to optimise rule matching"),
+                                                                /**
+                                                                 * Space-separated list of abstraction node labels of a graph grammar.
+                                                                 * These labels are used to define the level zero neighbourhood relation
+                                                                 * between nodes.
+                                                                 */
+                                                                ABSTRACTION_LABELS("abstractionLabels",
+            "A list of node labels, used by neighbourhood abstraction"),
+                                                                        /**
+                                                                         * Exploration strategy description.
+                                                                         */
+                                                                        EXPLORATION("explorationStrategy", PropertyKind.EXPLORATION,
+            "Default exploration strtategy for this grammar"),
+                                                                                /**
+                                                                                 * Flag that determines if transition parameters are included in the LTS
+                                                                                 * transition labels
+                                                                                 */
+                                                                                TRANSITION_PARAMETERS("transitionParameters", "Show parameters", "",
+            PropertyKind.THREE_VALUED,
+            "Flag controlling if transition labels should include rule parameters.\n"
+                + "Values: false, some (default), true (= all)"),
+                                                                                            /**
+                                                                                             * Flag that determines if (binary) loops can be shown as vertex labels.
+                                                                                             */
+                                                                                            LOOPS_AS_LABELS("loopsAsLabels", PropertyKind.BOOLEAN,
+            "Flag controlling if binary self-edges may be shown as vertex labels");
 
         private Key(String text, String comment) {
             this(text, PropertyKind.TRUE, comment);
         }
 
         private Key(String text, PropertyKind property, String comment) {
-            this(text, null, Groove.unCamel(text, false), "", property, comment);
+            this(text, Groove.unCamel(text, false), "", property, comment);
         }
 
-        private Key(String text, String category, String description, String defaultValue,
-                PropertyKind property, String comment) {
+        private Key(String text, String description, String defaultValue, PropertyKind property,
+                String comment) {
             this.name = text;
-            this.category = category;
             this.description = description;
             this.defaultValue = defaultValue;
             this.format = property.newInstance(comment);
@@ -810,14 +814,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
             return this.description;
         }
 
-        @Override
-        public String getCategory() {
-            return this.category;
-        }
-
         private final String name;
         private final String description;
-        private final String category;
         private final String defaultValue;
         private final Property<String> format;
         private final boolean system;
@@ -842,18 +840,29 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
                     return new IsExtendedBoolean(comment);
                 }
             },
+            THREE_VALUED {
+                @Override
+                public Property<String> newInstance(final String comment) {
+                    return new ThreeValued.Selector() {
+                        @Override
+                        public String getComment() {
+                            return comment;
+                        }
+                    };
+                }
+            },
             ALGEBRA {
                 @Override
                 public Property<String> newInstance(String comment) {
                     return new Property.Choice<String>(comment, AlgebraFamily.DEFAULT.getName(),
-                        AlgebraFamily.POINT.getName(), AlgebraFamily.BIG.getName(),
-                        AlgebraFamily.TERM.getName());
+                            AlgebraFamily.POINT.getName(), AlgebraFamily.BIG.getName(),
+                            AlgebraFamily.TERM.getName());
                 }
             },
             EXPLORATION {
                 @Override
                 public Property<String> newInstance(String comment) {
-                    return new IsExplorationString();
+                    return new IsExplorationString(comment);
                 }
             },
             UNMODIFIABLE {

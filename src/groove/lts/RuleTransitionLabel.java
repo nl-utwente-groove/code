@@ -17,9 +17,10 @@
 package groove.lts;
 
 import groove.control.Binding;
-import groove.control.Call;
 import groove.control.CtrlPar;
+import groove.control.CtrlPar.Wild;
 import groove.control.instance.Step;
+import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
@@ -28,6 +29,7 @@ import groove.graph.Label;
 import groove.gui.look.Line;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
+import groove.util.ThreeValued;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +65,11 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     private final Step step;
 
+    @Override
+    public Switch getSwitch() {
+        return getStep().getRuleSwitch();
+    }
+
     /** Returns the added nodes of the label. */
     public HostNode[] getAddedNodes() {
         return this.addedNodes;
@@ -73,29 +80,24 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public HostNode[] getArguments() {
         HostNode[] result;
-        Call call = getStep().getRuleCall();
-        if (call.getArgs().isEmpty()) {
+        List<? extends CtrlPar> callArgs = getStep().getRuleCall().getArgs();
+        if (callArgs.isEmpty()) {
             result = EMPTY_NODE_ARRAY;
         } else {
-            List<? extends CtrlPar> callArgs = call.getArgs();
             result = new HostNode[callArgs.size()];
             for (int i = 0; i < callArgs.size(); i++) {
                 HostNode arg;
-                if (callArgs.get(i).isDontCare()) {
+                Binding binding = getAction().getParBinding(i);
+                switch (binding.getSource()) {
+                case ANCHOR:
+                    arg = (HostNode) getEvent().getAnchorImage(binding.getIndex());
+                    break;
+                case CREATOR:
+                    arg = getAddedNodes()[binding.getIndex()];
+                    break;
+                default:
+                    assert false;
                     arg = null;
-                } else {
-                    Binding binding = getAction().getParBinding(i);
-                    switch (binding.getSource()) {
-                    case ANCHOR:
-                        arg = (HostNode) getEvent().getAnchorImage(binding.getIndex());
-                        break;
-                    case CREATOR:
-                        arg = getAddedNodes()[binding.getIndex()];
-                        break;
-                    default:
-                        assert false;
-                        arg = null;
-                    }
                 }
                 result[i] = arg;
             }
@@ -119,37 +121,13 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(getStep().getRecipe().getFullName());
             result.append('/');
         }
+        result.append(getAction().getTransitionLabel());
         if (anchored) {
-            result.append(getAction().getTransitionLabel());
             result.append(getEvent().getAnchorImageString());
         } else {
-            result.append(computeText(this));
+            result.append(computeParameters(this));
         }
         return result.toString();
-    }
-
-    static StringBuilder computeText(ActionLabel label) {
-        StringBuilder result = new StringBuilder();
-        result.append(label.getAction().getTransitionLabel());
-        if (label.getAction().getGrammarProperties().isUseParameters()) {
-            result.append('(');
-            boolean first = true;
-            for (HostNode arg : label.getArguments()) {
-                if (!first) {
-                    result.append(',');
-                }
-                first = false;
-                if (arg == null) {
-                    result.append('_');
-                } else if (arg instanceof ValueNode) {
-                    result.append(((ValueNode) arg).getTerm().toDisplayString());
-                } else {
-                    result.append(arg);
-                }
-            }
-            result.append(')');
-        }
-        return result;
     }
 
     @Override
@@ -193,7 +171,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (result != 0) {
             return result;
         }
-        if (obj instanceof RecipeTransitionLabel) {
+        if (obj instanceof RecipeTransition) {
             return -1;
         }
         RuleTransitionLabel other = (RuleTransitionLabel) obj;
@@ -202,6 +180,39 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             return result;
         }
         result = getEvent().compareTo(other.getEvent());
+        return result;
+    }
+
+    static StringBuilder computeParameters(ActionLabel label) {
+        StringBuilder result = new StringBuilder();
+        ThreeValued useParameters = label.getAction().getGrammarProperties().isUseParameters();
+        if (!useParameters.isFalse()) {
+            List<? extends CtrlPar> args = label.getSwitch().getCall().getArgs();
+            // test if all arguments are wildcards
+            boolean allWild = true;
+            StringBuilder params = new StringBuilder();
+            params.append('(');
+            boolean first = true;
+            for (int i = 0; i < args.size(); i++) {
+                HostNode arg = label.getArguments()[i];
+                if (!first) {
+                    params.append(',');
+                }
+                first = false;
+                if (arg == null) {
+                    params.append('_');
+                } else if (arg instanceof ValueNode) {
+                    params.append(((ValueNode) arg).getTerm().toDisplayString());
+                } else {
+                    params.append(arg);
+                }
+                allWild &= args.get(i) instanceof Wild;
+            }
+            params.append(')');
+            if (!allWild || useParameters.isTrue()) {
+                result.append(params);
+            }
+        }
         return result;
     }
 
