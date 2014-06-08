@@ -271,9 +271,7 @@ public class Switch implements Comparable<Switch> {
         /** Recipe call transition. */
         RECIPE("recipe"),
         /** Verdict transition. */
-        VERDICT("choice"),
-        /** Legacy kind modelling final states. */
-        OMEGA("omega"), ;
+        VERDICT("choice"), ;
 
         private Kind(String name) {
             this.name = name;

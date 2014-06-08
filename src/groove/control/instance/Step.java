@@ -19,7 +19,6 @@ package groove.control.instance;
 import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CallStack;
-import groove.control.CalledAction;
 import groove.control.CtrlVar;
 import groove.control.template.Switch;
 import groove.control.template.Switch.Kind;
@@ -36,7 +35,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step>, CalledAction {
+public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     /**
      * Constructs a step from the given parameters.
      * @param source source frame for the step
@@ -111,18 +110,23 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step>, Called
         return inRecipe() && !getSource().inRecipe();
     }
 
-    @Override
+    /** Indicates if this step is part of a recipe.
+     * @return {@code true} if and only if {@link #getRecipe()} is non-{@code null}
+     * @see #getRecipe()
+     */
     public boolean inRecipe() {
         return getCallStack().inRecipe();
     }
 
-    @Override
+    /**
+     * Returns the outermost recipe of which this step is a part, if any.
+     * @see #inRecipe()
+     */
     public Recipe getRecipe() {
         return getCallStack().getRecipe();
     }
 
-    /** Convenience method to return called rule of this step. */
-    @Override
+    /** Convenience method to return the called rule of this step. */
     public final Rule getRule() {
         return getRuleCall().getRule();
     }

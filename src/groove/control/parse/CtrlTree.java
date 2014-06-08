@@ -1,7 +1,6 @@
 package groove.control.parse;
 
 import groove.control.Call;
-import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -100,17 +99,17 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     private CtrlPar par;
 
     /** Returns the derived rule call stored in this tree node, if any. */
-    public CtrlCall getCtrlCall() {
+    public Call getCall() {
         return this.call;
     }
 
     /** Stores a rule call in this tree node. */
-    public void setCtrlCall(CtrlCall call) {
+    public void setCall(Call call) {
         assert call != null;
         this.call = call;
     }
 
-    private CtrlCall call;
+    private Call call;
 
     /** Returns a list of all call tokens in this tree with a given name. */
     public List<Token> getCallTokens(String name) {
@@ -224,14 +223,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = args[0].star();
             break;
         case CtrlParser.CALL:
-            CtrlCall call = getCtrlCall();
-            Call newCall;
-            if (call.getArgs() == null) {
-                newCall = new Call(call.getUnit());
-            } else {
-                newCall = new Call(call.getUnit(), call.getArgs());
-            }
-            result = prot.call(newCall);
+            result = prot.call(getCall());
             break;
         case CtrlParser.ANY:
             result = prot.delta();

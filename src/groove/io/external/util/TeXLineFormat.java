@@ -1,22 +1,21 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.external.util;
 
-import groove.control.CtrlCall;
 import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 import groove.gui.look.LineFormat;
@@ -40,8 +39,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     }
 
     @Override
-    public TeXBuilder applyColored(ColorType type, Color color,
-            TeXBuilder subline) {
+    public TeXBuilder applyColored(ColorType type, Color color, TeXBuilder subline) {
         Duo<String> marker = getColorMarker(type, color);
         subline.surround(marker, Mode.TEXT);
         return subline;
@@ -91,7 +89,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
 
     static {
         Map<Style,Pair<Duo<String>,Mode>> result =
-            new EnumMap<Style,Pair<Duo<String>,Mode>>(Style.class);
+                new EnumMap<Style,Pair<Duo<String>,Mode>>(Style.class);
         for (Style style : Style.values()) {
             String start, end;
             Mode mode;
@@ -131,8 +129,8 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         String colorString;
         if (type == ColorType.RGB) {
             colorString =
-                "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + ","
-                    + color.getBlue() + "}";
+                    "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + "," + color.getBlue()
+                    + "}";
         } else {
             colorString = colorMap.get(type);
         }
@@ -143,8 +141,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     private static final Map<ColorType,String> colorMap;
 
     static {
-        Map<ColorType,String> result =
-            new EnumMap<ColorType,String>(ColorType.class);
+        Map<ColorType,String> result = new EnumMap<ColorType,String>(ColorType.class);
         for (ColorType type : ColorType.values()) {
             String color;
             switch (type) {
@@ -162,7 +159,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         colorMap = result;
     }
 
-    /** 
+    /**
      * For special characters (that cannot be inserted as-is in a LaTeX text)
      * returns a LaTeX string and a flag indicating whether the string should
      * set in math mode.
@@ -177,7 +174,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     }
 
     private static Map<Character,Pair<String,Mode>> charMap =
-        new HashMap<Character,Pair<String,Mode>>();
+            new HashMap<Character,Pair<String,Mode>>();
 
     static {
         addChar(Util.EXISTS, "\\exists", Mode.MATH);
@@ -188,7 +185,6 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         addChar(Util.UT, "{\\blacktriangle}", Mode.MATH);
         addChar(Util.LT, "{\\blacktriangleleft}", Mode.MATH);
         addChar(Util.RT, "{\\blacktriangleright}", Mode.MATH);
-        addChar(CtrlCall.OMEGA_NAME.charAt(0), "\\Omega", Mode.MATH);
         addChar('<', "<", Mode.MATH);
         addChar('>', ">", Mode.MATH);
         addChar('{', "\\{", Mode.BOTH);
@@ -252,10 +248,8 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
          */
         void append(String text, Mode mode) {
             if (isEmpty()) {
-                this.requiresMath =
-                    this.providesMath = this.mathOnly = (mode == Mode.MATH);
-            } else if (this.providesMath ? mode == Mode.TEXT
-                    : mode == Mode.MATH) {
+                this.requiresMath = this.providesMath = this.mathOnly = (mode == Mode.MATH);
+            } else if (this.providesMath ? mode == Mode.TEXT : mode == Mode.MATH) {
                 // the math mode must change
                 this.content.append("$");
                 this.providesMath = !this.providesMath;
