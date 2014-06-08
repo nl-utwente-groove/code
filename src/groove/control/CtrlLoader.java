@@ -121,13 +121,13 @@ public class CtrlLoader {
     }
 
     /**
-     * Returns the set of all recipes collected in the course of
-     * processing all control files since construction of this loader.
+     * Returns the set of all fixed recipes collected in the course of
+     * processing all control files since the construction of this loader.
      */
     public Collection<Recipe> getRecipes() {
         Collection<Recipe> result = new ArrayList<Recipe>();
         for (Callable unit : this.namespace.getCallables()) {
-            if (unit instanceof Recipe) {
+            if (unit instanceof Recipe && ((Recipe) unit).isFixed()) {
                 result.add((Recipe) unit);
             }
         }

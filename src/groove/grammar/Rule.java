@@ -77,7 +77,7 @@ public class Rule implements Action, Fixable {
      */
     public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
         assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
-            && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
+                && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
@@ -109,7 +109,7 @@ public class Rule implements Action, Fixable {
 
     /**
      * Returns the last part of the qualified name of this rule
-     * (which equals the name of the associated condition). 
+     * (which equals the name of the associated condition).
      */
     @Override
     public String getLastName() {
@@ -229,9 +229,9 @@ public class Rule implements Action, Fixable {
         return !getSubRules().isEmpty();
     }
 
-    /** 
+    /**
      * Adds a sub-rule to this rule.
-     * The sub-rules are those connected to sub-conditions 
+     * The sub-rules are those connected to sub-conditions
      * in the associated condition tree.
      * @param subRule the new sub-rule
      */
@@ -279,7 +279,7 @@ public class Rule implements Action, Fixable {
             }
             String parName = "arg" + i;
             CtrlType parType = sig.get(i).getType();
-            CtrlVar var = new CtrlVar(parName, parType);
+            CtrlVar var = new CtrlVar(null, parName, parType);
             CtrlPar.Var par;
             boolean inOnly = sig.get(i).isInOnly();
             boolean outOnly = sig.get(i).isOutOnly();
@@ -396,7 +396,7 @@ public class Rule implements Action, Fixable {
     /**
      * Traverses the matches of this rule on a given host graph and for
      * a given context map, and calls the visitor's visit method on all
-     * of them, until the first time the visitor returns 
+     * of them, until the first time the visitor returns
      * {@code false}.
      * @param host the graph in which the match is to be found
      * @param contextMap a matching of the pattern of this condition; may be
@@ -413,23 +413,23 @@ public class Rule implements Action, Fixable {
             final Visitor<Proof,R> visitor) {
         assert isFixed();
         RuleToHostMap seedMap =
-            contextMap == null ? host.getFactory().createRuleToHostMap() : contextMap;
-        getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
-            @Override
-            protected boolean process(TreeMatch match) {
-                assert visitor.isContinue();
-                if (isValidPatternMap(host, match.getPatternMap())) {
-                    match.traverseProofs(visitor);
-                }
-                return visitor.isContinue();
-            }
-        });
-        return visitor.getResult();
+                contextMap == null ? host.getFactory().createRuleToHostMap() : contextMap;
+                getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
+                    @Override
+                    protected boolean process(TreeMatch match) {
+                        assert visitor.isContinue();
+                        if (isValidPatternMap(host, match.getPatternMap())) {
+                            match.traverseProofs(visitor);
+                        }
+                        return visitor.isContinue();
+                    }
+                });
+                return visitor.getResult();
     }
 
     /**
      * Lazily creates and returns a matcher for rule events of this rule. The
-     * matcher will try to extend anchor maps to full matches. This is in 
+     * matcher will try to extend anchor maps to full matches. This is in
      * contrast with the normal (condition) matcher, which is based on the
      * images of the root map.
      */
@@ -442,12 +442,12 @@ public class Rule implements Action, Fixable {
 
     /**
      * Returns the match strategy for the target
-     * pattern. First creates the strategy using 
+     * pattern. First creates the strategy using
      * {@link #createMatcher(Anchor)} if that
      * has not been done.
-     * 
+     *
      * @param seedMap mapping from the seed elements to a host graph.
-     * 
+     *
      * @see #createMatcher(Anchor)
      */
     private SearchStrategy getMatcher(RuleToHostMap seedMap) {
@@ -587,7 +587,7 @@ public class Rule implements Action, Fixable {
     @Override
     public String toString() {
         StringBuilder res =
-            new StringBuilder(String.format("Rule %s; anchor %s%n", getFullName(), getAnchor()));
+                new StringBuilder(String.format("Rule %s; anchor %s%n", getFullName(), getAnchor()));
         res.append(getCondition().toString("    "));
         return res.toString();
     }
@@ -636,7 +636,7 @@ public class Rule implements Action, Fixable {
     /**
      * Tests if the condition is fixed or not. Throws an exception if the
      * fixedness does not coincide with the given value.
-     * 
+     *
      * @param value the expected fixedness state
      * @throws IllegalStateException if {@link #isFixed()} does not yield
      *         <code>value</code>
@@ -654,7 +654,7 @@ public class Rule implements Action, Fixable {
         }
     }
 
-    /** 
+    /**
      * Checks this rule for compatibility with a chosen algebra.
      * Called before starting an exploration.
      */
@@ -730,17 +730,17 @@ public class Rule implements Action, Fixable {
      */
     private boolean computeIsModifying() {
         boolean result =
-            getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
+                getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
                 || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.isModifying();
-                if (result) {
-                    break;
+                if (!result) {
+                    for (Rule subRule : getSubRules()) {
+                        result = subRule.isModifying();
+                        if (result) {
+                            break;
+                        }
+                    }
                 }
-            }
-        }
-        return result;
+                return result;
     }
 
     /**
@@ -875,7 +875,7 @@ public class Rule implements Action, Fixable {
      */
     private RuleEdge[] computeEraserNonAnchorEdges() {
         Set<RuleEdge> eraserNonAnchorEdgeSet =
-            new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
+                new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(getAnchor().edgeSet());
         return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
@@ -1145,9 +1145,9 @@ public class Rule implements Action, Fixable {
         return this.lhsMergers;
     }
 
-    /** 
+    /**
      * Returns the set of merger edges in the RHS of which at least one end
-     * is a creator node. 
+     * is a creator node.
      */
     public final Set<RuleEdge> getRhsMergers() {
         if (this.rhsMergers == null) {
@@ -1203,7 +1203,7 @@ public class Rule implements Action, Fixable {
 
     private void closeMergeMap(Map<RuleNode,RuleNode> mergeMap) {
         // transitively close the map
-        // because we don't expect long chains of mergers, 
+        // because we don't expect long chains of mergers,
         // we can sacrifice efficiency for brevity
         for (Map.Entry<RuleNode,RuleNode> mergeEntry : mergeMap.entrySet()) {
             RuleNode oldValue = mergeEntry.getValue();
@@ -1215,7 +1215,7 @@ public class Rule implements Action, Fixable {
         }
     }
 
-    /** 
+    /**
      * Indicates if this rule is part of a recipe.
      * @see #isPartial()
      */
@@ -1223,9 +1223,9 @@ public class Rule implements Action, Fixable {
         return this.partial;
     }
 
-    /** 
+    /**
      * Sets the rule to partial.
-     * @see #isPartial() 
+     * @see #isPartial()
      */
     public void setPartial() {
         this.partial = true;
@@ -1391,7 +1391,7 @@ public class Rule implements Action, Fixable {
 
     /** The signature of the rule. */
     private List<CtrlPar.Var> sig;
-    /** 
+    /**
      * List of indices for the parameters, pointing either to the
      * anchor position or to the position in the created nodes list.
      * The latter are offset by the length of the anchor.

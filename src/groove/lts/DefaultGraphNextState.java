@@ -96,7 +96,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-    public Object[] getFrameValues() {
+    public Object[] getPrimeValues() {
         return this.frameValues;
     }
 

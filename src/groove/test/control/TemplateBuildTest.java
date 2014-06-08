@@ -55,7 +55,7 @@ public class TemplateBuildTest extends CtrlTester {
         this.bCall = new Call(getRule("b"));
         this.cCall = new Call(getRule("c"));
         this.dCall = new Call(getRule("d"));
-        this.xInt = new CtrlVar("x", CtrlType.INT);
+        this.xInt = new CtrlVar(null, "x", CtrlType.INT);
         this.xIntOut = new CtrlPar.Var(this.xInt, false);
     }
 

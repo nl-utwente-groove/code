@@ -85,6 +85,14 @@ public interface GraphState extends Node {
     public Frame getActualFrame();
 
     /**
+     * Returns a stack of values for the bound variables of
+     * the prime control frame.
+     * @see #getPrimeFrame()
+     * @see Frame#getVars()
+     */
+    public Object[] getPrimeValues();
+
+    /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
      * <code>null</code> otherwise.
      */
@@ -140,14 +148,6 @@ public interface GraphState extends Node {
      * transition); non-{@code null}
      */
     public RuleTransition applyMatch(MatchResult match);
-
-    /**
-     * Returns a list of values for the bound variables of
-     * the prime control frame.
-     * @see #getPrimeFrame()
-     * @see Frame#getVars()
-     */
-    public Object[] getFrameValues();
 
     /**
      * Returns the current state cache, or a fresh one if the cache is cleared.

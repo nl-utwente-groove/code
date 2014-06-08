@@ -109,7 +109,7 @@ public class TemplateBuilder {
             SwitchAttempt locAttempt = new SwitchAttempt(source, succTarget, failTarget);
             for (Derivation deriv : nextAttempt) {
                 // build the (possibly nested) switch
-                locAttempt.add(addSwitch(result, deriv));
+                locAttempt.add(addSwitch(source, result, deriv));
             }
             source.setAttempt(locAttempt);
         }
@@ -155,27 +155,31 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from terms to locations. */
     private final Map<Template,Map<Pair<Term,CtrlVarSet>,Location>> locMapMap =
-        new HashMap<Template,Map<Pair<Term,CtrlVarSet>,Location>>();
+            new HashMap<Template,Map<Pair<Term,CtrlVarSet>,Location>>();
 
     /**
      * Adds a switch corresponding to a given derivation to the
      * template and auxiliary data structures, if it does not yet exist.
+     * @param source Source location for the new switch
      * @param template the template to which the location should be added
      * @param deriv the derivation to be added
      * @return the fresh or pre-existing control switch
      * @throws IllegalStateException if {@code deriv} has a nested derivation
      * but the procedure does not have an initialised template
      */
-    private SwitchStack addSwitch(Template template, Derivation deriv) throws IllegalStateException {
+    private SwitchStack addSwitch(Location source, Template template, Derivation deriv)
+        throws IllegalStateException {
         Map<Derivation,SwitchStack> switchMap = getSwitchMap(template);
         SwitchStack result = switchMap.get(deriv);
         if (result == null) {
             result = new SwitchStack();
             Location target = addLocation(template, deriv.onFinish(), deriv.getCall());
-            result.add(new Switch(deriv.getCall(), deriv.getTransience(), target));
+            result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
             if (deriv.hasNested()) {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
-                SwitchStack nested = addSwitch(getTemplate(caller), deriv.getNested());
+                Template callerTemplate = getTemplate(caller);
+                SwitchStack nested =
+                    addSwitch(callerTemplate.getStart(), callerTemplate, deriv.getNested());
                 result.addAll(nested);
             }
             switchMap.put(deriv, result);
@@ -196,7 +200,7 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from derivations to switches. */
     private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
-        new HashMap<Template,Map<Derivation,SwitchStack>>();
+            new HashMap<Template,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -211,7 +215,7 @@ public class TemplateBuilder {
 
     /** Unexplored set of symbolic locations per template. */
     private final Map<Template,Deque<Pair<Term,CtrlVarSet>>> freshMap =
-        new HashMap<Template,Deque<Pair<Term,CtrlVarSet>>>();
+            new HashMap<Template,Deque<Pair<Term,CtrlVarSet>>>();
 
     /** Returns the template being built for a given procedure. */
     private Template getTemplate(Procedure proc) {
@@ -397,7 +401,9 @@ public class TemplateBuilder {
                 Switch swit = stack.getBottom();
                 Location target = locMap.get(swit.onFinish());
                 target.setVars(swit.getCall().getOutVars().keySet());
-                Switch imageSwitch = new Switch(swit.getCall(), swit.getTransience(), target);
+                Location source = locMap.get(swit.getSource());
+                Switch imageSwitch =
+                    new Switch(source, swit.getCall(), swit.getTransience(), target);
                 switchMap.put(swit, imageSwitch);
             }
         }
@@ -425,7 +431,7 @@ public class TemplateBuilder {
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
-        new HashMap<Location,Record<Location>>();
+            new HashMap<Location,Record<Location>>();
 
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);

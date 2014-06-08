@@ -78,19 +78,26 @@ public abstract class CtrlPar {
     /** Prefix used to indicate output parameters. */
     public static final String OUT_PREFIX = "out";
 
-    /** Convenience method to construct a parameter with a given name, type and direction. */
-    public static Var var(String name, CtrlType type, boolean inOnly) {
-        return new Var(new CtrlVar(name, type), inOnly);
+    /**
+     * Convenience method to construct a parameter with a given name, type and direction.
+     * @param scope defining scope of the variable; possibly {@code null}
+     */
+    public static Var var(String scope, String name, CtrlType type, boolean inOnly) {
+        return new Var(new CtrlVar(scope, name, type), inOnly);
     }
 
-    /** Convenience method to construct an input parameter with a given name and type. */
-    public static Var inVar(String name, String type) {
-        return var(name, CtrlType.getType(type), true);
+    /** Convenience method to construct an input parameter with a given name and type.
+     * @param scope defining scope of the variable; possibly {@code null}
+     */
+    public static Var inVar(String scope, String name, String type) {
+        return var(scope, name, CtrlType.getType(type), true);
     }
 
-    /** Convenience method to construct an output parameter with a given name and type. */
-    public static Var outVar(String name, String type) {
-        return var(name, CtrlType.getType(type), false);
+    /** Convenience method to construct an output parameter with a given name and type.
+     * @param scope defining scope of the variable; possibly {@code null}
+     */
+    public static Var outVar(String scope, String name, String type) {
+        return var(scope, name, CtrlType.getType(type), false);
     }
 
     /** Returns a wildcard parameter with a given type and number. */
@@ -107,7 +114,7 @@ public abstract class CtrlPar {
 
     /** Store of wildcard variables. */
     private static Map<CtrlType,List<Var>> wildMap =
-        new EnumMap<CtrlType,List<Var>>(CtrlType.class);
+            new EnumMap<CtrlType,List<Var>>(CtrlType.class);
 
     /** Returns the single untyped wildcard argument. */
     public static Wild wild() {
@@ -156,7 +163,7 @@ public abstract class CtrlPar {
             }
             Var other = (Var) obj;
             return isOutOnly() == other.isOutOnly() && isInOnly() == other.isInOnly()
-                && getVar().equals(other.getVar());
+                    && getVar().equals(other.getVar());
         }
 
         @Override

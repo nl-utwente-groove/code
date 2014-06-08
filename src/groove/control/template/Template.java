@@ -198,14 +198,6 @@ public class Template {
                 todo.addAll(inMap.get(loc));
             }
         }
-        // initialise the source vars in the switches
-        for (Location loc : getLocations()) {
-            if (loc.isTrial()) {
-                for (SwitchStack swit : loc.getAttempt()) {
-                    swit.get(0).setSourceVars(loc.getVars());
-                }
-            }
-        }
     }
 
     /** Returns a mapping from locations to sets of predecessors. */

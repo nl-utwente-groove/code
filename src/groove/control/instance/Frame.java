@@ -355,26 +355,27 @@ public class Frame implements Position<Frame,Step>, Fixable {
     /** Returns the concatenation of the call stack locations. */
     public String getIdString() {
         StringBuilder result = new StringBuilder();
-        String callerName = null;
-        for (Switch swit : getSwitchStack()) {
-            if (callerName == null) {
-                result.append("c");
-            } else {
-                result.append('/');
-                result.append(callerName);
-                result.append('.');
-            }
-            result.append(swit.onFinish().getNumber());
-            callerName = swit.getCall().getUnit().getLastName();
-        }
-        if (callerName == null) {
-            result.append("c");
-        } else {
-            result.append('/');
-            result.append(callerName);
-            result.append('.');
-        }
-        result.append(getLocation().getNumber());
+        //        String callerName = null;
+        //        for (Switch swit : getSwitchStack()) {
+        //            if (callerName == null) {
+        //                result.append("c");
+        //            } else {
+        //                result.append('/');
+        //                result.append(callerName);
+        //                result.append('.');
+        //            }
+        //            result.append(swit.onFinish().getNumber());
+        //            callerName = swit.getCall().getUnit().getLastName();
+        //        }
+        //        if (callerName == null) {
+        //            result.append("c");
+        //        } else {
+        //            result.append('/');
+        //            result.append(callerName);
+        //            result.append('.');
+        //        }
+        result.append("c");
+        result.append(getNumber());
         return result.toString();
     }
 

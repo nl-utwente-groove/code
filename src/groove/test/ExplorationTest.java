@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: ExplorationTest.java,v 1.20 2008-01-31 14:25:54 fladder Exp $
  */
 
@@ -41,7 +41,7 @@ import org.junit.Test;
 /**
  * System test class, which explores a number of graph production systems and
  * tests if this gives rise to the expected numbers of states and transitions.
- * 
+ *
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -95,7 +95,7 @@ public class ExplorationTest {
         testExploration("append.gps", "append-2-list-5", "cebound:append>6", 79, 108, 12);
     }
 
-    /** Tests the Car Platooning example without the rule that uses 
+    /** Tests the Car Platooning example without the rule that uses
      *  regular expressions
      */
     @Test
@@ -105,7 +105,7 @@ public class ExplorationTest {
         testExploration("car-platooning-no-reg-exp.gps", "start-03", "rete", 268, 561);
     }
 
-    /** Tests the complete Car Platooning example 
+    /** Tests the complete Car Platooning example
      */
     @Test
     public void testCarPlatooningFull() {
@@ -207,6 +207,12 @@ public class ExplorationTest {
     public void testPetrinet() {
         testExploration("petrinet.gps", 6, 9);
         testExploration("petrinet.gps", "start", "rete", 6, 9);
+    }
+
+    /** Tests the fibonacci sample. */
+    @Test
+    public void testFibonacci() {
+        testExploration("fibonacci.gps", 63, 63);
     }
 
     /** Tests the wildcards sample. */
@@ -325,7 +331,7 @@ public class ExplorationTest {
 
     /**
      * Tests exploration of a given grammar.
-     * 
+     *
      * @param view the graph grammar to be tested
      * @param strategyDescr description of the exploration strategy to be used
      * @param nodeCount expected number of nodes; disregarded if < 0

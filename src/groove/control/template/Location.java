@@ -175,8 +175,11 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     @Override
     public String toString() {
-        String result = getTemplate().hasOwner() ? getTemplate().getName() + "." : "L";
-        return result + getNumber();
+        StringBuilder result = new StringBuilder();
+        result.append(getTemplate().hasOwner() ? getTemplate().getName() : "main");
+        result.append(".");
+        result.append(getNumber());
+        return result.toString();
     }
 
     @Override

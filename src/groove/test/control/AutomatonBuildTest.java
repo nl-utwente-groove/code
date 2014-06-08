@@ -66,7 +66,7 @@ public class AutomatonBuildTest {
     public void testNesting() {
         add("f", "function f() { node arg; choice try r(1,out arg); or b; }");
         add("r",
-            "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
+                "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
         add("main", "f|a; ");
         Automaton p = build();
         p.explore();
@@ -77,8 +77,8 @@ public class AutomatonBuildTest {
         assertEquals(Position.Type.TRIAL, f.getType());
         StepAttempt s = f.getAttempt();
         assertEquals(2, s.size());
-        Call oNodeCall = call("oNode", CtrlPar.outVar("r.q", "node"));
-        Call bNodeCall = call("bNode", CtrlPar.outVar("r.q", "node"));
+        Call oNodeCall = call("oNode", CtrlPar.outVar("r", "q", "node"));
+        Call bNodeCall = call("bNode", CtrlPar.outVar("r", "q", "node"));
         assertEquals(oNodeCall, s.get(0).getRuleCall());
         assertEquals(bNodeCall, s.get(1).getRuleCall());
         //
@@ -110,7 +110,7 @@ public class AutomatonBuildTest {
         Frame fNext = s.get(1).onFinish();
         StepAttempt sNext = fNext.getAttempt();
         assertEquals(1, sNext.size());
-        Call bIntCall = call("bInt", CtrlPar.inVar("r.p", "int"));
+        Call bIntCall = call("bInt", CtrlPar.inVar("r", "p", "int"));
         assertEquals(bIntCall, sNext.get(0).getRuleCall());
     }
 
@@ -398,7 +398,7 @@ public class AutomatonBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
+                new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
         return result;
     }
 

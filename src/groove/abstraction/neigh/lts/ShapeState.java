@@ -137,7 +137,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Object[] getFrameValues() {
+    public Object[] getPrimeValues() {
         return EMPTY_NODE_ARRAY;
     }
 

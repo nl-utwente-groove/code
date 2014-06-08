@@ -748,8 +748,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
                 return false;
             }
-            Object[] myBoundNodes = myState.getFrameValues();
-            Object[] otherBoundNodes = otherState.getFrameValues();
+            Object[] myBoundNodes = myState.getPrimeValues();
+            Object[] otherBoundNodes = otherState.getPrimeValues();
             HostGraph myGraph = myState.getGraph();
             HostGraph otherGraph = otherState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
@@ -783,7 +783,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    result += Valuator.hashCode(stateKey.getFrameValues());
+                    result += Valuator.hashCode(stateKey.getPrimeValues());
                 }
             } else {
                 CertificateStrategy certifier =
@@ -794,7 +794,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     result +=
-                            Valuator.hashCode(stateKey.getFrameValues(), certifier.getCertificateMap());
+                            Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {

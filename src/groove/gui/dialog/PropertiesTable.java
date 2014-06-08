@@ -17,7 +17,6 @@
 package groove.gui.dialog;
 
 import groove.graph.GraphProperties;
-import groove.graph.GraphProperties.Key;
 import groove.util.Property;
 import groove.util.collect.ListComparator;
 
@@ -58,7 +57,7 @@ public class PropertiesTable extends JTable {
         this.editable = editable;
         this.defaultKeys = defaultKeys;
         this.properties =
-                new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
+            new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
         final TableModel model = getTableModel();
         setModel(model);
         setIntercellSpacing(new Dimension(2, -2));
@@ -123,7 +122,7 @@ public class PropertiesTable extends JTable {
         for (Map.Entry<String,String> entry : this.properties.entrySet()) {
             String stringKey = entry.getKey();
             String value = entry.getValue();
-            Key key = GraphProperties.getKeyMap().get(stringKey);
+            PropertyKey key = this.defaultKeys.get(stringKey);
             if (key == null || !key.getDefaultValue().equals(value)) {
                 result.put(stringKey, value);
             }
@@ -287,7 +286,7 @@ public class PropertiesTable extends JTable {
         private boolean isEditedValueCorrect(String value) {
             if (this.editingValueForKey == null) {
                 return GraphProperties.isValidUserKey(value)
-                        && !PropertiesTable.this.defaultKeys.containsKey(value);
+                    && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
                 PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
                 Property<String> test = key == null ? null : key.getFormat();
@@ -301,8 +300,8 @@ public class PropertiesTable extends JTable {
          */
         private boolean showContinueDialog(String value) {
             int response =
-                    JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
-                        null, JOptionPane.YES_NO_OPTION);
+                JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
+                    null, JOptionPane.YES_NO_OPTION);
             return response == JOptionPane.YES_OPTION;
         }
 
