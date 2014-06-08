@@ -20,13 +20,17 @@ import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
 import groove.control.CtrlVar;
 import groove.control.Position;
+import groove.control.Valuator;
 import groove.control.instance.Frame;
+import groove.control.template.Location;
+import groove.control.template.Switch;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.rule.VariableNode;
@@ -52,7 +56,9 @@ import groove.lts.GraphTransition;
 import groove.util.Colors;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * Visual value refresher for the {@link VisualKey#LABEL}.
@@ -300,11 +306,19 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.getJGraph().isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
-            Frame frame = state.getPrimeFrame();
-            if (!frame.isStart()) {
-                id.append("|" + frame.toString());
-            }
             result.add(Line.atom(id.toString()).style(Style.ITALIC), Direct.NONE);
+        }
+        if (jVertex.getJGraph().isShowControlStates()) {
+            GraphState state = jVertex.getNode();
+            Frame frame = state.getPrimeFrame();
+            Object[] values = state.getPrimeValues();
+            result.add(getStackLine(frame.getLocation(), values), Direct.NONE);
+            Stack<Switch> stack = frame.getSwitchStack();
+            for (int i = stack.size() - 1; i >= 0; i--) {
+                values = Valuator.pop(values);
+                Switch sw = stack.get(i);
+                result.add(getStackLine(sw.getSource(), values), Direct.NONE);
+            }
         }
         // only add edges that have an unfiltered label
         boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
@@ -317,12 +331,37 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
+    private Line getStackLine(Location loc, Object[] values) {
+        Line result = Line.atom(loc.toString()).style(Style.ITALIC);
+        List<CtrlVar> vars = loc.getVars();
+        if (!vars.isEmpty()) {
+            StringBuilder content = new StringBuilder();
+            content.append(" [");
+            for (int i = 0; i < vars.size(); i++) {
+                if (i > 0) {
+                    content.append(',');
+                }
+                content.append(vars.get(i).getName());
+                content.append('=');
+                HostNode val = (HostNode) values[i];
+                if (val instanceof ValueNode) {
+                    content.append(((ValueNode) val).getSymbol());
+                } else {
+                    content.append(val);
+                }
+            }
+            content.append(']');
+            result = result.append(content.toString());
+        }
+        return result;
+    }
+
     /**
      * Appends the bound variables to the lines, if this list is not empty
      */
     private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
         MultiLabel result = new MultiLabel();
-        result.add(Line.atom(jVertex.getNode().toString()).style(Style.BOLD), Direct.NONE);
+        result.add(Line.atom(jVertex.getNode().toString()).style(Style.ITALIC), Direct.NONE);
         Position<?,?> state = jVertex.getNode().getPosition();
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();

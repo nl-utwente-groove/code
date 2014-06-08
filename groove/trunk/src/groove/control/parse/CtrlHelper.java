@@ -100,20 +100,20 @@ public class CtrlHelper {
      */
     @SuppressWarnings("unchecked")
     void startBranch() {
-        this.initVarScopes.push(new Set[] {new HashSet<String>(this.initVars), null});
+        this.initVarScopes.push(new Set[] {new HashSet<CtrlVar>(this.initVars), null});
     }
 
     /**
      * Switches to the next option in the top level branch of the program.
      */
     void nextBranch() {
-        Set<String>[] topInitVarScope = this.initVarScopes.peek();
+        Set<CtrlVar>[] topInitVarScope = this.initVarScopes.peek();
         if (topInitVarScope[1] == null) {
-            topInitVarScope[1] = new HashSet<String>(this.initVars);
+            topInitVarScope[1] = new HashSet<CtrlVar>(this.initVars);
         } else {
             topInitVarScope[1].retainAll(this.initVars);
         }
-        this.initVars = new HashSet<String>(topInitVarScope[0]);
+        this.initVars = new HashSet<CtrlVar>(topInitVarScope[0]);
     }
 
     /**
@@ -121,7 +121,7 @@ public class CtrlHelper {
      * to those initialised in every option.
      */
     void endBranch() {
-        Set<String>[] topInitVarScope = this.initVarScopes.pop();
+        Set<CtrlVar>[] topInitVarScope = this.initVarScopes.pop();
         if (topInitVarScope[1] == null) {
             // this was the only branch
         } else {
@@ -250,8 +250,8 @@ public class CtrlHelper {
             boolean out = parTree.getChildCount() == 3;
             CtrlTree typeTree = parTree.getChild(out ? 1 : 0);
             CtrlType type = typeTree.getCtrlType();
-            String name = toLocalName(procName, parTree.getChild(out ? 2 : 1).getText());
-            result.add(CtrlPar.var(name, type, !out));
+            String name = parTree.getChild(out ? 2 : 1).getText();
+            result.add(CtrlPar.var(procName, name, type, !out));
         }
         return result;
     }
@@ -266,17 +266,13 @@ public class CtrlHelper {
     /** Ends a procedure declaration. */
     void endBody(CtrlTree bodyTree) {
         for (String outPar : this.symbolTable.getOutPars()) {
-            if (!this.initVars.contains(outPar)) {
+            if (!this.initVars.contains(new CtrlVar(this.procName, outPar,
+                this.symbolTable.getType(outPar)))) {
                 emitErrorMessage(bodyTree, "Output parameter %s may fail to be initialised", outPar);
             }
         }
         closeScope();
         resetContext();
-    }
-
-    /** Prefixes a given name with the current procedure name, if any. */
-    private String toLocalName(String procName, String name) {
-        return procName == null ? name : procName + "." + name;
     }
 
     /** Sets the context being processed to a given procedure. */
@@ -313,12 +309,13 @@ public class CtrlHelper {
     /** Adds a formal parameter to the symbol table. */
     boolean declarePar(CtrlTree nameTree, CtrlTree typeTree, CtrlTree out) {
         boolean result = true;
-        String name = toLocalName(this.procName, nameTree.getText());
-        if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType(), out != null)) {
+        String name = nameTree.getText();
+        CtrlType type = typeTree.getCtrlType();
+        if (!this.symbolTable.declareSymbol(name, type, out != null)) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
         } else if (out == null) {
-            this.initVars.add(name);
+            this.initVars.add(new CtrlVar(this.procName, name, type));
         }
         return result;
     }
@@ -326,7 +323,7 @@ public class CtrlHelper {
     /** Adds a variable to the symbol table. */
     boolean declareVar(CtrlTree nameTree, CtrlTree typeTree) {
         boolean result = true;
-        String name = toLocalName(this.procName, nameTree.getText());
+        String name = nameTree.getText();
         if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType())) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
@@ -361,17 +358,17 @@ public class CtrlHelper {
      */
     CtrlVar checkVar(CtrlTree nameTree, boolean checkInit) {
         CtrlVar result = null;
-        String name = toLocalName(this.procName, nameTree.getText());
+        String name = nameTree.getText();
         CtrlType type = this.symbolTable.getType(name);
         if (type == null) {
             emitErrorMessage(nameTree, "Local variable %s not declared", name);
         } else {
-            result = new CtrlVar(name, type);
+            result = new CtrlVar(this.procName, name, type);
             nameTree.setCtrlVar(result);
-            if (checkInit && !this.initVars.contains(name)) {
+            if (checkInit && !this.initVars.contains(result)) {
                 emitErrorMessage(nameTree, "Variable %s may not have been initialised", name);
             } else {
-                this.initVars.add(name);
+                this.initVars.add(result);
             }
         }
         return result;
@@ -589,14 +586,14 @@ public class CtrlHelper {
     /** The symbol table holding the local variable declarations. */
     private final SymbolTable symbolTable = new SymbolTable();
     /** Set of currently initialised variables. */
-    private Set<String> initVars = new HashSet<String>();
+    private Set<CtrlVar> initVars = new HashSet<CtrlVar>();
     /**
      * Stack of checkpointed initialised variables. Each stack record consists
      * of two sets of variables. The first element is the set of variables
      * initialised at the start of the branch, the second is the set of
      * variables initialised in each case of the branch.
      */
-    private final Stack<Set<String>[]> initVarScopes = new Stack<Set<String>[]>();
+    private final Stack<Set<CtrlVar>[]> initVarScopes = new Stack<Set<CtrlVar>[]>();
 
     /** Name of the module in which all declared names should be placed. */
     private String packageName = "";

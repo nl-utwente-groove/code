@@ -19,7 +19,6 @@ package groove.lts;
 import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
-import groove.control.Valuator;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -306,6 +305,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         getGTS().fireUpdateState(this, flag);
     }
 
+    /** Field holding status flags of the state. */
+    private int status;
+
     /**
      * Retrieves a frozen representation of the graph, in the form of all nodes
      * and edges collected in one array. May return <code>null</code> if there
@@ -321,6 +323,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         this.frozenGraph = frozenGraph;
         frozenGraphCount++;
     }
+
+    /**
+     * Slot to store a frozen graph representation. When filled, this provides a
+     * faster way to reconstruct the graph of this state.
+     */
+    private HostElement[] frozenGraph;
 
     /**
      * This implementation compares state numbers. The current state is either
@@ -353,9 +361,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             result.append(getNumber());
         } else {
             result.append("??");
-        }
-        if (getFrameValues().length > 0) {
-            result.append(Valuator.toString(getFrameValues()));
         }
         return result.toString();
     }
@@ -396,23 +401,16 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return this.nr;
     }
 
+    /**
+     * The number of this Node.
+     *
+     * @invariant nr < nrNodes
+     */
+    private final int nr;
+
     /** Returns the system record associated with this state. */
     protected Record getRecord() {
         return getGTS().getRecord();
-    }
-
-    /**
-     * Returns the map of parameters to nodes for this state
-     * @return a Map<String,Node> of parameters
-     */
-    @Override
-    public Object[] getFrameValues() {
-        return EMPTY_NODE_LIST;
-    }
-
-    @Override
-    public Frame getPrimeFrame() {
-        return getActualFrame().getPrime();
     }
 
     @Override
@@ -425,30 +423,24 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
+    public Frame getPrimeFrame() {
+        return getActualFrame().getPrime();
+    }
+
+    @Override
     public final Frame getActualFrame() {
         return this.currentFrame;
     }
 
     private Frame currentFrame;
 
-    /**
-     * The number of this Node.
-     *
-     * @invariant nr < nrNodes
-     */
-    private final int nr;
+    @Override
+    public Object[] getPrimeValues() {
+        return EMPTY_NODE_LIST;
+    }
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;
-
-    /**
-     * Slot to store a frozen graph representation. When filled, this provides a
-     * faster way to reconstruct the graph of this state.
-     */
-    private HostElement[] frozenGraph;
-
-    /** Field holding status flags of the state. */
-    private int status;
 
     /** Returns the total number of fixed delta graphs. */
     static public int getFrozenGraphCount() {

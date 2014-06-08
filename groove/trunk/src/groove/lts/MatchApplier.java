@@ -196,7 +196,7 @@ public class MatchApplier {
 
     private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
             RuleEffect record) {
-        Object[] result = source.getFrameValues();
+        Object[] result = source.getPrimeValues();
         for (Assignment assign : step.getApplyAssignments()) {
             switch (assign.getKind()) {
             case MODIFY:

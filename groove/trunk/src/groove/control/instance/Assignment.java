@@ -166,7 +166,7 @@ public class Assignment {
     static Assignment modify(Switch swit) {
         assert swit.getKind() == Switch.Kind.RULE;
         List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = swit.getSourceVars();
+        List<CtrlVar> sourceVars = swit.getSource().getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
@@ -194,7 +194,7 @@ public class Assignment {
     static Assignment enter(Switch swit) {
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
-        List<CtrlVar> sourceVars = swit.getSourceVars();
+        List<CtrlVar> sourceVars = swit.getSource().getVars();
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
         for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
@@ -225,7 +225,7 @@ public class Assignment {
         assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<Binding>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
-        List<CtrlVar> callerVars = swit.getSourceVars();
+        List<CtrlVar> callerVars = swit.getSource().getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         Map<CtrlVar,Integer> finalVars = top.getVarIxMap();
         for (CtrlVar var : swit.onFinish().getVars()) {

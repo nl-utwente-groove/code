@@ -52,7 +52,7 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
-ActionLabel {
+        ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
@@ -233,12 +233,12 @@ ActionLabel {
             } else {
                 assert arg instanceof Var;
                 if (arg.isInOnly()) {
-                    int varIndex = getSwitch().getSourceVars().indexOf(arg);
-                    node = Valuator.get(source().getFrameValues(), varIndex);
+                    int varIndex = getSwitch().getSource().getVars().indexOf(arg);
+                    node = Valuator.get(source().getPrimeValues(), varIndex);
                 } else {
                     assert arg.isOutOnly();
                     int varIndex = getSwitch().onFinish().getVarIxMap().get(((Var) arg).getVar());
-                    Object[] values = target().getFrameValues();
+                    Object[] values = target().getPrimeValues();
                     for (Assignment pop : target().getActualFrame().getPops()) {
                         values = pop.apply(values);
                     }
@@ -352,6 +352,6 @@ ActionLabel {
     @Override
     protected boolean isLabelEqual(Edge other) {
         return other instanceof RecipeTransition
-                && ((RecipeTransition) other).initial.equals(this.initial);
+            && ((RecipeTransition) other).initial.equals(this.initial);
     }
 }

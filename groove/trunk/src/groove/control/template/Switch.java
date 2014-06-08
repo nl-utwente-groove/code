@@ -36,33 +36,26 @@ import java.util.List;
 public class Switch implements Comparable<Switch> {
     /**
      * Constructs a new switch.
+     * @param source TODO
      * @param call call to be used as label
      * @param transience the additional transient depth entered by this switch
      * @param onFinish target location of the switch
      */
-    public Switch(Call call, int transience, Location onFinish) {
+    public Switch(Location source, Call call, int transience, Location onFinish) {
         assert onFinish != null;
+        this.source = source;
         this.onFinish = onFinish;
         this.kind = call.getUnit().getKind();
         this.call = call;
         this.transience = transience;
     }
 
-    /** Initialises the control variables of the source location of the switch. */
-    void setSourceVars(List<CtrlVar> sourceVars) {
-        this.sourceVars = sourceVars;
+    /** Returns the source location of this switch. */
+    public Location getSource() {
+        return this.source;
     }
 
-    /** Returns the control variables in the source location of this switch. */
-    public List<CtrlVar> getSourceVars() {
-        if (this.sourceVars == null) {
-            onFinish().getTemplate().initVars();
-            assert this.sourceVars != null;
-        }
-        return this.sourceVars;
-    }
-
-    private List<CtrlVar> sourceVars;
+    private final Location source;
 
     /** Returns the target position of this switch. */
     public Location onFinish() {
@@ -155,7 +148,7 @@ public class Switch implements Comparable<Switch> {
         List<? extends CtrlPar> args = getArgs();
         List<Var> sig = getUnit().getSignature();
         int size = args == null ? 0 : args.size();
-        List<CtrlVar> sourceVars = getSourceVars();
+        List<CtrlVar> sourceVars = getSource().getVars();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = args.get(i);
             Binding bind;
@@ -191,7 +184,7 @@ public class Switch implements Comparable<Switch> {
     public int hashCode(boolean full) {
         final int prime = 31;
         int result = 1;
-        result = prime * result + getSourceVars().hashCode();
+        result = prime * result + getSource().hashCode();
         result = prime * result + onFinish().hashCode();
         result = prime * result + getKind().hashCode();
         result = prime * result + getTransience();
@@ -214,7 +207,7 @@ public class Switch implements Comparable<Switch> {
         if (getTransience() != other.getTransience()) {
             return false;
         }
-        if (!getSourceVars().equals(other.getSourceVars())) {
+        if (!getSource().equals(other.getSource())) {
             return false;
         }
         if (!onFinish().equals(other.onFinish())) {
@@ -244,16 +237,7 @@ public class Switch implements Comparable<Switch> {
         if (result != 0) {
             return result;
         }
-        result = getSourceVars().size() - o.getSourceVars().size();
-        if (result != 0) {
-            return result;
-        }
-        for (int i = 0; i < getSourceVars().size(); i++) {
-            result = getSourceVars().get(i).compareTo(o.getSourceVars().get(i));
-            if (result != 0) {
-                return result;
-            }
-        }
+        result = getSource().getNumber() - o.getSource().getNumber();
         return result;
     }
 

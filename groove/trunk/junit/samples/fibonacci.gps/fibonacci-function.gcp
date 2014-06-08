@@ -1,0 +1,25 @@
+// recursive function
+function fib(int x, out int result) {
+	try {
+		// if x is zero, output zero
+		zero(x); zero(out result);
+	} else try {
+		// if x is one, output one
+		one(x); one(out result);
+	} else {
+		int y, z;
+		// decrease x
+		decr(x, out x);
+		// y := fib(x-1)
+		fib(x, out y);
+		// decrease x
+		decr(x, out x);
+		// z := fib(x-z)
+		fib(x, out z);
+		// result := y+z
+		add(y, z, out result);
+	}
+}
+
+int result;
+fib(5, out result);

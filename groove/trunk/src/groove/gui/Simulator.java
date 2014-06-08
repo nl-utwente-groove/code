@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: Simulator.java,v 1.92 2008/03/18 15:34:40 iovka Exp $
  */
 package groove.gui;
@@ -23,6 +23,7 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
+import static groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
@@ -175,8 +176,8 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-      * Displays a list of search results.
-      */
+     * Displays a list of search results.
+     */
     public void setSearchResults(List<SearchResult> searchResults) {
         getResultsPanel().getSearchResultListPanel().setEntries(searchResults);
         adjustResultsPanel();
@@ -204,7 +205,7 @@ public class Simulator implements SimulatorListener {
             this.frame.setIconImage(Icons.GROOVE_ICON_16x16.getImage());
             this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-            // register doQuit() for the Command-Q shortcut on MacOS 
+            // register doQuit() for the Command-Q shortcut on MacOS
             if (Groove.IS_PLATFORM_MAC) {
                 try {
                     OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
@@ -260,7 +261,7 @@ public class Simulator implements SimulatorListener {
     JSplitPane getGrammarPanel() {
         if (this.grammarPanel == null) {
             this.grammarPanel =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(), getDisplaysInfoPanel());
+                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(), getDisplaysInfoPanel());
             this.grammarPanel.setBorder(null);
         }
         return this.grammarPanel;
@@ -272,8 +273,8 @@ public class Simulator implements SimulatorListener {
     JSplitPane getListsPanel() {
         if (this.listsPanel == null) {
             this.listsPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getDisplaysPanel().getUpperListsPanel(),
-                    getDisplaysPanel().getLowerListsPanel());
+                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, getDisplaysPanel().getUpperListsPanel(),
+                        getDisplaysPanel().getLowerListsPanel());
             this.listsPanel.setBorder(null);
         }
         return this.listsPanel;
@@ -346,7 +347,7 @@ public class Simulator implements SimulatorListener {
                     if (resource != null) {
                         getModel().doSelect(resource, name);
                         ResourceTab resourceTab =
-                            getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
+                                getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
                         if (resource.isGraphBased()) {
                             AspectJGraph jGraph;
                             if (resourceTab.isEditor()) {
@@ -532,7 +533,7 @@ public class Simulator implements SimulatorListener {
         return this.editGraphItem;
     }
 
-    /** 
+    /**
      * Creates a menu item that can be refreshed with a {@link DisplayKind}-
      * or {@link ResourceKind}-dependent action.
      */
@@ -706,6 +707,7 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+        result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_ARROWS_ON_LABELS_OPTION));

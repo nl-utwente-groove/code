@@ -156,10 +156,10 @@ public class ProgramBuildTest {
             build("pars",
                 "function f(int x, out node n) { iInt(x); node n2; oNode(out n2); bNode-oNode(n2, out n); }");
         Procedure fProc = p.getProc("f");
-        CtrlPar xIn = CtrlPar.inVar("f.x", "int");
-        CtrlPar nOut = CtrlPar.outVar("f.n", "node");
-        CtrlPar n2In = CtrlPar.inVar("f.n2", "node");
-        CtrlPar n2Out = CtrlPar.outVar("f.n2", "node");
+        CtrlPar xIn = CtrlPar.inVar("f", "x", "int");
+        CtrlPar nOut = CtrlPar.outVar("f", "n", "node");
+        CtrlPar n2In = CtrlPar.inVar("f", "n2", "node");
+        CtrlPar n2Out = CtrlPar.outVar("f", "n2", "node");
         assertEquals(
             call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out)).seq(
                 call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
@@ -181,11 +181,11 @@ public class ProgramBuildTest {
         Program p = build();
         Procedure fProc = p.getProc("sub.f");
         Procedure gProc = p.getProc("sub.g");
-        assertEquals(call(fProc, CtrlPar.outVar("n", "int")), p.getMain());
-        CtrlPar xIn = CtrlPar.inVar("sub.f.x", "int");
-        CtrlPar xOut = CtrlPar.outVar("sub.f.x", "int");
+        assertEquals(call(fProc, CtrlPar.outVar(null, "n", "int")), p.getMain());
+        CtrlPar xIn = CtrlPar.inVar("sub.f", "x", "int");
+        CtrlPar xOut = CtrlPar.outVar("sub.f", "x", "int");
         assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());
-        CtrlPar yIn = CtrlPar.inVar("sub.g.y", "int");
+        CtrlPar yIn = CtrlPar.inVar("sub.g", "y", "int");
         assertEquals(call(rule("bInt"), yIn), gProc.getTerm());
     }
 
