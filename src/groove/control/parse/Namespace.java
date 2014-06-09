@@ -64,9 +64,18 @@ public class Namespace implements ParseInfo {
         boolean result = !hasCallable(fullName);
         if (result) {
             this.callableMap.put(fullName, proc);
+            this.controlNameMap.put(fullName, getControlName());
         }
         return result;
     }
+
+    /** Returns the control program name in which a procedure with a given name has been declared. */
+    public String getControlName(String procName) {
+        return this.controlNameMap.get(procName);
+    }
+
+    /** Mapping from declared procedures to the declaring control program. */
+    private final Map<String,String> controlNameMap = new HashMap<String,String>();
 
     /**
      * Adds a rule to the name space.

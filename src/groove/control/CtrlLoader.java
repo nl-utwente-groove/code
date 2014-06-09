@@ -21,6 +21,7 @@ import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
 import groove.control.template.Program;
+import groove.control.template.Switch.Kind;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
@@ -142,12 +143,9 @@ public class CtrlLoader {
         for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
             String name = entry.getKey();
             CtrlTree tree = entry.getValue();
-            CtrlLexer lexer = new CtrlLexer(null);
-            lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
-            TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
-            rewriter.fill();
+            TokenRewriteStream rewriter = getRewriter(tree);
             boolean changed = false;
-            for (CtrlTree t : tree.getCallTokens(oldCallName)) {
+            for (CtrlTree t : tree.getRuleIdTokens(oldCallName)) {
                 rewriter.replace(t.getToken(), t.getChild(0).getToken(), newCallName);
                 changed = true;
             }
@@ -156,6 +154,60 @@ public class CtrlLoader {
             }
         }
         return result;
+    }
+
+    /** Returns a version of the control program defining a recipe with a given name,
+     * where the declared priority of that recipe has been changed to a given value.
+     * TODO finish this (SF Feature Request #172)
+     * @param prioMap mapping from the names of the recipes to be changed to
+     * the new priority values
+     * @return mapping of control program names and new control programs
+     */
+    public Map<String,String> changePriority(Map<String,Integer> prioMap) {
+        Map<String,String> result = new HashMap<String,String>();
+        for (Map.Entry<String,Integer> entry : prioMap.entrySet()) {
+            String recipeName = entry.getKey();
+            int newPriority = entry.getValue();
+            String controlName = getNamespace().getControlName(recipeName);
+            if (controlName == null) {
+                continue;
+            }
+            CtrlTree tree = this.treeMap.get(controlName);
+            assert tree != null : String.format("Parse tree of %s not found", controlName);
+            CtrlTree recipeTree = tree.getProcs(Kind.RECIPE).get(recipeName);
+            assert recipeTree != null : String.format("Recipe declaration of %s not found",
+                recipeName);
+            TokenRewriteStream rewriter = getRewriter(tree);
+            boolean changed = false;
+            if (recipeTree.getChildCount() == 3) {
+                // no explicit priority
+                if (newPriority != 0) {
+                    rewriter.insertAfter(recipeTree.getChild(1).getToken(), "priority "
+                            + newPriority);
+                    changed = true;
+                }
+            } else {
+                CtrlTree prioTree = recipeTree.getChild(2);
+                int oldPriority = Integer.parseInt(prioTree.getText());
+                if (oldPriority != newPriority) {
+                    rewriter.replace(prioTree.getToken(), "" + newPriority);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                result.put(controlName, rewriter.toString());
+            }
+        }
+        System.out.println(result);
+        return result;
+    }
+
+    private TokenRewriteStream getRewriter(CtrlTree tree) {
+        CtrlLexer lexer = new CtrlLexer(null);
+        lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
+        TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
+        rewriter.fill();
+        return rewriter;
     }
 
     /** Returns the name space of this loader. */
@@ -185,7 +237,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, String program)
-            throws FormatException {
+        throws FormatException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         instance.parse(programName, program);
         Program result = instance.buildProgram(Collections.singleton(programName));
@@ -195,7 +247,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, File base)
-            throws FormatException, IOException {
+        throws FormatException, IOException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         QualName qualName = new QualName(programName);
         File control = base;

@@ -56,7 +56,7 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             boolean change =
-                new HashSet<String>(names).removeAll(getGrammar().getActiveNames(resource));
+                    new HashSet<String>(names).removeAll(getGrammar().getActiveNames(resource));
             switch (resource) {
             case CONTROL:
             case PROLOG:
@@ -87,7 +87,7 @@ public class SimulatorModel implements Cloneable {
      * @throws IOException if the action failed due to an IO error
      */
     public boolean doRename(ResourceKind resource, String oldName, String newName)
-        throws IOException {
+            throws IOException {
         boolean result = false;
         start();
         try {
@@ -96,7 +96,7 @@ public class SimulatorModel implements Cloneable {
             if (resource == ResourceKind.RULE) {
                 // rename rules in control programs
                 Map<String,String> renamedControl =
-                    getGrammar().getControlModel().getLoader().rename(oldName, newName);
+                        getGrammar().getControlModel().getLoader().rename(oldName, newName);
                 if (!renamedControl.isEmpty()) {
                     getStore().putTexts(ResourceKind.CONTROL, renamedControl);
                 }
@@ -209,7 +209,7 @@ public class SimulatorModel implements Cloneable {
      * @throws IOException if the add action failed
      */
     public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph, boolean layout)
-        throws IOException {
+            throws IOException {
         assert newGraph.isFixed();
         start();
         try {
@@ -258,26 +258,31 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Sets the priority of a set of rules.
+     * Sets the priority of a set of rules and recipes.
      * @param priorityMap mapping from rule names to their new priorities
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
     public boolean doSetPriority(Map<String,Integer> priorityMap) throws IOException {
         start();
-        ResourceKind resource = ResourceKind.RULE;
         Set<AspectGraph> newGraphs = new HashSet<AspectGraph>();
         for (Map.Entry<String,Integer> entry : priorityMap.entrySet()) {
-            AspectGraph oldGraph = getStore().getGraphs(resource).get(entry.getKey());
+            AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
             AspectGraph newGraph = oldGraph.clone();
             GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();
             newGraphs.add(newGraph);
         }
+        Map<String,String> newControl =
+                getGrammar().getControlModel().getLoader().changePriority(priorityMap);
         try {
-            getStore().putGraphs(resource, newGraphs, false);
+            if (!newGraphs.isEmpty()) {
+                getStore().putGraphs(ResourceKind.RULE, newGraphs, false);
+            }
+            if (!newControl.isEmpty()) {
+                getStore().putTexts(ResourceKind.CONTROL, newControl);
+            }
             changeGrammar(true);
-            changeDisplay(DisplayKind.toDisplay(resource));
             return true;
         } finally {
             finish();
@@ -1062,8 +1067,8 @@ public class SimulatorModel implements Cloneable {
     @Override
     public String toString() {
         return "GuiState [gts=" + this.gts + ", state=" + this.state + ", match=" + this.match
-            + ", grammar=" + this.grammar + ", resources=" + this.resources + ", changes="
-            + this.changes + "]";
+                + ", grammar=" + this.grammar + ", resources=" + this.resources + ", changes="
+                + this.changes + "]";
     }
 
     /**
@@ -1156,7 +1161,7 @@ public class SimulatorModel implements Cloneable {
         Set<SimulatorListener> notified = new HashSet<SimulatorListener>();
         for (Change change : this.changes) {
             for (SimulatorListener listener : new ArrayList<SimulatorListener>(
-                this.listeners.get(change))) {
+                    this.listeners.get(change))) {
                 if (notified.add(listener)) {
                     listener.update(this, this.old, this.changes);
                 }
@@ -1180,7 +1185,7 @@ public class SimulatorModel implements Cloneable {
     private final Set<RuleTransition> trace = new HashSet<RuleTransition>();
     /** Mapping from resource kinds to sets of selected resources of that kind. */
     private Map<ResourceKind,Set<String>> resources = new EnumMap<ResourceKind,Set<String>>(
-        ResourceKind.class);
+            ResourceKind.class);
     {
         for (ResourceKind resource : ResourceKind.all(false)) {
             this.resources.put(resource, Collections.<String>emptySet());
@@ -1205,7 +1210,7 @@ public class SimulatorModel implements Cloneable {
     private DisplayKind display = DisplayKind.HOST;
     /** Array of listeners. */
     private final Map<Change,List<SimulatorListener>> listeners =
-        new EnumMap<Change,List<SimulatorListener>>(Change.class);
+            new EnumMap<Change,List<SimulatorListener>>(Change.class);
     { // initialise the listener map to empty listener lists
         for (Change change : Change.values()) {
             this.listeners.put(change, new ArrayList<SimulatorListener>());
@@ -1291,7 +1296,7 @@ public class SimulatorModel implements Cloneable {
         }
 
         private static Map<ResourceKind,Change> resourceToChangeMap =
-            new EnumMap<ResourceKind,Change>(ResourceKind.class);
+                new EnumMap<ResourceKind,Change>(ResourceKind.class);
 
         static {
             for (Change change : Change.values()) {
