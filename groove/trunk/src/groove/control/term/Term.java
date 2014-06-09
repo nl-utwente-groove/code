@@ -335,7 +335,7 @@ abstract public class Term implements Position<Term,Derivation> {
      * This is implemented as <code>if atomic { this } else arg1</code>.
      */
     public final Term tryElse(Term elsePart) {
-        return atom().ifElse(epsilon(), elsePart);
+        return ifElse(epsilon(), elsePart);
     }
 
     /** Returns the try of this term (which is the same as try-else-epsilon). */
@@ -348,7 +348,7 @@ abstract public class Term implements Position<Term,Derivation> {
      * This is implemented as <code>while atomic { this }</code>.
      */
     public final Term alap() {
-        return atom().whileDo(epsilon());
+        return whileDo(epsilon());
     }
 
     /** Returns the until of this term and another. */

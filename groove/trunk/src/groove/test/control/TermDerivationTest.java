@@ -77,6 +77,11 @@ public class TermDerivationTest {
         assertDepth(0);
         // (try a;a else b) | c
         setSource(a.seq(a).tryElse(b).or(c));
+        assertEdge(this.aCall, a);
+        assertSuccFail(c, b.or(c));
+        assertDepth(0);
+        // (try <a;a> else b) | c
+        setSource(a.seq(a).atom().tryElse(b).or(c));
         assertEdge(this.aCall, a.transit());
         assertSuccFail(c, b.or(c));
         assertDepth(0);
@@ -253,7 +258,12 @@ public class TermDerivationTest {
         assertDepth(1);
         // @(alap { a;a; })
         setSource(a.seq(a).alap().transit());
-        assertEdge(this.aCall, a.transit().seq(a.seq(a).alap()).transit());
+        assertEdge(this.aCall, a.seq(a.seq(a).alap()).transit());
+        assertSuccFail(p.delta(1), epsilon());
+        assertDepth(1);
+        // @(alap < a;a; >)
+        setSource(a.seq(a).atom().alap().transit());
+        assertEdge(this.aCall, a.transit().seq(a.seq(a).atom().alap()).transit());
         assertSuccFail(p.delta(1), epsilon());
         assertDepth(1);
     }
