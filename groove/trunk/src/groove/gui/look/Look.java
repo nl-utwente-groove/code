@@ -238,12 +238,18 @@ public enum Look {
             add(VisualKey.BACKGROUND, Values.RESULT_BACKGROUND);
         }
     },
-    /** Change in look due to transient state/transition status. */
+    /** Change in look due to in-recipe status. */
     RECIPE() {
         @Override
         void init() {
+            add(VisualKey.FOREGROUND, Values.RECIPE_COLOR);
+        }
+    },
+    /** Change in look due to transient status. */
+    TRANSIENT() {
+        @Override
+        void init() {
             add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);
-            add(VisualKey.FOREGROUND, Values.TRANSIENT_COLOR);
         }
     },
     /** Change in look due to absent state/transition status. */
@@ -263,11 +269,11 @@ public enum Look {
 
         @Override
         public void apply(VisualMap map) {
-            boolean isTransient = (map.getForeground() == Values.TRANSIENT_COLOR);
+            boolean inRecipe = (map.getForeground() == Values.RECIPE_COLOR);
             boolean isStart = (map.getForeground() == Values.START_FOREGROUND);
             super.apply(map);
-            if (isTransient || isStart) {
-                map.put(VisualKey.FOREGROUND, isTransient ? Values.TRANSIENT_ACTIVE_COLOR
+            if (inRecipe || isStart) {
+                map.put(VisualKey.FOREGROUND, inRecipe ? Values.ACTIVE_RECIPE_COLOR
                         : Values.ACTIVE_START_COLOR, false);
             }
         }
