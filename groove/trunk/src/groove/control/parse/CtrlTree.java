@@ -6,6 +6,7 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.template.Program;
+import groove.control.template.Switch.Kind;
 import groove.control.term.Term;
 import groove.grammar.Action;
 import groove.grammar.QualName;
@@ -16,6 +17,7 @@ import groove.util.antlr.ParseTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -111,23 +113,25 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     private Call call;
 
-    /** Returns a list of all call tokens in this tree with a given name. */
-    public List<CtrlTree> getCallTokens(String name) {
+    /** Returns a list of all rule ID tokens in this tree with a given name. */
+    public List<CtrlTree> getRuleIdTokens(String name) {
         List<CtrlTree> result = new ArrayList<CtrlTree>();
-        collectCallTokens(result, name);
+        collectRuleIdTokens(result, name);
         return result;
     }
 
-    /** Recursively collects all call tokens with a given name. */
-    private void collectCallTokens(List<CtrlTree> result, String name) {
-        if (getToken().getType() == CtrlLexer.CALL) {
+    /** Recursively collects all rule ID tokens with a given name. */
+    private void collectRuleIdTokens(List<CtrlTree> result, String name) {
+        int tokenType = getToken().getType();
+        if (tokenType == CtrlLexer.CALL || tokenType == CtrlLexer.IMPORT) {
             CtrlTree id = getChild(0);
             if (id.getText().equals(name)) {
                 result.add(id);
             }
-        }
-        for (int i = 0; i < getChildCount(); i++) {
-            getChild(i).collectCallTokens(result, name);
+        } else {
+            for (int i = 0; i < getChildCount(); i++) {
+                getChild(i).collectRuleIdTokens(result, name);
+            }
         }
     }
 
@@ -285,21 +289,43 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     public Program toProgram() throws FormatException {
         assert getType() == CtrlParser.PROGRAM && isChecked();
         Program result = new Program(getControlName());
-        CtrlTree functions = getChild(2);
-        CtrlTree recipes = getChild(3);
         CtrlTree body = getChild(4);
         if (body.getChildCount() == 0) {
             result.setMain(getInfo().getPrototype().delta());
         } else {
             result.setMain(body.toTerm());
         }
-        for (int i = 0; i < functions.getChildCount(); i++) {
-            CtrlTree funcTree = functions.getChild(i);
+        for (CtrlTree funcTree : getProcs(Kind.FUNCTION).values()) {
             result.addProc(funcTree.toProcedure());
         }
-        for (int i = 0; i < recipes.getChildCount(); i++) {
-            CtrlTree recipeTree = recipes.getChild(i);
+        for (CtrlTree recipeTree : getProcs(Kind.RECIPE).values()) {
             result.addProc(recipeTree.toProcedure());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the function or recipe subtrees declared in the control program.
+     * Only valid if this tree is a program.
+     * @param procKind either {@link Kind#FUNCTION}
+     * or {@link Kind#RECIPE}.
+     */
+    public Map<String,CtrlTree> getProcs(Kind procKind) {
+        assert getType() == CtrlParser.PROGRAM && isChecked();
+        Map<String,CtrlTree> result = new TreeMap<String,CtrlTree>();
+        String packName = toPackageName();
+        CtrlTree parent;
+        if (procKind == Kind.FUNCTION) {
+            parent = getChild(2);
+            assert parent.getToken().getType() == CtrlParser.FUNCTIONS;
+        } else {
+            parent = getChild(3);
+            assert parent.getToken().getType() == CtrlParser.RECIPES;
+        }
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            CtrlTree tree = parent.getChild(i);
+            String name = QualName.extend(packName, tree.getChild(0).getText());
+            result.put(name, tree);
         }
         return result;
     }

@@ -124,7 +124,7 @@ qual_name
 recipe
   : //@S RECIPE name par_list (PRIORITY int)? block
     //@B Declares an atomic rule %s, with parameters %s and body %3$s.
-    //@B The optional priority %3$s assigns preference in a choice.
+    //@B The optional priority %2$s assigns preference in a choice.
     RECIPE^ ID par_list (PRIORITY! INT_LIT)?
     { helper.setContext($RECIPE.tree); }
     block
@@ -140,7 +140,6 @@ recipe
 function
   : //@S FUNCTION name par_list block
     //@B Declares the function %s, with parameters %s and body %3$s.
-    //@B The optional priority %3$s assigns preference in a choice.
     FUNCTION^ ID par_list 
     { helper.setContext($FUNCTION.tree); }
     block

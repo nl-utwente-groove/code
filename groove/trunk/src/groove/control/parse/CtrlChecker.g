@@ -78,7 +78,7 @@ functions
 function
   : ^( FUNCTION
        { helper.startBody($FUNCTION); }
-       ID ^(PARS par_decl*) INT_LIT?
+       ID ^(PARS par_decl*)
        block
        { helper.endBody($block.tree); } 
      )
