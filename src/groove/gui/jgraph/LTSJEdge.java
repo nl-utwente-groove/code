@@ -31,7 +31,17 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
 
     @Override
     public boolean isCompatible(Edge edge) {
-        return super.isCompatible(edge) && inRecipe() == ((GraphTransition) edge).isPartial();
+        if (!super.isCompatible(edge)) {
+            return false;
+        }
+        GraphTransition trans = (GraphTransition) edge;
+        if (inRecipe() != trans.isRecipeStep()) {
+            return false;
+        }
+        if (isAbsent() != (trans.source().isAbsent() || trans.target().isAbsent())) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -88,14 +98,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
 
     /** Indicates that this edge is part of a recipe. */
     final boolean inRecipe() {
-        boolean result = true;
-        for (Edge trans : getEdges()) {
-            if (!((GraphTransition) trans).isRecipeStep()) {
-                result = false;
-                break;
-            }
-        }
-        return result;
+        return getEdge().isRecipeStep();
     }
 
     @Override

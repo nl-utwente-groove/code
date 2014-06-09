@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -66,7 +66,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     private final Map<String,EncodedType<?,String>> argumentTypes;
 
     /**
-     * Builds the template, which consists of a keyword for the command line, 
+     * Builds the template, which consists of a keyword for the command line,
      * a name, an explanation, a parser for the arguments on the command line,
      * and an array of argument names. The types of the arguments have to be
      * set later by calls to setArgumentType().
@@ -176,7 +176,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         return result;
     }
 
-    /** 
+    /**
      * Inverse to {@link #parseCommandline(String)}.
      * @param source the object to be converted to string; may
      * be modified as a result of this call
@@ -192,7 +192,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     /**
      * Returns a description of the grammar that is used to parse this template
      * on the command line. The grammar is displayed as a (pretty-printed)
-     * regular expression. 
+     * regular expression.
      */
     String describeCommandlineGrammar() {
         StringBuffer desc = new StringBuffer();
@@ -232,8 +232,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             for (String argName : Template.this.argumentNames) {
                 addArgument(argName);
             }
-            add(Box.createRigidArea(new Dimension(0, 400)));
-            SpringUtilities.makeCompactGrid(this, 7 + Template.this.argumentNames.length, 1, 2, 2,
+            SpringUtilities.makeCompactGrid(this, 6 + Template.this.argumentNames.length, 1, 2, 2,
                 0, 0);
             refresh();
         }
@@ -332,13 +331,13 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-    * <!---------------------------------------------------------------------->
-    * A Template0<X> describes the encoding of values of type X by means of a
-    * Serialized that starts with a given keyword and has no arguments.
-    * Implements the method parse, but in turns requires the method create
-    * to be defined by any concrete subclass.
-    * <!---------------------------------------------------------------------->
-    */
+     * <!---------------------------------------------------------------------->
+     * A Template0<X> describes the encoding of values of type X by means of a
+     * Serialized that starts with a given keyword and has no arguments.
+     * Implements the method parse, but in turns requires the method create
+     * to be defined by any concrete subclass.
+     * <!---------------------------------------------------------------------->
+     */
     public static abstract class Template0<X> extends Template<X> {
 
         /**
@@ -370,14 +369,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-    * <!---------------------------------------------------------------------->
-    * A Template1<X,P1> describes the encoding of values of type X by means of
-    * a Serialized that starts with a given keyword and has one argument of
-    * type EncodedType<P1,String>.
-    * Implements the method parse, but in turns requires the method create
-    * to be defined by any concrete subclass.
-    * <!---------------------------------------------------------------------->
-    */
+     * <!---------------------------------------------------------------------->
+     * A Template1<X,P1> describes the encoding of values of type X by means of
+     * a Serialized that starts with a given keyword and has one argument of
+     * type EncodedType<P1,String>.
+     * Implements the method parse, but in turns requires the method create
+     * to be defined by any concrete subclass.
+     * <!---------------------------------------------------------------------->
+     */
     public static abstract class Template1<X,P1> extends Template<X> {
 
         private final EncodedType<P1,String> type1;
@@ -428,14 +427,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-    * <!---------------------------------------------------------------------->
-    * A Template2<X,P1,P2> describes the encoding of values of type X by means 
-    * of a Serialized that starts with a given keyword and has two argument, of
-    * types EncodedType<P1,String> and EncodedType<P2,String> respectively.
-    * Implements the method parse, but in turns requires the method create
-    * to be defined by any concrete subclass.
-    * <!---------------------------------------------------------------------->
-    */
+     * <!---------------------------------------------------------------------->
+     * A Template2<X,P1,P2> describes the encoding of values of type X by means
+     * of a Serialized that starts with a given keyword and has two argument, of
+     * types EncodedType<P1,String> and EncodedType<P2,String> respectively.
+     * Implements the method parse, but in turns requires the method create
+     * to be defined by any concrete subclass.
+     * <!---------------------------------------------------------------------->
+     */
     public static abstract class Template2<X,P1,P2> extends Template<X> {
 
         private final EncodedType<P1,String> type1;
@@ -500,14 +499,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-    * <!---------------------------------------------------------------------->
-    * A TemplateN<X> describes the encoding of values of type X by means 
-    * of a Serialized that starts with a given keyword and has n arguments, of
-    * n types EncodedType<Object,String>.
-    * Implements the method parse, but in turns requires the method create
-    * to be defined by any concrete subclass.
-    * <!---------------------------------------------------------------------->
-    * This class does not perform any typing checks
+     * <!---------------------------------------------------------------------->
+     * A TemplateN<X> describes the encoding of values of type X by means
+     * of a Serialized that starts with a given keyword and has n arguments, of
+     * n types EncodedType<Object,String>.
+     * Implements the method parse, but in turns requires the method create
+     * to be defined by any concrete subclass.
+     * <!---------------------------------------------------------------------->
+     * This class does not perform any typing checks
      */
     public static abstract class TemplateN<X> extends Template<X> {
         private final String[] typenames;
@@ -515,7 +514,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         /**
          * Localized creation of the template class (with argumentNames.length arguments)
-         * It is required that argumentTypes.length==argumentNames.length 
+         * It is required that argumentTypes.length==argumentNames.length
          */
         public TemplateN(ParsableValue value, SerializedParser commandlineParser,
                 String[] argumentNames, EncodedType<? extends Object,String>... argumentTypes) {

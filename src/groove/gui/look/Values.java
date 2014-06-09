@@ -140,11 +140,11 @@ public class Values {
     }
 
     /** Text display colours to be used for transient states. */
-    static public final Values.ColorSet TRANSIENT_COLORS = new Values.ColorSet();
+    static public final Values.ColorSet RECIPE_COLORS = new Values.ColorSet();
     static {
-        TRANSIENT_COLORS.putColors(FOCUSED, Color.WHITE, RECIPE_COLOR.darker());
-        TRANSIENT_COLORS.putColors(SELECTED, RECIPE_COLOR.darker(), SELECT_BACKGROUND);
-        TRANSIENT_COLORS.putColors(NONE, RECIPE_COLOR, NORMAL_BACKGROUND);
+        RECIPE_COLORS.putColors(FOCUSED, Color.WHITE, RECIPE_COLOR.darker());
+        RECIPE_COLORS.putColors(SELECTED, RECIPE_COLOR.darker(), SELECT_BACKGROUND);
+        RECIPE_COLORS.putColors(NONE, RECIPE_COLOR, NORMAL_BACKGROUND);
     }
 
     /** Line style that always makes right edges. */

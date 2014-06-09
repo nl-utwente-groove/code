@@ -250,11 +250,11 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             this.infoPanel = new JPanel(new CardLayout());
             this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 255)));
             JScrollPane infoScroller = new JScrollPane(this.infoPanel);
+            infoScroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             infoScroller.setPreferredSize(new Dimension(350, 200));
             for (String keyword : this.templateKeywords) {
                 this.infoPanel.add(this.editors.get(keyword), keyword);
             }
-            //TODO limit infoPanel size
             add(infoScroller);
         }
 
@@ -262,8 +262,11 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         public void valueChanged(ListSelectionEvent e) {
             int selectedIndex = this.nameSelector.getSelectedIndex();
             String selectedKeyword = this.templateKeywords.get(selectedIndex);
+            EncodedTypeEditor<?,?> editor = this.editors.get(selectedKeyword);
+            editor.refresh();
+            int editorHeight = editor.getMinimumSize().height;
+            this.infoPanel.setPreferredSize(new Dimension(0, editorHeight));
             CardLayout cards = (CardLayout) (this.infoPanel.getLayout());
-            this.editors.get(selectedKeyword).refresh();
             cards.show(this.infoPanel, selectedKeyword);
             notifyTemplateListeners();
         }
@@ -297,9 +300,13 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
         @Override
         public void setCurrentValue(Serialized value) {
-            if (this.templateKeywords.contains(value.getKeyword())) {
-                this.editors.get(value.getKeyword()).setCurrentValue(value);
-                this.nameSelector.setSelectedIndex(this.templateKeywords.indexOf(value.getKeyword()));
+            String keyword = value.getKeyword();
+            if (this.templateKeywords.contains(keyword)) {
+                this.nameSelector.setSelectedIndex(this.templateKeywords.indexOf(keyword));
+                EncodedTypeEditor<?,Serialized> editor = this.editors.get(keyword);
+                editor.setCurrentValue(value);
+                int editorHeight = editor.getMinimumSize().height;
+                this.infoPanel.setPreferredSize(new Dimension(0, editorHeight));
                 CardLayout cards = (CardLayout) (this.infoPanel.getLayout());
                 cards.show(this.infoPanel, value.getKeyword());
             }

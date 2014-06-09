@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -34,20 +34,19 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
     }
 
     @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value,
-            boolean isSelected, boolean expanded, boolean leaf, int row,
-            boolean hasFocus) {
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected,
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
         boolean cellSelected = isSelected || hasFocus;
         boolean cellFocused = cellSelected && this.displayList.isFocusOwner();
         Component result =
-            super.getTreeCellRendererComponent(tree, value, cellSelected,
-                expanded, leaf, row, false);
+                super.getTreeCellRendererComponent(tree, value, cellSelected, expanded, leaf, row,
+                false);
         Icon icon = null;
         String tip = null;
         String text = value.toString();
         boolean enabled = true;
         boolean error = false;
-        boolean isTransient = false;
+        boolean inRecipe = false;
         if (value instanceof DisplayTreeNode) {
             DisplayTreeNode node = (DisplayTreeNode) value;
             tip = node.getTip();
@@ -55,7 +54,7 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
             text = node.getText();
             enabled = node.isEnabled();
             error = node.isError();
-            isTransient = node.isTransient();
+            inRecipe = node.inRecipe();
         }
         if (icon != null) {
             setIcon(icon);
@@ -63,8 +62,7 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         setText(text);
         setToolTipText(tip);
         Values.ColorSet colors =
-            isTransient ? Values.TRANSIENT_COLORS : error ? Values.ERROR_COLORS
-                    : Values.NORMAL_COLORS;
+                inRecipe ? Values.RECIPE_COLORS : error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
         Color background = colors.getBackground(cellSelected, cellFocused);
         Color foreground = colors.getForeground(cellSelected, cellFocused);
         setForeground(enabled ? foreground : transparent(foreground));
