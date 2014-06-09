@@ -227,29 +227,28 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             break;
         case CtrlParser.ANY:
             result = prot.delta();
-            SortedMap<Integer,List<String>> prioMap = new TreeMap<Integer,List<String>>();
-            for (String name : getInfo().getTopNames()) {
-                Action unit = (Action) getInfo().getCallable(name);
-                List<String> names = prioMap.get(unit.getPriority());
-                if (names == null) {
-                    prioMap.put(unit.getPriority(), names = new ArrayList<String>());
+            SortedMap<Integer,List<Action>> prioMap = new TreeMap<Integer,List<Action>>();
+            for (Action action : getInfo().getTopActions()) {
+                List<Action> actions = prioMap.get(action.getPriority());
+                if (actions == null) {
+                    prioMap.put(action.getPriority(), actions = new ArrayList<Action>());
                 }
-                names.add(name);
+                actions.add(action);
             }
             result = prot.delta();
-            for (List<String> names : prioMap.values()) {
-                result = or(names).tryElse(result);
+            for (List<Action> actions : prioMap.values()) {
+                result = or(actions).tryElse(result);
             }
             break;
         case CtrlParser.OTHER:
             result = prot.delta();
-            List<String> names = new ArrayList<String>();
-            for (String name : getInfo().getTopNames()) {
-                if (!getInfo().getUsedNames().contains(name)) {
-                    names.add(name);
+            List<Action> actions = new ArrayList<Action>();
+            for (Action action : getInfo().getTopActions()) {
+                if (!getInfo().getUsedNames().contains(action.getFullName())) {
+                    actions.add(action);
                 }
             }
-            result = or(names);
+            result = or(actions);
             break;
         default:
             assert false;
@@ -257,11 +256,11 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         return result;
     }
 
-    private Term or(Collection<String> names) {
+    private Term or(Collection<Action> actions) {
         Term prot = getInfo().getPrototype();
         Term result = prot.delta();
-        for (String name : names) {
-            Call part = new Call(getInfo().getCallable(name));
+        for (Action action : actions) {
+            Call part = new Call(action);
             result = result.or(prot.call(part));
         }
         return result;

@@ -25,6 +25,7 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.template.Switch.Kind;
+import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
 
@@ -435,9 +436,14 @@ public class CtrlHelper {
                     args.add(arg);
                 }
             }
-            if (checkCall(callTree, unitName, args)) {
+            Callable unit = this.namespace.getCallable(unitName);
+            if (unit == null) {
+                emitErrorMessage(callTree, "Unknown action '%s'", unitName);
+            } else if (unit instanceof Action && ((Action) unit).getPriority() > 0) {
+                String message = "Explicit call of prioritised %s %s not allowed";
+                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
+            } else if (checkCall(callTree, unit, args)) {
                 // create the call
-                Callable unit = this.namespace.getCallable(unitName);
                 result = args == null ? new Call(unit) : new Call(unit, args);
                 callTree.setCall(result);
             }
@@ -448,21 +454,27 @@ public class CtrlHelper {
         if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
-        checkGroupCall(anyTree, this.namespace.getTopNames());
+        checkGroupCall(anyTree, this.namespace.getTopActions());
     }
 
     void checkOther(CtrlTree otherTree) {
         if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(otherTree, "'other' may not be used within a recipe");
         }
-        Set<String> unusedRules = new HashSet<String>(this.namespace.getTopNames());
-        unusedRules.removeAll(this.namespace.getUsedNames());
-        checkGroupCall(otherTree, unusedRules);
+        Set<Action> otherActions = new HashSet<Action>();
+        Set<String> usedNames = this.namespace.getUsedNames();
+        for (Action action : this.namespace.getTopActions()) {
+            if (!usedNames.contains(action.getFullName())) {
+                otherActions.add(action);
+            }
+        }
+        otherActions.removeAll(this.namespace.getUsedNames());
+        checkGroupCall(otherTree, otherActions);
     }
 
-    private void checkGroupCall(CtrlTree callTree, Set<String> rules) {
-        for (String ruleName : rules) {
-            checkCall(callTree, ruleName, null);
+    private void checkGroupCall(CtrlTree callTree, Set<Action> actions) {
+        for (Action action : actions) {
+            checkCall(callTree, action, null);
         }
     }
 
@@ -470,42 +482,38 @@ public class CtrlHelper {
      * Tests if a call with a given argument list is compatible with
      * the declared signature.
      */
-    private boolean checkCall(CtrlTree callTree, String name, List<CtrlPar> args) {
-        Callable unit = this.namespace.getCallable(name);
-        List<CtrlPar.Var> sig = unit == null ? null : unit.getSignature();
-        boolean result = unit != null;
-        if (!result) {
-            emitErrorMessage(callTree, "Unknown action '%s'", name);
+    private boolean checkCall(CtrlTree callTree, Callable unit, List<CtrlPar> args) {
+        assert unit != null;
+        boolean result;
+        String name = unit.getFullName();
+        List<CtrlPar.Var> sig = unit.getSignature();
+        Kind unitKind = unit.getKind();
+        if (args == null) {
+            result = true;
+            for (int i = 0; result && i < sig.size(); i++) {
+                result = sig.get(i).compatibleWith(CtrlPar.wild());
+            }
+            if (!result) {
+                String message = "%s %s%s not applicable without arguments";
+                String ruleSig = toTypeString(sig);
+                emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig);
+            }
         } else {
-            Kind unitKind = unit.getKind();
-            if (args == null) {
-                result = true;
-                for (int i = 0; result && i < sig.size(); i++) {
-                    result = sig.get(i).compatibleWith(CtrlPar.wild());
-                }
-                if (!result) {
-                    String message = "%s %s%s not applicable without arguments";
-                    String ruleSig = toTypeString(sig);
-                    emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig);
-                }
-            } else {
-                result = args.size() == sig.size();
-                for (int i = 0; result && i < args.size(); i++) {
-                    result = sig.get(i).compatibleWith(args.get(i));
-                }
-                if (!result) {
-                    String message = "%s %s%s not applicable for arguments %s";
-                    String callSig = toTypeString(args);
-                    String ruleSig = toTypeString(sig);
-                    emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig,
-                        callSig);
-                }
+            result = args.size() == sig.size();
+            for (int i = 0; result && i < args.size(); i++) {
+                result = sig.get(i).compatibleWith(args.get(i));
             }
-            if (unitKind.isProcedure() && this.procName == null && !this.namespace.isResolved(name)) {
-                result = false;
-                emitErrorMessage(callTree, "%s %s has not yet been resolved",
-                    unitKind.getName(true), name);
+            if (!result) {
+                String message = "%s %s%s not applicable for arguments %s";
+                String callSig = toTypeString(args);
+                String ruleSig = toTypeString(sig);
+                emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig, callSig);
             }
+        }
+        if (unitKind.isProcedure() && this.procName == null && !this.namespace.isResolved(name)) {
+            result = false;
+            emitErrorMessage(callTree, "%s %s has not yet been resolved", unitKind.getName(true),
+                name);
         }
         return result;
     }
