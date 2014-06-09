@@ -50,15 +50,14 @@ public class Frame implements Position<Frame,Step>, Fixable {
         this.aut = ctrl;
         this.nr = ctrl.getFrames().size();
         List<Assignment> pops = new ArrayList<Assignment>();
-        Set<CallStack> attempts = new HashSet<CallStack>();
         // avoid sharing
         stack = new SwitchStack(stack);
+        this.pred = pred;
         if (pred == null) {
-            this.primeFrame = this;
+            this.prime = this;
         } else {
-            this.primeFrame = pred.getPrime();
+            this.prime = pred.getPrime();
             pops.addAll(pred.getPops());
-            attempts.addAll(pred.getPastAttempts());
         }
         // pop the call stack until we have a non-final location or empty stack
         while (loc.isFinal() && !stack.isEmpty()) {
@@ -69,7 +68,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
             }
             loc = done.onFinish();
         }
-        this.pastAttempts = attempts;
         this.pops = pops;
         this.switchStack = stack;
         this.location = loc;
@@ -113,12 +111,23 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private final Location location;
 
     /**
+     * Returns the predecessor frame in the chain between the
+     * prime frame and this, or {@code null} if this is a prime frame.
+     */
+    private Frame getPred() {
+        return this.pred;
+    }
+
+    /** The predecessor frame, or {@code null} if this is a prime frame. */
+    private final Frame pred;
+
+    /**
      * Returns the prime frame of this frame.
      * The prime frame is the initial frame from which this one was
      * reached after a sequence of verdicts.
      */
     public Frame getPrime() {
-        return this.primeFrame;
+        return this.prime;
     }
 
     /** Indicates if this frame is its own prime. */
@@ -126,17 +135,30 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return getPrime() == this;
     }
 
-    private final Frame primeFrame;
+    private final Frame prime;
 
     /**
-     * Returns the set of called actions that have been tried at this point
-     * of the frame.
+     * Returns the set of called actions that have been tried
+     * between the prime frame and this one (inclusive).
      */
     public Set<CallStack> getPastAttempts() {
+        Set<CallStack> result = this.pastAttempts;
+        if (result == null) {
+            result = new HashSet<CallStack>();
+            if (!isPrime()) {
+                result.addAll(getPred().getPastAttempts());
+            }
+            if (isTrial()) {
+                for (Step step : getAttempt()) {
+                    result.add(step.getCallStack());
+                }
+            }
+            this.pastAttempts = result;
+        }
         return this.pastAttempts;
     }
 
-    private final Set<CallStack> pastAttempts;
+    private Set<CallStack> pastAttempts;
 
     /** Returns the set of rule calls that have been tried since the prime frame. */
     public Set<Call> getPastCalls() {
@@ -201,10 +223,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
     /** Computes the attempt of this frame. */
     private StepAttempt computeAttempt() {
         SwitchAttempt locAttempt = getLocation().getAttempt();
-        Set<CallStack> pastAttempts = new HashSet<CallStack>(getPastAttempts());
         List<Step> steps = new ArrayList<Step>();
         for (SwitchStack locStack : locAttempt) {
-            pastAttempts.add(locStack.getCallStack());
             SwitchStack targetStack = new SwitchStack();
             targetStack.addAll(getSwitchStack());
             targetStack.addAll(locStack);
@@ -212,8 +232,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             Frame onFinish = new Frame(getAut(), topCall.onFinish(), targetStack, null);
             steps.add(new Step(this, locStack, onFinish.normalise()));
         }
-        Frame onSuccess = newFrame(locAttempt.onSuccess(), pastAttempts);
-        Frame onFailure = newFrame(locAttempt.onFailure(), pastAttempts);
+        Frame onSuccess = newFrame(locAttempt.onSuccess());
+        Frame onFailure = newFrame(locAttempt.onFailure());
         StepAttempt result = new StepAttempt(onSuccess, onFailure);
         result.addAll(steps);
         return result;
@@ -273,7 +293,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Constructs a frame for a given control location,
      * with the same prime frame and call stack as this frame.
      */
-    private Frame newFrame(Location loc, Set<CallStack> pastAttempts) {
+    private Frame newFrame(Location loc) {
         Frame result = new Frame(getAut(), loc, getSwitchStack(), this);
         return result.normalise();
     }
@@ -289,8 +309,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
         assert isFixed();
         final int prime = 31;
         // use identity of prime frame as it has already been normalised
-        int result = (isPrime() ? 1237 : System.identityHashCode(this.primeFrame));
-        result = prime * result + this.pastAttempts.hashCode();
+        int result = (isPrime() ? 1237 : System.identityHashCode(this.prime));
+        result = prime * result + System.identityHashCode(this.pred);
         result = prime * result + this.location.hashCode();
         result = prime * result + this.pops.hashCode();
         result = prime * result + this.switchStack.hashCode();
@@ -307,10 +327,10 @@ public class Frame implements Position<Frame,Step>, Fixable {
             return false;
         }
         Frame other = (Frame) obj;
-        if (isPrime() ? !other.isPrime() : this.primeFrame != other.primeFrame) {
+        if (isPrime() ? !other.isPrime() : this.prime != other.prime) {
             return false;
         }
-        if (!this.pastAttempts.equals(other.pastAttempts)) {
+        if (this.pred != other.pred) {
             return false;
         }
         if (!this.pops.equals(other.pops)) {
