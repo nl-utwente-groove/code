@@ -93,6 +93,14 @@ public interface GraphState extends Node {
     public Object[] getPrimeValues();
 
     /**
+     * Returns a stack of values for the bound variables of
+     * the actual control frame.
+     * @see #getPrimeFrame()
+     * @see Frame#getVars()
+     */
+    public Object[] getActualValues();
+
+    /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
      * <code>null</code> otherwise.
      */

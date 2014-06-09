@@ -19,6 +19,7 @@ package groove.lts;
 import static groove.lts.GraphState.Flag.CLOSED;
 import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
+import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -43,7 +44,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-        GraphState {
+GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -88,7 +89,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                && ((RuleTransitionStub) stub).getKey(this) == match) {
+                    && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -437,6 +438,15 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public Object[] getPrimeValues() {
         return EMPTY_NODE_LIST;
+    }
+
+    @Override
+    public Object[] getActualValues() {
+        Object[] result = getPrimeValues();
+        for (Assignment pop : getActualFrame().getPops()) {
+            result = pop.apply(result);
+        }
+        return result;
     }
 
     /** Global constant empty stub array. */

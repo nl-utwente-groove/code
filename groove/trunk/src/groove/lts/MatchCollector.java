@@ -160,7 +160,7 @@ public class MatchCollector {
                     break;
                 case NODE:
                     if (!(anchorImage instanceof ValueNode)
-                        && !host.containsNode((HostNode) anchorImage)) {
+                            && !host.containsNode((HostNode) anchorImage)) {
                         assert false : String.format("Node %s does not occur in graph %s",
                             anchorImage, host);
                     }
@@ -211,7 +211,7 @@ public class MatchCollector {
      */
     private RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
-        Object[] sourceValues = this.state.getPrimeValues();
+        Object[] sourceValues = this.state.getActualValues();
         for (Assignment assign : step.getPrepareAssignments()) {
             sourceValues = assign.apply(sourceValues);
         }
