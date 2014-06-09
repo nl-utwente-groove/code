@@ -1,21 +1,21 @@
 /*
  * 10/08/2004
- * 
+ *
  * JavaScriptTokenMaker.java - An object that can take a chunk of text and
  * return a linked list of <code>Token</code>s representing it in the JavaScript
  * programming language. Copyright (C) 2004 Robert Futrell robert_futrell at
  * users.sourceforge.net http://fifesoft.com/rsyntaxtextarea
- * 
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -32,16 +32,16 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
 /**
  * A token maker that turns text into a linked list of <code>Token</code>s for
  * syntax highlighting in the JavaScript programming language.
- * 
+ *
  * @author Robert Futrell
  * @version 0.1
  */
 @SuppressWarnings("all")
 public class CtrlTokenMaker extends AbstractTokenMaker {
 
-    protected final String operators = "+-*/%!=<>^&|?:#";
+    protected final String operators = "+-*/%!=^&|?:#";
 
-    protected final String separators = "()[]{}";
+    protected final String separators = "()[]{}<>";
 
     protected final String separators2 = ".,;"; // Characters you don't want
     // syntax highlighted but
@@ -66,7 +66,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
     /**
      * Checks the token to give it the exact ID it deserves before being passed
      * up to the super method.
-     * 
+     *
      * @param segment <code>Segment</code> to get text from.
      * @param start Start offset in <code>segment</code> of token.
      * @param end End offset in <code>segment</code> of token.
@@ -114,7 +114,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
     /**
      * Returns the text to place at the beginning and end of a line to "comment"
      * it in a this programming language.
-     * 
+     *
      * @return The start and end strings to add to a line to "comment" it out.
      */
     @Override
@@ -124,7 +124,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
     /**
      * Returns the words to highlight for the Groove control language.
-     * 
+     *
      * @return A <code>TokenMap</code> containing the words to highlight for the
      *         Groove control language.
      * @see org.fife.ui.rsyntaxtextarea.AbstractTokenMaker#getWordsToHighlight
@@ -173,7 +173,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
      * Returns the first token in the linked list of tokens generated from
      * <code>text</code>. This method must be implemented by subclasses so they
      * can correctly implement syntax highlighting.
-     * 
+     *
      * @param text The text from which to get tokens.
      * @param initialTokenType The token type we should start with.
      * @param startOffset The offset into the document at which
