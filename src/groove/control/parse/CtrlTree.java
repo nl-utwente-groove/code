@@ -112,16 +112,19 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     private Call call;
 
     /** Returns a list of all call tokens in this tree with a given name. */
-    public List<Token> getCallTokens(String name) {
-        List<Token> result = new ArrayList<Token>();
+    public List<CtrlTree> getCallTokens(String name) {
+        List<CtrlTree> result = new ArrayList<CtrlTree>();
         collectCallTokens(result, name);
         return result;
     }
 
     /** Recursively collects all call tokens with a given name. */
-    private void collectCallTokens(List<Token> result, String name) {
-        if (getToken().getType() == CtrlLexer.CALL && getToken().getText().equals(name)) {
-            result.add(getToken());
+    private void collectCallTokens(List<CtrlTree> result, String name) {
+        if (getToken().getType() == CtrlLexer.CALL) {
+            CtrlTree id = getChild(0);
+            if (id.getText().equals(name)) {
+                result.add(id);
+            }
         }
         for (int i = 0; i < getChildCount(); i++) {
             getChild(i).collectCallTokens(result, name);

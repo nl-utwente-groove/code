@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Collection of values that make up the state of 
+ * Collection of values that make up the state of
  * the {@link Simulator}.
  * GUI state changes (such as selections) should be made through
  * a transaction on this object.
@@ -93,6 +93,14 @@ public class SimulatorModel implements Cloneable {
         try {
             result = getGrammar().getActiveNames(resource).contains(oldName);
             getStore().rename(resource, oldName, newName);
+            if (resource == ResourceKind.RULE) {
+                // rename rules in control programs
+                Map<String,String> renamedControl =
+                    getGrammar().getControlModel().getLoader().rename(oldName, newName);
+                if (!renamedControl.isEmpty()) {
+                    getStore().putTexts(ResourceKind.CONTROL, renamedControl);
+                }
+            }
             changeSelected(resource, newName);
             changeGrammar(result);
             changeDisplay(DisplayKind.toDisplay(resource));
@@ -358,13 +366,13 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** 
+    /**
      * Replaces all occurrences of a given label into another label, throughout
      * the grammar.
      * @param oldLabel the label to be renamed
      * @param newLabel the replacement label
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the relabel action failed 
+     * @throws IOException if the relabel action failed
      */
     public boolean doRelabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
         start();
@@ -377,7 +385,7 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** 
+    /**
      * Renumbers the nodes in all graphs from {@code 0} upwards.
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
@@ -397,7 +405,7 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** 
+    /**
      * Sets the selected state and optionally the incoming transition through which
      * this state was reached, as well as a randomly selected outgoing match.
      * @param state the new selected state; non-{@code null}
@@ -460,7 +468,7 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Refreshes the GTS by firing an update event if any changes occurred 
+     * Refreshes the GTS by firing an update event if any changes occurred
      * since the GTS was last set or refreshed.
      */
     public final boolean refreshGts() {
@@ -481,7 +489,7 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** 
+    /**
      * Sets the active GTS and fires an update event when this results in a change.
      * If the new GTS is different from the old, this has the side effects of
      * <li> setting the state to the start state of the new GTS,
@@ -513,7 +521,7 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** 
+    /**
      * Creates a fresh GTS and fires an update event.
      * This has the side effects of
      * <li> setting the state to the start state of the new GTS,
@@ -534,7 +542,7 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** 
+    /**
      * Changes the active GTS.
      * @param always also fire an event if the GTS actually is the same object.
      * @see #setGts(GTS, boolean)
@@ -556,14 +564,14 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** 
+    /**
      * Indicates if there is an active state.
      */
     public final boolean hasState() {
         return getState() != null;
     }
 
-    /** 
+    /**
      * Returns the currently active state, if any.
      * If the GTS is set, there is always an active state.
      */
@@ -571,7 +579,7 @@ public class SimulatorModel implements Cloneable {
         return this.state;
     }
 
-    /** 
+    /**
      * Sets the selected state and fires an update event if this results in a change.
      * If the new state is different from the old, the transition
      * and event are set to {@code null}.
@@ -591,7 +599,7 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** 
+    /**
      * Does the work for {@link #setState(GraphState)}, except
      * for firing the update.
      */
@@ -615,7 +623,7 @@ public class SimulatorModel implements Cloneable {
         return this.match;
     }
 
-    /** 
+    /**
      * Changes the selected state and rule match, and fires an update event.
      * If the match is changed to a non-null event, also sets the rule.
      * If the match is changed to a non-null transition from the selected state,
@@ -684,7 +692,7 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** 
+    /**
      * Changes the selected rule match.
      */
     private final boolean changeMatch(MatchResult match) {
@@ -696,7 +704,7 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** 
+    /**
      * Changes the selected transition.
      */
     private final boolean changeTransition(GraphTransition trans) {
@@ -740,7 +748,7 @@ public class SimulatorModel implements Cloneable {
                 try {
                     getExploration().test(grammar.toGrammar());
                 } catch (FormatException e) {
-                    // the exploration strategy is not compatible with the 
+                    // the exploration strategy is not compatible with the
                     // grammar;
                     // reset to default exploration
                     changeExploration(new Exploration());
@@ -750,8 +758,8 @@ public class SimulatorModel implements Cloneable {
         finish();
     }
 
-    /** 
-     * Checks for changes in the currently loaded grammar view, 
+    /**
+     * Checks for changes in the currently loaded grammar view,
      * but does not yet fire an update.
      * Should be called after any change in the grammar view or
      * underlying store.
@@ -787,27 +795,27 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** Convenience method to return the store of the currently loaded 
+    /** Convenience method to return the store of the currently loaded
      * grammar view, if any.
      */
     public final SystemStore getStore() {
         return this.grammar == null ? null : this.grammar.getStore();
     }
 
-    /** 
+    /**
      * Returns the selected resource of a given kind, or {@code null}
      * if no resource is selected.
-     * Convenience method for {@code getGrammar().getResource(resource,getSelected(name))}. 
+     * Convenience method for {@code getGrammar().getResource(resource,getSelected(name))}.
      */
     public final ResourceModel<?> getResource(ResourceKind resource) {
         String name = getSelected(resource);
         return name == null ? null : getGrammar().getResource(resource, name);
     }
 
-    /** 
+    /**
      * Returns the selected graph-based resource of a given kind, or {@code null}
      * if no resource is selected.
-     * Convenience method for {@code getGrammar().getGraphResource(resource,getSelected(name))}. 
+     * Convenience method for {@code getGrammar().getGraphResource(resource,getSelected(name))}.
      * @param resource the resource kind for which the resource is retrieved; must be graph-based
      */
     public final GraphBasedModel<?> getGraphResource(ResourceKind resource) {
@@ -815,10 +823,10 @@ public class SimulatorModel implements Cloneable {
         return name == null ? null : getGrammar().getGraphResource(resource, name);
     }
 
-    /** 
+    /**
      * Returns the selected resource of a given kind, or {@code null}
      * if no resource is selected.
-     * Convenience method for {@code getGrammar().getTextResource(resource,getSelected(name))}. 
+     * Convenience method for {@code getGrammar().getTextResource(resource,getSelected(name))}.
      * @param resource the resource kind for which the resource is retrieved; must be text-based
      */
     public final TextBasedModel<?> getTextResource(ResourceKind resource) {
@@ -841,8 +849,8 @@ public class SimulatorModel implements Cloneable {
         return searchResults;
     }
 
-    /** 
-     * Checks for changes in the currently loaded grammar view, 
+    /**
+     * Checks for changes in the currently loaded grammar view,
      * and calls an update event if required.
      * Should be called after any change in the grammar view or
      * underlying store.
@@ -853,7 +861,7 @@ public class SimulatorModel implements Cloneable {
         finish();
     }
 
-    /** 
+    /**
      * Tests if there is a selected resource of a given kind.
      * Convenience method for {@code getResource(ResourceKind) != null}.
      */
@@ -861,7 +869,7 @@ public class SimulatorModel implements Cloneable {
         return getSelected(kind) != null;
     }
 
-    /** 
+    /**
      * Returns the currently selected resource name of a given kind.
      * @param kind the resource kind
      * @return the currently selected resource, or {@code null} if
@@ -872,7 +880,7 @@ public class SimulatorModel implements Cloneable {
         return resourceSet.isEmpty() ? null : resourceSet.iterator().next();
     }
 
-    /** 
+    /**
      * Returns set of names of the currently selected resources of a given kind.
      * @param kind the resource kind
      * @return the names of the currently selected resource
@@ -891,7 +899,7 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** 
+    /**
      * Changes the selection of a given resource kind.
      */
     public final boolean doSelectSet(ResourceKind kind, Collection<String> names) {
@@ -900,7 +908,7 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** 
+    /**
      * Changes the selected value of a given resource kind.
      */
     private boolean changeSelected(ResourceKind kind, String name) {
@@ -908,7 +916,7 @@ public class SimulatorModel implements Cloneable {
             name == null ? Collections.<String>emptySet() : Collections.singleton(name));
     }
 
-    /** 
+    /**
      * Changes the currently selected resource set and records the change,
      * if the new resource set differs from the old.
      * @return {@code true} if a change was actually made
@@ -947,7 +955,7 @@ public class SimulatorModel implements Cloneable {
         return this.abstractionMode;
     }
 
-    /** 
+    /**
      * Sets the abstraction mode.
      * @param value if {@code true}, the simulator is set to abstract.
      */
@@ -957,7 +965,7 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** 
+    /**
      * Sets the abstraction mode.
      * @param value if {@code true}, the simulator is set to abstract.
      */
@@ -1058,7 +1066,7 @@ public class SimulatorModel implements Cloneable {
             + this.changes + "]";
     }
 
-    /** 
+    /**
      * Adds a given simulation listener to the list.
      * An optional parameter indicates which kinds of changes should be
      * notified.
@@ -1082,7 +1090,7 @@ public class SimulatorModel implements Cloneable {
      * Removes a given listener from the list.
      * @param listener the listener to be removed
      * @param changes the set of change events the listener should be notified of;
-     * if empty, the listener is notified of all types of events 
+     * if empty, the listener is notified of all types of events
      */
     public void removeListener(SimulatorListener listener, Change... changes) {
         if (changes.length == 0) {
@@ -1098,7 +1106,7 @@ public class SimulatorModel implements Cloneable {
         return this.gtsCounter;
     }
 
-    /** 
+    /**
      * Starts a transaction.
      * This is only allowed if no transaction is currently underway.
      */
@@ -1108,7 +1116,7 @@ public class SimulatorModel implements Cloneable {
         this.changes.clear();
     }
 
-    /** 
+    /**
      * Ends a transaction and notifies all listeners.
      * This is only allowed if there is a transaction underway,
      * by the same owner.
@@ -1140,7 +1148,7 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** 
+    /**
      * Notifies all registered listeners of the changes involved in the current
      * transaction.
      */
@@ -1214,21 +1222,21 @@ public class SimulatorModel implements Cloneable {
          * The selected control program has changed.
          */
         CONTROL(ResourceKind.CONTROL),
-        /** 
+        /**
          * The loaded grammar has changed.
          * @see SimulatorModel#getGrammar()
          */
         GRAMMAR,
-        /** 
+        /**
          * The GTS has changed.
          * @see SimulatorModel#getGts()
          */
         GTS,
-        /** 
+        /**
          * The selected set of host graphs has changed.
          */
         HOST(ResourceKind.HOST),
-        /** 
+        /**
          * The selected match (i.e., a rule event or a transition) has changed.
          * @see SimulatorModel#getMatch()
          * @see SimulatorModel#getTransition()
@@ -1246,11 +1254,11 @@ public class SimulatorModel implements Cloneable {
          * The selected Groovy script has changed.
          */
         GROOVY(ResourceKind.GROOVY),
-        /** 
+        /**
          * The selected rule set has changed.
          */
         RULE(ResourceKind.RULE),
-        /** 
+        /**
          * The selected and/or active state has changed.
          * @see SimulatorModel#getState()
          */

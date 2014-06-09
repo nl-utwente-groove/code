@@ -42,7 +42,6 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
 
 /**
@@ -58,7 +57,7 @@ public class CtrlLoader {
      */
     public CtrlLoader(GrammarProperties grammarProperties, Collection<Rule> rules,
             boolean checkDependencies) {
-        this.namespace = new Namespace(grammarProperties, checkDependencies);
+        this.namespace = new Namespace(grammarProperties);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
         }
@@ -135,19 +134,28 @@ public class CtrlLoader {
     }
 
     /**
-     * Returns a renamed version of an existing control program.
-     * TODO extend this to deal correctly with qualified names (SF Feature Request #3581300)
+     * Returns renamed versions of the stored control programs.
+     * @return a mapping from program names to changed programs
      */
-    public String rename(String name, String oldCallName, String newCallName) {
-        CtrlTree tree = this.treeMap.get(name);
-        CtrlLexer lexer = new CtrlLexer(null);
-        lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
-        TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
-        rewriter.fill();
-        for (Token t : tree.getCallTokens(oldCallName)) {
-            rewriter.replace(t, newCallName);
+    public Map<String,String> rename(String oldCallName, String newCallName) {
+        Map<String,String> result = new HashMap<String,String>();
+        for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
+            String name = entry.getKey();
+            CtrlTree tree = entry.getValue();
+            CtrlLexer lexer = new CtrlLexer(null);
+            lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
+            TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
+            rewriter.fill();
+            boolean changed = false;
+            for (CtrlTree t : tree.getCallTokens(oldCallName)) {
+                rewriter.replace(t.getToken(), t.getChild(0).getToken(), newCallName);
+                changed = true;
+            }
+            if (changed) {
+                result.put(name, rewriter.toString());
+            }
         }
-        return rewriter.toString();
+        return result;
     }
 
     /** Returns the name space of this loader. */
@@ -177,7 +185,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, String program)
-        throws FormatException {
+            throws FormatException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         instance.parse(programName, program);
         Program result = instance.buildProgram(Collections.singleton(programName));
@@ -187,7 +195,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, File base)
-        throws FormatException, IOException {
+            throws FormatException, IOException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         QualName qualName = new QualName(programName);
         File control = base;

@@ -43,8 +43,8 @@ program
   ;
 
 package_decl
-  : ^( PACKAGE ID SEMI
-       { helper.checkPackage($ID); }
+  : ^( PACKAGE qual_id SEMI
+       { helper.checkPackage($qual_id.tree); }
      )
   ;
 
@@ -53,14 +53,13 @@ imports
   ;
 
 import_decl
-  : ^( IMPORT ID SEMI
-       { helper.checkImport($ID); }
+  : ^( IMPORT qual_id SEMI
+       { helper.checkImport($qual_id.tree); }
      )
   ;
 
 recipes
   : ^(RECIPES recipe*)
-       { helper.reorderFunctions($RECIPES); }
   ;
 
 recipe
@@ -74,7 +73,6 @@ recipe
 
 functions
   : ^( FUNCTIONS function*)
-       { helper.reorderFunctions($FUNCTIONS); }
   ;
 
 function
@@ -156,7 +154,7 @@ stat
 
 rule
 @after{ helper.checkCall($tree); }
-  : ^(CALL id=ID (^(ARGS arg* RPAR))?)
+  : ^(CALL qual_id (^(ARGS arg* RPAR))?)
   ;
 
 var_decl
@@ -166,6 +164,12 @@ var_decl
 	     )+
 	   )
 	;
+
+qual_id
+  : ^(ID ID)
+  // the second ID is a traceability token to keep track of the original
+  // last token of the qualified ID
+  ;
 
 type
   // no idea why, but for some reason without the rewriting
