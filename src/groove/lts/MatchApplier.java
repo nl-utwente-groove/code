@@ -75,13 +75,13 @@ public class MatchApplier {
                 boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
-                    && !match.getEvent().conflicts(sourceKey.getEvent())) {
+                        && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
-                            createTransition(source, match, siblingOut.getTarget(sibling),
-                                siblingOut.isSymmetry());
+                                createTransition(source, match, siblingOut.getTarget(sibling),
+                                    siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
                 }
@@ -96,8 +96,8 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                    new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
-                        isoTarget, true);
+                        new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
+                            isoTarget, true);
             }
         }
         // add transition to gts
@@ -196,7 +196,7 @@ public class MatchApplier {
 
     private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
             RuleEffect record) {
-        Object[] result = source.getPrimeValues();
+        Object[] result = source.getActualValues();
         for (Assignment assign : step.getApplyAssignments()) {
             switch (assign.getKind()) {
             case MODIFY:

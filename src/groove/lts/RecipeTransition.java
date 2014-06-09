@@ -21,7 +21,6 @@ import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlPar.Wild;
 import groove.control.Valuator;
-import groove.control.instance.Assignment;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Recipe;
@@ -52,7 +51,7 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
-        ActionLabel {
+ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
@@ -238,10 +237,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                 } else {
                     assert arg.isOutOnly();
                     int varIndex = getSwitch().onFinish().getVarIxMap().get(((Var) arg).getVar());
-                    Object[] values = target().getPrimeValues();
-                    for (Assignment pop : target().getActualFrame().getPops()) {
-                        values = pop.apply(values);
-                    }
+                    Object[] values = target().getActualValues();
                     node = Valuator.get(values, varIndex);
                 }
             }
@@ -352,6 +348,6 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     @Override
     protected boolean isLabelEqual(Edge other) {
         return other instanceof RecipeTransition
-            && ((RecipeTransition) other).initial.equals(this.initial);
+                && ((RecipeTransition) other).initial.equals(this.initial);
     }
 }
