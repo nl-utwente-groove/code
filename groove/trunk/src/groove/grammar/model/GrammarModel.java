@@ -71,7 +71,7 @@ public class GrammarModel implements Observer {
         String grammarVersion = store.getProperties().getGrammarVersion();
         boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
         if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
-                && noActiveStartGraphs) {
+            && noActiveStartGraphs) {
             setLocalActiveNames(HOST, Groove.DEFAULT_START_GRAPH_NAME);
         }
         for (ResourceKind resource : ResourceKind.all(false)) {
@@ -415,7 +415,7 @@ public class GrammarModel implements Observer {
             for (ResourceModel<?> model : getResourceSet(kind)) {
                 if (!QualName.isValid(model.getFullName(), null, null)) {
                     this.errors.add(new FormatError(kind.getName() + " name '"
-                            + model.getFullName() + "' " + "is an illegal identifier", model));
+                        + model.getFullName() + "' " + "is an illegal identifier", model));
                 }
             }
         }
@@ -451,10 +451,6 @@ public class GrammarModel implements Observer {
             }
         }
         try {
-            // set control
-            if (result.hasMultiplePriorities() && !getActiveNames(CONTROL).isEmpty()) {
-                errors.add("Rule priorities and explicit control cannot be used simultaneously");
-            }
             result.setControl(getControlModel().toResource());
         } catch (FormatException e) {
             errors.addAll(e.getErrors());
@@ -662,7 +658,7 @@ public class GrammarModel implements Observer {
 
     /** Mapping from resource kinds and names to resource models. */
     private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
-            new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
+        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
@@ -670,19 +666,19 @@ public class GrammarModel implements Observer {
      * @see #localActiveNamesMap
      */
     private final Map<ResourceKind,SortedSet<String>> storedActiveNamesMap =
-            new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * Where non-{@code null}, the values in this map override the {@link #storedActiveNamesMap}.
      */
     private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
-            new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private final ChangeCount changeCount;
     private final Map<ResourceKind,ChangeCount> resourceChangeCounts =
-            new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
+        new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
     /** Local properties; if {@code null}, the stored properties are used. */
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
@@ -754,7 +750,7 @@ public class GrammarModel implements Observer {
      * @throws IOException if a store can be created but not loaded
      */
     static public GrammarModel newInstance(String location) throws IllegalArgumentException,
-    IOException {
+        IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {

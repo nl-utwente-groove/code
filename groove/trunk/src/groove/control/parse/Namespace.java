@@ -18,8 +18,8 @@ package groove.control.parse;
 
 import groove.control.Callable;
 import groove.control.Procedure;
-import groove.control.template.Switch.Kind;
 import groove.control.term.Term;
+import groove.grammar.Action;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
@@ -174,33 +174,35 @@ public class Namespace implements ParseInfo {
     private String parentName;
 
     /**
-     * Returns the set of all top-level rule and recipe names.
+     * Returns the set of all top-level actions (rules and recipes).
      * Rules and recipes directly or indirectly invoked from (other) procedures are
      * excluded from this set.
      */
-    public Set<String> getTopNames() {
-        if (this.topNames == null) {
-            this.topNames = new TreeSet<String>();
+    public Set<Action> getTopActions() {
+        if (this.topActions == null) {
             Set<String> calledNames = new HashSet<String>();
-            for (Map.Entry<String,Callable> entry : this.callableMap.entrySet()) {
-                String name = entry.getKey();
-                Kind kind = entry.getValue().getKind();
-                if (kind.isAction()) {
-                    this.topNames.add(name);
-                    if (kind.isProcedure()) {
+            for (Callable callable : this.callableMap.values()) {
+                if (callable instanceof Action) {
+                    if (callable.getKind().isProcedure()) {
+                        String name = callable.getFullName();
                         Set<String> newCalledNames = new HashSet<String>(this.calleeMap.get(name));
                         newCalledNames.remove(name);
                         calledNames.addAll(newCalledNames);
                     }
                 }
             }
-            this.topNames.removeAll(calledNames);
+            this.topActions = new TreeSet<Action>();
+            for (Callable unit : this.callableMap.values()) {
+                if (unit instanceof Action && !calledNames.contains(unit.getFullName())) {
+                    this.topActions.add((Action) unit);
+                }
+            }
         }
-        return this.topNames;
+        return this.topActions;
     }
 
     /** Set of top-level rule and recipe names. */
-    private Set<String> topNames;
+    private Set<Action> topActions;
 
     /** Returns the set of all used names,
      * i.e., all rules for which {@link #addCall(String, String)}
