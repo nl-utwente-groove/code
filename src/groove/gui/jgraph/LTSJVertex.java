@@ -36,6 +36,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
             setLook(Look.OPEN, !state.isClosed());
             setLook(Look.ABSENT, state.isAbsent());
             setLook(Look.RECIPE, state.isRecipeState());
+            setLook(Look.TRANSIENT, state.isTransient());
             setLook(Look.FINAL, state.getGTS().isFinal(state));
             setLook(Look.RESULT, state.getGTS().isResult(state));
         }

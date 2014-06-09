@@ -93,9 +93,9 @@ public class Values {
     /** Foreground colour for the active start node. */
     public static final Color ACTIVE_START_COLOR = Colors.findColor("30 190 255");
     /** Colour used for transient states. */
-    static public final Color TRANSIENT_COLOR = Colors.findColor("165 42 42");
+    static public final Color RECIPE_COLOR = Colors.findColor("165 42 42");
     /** Colour used for transient active states. */
-    static public final Color TRANSIENT_ACTIVE_COLOR = Colors.findColor("165 42 149");
+    static public final Color ACTIVE_RECIPE_COLOR = Colors.findColor("165 42 149");
 
     /** Background colour used for selected items in focused lists. */
     static public final Color FOCUS_BACKGROUND = Color.DARK_GRAY;
@@ -142,9 +142,9 @@ public class Values {
     /** Text display colours to be used for transient states. */
     static public final Values.ColorSet TRANSIENT_COLORS = new Values.ColorSet();
     static {
-        TRANSIENT_COLORS.putColors(FOCUSED, Color.WHITE, TRANSIENT_COLOR.darker());
-        TRANSIENT_COLORS.putColors(SELECTED, TRANSIENT_COLOR.darker(), SELECT_BACKGROUND);
-        TRANSIENT_COLORS.putColors(NONE, TRANSIENT_COLOR, NORMAL_BACKGROUND);
+        TRANSIENT_COLORS.putColors(FOCUSED, Color.WHITE, RECIPE_COLOR.darker());
+        TRANSIENT_COLORS.putColors(SELECTED, RECIPE_COLOR.darker(), SELECT_BACKGROUND);
+        TRANSIENT_COLORS.putColors(NONE, RECIPE_COLOR, NORMAL_BACKGROUND);
     }
 
     /** Line style that always makes right edges. */
