@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,17 +132,24 @@ public class CtrlHelper {
     }
 
     /** Creates a new tree with a {@link CtrlParser#ID} token at the root,
-     * of which the text is the concatenation of the children of the given tree.
+     * of which the text is the concatenation of a given list of tokens.
+     * The last token in the list is added as child to the result, to retain traceability.
      */
     CommonTree toQualName(List<? extends Token> children) {
         CommonToken token = new CommonToken(CtrlParser.ID, flatten(children));
+        Token lastChild;
         // set the line/column info to get useful error output
-        if (!children.isEmpty()) {
+        if (children.isEmpty()) {
+            lastChild = token;
+        } else {
             CommonToken child = (CommonToken) children.get(0);
             token.setLine(child.getLine());
             token.setTokenIndex(child.getTokenIndex());
+            lastChild = children.get(children.size() - 1);
         }
-        return new CtrlTree(token);
+        CtrlTree result = new CtrlTree(token);
+        result.addChild(new CtrlTree(lastChild));
+        return result;
     }
 
     /**
@@ -164,6 +170,7 @@ public class CtrlHelper {
             token.setLine(ruleNameToken.getLine());
             token.setTokenIndex(ruleNameToken.getToken().getTokenIndex());
             result = new CtrlTree(token);
+            result.addChild(ruleNameToken.getChild(0));
         }
         return result;
     }
@@ -209,7 +216,7 @@ public class CtrlHelper {
     boolean declareCtrlUnit(CtrlTree unitTree) {
         boolean result = false;
         assert (unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
-        && unitTree.getChildCount() <= 4;
+            && unitTree.getChildCount() <= 4;
         String fullName = qualify(unitTree.getChild(0).getText());
         Callable unit = this.namespace.getCallable(fullName);
         if (unit != null) {
@@ -217,12 +224,8 @@ public class CtrlHelper {
                 unit.getKind().getName(true), fullName);
         } else {
             int priority =
-                    unitTree.getChildCount() == 3 ? 0
-                            : Integer.parseInt(unitTree.getChild(2).getText());
-            if (this.namespace.isCheckDependencies() && priority > 0) {
-                emitErrorMessage(unitTree.getChild(2),
-                        "Priorities are not supported in this version.");
-            }
+                unitTree.getChildCount() == 3 ? 0
+                        : Integer.parseInt(unitTree.getChild(2).getText());
             List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
@@ -302,9 +305,7 @@ public class CtrlHelper {
     void registerCall(CtrlTree callTree) {
         String from = this.procName;
         String to = callTree.getText();
-        if (!this.namespace.addCall(from, to)) {
-            emitErrorMessage(callTree, "Call from %s to %s causes a circular dependency", from, to);
-        }
+        this.namespace.addCall(from, to);
     }
 
     /** Adds a formal parameter to the symbol table. */
@@ -401,8 +402,8 @@ public class CtrlHelper {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
             CtrlPar result =
-                    new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
-                        family.toValue(constant));
+                new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
+                    family.toValue(constant));
             argTree.setCtrlPar(result);
             return result;
         } catch (FormatException e) {
@@ -410,7 +411,7 @@ public class CtrlHelper {
             // by the control parser
             assert false : String.format("%s is not a parsable constant",
                 argTree.getChild(0).getText());
-        return null;
+            return null;
         }
     }
 
@@ -510,11 +511,6 @@ public class CtrlHelper {
                 emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig, callSig);
             }
         }
-        if (unitKind.isProcedure() && this.procName == null && !this.namespace.isResolved(name)) {
-            result = false;
-            emitErrorMessage(callTree, "%s %s has not yet been resolved", unitKind.getName(true),
-                name);
-        }
         return result;
     }
 
@@ -540,28 +536,6 @@ public class CtrlHelper {
         }
         result.append(')');
         return result.toString();
-    }
-
-    /** Reorders the functions according to their dependencies. */
-    void reorderFunctions(CtrlTree functionsTree) {
-        assert functionsTree.getType() == CtrlChecker.FUNCTIONS
-                || functionsTree.getType() == CtrlChecker.RECIPES;
-        int functionsCount = functionsTree.getChildCount();
-        Map<String,CtrlTree> functionMap = new LinkedHashMap<String,CtrlTree>();
-        for (int i = 0; i < functionsCount; i++) {
-            CtrlTree function = functionsTree.getChild(i);
-            functionMap.put(qualify(function.getChild(0).getText()), function);
-        }
-        List<String> resolution = this.namespace.resolveFunctions(functionMap.keySet());
-        if (resolution == null) {
-            emitErrorMessage(functionsTree, "Can't resolve functions due to forward dependencies");
-        } else {
-            int i = 0;
-            for (String name : resolution) {
-                functionsTree.setChild(i, functionMap.get(name));
-                i++;
-            }
-        }
     }
 
     /** Clears the name space errors. */

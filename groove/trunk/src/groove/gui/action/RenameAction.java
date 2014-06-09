@@ -8,7 +8,7 @@ import groove.io.store.EditType;
 import java.io.IOException;
 
 /**
- * Action to rename the currently displayed control program.
+ * Action to rename the currently displayed resource.
  */
 public class RenameAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
@@ -27,9 +27,10 @@ public class RenameAction extends SimulatorAction {
                 try {
                     getSimulatorModel().doRename(resource, oldName, newName);
                 } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while renaming %s '%s' into '%s'",
-                        resource.getDescription(), oldName, newName));
+                    showErrorDialog(
+                        exc,
+                        String.format("Error while renaming %s '%s' into '%s'",
+                            resource.getDescription(), oldName, newName));
                 }
             }
         }
@@ -38,6 +39,6 @@ public class RenameAction extends SimulatorAction {
     @Override
     public void refresh() {
         setEnabled(getSimulatorModel().getSelectSet(getResourceKind()).size() == 1
-            && getSimulatorModel().getStore().isModifiable());
+                && getSimulatorModel().getStore().isModifiable());
     }
 }

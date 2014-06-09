@@ -27,12 +27,9 @@ import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseInfo;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -46,12 +43,9 @@ import java.util.TreeSet;
  */
 public class Namespace implements ParseInfo {
     /** Constructs a new name space, on the basis of a given algebra family.
-     * @param checkDependencies flag to determine whether the name space
-     * should check for circular dependencies and forward references.
      */
-    public Namespace(GrammarProperties grammarProperties, boolean checkDependencies) {
+    public Namespace(GrammarProperties grammarProperties) {
         this.grammarProperties = grammarProperties;
-        this.checkDependencies = checkDependencies;
     }
 
     /** Returns the algebra family of this name space. */
@@ -60,17 +54,6 @@ public class Namespace implements ParseInfo {
     }
 
     private final GrammarProperties grammarProperties;
-
-    /** Indicates if the name space should check for circular
-     * dependencies ({@link #addCall}) and
-     * call resolution ({@link #isResolved} and
-     * {@link #resolveFunctions}.
-     */
-    public boolean isCheckDependencies() {
-        return this.checkDependencies;
-    }
-
-    private final boolean checkDependencies;
 
     /**
      * Adds a function or recipe to the set of declared procedures.
@@ -113,14 +96,11 @@ public class Namespace implements ParseInfo {
     }
 
     /** Tries to add a dependency from a caller to a callee.
-     * @return {@code false} if this call an illegal circular dependency.
      */
-    public boolean addCall(String caller, String callee) {
-        boolean result = true;
+    public void addCall(String caller, String callee) {
         if (caller != null) {
             Set<String> parentCallers = getFromMap(this.callerMap, caller);
             Set<String> callees = getFromMap(this.calleeMap, caller);
-            result = !isCheckDependencies() || !parentCallers.contains(callee);
             if (callees.add(callee)) {
                 Set<String> childCallees = getFromMap(this.calleeMap, callee);
                 for (String parentCaller : parentCallers) {
@@ -132,7 +112,6 @@ public class Namespace implements ParseInfo {
             }
         }
         this.usedNames.add(callee);
-        return result;
     }
 
     private Set<String> getFromMap(Map<String,Set<String>> map, String key) {
@@ -214,67 +193,6 @@ public class Namespace implements ParseInfo {
 
     /** Set of callable names appearing explicitly in the control program. */
     private final Set<String> usedNames = new HashSet<String>();
-
-    /**
-     * Returns a set of function names in an order in which there are no
-     * forward dependencies.
-     * Functions that already have bodies do not count as dependencies.
-     * @return an ordered list consisting of the elements of {@code functions};
-     * or {@code null} if no order exists
-     */
-    public List<String> resolveFunctions(Collection<String> functions) {
-        List<String> result = new ArrayList<String>();
-        if (isCheckDependencies()) {
-            // collect the remaining functions to be resolved
-            Set<String> resolved = this.resolved;
-            functions = new HashSet<String>(functions);
-            while (!functions.isEmpty()) {
-                Iterator<String> remainingIter = functions.iterator();
-                String candidate = null;
-                while (remainingIter.hasNext()) {
-                    candidate = remainingIter.next();
-                    resolved.add(candidate);
-                    if (isAllResolved(candidate, resolved)) {
-                        remainingIter.remove();
-                        break;
-                    } else {
-                        resolved.remove(candidate);
-                        candidate = null;
-                    }
-                }
-                if (candidate == null) {
-                    result = null;
-                    break;
-                } else {
-                    result.add(candidate);
-                }
-            }
-        } else {
-            result.addAll(functions);
-        }
-        return result;
-    }
-
-    /** Tests if all the called procedures from a given procedure have been resolved. */
-    private boolean isAllResolved(String candidate, Set<String> resolved) {
-        boolean result = true;
-        for (String callee : this.calleeMap.get(candidate)) {
-            if (getCallable(callee).getKind().isProcedure() && !resolved.contains(callee)) {
-                result = false;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Indicates if a certain procedure name has been resolved.
-     */
-    public boolean isResolved(String name) {
-        return !isCheckDependencies() || this.resolved.contains(name);
-    }
-
-    private Set<String> resolved = new HashSet<String>();
 
     @Override
     public String toString() {
