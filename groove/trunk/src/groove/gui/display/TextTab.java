@@ -45,7 +45,7 @@ final public class TextTab extends ResourceTab {
         this(display, null, null);
     }
 
-    /** 
+    /**
      * Constructs an editor with a given name.
      * @param display the display on which this editor is placed.
      * @param name name of the program to be edited; if {@code null}, this
@@ -116,8 +116,7 @@ final public class TextTab extends ResourceTab {
 
     @Override
     public Icon getIcon() {
-        return isEditor() ? super.getIcon()
-                : Icons.getMainTabIcon(getDisplay().getResourceKind());
+        return isEditor() ? super.getIcon() : Icons.getMainTabIcon(getDisplay().getResourceKind());
     }
 
     @Override
@@ -129,9 +128,7 @@ final public class TextTab extends ResourceTab {
     public boolean setResource(String name) {
         String program = null;
         if (name != null) {
-            program =
-                getSimulatorModel().getStore().getTexts(getResourceKind()).get(
-                    name);
+            program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
         }
         if (program != null) {
             setName(name);
@@ -157,12 +154,13 @@ final public class TextTab extends ResourceTab {
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
         TextBasedModel<?> textModel =
-            getName() == null ? null : (TextBasedModel<?>) grammar.getResource(
-                getResourceKind(), getName());
+                getName() == null ? null : (TextBasedModel<?>) grammar.getResource(getResourceKind(),
+                getName());
         if (textModel == null) {
             dispose();
         } else if (!isDirty()) {
             this.textArea.setProgram(textModel.getProgram());
+            updateErrors();
         }
     }
 
@@ -297,7 +295,7 @@ final public class TextTab extends ResourceTab {
             addMouseListener(new EditMouseListener());
         }
 
-        /** 
+        /**
          * Changes the edited program in the area.
          * @param program the new program; if {@code null}, the text area will
          * be disabled
