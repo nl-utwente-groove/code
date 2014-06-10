@@ -249,7 +249,7 @@ public enum Look {
     TRANSIENT() {
         @Override
         void init() {
-            add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);
+            add(VisualKey.NODE_SHAPE, NodeShape.HEXAGON);
         }
     },
     /** Change in look due to absent state/transition status. */
@@ -293,7 +293,7 @@ public enum Look {
     CTRL_TRANSIENT_STATE(true, STATE) {
         @Override
         void init() {
-            add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);
+            add(VisualKey.NODE_SHAPE, NodeShape.HEXAGON);
         }
     },
     /** Transient control state look. */
