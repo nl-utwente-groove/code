@@ -16,9 +16,10 @@
  */
 package groove.explore.result;
 
+import groove.grammar.Action;
 import groove.grammar.Rule;
 import groove.lts.GraphState;
-import groove.lts.RuleTransition;
+import groove.lts.GraphTransition;
 
 /**
  * A <code>Predicate</code> over <code>A></code> is a boolean condition that
@@ -30,32 +31,46 @@ import groove.lts.RuleTransition;
  * @see PredicateAcceptor
  * @author Maarten de Mol
  */
-public abstract class Predicate<A> {
-
-    /** Indicator whether the generic type A equals GraphState. */
-    public final boolean statePredicate;
-    /** Indicator whether the generic type A equals GraphTransition. */
-    public final boolean transitionPredicate;
-
-    /**
-     * Constructor for explicitly setting the final fields.
+public abstract class Predicate<X> {
+    /** 
+     * Constructor for a state or transition predicate.
+     * 
+     * @param forStates if {@code true}, this is a state predicate;
+     * otherwise, it is a transition predicate.
      */
-    public Predicate(boolean statePredicate, boolean transitionPredicate) {
-        this.statePredicate = statePredicate;
-        this.transitionPredicate = transitionPredicate;
+    protected Predicate(boolean forStates) {
+        this.forStates = forStates;
     }
 
-    /**
-     * Convenience constructor.
+    /** Indicates that this predicate tests graph states.
+     * If {@code false}, it tests rule transitions. 
      */
-    public Predicate() {
-        this(false, false);
+    public boolean forStates() {
+        return this.forStates;
     }
+
+    private final boolean forStates;
 
     /**
      * The evaluation method of the predicate.
      */
-    public abstract boolean eval(A value);
+    public abstract boolean eval(X value);
+
+    /** Predicate class for graph states. */
+    abstract public static class StatePredicate extends Predicate<GraphState> {
+        /** Constructor for subclassing. */
+        protected StatePredicate() {
+            super(true);
+        }
+    }
+
+    /** Predicate class for rule transitions. */
+    abstract public static class TransitionPredicate extends Predicate<GraphTransition> {
+        /** Constructor for subclassing. */
+        protected TransitionPredicate() {
+            super(false);
+        }
+    }
 
     /**
      * <======================================================================>
@@ -67,7 +82,7 @@ public abstract class Predicate<A> {
 
         /** Default constructor. */
         public Not(Predicate<X> P) {
-            super(P.statePredicate, P.transitionPredicate);
+            super(P.forStates());
             this.P = P;
         }
 
@@ -88,7 +103,8 @@ public abstract class Predicate<A> {
 
         /** Default constructor. */
         public And(Predicate<X> P, Predicate<X> Q) {
-            super(P.statePredicate, P.transitionPredicate);
+            super(P.forStates());
+            assert P.forStates() == Q.forStates();
             this.P = P;
             this.Q = Q;
         }
@@ -110,7 +126,8 @@ public abstract class Predicate<A> {
 
         /** Default constructor. */
         public Or(Predicate<X> P, Predicate<X> Q) {
-            super(P.statePredicate, P.transitionPredicate);
+            super(P.forStates());
+            assert P.forStates() == Q.forStates();
             this.P = P;
             this.Q = Q;
         }
@@ -132,7 +149,8 @@ public abstract class Predicate<A> {
 
         /** Default constructor. */
         public Implies(Predicate<X> P, Predicate<X> Q) {
-            super(P.statePredicate, P.transitionPredicate);
+            super(P.forStates());
+            assert P.forStates() == Q.forStates();
             this.P = P;
             this.Q = Q;
         }
@@ -153,12 +171,11 @@ public abstract class Predicate<A> {
      * checks whether a given rule is applicable.
      * <======================================================================>
      */
-    public static class RuleApplicable extends Predicate<GraphState> {
+    public static class RuleApplicable extends StatePredicate {
         private final Rule rule;
 
         /** Default constructor. */
         public RuleApplicable(Rule rule) {
-            super(true, false);
             this.rule = rule;
         }
 
@@ -174,19 +191,17 @@ public abstract class Predicate<A> {
      * checks whether a given rule has been applied.
      * <======================================================================>
      */
-    public static class RuleApplied extends Predicate<RuleTransition> {
-        private final Rule rule;
+    public static class RuleApplied extends TransitionPredicate {
+        private final Action action;
 
         /** Default constructor. */
-        public RuleApplied(Rule rule) {
-            super(false, true);
-            this.rule = rule;
+        public RuleApplied(Action action) {
+            this.action = action;
         }
 
         @Override
-        public boolean eval(RuleTransition value) {
-            return value.getEvent().getRule().equals(this.rule);
+        public boolean eval(GraphTransition value) {
+            return value.getAction().equals(this.action);
         }
     }
-
 }

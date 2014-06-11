@@ -19,6 +19,7 @@ package groove.explore.result;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 
 /**
  * A <code>PredicateAcceptor</code> is an acceptor that adds states to its
@@ -29,31 +30,28 @@ import groove.lts.GraphTransition;
  * @author Maarten de Mol 
  */
 public class PredicateAcceptor extends Acceptor {
-
-    private final boolean statePredicate;
     private final Predicate<GraphState> P;
-    private final boolean transitionPredicate;
-    private final Predicate<GraphTransition> Q;
+    private final Predicate<RuleTransition> Q;
 
     /**
-     * Default constructor. Initializes predicate.
+     * Default constructor. Initialises predicate and sets a default result object.
+     */
+    public PredicateAcceptor(Predicate<?> predicate) {
+        this(new Result(), predicate);
+    }
+
+    /**
+     * Default constructor. Initialises predicate and result object.
      */
     @SuppressWarnings("unchecked")
-    public PredicateAcceptor(Predicate<?> predicate) {
-        super();
-
-        this.statePredicate = predicate.statePredicate;
-        if (this.statePredicate) {
+    public PredicateAcceptor(Result result, Predicate<?> predicate) {
+        super(result);
+        if (predicate.forStates()) {
             this.P = (Predicate<GraphState>) predicate;
+            this.Q = null;
         } else {
             this.P = null;
-        }
-
-        this.transitionPredicate = predicate.transitionPredicate;
-        if (this.transitionPredicate) {
-            this.Q = (Predicate<GraphTransition>) predicate;
-        } else {
-            this.Q = null;
+            this.Q = (Predicate<RuleTransition>) predicate;
         }
     }
 
@@ -63,10 +61,7 @@ public class PredicateAcceptor extends Acceptor {
      */
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        if (!this.statePredicate) {
-            return;
-        }
-        if (this.P.eval(state)) {
+        if (this.P.forStates() && this.P.eval(state)) {
             this.getResult().add(state);
         }
     }
@@ -78,10 +73,8 @@ public class PredicateAcceptor extends Acceptor {
      */
     @Override
     public void addUpdate(GTS gts, GraphTransition transition) {
-        if (!this.transitionPredicate) {
-            return;
-        }
-        if (this.Q.eval(transition)) {
+        if (this.Q != null && transition instanceof RuleTransition
+            && this.Q.eval((RuleTransition) transition)) {
             getResult().add(transition.target());
         }
     }
