@@ -44,7 +44,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-GraphState {
+        GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -62,7 +62,7 @@ GraphState {
 
     @Override
     final public Set<? extends GraphTransition> getTransitions() {
-        return getTransitions(GraphTransition.Class.COMPLETE);
+        return getTransitions(GraphTransition.Class.REAL);
     }
 
     @Override
@@ -89,7 +89,7 @@ GraphState {
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                    && ((RuleTransitionStub) stub).getKey(this) == match) {
+                && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -229,6 +229,11 @@ GraphState {
     @Override
     final public boolean isRecipeState() {
         return getActualFrame().inRecipe();
+    }
+
+    @Override
+    public final boolean isRealState() {
+        return !isRecipeState() && !isAbsent() && !isError();
     }
 
     @Override

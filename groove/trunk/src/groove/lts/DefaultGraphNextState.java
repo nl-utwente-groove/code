@@ -333,13 +333,18 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-    public boolean isPartial() {
+    public final boolean isPartial() {
         return getStep().isPartial();
     }
 
     @Override
-    public boolean isRecipeStep() {
+    public final boolean isRecipeStep() {
         return getStep().inRecipe();
+    }
+
+    @Override
+    public final boolean isRealStep() {
+        return !isRecipeStep() && source().isRealState() && target().isRealState();
     }
 
     /** Keeps track of bound variables */

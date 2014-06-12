@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
@@ -70,6 +71,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         super.installListeners();
         addOptionListener(SHOW_STATE_IDS_OPTION);
         addOptionListener(SHOW_CONTROL_STATE_OPTION);
+        addOptionListener(SHOW_ABSENT_STATES_OPTION);
         addOptionListener(SHOW_RECIPE_STEPS_OPTION);
     }
 
@@ -109,6 +111,11 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Indicates if control state info should be shown on states. */
     public boolean isShowControlStates() {
         return getOptionValue(Options.SHOW_CONTROL_STATE_OPTION);
+    }
+
+    /** Indicates if absent states should be shown. */
+    public boolean isShowAbsentStates() {
+        return getOptionValue(Options.SHOW_ABSENT_STATES_OPTION);
     }
 
     /** Indicates if in-recipe states and transitions should be shown. */

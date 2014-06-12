@@ -48,7 +48,7 @@ import java.util.MissingFormatArgumentException;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel> implements
-RuleTransitionStub, RuleTransition {
+        RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
@@ -222,14 +222,11 @@ RuleTransitionStub, RuleTransition {
         return this.morphism;
     }
 
-    /** Callback method to construct a rule application from this
-     * state, considered as a graph transition.
+    /**
+     * The underlying morphism of this transition. Computed lazily (using the
+     * footprint) using {@link #computeMorphism()}.
      */
-    @Override
-    public RuleApplication createRuleApplication() {
-        return new RuleApplication(getEvent(), source().getGraph(), target().getGraph(),
-            getAddedNodes());
-    }
+    private HostGraphMorphism morphism;
 
     /**
      * Constructs an underlying morphism for the transition from the stored
@@ -245,10 +242,10 @@ RuleTransitionStub, RuleTransition {
                 HostGraph derivedTarget = appl.getTarget().clone();
                 HostGraph realTarget = target().getGraph().clone();
                 final Morphism<HostNode,HostEdge> iso =
-                        IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
+                    IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
                 assert iso != null : "Can't reconstruct derivation from graph transition " + this
-                        + ": \n" + AGraph.toString(derivedTarget) + " and \n"
-                        + AGraph.toString(realTarget) + " \nnot isomorphic";
+                    + ": \n" + AGraph.toString(derivedTarget) + " and \n"
+                    + AGraph.toString(realTarget) + " \nnot isomorphic";
                 result = result.then(iso);
             }
         } else {
@@ -262,6 +259,15 @@ RuleTransitionStub, RuleTransition {
             }
         }
         return result;
+    }
+
+    /** Callback method to construct a rule application from this
+     * state, considered as a graph transition.
+     */
+    @Override
+    public RuleApplication createRuleApplication() {
+        return new RuleApplication(getEvent(), source().getGraph(), target().getGraph(),
+            getAddedNodes());
     }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
@@ -289,7 +295,7 @@ RuleTransitionStub, RuleTransition {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof RuleTransition && equalsSource((RuleTransition) obj)
-                && equalsEvent((RuleTransition) obj);
+            && equalsEvent((RuleTransition) obj);
     }
 
     /*
@@ -312,20 +318,20 @@ RuleTransitionStub, RuleTransition {
     }
 
     @Override
-    public boolean isPartial() {
+    public final boolean isPartial() {
         return getStep().isPartial();
     }
 
     @Override
-    public boolean isRecipeStep() {
+    public final boolean isRecipeStep() {
         return getStep().inRecipe();
     }
 
-    /**
-     * The underlying morphism of this transition. Computed lazily (using the
-     * footprint) using {@link #computeMorphism()}.
-     */
-    private HostGraphMorphism morphism;
+    @Override
+    public final boolean isRealStep() {
+        return !isRecipeStep() && source().isRealState() && target().isRealState();
+    }
+
     /** Flag indicating that the underlying morphism is a partial identity. */
     private final boolean symmetry;
 

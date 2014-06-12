@@ -62,12 +62,6 @@ public interface GraphTransition extends Edge {
     /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
 
-    /** Returns the corresponding switch from the control template.
-     * For rule transitions, this is the top switch in the call stack of the step;
-     * for recipe transitions, it is the recipe call switch in the main template.
-     * */
-    public Switch getSwitch();
-
     /**
      * Indicates if this transition is a step in a recipe transition.
      * If this is the case, then either the step is partial or it represents
@@ -75,6 +69,21 @@ public interface GraphTransition extends Edge {
      * @see #isPartial()
      */
     public boolean isRecipeStep();
+
+    /**'
+     * Indicates if this transition is a real part of the GTS.
+     * This is the case if it is not a recipe step, and its source and
+     * target states are real.
+     * @see #isRecipeStep()
+     * @see GraphState#isRealState()
+     */
+    public boolean isRealStep();
+
+    /** Returns the corresponding switch from the control template.
+     * For rule transitions, this is the top switch in the call stack of the step;
+     * for recipe transitions, it is the recipe call switch in the main template.
+     * */
+    public Switch getSwitch();
 
     /**
      * Returns the initial rule transition of this graph transition.
@@ -124,7 +133,7 @@ public interface GraphTransition extends Edge {
                 return true;
             }
         },
-        /** Only rule transitions, be they partial or complete. */
+        /** Only rule transitions, be they in-recipe or complete. */
         RULE {
             @Override
             public boolean admits(GraphTransition trans) {
@@ -133,14 +142,25 @@ public interface GraphTransition extends Edge {
         },
         /**
          * Only complete transitions, be they rule- or recipe-triggered.
-         * @see GraphTransition#isPartial()
+         * @see GraphTransition#isRecipeStep()
          */
         COMPLETE {
             @Override
             public boolean admits(GraphTransition trans) {
-                return !trans.isPartial();
+                return !trans.isRecipeStep();
             }
-        };
+        },
+        /**
+         * Only real transitions.
+         * @see GraphTransition#isRealStep()
+         */
+        REAL {
+            @Override
+            public boolean admits(GraphTransition trans) {
+                return trans.isRealStep();
+            }
+        },
+        ;
 
         /** Indicates if a given graph transition belongs to this class. */
         abstract public boolean admits(GraphTransition trans);
