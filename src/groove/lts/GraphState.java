@@ -219,8 +219,18 @@ public interface GraphState extends Node {
     public boolean isRecipeState();
 
     /**
-     * Indicates if this is a transient state.
-     * This is the case if and only if the associated control schedule is transient.
+     * Indicates if this state is a real part of the GTS.
+     * This is the case if and only if the state is not a recipe state, 
+     * or an absent or erroneous state.
+     * @see #isAbsent()
+     * @see #isError()
+     * @see #isRecipeState()
+     */
+    public boolean isRealState();
+
+    /**
+     * Indicates if this is a transient state, i.e., it is inside an atomic block.
+     * This is the case if and only if the associated control frame is transient.
      * @see #getActualFrame()
      */
     public boolean isTransient();

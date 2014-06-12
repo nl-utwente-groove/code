@@ -178,6 +178,11 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
         return getStep().inRecipe();
     }
 
+    @Override
+    public final boolean isRealStep() {
+        return !isRecipeStep() && source().isRealState() && target().isRealState();
+    }
+
     // ------------------------------------------------------------------------
     // Unimplemented methods
     // ------------------------------------------------------------------------

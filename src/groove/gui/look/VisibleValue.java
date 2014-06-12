@@ -157,6 +157,9 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jVertex.hasVisibleFlag()) {
             return false;
         }
+        if (!jVertex.getJGraph().isShowAbsentStates() && state.isAbsent()) {
+            return false;
+        }
         if (!jVertex.getJGraph().isShowRecipeSteps() && state.isRecipeState() && state.isDone()) {
             return false;
         }

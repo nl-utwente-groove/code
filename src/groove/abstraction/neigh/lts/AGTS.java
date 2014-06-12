@@ -128,7 +128,7 @@ public final class AGTS extends GTS {
             this.subsumedStatesCount += newState.markSubsumedStates(this.toRemove);
             if (this.reachability) {
                 for (ShapeState stateToRemove : this.toRemove) {
-                    getStateSet().remove(stateToRemove);
+                    allStateSet().remove(stateToRemove);
                     stateToRemove.disconnectState();
                 }
             }
@@ -263,7 +263,7 @@ public final class AGTS extends GTS {
 
         // Go over all states and compute the closure for the subsumption
         // relation.
-        for (GraphState graphState : getStateSet()) {
+        for (GraphState graphState : getStates()) {
             ShapeState state = (ShapeState) graphState;
             if (!state.isSubsumed() && !closureMap.containsKey(state)) {
                 // This state will be in the reduced GTS.

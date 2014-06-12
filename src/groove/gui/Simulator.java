@@ -19,6 +19,7 @@ package groove.gui;
 import static groove.gui.Options.DELETE_RESOURCE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
+import static groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
@@ -261,7 +262,7 @@ public class Simulator implements SimulatorListener {
     JSplitPane getGrammarPanel() {
         if (this.grammarPanel == null) {
             this.grammarPanel =
-                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(), getDisplaysInfoPanel());
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(), getDisplaysInfoPanel());
             this.grammarPanel.setBorder(null);
         }
         return this.grammarPanel;
@@ -273,8 +274,8 @@ public class Simulator implements SimulatorListener {
     JSplitPane getListsPanel() {
         if (this.listsPanel == null) {
             this.listsPanel =
-                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, getDisplaysPanel().getUpperListsPanel(),
-                        getDisplaysPanel().getLowerListsPanel());
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getDisplaysPanel().getUpperListsPanel(),
+                    getDisplaysPanel().getLowerListsPanel());
             this.listsPanel.setBorder(null);
         }
         return this.listsPanel;
@@ -347,7 +348,7 @@ public class Simulator implements SimulatorListener {
                     if (resource != null) {
                         getModel().doSelect(resource, name);
                         ResourceTab resourceTab =
-                                getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
+                            getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
                         if (resource.isGraphBased()) {
                             AspectJGraph jGraph;
                             if (resourceTab.isEditor()) {
@@ -705,12 +706,14 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
         result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
-        result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
-        result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
-        result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_ARROWS_ON_LABELS_OPTION));
+        result.addSeparator();
+        result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+        result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
+        result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
+        result.add(getOptions().getItem(SHOW_ABSENT_STATES_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));

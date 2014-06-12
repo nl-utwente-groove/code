@@ -31,21 +31,19 @@ import groove.prolog.GrooveEnvironment;
  */
 public class Predicate_state extends LtsPrologCode {
     @Override
-    public int execute(Interpreter interpreter, boolean backtrackMode,
-            Term[] args) throws PrologException {
+    public int execute(Interpreter interpreter, boolean backtrackMode, Term[] args)
+        throws PrologException {
         if (backtrackMode) {
-            PrologCollectionIterator it =
-                (PrologCollectionIterator) interpreter.popBacktrackInfo();
+            PrologCollectionIterator it = (PrologCollectionIterator) interpreter.popBacktrackInfo();
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            GTS gts =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGts();
+            GTS gts = ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGts();
             if (gts == null) {
                 return FAIL;
             }
             PrologCollectionIterator it =
-                new PrologCollectionIterator(gts.nodeSet(), args[0],
+                new PrologCollectionIterator(gts.getStates(), args[0],
                     interpreter.getUndoPosition());
             return it.nextSolution(interpreter);
         }

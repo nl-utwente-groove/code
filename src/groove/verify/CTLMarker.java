@@ -54,11 +54,10 @@ public class CTLMarker {
      * @throws FormatException if the model has special state markers that occur
      * on edge labels 
      */
-    public CTLMarker(Formula formula, Graph model, LTSLabels ltsLabels)
-        throws FormatException {
+    public CTLMarker(Formula formula, Graph model, LTSLabels ltsLabels) throws FormatException {
         assert model != null;
         this.formula = formula;
-        this.model = model;
+        this.model = new GraphModel(model);
         this.ltsLabels = ltsLabels;
         testFormat();
         init();
@@ -71,7 +70,7 @@ public class CTLMarker {
     public CTLMarker(Formula formula, GTS model) {
         assert model != null;
         this.formula = formula;
-        this.model = model;
+        this.model = new GTSModel(model);
         this.ltsLabels = null;
         init();
     }
@@ -84,11 +83,9 @@ public class CTLMarker {
         for (Node node : this.model.nodeSet()) {
             Set<? extends Edge> outEdges = this.model.outEdgeSet(node);
             for (Edge outEdge : outEdges) {
-                if (getFlag(outEdge.label().text()) != null
-                    && !outEdge.isLoop()) {
+                if (getFlag(outEdge.label().text()) != null && !outEdge.isLoop()) {
                     throw new FormatException(
-                        "Special state marker '%s' occurs as edge label in model",
-                        outEdge.label());
+                        "Special state marker '%s' occurs as edge label in model", outEdge.label());
                 }
             }
         }
@@ -139,8 +136,7 @@ public class CTLMarker {
                     setAtom(nodeNr, label);
                 } else {
                     assert outEdge.isLoop() : String.format(
-                        "Special state marker '%s' occurs as edge label in model",
-                        outEdge.label());
+                        "Special state marker '%s' occurs as edge label in model", outEdge.label());
                     setAtom(nodeNr, flagText.get(flag));
                     specialEdgeCount++;
                 }
@@ -150,7 +146,7 @@ public class CTLMarker {
             this.outCount[nodeNr] = outEdges.size() - specialEdgeCount;
             // Test the state markers in case we are in a GTS
             for (Map.Entry<Flag,Integer> flagEntry : flagNrs.entrySet()) {
-                if (isSpecial(node, flagEntry.getKey())) {
+                if (this.model.isSpecial(node, flagEntry.getKey())) {
                     this.marking[flagEntry.getValue()].set(nodeNr);
                 }
             }
@@ -217,29 +213,6 @@ public class CTLMarker {
                 throw new IllegalStateException();
             }
         }
-    }
-
-    /** 
-     * Tests if a given node satisfies one of the special ({@link Flag}) atoms.
-     */
-    private boolean isSpecial(Node node, Flag flag) {
-        boolean result = false;
-        if (this.model instanceof GTS) {
-            switch (flag) {
-            case FINAL:
-                result = ((GTS) this.model).isFinal((GraphState) node);
-                break;
-            case OPEN:
-                result = !((GraphState) node).isClosed();
-                break;
-            case RESULT:
-                result = ((GTS) this.model).isResult((GraphState) node);
-                break;
-            case START:
-                result = node == ((GTS) this.model).startState();
-            }
-        }
-        return result;
     }
 
     /**
@@ -606,8 +579,7 @@ public class CTLMarker {
                 return new Iterator<Node>() {
                     @Override
                     public boolean hasNext() {
-                        return this.stateIx >= 0
-                            && this.stateIx < CTLMarker.this.nodeCount;
+                        return this.stateIx >= 0 && this.stateIx < CTLMarker.this.nodeCount;
                     }
 
                     @Override
@@ -627,8 +599,7 @@ public class CTLMarker {
                         throw new UnsupportedOperationException();
                     }
 
-                    int stateIx = value ? sat.nextSetBit(0)
-                            : sat.nextClearBit(0);
+                    int stateIx = value ? sat.nextSetBit(0) : sat.nextClearBit(0);
                 };
             }
         };
@@ -637,13 +608,12 @@ public class CTLMarker {
     /** The (top-level) formula to check. */
     private final Formula formula;
     /** The GTS on which to check the formula. */
-    private final Graph model;
+    private final Model model;
     private final LTSLabels ltsLabels;
     /**
      * Mapping from subformulas to (consecutive) numbers
      */
-    private final Map<Formula,Integer> formulaNr =
-        new HashMap<Formula,Integer>();
+    private final Map<Formula,Integer> formulaNr = new HashMap<Formula,Integer>();
     /** Mapping from atomic propositions (as literal strings) to formula numbers. */
     private final Map<String,Integer> atoms = new HashMap<String,Integer>();
     /** Marking matrix: 1st dimension = state, 2nd dimension = formula. */
@@ -669,8 +639,7 @@ public class CTLMarker {
 
     private boolean verified;
     /** Mapping from flags to the text of the corresponding atomic proposition. */
-    static final Map<Flag,String> flagText =
-        new EnumMap<LTSLabels.Flag,String>(Flag.class);
+    static final Map<Flag,String> flagText = new EnumMap<LTSLabels.Flag,String>(Flag.class);
     /** Mapping from flags to the corresponding atomic formula. */
     /** Mapping from special atomic formulae to the corresponding flags. */
     static final Map<Formula,Flag> formulaFlag = new HashMap<Formula,Flag>();
@@ -683,6 +652,90 @@ public class CTLMarker {
         }
     }
     /** Proposition text expressing that a node is the start state of the GTS. */
-    static public final Formula START_ATOM =
-        Formula.Atom(flagText.get(Flag.START));
+    static public final Formula START_ATOM = Formula.Atom(flagText.get(Flag.START));
+
+    /** Facade for models, with the functionality required by this class. */
+    private static interface Model {
+        /** Returns the number of (real) nodes of the model. */
+        int nodeCount();
+
+        /** Returns the set of (real) nodes of the model. */
+        Set<? extends Node> nodeSet();
+
+        /** Returns the set of (real) outgoing edges of a node. */
+        Set<? extends Edge> outEdgeSet(Node node);
+
+        /** Tests if a given node satisfies the special property expressed by a given flag. */
+        boolean isSpecial(Node node, Flag flag);
+    }
+
+    private static class GTSModel implements Model {
+        GTSModel(GTS gts) {
+            this.gts = gts;
+        }
+
+        @Override
+        public int nodeCount() {
+            return this.gts.getStates().size();
+        }
+
+        @Override
+        public Set<? extends Node> nodeSet() {
+            return this.gts.getStates();
+        }
+
+        @Override
+        public Set<? extends Edge> outEdgeSet(Node node) {
+            return ((GraphState) node).getTransitions();
+        }
+
+        @Override
+        public boolean isSpecial(Node node, Flag flag) {
+            boolean result = false;
+            switch (flag) {
+            case FINAL:
+                result = this.gts.isFinal((GraphState) node);
+                break;
+            case OPEN:
+                result = !((GraphState) node).isClosed();
+                break;
+            case RESULT:
+                result = this.gts.isResult((GraphState) node);
+                break;
+            case START:
+                result = node == this.gts.startState();
+            }
+            return result;
+        }
+
+        private final GTS gts;
+    }
+
+    private static class GraphModel implements Model {
+        public GraphModel(Graph graph) {
+            this.graph = graph;
+        }
+
+        @Override
+        public int nodeCount() {
+            return this.graph.nodeCount();
+        }
+
+        @Override
+        public Set<? extends Node> nodeSet() {
+            return this.graph.nodeSet();
+        }
+
+        @Override
+        public Set<? extends Edge> outEdgeSet(Node node) {
+            return this.graph.outEdgeSet(node);
+        }
+
+        @Override
+        public boolean isSpecial(Node node, Flag flag) {
+            return false;
+        }
+
+        private final Graph graph;
+    }
 }

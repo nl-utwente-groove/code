@@ -51,7 +51,7 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
-ActionLabel {
+        ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
@@ -109,8 +109,13 @@ ActionLabel {
     private RecipeEvent event;
 
     @Override
-    public boolean isRecipeStep() {
+    public final boolean isRecipeStep() {
         return false;
+    }
+
+    @Override
+    public final boolean isRealStep() {
+        return source().isRealState() && target().isRealState();
     }
 
     @Override
@@ -348,6 +353,6 @@ ActionLabel {
     @Override
     protected boolean isLabelEqual(Edge other) {
         return other instanceof RecipeTransition
-                && ((RecipeTransition) other).initial.equals(this.initial);
+            && ((RecipeTransition) other).initial.equals(this.initial);
     }
 }

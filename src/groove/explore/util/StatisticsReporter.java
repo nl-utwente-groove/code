@@ -77,7 +77,8 @@ public class StatisticsReporter extends AExplorationReporter {
     private Verbosity sbVerbosity;
 
     private final Verbosity verbosity;
-    private final StatisticsListener statisticsListener = new StatisticsListener();
+    private final GTSCounter gtsCounter = new GTSCounter();
+    private final GraphCounter graphCounter = new GraphCounter();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -106,7 +107,8 @@ public class StatisticsReporter extends AExplorationReporter {
         runTime.gc();
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
         if (!this.verbosity.isLow()) {
-            gts.addLTSListener(this.statisticsListener);
+            gts.addLTSListener(this.gtsCounter);
+            gts.addLTSListener(this.graphCounter);
         }
         this.startTime = System.currentTimeMillis();
         // clear any previous report
@@ -119,7 +121,8 @@ public class StatisticsReporter extends AExplorationReporter {
     @Override
     public void report() {
         this.endTime = System.currentTimeMillis();
-        getGTS().removeLTSListener(this.statisticsListener);
+        getGTS().removeLTSListener(this.gtsCounter);
+        getGTS().removeLTSListener(this.graphCounter);
     }
 
     /**
@@ -163,7 +166,7 @@ public class StatisticsReporter extends AExplorationReporter {
             this.sb.append(sw.toString());
         }
         emit(HIGH,
-                "===============================================================================%n");
+            "===============================================================================%n");
     }
 
     private void reportStatistics() {
@@ -195,8 +198,8 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports data on the LTS generated. */
     private void reportLTS() {
-        int openRecipeStageCount = this.statisticsListener.getOpenRecipeStageCount();
-        int closedRecipeStageCount = this.statisticsListener.getClosedRecipeStageCount();
+        int openRecipeStageCount = this.gtsCounter.getOpenRecipeStateCount();
+        int closedRecipeStageCount = this.gtsCounter.getClosedRecipeStateCount();
         int realStateCount = getGTS().nodeCount() - openRecipeStageCount - closedRecipeStageCount;
         String formatString = "%-14s%d%n";
         emit(MEDIUM, "%n");
@@ -205,7 +208,7 @@ public class StatisticsReporter extends AExplorationReporter {
         if (openRealStateCount > 0) {
             emit(MEDIUM, formatString, "Explored:", (realStateCount - openRealStateCount));
         }
-        int recipeStepCount = this.statisticsListener.getRecipeStepCount();
+        int recipeStepCount = this.gtsCounter.getRecipeStepCount();
         int realTransitionCount = getGTS().edgeCount() - recipeStepCount;
         emit(MEDIUM, formatString, "Transitions:", realTransitionCount);
     }
@@ -239,7 +242,7 @@ public class StatisticsReporter extends AExplorationReporter {
         int predicted = IsoChecker.getTotalCheckCount();
         int falsePos2 = IsoChecker.getDistinctSimCount();
         int falsePos1 =
-                falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
+            falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
         int equalGraphCount = IsoChecker.getEqualGraphsCount();
         int equalCertsCount = IsoChecker.getEqualCertsCount();
         int equalSimCount = IsoChecker.getEqualSimCount();
@@ -271,9 +274,9 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(HIGH, "%nGraph element count%n");
         emit(HIGH, intFormat, "Factory nodes:", factory.getNodeCount());
         emit(HIGH, intFormat, "Factory edges:", factory.getEdgeCount());
-        double nodeAvg = (double) this.statisticsListener.getNodeCount() / getGTS().nodeCount();
+        double nodeAvg = (double) this.graphCounter.getNodeCount() / getGTS().nodeCount();
         emit(HIGH, floatFormat, "Nodes/state (avg):", nodeAvg);
-        double edgeAvg = (double) this.statisticsListener.getEdgeCount() / getGTS().edgeCount();
+        double edgeAvg = (double) this.graphCounter.getEdgeCount() / getGTS().edgeCount();
         emit(HIGH, floatFormat, "Edges/state (avg):", edgeAvg);
     }
 
@@ -367,22 +370,20 @@ public class StatisticsReporter extends AExplorationReporter {
         }
     }
 
-    /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends GTSAdapter {
+    /** GTS listener that counts all types of states and transitions. */
+    public static class GTSCounter extends GTSAdapter {
         /** Empty constructor with the correct visibility. */
-        StatisticsListener() {
+        GTSCounter() {
             // Empty.
         }
 
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            this.nodeCount += state.getGraph().nodeCount();
-            this.edgeCount += state.getGraph().edgeCount();
             if (state.isRecipeState()) {
                 if (state.isClosed()) {
-                    this.closedRecipeStageCount++;
+                    this.closedRecipeStateCount++;
                 } else {
-                    this.openRecipeStageCount++;
+                    this.openRecipeStateCount++;
                 }
             }
         }
@@ -396,14 +397,68 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
-            if (flag == Flag.CLOSED) {
-                if (explored.getPrimeFrame().isTransient()) {
-                    this.openRecipeStageCount--;
+            switch (flag) {
+            case CLOSED:
+                if (explored.getPrimeFrame().inRecipe()) {
+                    this.openRecipeStateCount--;
                 }
                 if (explored.isRecipeState()) {
-                    this.closedRecipeStageCount++;
+                    this.closedRecipeStateCount++;
+                }
+                break;
+            case ERROR:
+                this.errorStateCount++;
+                break;
+            case DONE:
+                if (explored.getAbsence() > 0) {
+                    this.absentStateCount++;
                 }
             }
+        }
+
+        /** Returns the number of closed recipe stages in the GTS. */
+        public int getAbsentStateCount() {
+            return this.absentStateCount;
+        }
+
+        /** Returns the number of closed recipe stages in the GTS. */
+        public int getErrorStateCount() {
+            return this.errorStateCount;
+        }
+
+        /** Returns the number of closed recipe stages in the GTS. */
+        public int getClosedRecipeStateCount() {
+            return this.closedRecipeStateCount;
+        }
+
+        /** Returns the number of open recipe stages in the GTS. */
+        public int getOpenRecipeStateCount() {
+            return this.openRecipeStateCount;
+        }
+
+        /** Returns the number of recipe steps in the GTS. */
+        public int getRecipeStepCount() {
+            return this.recipeStepCount;
+        }
+
+        private int errorStateCount;
+        private int absentStateCount;
+        private int closedRecipeStateCount;
+        private int openRecipeStateCount;
+        private int recipeStepCount;
+    }
+
+    /** GTS listener that sums all nodes and edges of added sates. */
+    public static class GraphCounter extends GTSAdapter {
+        /** Empty constructor with the correct visibility. */
+        GraphCounter() {
+            // Empty.
+        }
+
+        @Override
+        public void addUpdate(GTS gts, GraphState state) {
+            this.nodeCount += state.getGraph().nodeCount();
+            this.edgeCount += state.getGraph().edgeCount();
         }
 
         /** Returns the number of nodes in the added states. */
@@ -416,25 +471,7 @@ public class StatisticsReporter extends AExplorationReporter {
             return this.edgeCount;
         }
 
-        /** Returns the number of closed recipe stages in the GTS. */
-        public int getClosedRecipeStageCount() {
-            return this.closedRecipeStageCount;
-        }
-
-        /** Returns the number of open recipe stages in the GTS. */
-        public int getOpenRecipeStageCount() {
-            return this.openRecipeStageCount;
-        }
-
-        /** Returns the number of recipe steps in the GTS. */
-        public int getRecipeStepCount() {
-            return this.recipeStepCount;
-        }
-
         private int nodeCount;
         private int edgeCount;
-        private int closedRecipeStageCount;
-        private int openRecipeStageCount;
-        private int recipeStepCount;
     }
 }
