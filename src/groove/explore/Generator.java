@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -31,6 +31,7 @@ import groove.lts.GTS;
 import groove.transform.Transformer;
 import groove.util.cli.DirectoryHandler;
 import groove.util.cli.GrammarHandler;
+import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.File;
@@ -49,7 +50,7 @@ import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
 /**
- * New command-line Generator class, using the Agrs4J library. 
+ * New command-line Generator class, using the Agrs4J library.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -77,16 +78,29 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return transformer.getGTS();
     }
 
+    /* Adds a message about the -XX:SoftRefLRUPolicyMSPerMB JVM option. */
+    @Override
+    protected GrooveCmdLineParser createParser(String appName) {
+        return new GrooveCmdLineParser(appName, this) {
+            @Override
+            public String getUsageLine() {
+                return String.format(
+                    "%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
+                    super.getUsageLine(), SOFT_REF_POLICY_NAME);
+            }
+        };
+    }
+
+    private final static String SOFT_REF_POLICY_NAME = "-XX:SoftRefLRUPolicyMSPerMB";
+
     /**
      * Compute the exploration out of the command line options.
      * Uses the default exploration for components that were not specified.
      */
-    private Transformer computeTransformer() throws IOException,
-        FormatException {
+    private Transformer computeTransformer() throws IOException, FormatException {
         Transformer result = new Transformer(getGrammar());
         if (hasStrategy()) {
-            Serialized strategy =
-                StrategyEnumerator.parseCommandLineStrategy(getStrategy());
+            Serialized strategy = StrategyEnumerator.parseCommandLineStrategy(getStrategy());
             result.setStrategy(strategy);
         }
         if (hasAcceptor()) {
@@ -123,9 +137,9 @@ public class Generator extends GrooveCmdLineTool<GTS> {
             handler = DirectoryHandler.class)
     private File logdir;
 
-    /** 
+    /**
      * Indicates if the strategy option is set.
-     * @return {@code true} if {@link #getStrategy()} is not {@code null} 
+     * @return {@code true} if {@link #getStrategy()} is not {@code null}
      */
     public boolean hasStrategy() {
         return getStrategy() != null;
@@ -138,13 +152,12 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return this.strategy;
     }
 
-    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR,
-            usage = STRATEGY_USAGE)
+    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR, usage = STRATEGY_USAGE)
     private String strategy;
 
-    /** 
+    /**
      * Indicates if the acceptor option is set.
-     * @return {@code true} if {@link #getAcceptor()} is not {@code null} 
+     * @return {@code true} if {@link #getAcceptor()} is not {@code null}
      */
     public boolean hasAcceptor() {
         return getAcceptor() != null;
@@ -157,8 +170,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return this.acceptor;
     }
 
-    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR,
-            usage = ACCEPTOR_USAGE)
+    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR, usage = ACCEPTOR_USAGE)
     private String acceptor;
 
     /**
@@ -177,15 +189,11 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return this.grammarProperties;
     }
 
-    @Option(
-            name = "-D",
-            metaVar = "key=val",
-            usage = ""
-                + "Set grammar property <key> to <val>. Legal settings are:\n"
-                + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
-                + "  - controlProgram=names - set the control program(s) to be used\n"
-                + "See groove.grammar.GrammarProperties "
-                + "for other allowed key/value pairs",
+    @Option(name = "-D", metaVar = "key=val", usage = ""
+            + "Set grammar property <key> to <val>. Legal settings are:\n"
+            + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
+            + "  - controlProgram=names - set the control program(s) to be used\n"
+            + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
             handler = PropertiesHandler.class)
     private Map<Key,String> grammarProperties;
 
@@ -196,25 +204,21 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return this.ltsLabels;
     }
 
-    @Option(
-            name = "-ef",
-            metaVar = "flags",
-            depends = "-o",
-            usage = ""
-                + "Flags for the \"-o\" option. Legal values are:\n" //
-                + "  s - label start state (default: 'start')\n" //
-                + "  f - label final states (default: 'final')\n" //
-                + "  o - label open states (default: 'open')\n" //
-                + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
-                + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
-                + "  r - result state label (default: 'result')\n" //
-                + "Specify label to be used by appending flag with 'label' (single-quoted)",
+    @Option(name = "-ef", metaVar = "flags", depends = "-o", usage = ""
+            + "Flags for the \"-o\" option. Legal values are:\n" //
+            + "  s - label start state (default: 'start')\n" //
+            + "  f - label final states (default: 'final')\n" //
+            + "  o - label open states (default: 'open')\n" //
+            + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
+            + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
+            + "  r - result state label (default: 'result')\n" //
+            + "Specify label to be used by appending flag with 'label' (single-quoted)",
             handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
-    /** 
+    /**
      * Indicates if the LTS output option is set.
-     * @return {@code true} if {@link #getLtsPattern()} is not {@code null} 
+     * @return {@code true} if {@link #getLtsPattern()} is not {@code null}
      */
     public boolean isSaveLts() {
         return getLtsPattern() != null;
@@ -222,24 +226,22 @@ public class Generator extends GrooveCmdLineTool<GTS> {
 
     /**
      * Returns the (optional) file to be used for saving the generated LTS to.
-     * @return the file to save the LTS to, or {@code null} if not set 
+     * @return the file to save the LTS to, or {@code null} if not set
      */
     public String getLtsPattern() {
         return this.ltsPattern;
     }
 
-    @Option(
-            name = "-o",
-            metaVar = "file",
+    @Option(name = "-o", metaVar = "file",
             usage = "Save the generated LTS to a file with name derived from <file>, "
-                + "in which '#' is instantiated with the grammar ID. "
-                + "The \"-ef\"-option controls some additional state labels. "
-                + "The optional extension determines the output format (default is .gxl)")
+                    + "in which '#' is instantiated with the grammar ID. "
+                    + "The \"-ef\"-option controls some additional state labels. "
+                    + "The optional extension determines the output format (default is .gxl)")
     private String ltsPattern;
 
-    /** 
+    /**
      * Indicates if the state save option is set.
-     * @return {@code true} if {@link #getStatePattern()} is not {@code null} 
+     * @return {@code true} if {@link #getStatePattern()} is not {@code null}
      */
     public boolean isSaveState() {
         return getStatePattern() != null;
@@ -256,12 +258,10 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return this.statePattern;
     }
 
-    @Option(
-            name = "-f",
-            metaVar = "file",
+    @Option(name = "-f", metaVar = "file",
             usage = "Save result states in separate files, with names derived from <file>, "
-                + "in which the mandatory '#' is instantiated with the state number. "
-                + "The optional extension determines the output format (default is .gst)")
+                    + "in which the mandatory '#' is instantiated with the state number. "
+                    + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
     /**
@@ -273,15 +273,15 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return this.grammar;
     }
 
-    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
-            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
+            handler = GrammarHandler.class)
     private File grammar;
 
     /**
      * Returns the optional start graph, if set.
-     * If set, the start graph is guaranteed to either the (qualified) 
+     * If set, the start graph is guaranteed to either the (qualified)
      * name of a host graph within the grammar, or the name of an existing file.
-     * @return the start graph name; may be {@code null} 
+     * @return the start graph name; may be {@code null}
      */
     public List<String> getStartGraphs() {
         return this.startGraphs;
@@ -310,7 +310,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         if (isSaveState()) {
             result.add(new StateReporter(getStatePattern(), logger));
         }
-        // add the logger last, to ensure that any messages from the 
+        // add the logger last, to ensure that any messages from the
         // other reporters are included.
         result.add(logger);
         return result;
@@ -329,9 +329,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     public static final String ACCEPTOR_VAR = "acc";
 
     /** Usage message for the acceptor option. */
-    public final static String ACCEPTOR_USAGE =
-        ""
-            + "Set the acceptor to <acc>. "
+    public final static String ACCEPTOR_USAGE = "" + "Set the acceptor to <acc>. "
             + "The acceptor determines when a state is counted as a result of the exploration. "
             + "Legal values are:\n" //
             + "    final      - When final (default)\n" //
@@ -378,10 +376,8 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         + "  cebound:id>n,...\n"
         + "              - Conditional: up to <n> edges labelled <id>\n"
         + "  ltl:prop    - LTL Model Checking\n" //
-        + "  ltlbounded:idn,...;prop\n"
-        + "              - Bounded LTL Model Checking\n"
-        + "  ltlpocket:idn,...;prop\n"
-        + "              - Pocket LTL Model Checking\n"
+        + "  ltlbounded:idn,...;prop\n" + "              - Bounded LTL Model Checking\n"
+        + "  ltlpocket:idn,...;prop\n" + "              - Pocket LTL Model Checking\n"
         + "  remote:host - Remote";
 
     /**
@@ -420,8 +416,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     private static GTS staticGTS;
 
     /** Handler for the {@link #ltsLabels} option. */
-    public static class LTSLabelsHandler extends
-            OneArgumentOptionHandler<LTSLabels> {
+    public static class LTSLabelsHandler extends OneArgumentOptionHandler<LTSLabels> {
         /** The required constructor. */
         public LTSLabelsHandler(CmdLineParser parser, OptionDef option,
                 Setter<? super LTSLabels> setter) {
@@ -429,8 +424,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         }
 
         @Override
-        protected LTSLabels parse(String argument)
-            throws NumberFormatException, CmdLineException {
+        protected LTSLabels parse(String argument) throws NumberFormatException, CmdLineException {
             try {
                 return new LTSLabels(argument);
             } catch (FormatException e) {
@@ -470,12 +464,9 @@ public class Generator extends GrooveCmdLineTool<GTS> {
             if (property == null) {
                 this.error = String.format("Unknown property key '%s'", key);
             } else if (property.isSystem()) {
-                this.error =
-                    String.format("Cannot set system property '%s'", key);
+                this.error = String.format("Cannot set system property '%s'", key);
             } else if (!property.getFormat().isSatisfied(value)) {
-                this.error =
-                    String.format("Incorrect value '%s' for property '%s'",
-                        value, key);
+                this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
                 m.put(property, value);
             }
