@@ -198,7 +198,7 @@ public class Quad<T,U,V,W> implements Fixable {
      * @param four fourth element of the new quad
      * @return a new typed quad with the given values
      */
-    public static <TT,UU,VV,WW> Quad<TT,UU,VV,WW> newPair(TT one, UU two, VV three, WW four) {
+    public static <TT,UU,VV,WW> Quad<TT,UU,VV,WW> newQuad(TT one, UU two, VV three, WW four) {
         return new Quad<TT,UU,VV,WW>(one, two, three, four);
     }
 
