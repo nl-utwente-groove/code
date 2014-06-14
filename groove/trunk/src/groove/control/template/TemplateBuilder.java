@@ -28,6 +28,7 @@ import groove.control.term.Term;
 import groove.util.Duo;
 import groove.util.Pair;
 import groove.util.Quad;
+import groove.util.Triple;
 
 import java.util.Deque;
 import java.util.HashMap;
@@ -89,23 +90,24 @@ public class TemplateBuilder {
     private void build(Term init, Template result) throws IllegalStateException {
         assert init.getTransience() == 0 : "Can't build template from transient term";
         // initialise the auxiliary data structures
-        Map<Pair<Term,CtrlVarSet>,Location> locMap = getLocMap(result);
-        Deque<Pair<Term,CtrlVarSet>> fresh = getFresh(result);
+        Map<TermKey,Location> locMap = getLocMap(result);
+        Deque<TermKey> fresh = getFresh(result);
         // set the initial location
-        Pair<Term,CtrlVarSet> initKey = Pair.newPair(init, new CtrlVarSet());
+        TermKey initKey = new TermKey(init, new HashSet<Term>(), new CtrlVarSet());
         locMap.put(initKey, result.getStart());
+        this.termKeyMap.put(result.getStart(), initKey);
         result.getStart().setType(init.getType());
         fresh.add(initKey);
         // do the following as long as there are fresh locations
         while (!fresh.isEmpty()) {
-            Pair<Term,CtrlVarSet> next = fresh.poll();
+            TermKey next = fresh.poll();
             if (!next.one().isTrial()) {
                 continue;
             }
             Location source = locMap.get(next);
             DerivationAttempt nextAttempt = next.one().getAttempt();
-            Location succTarget = addLocation(result, nextAttempt.onSuccess(), null);
-            Location failTarget = addLocation(result, nextAttempt.onFailure(), null);
+            Location succTarget = addLocation(result, nextAttempt.onSuccess(), source, null);
+            Location failTarget = addLocation(result, nextAttempt.onFailure(), source, null);
             SwitchAttempt locAttempt = new SwitchAttempt(source, succTarget, failTarget);
             for (Derivation deriv : nextAttempt) {
                 // build the (possibly nested) switch
@@ -120,42 +122,57 @@ public class TemplateBuilder {
      * template and auxiliary data structures, if it does not yet exist.
      * @param template the template to which the location should be added
      * @param term the term to be added
+     * @param pred the predecessor location if this is due to a verdict; is {@code null}
+     * iff {@code incoming} is non-{@code null}
      * @param incoming incoming control call leading to the location to be created;
-     * may be {@code null}
+     * may be {@code null} if there is no incoming control call but an incoming verdict
      * @return the fresh or pre-existing control location
      */
-    private Location addLocation(Template template, Term term, Call incoming) {
-        Map<Pair<Term,CtrlVarSet>,Location> locMap = getLocMap(template);
+    private Location addLocation(Template template, Term term, Location pred, Call incoming) {
+        Map<TermKey,Location> locMap = getLocMap(template);
         CtrlVarSet vars = new CtrlVarSet();
-        if (incoming != null) {
+        Set<Term> predTerms = new HashSet<Term>();
+        if (incoming == null) {
+            TermKey predKey = this.termKeyMap.get(pred);
+            predTerms.addAll(predKey.two());
+            predTerms.add(predKey.one());
+        } else {
+            assert pred == null;
             vars.addAll(incoming.getOutVars().keySet());
         }
-        Pair<Term,CtrlVarSet> key = Pair.newPair(term, vars);
+        TermKey key = new TermKey(term, predTerms, vars);
         Location result = locMap.get(key);
         if (result == null) {
             getFresh(template).add(key);
             result = template.addLocation(term.getTransience());
             result.setVars(vars);
-            result.setType(term.getType());
+            // if the term is among the verdict predecessors,
+            // we have a loop, meaning that everything has been tried already
+            // so we can safely halt here
+            result.setType(predTerms.contains(term) ? Type.DEAD : term.getType());
             locMap.put(key, result);
+            this.termKeyMap.put(result, key);
         }
         return result;
     }
 
+    /** Mapping from locations to the terms they represent. */
+    private final Map<Location,TermKey> termKeyMap = new HashMap<Location,TermKey>();
+
     /**
      * Returns the mapping from terms to locations for a given template.
      */
-    private Map<Pair<Term,CtrlVarSet>,Location> getLocMap(Template template) {
-        Map<Pair<Term,CtrlVarSet>,Location> result = this.locMapMap.get(template);
+    private Map<TermKey,Location> getLocMap(Template template) {
+        Map<TermKey,Location> result = this.locMapMap.get(template);
         if (result == null) {
-            this.locMapMap.put(template, result = new HashMap<Pair<Term,CtrlVarSet>,Location>());
+            this.locMapMap.put(template, result = new HashMap<TermKey,Location>());
         }
         return result;
     }
 
     /** For each template, a mapping from terms to locations. */
-    private final Map<Template,Map<Pair<Term,CtrlVarSet>,Location>> locMapMap =
-            new HashMap<Template,Map<Pair<Term,CtrlVarSet>,Location>>();
+    private final Map<Template,Map<TermKey,Location>> locMapMap =
+        new HashMap<Template,Map<TermKey,Location>>();
 
     /**
      * Adds a switch corresponding to a given derivation to the
@@ -173,7 +190,7 @@ public class TemplateBuilder {
         SwitchStack result = switchMap.get(deriv);
         if (result == null) {
             result = new SwitchStack();
-            Location target = addLocation(template, deriv.onFinish(), deriv.getCall());
+            Location target = addLocation(template, deriv.onFinish(), null, deriv.getCall());
             result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
             if (deriv.hasNested()) {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
@@ -200,22 +217,21 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from derivations to switches. */
     private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
-            new HashMap<Template,Map<Derivation,SwitchStack>>();
+        new HashMap<Template,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
      */
-    private Deque<Pair<Term,CtrlVarSet>> getFresh(Template template) {
-        Deque<Pair<Term,CtrlVarSet>> result = this.freshMap.get(template);
+    private Deque<TermKey> getFresh(Template template) {
+        Deque<TermKey> result = this.freshMap.get(template);
         if (result == null) {
-            this.freshMap.put(template, result = new LinkedList<Pair<Term,CtrlVarSet>>());
+            this.freshMap.put(template, result = new LinkedList<TermKey>());
         }
         return result;
     }
 
     /** Unexplored set of symbolic locations per template. */
-    private final Map<Template,Deque<Pair<Term,CtrlVarSet>>> freshMap =
-            new HashMap<Template,Deque<Pair<Term,CtrlVarSet>>>();
+    private final Map<Template,Deque<TermKey>> freshMap = new HashMap<Template,Deque<TermKey>>();
 
     /** Returns the template being built for a given procedure. */
     private Template getTemplate(Procedure proc) {
@@ -431,7 +447,7 @@ public class TemplateBuilder {
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
-            new HashMap<Location,Record<Location>>();
+        new HashMap<Location,Record<Location>>();
 
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);
@@ -457,6 +473,17 @@ public class TemplateBuilder {
     }
 
     private static final TemplateBuilder INSTANCE = new TemplateBuilder();
+
+    /**
+     * Type serving to distinguish freshly generated locations.
+     * The distinction is made on the basis of underlying term,
+     * set of verdict predecessor terms, and set of control variables.
+     */
+    private static class TermKey extends Triple<Term,Set<Term>,CtrlVarSet> {
+        TermKey(Term one, Set<Term> two, CtrlVarSet three) {
+            super(one, two, three);
+        }
+    }
 
     /**
      * Type serving to distinguish locations in the initial partition.
