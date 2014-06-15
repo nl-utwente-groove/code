@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.explore.result;
@@ -84,6 +84,13 @@ public class Result {
      */
     public boolean done() {
         return this.bound > 0 && this.elements.size() >= this.bound;
+    }
+
+    /** Sets the result status to all states in this result. */
+    public void register() {
+        for (GraphState state : this.elements) {
+            state.setResult();
+        }
     }
 
     /** Callback factory method for the result set. */

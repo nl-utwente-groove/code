@@ -23,8 +23,8 @@ import groove.gui.look.VisualKey;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
+import groove.lts.Status.Flag;
 
 import java.util.Collection;
 
@@ -95,7 +95,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     }
 
     @Override
-    public void statusUpdate(GTS lts, GraphState explored, Flag flag) {
+    public void statusUpdate(GTS lts, GraphState explored, Flag flag, int oldStatus) {
         if (this.listening) {
             JVertex<GTS> jCell = getJCellForNode(explored);
             if (jCell != null) {
@@ -113,14 +113,16 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                         }
                         jCell.setLook(Look.ABSENT, true);
                     }
-                    if (explored.isRecipeState()) {
+                    if (explored.isInternalState()) {
                         for (JEdge<GTS> jEdge : jCell.getContext()) {
                             jEdge.setLook(Look.RECIPE, true);
                         }
                         jCell.setLook(Look.RECIPE, true);
                     }
-                    jCell.setLook(Look.FINAL, lts.isFinal(explored));
-                    jCell.setLook(Look.RESULT, lts.isResult(explored));
+                    jCell.setLook(Look.FINAL, explored.isFinal());
+                    break;
+                case RESULT:
+                    jCell.setLook(Look.RESULT, explored.isResult());
                 }
             }
         }

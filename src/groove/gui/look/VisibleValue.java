@@ -160,7 +160,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jVertex.getJGraph().isShowAbsentStates() && state.isAbsent()) {
             return false;
         }
-        if (!jVertex.getJGraph().isShowRecipeSteps() && state.isRecipeState() && state.isDone()) {
+        if (!jVertex.getJGraph().isShowRecipeSteps() && state.isInternalState() && state.isDone()) {
             return false;
         }
         if (jVertex.getNumber() > jVertex.getJModel().getStateBound()) {
@@ -180,7 +180,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jEdge.hasVisibleFlag()) {
             return false;
         }
-        if (!jEdge.getJGraph().isShowRecipeSteps() && trans.isRecipeStep()
+        if (!jEdge.getJGraph().isShowRecipeSteps() && trans.isInternalStep()
             && trans.source().isDone()) {
             return false;
         }

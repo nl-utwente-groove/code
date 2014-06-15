@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -39,15 +39,15 @@ import java.util.List;
  * @version $Revision $
  */
 public enum VisualKey {
-    /** 
+    /**
      * Node adornment text (parameter-style). Defaults to {@code null},
      * meaning no adornment. The empty string results in an adornment without
-     * inscription.  
+     * inscription.
      */
     ADORNMENT(String.class, null, REFRESHABLE),
-    /** 
+    /**
      * Background colour for nodes. Defaults to {@link Values#DEFAULT_BACKGROUND}.
-     * A {@code null} value means a whitewashed version of the foreground is used. 
+     * A {@code null} value means a whitewashed version of the foreground is used.
      */
     BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND, DERIVED),
     /** Controlled foreground colour, overriding {@link #FOREGROUND} if set. Defaults to {@code null}. */
@@ -66,7 +66,7 @@ public enum VisualKey {
     EDGE_TARGET_LABEL(String.class, null, REFRESHABLE),
     /** Position of the optional edge target label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
     EDGE_TARGET_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
-    /** Node or edge visibility. Defaults to {@code false}. */
+    /** Node or edge error. Defaults to {@code false}. */
     ERROR(Boolean.class, false, REFRESHABLE),
     /** Node or edge emphasis. Defaults to {@code false}. */
     EMPHASIS(Boolean.class, false, CONTROLLED),
@@ -77,12 +77,12 @@ public enum VisualKey {
     /**
      * Line colour for an <i>inner</i> line drawn inside the normal outline
      * Defaults to {@code null}, meaning there is no
-     * inner line. 
+     * inner line.
      */
     INNER_LINE(Color.class, null, DERIVED),
     /**
      * Extra space between text and border (needed if the node can have
-     * a thicker border). Defaults to 0. 
+     * a thicker border). Defaults to 0.
      */
     INSET(Integer.class, 0, DERIVED),
     /**
@@ -105,11 +105,9 @@ public enum VisualKey {
     /** Node opacity. Defaults to {@code false}. */
     OPAQUE(Boolean.class, false, DERIVED),
     /** Intermediate edge points. */
-    POINTS(List.class,
-            Arrays.asList(new Point2D.Double(), new Point2D.Double()),
-            CONTROLLED),
-    /** Node or edge visibility. Defaults to {@code true}. */
-    VISIBLE(Boolean.class, true, REFRESHABLE);
+    POINTS(List.class, Arrays.asList(new Point2D.Double(), new Point2D.Double()), CONTROLLED),
+        /** Node or edge visibility. Defaults to {@code true}. */
+        VISIBLE(Boolean.class, true, REFRESHABLE);
 
     /** Constructs a visual key that is possibly derived from a looks value. */
     private VisualKey(Class<?> type, Object defaultValue, Nature nature) {
@@ -119,7 +117,7 @@ public enum VisualKey {
         test(defaultValue);
     }
 
-    /** 
+    /**
      * Tests if a given attribute value is of the correct type for this attribute.
      * @param value the value to be tested
      * @throws IllegalArgumentException if the value is not of the correct type
@@ -132,8 +130,8 @@ public enum VisualKey {
             error = !this.type.isAssignableFrom(value.getClass());
         }
         if (error) {
-            throw new IllegalArgumentException(String.format(
-                "%s value %s should be of type %s", this, value, this.type));
+            throw new IllegalArgumentException(String.format("%s value %s should be of type %s",
+                this, value, this.type));
         }
     }
 
@@ -151,7 +149,7 @@ public enum VisualKey {
     private final Object defaultValue;
     private final Nature nature;
 
-    /** 
+    /**
      * Returns an array of automatically refreshable controlled keys.
      * The list consists of all {@link #REFRESHABLE} keys.
      */
@@ -159,7 +157,7 @@ public enum VisualKey {
         return REFRESHABLES;
     }
 
-    /** 
+    /**
      * Returns an array of derived keys.
      * The list consists of all {@link #DERIVED} keys.
      */
@@ -167,7 +165,7 @@ public enum VisualKey {
         return DERIVEDS;
     }
 
-    /** 
+    /**
      * Returns an array of controlled keys.
      * The list consists of all {@link #CONTROLLED} keys.
      */

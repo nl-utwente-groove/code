@@ -323,13 +323,13 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
-    public final boolean isRecipeStep() {
+    public final boolean isInternalStep() {
         return getStep().inRecipe();
     }
 
     @Override
     public final boolean isRealStep() {
-        return !isRecipeStep() && source().isRealState() && target().isRealState();
+        return !isInternalStep() && source().isRealState() && target().isRealState();
     }
 
     /** Flag indicating that the underlying morphism is a partial identity. */

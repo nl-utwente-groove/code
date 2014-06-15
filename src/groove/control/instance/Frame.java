@@ -247,7 +247,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @see #getRecipe()
      * @see #isTransient()
      */
-    public boolean inRecipe() {
+    public boolean isInternal() {
         return getSwitchStack().inRecipe();
     }
 
@@ -255,7 +255,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Returns the outer recipe to which this frame belongs, if any.
      * @return the recipe to this this frame belongs, or {@code null}
      * if it is not inside a recipe
-     * @see #inRecipe()
+     * @see #isInternal()
      */
     public Recipe getRecipe() {
         return getSwitchStack().getRecipe();

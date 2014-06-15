@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -61,7 +61,7 @@ public class Exploration {
     private boolean interrupted;
 
     /**
-     * Initialise to a given exploration. 
+     * Initialise to a given exploration.
      * @param strategy strategy component of the exploration; non-{@code null}
      * @param acceptor acceptor component of the exploration; non-{@code null}
      * @param nrResults number of results: {@code 0} means unbounded
@@ -97,7 +97,7 @@ public class Exploration {
 
     /**
      * Initialises to the default exploration, which is formed by the BFS
-     * strategy, the final acceptor and 0 (=infinite) results.  
+     * strategy, the final acceptor and 0 (=infinite) results.
      */
     public Exploration() {
         this("bfs", "final", 0);
@@ -154,28 +154,28 @@ public class Exploration {
     }
 
     /**
-     * Returns the result of the most recent exploration. 
+     * Returns the result of the most recent exploration.
      */
     public Result getResult() {
         return this.lastResult;
     }
 
     /**
-     * Returns the state in which the most recent exploration ended. 
+     * Returns the state in which the most recent exploration ended.
      */
     public GraphState getLastState() {
         return this.lastState;
     }
 
     /**
-     * Returns the message of the last exploration. 
+     * Returns the message of the last exploration.
      */
     public String getLastMessage() {
         return this.lastMessage;
     }
 
     /**
-     * Indicates if the most recent exploration was manually interrupted. 
+     * Indicates if the most recent exploration was manually interrupted.
      */
     public boolean isInterrupted() {
         return this.interrupted;
@@ -200,7 +200,7 @@ public class Exploration {
         return buffer.toString();
     }
 
-    /** 
+    /**
      * Tests if this exploration is compatible with a given rule system.
      * If this method does not throw an exception, then neither will {@link #play(GTS, GraphState)}.
      * @throws FormatException if the rule system is not compatible
@@ -262,23 +262,24 @@ public class Exploration {
                 listener.stop(gts);
             }
         }
-        // stop profiling    
+        // stop profiling
         playReporter.stop();
 
         // store result
         this.lastResult = parsedAcceptor.getResult();
+        this.lastResult.register();
         this.lastState = parsedStrategy.getLastState();
         this.lastMessage = parsedStrategy.getMessage();
     }
 
-    /** 
+    /**
      * Returns a string that, when used as input for {@link #parse(String)},
      * will return an exploration equal to this one.
      */
     public String toParsableString() {
         String result =
-            StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.nrResults;
+                StrategyEnumerator.toParsableStrategy(this.strategy) + " "
+                        + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.nrResults;
         return result;
     }
 
@@ -301,12 +302,12 @@ public class Exploration {
         this.listeners.remove(listener);
     }
 
-    /** 
+    /**
      * Parses an exploration description into an exploration instance.
      * The description must be a list of two or three space-separated substrings:
      * <li> The first value is the name of the strategy
      * <li> The second value is the name of the acceptor
-     * <li> the (optional) third value is the number of expected results; 
+     * <li> the (optional) third value is the number of expected results;
      * if omitted, the number is infinite
      * @param description the exploration description to be parsed
      * @return the parsed exploration (non-{@code null})
@@ -322,7 +323,7 @@ public class Exploration {
         int resultCount = 0;
         if (parts.length == 3) {
             String countMessage =
-                String.format("Result count '%s' must be a non-negative number", parts[2]);
+                    String.format("Result count '%s' must be a non-negative number", parts[2]);
             try {
                 resultCount = Integer.parseInt(parts[2]);
             } catch (NumberFormatException e) {
@@ -338,7 +339,7 @@ public class Exploration {
     /**
      * Returns the total running time of the exploration.
      * This information can be used for profiling.
-     * @return the long holding the running time in number of seconds 
+     * @return the long holding the running time in number of seconds
      */
     static public long getRunningTime() {
         return playReporter.getTotalTime();
@@ -346,7 +347,7 @@ public class Exploration {
 
     /** Message describing the syntax of a parsable exploration strategy. */
     static public final String SYNTAX_MESSAGE =
-        "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
+            "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Static instance of the strategy enumerator. */
     static private final StrategyEnumerator strategies = StrategyEnumerator.instance();
     /** Static instance of the acceptor enumerator. */

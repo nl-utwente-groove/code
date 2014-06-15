@@ -30,10 +30,10 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.MatchApplier;
 import groove.lts.MatchCollector;
+import groove.lts.Status.Flag;
 import groove.transform.Record;
 import groove.util.Groove;
 import groove.util.Reporter;
@@ -379,7 +379,7 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            if (state.isRecipeState()) {
+            if (state.isInternalState()) {
                 if (state.isClosed()) {
                     this.closedRecipeStateCount++;
                 } else {
@@ -396,13 +396,13 @@ public class StatisticsReporter extends AExplorationReporter {
         }
 
         @Override
-        public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
+        public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
             switch (flag) {
             case CLOSED:
-                if (explored.getPrimeFrame().inRecipe()) {
+                if (explored.getPrimeFrame().isInternal()) {
                     this.openRecipeStateCount--;
                 }
-                if (explored.isRecipeState()) {
+                if (explored.isInternalState()) {
                     this.closedRecipeStateCount++;
                 }
                 break;
@@ -410,7 +410,7 @@ public class StatisticsReporter extends AExplorationReporter {
                 this.errorStateCount++;
                 break;
             case DONE:
-                if (explored.getAbsence() > 0) {
+                if (explored.isAbsent()) {
                     this.absentStateCount++;
                 }
             }

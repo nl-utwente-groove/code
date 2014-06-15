@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: LTSPanel.java,v 1.21 2008-02-05 13:28:06 rensink Exp $
  */
 package groove.gui.display;
@@ -39,8 +39,8 @@ import groove.gui.tree.LabelTree;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
+import groove.lts.Status.Flag;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -74,7 +74,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
  * Simulator.
- * 
+ *
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
@@ -118,14 +118,12 @@ public class LTSDisplay extends Display implements SimulatorListener {
     @Override
     protected JComponent createInfoPanel() {
         LabelTree<GTS> labelTree = getLabelTree();
-        final TitledPanel result =
-            new TitledPanel("Transition labels", labelTree, null, true);
+        final TitledPanel result = new TitledPanel("Transition labels", labelTree, null, true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("background")
-                    && evt.getNewValue() != null) {
+                if (evt.getPropertyName().equals("background") && evt.getNewValue() != null) {
                     result.setEnabledBackground((Color) evt.getNewValue());
                 }
             }
@@ -155,8 +153,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     private JToggleButton getFilterLTSButton() {
         if (this.filterLTSButton == null) {
-            this.filterLTSButton =
-                Options.createToggleButton(getActions().getFilterLTSAction());
+            this.filterLTSButton = Options.createToggleButton(getActions().getFilterLTSAction());
         }
         return this.filterLTSButton;
     }
@@ -243,8 +240,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * @param showTransitions flag to indicate that the canonical incoming transition
      * should also be highlighted.
      */
-    public void emphasiseStates(List<GraphState> counterExamples,
-            boolean showTransitions) {
+    public void emphasiseStates(List<GraphState> counterExamples, boolean showTransitions) {
         if (getJModel() == null) {
             return;
         }
@@ -307,8 +303,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private LabelTree<GTS> labelTree;
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
@@ -424,7 +419,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void statusUpdate(GTS gts, GraphState closed, Flag flag) {
+        public void statusUpdate(GTS gts, GraphState closed, Flag flag, int oldStatus) {
             assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
             updateStatus(gts);
         }
@@ -473,17 +468,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
         @Override
         public void mouseClicked(MouseEvent evt) {
-            if (getJGraph().getMode() == SELECT_MODE
-                && evt.getButton() == MouseEvent.BUTTON1) {
-                if (!isEnabled()
-                    && getActions().getStartSimulationAction().isEnabled()) {
+            if (getJGraph().getMode() == SELECT_MODE && evt.getButton() == MouseEvent.BUTTON1) {
+                if (!isEnabled() && getActions().getStartSimulationAction().isEnabled()) {
                     getActions().getStartSimulationAction().execute();
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
                     // find cell in model coordinates
-                    JCell<GTS> cell =
-                        getJGraph().getFirstCellForLocation(loc.x, loc.y);
+                    JCell<GTS> cell = getJGraph().getFirstCellForLocation(loc.x, loc.y);
                     if (cell instanceof LTSJEdge) {
                         GraphTransition trans = ((LTSJEdge) cell).getEdge();
                         getSimulatorModel().setTransition(trans);
@@ -525,17 +517,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
         /**
          * Refreshes the background colour, based on the question whether the LTS is
-         * filtered or incompletely displayed. 
+         * filtered or incompletely displayed.
          */
         public void refreshBackground() {
             boolean incomplete = isFilteringLts();
             LTSJModel jModel = (LTSJModel) getJGraph().getModel();
             if (!incomplete) {
-                incomplete =
-                    jModel.getStateBound() < jModel.getGraph().nodeCount();
+                incomplete = jModel.getStateBound() < jModel.getGraph().nodeCount();
             }
-            Color background =
-                incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;
+            Color background = incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;
             setEnabledBackground(background);
         }
     }

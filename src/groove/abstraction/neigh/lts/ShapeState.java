@@ -28,12 +28,12 @@ import groove.lts.AbstractGraphState;
 import groove.lts.ActionLabel;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchCollector;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
 import groove.lts.StateReference;
-import groove.lts.MatchCollector;
 import groove.transform.Proof;
 import groove.util.cache.CacheReference;
 
@@ -80,8 +80,7 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    protected ShapeState(CacheReference<StateCache> reference, Shape shape, Frame frame,
-            int number) {
+    protected ShapeState(CacheReference<StateCache> reference, Shape shape, Frame frame, int number) {
         super(reference, number);
         this.shape = shape;
         if (!this.shape.isFixed()) {
@@ -132,8 +131,8 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition || transition instanceof ShapeNextState : "Invalid transition type.";
-    this.transitions.add(transition);
-    return true;
+        this.transitions.add(transition);
+        return true;
     }
 
     @Override

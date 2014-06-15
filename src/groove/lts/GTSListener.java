@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.lts.GraphState.Flag;
+import groove.lts.Status.Flag;
 
 /**
  * A listener to certain types of GTS updates.
@@ -43,7 +43,9 @@ public interface GTSListener {
      * state has changed.
      * @param gts the GTS in which the change occurred
      * @param state the graph state whose status has changed
-     * @param flag the status flag that has changed
+     * @param flag the status flag that is indicative of the state.
+     * Must satisfy {@link Flag#isChange()}
+     * @param oldStatus status of {@code state} before the change
      */
-    public void statusUpdate(GTS gts, GraphState state, Flag flag);
+    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus);
 }

@@ -167,12 +167,12 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
 
     @Override
     public GraphTransition getInTransition() {
-        if (isRecipeState() || !isRecipeStep()) {
+        if (isInternalState() || !isInternalStep()) {
             return this;
         }
         // find the initial rule transition
         RuleTransition initial = this;
-        while (initial.source().isRecipeState()) {
+        while (initial.source().isInternalState()) {
             // recipe states cannot be the initial state, so it's a GraphNextState
             initial = (GraphNextState) initial.source();
         }
@@ -203,13 +203,13 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
     }
 
     @Override
-    public boolean isRecipeStep() {
+    public boolean isInternalStep() {
         return getStep().inRecipe();
     }
 
     @Override
     public final boolean isRealStep() {
-        return !isRecipeStep() && source().isRealState() && target().isRealState();
+        return !isInternalStep() && source().isRealState() && target().isRealState();
     }
 
     // ------------------------------------------------------------------------

@@ -1,22 +1,22 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.lts;
 
-import groove.lts.GraphState.Flag;
+import groove.lts.Status.Flag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ public class GTSCounter implements GTSListener {
         }
         if (!state.isDone()) {
             this.inTransMap.put(state, new ArrayList<RuleTransition>());
-        } else if (state.isRecipeState()) {
+        } else if (state.isInternalState()) {
             this.recipeStageCount++;
         }
     }
@@ -105,9 +105,9 @@ public class GTSCounter implements GTSListener {
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag) {
+    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
         this.count[flag.ordinal()]++;
-        if (flag == Flag.CLOSED && state.isRecipeState()) {
+        if (flag == Flag.CLOSED && state.isInternalState()) {
             this.recipeStageCount++;
         } else if (flag == Flag.DONE) {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);
@@ -176,5 +176,5 @@ public class GTSCounter implements GTSListener {
     private int ruleTransitionCount;
     private int absentTransitionCount;
     private final Map<GraphState,List<RuleTransition>> inTransMap =
-        new HashMap<GraphState,List<RuleTransition>>();
+            new HashMap<GraphState,List<RuleTransition>>();
 }

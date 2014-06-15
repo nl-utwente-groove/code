@@ -35,7 +35,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
             return false;
         }
         GraphTransition trans = (GraphTransition) edge;
-        if (inRecipe() != trans.isRecipeStep()) {
+        if (inRecipe() != trans.isInternalStep()) {
             return false;
         }
         if (isAbsent() != (trans.source().isAbsent() || trans.target().isAbsent())) {
@@ -98,7 +98,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
 
     /** Indicates that this edge is part of a recipe. */
     final boolean inRecipe() {
-        return getEdge().isRecipeStep();
+        return getEdge().isInternalStep();
     }
 
     @Override

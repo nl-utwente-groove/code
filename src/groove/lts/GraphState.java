@@ -19,6 +19,7 @@ package groove.lts;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
 import groove.graph.Node;
+import groove.lts.Status.Flag;
 
 import java.util.List;
 import java.util.Set;
@@ -182,6 +183,17 @@ public interface GraphState extends Node {
     public boolean isClosed();
 
     /**
+     * Declares this state to be a result state.
+     * The return value indicates if the result status was changed as
+     * a result of this call.
+     * @return if {@code false}, the state was already known to be a result state
+     */
+    public boolean setResult();
+
+    /** Indicates if this is a result state. */
+    public boolean isResult();
+
+    /**
      * Declares this state to be an error state.
      * The return value indicates if the error status was changed as
      * a result of this call.
@@ -209,22 +221,30 @@ public interface GraphState extends Node {
      */
     public boolean isDone();
 
+    /**
+     * Indicates if this state is final.
+     * This is the case if and only if the state is done and the actual control frame is final.
+     * @see Flag#FINAL
+     */
+    public boolean isFinal();
+
     /** Indicates if this state is inside a recipe.
      * This is the case if and only if the recipe has started
      * and not yet terminated.
      * A state can only be inside a recipe if it is transient.
      * @see #isTransient()
+     * @see Flag#INTERNAL
 
      */
-    public boolean isRecipeState();
+    public boolean isInternalState();
 
     /**
      * Indicates if this state is a real part of the GTS.
-     * This is the case if and only if the state is not a recipe state, 
+     * This is the case if and only if the state is not a recipe state,
      * or an absent or erroneous state.
      * @see #isAbsent()
      * @see #isError()
-     * @see #isRecipeState()
+     * @see #isInternalState()
      */
     public boolean isRealState();
 
@@ -247,7 +267,7 @@ public interface GraphState extends Node {
     /**
      * Indicates the absence level, which is defined as the lowest
      * transient depth of the known reachable states.
-     * This is maximal ({@link Flag#MAX_ABSENCE}) if the state is
+     * This is maximal ({@link Status#MAX_ABSENCE}) if the state is
      * erroneous, and 0 if the state is non-transient (hence present).
      * The state is <i>absent</i> if it is done has a positive absence level.
      * @see #isDone()
@@ -265,6 +285,9 @@ public interface GraphState extends Node {
      */
     public boolean isPresent();
 
+    /** Returns the integer representation of the status of this state. */
+    public int getStatus();
+
     /** Tests if a given status flag is set. */
     public boolean hasFlag(Flag flag);
 
@@ -279,77 +302,4 @@ public interface GraphState extends Node {
      * @see Flag#isStrategy()
      */
     public boolean setFlag(Flag flag, boolean value);
-
-    /** Changeable status flags of a graph state. */
-    public enum Flag {
-        /**
-         * Flag indicating that the state has been closed.
-         * This is the case if and only if no more outgoing transitions will be added.
-         */
-        CLOSED(false),
-        /**
-         * Flag indicating that exploration of the graph state is done.
-         * This is the case if and only if it is closed, and all outgoing transition
-         * sequences eventually lead to non-transient or absent states.
-         */
-        DONE(false),
-        /** Flag indicating that the state has an error. */
-        ERROR(false),
-        /** Helper flag used during state space exploration. */
-        KNOWN(true);
-
-        private Flag(boolean strategy) {
-            this.mask = 1 << ordinal();
-            this.strategy = strategy;
-        }
-
-        /** Returns the mask corresponding to this flag. */
-        public int mask() {
-            return this.mask;
-        }
-
-        /** Sets this flag in a given integer value. */
-        public int set(int status) {
-            return status | this.mask;
-        }
-
-        /** Resets this flag in a given integer value. */
-        public int reset(int status) {
-            return status & ~this.mask;
-        }
-
-        /** Tests if this flag is set in a given integer value. */
-        public boolean test(int status) {
-            return (status & this.mask) != 0;
-        }
-
-        /** Indicates if this flag is exploration strategy-related. */
-        public boolean isStrategy() {
-            return this.strategy;
-        }
-
-        /** Retrieves the absence level from a given status value. */
-        static public int getAbsence(int status) {
-            return status >> ABSENCE_SHIFT;
-        }
-
-        /** Retrieves the absence level from a given status value. */
-        static public int setAbsence(int status, int absence) {
-            if (absence > MAX_ABSENCE) {
-                throw new IllegalArgumentException(String.format(
-                    "Absence level %d too large: max. %s", absence, MAX_ABSENCE));
-            }
-            return status | (absence << ABSENCE_SHIFT);
-        }
-
-        private final int mask;
-        /** Indicates if this flag is exploration-related. */
-        private final boolean strategy;
-        /** Number of bits by which a status value has be right-shifted to get
-         * the absence value.
-         */
-        private final static int ABSENCE_SHIFT = 25;
-        /** Maximal absence value. */
-        public final static int MAX_ABSENCE = 1 << (31 - ABSENCE_SHIFT);
-    }
 }

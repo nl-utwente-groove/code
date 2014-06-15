@@ -21,8 +21,8 @@ import groove.explore.ExplorationListener;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
+import groove.lts.Status.Flag;
 
 /**
  * Class that implements a visualisation of the progress of a GTS generation
@@ -32,7 +32,7 @@ import groove.lts.GraphTransition;
  * @version $Revision$
  */
 public class GenerateProgressListener extends GenerateProgressMonitor implements
-        ExplorationListener, GTSListener {
+ExplorationListener, GTSListener {
     @Override
     public void start(Exploration exploration, GTS gts) {
         restart();
@@ -60,7 +60,7 @@ public class GenerateProgressListener extends GenerateProgressMonitor implements
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag) {
+    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
         // does nothing
     }
 }

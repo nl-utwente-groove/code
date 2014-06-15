@@ -35,10 +35,11 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
         if (state != null) {
             setLook(Look.OPEN, !state.isClosed());
             setLook(Look.ABSENT, state.isAbsent());
-            setLook(Look.RECIPE, state.isRecipeState());
+            setLook(Look.RECIPE, state.isInternalState());
             setLook(Look.TRANSIENT, state.isTransient());
-            setLook(Look.FINAL, state.getGTS().isFinal(state));
-            setLook(Look.RESULT, state.getGTS().isResult(state));
+            setLook(Look.FINAL, state.isFinal());
+            setLook(Look.RESULT, state.isResult());
+            setLook(Look.ERROR, state.isError());
         }
     }
 
@@ -69,7 +70,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
      * @return true if the state is a result state.
      */
     public boolean isResult() {
-        return getNode().getGTS().isResult(getNode());
+        return getNode().isResult();
     }
 
     /**
@@ -99,8 +100,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
      * @return true if the state is final.
      */
     public boolean isFinal() {
-        GTS gts = getNode().getGTS();
-        return gts.isFinal(getNode());
+        return getNode().isFinal();
     }
 
     @Override

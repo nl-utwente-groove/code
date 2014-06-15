@@ -712,6 +712,15 @@ public class Rule implements Action, Fixable {
         return result;
     }
 
+    /** Indicates if this rule serves to test a property of a graph.
+     * This is only the case if the rule is unmodifying, has no parameters
+     * and has zero priority.
+     *
+     */
+    public boolean isProperty() {
+        return isModifying() && getSignature().isEmpty() && getPriority() == 0;
+    }
+
     /**
      * Indicates if application of this rule actually changes the host graph. If
      * <code>false</code>, this means the rule is essentially a graph

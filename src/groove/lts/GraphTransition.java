@@ -68,13 +68,13 @@ public interface GraphTransition extends Edge {
      * an atomic recipe execution.
      * @see #isPartial()
      */
-    public boolean isRecipeStep();
+    public boolean isInternalStep();
 
     /**'
      * Indicates if this transition is a real part of the GTS.
      * This is the case if it is not a recipe step, and its source and
      * target states are real.
-     * @see #isRecipeStep()
+     * @see #isInternalStep()
      * @see GraphState#isRealState()
      */
     public boolean isRealStep();
@@ -142,12 +142,12 @@ public interface GraphTransition extends Edge {
         },
         /**
          * Only complete transitions, be they rule- or recipe-triggered.
-         * @see GraphTransition#isRecipeStep()
+         * @see GraphTransition#isInternalStep()
          */
         COMPLETE {
             @Override
             public boolean admits(GraphTransition trans) {
-                return !trans.isRecipeStep();
+                return !trans.isInternalStep();
             }
         },
         /**

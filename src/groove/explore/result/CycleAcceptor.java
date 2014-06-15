@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: CycleAcceptor.java,v 1.4 2008-03-04 14:48:17 kastenberg Exp $
  */
 
@@ -20,7 +20,7 @@ package groove.explore.result;
 import groove.explore.strategy.LTLStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
+import groove.lts.Status.Flag;
 import groove.verify.ModelChecking.Outcome;
 import groove.verify.ModelChecking.Record;
 import groove.verify.ProductListener;
@@ -37,7 +37,7 @@ import java.util.Collection;
  * cycle detection depth-first search is started. If a counter-example is found,
  * the graph-states currently on the search-stack constitute the path
  * representing the counter-example.
- * 
+ *
  * @author Harmen Kastenberg
  * @version $Revision: 5191 $
  */
@@ -61,7 +61,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag) {
+    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
         throw new UnsupportedOperationException();
     }
 
@@ -127,7 +127,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     private LTLStrategy strategy;
     private Record record;
 
-    /** 
+    /**
      * Type of the result object for the {@link CycleAcceptor}.
      * The result is a list rather than a set, allowing for the multiple
      * occurrence of the same graph state in a counter-example.

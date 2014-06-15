@@ -312,7 +312,7 @@ public final class AGTS extends GTS {
                 // This can only happen on the first state.
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
-                    new ShapeState(AGTS.this, origSrcClosure.getGraph(),
+                    new ShapeState(result, origSrcClosure.getGraph(),
                         origSrcClosure.getPrimeFrame(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
@@ -353,10 +353,9 @@ public final class AGTS extends GTS {
         if (reducedState instanceof ShapeNextState) {
             reducedGTS.addTransition((RuleTransition) reducedState);
         }
+        reducedState.setFrame(origState.getActualFrame());
         reducedState.setClosed(true);
-        if (this.isFinal(origState)) {
-            reducedGTS.setFinal(reducedState);
-        }
+        reducedState.setDone(origState.getAbsence());
     }
 
     private ShapeState addStateWithoutCheck(ShapeState state) {

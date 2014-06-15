@@ -23,9 +23,9 @@ import groove.grammar.host.ValueNode;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
+import groove.lts.Status.Flag;
 import groove.transform.RuleEvent;
 
 import java.io.File;
@@ -261,7 +261,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      */
     private boolean isRuleEnabled(String r) {
         return this.enabledrules == null || this.enabledrules.size() == 0
-            || this.enabledrules.contains(r);
+                || this.enabledrules.contains(r);
     }
 
     private boolean isMinMaxrule(String r) {
@@ -303,7 +303,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         } else {
             //update the score
             if (isRuleEnabled(transition.label().getAction().getLastName())
-                && target.getMatch() == null) {
+                    && target.getMatch() == null) {
                 int score = getHeuristicScore((RuleTransition) transition);
                 mtt.setScore(score);
             }
@@ -315,7 +315,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag) {
+    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
         //unnessecary when all transitions are already handled
     }
 

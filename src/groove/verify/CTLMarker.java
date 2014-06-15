@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: CTLMatchingMarker.java,v 1.8 2008-03-05 16:52:10 rensink Exp $
  */
 package groove.verify;
@@ -52,7 +52,7 @@ public class CTLMarker {
      * graph, where certain special LTS-related properties may be indicated
      * by special labels.
      * @throws FormatException if the model has special state markers that occur
-     * on edge labels 
+     * on edge labels
      */
     public CTLMarker(Formula formula, Graph model, LTSLabels ltsLabels) throws FormatException {
         assert model != null;
@@ -75,9 +75,9 @@ public class CTLMarker {
         init();
     }
 
-    /** Tests if the model is consistent with the special state markers. 
+    /** Tests if the model is consistent with the special state markers.
      * @throws FormatException if the model has special state markers that occur
-     * on edge labels 
+     * on edge labels
      */
     private void testFormat() throws FormatException {
         for (Node node : this.model.nodeSet()) {
@@ -91,7 +91,7 @@ public class CTLMarker {
         }
     }
 
-    /** Creates and initialises the internal data structures for marking. 
+    /** Creates and initialises the internal data structures for marking.
      */
     private void init() {
         // initialise the formula numbering
@@ -185,7 +185,7 @@ public class CTLMarker {
         }
     }
 
-    /** 
+    /**
      * Registers a formula and all its subformulas
      * into the {@link #formulaNr} and {@link #atoms} maps.
      */
@@ -295,10 +295,10 @@ public class CTLMarker {
             return computeEU(mark(property.getArg1()), mark(property.getArg2()));
         case EVENTUALLY:
             throw new UnsupportedOperationException(
-                "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
+                    "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
         case ALWAYS:
             throw new UnsupportedOperationException(
-                "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
+                    "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
         default:
             throw new IllegalArgumentException();
         }
@@ -312,10 +312,10 @@ public class CTLMarker {
             return computeAU(mark(property.getArg1()), mark(property.getArg2()));
         case EVENTUALLY:
             throw new UnsupportedOperationException(
-                "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
+                    "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
         case ALWAYS:
             throw new UnsupportedOperationException(
-                "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
+                    "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
         default:
             throw new IllegalArgumentException();
         }
@@ -485,7 +485,7 @@ public class CTLMarker {
         return result;
     }
 
-    /** 
+    /**
      * Tests if the top-level formula has a given boolean value for the initial state.
      * @param value the value for which the top-level formula is tested
      */
@@ -505,7 +505,7 @@ public class CTLMarker {
     private boolean hasValue(Formula formula, boolean value) {
         if (!hasRoot()) {
             throw new IllegalArgumentException(
-                "The model being checked does not have an unabiguous root node");
+                    "The model being checked does not have an unabiguous root node");
         }
         assert this.formulaNr.containsKey(formula);
         return hasValue(formula, getRoot(), value);
@@ -589,9 +589,9 @@ public class CTLMarker {
                         }
                         Node result = CTLMarker.this.states[this.stateIx];
                         this.stateIx =
-                            value ? sat.nextSetBit(this.stateIx + 1)
-                                    : sat.nextClearBit(this.stateIx + 1);
-                        return result;
+                                value ? sat.nextSetBit(this.stateIx + 1)
+                                        : sat.nextClearBit(this.stateIx + 1);
+                                return result;
                     }
 
                     @Override
@@ -694,13 +694,13 @@ public class CTLMarker {
             boolean result = false;
             switch (flag) {
             case FINAL:
-                result = this.gts.isFinal((GraphState) node);
+                result = ((GraphState) node).isFinal();
                 break;
             case OPEN:
                 result = !((GraphState) node).isClosed();
                 break;
             case RESULT:
-                result = this.gts.isResult((GraphState) node);
+                result = ((GraphState) node).isResult();
                 break;
             case START:
                 result = node == this.gts.startState();
