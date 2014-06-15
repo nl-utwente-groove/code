@@ -31,15 +31,15 @@ import java.util.List;
  * @version $Revision$
  */
 public interface RuleTransition extends RuleTransitionStub, GraphTransition {
-    /** Overrides the method to specialise the result type. */
+    /* Overrides the method to specialise the result type. */
     @Override
     GraphState source();
 
-    /** Overrides the method to specialise the result type. */
+    /* Overrides the method to specialise the result type. */
     @Override
     GraphState target();
 
-    /** Returns the event associated with this rule transition. */
+    /* Overrides the method to specialise the result type. */
     @Override
     RuleEvent getEvent();
 

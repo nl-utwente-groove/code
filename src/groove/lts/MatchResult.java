@@ -20,8 +20,6 @@ import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.transform.RuleEvent;
 
-import java.util.Comparator;
-
 /**
  * Class encoding the result of matching the rule in a control transition.
  * This essentially consists of a rule event and the control transition.
@@ -45,10 +43,10 @@ public class MatchResult implements GraphTransitionKey {
      * Indicates if this match result corresponds to an
      * already explored rule transition from a given source state.
      * @param state the source state for which the test is carried out
-     * @see #hasRuleTransition()
+     * @see #hasTransition()
      */
-    public boolean hasRuleTransitionFrom(GraphState state) {
-        return hasRuleTransition() && getRuleTransition().source() == state;
+    public boolean hasTransitionFrom(GraphState state) {
+        return hasTransition() && getTransition().source() == state;
     }
 
     /**
@@ -56,20 +54,21 @@ public class MatchResult implements GraphTransitionKey {
      * Note that, in case the match is reused from a parent state,
      * the source of this transition (if any) may differ from
      * the state to which the match is to be applied.
-     * @see #hasRuleTransitionFrom(GraphState)
+     * @see #hasTransitionFrom(GraphState)
      */
-    public boolean hasRuleTransition() {
+    public boolean hasTransition() {
         return this.ruleTrans != null;
     }
 
     /** Returns the rule transition wrapped in this match result, if any. */
-    public RuleTransition getRuleTransition() {
+    public RuleTransition getTransition() {
         return this.ruleTrans;
     }
 
     private final RuleTransition ruleTrans;
 
     /** Returns the event wrapped by this transition key. */
+    @Override
     public RuleEvent getEvent() {
         return this.event;
     }
@@ -84,7 +83,8 @@ public class MatchResult implements GraphTransitionKey {
     private final Step step;
 
     /** Returns the underlying rule of this match. */
-    public Rule getRule() {
+    @Override
+    public Rule getAction() {
         return this.event.getRule();
     }
 
@@ -132,23 +132,9 @@ public class MatchResult implements GraphTransitionKey {
 
     @Override
     public String toString() {
-        return getRule().getLastName();
+        return getAction().getLastName();
     }
 
     /** The precomputed hashcode; 0 if it has not yet been not initialised. */
     private int hashcode;
-
-    /** Fixed comparator for match results, which compares results for their
-     * rule events and then their control transitions.
-     */
-    public static final Comparator<MatchResult> COMPARATOR = new Comparator<MatchResult>() {
-        @Override
-        public int compare(MatchResult o1, MatchResult o2) {
-            int result = o1.getEvent().compareTo(o2.getEvent());
-            if (result != 0) {
-                return result;
-            }
-            return o1.getStep().compareTo(o2.getStep());
-        }
-    };
 }

@@ -62,17 +62,17 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     final public Set<? extends GraphTransition> getTransitions() {
-        return getTransitions(GraphTransition.Class.REAL);
+        return getTransitions(GraphTransition.Claz.REAL);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     final public Set<RuleTransition> getRuleTransitions() {
-        return (Set<RuleTransition>) getTransitions(GraphTransition.Class.RULE);
+        return (Set<RuleTransition>) getTransitions(GraphTransition.Claz.RULE);
     }
 
     @Override
-    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz) {
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Claz claz) {
         return getCache().getTransitions(claz);
     }
 

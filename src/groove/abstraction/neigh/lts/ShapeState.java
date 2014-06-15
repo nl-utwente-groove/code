@@ -114,7 +114,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz) {
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Claz claz) {
         Set<GraphTransition> result = new HashSet<GraphTransition>();
         for (GraphTransition trans : this.transitions) {
             if (claz.admits(trans)) {

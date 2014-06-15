@@ -39,8 +39,11 @@ import groove.gui.display.DisplayKind;
 import groove.gui.display.RuleDisplay;
 import groove.gui.display.TextTab;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.GraphTransition.Claz;
+import groove.lts.GraphTransitionKey;
 import groove.lts.MatchResult;
-import groove.lts.RuleTransition;
+import groove.lts.RecipeEvent;
 import groove.util.Duo;
 
 import java.awt.event.ItemEvent;
@@ -67,7 +70,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -172,15 +174,22 @@ public class RuleTree extends AbstractResourceTree {
         }
         if (renewSelection) {
             ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
-            selectMatch((RuleModel) ruleModel, source.getMatch());
+            Set<GraphTransitionKey> keys = new HashSet<GraphTransitionKey>();
+            if (source.hasMatch()) {
+                keys.add(source.getMatch());
+            }
+            if (source.hasTransition()) {
+                keys.add(source.getTransition().getKey());
+            }
+            selectMatch((RuleModel) ruleModel, keys);
         }
         activateListeners();
     }
 
     /** Clears all maps of the tree. */
     private void clearAllMaps() {
+        this.recipeNodeMap.clear();
         this.ruleNodeMap.clear();
-        this.recipeMap.clear();
         this.matchNodeMap.clear();
     }
 
@@ -212,7 +221,6 @@ public class RuleTree extends AbstractResourceTree {
             for (ActionEntry action : priorityEntry.getValue()) {
                 if (action instanceof RecipeEntry) {
                     recipes.add((RecipeEntry) action);
-                    this.recipeMap.put(action.getName(), ((RecipeEntry) action).getRecipe());
                 } else {
                     ruleEntryMap.put(action.getName(), (RuleEntry) action);
                 }
@@ -367,9 +375,10 @@ public class RuleTree extends AbstractResourceTree {
      * Simulator.
      */
     private void refresh(GraphState state) {
-        SortedSet<MatchResult> matches = new TreeSet<MatchResult>(MatchResult.COMPARATOR);
+        SortedSet<GraphTransitionKey> matches =
+            new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR);
         if (state != null) {
-            for (RuleTransition trans : state.getRuleTransitions()) {
+            for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
                 matches.add(trans.getKey());
             }
             matches.addAll(state.getMatches());
@@ -379,15 +388,15 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     /**
-     * Selects the row of a given match result, or if that is {@code null}, a
+     * Selects the rows of a given set of match keys, or if that is empty, a
      * given rule.
      * @param rule the rule to be selected if the event is {@code null}
-     * @param match the match result to be selected
+     * @param keys the match results to be selected
      */
-    private void selectMatch(RuleModel rule, MatchResult match) {
-        List<DefaultMutableTreeNode> treeNodes = new ArrayList<DefaultMutableTreeNode>();
-        if (match != null) {
-            MatchTreeNode node = this.matchNodeMap.get(match);
+    private void selectMatch(RuleModel rule, Set<GraphTransitionKey> keys) {
+        List<DisplayTreeNode> treeNodes = new ArrayList<DisplayTreeNode>();
+        for (GraphTransitionKey key : keys) {
+            DisplayTreeNode node = this.matchNodeMap.get(key);
             if (node != null) {
                 treeNodes.add(node);
             }
@@ -406,9 +415,9 @@ public class RuleTree extends AbstractResourceTree {
      * Refreshes the match nodes, based on a given match result set.
      * @param matches the set of matches used to create {@link MatchTreeNode}s
      */
-    private void refreshMatches(GraphState state, Collection<? extends MatchResult> matches) {
+    private void refreshMatches(GraphState state, Collection<GraphTransitionKey> matches) {
         // remove current matches
-        for (MatchTreeNode matchNode : this.matchNodeMap.values()) {
+        for (DisplayTreeNode matchNode : this.matchNodeMap.values()) {
             this.ruleDirectory.removeNodeFromParent(matchNode);
         }
         // clean up current match node map
@@ -446,22 +455,41 @@ public class RuleTree extends AbstractResourceTree {
         // recollect the match results so that they are ordered according to the
         // rule events
         // insert new matches
-        for (MatchResult match : matches) {
-            Rule rule = match.getEvent().getRule();
-            Recipe recipe = match.getStep().getRecipe();
-            String ruleName = rule.getFullName();
-            // find the correct rule tree node
-            for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {
-                if (recipe == null || recipe.equals(getRecipe(ruleNode))) {
-                    int nrOfMatches = ruleNode.getChildCount();
-                    MatchTreeNode matchNode =
-                        new MatchTreeNode(getSimulatorModel(), state, match, nrOfMatches + 1,
-                            getSimulator().getOptions().isSelected(Options.SHOW_ANCHORS_OPTION));
-                    this.ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
-                    expandPath(new TreePath(ruleNode.getPath()));
-                    this.matchNodeMap.put(match, matchNode);
+        for (GraphTransitionKey key : matches) {
+            // new node to be created for this key
+            DisplayTreeNode newNode;
+            // parent node of the new node
+            DisplayTreeNode parentNode;
+            // child index of the new node in the parent node
+            int matchCount;
+            if (key instanceof MatchResult) {
+                MatchResult match = (MatchResult) key;
+                Recipe recipe = match.getStep().getRecipe();
+                String ruleName = key.getAction().getFullName();
+                // find the correct rule tree node
+                parentNode = null;
+                for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {
+                    if (recipe == null || recipe.equals(getRecipe(ruleNode))) {
+                        parentNode = ruleNode;
+                        break;
+                    }
                 }
+                matchCount = parentNode.getChildCount();
+                newNode =
+                    new MatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
+                        getSimulator().getOptions().isSelected(Options.SHOW_ANCHORS_OPTION));
+            } else {
+                RecipeEvent event = (RecipeEvent) key;
+                RecipeTreeNode recipeNode = this.recipeNodeMap.get(event.getAction().getFullName());
+                matchCount = recipeNode.getTransitionCount();
+                parentNode = recipeNode;
+
+                newNode =
+                    new RecipeTransitionTreeNode(getSimulatorModel(), state, event, matchCount + 1);
             }
+            this.matchNodeMap.put(key, newNode);
+            this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
+            expandPath(new TreePath(parentNode.getPath()));
         }
     }
 
@@ -511,16 +539,16 @@ public class RuleTree extends AbstractResourceTree {
     private final Map<String,Collection<RuleTreeNode>> ruleNodeMap =
         new HashMap<String,Collection<RuleTreeNode>>();
     /**
-     * Mapping from action names in the current grammar to entries in this tree.
+     * Mapping from recipe names in the current grammar to recipe nodes in the
+     * current rule directory.
      */
-    private final Map<String,Recipe> recipeMap = new HashMap<String,Recipe>();
-
+    private final Map<String,RecipeTreeNode> recipeNodeMap = new HashMap<String,RecipeTreeNode>();
     /**
-     * Mapping from RuleMatches in the current LTS to match nodes in the rule
+     * Mapping from {@link MatchResult} in the current LTS to match nodes in the rule
      * directory
      */
-    private final Map<MatchResult,MatchTreeNode> matchNodeMap =
-        new HashMap<MatchResult,MatchTreeNode>();
+    private final Map<GraphTransitionKey,DisplayTreeNode> matchNodeMap =
+        new HashMap<GraphTransitionKey,DisplayTreeNode>();
 
     /** Flag to indicate that the anchor image option listener has been set. */
     private boolean anchorImageOptionListenerSet = false;
@@ -592,7 +620,9 @@ public class RuleTree extends AbstractResourceTree {
 
         @Override
         public RecipeTreeNode createTreeNode() {
-            return new RecipeTreeNode(getRecipe());
+            RecipeTreeNode result = new RecipeTreeNode(getRecipe());
+            RuleTree.this.recipeNodeMap.put(getName(), result);
+            return result;
         }
 
         @Override
@@ -633,12 +663,20 @@ public class RuleTree extends AbstractResourceTree {
                     break;
                 }
             }
+            for (TreeNode node : selectedNodes) {
+                if (node instanceof RecipeTransitionTreeNode) {
+                    // selected tree node is a match (level 2 node)
+                    GraphTransition trans = ((RecipeTransitionTreeNode) node).getTransition();
+                    getSimulatorModel().setTransition(trans);
+                    done = true;
+                    break;
+                }
+            }
             if (!done) {
                 // otherwise, select a recipe if appropriate
                 for (TreeNode node : selectedNodes) {
                     if (node instanceof RecipeTreeNode) {
-                        String name = ((RecipeTreeNode) node).getName();
-                        Recipe recipe = RuleTree.this.recipeMap.get(name);
+                        Recipe recipe = ((RecipeTreeNode) node).getRecipe();
                         getSimulatorModel().doSelectSet(ResourceKind.RULE,
                             Collections.<String>emptySet());
                         getSimulatorModel().doSelect(ResourceKind.CONTROL, recipe.getControlName());
@@ -703,7 +741,8 @@ public class RuleTree extends AbstractResourceTree {
                 return;
             }
             Object selectedNode = path.getLastPathComponent();
-            if (selectedNode instanceof MatchTreeNode) {
+            if (selectedNode instanceof MatchTreeNode
+                || selectedNode instanceof RecipeTransitionTreeNode) {
                 if (evt.getClickCount() == 2) {
                     getActions().getApplyMatchAction().execute();
                 }

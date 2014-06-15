@@ -45,7 +45,7 @@ class MatchTreeNode extends DisplayTreeNode {
 
     /** Indicates if this match corresponds to a transition from the source state. */
     private boolean isTransition() {
-        return getMatch().hasRuleTransitionFrom(this.source);
+        return getMatch().hasTransitionFrom(this.source);
     }
 
     @Override
@@ -99,7 +99,7 @@ class MatchTreeNode extends DisplayTreeNode {
         result.append(this.nr);
         result.append(": ");
         if (isTransition()) {
-            RuleTransition trans = getMatch().getRuleTransition();
+            RuleTransition trans = getMatch().getTransition();
             result.append(trans.text(this.anchored));
             result.append(RIGHTARROW);
             result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));

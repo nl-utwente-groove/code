@@ -27,6 +27,11 @@ import java.util.Comparator;
  * @version $Revision $
  */
 public interface Action extends Callable, Comparable<Action> {
+    /** Indicates if this is a partial action.
+     * A partial action is a rule that serves as a sub-rule of some recipe.
+     */
+    public boolean isPartial();
+
     /**
      * Returns the priority of the action.
      */
@@ -86,6 +91,21 @@ public interface Action extends Callable, Comparable<Action> {
         }
 
     };
+
+    /** A comparator for actions that orders all non-partial rules before
+     * partial rules, and otherwise behaves like @{link #ACTION_COMPARATOR}.
+     */
+    public static final Comparator<Action> PARTIAL_COMPARATOR =
+        new groove.util.collect.Comparator<Action>() {
+            @Override
+            public int compare(Action o1, Action o2) {
+                int result = compare(!o1.isPartial(), !o2.isPartial());
+                if (result != 0) {
+                    return result;
+                }
+                return ACTION_COMPARATOR.compare(o1, o2);
+            }
+        };
 
     /**
      * The lowest rule priority, which is also the default value if no explicit

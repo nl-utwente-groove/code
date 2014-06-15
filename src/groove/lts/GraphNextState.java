@@ -23,5 +23,10 @@ package groove.lts;
  * @version $Revision$
  */
 public interface GraphNextState extends GraphState, RuleTransition {
-    // adds nothing to the combination of interfaces
+    /** 
+     * Returns the (rule or recipe) transition 
+     * leading up to this state. The resulting transition is
+     * internal if and only if this state is so.
+     */
+    public GraphTransition getInTransition();
 }

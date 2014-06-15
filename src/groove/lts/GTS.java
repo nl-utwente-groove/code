@@ -254,7 +254,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     @Override
     public Set<? extends GraphTransition> outEdgeSet(Node node) {
         GraphState state = (GraphState) node;
-        return state.getTransitions(GraphTransition.Class.ANY);
+        return state.getTransitions(GraphTransition.Claz.ANY);
     }
 
     /** Checks if this GTS has a state with a post application error. */

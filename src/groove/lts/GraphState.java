@@ -110,7 +110,7 @@ public interface GraphState extends Node {
      * Returns the set of currently generated outgoing
      * complete transitions starting in this state.
      * Convenience method for {@code getTransitions(COMPLETE)}.
-     * @see #getTransitions(GraphTransition.Class)
+     * @see #getTransitions(GraphTransition.Claz)
      */
     public Set<? extends GraphTransition> getTransitions();
 
@@ -118,7 +118,7 @@ public interface GraphState extends Node {
      * Returns the set of currently generated outgoing
      * rule transitions starting in this state.
      * Convenience method for {@code getTransitions(RULE)}.
-     * @see #getTransitions(GraphTransition.Class)
+     * @see #getTransitions(GraphTransition.Claz)
      */
     public Set<RuleTransition> getRuleTransitions();
 
@@ -127,7 +127,7 @@ public interface GraphState extends Node {
      * transitions of a certain class starting in this state.
      * @param claz class of graph transformations to be returned
      */
-    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz);
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Claz claz);
 
     /**
      * Adds an outgoing transition to this state, if it is not yet there.

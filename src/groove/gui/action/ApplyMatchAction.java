@@ -5,6 +5,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 
@@ -24,28 +25,30 @@ public class ApplyMatchAction extends SimulatorAction {
     @Override
     public void execute() {
         MatchResult match = getSimulatorModel().getMatch();
-        if (match == null) {
-            // no match is selected; explore the selected state instead
-            getActions().getExploreAction().doExploreState();
-        } else {
+        if (getSimulatorModel().hasTransition()) {
+            GraphTransition trans = getSimulatorModel().getTransition();
+            getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
+        } else if (getSimulatorModel().hasMatch()) {
             GraphState state = getSimulatorModel().getState();
             RuleTransition trans;
-            if (match.hasRuleTransitionFrom(state)) {
-                trans = match.getRuleTransition();
+            if (match.hasTransitionFrom(state)) {
+                trans = match.getTransition();
             } else {
                 trans = state.applyMatch(match);
             }
             getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
+        } else {
+            // no match is selected; explore the selected state instead
+            getActions().getExploreAction().doExploreState();
         }
     }
 
     @Override
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
-        setEnabled(getSimulatorModel().hasState() && grammar != null
-            && !grammar.hasErrors() && grammar.hasRules());
+        setEnabled(getSimulatorModel().hasState() && grammar != null && !grammar.hasErrors()
+            && grammar.hasRules());
         putValue(Action.SHORT_DESCRIPTION, getSimulatorModel().hasMatch()
-                ? Options.APPLY_MATCH_ACTION_NAME
-                : Options.EXPLORE_STATE_ACTION_NAME);
+                ? Options.APPLY_MATCH_ACTION_NAME : Options.EXPLORE_STATE_ACTION_NAME);
     }
 }

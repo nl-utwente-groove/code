@@ -125,8 +125,8 @@ public interface GraphTransition extends Edge {
     public HostGraphMorphism getMorphism();
 
     /** Classes of graph transitions. */
-    public enum Class {
-        /** Combination of {@link Class#RULE} and {@link Class#COMPLETE}. */
+    public enum Claz {
+        /** Combination of {@link Claz#RULE} and {@link Claz#COMPLETE}. */
         ANY {
             @Override
             public boolean admits(GraphTransition trans) {

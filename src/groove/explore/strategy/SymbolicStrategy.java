@@ -155,13 +155,13 @@ public class SymbolicStrategy extends GTSStrategy {
         Collections.sort(sortedMatches, new PriorityComparator());
         List<Collection<? extends MatchResult>> priorityGroups =
             new ArrayList<Collection<? extends MatchResult>>();
-        int priority = sortedMatches.get(0).getRule().getPriority();
+        int priority = sortedMatches.get(0).getAction().getPriority();
         Collection<MatchResult> current = new HashSet<MatchResult>();
         for (MatchResult match : sortedMatches) {
-            if (match.getRule().getPriority() != priority) {
+            if (match.getAction().getPriority() != priority) {
                 priorityGroups.add(current);
                 current = new HashSet<MatchResult>();
-                priority = match.getRule().getPriority();
+                priority = match.getAction().getPriority();
             }
             current.add(match);
         }
@@ -174,7 +174,7 @@ public class SymbolicStrategy extends GTSStrategy {
 
         @Override
         public int compare(MatchResult res1, MatchResult res2) {
-            return res2.getRule().getPriority() - res1.getRule().getPriority();
+            return res2.getAction().getPriority() - res1.getAction().getPriority();
         }
 
         @Override
