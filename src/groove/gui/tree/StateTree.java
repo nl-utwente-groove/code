@@ -111,7 +111,7 @@ public class StateTree extends JTree implements SimulatorListener {
 
     /** Installs all listeners, and sets the listening status to {@code true}. */
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.GTS, Change.STATE, Change.MATCH);
+        getSimulatorModel().addListener(this, Change.GTS, Change.STATE, Change.MATCH, Change.TRACE);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -233,9 +233,35 @@ public class StateTree extends JTree implements SimulatorListener {
                 refreshList(source.getGts(), oldModel.getState());
             }
             RuleModel ruleModel = (RuleModel) source.getResource(RULE);
+            if (changes.contains(Change.TRACE)) {
+                Set<GraphState> refreshables = new HashSet<GraphState>();
+                for (GraphTransition trans : oldModel.getTrace()) {
+                    refreshables.add(trans.source());
+                }
+                for (GraphTransition trans : source.getTrace()) {
+                    refreshables.add(trans.source());
+                }
+                refreshStates(refreshables);
+            }
             refreshSelection(source.getState(), ruleModel, source.getMatch(),
                 source.getTransition());
             activateListening();
+        }
+    }
+
+    /**
+     * Refreshes the rendering of the states in a given set.
+     */
+    private void refreshStates(Set<GraphState> refreshables) {
+        for (GraphState state : refreshables) {
+            StateTreeNode node = getStateNode(state);
+            DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+            int index = parent.getIndex(node);
+            node.removeFromParent();
+            StateTreeNode newNode = createStateNode(state);
+            parent.insert(newNode, index);
+            getModel().reload(parent);
+            setStateExpanded(newNode);
         }
     }
 
