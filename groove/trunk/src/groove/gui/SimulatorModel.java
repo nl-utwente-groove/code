@@ -659,9 +659,26 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
+    /** 
+     * Changes the currently selected trace.
+     * @param trace the new trace to be selected
+     * @return if {@code true}, the trace was really changed
+     */
+    public final boolean setTrace(Set<GraphTransition> trace) {
+        start();
+        boolean result = !this.trace.equals(trace);
+        if (result) {
+            this.trace.clear();
+            this.trace.addAll(trace);
+            this.changes.add(Change.TRACE);
+        }
+        finish();
+        return result;
+    }
+
     /** Returns the currently selected trace. */
     public final Set<GraphTransition> getTrace() {
-        return this.trace;
+        return Collections.unmodifiableSet(this.trace);
     }
 
     /** Indicates if there is currently a transition selected.
@@ -1247,6 +1264,10 @@ public class SimulatorModel implements Cloneable {
          * @see SimulatorModel#getTransition()
          */
         MATCH,
+        /**
+         * The selected trace in the LTS has changed.
+         */
+        TRACE,
         /**
          * The selected prolog program has changed.
          */
