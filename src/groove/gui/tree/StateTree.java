@@ -645,8 +645,7 @@ public class StateTree extends JTree implements SimulatorListener {
 
         @Override
         public String getText() {
-            return HTMLConverter.HTML_TAG.on("State "
-                + HTMLConverter.ITALIC_TAG.on(getState().toString()));
+            return "State " + HTMLConverter.ITALIC_TAG.on(getState().toString());
         }
 
         @Override

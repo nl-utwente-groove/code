@@ -86,7 +86,6 @@ class RecipeTransitionTreeNode extends DisplayTreeNode {
         if (this.model.getTrace().contains(trans)) {
             result.append(TRACE_SUFFIX);
         }
-        HTMLConverter.HTML_TAG.on(result);
         return result.toString();
     }
 

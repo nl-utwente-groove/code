@@ -57,8 +57,8 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     }
 
     @Override
-    public String toString() {
-        return getRecipe().getLastName() + " (recipe)";
+    public String getText() {
+        return getRecipe().getLastName() + RECIPE_SUFFIX;
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */
@@ -103,4 +103,6 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         }
         return result;
     }
+
+    private final static String RECIPE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("recipe");
 }

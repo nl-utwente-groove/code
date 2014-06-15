@@ -69,8 +69,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         // collect the non-system, non-remark properties
         for (Key key : Key.values()) {
             String value = properties.getProperty(key);
-            if (key != Key.REMARK && !key.isSystem() && value != null
-                && !value.isEmpty()) {
+            if (key != Key.REMARK && !key.isSystem() && value != null && !value.isEmpty()) {
                 filteredProps.put(key.getDescription(), value);
             }
         }
@@ -114,7 +113,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                 !hasRecipe() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
-        return getDisplay().getLabelText(getName(), showEnabled);
+        return getDisplay().getLabelText(getName(), showEnabled)
+            + (hasRecipe() ? SUBRULE_SUFFIX : RULE_SUFFIX);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */
@@ -129,4 +129,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
 
     /** Flag indicating whether the rule has been tried on the displayed state. */
     private boolean tried;
+
+    private final static String SUBRULE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("subrule");
+    private final static String RULE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("rule");
 }

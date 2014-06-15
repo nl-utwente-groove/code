@@ -109,7 +109,6 @@ class MatchTreeNode extends DisplayTreeNode {
             if (trans.target().isAbsent()) {
                 HTMLConverter.STRIKETHROUGH_TAG.on(result);
             }
-            HTMLConverter.HTML_TAG.on(result);
         } else {
             result.append(RuleTransitionLabel.text(this.source, getMatch(), this.anchored));
             result.append(RIGHTARROW);
