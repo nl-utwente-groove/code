@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.explore.strategy;
@@ -19,14 +19,14 @@ package groove.explore.strategy;
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
+import groove.lts.Status.Flag;
 
 /**
  * A strategy defines an order in which the states of a graph transition system
  * are to be explored. It can also determine which states are to be explored
  * because of the nature of the strategy (see for instance
  * {@link LinearStrategy}).
- * To use, call {@link #setGTS} and optionally {@link #setState} and 
+ * To use, call {@link #setGTS} and optionally {@link #setState} and
  * {@link #setAcceptor}, and then call {@link #play()} or {@link #play(Halter)}.
  */
 public abstract class Strategy {
@@ -81,18 +81,17 @@ public abstract class Strategy {
         play(null);
     }
 
-    /** 
-     * Plays out this strategy, until a halting condition kicks in, 
+    /**
+     * Plays out this strategy, until a halting condition kicks in,
      * the thread is interrupted or exploration is done.
      * @param halter halting condition invoked after each state exploration;
-     * ignored if {@code null} 
+     * ignored if {@code null}
      */
     final public void play(Halter halter) {
         this.iterator.prepare(this.gts, this.startState, this.acceptor);
         collectKnownStates();
         this.interrupted = false;
-        while ((halter == null || !halter.halt()) && this.iterator.hasNext()
-            && !testInterrupted()) {
+        while ((halter == null || !halter.halt()) && this.iterator.hasNext() && !testInterrupted()) {
             this.lastState = this.iterator.doNext();
         }
         this.iterator.finish();
@@ -112,7 +111,7 @@ public abstract class Strategy {
         return this.interrupted;
     }
 
-    /** 
+    /**
      * Tests if the thread has been interrupted, and stores the
      * result.
      */
@@ -124,15 +123,15 @@ public abstract class Strategy {
         return result;
     }
 
-    /** Returns the last state explored by the last invocation of {@link #play}. 
+    /** Returns the last state explored by the last invocation of {@link #play}.
      */
     final public GraphState getLastState() {
         return this.lastState;
     }
 
-    /** 
+    /**
      * Returns a message recorded after exploration.
-     * The message is non-{@code null} after {@link #play()} has returned. 
+     * The message is non-{@code null} after {@link #play()} has returned.
      */
     final public String getMessage() {
         StringBuilder result = new StringBuilder();

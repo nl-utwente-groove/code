@@ -21,10 +21,10 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSCounter;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
+import groove.lts.Status.Flag;
 
 import java.io.File;
 import java.io.IOException;
@@ -1358,7 +1358,7 @@ public class SimulatorModel implements Cloneable {
         }
 
         @Override
-        public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
+        public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
             this.changed = true;
         }
 

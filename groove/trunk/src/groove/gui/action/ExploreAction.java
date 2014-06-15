@@ -58,23 +58,22 @@ public class ExploreAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        explore(getSimulatorModel().getExploration(), true, true);
+        explore(getSimulatorModel().getExploration(), true);
     }
 
     /** Fully explores a given state of the GTS. */
     public void doExploreState() {
         GraphState state = getSimulatorModel().getState();
-        explore(getStateExploration(), true, true);
+        explore(getStateExploration(), true);
         getSimulatorModel().doSetStateAndMatch(state, null);
     }
 
     /**
      * Run a given exploration. Can be called from outside the Simulator.
      * @param exploration the exploration strategy to be used
-     * @param setResult if {@code true}, the result of the exploration will be set in the GTS
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
-    public void explore(Exploration exploration, boolean setResult, boolean emphasise) {
+    public void explore(Exploration exploration, boolean emphasise) {
         LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
@@ -99,10 +98,6 @@ public class ExploreAction extends SimulatorAction {
         // emphasise the result states, if required
         getSimulatorModel().setGts(gts, true);
         gts.addLTSListener(ltsJModel);
-        // collect the result states
-        if (setResult) {
-            gts.setResult(exploration.getResult());
-        }
         GraphState lastState = exploration.getLastState();
         if (lastState != null) {
             getSimulatorModel().setState(lastState);
@@ -149,7 +144,7 @@ public class ExploreAction extends SimulatorAction {
         return this.animated;
     }
 
-    /** 
+    /**
      * Returns the pause between animation steps, in milliseconds.
      * The pause equals {@code 4000/(speed+1)}.
      */
@@ -242,7 +237,7 @@ public class ExploreAction extends SimulatorAction {
     }
 
     /**
-     * If the number of states now exeeds a bound, ask whether we 
+     * If the number of states now exeeds a bound, ask whether we
      * should continue exploring (and by how much).
      */
     final void checkContinue(final GTS gts) {
@@ -381,7 +376,7 @@ public class ExploreAction extends SimulatorAction {
         /**
          * Runs the exploration as a parallel thread;
          * then hides the cancel dialog invisible, causing the event
-         * dispatch thread to continue. 
+         * dispatch thread to continue.
          */
         @Override
         final public void run() {
@@ -426,9 +421,9 @@ public class ExploreAction extends SimulatorAction {
             return result;
         }
 
-        /** 
+        /**
          * Disposes the dialog that can cancel the exploration thread.
-         * May only be invoked from the exploration thread. 
+         * May only be invoked from the exploration thread.
          */
         private void disposeCancelDialog() {
             assert !SwingUtilities.isEventDispatchThread();

@@ -115,7 +115,7 @@ public final class TikzStylesExtractor {
      * Extra enumeration for the additional looks that can modify a main look.
      */
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED, BIDIRECTIONAL, NO_ARROW,
-        COMPOSITE, OPEN, FINAL, RESULT, RECIPE, ABSENT, ACTIVE, GRAYED_OUT);
+        COMPOSITE, OPEN, FINAL, Look.ERROR, RESULT, RECIPE, ABSENT, ACTIVE, GRAYED_OUT);
 
     /**
      * Set of unused looks. It is required that mainLooks + modifyingLooks +
@@ -255,6 +255,7 @@ public final class TikzStylesExtractor {
             break;
         case OPEN:
         case FINAL:
+        case ERROR:
         case RESULT:
             Style.writeBackgroundColor(visuals.getBackground(), styles);
             break;

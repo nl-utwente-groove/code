@@ -79,9 +79,13 @@ public class Values {
     /** Background colour of (normal) open states. */
     public static final Color OPEN_BACKGROUND = Color.GRAY.brighter();
     /** Background colour of final states. */
-    public static final Color FINAL_BACKGROUND = Color.RED;
+    public static final Color FINAL_BACKGROUND = Colors.findColor("255 165 0");
+    /** Foreground colour of result states. */
+    public static final Color RESULT_FOREGROUND = JAttr.STATE_BACKGROUND;
     /** Background colour of result states. */
-    public static final Color RESULT_BACKGROUND = Colors.findColor("255 165 0");
+    public static final Color RESULT_BACKGROUND = Colors.findColor("92 125 23");
+    /** Background colour of error states. */
+    public static final Color ERROR_BACKGROUND = Color.RED;
     /** Foreground colour of the start state. */
     public static final Color START_FOREGROUND = JAttr.STATE_BACKGROUND;
     /** Background colour of the start state. */

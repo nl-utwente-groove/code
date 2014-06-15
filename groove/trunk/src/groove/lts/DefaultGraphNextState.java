@@ -36,7 +36,7 @@ import java.util.List;
  * @version $Revision$
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState,
-        RuleTransitionStub {
+RuleTransitionStub {
     /**
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
@@ -194,12 +194,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public GraphTransition getInTransition() {
-        if (isRecipeState() || !isRecipeStep()) {
+        if (isInternalState() || !isInternalStep()) {
             return this;
         }
         // find the initial rule transition
         RuleTransition initial = this;
-        while (initial.source().isRecipeState()) {
+        while (initial.source().isInternalState()) {
             // recipe states cannot be the initial state, so it's a GraphNextState
             initial = (GraphNextState) initial.source();
         }
@@ -316,7 +316,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      */
     protected boolean equalsTransition(RuleTransition other) {
         return source() == other.source() && getEvent().equals(other.getEvent())
-            && getStep().equals(other.getStep());
+                && getStep().equals(other.getStep());
     }
 
     /**
@@ -365,13 +365,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-    public final boolean isRecipeStep() {
+    public final boolean isInternalStep() {
         return getStep().inRecipe();
     }
 
     @Override
     public final boolean isRealStep() {
-        return !isRecipeStep() && source().isRealState() && target().isRealState();
+        return !isInternalStep() && source().isRealState() && target().isRealState();
     }
 
     /** Keeps track of bound variables */

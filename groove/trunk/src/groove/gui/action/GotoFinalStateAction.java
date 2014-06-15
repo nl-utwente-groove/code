@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * This action will perform random linear exploration, set the state graph to the final state 
- * and apply the layouter to this graph. This can be quite useful if you need a quick way 
+ * This action will perform random linear exploration, set the state graph to the final state
+ * and apply the layouter to this graph. This can be quite useful if you need a quick way
  * to show an end result of a graph grammar execution.
  * @author Tim Molderez
  */
@@ -54,8 +54,8 @@ public class GotoFinalStateAction extends SimulatorAction {
     }
 
     /**
-     * Returns either the set of result states or, if that is empty,
-     * the set of final states of the GTS.
+     * Returns either the set of final states or, if that is empty,
+     * the set of result states of the GTS.
      */
     private Collection<GraphState> getFinalStates() {
         GTS gts = getSimulatorModel().getGts();

@@ -20,9 +20,9 @@ import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
-import groove.lts.GraphState.Flag;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
+import groove.lts.Status.Flag;
 
 import java.util.List;
 import java.util.Stack;

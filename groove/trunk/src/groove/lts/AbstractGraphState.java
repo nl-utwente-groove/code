@@ -16,15 +16,13 @@
  */
 package groove.lts;
 
-import static groove.lts.GraphState.Flag.CLOSED;
-import static groove.lts.GraphState.Flag.DONE;
-import static groove.lts.GraphState.Flag.ERROR;
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.lts.Status.Flag;
 import groove.transform.Record;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
@@ -189,12 +187,13 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public boolean isClosed() {
-        return hasFlag(CLOSED);
+        return hasFlag(Flag.CLOSED);
     }
 
     @Override
     public boolean setClosed(boolean complete) {
-        boolean result = setStatus(CLOSED, true);
+        int oldStatus = this.status;
+        boolean result = setStatus(Flag.CLOSED, true);
         if (result) {
             setStoredTransitionStubs(getCachedTransitionStubs());
             updateClosed();
@@ -202,9 +201,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             // completely explored
             if (!complete) {
                 setFrame(getPrimeFrame());
+            } else {
+                setStatus(Flag.TRANSIENT, getActualFrame().isTransient());
+                setStatus(Flag.INTERNAL, getActualFrame().isInternal());
             }
+            fireStatus(Flag.CLOSED, oldStatus);
             getCache().notifyClosed();
-            fireStatus(CLOSED);
         }
         return result;
     }
@@ -213,45 +215,61 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     abstract protected void updateClosed();
 
     @Override
-    public boolean setError() {
-        boolean result = setStatus(ERROR, true);
+    public boolean setResult() {
+        int oldStatus = this.status;
+        boolean result = setStatus(Flag.RESULT, true);
         if (result) {
-            fireStatus(ERROR);
+            fireStatus(Flag.RESULT, oldStatus);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isResult() {
+        return hasFlag(Flag.RESULT);
+    }
+
+    @Override
+    public boolean setError() {
+        int oldStatus = this.status;
+        boolean result = setStatus(Flag.ERROR, true);
+        if (result) {
+            fireStatus(Flag.ERROR, oldStatus);
         }
         return result;
     }
 
     @Override
     public boolean isError() {
-        return hasFlag(ERROR);
+        return hasFlag(Flag.ERROR);
     }
 
     @Override
-    final public boolean isRecipeState() {
-        return getActualFrame().inRecipe();
+    final public boolean isInternalState() {
+        return hasFlag(Flag.INTERNAL);
     }
 
     @Override
     public final boolean isRealState() {
-        return !isRecipeState() && !isAbsent() && !isError();
+        return !isInternalState() && !isAbsent() && !isError();
     }
 
     @Override
     final public boolean isTransient() {
-        return getActualFrame().isTransient();
+        return hasFlag(Flag.TRANSIENT);
     }
 
     @Override
     public boolean isAbsent() {
-        return isDone() && getAbsence() > 0;
+        return hasFlag(Flag.ABSENT);
     }
 
     @Override
     public int getAbsence() {
         if (isError()) {
-            return Flag.MAX_ABSENCE;
+            return Status.MAX_ABSENCE;
         } else if (isDone()) {
-            return Flag.getAbsence(this.status);
+            return Status.getAbsence(this.status);
         } else {
             return getCache().getAbsence();
         }
@@ -264,19 +282,46 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public boolean setDone(int absence) {
-        boolean result = setStatus(DONE, true);
+        int oldStatus = this.status;
+        boolean result = setStatus(Flag.DONE, true);
         if (result) {
-            this.status = Flag.setAbsence(this.status, absence);
+            setAbsence(absence);
+            setStatus(Flag.ABSENT, absence > 0);
+            setStatus(Flag.FINAL, hasFinalProperties(absence == 0));
             getCache().notifyDone();
             setCacheCollectable();
-            fireStatus(DONE);
+            fireStatus(Flag.DONE, oldStatus);
+        }
+        return result;
+    }
+
+    /**
+     * Tests if this is present and has no non-property transitions to
+     * a distinct present state.
+     */
+    private boolean hasFinalProperties(boolean present) {
+        boolean result = present;
+        if (result) {
+            for (RuleTransition trans : getRuleTransitions()) {
+                if (!trans.target().isAbsent()) {
+                    if (!trans.getStep().getRule().isProperty() || !trans.target().equals(this)) {
+                        result = false;
+                        break;
+                    }
+                }
+            }
         }
         return result;
     }
 
     @Override
     public boolean isDone() {
-        return hasFlag(DONE);
+        return hasFlag(Flag.DONE);
+    }
+
+    @Override
+    public boolean isFinal() {
+        return hasFlag(Flag.FINAL);
     }
 
     @Override
@@ -288,6 +333,10 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     public boolean setFlag(Flag flag, boolean value) {
         assert flag.isStrategy();
         return setStatus(flag, value);
+    }
+
+    private void setAbsence(int absence) {
+        this.status = Status.setAbsence(this.status, absence);
     }
 
     /**
@@ -306,9 +355,15 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
      * Notifies the observers of a change in this state's status with respect
      * to a given status flag.
+     * @param oldStatus the status of this state before the change
      */
-    private void fireStatus(Flag flag) {
-        getGTS().fireUpdateState(this, flag);
+    private void fireStatus(Flag flag, int oldStatus) {
+        getGTS().fireUpdateState(this, flag, oldStatus);
+    }
+
+    @Override
+    public int getStatus() {
+        return this.status;
     }
 
     /** Field holding status flags of the state. */
@@ -425,7 +480,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         // AR: the assertion below fails to hold in one of the tests because
         // the frame is artificially set again for a start state
         // assert this.currentFrame == null || frame.getPrime() == getPrimeFrame();
-        this.currentFrame = frame;
+        this.actualFrame = frame;
+        setStatus(Flag.TRANSIENT, frame.isTransient());
+        setStatus(Flag.INTERNAL, frame.isInternal());
     }
 
     @Override
@@ -435,10 +492,10 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public final Frame getActualFrame() {
-        return this.currentFrame;
+        return this.actualFrame;
     }
 
-    private Frame currentFrame;
+    private Frame actualFrame;
 
     @Override
     public Object[] getPrimeValues() {

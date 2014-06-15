@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.lts.GraphState.Flag;
+import groove.lts.Status.Flag;
 
 /**
  * Default implementation of an LTS listener that does nothing.
@@ -41,7 +41,7 @@ public class GTSAdapter implements GTSListener {
      * has no behaviour.
      */
     @Override
-    public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
+    public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
         // this implementation does nothing
     }
 }

@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.lts.GraphState.Flag;
 import groove.util.Pair;
 
 import java.util.ArrayList;
@@ -42,16 +41,16 @@ class ExploreData {
     ExploreData(StateCache cache) {
         GraphState state = this.state = cache.getState();
         this.absence =
-            this.state.isError() ? Flag.MAX_ABSENCE : this.state.getActualFrame().getTransience();
-        this.inRecipe = state.isRecipeState();
+            this.state.isError() ? Status.MAX_ABSENCE : this.state.getActualFrame().getTransience();
+        this.inRecipe = state.isInternalState();
         if (!state.isClosed()) {
             this.recipeTargets = new ArrayList<GraphState>();
-            if (!state.isRecipeState()) {
+            if (!state.isInternalState()) {
                 this.recipeTargets.add(state);
             }
         }
         this.recipeInits =
-            state.isRecipeState() ? new ArrayList<Pair<ExploreData,RuleTransition>>() : null;
+            state.isInternalState() ? new ArrayList<Pair<ExploreData,RuleTransition>>() : null;
     }
 
     private final AbstractGraphState state;
@@ -118,7 +117,7 @@ class ExploreData {
             this.absence = depth;
         }
         Change change = Change.TRANSIENCE;
-        if (this.inRecipe && !this.state.isRecipeState()) {
+        if (this.inRecipe && !this.state.isInternalState()) {
             this.inRecipe = false;
             change = Change.TOP_LEVEL;
         }
@@ -142,7 +141,7 @@ class ExploreData {
                 this.transientOpens.add(target);
             }
         }
-        if (this.inRecipe && !target.isRecipeState()) {
+        if (this.inRecipe && !target.isInternalState()) {
             addRecipeTarget(target);
         }
     }
@@ -189,7 +188,7 @@ class ExploreData {
 
     /** Adds recipe transitions from the surface parents to a given (surface) target. */
     private void addRecipeTarget(GraphState target) {
-        assert !target.isRecipeState();
+        assert !target.isInternalState();
         if (DEBUG) {
             System.out.printf("Recipe targets of %s augmented by %s%n", this.state, target);
         }
@@ -210,7 +209,7 @@ class ExploreData {
 
     /** 
      * Returns the absence level of the state.
-     * This is {@link Flag#MAX_ABSENCE} if the state is erroneous,
+     * This is {@link Status#MAX_ABSENCE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
      */
     final int getAbsence() {
@@ -330,7 +329,7 @@ class ExploreData {
                 if (data.recipeTargets == null) {
                     // we're going to traverse further
                     this.resultList.add(Pair.newPair(data, resultEntry));
-                    if (data.state.isRecipeState()) {
+                    if (data.state.isInternalState()) {
                         this.queue.add(data);
                     } else {
                         resultEntry.add(data.state);

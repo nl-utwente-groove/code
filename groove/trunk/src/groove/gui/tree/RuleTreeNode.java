@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -48,7 +48,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     }
 
     /** Indicates if this rule node is part of a recipe. */
-    public boolean hasRecipe() {
+    public boolean isPartial() {
         return getRule().hasRecipes();
     }
 
@@ -110,11 +110,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                !hasRecipe() || (getParent() instanceof RecipeTreeNode)
+                    !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         return getDisplay().getLabelText(getName(), showEnabled)
-            + (hasRecipe() ? SUBRULE_SUFFIX : RULE_SUFFIX);
+                + (isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX
+                    : RULE_SUFFIX);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */
@@ -132,4 +133,5 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
 
     private final static String SUBRULE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("subrule");
     private final static String RULE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("rule");
+    private final static String PROPERTY_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("property");
 }

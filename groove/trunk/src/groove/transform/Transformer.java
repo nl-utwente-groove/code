@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -45,7 +45,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Encapsulates a grammar and offers functionality to transform 
+ * Encapsulates a grammar and offers functionality to transform
  * arbitrary graphs.
  * @author Arend Rensink
  * @version $Revision $
@@ -81,15 +81,14 @@ public class Transformer {
 
     private final GrammarModel grammarModel;
 
-    /** 
+    /**
      * Changes a property in the grammar model.
      * @param key the property to be changed; should be modifiable
      * @param value the new value for the property; should satisfy {@link Key#getFormat()}
-     * @throws FormatException if the given key/value pair is unsuitable for the given 
+     * @throws FormatException if the given key/value pair is unsuitable for the given
      * grammar
      */
-    public void setProperty(GrammarProperties.Key key, String value)
-        throws FormatException {
+    public void setProperty(GrammarProperties.Key key, String value) throws FormatException {
         assert !key.isSystem();
         assert value != null && key.getFormat().isSatisfied(value);
         if (this.properties == null) {
@@ -116,8 +115,7 @@ public class Transformer {
         GTS gts = getFreshGTS(grammar);
         getExploration().play(gts, null);
         Result exploreResult = getExploration().getResult();
-        gts.setResult(exploreResult);
-        return getExploration().getResult().getValue();
+        return exploreResult.getValue();
     }
 
     /**
@@ -128,8 +126,7 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Collection<GraphState> explore(AspectGraph start)
-        throws FormatException {
+    public Collection<GraphState> explore(AspectGraph start) throws FormatException {
         if (start != null) {
             getGrammarModel().setStartGraph(start);
         }
@@ -157,8 +154,8 @@ public class Transformer {
      * or the exploration is not compatible with the grammar
      * @throws IOException if the named start graph cannot be loaded
      */
-    public Collection<GraphState> explore(String startGraphName)
-        throws FormatException, IOException {
+    public Collection<GraphState> explore(String startGraphName) throws FormatException,
+    IOException {
         return explore(computeStartGraph(startGraphName));
     }
 
@@ -173,39 +170,33 @@ public class Transformer {
      * or the exploration is not compatible with the grammar
      * @throws IOException if any of the named start graphs cannot be loaded
      */
-    public Collection<GraphState> explore(List<String> startGraphNames)
-        throws IOException, FormatException {
+    public Collection<GraphState> explore(List<String> startGraphNames) throws IOException,
+    FormatException {
         return explore(computeStartGraph(startGraphNames));
     }
 
     /** Loads a named start graph. */
-    private AspectGraph computeStartGraph(String startGraphName)
-        throws IOException {
+    private AspectGraph computeStartGraph(String startGraphName) throws IOException {
         AspectGraph result = null;
         if (startGraphName != null) {
             // first see if the name refers to a local host graph
             GraphBasedModel<?> hostModel =
-                getGrammarModel().getGraphResource(ResourceKind.HOST,
-                    startGraphName);
+                getGrammarModel().getGraphResource(ResourceKind.HOST, startGraphName);
             if (hostModel == null) {
                 // try to load the graph as a standalone file
                 startGraphName = FileType.STATE.addExtension(startGraphName);
                 File startGraphFile = new File(startGraphName);
                 if (!startGraphFile.exists()) {
                     // look for the name within the grammar location
-                    Object grammarLocation =
-                        getGrammarModel().getStore().getLocation();
+                    Object grammarLocation = getGrammarModel().getStore().getLocation();
                     if (grammarLocation instanceof File) {
-                        startGraphFile =
-                            new File((File) grammarLocation, startGraphName);
+                        startGraphFile = new File((File) grammarLocation, startGraphName);
                     }
                 }
                 if (!startGraphFile.exists()) {
-                    throw new IOException("Can't find start graph "
-                        + startGraphName);
+                    throw new IOException("Can't find start graph " + startGraphName);
                 }
-                result =
-                    GraphConverter.toAspect(Groove.loadGraph(startGraphFile));
+                result = GraphConverter.toAspect(Groove.loadGraph(startGraphFile));
             } else {
                 result = hostModel.getSource();
             }
@@ -213,8 +204,7 @@ public class Transformer {
         return result;
     }
 
-    private AspectGraph computeStartGraph(List<String> startGraphNames)
-        throws IOException {
+    private AspectGraph computeStartGraph(List<String> startGraphNames) throws IOException {
         AspectGraph result = null;
         if (startGraphNames != null && !startGraphNames.isEmpty()) {
             List<AspectGraph> graphs = new ArrayList<AspectGraph>();
@@ -227,7 +217,7 @@ public class Transformer {
     }
 
     /**
-     * Returns the (first) result of transforming the 
+     * Returns the (first) result of transforming the
      * grammar's default start graph, or {@code null} if
      * there is no result.
      * @throws FormatException if either the grammar could not be built
@@ -246,7 +236,7 @@ public class Transformer {
     }
 
     /**
-     * Returns the list of results of transforming the 
+     * Returns the list of results of transforming the
      * grammar's default start graph.
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
@@ -287,7 +277,7 @@ public class Transformer {
         return this.gts;
     }
 
-    /** 
+    /**
      * Creates and returns a fresh GTS.
      */
     private GTS getFreshGTS(Grammar grammar) throws FormatException {
@@ -329,12 +319,9 @@ public class Transformer {
         }
         boolean rebuild = hasStrategy() || hasAcceptor() || hasResultCount();
         if (rebuild) {
-            Serialized strategy =
-                hasStrategy() ? getStrategy() : result.getStrategy();
-            Serialized acceptor =
-                hasAcceptor() ? getAcceptor() : result.getAcceptor();
-            int resultCount =
-                hasResultCount() ? getResultCount() : result.getNrResults();
+            Serialized strategy = hasStrategy() ? getStrategy() : result.getStrategy();
+            Serialized acceptor = hasAcceptor() ? getAcceptor() : result.getAcceptor();
+            int resultCount = hasResultCount() ? getResultCount() : result.getNrResults();
             result = new Exploration(strategy, acceptor, resultCount);
         }
         for (ExplorationListener listener : getListeners()) {
@@ -345,10 +332,10 @@ public class Transformer {
 
     private Exploration exploration;
 
-    /** 
+    /**
      * Sets the strategy to be used in the next exploration.
      * @param strategy the strategy to be used; if {@code null}, the
-     * default strategy of the grammar will be used 
+     * default strategy of the grammar will be used
      */
     public void setStrategy(Serialized strategy) {
         this.strategy = strategy;
@@ -356,10 +343,10 @@ public class Transformer {
         this.exploration = null;
     }
 
-    /** 
+    /**
      * Sets the strategy to be used in the next exploration.
      * @param strategy the strategy to be used; if {@code null}, the
-     * default strategy of the grammar will be used 
+     * default strategy of the grammar will be used
      * @throws FormatException if the strategy cannot be parsed
      */
     public void setStrategy(String strategy) throws FormatException {
@@ -376,10 +363,10 @@ public class Transformer {
         return getStrategy() != null;
     }
 
-    /** 
+    /**
      * Sets the acceptor to be used in the next exploration.
      * @param acceptor the acceptor to be used; if {@code null}, the
-     * default acceptor of the grammar will be used 
+     * default acceptor of the grammar will be used
      */
     public void setAcceptor(Serialized acceptor) {
         this.acceptor = acceptor;
@@ -387,10 +374,10 @@ public class Transformer {
         this.exploration = null;
     }
 
-    /** 
+    /**
      * Sets the acceptor to be used in the next exploration.
      * @param acceptor the acceptor to be used; if {@code null}, the
-     * default acceptor of the grammar will be used 
+     * default acceptor of the grammar will be used
      * @throws FormatException if the acceptor cannot be parsed
      */
     public void setAcceptor(String acceptor) throws FormatException {
@@ -407,10 +394,10 @@ public class Transformer {
         return getAcceptor() != null;
     }
 
-    /** 
+    /**
      * Sets the result count to be used in the next exploration.
      * @param count the result count to be used; if {@code null}, the
-     * default count of the grammar will be used 
+     * default count of the grammar will be used
      */
     public void setResultCount(int count) {
         this.resultCount = count;
@@ -451,8 +438,7 @@ public class Transformer {
         return this.gtsListeners;
     }
 
-    private final List<ExplorationListener> gtsListeners =
-        new ArrayList<ExplorationListener>();
+    private final List<ExplorationListener> gtsListeners = new ArrayList<ExplorationListener>();
     private Serialized strategy;
     private Serialized acceptor;
     private int resultCount;

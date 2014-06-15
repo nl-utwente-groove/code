@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.tree;
@@ -290,7 +290,7 @@ public class StateTree extends JTree implements SimulatorListener {
                 if (state.isAbsent() && !isShowAbsent()) {
                     continue;
                 }
-                if (state.isRecipeState() && !isShowInternal()) {
+                if (state.isInternalState() && !isShowInternal()) {
                     continue;
                 }
                 this.states[state.getNumber()] = state;
@@ -318,7 +318,7 @@ public class StateTree extends JTree implements SimulatorListener {
         setEnabled(gts != null);
     }
 
-    /** 
+    /**
      * Fills a parent node with a range of state nodes.
      * Also updates the model and makes sure the state nodes are
      * collapsed but its children are not.
@@ -364,7 +364,7 @@ public class StateTree extends JTree implements SimulatorListener {
             if (trans.target().isAbsent() && !isShowAbsent()) {
                 continue;
             }
-            if (trans.isRecipeStep() && !isShowInternal()) {
+            if (trans.isInternalStep() && !isShowInternal()) {
                 continue;
             }
             matches.add(trans.getKey());
@@ -484,10 +484,10 @@ public class StateTree extends JTree implements SimulatorListener {
         return result;
     }
 
-    /** 
+    /**
      * Retrieves the child of a given parent node that is
      * a number tree node with a given number, if any.
-     * @return the correctly numbered child, or {@code null} if there 
+     * @return the correctly numbered child, or {@code null} if there
      * is none such
      */
     private NumberedTreeNode find(TreeNode parent, int number) {
@@ -511,7 +511,7 @@ public class StateTree extends JTree implements SimulatorListener {
     }
 
     /**
-     * Indicates if there are so many states that the tree has a 
+     * Indicates if there are so many states that the tree has a
      * top level of range nodes.
      */
     private boolean hasRangeNodes() {
@@ -653,9 +653,9 @@ public class StateTree extends JTree implements SimulatorListener {
             GraphState state = getState();
             if (state instanceof StartGraphState) {
                 return Icons.STATE_START_ICON;
-            } else if (state.getGTS().isResult(state)) {
+            } else if (state.isResult()) {
                 return Icons.STATE_RESULT_ICON;
-            } else if (state.getGTS().isFinal(state)) {
+            } else if (state.isFinal()) {
                 return Icons.STATE_FINAL_ICON;
             } else if (state.isClosed()) {
                 return Icons.STATE_CLOSED_ICON;

@@ -22,7 +22,6 @@ import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.algebra.AlgebraFamily;
 import groove.control.Valuator;
 import groove.control.instance.Frame;
-import groove.explore.result.Result;
 import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostEdgeSet;
@@ -41,8 +40,7 @@ import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
 import groove.graph.multi.MultiGraph;
 import groove.graph.multi.MultiNode;
-import groove.gui.jgraph.LTSJModel;
-import groove.lts.GraphState.Flag;
+import groove.lts.Status.Flag;
 import groove.transform.Record;
 import groove.util.collect.NestedIterator;
 import groove.util.collect.SetView;
@@ -50,11 +48,15 @@ import groove.util.collect.TransformIterator;
 import groove.util.collect.TreeHashSet;
 
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -156,96 +158,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return getGrammar().getProperties().getAlgebraFamily();
     }
 
-    /**
-     * Returns the set of final states explored so far.
-     */
-    public Collection<GraphState> getFinalStates() {
-        return this.finalStates;
-    }
-
-    /**
-     * @return the set of result states.
-     */
-    public Collection<GraphState> getResultStates() {
-        return this.resultStates;
-    }
-
-    /**
-     * Indicates whether we have found a final state during exploration.
-     * Convenience method for <tt>! getFinalStates().isEmpty()</tt>.
-     */
-    public boolean hasFinalStates() {
-        return !getFinalStates().isEmpty();
-    }
-
-    /**
-     * Indicates if this GTS has at any point included recipe sub-stages.
-     * Note that the sub-stage nature may have dissipated when the
-     * state was done.
-     */
-    public boolean hasTransientStates() {
-        return this.transients;
-    }
-
-    /**
-     * Indicates whether a given state is final. Equivalent to
-     * <tt>getFinalStates().contains(state)</tt>.
-     */
-    public boolean isFinal(GraphState state) {
-        return getFinalStates().contains(state);
-    }
-
-    /**
-     * @param state the state to be checked.
-     * @return true if the state is a result state.
-     */
-    public boolean isResult(GraphState state) {
-        return getResultStates().contains(state);
-    }
-
-    /** Adds a given state to the final states of this GTS. */
-    protected void setFinal(GraphState state) {
-        this.finalStates.add(state);
-    }
-
-    /**
-     * @param result the set of result states.
-     */
-    public void setResult(Result result) {
-        this.resultStates.addAll(result.getValue());
-        // Notify the listener for the GUI if we are in the simulator.
-        // Fix for SF bug ticket #3600971.
-        LTSJModel ltsJModel = getJModelListener();
-        if (ltsJModel != null) {
-            for (GraphState resultState : this.resultStates) {
-                ltsJModel.statusUpdate(this, resultState, Flag.DONE);
-            }
-        }
-    }
-
-    /**
-     * Indicates whether a given state is open, in the sense of not (completely)
-     * explored. Equivalent to <tt>!state.isClosed()</tt>.
-     */
-    public boolean isOpen(GraphState state) {
-        return !state.isClosed();
-    }
-
-    /**
-     * Indicates if the GTS currently has open states. Equivalent to (but more
-     * efficient than) <code>getOpenStateIter().hasNext()</code> or
-     * <code>!getOpenStates().isEmpty()</code>.
-     * @return <code>true</code> if the GTS currently has open states
-     */
-    public boolean hasOpenStates() {
-        return openStateCount() > 0;
-    }
-
-    /** Returns the number of not fully explored states. */
-    public int openStateCount() {
-        return nodeCount() - this.closedStateCount;
-    }
-
     @Override
     public int edgeCount() {
         return this.transitionCount;
@@ -337,18 +249,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return result;
     }
 
-    @Override
-    public Set<? extends GraphTransition> edgeSet() {
-        if (this.allTransitionSet == null) {
-            this.allTransitionSet = new TransitionSet();
-        }
-        return this.allTransitionSet;
-    }
-
-    /** The set of transitions of the GTS. */
-    private TransitionSet allTransitionSet;
-
-    /** 
+    /**
      * Returns a view on the set of <i>real</i> states in the GTS.
      * A state is real if it is not absent, erroneous or inside a recipe.
      * @see GraphState#isRealState()
@@ -370,7 +271,100 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     private Set<GraphState> realStateSet;
 
-    /** 
+    /**
+     * Returns the set of final states explored so far.
+     */
+    public Collection<GraphState> getFinalStates() {
+        return getStates(Flag.FINAL);
+    }
+
+    /**
+     * @return the set of result states.
+     */
+    public Collection<GraphState> getResultStates() {
+        return getStates(Flag.RESULT);
+    }
+
+    /**
+     * Indicates whether we have found a final state during exploration.
+     * Convenience method for <tt>! getFinalStates().isEmpty()</tt>.
+     */
+    public boolean hasFinalStates() {
+        return hasStates(Flag.FINAL);
+    }
+
+    /**
+     * Indicates if the GTS currently has open states. Equivalent to (but more
+     * efficient than) <code>getOpenStateIter().hasNext()</code> or
+     * <code>!getOpenStates().isEmpty()</code>.
+     * @return <code>true</code> if the GTS currently has open states
+     */
+    public boolean hasOpenStates() {
+        return openStateCount() > 0;
+    }
+
+    /** Returns the number of not fully explored states. */
+    public int openStateCount() {
+        return nodeCount() - getStateCount(Flag.CLOSED);
+    }
+
+    /**
+     * Returns the set of real states with a given flag.
+     */
+    private Collection<GraphState> getStates(Flag flag) {
+        List<GraphState> result = this.statesMap.get(flag);
+        if (result == null) {
+            this.statesMap.put(flag, result = new ArrayList<GraphState>());
+            for (GraphState state : getStates()) {
+                if (state.hasFlag(flag)) {
+                    result.add(state);
+                }
+            }
+        }
+        assert result.size() == getStateCount(flag);
+        return result;
+    }
+
+    private final Map<Flag,List<GraphState>> statesMap = new EnumMap<Status.Flag,List<GraphState>>(
+        Flag.class);
+
+    /**
+     * Indicates if there are states with a given flag.
+     */
+    private boolean hasStates(Flag flag) {
+        return getStateCount(flag) > 0;
+    }
+
+    /** Returns the number of states with a given flag. */
+    private int getStateCount(Flag flag) {
+        return this.stateCounts[flag.ordinal()];
+    }
+
+    private final int[] stateCounts = new int[Flag.values().length];
+
+    /**
+     * Indicates if this GTS has at any point included transient states.
+     * Note that the transient nature may have dissipated when the
+     * state was done.
+     */
+    public boolean hasTransientStates() {
+        return this.transients;
+    }
+
+    private boolean transients;
+
+    @Override
+    public Set<? extends GraphTransition> edgeSet() {
+        if (this.allTransitionSet == null) {
+            this.allTransitionSet = new TransitionSet();
+        }
+        return this.allTransitionSet;
+    }
+
+    /** The set of transitions of the GTS. */
+    private TransitionSet allTransitionSet;
+
+    /**
      * Returns a view on the set of real transitions in the GTS.
      * A transition is real if it is not inside a recipe, and its source
      * and target states are real.
@@ -492,25 +486,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         }
     }
 
-    /** Returns the possibly null J-Graph listener. */
-    private LTSJModel getJModelListener() {
-        for (GTSListener listener : getGraphListeners()) {
-            if (listener instanceof LTSJModel) {
-                return (LTSJModel) listener;
-            }
-        }
-        return null;
-    }
-
     /**
      * Notifies the {@link GTSListener}s, in addition to
      * calling the super method.
      */
     @Override
-    protected void fireAddNode(GraphState node) {
-        super.fireAddNode(node);
+    protected void fireAddNode(GraphState state) {
+        super.fireAddNode(state);
         for (GTSListener listener : getGraphListeners()) {
-            listener.addUpdate(this, node);
+            listener.addUpdate(this, state);
         }
     }
 
@@ -529,41 +513,31 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /**
      * Notifies all listeners of a change in status of a given state.
-     * @param state the status of which the status has changed
-     * @param flag the flag that has changed in the state
+     * @param state the state of which the status has changed
+     * @param flag the flag that is indicative of the change
+     * @param oldStatus status
      */
-    protected void fireUpdateState(GraphState state, Flag flag) {
-        switch (flag) {
-        case CLOSED:
-            if (state.getActualFrame().isFinal() || hasFinalProperties(state)) {
-                setFinal(state);
-            }
-            this.closedStateCount++;
-            break;
-        case DONE:
-        }
-        for (GTSListener listener : getGraphListeners()) {
-            listener.statusUpdate(this, state, flag);
-        }
-    }
-
-    /**
-     * Tests if a state is present and has no modifying outgoing transitions to
-     * a present state.
-     */
-    private boolean hasFinalProperties(GraphState state) {
-        boolean result = state.isPresent();
-        if (result) {
-            for (RuleTransition trans : state.getRuleTransitions()) {
-                if (!trans.target().isAbsent()) {
-                    if (trans.getStep().getRule().isModifying() || !trans.target().equals(state)) {
-                        result = false;
-                        break;
+    protected void fireUpdateState(GraphState state, Flag flag, int oldStatus) {
+        assert flag.isChange();
+        if (state.isRealState()) {
+            for (Flag recorded : FLAG_ARRAY) {
+                boolean had = recorded.test(oldStatus);
+                int index = recorded.ordinal();
+                if (state.hasFlag(recorded)) {
+                    if (!had) {
+                        this.stateCounts[index]++;
+                        if (this.statesMap.containsKey(recorded)) {
+                            this.statesMap.get(recorded).add(state);
+                        }
                     }
+                } else if (had) {
+                    this.stateCounts[index]--;
                 }
             }
         }
-        return result;
+        for (GTSListener listener : getGraphListeners()) {
+            listener.statusUpdate(this, state, flag, oldStatus);
+        }
     }
 
     /**
@@ -591,7 +565,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         Map<GraphState,MultiNode> nodeMap = new HashMap<GraphState,MultiNode>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
-            if (state.isRecipeState() && !flags.showRecipes()) {
+            if (state.isInternalState() && !flags.showRecipes()) {
                 continue;
             }
             if (state.isAbsent()) {
@@ -599,10 +573,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             MultiNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
-            if (flags.showResult() && isResult(state)) {
+            if (flags.showResult() && state.isResult()) {
                 result.addEdge(image, flags.getResultLabel(), image);
             }
-            if (flags.showFinal() && isFinal(state)) {
+            if (flags.showFinal() && state.isFinal()) {
                 result.addEdge(image, flags.getFinalLabel(), image);
             }
             if (flags.showStart() && startState().equals(state)) {
@@ -617,20 +591,20 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             if (flags.showTransience() && state.isTransient()) {
                 String label =
-                    flags.getTransienceLabel().replaceAll("#",
-                        "" + state.getActualFrame().getTransience());
+                        flags.getTransienceLabel().replaceAll("#",
+                            "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
-            if (flags.showRecipes() && state.isRecipeState()) {
+            if (flags.showRecipes() && state.isInternalState()) {
                 String label =
-                    flags.getRecipeLabel().replaceAll("#",
-                        "" + state.getActualFrame().getRecipe().getFullName());
+                        flags.getRecipeLabel().replaceAll("#",
+                            "" + state.getActualFrame().getRecipe().getFullName());
                 result.addEdge(image, label, image);
             }
         }
         for (GraphTransition transition : edgeSet()) {
             // don't include partial transitions unless forced to
-            if (transition.isRecipeStep() && !flags.showRecipes()) {
+            if (transition.isInternalStep() && !flags.showRecipes()) {
                 continue;
             }
             MultiNode sourceImage = nodeMap.get(transition.source());
@@ -706,26 +680,11 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private final Grammar grammar;
     /** Unique factory for host elements, associated with this GTS. */
     private HostFactory hostFactory;
-    /**
-     * Set of states that have not yet been extended.
-     * @invariant <tt>freshStates \subseteq nodes</tt>
-     */
-    private final Set<GraphState> finalStates = new HashSet<GraphState>();
-
-    private final Set<GraphState> resultStates = new HashSet<GraphState>();
 
     /** The system record for this GTS. */
     private Record record;
     /** The match applier associated with this GTS. */
     private MatchApplier matchApplier;
-    /**
-     * The number of closed states in the GTS.
-     */
-    private int closedStateCount = 0;
-    /**
-     * The number of transient states in the GTS.
-     */
-    private boolean transients = false;
     /**
      * The number of transitions in the GTS.
      */
@@ -735,6 +694,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * Set to <tt>null</tt> when the graph is fixed.
      */
     private Set<GTSListener> listeners = new HashSet<GTSListener>();
+
+    /** Set of all flags of which state sets are recorded. */
+    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.RESULT);
+    /** Array of all flags of which state sets are recorded. */
+    private static final Flag[] FLAG_ARRAY = FLAG_SET.toArray(new Flag[FLAG_SET.size()]);
+
     /**
      * Tree resolution of the state set (which is a {@link TreeHashSet}). A
      * smaller value means memory savings; a larger value means speedup.
@@ -800,7 +765,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 Set<?> myNodeSet = new HostNodeSet(myGraph.nodeSet());
                 Set<?> myEdgeSet = new HostEdgeSet(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
-                    && myEdgeSet.equals(otherGraph.edgeSet());
+                        && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
                 return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
                     otherBoundNodes);
@@ -826,14 +791,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 }
             } else {
                 CertificateStrategy certifier =
-                    this.checker.getCertifier(stateKey.getGraph(), true);
+                        this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     result +=
-                        Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
+                            Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {
@@ -925,13 +890,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         @Override
         public Iterator<GraphTransition> iterator() {
             Iterator<Iterator<? extends GraphTransition>> stateOutTransitionIter =
-                new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
-                    nodeSet().iterator()) {
-                    @Override
-                    public Iterator<? extends GraphTransition> toOuter(GraphState state) {
-                        return outEdgeSet(state).iterator();
-                    }
-                };
+                    new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
+                            nodeSet().iterator()) {
+                @Override
+                public Iterator<? extends GraphTransition> toOuter(GraphState state) {
+                    return outEdgeSet(state).iterator();
+                }
+            };
             return new NestedIterator<GraphTransition>(stateOutTransitionIter);
         }
 

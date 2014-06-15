@@ -109,7 +109,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     private RecipeEvent event;
 
     @Override
-    public final boolean isRecipeStep() {
+    public final boolean isInternalStep() {
         return false;
     }
 
@@ -187,7 +187,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
                 GraphState target = trans.target();
-                if (target.isRecipeState() || target == target()) {
+                if (target.isInternalState() || target == target()) {
                     Set<RuleTransition> inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {

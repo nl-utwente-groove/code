@@ -107,7 +107,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     public boolean isInitial() {
         // if a recipe step starts in a non-recipe frame, it must be
         // the initial step of a recipe
-        return inRecipe() && !getSource().inRecipe();
+        return inRecipe() && !getSource().isInternal();
     }
 
     /** Indicates if this step is part of a recipe.
