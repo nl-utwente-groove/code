@@ -17,6 +17,7 @@
 package groove.gui.tree;
 
 import groove.gui.look.Values;
+import groove.io.HTMLConverter;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -39,7 +40,7 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         boolean cellSelected = isSelected || hasFocus;
         boolean cellFocused = cellSelected && this.displayList.isFocusOwner();
         Component result =
-                super.getTreeCellRendererComponent(tree, value, cellSelected, expanded, leaf, row,
+            super.getTreeCellRendererComponent(tree, value, cellSelected, expanded, leaf, row,
                 false);
         Icon icon = null;
         String tip = null;
@@ -59,10 +60,10 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         if (icon != null) {
             setIcon(icon);
         }
-        setText(text);
+        setText(text == null ? null : HTMLConverter.HTML_TAG.on(text));
         setToolTipText(tip);
         Values.ColorSet colors =
-                inRecipe ? Values.RECIPE_COLORS : error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
+            inRecipe ? Values.RECIPE_COLORS : error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
         Color background = colors.getBackground(cellSelected, cellFocused);
         Color foreground = colors.getForeground(cellSelected, cellFocused);
         setForeground(enabled ? foreground : transparent(foreground));

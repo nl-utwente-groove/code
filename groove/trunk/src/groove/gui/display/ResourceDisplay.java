@@ -146,8 +146,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         ResourceKind kind = getResourceKind();
         if (kind.isEnableable()) {
             result.add(getEnableButton());
-            if (getResourceKind() == ResourceKind.HOST
-                || getResourceKind() == ResourceKind.TYPE
+            if (getResourceKind() == ResourceKind.HOST || getResourceKind() == ResourceKind.TYPE
                 || getResourceKind() == ResourceKind.PROLOG
                 || getResourceKind() == ResourceKind.CONTROL) {
                 result.add(getEnableUniqueAction());
@@ -190,8 +189,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     private JSplitPane getSplitInfoPanel() {
         JSplitPane result = this.splitInfoPanel;
         if (result == null) {
-            this.splitInfoPanel =
-                result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            this.splitInfoPanel = result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             result.setContinuousLayout(true);
             result.setBorder(null);
         }
@@ -211,10 +209,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         String key;
         if (lowerInfoPanel == null || !lowerInfoPanel.isEnabled()) {
             // if we switch from split to single, freeze the divider location
-            if (upperInfoPanel != null
-                && upperInfoPanel.getParent() == getSplitInfoPanel()) {
-                this.frozenDividerPos =
-                    getSplitInfoPanel().getDividerLocation();
+            if (upperInfoPanel != null && upperInfoPanel.getParent() == getSplitInfoPanel()) {
+                this.frozenDividerPos = getSplitInfoPanel().getDividerLocation();
             }
             getSingleInfoPanel().removeAll();
             if (upperInfoPanel != null) {
@@ -363,15 +359,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
             AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
-                    name);
+                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
         } else {
-            String program =
-                getSimulatorModel().getStore().getTexts(getResourceKind()).get(
-                    name);
+            String program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
             return new TextTab(this, name, program);
         }
     }
@@ -413,8 +406,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      */
     public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
-        for (ResourceTab editor : new ArrayList<ResourceTab>(
-            getEditors().values())) {
+        for (ResourceTab editor : new ArrayList<ResourceTab>(getEditors().values())) {
             result = editor.saveEditor(true, dispose);
             if (!result) {
                 break;
@@ -434,17 +426,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (suspendListening()) {
             if (changes.contains(Change.GRAMMAR)) {
-                updateGrammar(source.getGrammar(),
-                    source.getGrammar() != oldModel.getGrammar());
+                updateGrammar(source.getGrammar(), source.getGrammar() != oldModel.getGrammar());
             }
-            ResourceModel<?> resourceModel =
-                source.getResource(getResourceKind());
-            getEnableButton().setSelected(
-                resourceModel != null && resourceModel.isEnabled());
+            ResourceModel<?> resourceModel = source.getResource(getResourceKind());
+            getEnableButton().setSelected(resourceModel != null && resourceModel.isEnabled());
             selectResource(source.getSelected(getResourceKind()));
             buildInfoPanel();
             activateListening();
@@ -482,21 +470,17 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      */
     @Override
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR,
-            Change.toChange(getResourceKind()));
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.toChange(getResourceKind()));
         // adds a mouse listener that offers a popup menu with a detach action
         getTabPane().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    int index =
-                        getTabPane().indexAtLocation(e.getX(), e.getY());
+                    int index = getTabPane().indexAtLocation(e.getX(), e.getY());
                     if (index >= 0) {
-                        ResourceTab tab =
-                            (ResourceTab) getTabPane().getComponentAt(index);
+                        ResourceTab tab = (ResourceTab) getTabPane().getComponentAt(index);
                         if (tab != getMainTab()) {
-                            createDetachMenu(tab).show(ResourceDisplay.this,
-                                e.getX(), e.getY());
+                            createDetachMenu(tab).show(ResourceDisplay.this, e.getX(), e.getY());
                         }
                     }
                 }
@@ -517,8 +501,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         result.add(new AbstractAction(Options.CLOSE_OTHER_ACTION_NAME) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (ResourceTab editor : new ArrayList<ResourceTab>(
-                    getEditors().values())) {
+                for (ResourceTab editor : new ArrayList<ResourceTab>(getEditors().values())) {
                     if (editor != tab && !editor.saveEditor(true, true)) {
                         break;
                     }
@@ -660,15 +643,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * @param enabled flag indicating if the name should be shown as enabled
      */
     public String getLabelText(String name, boolean enabled) {
-        StringBuilder result =
-            new StringBuilder(getResource(name).getLastName());
+        StringBuilder result = new StringBuilder(getResource(name).getLastName());
         if (isEdited(name)) {
             getEditors().get(name).decorateText(result);
         }
         if (enabled) {
             if (getKind() != DisplayKind.RULE) {
                 HTMLConverter.STRONG_TAG.on(result);
-                HTMLConverter.HTML_TAG.on(result);
             }
         } else {
             result.insert(0, "(");
@@ -692,8 +673,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         String result = enabled ? this.enabledText : this.disabledText;
         if (result == null) {
             this.enabledText =
-                String.format("Enabled %s; doubleclick to edit",
-                    getResourceKind().getDescription());
+                String.format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
             this.disabledText =
                 String.format("Disabled %s; doubleclick to edit",
                     getResourceKind().getDescription());
@@ -721,8 +701,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Retrieves the resource model for a given name from the grammar. */
     public final ResourceModel<?> getResource(String name) {
-        return getSimulatorModel().getGrammar().getResource(getResourceKind(),
-            name);
+        return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
     }
 
     private JTabbedPane tabPane;
@@ -736,8 +715,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /** Index of the selected tab at the lower info panel. */
     private int lowerInfoTabIndex;
     /** Mapping from graph names to editors for those graphs. */
-    private final Map<String,ResourceTab> editorMap =
-        new HashMap<String,ResourceTab>();
+    private final Map<String,ResourceTab> editorMap = new HashMap<String,ResourceTab>();
 
     /** Flag indicating that the listeners are currently active. */
     private boolean listening;

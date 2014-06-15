@@ -32,7 +32,6 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JModel;
 import groove.gui.tree.LabelFilter.Entry;
 import groove.gui.tree.TypeFilter.TypeEntry;
-import groove.io.HTMLConverter;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -130,8 +129,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
      */
     private JToggleButton getShowSubtypesButton() {
         if (this.showSubtypesButton == null) {
-            this.showSubtypesButton =
-                Options.createToggleButton(new ShowModeAction(true));
+            this.showSubtypesButton = Options.createToggleButton(new ShowModeAction(true));
             this.showSubtypesButton.setSelected(true);
         }
         return this.showSubtypesButton;
@@ -143,8 +141,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
      */
     private JToggleButton getShowSupertypesButton() {
         if (this.showSupertypesButton == null) {
-            this.showSupertypesButton =
-                Options.createToggleButton(new ShowModeAction(false));
+            this.showSupertypesButton = Options.createToggleButton(new ShowModeAction(false));
         }
         return this.showSupertypesButton;
     }
@@ -155,8 +152,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
      */
     private JToggleButton getShowAllLabelsButton() {
         if (this.showAllLabelsButton == null) {
-            this.showAllLabelsButton =
-                Options.createToggleButton(new ShowAllLabelsAction());
+            this.showAllLabelsButton = Options.createToggleButton(new ShowAllLabelsAction());
         }
         return this.showAllLabelsButton;
     }
@@ -244,24 +240,18 @@ public class TypeTree extends LabelTree<AspectGraph> {
         List<TreeNode> result = new ArrayList<TreeNode>();
         TypeGraph typeGraph = getTypeGraph();
         if (typeGraph != null) {
-            Collection<TypeGraph.Sub> typeGraphMap =
-                typeGraph.getComponentMap().values();
+            Collection<TypeGraph.Sub> typeGraphMap = typeGraph.getComponentMap().values();
             if (typeGraphMap.isEmpty()) {
-                result =
-                    fillTree(getTopNode(), getTypeGraph().nodeSet(),
-                        getTypeGraph().edgeSet());
+                result = fillTree(getTopNode(), getTypeGraph().nodeSet(), getTypeGraph().edgeSet());
             } else if (typeGraphMap.size() == 1) {
                 TypeGraph.Sub subTypeGraph = typeGraphMap.iterator().next();
-                result =
-                    fillTree(getTopNode(), subTypeGraph.getNodes(),
-                        subTypeGraph.getEdges());
+                result = fillTree(getTopNode(), subTypeGraph.getNodes(), subTypeGraph.getEdges());
             } else {
                 result = new ArrayList<TreeNode>();
                 for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
-                    TypeGraphTreeNode typeGraphNode =
-                        new TypeGraphTreeNode(subTypeGraph);
-                    result.addAll(fillTree(typeGraphNode,
-                        subTypeGraph.getNodes(), subTypeGraph.getEdges()));
+                    TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(subTypeGraph);
+                    result.addAll(fillTree(typeGraphNode, subTypeGraph.getNodes(),
+                        subTypeGraph.getEdges()));
                     // only add if there were any children
                     if (typeGraphNode.getChildCount() > 0) {
                         getTopNode().add(typeGraphNode);
@@ -293,8 +283,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             }
             TypeEntry entry = getFilter().getEntry(node);
             if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                TypedEntryNode nodeTypeNode =
-                    new TypedEntryNode(this, entry, true);
+                TypedEntryNode nodeTypeNode = new TypedEntryNode(this, entry, true);
                 topNode.add(nodeTypeNode);
                 result.add(nodeTypeNode);
                 addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, result);
@@ -304,13 +293,11 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 }
                 // check duplicates due to equi-labelled edges to different targets
                 Set<Entry> entries = new HashSet<Entry>();
-                for (TypeEdge edge : new TreeSet<TypeEdge>(
-                    getTypeGraph().outEdgeSet(node))) {
+                for (TypeEdge edge : new TreeSet<TypeEdge>(getTypeGraph().outEdgeSet(node))) {
                     if (typeEdges.contains(edge)) {
                         TypeEntry edgeEntry = getFilter().getEntry(edge);
                         if (entries.add(edgeEntry)) {
-                            TypedEntryNode edgeTypeNode =
-                                new TypedEntryNode(this, edgeEntry, true);
+                            TypedEntryNode edgeTypeNode = new TypedEntryNode(this, edgeEntry, true);
                             nodeTypeNode.add(edgeTypeNode);
                             result.add(edgeTypeNode);
                         }
@@ -326,8 +313,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 TypeEntry edgeEntry = getFilter().getEntry(edge);
                 if (isShowsAllLabels() || getFilter().hasJCells(edgeEntry)) {
                     if (entries.add(edgeEntry)) {
-                        TypedEntryNode edgeTypeNode =
-                            new TypedEntryNode(this, edgeEntry, true);
+                        TypedEntryNode edgeTypeNode = new TypedEntryNode(this, edgeEntry, true);
                         topNode.add(edgeTypeNode);
                         result.add(edgeTypeNode);
                     }
@@ -345,19 +331,16 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * @param map mapping from key types to related node type (in the combined type graph)
      * @param newNodes set that collects all newly created tree nodes  
      */
-    private void addRelatedTypes(Set<? extends TypeNode> typeNodes,
-            TypedEntryNode typeNode, Map<TypeNode,Set<TypeNode>> map,
-            List<TreeNode> newNodes) {
+    private void addRelatedTypes(Set<? extends TypeNode> typeNodes, TypedEntryNode typeNode,
+            Map<TypeNode,Set<TypeNode>> map, List<TreeNode> newNodes) {
         TypeNode type = (TypeNode) typeNode.getEntry().getType();
         Set<TypeNode> relatedTypes = map.get(type);
         assert relatedTypes != null : String.format(
-            "Node type '%s' does not occur in type graph '%s'", type,
-            map.keySet());
+            "Node type '%s' does not occur in type graph '%s'", type, map.keySet());
         for (TypeNode relType : relatedTypes) {
             // test if the node type label exists in the partial type graph
             if (typeNodes.contains(relType)) {
-                TypedEntryNode subTypeNode =
-                    new TypedEntryNode(this, relType, false);
+                TypedEntryNode subTypeNode = new TypedEntryNode(this, relType, false);
                 typeNode.add(subTypeNode);
                 if (newNodes != null) {
                     newNodes.add(typeNode);
@@ -374,18 +357,16 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * returns an HTML-formatted string with the text of the label.
      */
     @Override
-    public String convertValueToText(Object value, boolean selected,
-            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    public String convertValueToText(Object value, boolean selected, boolean expanded,
+            boolean leaf, int row, boolean hasFocus) {
         if (value instanceof TypeGraphTreeNode) {
             StringBuilder result = new StringBuilder();
             result.append("Type graph '");
             result.append(((TypeGraphTreeNode) value).getName());
             result.append("'");
-            return HTMLConverter.HTML_TAG.on(
-                ITALIC_TAG.on(STRONG_TAG.on(result))).toString();
+            return ITALIC_TAG.on(STRONG_TAG.on(result)).toString();
         } else {
-            return super.convertValueToText(value, selected, expanded, leaf,
-                row, hasFocus);
+            return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
     }
 
@@ -596,8 +577,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
          * value of {@link #isShowsAllLabels()}
          */
         private String computeName() {
-            return isShowsAllLabels()
-                    ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
+            return isShowsAllLabels() ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
                     : Options.SHOW_ALL_LABELS_ACTION_NAME;
         }
     }
