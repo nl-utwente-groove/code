@@ -193,6 +193,33 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
+    public GraphTransition getInTransition() {
+        if (isRecipeState() || !isRecipeStep()) {
+            return this;
+        }
+        // find the initial rule transition
+        RuleTransition initial = this;
+        while (initial.source().isRecipeState()) {
+            // recipe states cannot be the initial state, so it's a GraphNextState
+            initial = (GraphNextState) initial.source();
+        }
+        // look for the corresponding outgoing transition
+        RecipeTransition result = null;
+        for (GraphTransition trans : initial.source().getTransitions()) {
+            if (!(trans instanceof RecipeTransition)) {
+                continue;
+            }
+            result = (RecipeTransition) trans;
+            if (result.target() == this && result.getInitial() == initial) {
+                break;
+            } else {
+                result = null;
+            }
+        }
+        return result == null ? this : result;
+    }
+
+    @Override
     public MatchResult getKey() {
         return new MatchResult(this);
     }

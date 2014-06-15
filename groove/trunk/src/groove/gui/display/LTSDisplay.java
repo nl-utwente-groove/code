@@ -254,7 +254,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             jCells.add(getJModel().getJCellForNode(state));
             if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
-                for (GraphTransition trans : state.getTransitions(GraphTransition.Class.ANY)) {
+                for (GraphTransition trans : state.getTransitions(GraphTransition.Claz.ANY)) {
                     if (trans.target() == counterExamples.get(i + 1)) {
                         jCells.add(getJModel().getJCellForEdge(trans));
                         break;

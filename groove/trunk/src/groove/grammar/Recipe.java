@@ -51,8 +51,16 @@ public class Recipe extends Procedure implements Action {
                     result.add((Rule) action);
                 }
             }
+            this.rules = result;
         }
         return result;
+    }
+
+    private Set<Rule> rules;
+
+    @Override
+    public boolean isPartial() {
+        return false;
     }
 
     @Override
@@ -79,6 +87,4 @@ public class Recipe extends Procedure implements Action {
     public int compareTo(Action other) {
         return getFullName().compareTo(other.getFullName());
     }
-
-    private Set<Rule> rules;
 }

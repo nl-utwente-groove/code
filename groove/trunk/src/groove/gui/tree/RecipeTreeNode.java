@@ -21,9 +21,10 @@ import groove.gui.Icons;
 import groove.io.HTMLConverter;
 
 import javax.swing.Icon;
+import javax.swing.tree.TreeNode;
 
 /**
- * Transaction nodes (= level 1 nodes) of the directory
+ * Recipe nodes of the directory
  */
 class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     /**
@@ -66,8 +67,15 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         boolean result = false;
         int count = getChildCount();
         for (int i = 0; !result && i < count; i++) {
-            RuleTreeNode child = (RuleTreeNode) getChildAt(i);
-            result = child.isEnabled();
+            TreeNode child = getChildAt(i);
+            if (child instanceof RecipeTransitionTreeNode) {
+                result = true;
+            } else if (child instanceof RuleTreeNode) {
+                result = ((RuleTreeNode) child).isEnabled();
+            }
+            if (result) {
+                break;
+            }
         }
         return result;
     }
@@ -83,5 +91,16 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
+    }
+
+    /** Returns the number of child {@link RecipeTransitionTreeNode} nodes. */
+    public int getTransitionCount() {
+        int result = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            if (getChildAt(i) instanceof RecipeTransitionTreeNode) {
+                result++;
+            }
+        }
+        return result;
     }
 }

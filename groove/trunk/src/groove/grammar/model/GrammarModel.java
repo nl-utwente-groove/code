@@ -26,6 +26,7 @@ import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.GrammarProperties.Key;
 import groove.grammar.QualName;
+import groove.grammar.Recipe;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.type.TypeGraph;
@@ -450,7 +451,11 @@ public class GrammarModel implements Observer {
                 }
             }
         }
+        // set control
         try {
+            for (Recipe recipe : getControlModel().getRecipes()) {
+                result.add(recipe);
+            }
             result.setControl(getControlModel().toResource());
         } catch (FormatException e) {
             errors.addAll(e.getErrors());

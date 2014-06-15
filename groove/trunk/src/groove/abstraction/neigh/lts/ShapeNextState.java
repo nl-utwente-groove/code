@@ -27,8 +27,10 @@ import groove.graph.EdgeRole;
 import groove.lts.DefaultRuleTransition;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionKey;
 import groove.lts.MatchResult;
+import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionLabel;
 import groove.lts.RuleTransitionStub;
@@ -161,6 +163,33 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
     @Override
     public Switch getSwitch() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphTransition getInTransition() {
+        if (isRecipeState() || !isRecipeStep()) {
+            return this;
+        }
+        // find the initial rule transition
+        RuleTransition initial = this;
+        while (initial.source().isRecipeState()) {
+            // recipe states cannot be the initial state, so it's a GraphNextState
+            initial = (GraphNextState) initial.source();
+        }
+        // look for the corresponding outgoing transition
+        RecipeTransition result = null;
+        for (GraphTransition trans : initial.source().getTransitions()) {
+            if (!(trans instanceof RecipeTransition)) {
+                continue;
+            }
+            result = (RecipeTransition) trans;
+            if (result.target() == this && result.getInitial() == initial) {
+                break;
+            } else {
+                result = null;
+            }
+        }
+        return result == null ? this : result;
     }
 
     @Override

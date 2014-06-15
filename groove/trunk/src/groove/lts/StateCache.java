@@ -68,8 +68,8 @@ public class StateCache {
         return result;
     }
 
-    Set<? extends GraphTransition> getTransitions(final GraphTransition.Class claz) {
-        if (claz == GraphTransition.Class.ANY) {
+    Set<? extends GraphTransition> getTransitions(final GraphTransition.Claz claz) {
+        if (claz == GraphTransition.Claz.ANY) {
             return getTransitionMap();
         } else {
             return new SetView<GraphTransition>(getTransitionMap()) {

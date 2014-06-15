@@ -44,9 +44,8 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     }
 
     @Override
-    public GraphState getTarget(GraphState source) {
-        assert this.initial.getTarget(source) != null;
-        return this.target;
+    public RecipeEvent getEvent() {
+        return this;
     }
 
     @Override
@@ -55,9 +54,39 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     }
 
     @Override
+    public GraphState getTarget(GraphState source) {
+        assert this.initial.getTarget(source) != null;
+        return this.target;
+    }
+
+    /** Returns the target state of this event. */
+    public GraphState getTarget() {
+        return this.target;
+    }
+
+    /** Target state of the event. */
+    private final GraphState target;
+
+    @Override
     public RecipeTransition toTransition(GraphState source) {
         return new RecipeTransition(source, this.target, this.initial.toTransition(source));
     }
+
+    /** Returns the switch corresponding to the invocation wrapped in this event. */
+    public Switch getSwitch() {
+        return this.recipeSwitch;
+    }
+
+    /** Source state of the rule transition. */
+    private final Switch recipeSwitch;
+
+    /** Returns the initial transition for this event. */
+    public RuleTransitionStub getInitial() {
+        return this.initial;
+    }
+
+    /** Initial rule transition of the event. */
+    private final RuleTransitionStub initial;
 
     @Override
     public int hashCode() {
@@ -93,10 +122,9 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
         return true;
     }
 
-    /** Source state of the rule transition. */
-    private final Switch recipeSwitch;
-    /** Initial rule transition of the event. */
-    private final RuleTransitionStub initial;
-    /** Target state of the event. */
-    private final GraphState target;
+    @Override
+    public String toString() {
+        return "RecipeEvent [target=" + this.target + ", recipeSwitch=" + this.recipeSwitch
+            + ", initial=" + this.initial + "]";
+    }
 }

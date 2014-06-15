@@ -60,17 +60,17 @@ public class MatchApplier {
     public RuleTransition apply(GraphState source, MatchResult match) {
         addTransitionReporter.start();
         RuleTransition transition = null;
-        Rule rule = match.getRule();
+        Rule rule = match.getAction();
         if (!match.getStep().isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
-            } else if (match.hasRuleTransition()) {
+            } else if (match.hasTransition()) {
                 // try to find the target state by walking around three previously
                 // generated sides of a confluent diamond
                 // the parent state is the source of source
                 // the sibling is the child reached by the virtual event
                 assert source instanceof GraphNextState;
-                RuleTransition parentTrans = match.getRuleTransition();
+                RuleTransition parentTrans = match.getTransition();
                 assert source != parentTrans.source();
                 boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
@@ -118,7 +118,7 @@ public class MatchApplier {
         boolean hasFrameValues = ctrlStep.onFinish().hasVars();
         RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
-            RuleTransition parentOut = match.getRuleTransition();
+            RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
             // compute the frame values at the same time, if there are any
@@ -155,9 +155,9 @@ public class MatchApplier {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
-            RuleTransition parentOut = match.getRuleTransition();
+            RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
-        } else if (match.getRule().hasNodeCreators()) {
+        } else if (match.getAction().hasNodeCreators()) {
             RuleEffect record = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
             event.recordEffect(record);
             record.setFixed();
@@ -173,13 +173,13 @@ public class MatchApplier {
      * as created nodes for a new target graph.
      */
     private boolean reuseCreatedNodes(GraphState source, MatchResult match) {
-        if (!match.hasRuleTransition()) {
+        if (!match.hasTransition()) {
             return false;
         }
         if (!(source instanceof GraphNextState)) {
             return false;
         }
-        HostNode[] addedNodes = match.getRuleTransition().getAddedNodes();
+        HostNode[] addedNodes = match.getTransition().getAddedNodes();
         if (addedNodes == null || addedNodes.length == 0) {
             return true;
         }

@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
+import groove.transform.RuleEvent;
 
 /**
  * Graph transition stub specialised to rule transitions.
@@ -28,6 +29,9 @@ public interface RuleTransitionStub extends GraphTransitionStub {
     /** Specialises the return type. */
     @Override
     Rule getAction();
+
+    /** Returns the rule event on which this transition stub is based. */
+    public RuleEvent getEvent();
 
     /**
      * Returns the event that underlies the transition from a given source to
