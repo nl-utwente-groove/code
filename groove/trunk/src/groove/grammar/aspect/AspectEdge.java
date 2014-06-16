@@ -324,20 +324,24 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     }
 
     /** Tests if this edge has the same aspect type as another aspect element. */
-    public boolean equalsAspects(AspectElement other) {
+    public boolean isCompatible(AspectElement other) {
         assert isFixed() && other.isFixed();
-        boolean result =
-            getAspect() == null ? other.getAspect() == null : getAspect().equals(other.getAspect());
-        if (result) {
-            result =
-                getAttrAspect() == null ? other.getAttrAspect() == null : getAttrAspect().equals(
-                    other.getAttrAspect());
+        if (getKind() == REMARK || other.getKind() == REMARK) {
+            return true;
         }
-        if (result && other instanceof AspectEdge) {
+        if (getAspect() == null ? other.getAspect() != null
+                : !getAspect().equals(other.getAspect())) {
+            return false;
+        }
+        if (getAttrAspect() == null ? other.getAttrAspect() != null : !getAttrAspect().equals(
+            other.getAttrAspect())) {
+            return false;
+        }
+        if (other instanceof AspectEdge) {
             Aspect otherMode = ((AspectEdge) other).getLabelMode();
-            result = getLabelMode().equals(otherMode);
+            return getLabelMode().equals(otherMode);
         }
-        return result;
+        return true;
     }
 
     /** Returns the inner text of the edge label, i.e.,
@@ -375,8 +379,10 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
      * Returns the display line corresponding to this aspect edge.
      * @param onNode if {@code true}, the line will be part of the node label,
      * otherwise it is labelling a binary edge
+     * @param contextKind aspect kind of the element on which the line should be displayed.
+     * If different from this aspect kind, the prefix will be displaued
      */
-    public Line toLine(boolean onNode) {
+    public Line toLine(boolean onNode, AspectKind contextKind) {
         Line result = null;
         // Role prefix
         String rolePrefix = null;
@@ -491,9 +497,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
                 result = result.append(TYPE_TEXT);
                 result = result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
-            if (rolePrefix != null && getKind() != source().getKind()) {
-                result = Line.atom(rolePrefix).append(result);
-            }
+        }
+        if (contextKind != getKind() && rolePrefix != null) {
+            result = Line.atom(rolePrefix).append(result);
         }
         for (Style s : styles) {
             result = result.style(s);
@@ -517,7 +523,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         String name = getLevelName();
         // only consider proper names unequal to source or target level
         if (name != null && name.length() != 0 && !name.equals(source().getLevelName())
-            && !name.equals(target().getLevelName())) {
+                && !name.equals(target().getLevelName())) {
             result =
                     Line.atom(LEVEL_NAME_SEPARATOR).append(Line.atom(name).style(Style.ITALIC)).color(
                         Values.NESTED_COLOR);
@@ -568,7 +574,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
         if (getKind() == REMARK || isAssign() || isPredicate() || getGraphRole() == GraphRole.TYPE
-            && getAttrKind().hasSignature()) {
+                && getAttrKind().hasSignature()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {

@@ -14,6 +14,7 @@ import groove.grammar.model.GraphBasedModel.TypeModelMap;
 import groove.grammar.rule.RuleLabel;
 import groove.grammar.type.TypeEdge;
 import groove.graph.Edge;
+import groove.graph.EdgeComparator;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
@@ -23,14 +24,15 @@ import groove.io.HTMLConverter;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex>
-        implements AspectJCell {
-    /** 
+implements AspectJCell {
+    /**
      * Creates an uninitialised instance.
      */
     private AspectJEdge() {
@@ -84,7 +86,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (!super.isCompatible(edge)) {
             return false;
         }
-        if (!((AspectEdge) edge).equalsAspects(getEdge())) {
+        if (!((AspectEdge) edge).isCompatible(getEdge())) {
             return false;
         }
         return true;
@@ -98,16 +100,16 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     public void addEdge(Edge e) {
         AspectEdge edge = (AspectEdge) e;
         AspectEdge oldEdge = getEdge();
-        if (oldEdge == null) {
+        if (oldEdge == null || this.aspect == AspectKind.REMARK) {
             this.aspect = edge.getKind();
         }
         FormatError error = null;
         if (edge.getRole() != EdgeRole.BINARY) {
             error = new FormatError("Node label '%s' not allowed on edges", edge.label(), this);
-        } else if (oldEdge != null && !edge.equalsAspects(oldEdge)) {
+        } else if (oldEdge != null && !edge.isCompatible(oldEdge)) {
             error =
-                new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
-                    edge.label(), this);
+                    new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
+                        edge.label(), this);
         }
         if (error != null) {
             edge = new AspectEdge(edge.source(), edge.label(), edge.target());
@@ -121,11 +123,11 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
 
     /** Update this cell's look due to the addition of an edge. */
     private void updateLook(AspectEdge edge) {
-        // maybe update the look 
+        // maybe update the look
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
             if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR || ruleLabel.isNeg()
-                && ruleLabel.getNegOperand().isEmpty()) {
+                    && ruleLabel.getNegOperand().isEmpty()) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
             } else if (!ruleLabel.isAtom()) {
@@ -201,10 +203,10 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         return getJModel().getResourceModel().getTypeMap();
     }
 
-    /** 
+    /**
      * Indicates if this JEdge should be shown
      * instead as part of the source node label.
-     * This is true if this is an attribute edge to a "pure" value node, 
+     * This is true if this is an attribute edge to a "pure" value node,
      * and value nodes are not shown.
      */
     public boolean isSourceLabel() {
@@ -221,7 +223,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
             return false;
         }
         if (getJGraph().getGraphRole() != GraphRole.TYPE
-            && !getTargetNode().getAttrAspect().hasContent()) {
+                && !getTargetNode().getAttrAspect().hasContent()) {
             return false;
         }
         return true;
@@ -281,9 +283,33 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
 
     private AspectKind aspect;
 
-    /** 
+    @Override
+    protected Comparator<Edge> edgeComparator() {
+        return COMPARATOR;
+    }
+
+    private final static Comparator<Edge> COMPARATOR = new Comparator<Edge>() {
+        @Override
+        public int compare(Edge o1, Edge o2) {
+            int result = getKind(o1).compareTo(getKind(o2));
+            if (result != 0) {
+                return result;
+            }
+            return EdgeComparator.instance().compare(o1, o2);
+        }
+
+        private AspectKind getKind(Edge e) {
+            AspectKind result = ((AspectEdge) e).getKind();
+            if (result == null) {
+                result = DEFAULT;
+            }
+            return result;
+        }
+    };
+
+    /**
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel} to initialise. 
+     * Call {@link #setJModel} to initialise.
      */
     public static AspectJEdge newInstance() {
         return new AspectJEdge();

@@ -18,6 +18,7 @@ package groove.gui.layout;
 
 import groove.control.graph.ControlGraph;
 import groove.control.graph.ControlNode;
+import groove.graph.Edge;
 import groove.graph.EdgeComparator;
 import groove.graph.NodeComparator;
 import groove.gui.jgraph.CtrlJGraph;
@@ -147,7 +148,7 @@ public class ForestLayouter extends AbstractLayouter {
                     // it's possible that the edge is displayed as node label
                     // even though it has an explicit layout
                     EdgeView edgeView =
-                            (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(edge, false);
+                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(edge, false);
                     if (edgeView != null && edge.getVisuals().isVisible() && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
                         JVertex<?> sourceVertex = edge.getSourceVertex();
@@ -164,7 +165,7 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 for (JEdge<?> edge : outEdges) {
                     EdgeView edgeView =
-                            (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(edge, false);
+                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(edge, false);
                     // add all the points on the edge to the branches of
                     // the
                     // source node
@@ -183,7 +184,7 @@ public class ForestLayouter extends AbstractLayouter {
                 Set<LayoutNode> cellsWithInEdgeCount = this.inDegreeMap.get(inEdgeCountKey);
                 if (cellsWithInEdgeCount == null) {
                     this.inDegreeMap.put(inEdgeCountKey, cellsWithInEdgeCount =
-                            new LinkedHashSet<LayoutNode>());
+                        new LinkedHashSet<LayoutNode>());
                 }
                 cellsWithInEdgeCount.add(cellLayoutable);
             }
@@ -199,22 +200,22 @@ public class ForestLayouter extends AbstractLayouter {
      */
     private void computeRoots() {
         Iterator<LayoutNode> rootIter =
-                new CollectionOfCollections<LayoutNode>(this.inDegreeMap.values()).iterator();
+            new CollectionOfCollections<LayoutNode>(this.inDegreeMap.values()).iterator();
         // Transfer the suggested roots (if any) from j-cells to layoutables
         Collection<?> suggestedRoots = getSuggestedRoots();
         if (suggestedRoots != null && !suggestedRoots.isEmpty()) {
             Iterator<LayoutNode> suggestedRootIter =
-                    new TransformIterator<Object,LayoutNode>(suggestedRoots.iterator()) {
-                @Override
-                public LayoutNode toOuter(Object in) {
-                    LayoutNode result = ForestLayouter.this.layoutMap.get(in);
-                    if (result == null) {
-                        throw new IllegalArgumentException("Suggested root " + in
-                            + " is not a known graph cell");
+                new TransformIterator<Object,LayoutNode>(suggestedRoots.iterator()) {
+                    @Override
+                    public LayoutNode toOuter(Object in) {
+                        LayoutNode result = ForestLayouter.this.layoutMap.get(in);
+                        if (result == null) {
+                            throw new IllegalArgumentException("Suggested root " + in
+                                + " is not a known graph cell");
+                        }
+                        return result;
                     }
-                    return result;
-                }
-            };
+                };
             rootIter = new NestedIterator<LayoutNode>(suggestedRootIter, rootIter);
         }
         // now add real roots to the result list, one by one
@@ -272,14 +273,14 @@ public class ForestLayouter extends AbstractLayouter {
             leftIndent = new int[levelCount];
             rightIndent = new int[levelCount];
             int fit =
-                    (leftLevelCount == 0) ? 0 : leftRightIndent[0] + rightLeftIndent[0]
-                            - MIN_CHILD_DISTANCE;
+                (leftLevelCount == 0) ? 0 : leftRightIndent[0] + rightLeftIndent[0]
+                    - MIN_CHILD_DISTANCE;
             // fit = Math.min(fit, leftWidth);
             for (int level = 0; level < levelCount; level++) {
                 if (level < leftLevelCount && level < rightLevelCount) {
                     fit =
-                            Math.min(fit, leftRightIndent[level] + rightLeftIndent[level]
-                                    - MIN_NODE_DISTANCE);
+                        Math.min(fit, leftRightIndent[level] + rightLeftIndent[level]
+                            - MIN_NODE_DISTANCE);
                 }
             }
             for (int level = 0; level < levelCount; level++) {
@@ -323,7 +324,7 @@ public class ForestLayouter extends AbstractLayouter {
         // recursively call layouting for the next level of the tree
         Set<LayoutNode> branches = this.branchMap.get(layoutable);
         Object[] branchLayout =
-                layout(branches, height + VERTICAL_SPACE + (int) layoutable.getHeight());
+            layout(branches, height + VERTICAL_SPACE + (int) layoutable.getHeight());
         int branchWidth = ((Integer) branchLayout[0]).intValue();
         int[] branchLeftIndent = (int[]) branchLayout[1];
         int[] branchRightIndent = (int[]) branchLayout[2];
@@ -406,7 +407,7 @@ public class ForestLayouter extends AbstractLayouter {
      * own. If the branch set is empty, the cell is a leaf.
      */
     private final Map<LayoutNode,Set<LayoutNode>> branchMap =
-            new LinkedHashMap<LayoutNode,Set<LayoutNode>>();
+        new LinkedHashMap<LayoutNode,Set<LayoutNode>>();
     /** The roots of the forest. */
     private final Collection<LayoutNode> roots = new LinkedList<LayoutNode>();
 
@@ -423,7 +424,7 @@ public class ForestLayouter extends AbstractLayouter {
     };
 
     private final static NodeComparator nodeComp = NodeComparator.instance();
-    private final static EdgeComparator edgeComp = EdgeComparator.instance();
+    private final static Comparator<Edge> edgeComp = EdgeComparator.instance();
 
     /** Prototype instance of the forest layouter. */
     public static final ForestLayouter PROTOTYPE = new ForestLayouter();

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Edge;
+import groove.graph.EdgeComparator;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
@@ -42,8 +43,8 @@ import org.jgraph.graph.DefaultGraphCell;
  * @version $Revision $
  */
 public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>> extends
-        DefaultGraphCell implements JCell<G> {
-    /** 
+DefaultGraphCell implements JCell<G> {
+    /**
      * Constructs a new, uninitialised cell.
      * Call {@link #setJModel(JModel)} to initialise to a given model.
      */
@@ -268,18 +269,11 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
 
     /** Returns a label-sorted set of edges. */
     protected <E extends Edge> Set<E> createEdgeSet() {
-        return new TreeSet<E>(new Comparator<E>() {
-            @Override
-            public int compare(E o1, E o2) {
-                int result = o1.label().compareTo(o2.label());
-                if (result == 0) {
-                    result = o1.source().getNumber() - o2.source().getNumber();
-                    if (result == 0) {
-                        result = o1.target().getNumber() - o2.target().getNumber();
-                    }
-                }
-                return result;
-            }
-        });
+        return new TreeSet<E>(edgeComparator());
+    }
+
+    /** Returns the comparator for the edge set wrapped in this jCell. */
+    protected <E extends Edge> Comparator<E> edgeComparator() {
+        return EdgeComparator.instance();
     }
 }
