@@ -111,7 +111,7 @@ public abstract class AbstractExporter implements Exporter {
             }
         }
         if (supports) {
-            if (exportable.containsKind(Kind.RESOURCE)) {
+            if (exportable.containsKind(Kind.RESOURCE) && getFormatKinds().contains(Kind.RESOURCE)) {
                 // check if the specific resource kind is supported
                 FileType fileType = getFileType(exportable.getModel().getKind());
                 if (fileType != null) {
