@@ -110,12 +110,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                    !isPartial() || (getParent() instanceof RecipeTreeNode)
+                !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         return getDisplay().getLabelText(getName(), showEnabled)
-                + (isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX
-                    : RULE_SUFFIX);
+            + (isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX
+                        : RULE_SUFFIX);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */
@@ -131,7 +131,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     /** Flag indicating whether the rule has been tried on the displayed state. */
     private boolean tried;
 
-    private final static String SUBRULE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("subrule");
-    private final static String RULE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("rule");
-    private final static String PROPERTY_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("property");
+    private final static String SUBRULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("subrule");
+    private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("rule");
+    private final static String PROPERTY_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("property");
 }

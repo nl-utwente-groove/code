@@ -27,6 +27,7 @@ import groove.gui.list.ListPanel.SelectableListEntry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -268,5 +269,5 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     private static final NodeComparator nodeComparator = NodeComparator.instance();
-    private static final EdgeComparator edgeComparator = EdgeComparator.instance();
+    private static final Comparator<Edge> edgeComparator = EdgeComparator.instance();
 }

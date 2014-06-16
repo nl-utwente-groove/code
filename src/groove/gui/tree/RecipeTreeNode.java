@@ -104,5 +104,5 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         return result;
     }
 
-    private final static String RECIPE_SUFFIX = ": " + HTMLConverter.STRONG_TAG.on("recipe");
+    private final static String RECIPE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("recipe");
 }

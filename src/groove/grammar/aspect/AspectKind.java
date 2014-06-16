@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -53,6 +53,9 @@ import java.util.TreeMap;
  * @version $Revision $
  */
 public enum AspectKind {
+    /** Used for comments/documentation. */
+    REMARK("rem", ContentKind.NONE),
+
     /** Default aspect, if none is specified. */
     DEFAULT("none", ContentKind.NONE) {
         @Override
@@ -60,9 +63,6 @@ public enum AspectKind {
             return "";
         }
     },
-    /** Used for comments/documentation. */
-    REMARK("rem", ContentKind.NONE),
-
     // rule roles
     /** Indicates an unmodified element. */
     READER("use", ContentKind.LEVEL),
@@ -172,7 +172,7 @@ public enum AspectKind {
         return getName() + SEPARATOR;
     }
 
-    /** 
+    /**
      * Returns type of content of this aspect kind.
      * May be {@code null}, if no content kind is allowed.
      */
@@ -188,14 +188,14 @@ public enum AspectKind {
         return this.aspect;
     }
 
-    /** 
+    /**
      * Parses a given string into an aspect of this kind, and the remainder.
      * The string is guaranteed to start with the name of this aspect, and
      * to contain a separator.
      * @param input the string to be parsed
      * @param role graph role for which the parsing is done
      * @return a pair consisting of the resulting aspect and the remainder of
-     * the input string, starting from the character after the first occurrence 
+     * the input string, starting from the character after the first occurrence
      * of #SEPARATOR onwards.
      * @throws FormatException if the string does not have content of the
      * correct kind
@@ -205,66 +205,66 @@ public enum AspectKind {
         // give the text to the content kind to parse
         Pair<Object,String> result = getContentKind().parse(input, getName().length(), role);
         return new Pair<Aspect,String>(new Aspect(this, getContentKind(), result.one()),
-            result.two());
+                result.two());
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of roles.
-     * @see #roles 
+     * @see #roles
      */
     public boolean isRole() {
         return roles.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of NAC (non-LHS) elements.
-     * @see #nac 
+     * @see #nac
      */
     public boolean inNAC() {
         return nac.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of LHS element.
-     * @see #lhs 
+     * @see #lhs
      */
     public boolean inLHS() {
         return lhs.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of RHS elements.
-     * @see #rhs 
+     * @see #rhs
      */
     public boolean inRHS() {
         return rhs.contains(this);
     }
 
-    /** 
-     * Indicates if this element is in the LHS but not the RHS. 
+    /**
+     * Indicates if this element is in the LHS but not the RHS.
      * Convenience method for {@code inLHS() && !inRHS()}.
      */
     public boolean isEraser() {
         return inLHS() && !inRHS();
     }
 
-    /** 
-     * Indicates if this element is in the RHS but not the LHS. 
+    /**
+     * Indicates if this element is in the RHS but not the LHS.
      * Convenience method for {@code inRHS() && !inLHS()}.
      */
     public boolean isCreator() {
         return inRHS() && !inLHS();
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of typed data aspects.
-     * @see #getSignature() 
+     * @see #getSignature()
      */
     public boolean hasSignature() {
         return getSignature() != null;
     }
 
-    /** 
+    /**
      * Returns the (possibly {@code null}) signature of this aspect kind.
      * @see #hasSignature()
      */
@@ -272,48 +272,48 @@ public enum AspectKind {
         return this.contentKind.signature;
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of meta-aspects.
-     * @see #meta 
+     * @see #meta
      */
     public boolean isMeta() {
         return meta.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of parameter aspects.
-     * @see #params 
+     * @see #params
      */
     public boolean isParam() {
         return params.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of quantifiers.
-     * @see #existsQuantifiers 
+     * @see #existsQuantifiers
      */
     public boolean isExists() {
         return existsQuantifiers.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of quantifiers.
-     * @see #forallQuantifiers 
+     * @see #forallQuantifiers
      */
     public boolean isForall() {
         return forallQuantifiers.contains(this);
     }
 
-    /** 
+    /**
      * Indicates if this aspect is among the set of quantifiers.
      */
     public boolean isQuantifier() {
         return isExists() || isForall();
     }
 
-    /** 
+    /**
      * Indicates if this aspect is attribute related.
-     * @see #attributers 
+     * @see #attributers
      */
     public boolean isAttrKind() {
         return attributers.contains(this);
@@ -322,14 +322,14 @@ public enum AspectKind {
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
         return this.contentKind != ContentKind.LEVEL
-            && this.contentKind != ContentKind.MULTIPLICITY && this != COMPOSITE;
+                && this.contentKind != ContentKind.MULTIPLICITY && this != COMPOSITE;
     }
 
     private final ContentKind contentKind;
     private final String name;
     private Aspect aspect;
 
-    /** 
+    /**
      * Returns the aspect kind corresponding to a certain non-{@code null}
      * name, or {@code null} if there is no such aspect kind.
      */
@@ -337,7 +337,7 @@ public enum AspectKind {
         return kindMap.get(name);
     }
 
-    /** 
+    /**
      * Returns the aspect kind corresponding to a certain non-{@code null}
      * name, or {@code null} if there is no such aspect kind.
      */
@@ -899,10 +899,10 @@ public enum AspectKind {
 
     /** For every relevant graph role the node syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> nodeDocMapMap =
-        new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
+            new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** For every relevant graph role the edge syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> edgeDocMapMap =
-        new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
+            new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap = new HashMap<String,AspectKind>();
     /** Static mapping from nested value texts to values. */
@@ -911,7 +911,7 @@ public enum AspectKind {
     private static final Map<String,String> tokenMap = new HashMap<String,String>();
     /** Mapping from signature names to aspect kinds. */
     private static final Map<SignatureKind,AspectKind> sigKindMap =
-        new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
+            new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
 
     static {
         // initialise the aspect kind map
@@ -964,10 +964,10 @@ public enum AspectKind {
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
-        new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
+            new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
     /** Mapping from graph roles to the edge aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedEdgeKinds =
-        new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
+            new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
 
     static {
         for (GraphRole role : GraphRole.values()) {
@@ -979,21 +979,21 @@ public enum AspectKind {
                 break;
             case RULE:
                 nodeKinds =
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
-                        STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, ID, COLOR);
+                EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
+                    STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
+                    EXISTS_OPT, ID, COLOR);
                 edgeKinds =
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT,
-                        REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, NESTED, LET, TEST);
+                        EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT,
+                            REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                            EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
                 nodeKinds =
-                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR,
-                        EDGE);
+                EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR,
+                    EDGE);
                 edgeKinds =
-                    EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
-                        MULT_OUT, COMPOSITE);
+                        EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
+                            MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
@@ -1070,20 +1070,20 @@ public enum AspectKind {
             }
 
         },
-        /** 
-         * String constant, used in a typed value aspect. 
+        /**
+         * String constant, used in a typed value aspect.
          */
         STRING_LITERAL(SignatureKind.STRING),
-        /** 
-         * Boolean constant, used in a typed value aspect. 
+        /**
+         * Boolean constant, used in a typed value aspect.
          */
         BOOL_LITERAL(SignatureKind.BOOL),
         /**
-         * Integer number constant, used in a typed value aspect. 
+         * Integer number constant, used in a typed value aspect.
          */
         INT_LITERAL(SignatureKind.INT),
-        /** 
-         * Real number constant, used in a typed value aspect. 
+        /**
+         * Real number constant, used in a typed value aspect.
          */
         REAL_LITERAL(SignatureKind.REAL),
         /**
@@ -1112,9 +1112,9 @@ public enum AspectKind {
                 return ((Multiplicity) content).toString();
             }
         },
-        /** 
+        /**
          * Parameter number, starting with a dollar sign.
-         * The content is a non-negative value of type {@link Integer}. 
+         * The content is a non-negative value of type {@link Integer}.
          */
         PARAM {
             @Override
@@ -1133,11 +1133,11 @@ public enum AspectKind {
                 case ASSIGN:
                     if (text.charAt(pos + 1) != PARAM_START_CHAR) {
                         throw new FormatException("Parameter number should start with '%s'", ""
-                            + PARAM_START_CHAR);
+                                + PARAM_START_CHAR);
                     }
                     if (text.charAt(text.length() - 1) != SEPARATOR) {
                         throw new FormatException("Parameter line should end with '%s'", ""
-                            + SEPARATOR);
+                                + SEPARATOR);
                     }
                     nrText = text.substring(pos + 2, text.length() - 1);
                     if (nrText.length() == 0) {
@@ -1175,9 +1175,9 @@ public enum AspectKind {
                 }
             }
         },
-        /** 
+        /**
          * Argument number.
-         * The content is a non-negative value of type {@link Integer}. 
+         * The content is a non-negative value of type {@link Integer}.
          */
         NUMBER {
             @Override
@@ -1356,14 +1356,14 @@ public enum AspectKind {
             this.signature = signature;
         }
 
-        /** 
-         * Tries to parse a given string, from a given position, as content 
+        /**
+         * Tries to parse a given string, from a given position, as content
          * of this kind.
          * @param role graph role for which the content is parsed
          * @return a pair consisting of the resulting content value (which
          * may be {@code null} if there is, correctly, no content) and
          * the remainder of the input string
-         * @throws FormatException if the input string cannot be parsed 
+         * @throws FormatException if the input string cannot be parsed
          */
         Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
             // this implementation tries to find a literal of the
@@ -1383,14 +1383,14 @@ public enum AspectKind {
             }
         }
 
-        /** 
-         * Tries to parse a given string as content of the correct kind. 
+        /**
+         * Tries to parse a given string as content of the correct kind.
          * @param role graph role for which the content is parsed
-         * @return the resulting content value 
+         * @return the resulting content value
          */
         Object parseContent(String text, GraphRole role) throws FormatException {
             Object result;
-            // This implementation tries to parse the text as a constant of the 
+            // This implementation tries to parse the text as a constant of the
             // given signature.
             if (this.signature == null) {
                 throw new UnsupportedOperationException("No content allowed");
@@ -1432,9 +1432,9 @@ public enum AspectKind {
             return result;
         }
 
-        /** 
+        /**
          * Builds a string description of a given content object, in a form that
-         * can be parsed back to the content by {@link #parseContent(String, GraphRole)}. 
+         * can be parsed back to the content by {@link #parseContent(String, GraphRole)}.
          * @return a string description of a content object, or the empty
          * string if the object is {@code null}
          */
@@ -1475,12 +1475,12 @@ public enum AspectKind {
         }
 
         /**
-        * Relabels a given a content object by changing all
-        * occurrences of a certain label into another.
-        * @param oldLabel the label to be changed
-        * @param newLabel the new value for {@code oldLabel}
-        * @return a clone of the original content with changed labels, or 
-        * the original content if {@code oldLabel} did not occur
+         * Relabels a given a content object by changing all
+         * occurrences of a certain label into another.
+         * @param oldLabel the label to be changed
+         * @param newLabel the new value for {@code oldLabel}
+         * @return a clone of the original content with changed labels, or
+         * the original content if {@code oldLabel} did not occur
          */
         Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
             Object result = content;
