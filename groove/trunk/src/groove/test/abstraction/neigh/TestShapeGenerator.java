@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -49,18 +49,18 @@ public class TestShapeGenerator {
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             AGTS gts = generator.start().reduceGTS();
-            assertEquals(6, gts.getStateCount());
-            assertEquals(11, gts.getTransitionCount());
+            assertEquals(6, gts.nodeCount());
+            assertEquals(11, gts.edgeCount());
 
             NeighAbsParam.getInstance().setNodeMultBound(2);
             gts = generator.start().reduceGTS();
-            assertEquals(6, gts.getStateCount());
-            assertEquals(11, gts.getTransitionCount());
+            assertEquals(6, gts.nodeCount());
+            assertEquals(11, gts.edgeCount());
 
             NeighAbsParam.getInstance().setNodeMultBound(3);
             gts = generator.start().reduceGTS();
-            assertEquals(6, gts.getStateCount());
-            assertEquals(11, gts.getTransitionCount());
+            assertEquals(6, gts.nodeCount());
+            assertEquals(11, gts.edgeCount());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -78,8 +78,8 @@ public class TestShapeGenerator {
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             AGTS gts = ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
-            assertEquals(3, gts.getStateCount());
-            assertEquals(3, gts.getTransitionCount());
+            assertEquals(3, gts.nodeCount());
+            assertEquals(3, gts.edgeCount());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -96,8 +96,8 @@ public class TestShapeGenerator {
 
         try {
             AGTS gts = ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
-            assertEquals(26, gts.getStateCount());
-            assertEquals(59, gts.getTransitionCount());
+            assertEquals(26, gts.nodeCount());
+            assertEquals(59, gts.edgeCount());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -115,8 +115,8 @@ public class TestShapeGenerator {
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             AGTS gts = generator.start().reduceGTS();
-            assertEquals(17, gts.getStateCount());
-            assertEquals(40, gts.getTransitionCount());
+            assertEquals(17, gts.nodeCount());
+            assertEquals(40, gts.edgeCount());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -134,8 +134,8 @@ public class TestShapeGenerator {
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             AGTS gts = generator.start().reduceGTS();
-            assertEquals(8, gts.getStateCount());
-            assertEquals(42, gts.getTransitionCount());
+            assertEquals(8, gts.nodeCount());
+            assertEquals(42, gts.edgeCount());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -153,8 +153,8 @@ public class TestShapeGenerator {
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             AGTS gts = generator.start().reduceGTS();
-            assertEquals(36, gts.getStateCount());
-            assertEquals(64, gts.getTransitionCount());
+            assertEquals(36, gts.nodeCount());
+            assertEquals(64, gts.edgeCount());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }

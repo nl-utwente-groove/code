@@ -135,7 +135,7 @@ public class GTSCounter implements GTSListener {
 
     /** Returns the number of incompletely explored states in the GTS. */
     public int getOpenStateCount() {
-        return this.gts.openStateCount();
+        return this.gts.getOpenStateCount();
     }
 
     /** Returns the number of absent states in the GTS. */

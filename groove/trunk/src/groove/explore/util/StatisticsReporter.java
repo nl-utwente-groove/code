@@ -204,7 +204,7 @@ public class StatisticsReporter extends AExplorationReporter {
         String formatString = "%-14s%d%n";
         emit(MEDIUM, "%n");
         emit(MEDIUM, formatString, "States:", realStateCount);
-        int openRealStateCount = getGTS().openStateCount() - openRecipeStageCount;
+        int openRealStateCount = getGTS().getOpenStateCount() - openRecipeStageCount;
         if (openRealStateCount > 0) {
             emit(MEDIUM, formatString, "Explored:", (realStateCount - openRealStateCount));
         }

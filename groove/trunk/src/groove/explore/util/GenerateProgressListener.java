@@ -51,12 +51,12 @@ ExplorationListener, GTSListener {
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        addState(gts.nodeCount(), gts.edgeCount(), gts.openStateCount());
+        addState(gts.nodeCount(), gts.edgeCount(), gts.getOpenStateCount());
     }
 
     @Override
     public void addUpdate(GTS gts, GraphTransition transition) {
-        addTransition(gts.nodeCount(), gts.edgeCount(), gts.openStateCount());
+        addTransition(gts.nodeCount(), gts.edgeCount(), gts.getOpenStateCount());
     }
 
     @Override

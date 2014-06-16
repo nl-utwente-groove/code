@@ -43,7 +43,7 @@ public class Status {
         return this.code;
     }
 
-    private int code;
+    private final int code;
 
     /** Returns the set of flags in this status object. */
     public Set<Flag> getFlags() {
@@ -51,10 +51,6 @@ public class Status {
     }
 
     private final Set<Flag> flags;
-
-    /** Number of bits by which a status value has be right-shifted to get
-     * the absence value.
-     */
 
     /** Retrieves the absence level from a given status value. */
     static public int setAbsence(int status, int absence) {
@@ -70,6 +66,9 @@ public class Status {
         return status >> Status.ABSENCE_SHIFT;
     }
 
+    /** Number of bits by which a status value has be right-shifted to get
+     * the absence value.
+     */
     private final static int ABSENCE_SHIFT = 25;
 
     /** Maximal absence value. */
@@ -89,6 +88,11 @@ public class Status {
     private final static int MASK = (1 << Flag.values().length) - 1;
     /** Array of preconstructed {@link Status} objects. */
     private final static Status[] store = new Status[1 << Flag.values().length];
+
+    /** Indicates if a given integer status representation stands for a real state. */
+    public static boolean isReal(int status) {
+        return !Flag.INTERNAL.test(status) && !Flag.ABSENT.test(status);
+    }
 
     /** Changeable status flags of a graph state. */
     public enum Flag {

@@ -115,30 +115,30 @@ public final class AGTS extends GTS {
     @Override
     public ShapeState addState(GraphState newGState) {
         assert newGState instanceof ShapeState : "Type error : " + newGState
-            + " is not of type ShapeState.";
+        + " is not of type ShapeState.";
+    if (this.reachability) {
+        this.toRemove.clear();
+    }
+    ShapeState newState = (ShapeState) newGState;
+    ShapeState result = (ShapeState) super.addState(newState);
+    if (result == null) {
+        // There is no state in the transition system that subsumes the
+        // new state. Maybe the new state subsumes some states that are
+        // already in the GTS.
+        this.subsumedStatesCount += newState.markSubsumedStates(this.toRemove);
         if (this.reachability) {
-            this.toRemove.clear();
-        }
-        ShapeState newState = (ShapeState) newGState;
-        ShapeState result = (ShapeState) super.addState(newState);
-        if (result == null) {
-            // There is no state in the transition system that subsumes the
-            // new state. Maybe the new state subsumes some states that are
-            // already in the GTS.
-            this.subsumedStatesCount += newState.markSubsumedStates(this.toRemove);
-            if (this.reachability) {
-                for (ShapeState stateToRemove : this.toRemove) {
-                    allStateSet().remove(stateToRemove);
-                    stateToRemove.disconnectState();
-                }
+            for (ShapeState stateToRemove : this.toRemove) {
+                allStateSet().remove(stateToRemove);
+                stateToRemove.disconnectState();
             }
-            // Adjust the counter for the next state number.
-            this.nextStateNr = newState.getNumber() + 1;
-        } else if (newState.isSubsumed()) {
-            // The state will produce only a transition.
-            this.subsumedTransitionsCount++;
         }
-        return result;
+        // Adjust the counter for the next state number.
+        this.nextStateNr = newState.getNumber() + 1;
+    } else if (newState.isSubsumed()) {
+        // The state will produce only a transition.
+        this.subsumedTransitionsCount++;
+    }
+    return result;
     }
 
     /**
@@ -148,7 +148,7 @@ public final class AGTS extends GTS {
     @Override
     public void addTransition(GraphTransition transition) {
         assert (transition instanceof ShapeTransition) || (transition instanceof ShapeNextState) : "Type error : "
-            + transition + " is not of type ShapeTransition or ShapeNextState.";
+                + transition + " is not of type ShapeTransition or ShapeNextState.";
         if (!this.reachability) {
             super.addTransition(transition);
         }
@@ -237,11 +237,6 @@ public final class AGTS extends GTS {
         return this.subsumedTransitionsCount;
     }
 
-    /** Basic getter method. */
-    public int getStateCount() {
-        return this.nodeCount();
-    }
-
     /** Basic inspection method. */
     public boolean isReachability() {
         return this.reachability;
@@ -312,8 +307,8 @@ public final class AGTS extends GTS {
                 // This can only happen on the first state.
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
-                    new ShapeState(result, origSrcClosure.getGraph(),
-                        origSrcClosure.getPrimeFrame(), 0);
+                        new ShapeState(result, origSrcClosure.getGraph(),
+                            origSrcClosure.getPrimeFrame(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
                 result.startState = reducedSrc;
@@ -327,8 +322,8 @@ public final class AGTS extends GTS {
                 if (reducedTgt == null) {
                     // The target state doesn't exist yet.
                     reducedTgt =
-                        new ShapeNextState(result.nodeCount(), origTgtClosure.getGraph(),
-                            reducedSrc, origTrans.getKey());
+                            new ShapeNextState(result.nodeCount(), origTgtClosure.getGraph(),
+                                reducedSrc, origTrans.getKey());
                     toProcess.add(origTgtClosure);
                     addReducedState(result, origTgtClosure, reducedTgt);
                     stateMap.put(origTgtClosure, reducedTgt);
@@ -338,7 +333,7 @@ public final class AGTS extends GTS {
                     // Create a new transition.
                     if (!reducedSrc.containsTransition(transLabel, reducedTgt)) {
                         ShapeTransition reducedTrans =
-                            new ShapeTransition(reducedSrc, origTrans.getKey(), reducedTgt);
+                                new ShapeTransition(reducedSrc, origTrans.getKey(), reducedTgt);
                         result.addTransition(reducedTrans);
                     }
                 }
@@ -418,7 +413,7 @@ public final class AGTS extends GTS {
             // Now let's check for iso...
             ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
             int comparison =
-                checker.compareShapes(myShapeState.getGraph(), otherShapeState.getGraph()).one();
+                    checker.compareShapes(myShapeState.getGraph(), otherShapeState.getGraph()).one();
             if (checker.isDomStrictlyLargerThanCod(comparison)) {
                 // New state subsumes old one.
                 myShapeState.addSubsumedState(otherShapeState);

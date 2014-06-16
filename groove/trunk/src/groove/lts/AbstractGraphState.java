@@ -42,7 +42,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-        GraphState {
+GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -87,7 +87,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                && ((RuleTransitionStub) stub).getKey(this) == match) {
+                    && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -251,7 +251,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public final boolean isRealState() {
-        return !isInternalState() && !isAbsent() && !isError();
+        return Status.isReal(this.status);
     }
 
     @Override

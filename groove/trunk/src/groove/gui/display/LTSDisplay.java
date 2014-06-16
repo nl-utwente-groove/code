@@ -433,24 +433,44 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (gts == null) {
             text.append("No start state loaded");
         } else {
+            int stateCount = gts.getStateCount();
             text.append("Currently explored: ");
-            text.append(gts.nodeCount());
+            text.append(stateCount);
             text.append(" states");
-            if (gts.openStateCount() > 0 || gts.hasFinalStates()) {
-                text.append(" (");
-                if (gts.openStateCount() > 0) {
-                    text.append(gts.openStateCount() + " open");
-                    if (gts.hasFinalStates()) {
-                        text.append(", ");
-                    }
+            boolean brackets = false;
+            int openCount = gts.getOpenStateCount();
+            if (openCount > 0) {
+                if (brackets) {
+                    text.append(", ");
+                } else {
+                    text.append(" (");
+                    brackets = true;
                 }
-                if (gts.hasFinalStates()) {
-                    text.append(gts.getFinalStates().size() + " final");
-                }
-                text.append(")");
+                text.append(openCount + " open");
             }
+            int finalCount = gts.getFinalStateCount();
+            if (finalCount > 0) {
+                if (brackets) {
+                    text.append(", ");
+                } else {
+                    text.append(" (");
+                    brackets = true;
+                }
+                text.append(finalCount + " final");
+            }
+            int resultCount = gts.getResultStateCount();
+            if (resultCount > 0) {
+                if (brackets) {
+                    text.append(", ");
+                } else {
+                    text.append(" (");
+                    brackets = true;
+                }
+                text.append(resultCount + " result");
+            }
+            text.append(")");
             text.append(", ");
-            text.append(gts.edgeCount());
+            text.append(gts.getTransitionCount());
             text.append(" transitions");
         }
         getGraphPanel().getStatusLabel().setText(text.toString());
