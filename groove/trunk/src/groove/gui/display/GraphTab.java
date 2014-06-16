@@ -117,8 +117,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 JComponent propertiesPanel = getPropertiesPanel();
                 JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
                 scrollPanel.setName(propertiesPanel.getName());
-                scrollPanel.getViewport().setBackground(
-                    propertiesPanel.getBackground());
+                scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
                 result.addChangeListener(createInfoListener(true));
             }
@@ -138,8 +137,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             TypeTree labelTree = getLabelTree();
             this.labelPanel =
                 result =
-                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
-                        labelTree.createToolBar(), true);
+                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(),
+                        true);
             result.setTitled(false);
         }
         return result;
@@ -151,9 +150,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            this.propertiesPanel =
-                result =
-                    new PropertiesTable(GraphProperties.getKeyMap(), false);
+            this.propertiesPanel = result = new PropertiesTable(GraphProperties.getKeyMap(), false);
             result.setName("Properties");
             result.addMouseListener(new EditMouseListener());
         }
@@ -168,9 +165,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         JPanel result = this.lowerInfoPanel;
         RuleLevelTree levelTree = getLevelTree();
         if (result == null && levelTree != null) {
-            this.lowerInfoPanel =
-                result =
-                    new TitledPanel("Nesting levels", levelTree, null, true);
+            this.lowerInfoPanel = result = new TitledPanel("Nesting levels", levelTree, null, true);
         }
         return levelTree != null && levelTree.isEnabled() ? result : null;
     }
@@ -205,8 +200,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
             AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
-                    name);
+                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             if (graph != null) {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
@@ -270,8 +264,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 // we need to clone the graph to properly freeze the next layout change
                 AspectGraph graphClone = graph.clone();
                 graphClone.setFixed();
-                getSimulatorModel().doAddGraph(getResourceKind(), graphClone,
-                    true);
+                getSimulatorModel().doAddGraph(getResourceKind(), graphClone, true);
                 getPropertiesPanel().setProperties(getJModel().getProperties());
             } catch (IOException e1) {
                 // do nothing
@@ -283,10 +276,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     public final AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
         if (result == null) {
-            result =
-                this.jGraph =
-                    new AspectJGraph(getSimulator(), getDisplay().getKind(),
-                        false);
+            result = this.jGraph = new AspectJGraph(getSimulator(), getDisplay().getKind(), false);
             result.setLabelTree(getLabelTree());
             result.setLevelTree(getLevelTree());
         }
@@ -302,8 +292,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     /** Mapping from resource names to aspect models. */
-    private final Map<String,AspectJModel> jModelMap =
-        new HashMap<String,AspectJModel>();
+    private final Map<String,AspectJModel> jModelMap = new HashMap<String,AspectJModel>();
 
     private final static boolean DEBUG = false;
 }
