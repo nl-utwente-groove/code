@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AspectEdge.java,v 1.10 2008-01-30 09:31:33 iovka Exp $
  */
 package groove.grammar.aspect;
@@ -204,7 +204,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     /**
      * Tests if regular expression usage does not go beyond what is allowed.
      * In particular, regular expressions cannot be erasers or creators.
-     * @throws FormatException if a wrong usage is detected 
+     * @throws FormatException if a wrong usage is detected
      */
     private void checkRegExprs() throws FormatException {
         // this is called after the rule label has been computed
@@ -259,9 +259,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         }
     }
 
-    /** 
+    /**
      * Infers aspects from the end nodes of this edge.
-     * Inference exists for rule roles, remarks and nesting. 
+     * Inference exists for rule roles, remarks and nesting.
      */
     private void inferAspects() throws FormatException {
         AspectKind sourceKind = this.source.getKind();
@@ -355,7 +355,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return PlainLabel.parseLabel(label().toString());
     }
 
-    /** 
+    /**
      * Returns the rule label or the type label, whichever is appropriate
      * depending on the graph role of this edge.
      * @see #getRuleLabel()
@@ -371,7 +371,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return result;
     }
 
-    /** 
+    /**
      * Returns the display line corresponding to this aspect edge.
      * @param onNode if {@code true}, the line will be part of the node label,
      * otherwise it is labelling a binary edge
@@ -386,7 +386,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         Set<Style> styles = EnumSet.noneOf(Style.class);
         // colour to be set for the entire line
         ColorType color = null;
-        // prefix 
+        // prefix
         switch (getKind()) {
         case CONNECT:
             assert !onNode;
@@ -478,7 +478,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
                     result = result.append(suffix);
                     break;
                 case TYPE:
-                    // this is a primitive type field declaration modelled through an 
+                    // this is a primitive type field declaration modelled through an
                     // edge to the target type
                     type = target().getAttrKind().getSignature();
                 }
@@ -518,7 +518,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         // only consider proper names unequal to source or target level
         if (name != null && name.length() != 0 && !name.equals(source().getLevelName())
             && !name.equals(target().getLevelName())) {
-            result = Line.atom(LEVEL_NAME_SEPARATOR + name).color(Values.NESTED_COLOR);
+            result =
+                    Line.atom(LEVEL_NAME_SEPARATOR).append(Line.atom(name).style(Style.ITALIC)).color(
+                        Values.NESTED_COLOR);
         }
         return result;
     }
@@ -529,7 +531,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.ruleLabel;
     }
 
-    /** 
+    /**
      * Returns the rule label that this aspect edge gives rise to, if any.
      * @return a rule label generated from the aspects on this edge, or {@code null}
      * if the edge does not give rise to a rule label.
@@ -558,7 +560,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.typeLabel;
     }
 
-    /** 
+    /**
      * Returns the type label that this aspect edge gives rise to, if any.
      * @return a type label generated from the aspects on this edge, or {@code null}
      * if the edge does not give rise to a type label.
@@ -580,7 +582,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return result;
     }
 
-    /** 
+    /**
      * Parses a given string as a regular expression,
      * taking potential curly braces into account.
      */
@@ -603,7 +605,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         // process the content, if any
         if (kind.isQuantifier()) {
             // backward compatibility to take care of edges such as
-            // exists=q:del:a rather than del=q:a or 
+            // exists=q:del:a rather than del=q:a or
             // exists=q:a rather than use=q:a
             if (!aspect.hasContent()) {
                 throw new FormatException("Unnamed quantifier %s not allowed on edge", aspect, this);
@@ -648,7 +650,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.aspect != null;
     }
 
-    /** 
+    /**
      * Returns the determining aspect kind of this edge.
      * This is one of {@link AspectKind#REMARK}, a role, {@link AspectKind#NESTED},
      * {@link AspectKind#ABSTRACT} or {@link AspectKind#SUBTYPE}.
@@ -750,8 +752,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     }
 
     /**
-     * Returns the argument number, if this is an argument edge. 
-     * @return a non-negative number if and only if this is an argument edge 
+     * Returns the argument number, if this is an argument edge.
+     * @return a non-negative number if and only if this is an argument edge
      */
     public int getArgument() {
         return this.argumentNr;
@@ -762,7 +764,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.operator != null;
     }
 
-    /** 
+    /**
      * Returns an algebraic operator, if this is an operator edge.
      * @return a non-{@code null} object if and only if this is an operator edge
      */
@@ -855,7 +857,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     /** List of syntax errors in this edge. */
     private final FormatErrorSet errors = new FormatErrorSet();
     /** Separator between level name and edge label. */
-    static private final char LEVEL_NAME_SEPARATOR = '@';
+    static private final String LEVEL_NAME_SEPARATOR = "@";
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
 }
