@@ -322,7 +322,7 @@ public class ExplorationTest {
                 assertEquals(edgeCount, lts.edgeCount());
             }
             if (openCount >= 0) {
-                assertEquals(openCount, lts.openStateCount());
+                assertEquals(openCount, lts.getOpenStateCount());
             }
             return lts;
         } catch (FormatException exc) {
