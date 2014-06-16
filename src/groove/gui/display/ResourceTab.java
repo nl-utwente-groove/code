@@ -93,8 +93,7 @@ abstract public class ResourceTab extends JPanel {
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
             this.mainPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getEditArea(),
-                    getErrorPanel());
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getEditArea(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -108,8 +107,8 @@ abstract public class ResourceTab extends JPanel {
     final protected ListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             this.errorPanel =
-                new ErrorListPanel(String.format("Errors in %s",
-                    getResourceKind().getDescription()));
+                new ErrorListPanel(
+                    String.format("Errors in %s", getResourceKind().getDescription()));
             this.errorPanel.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;
@@ -152,8 +151,7 @@ abstract public class ResourceTab extends JPanel {
      * dirty status of the tab.
      */
     public String getTitle() {
-        StringBuilder result =
-            new StringBuilder(QualName.getLastName(getName()));
+        StringBuilder result = new StringBuilder(QualName.getLastName(getName()));
         return decorateText(result).toString();
     }
 
@@ -273,9 +271,8 @@ abstract public class ResourceTab extends JPanel {
         if (isDirty()) {
             int answer =
                 JOptionPane.showConfirmDialog(getDisplay(), String.format(
-                    "%s '%s' has been modified. Save changes?",
-                    getResourceKind().getName(), getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
+                    "%s '%s' has been modified. Save changes?", getResourceKind().getName(),
+                    getName()), null, JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 saveResource();
             }
@@ -321,8 +318,7 @@ abstract public class ResourceTab extends JPanel {
         if (name == null) {
             return null;
         } else {
-            return getSimulatorModel().getGrammar().getResource(
-                getResourceKind(), name);
+            return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
         }
     }
 
@@ -368,8 +364,7 @@ abstract public class ResourceTab extends JPanel {
 
     /** Creates and returns the cancel action. */
     protected final CancelEditAction getCancelAction() {
-        return getSimulator().getActions().getCancelEditAction(
-            getResourceKind());
+        return getSimulator().getActions().getCancelEditAction(getResourceKind());
     }
 
     /** Returns the save action of this editor. */

@@ -20,6 +20,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.list.ListTabbedPane;
 import groove.gui.look.Values;
+import groove.io.HTMLConverter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -139,7 +140,7 @@ public class TabLabel extends JPanel {
 
     /** Changes the title of the tab. */
     public void setTitle(String title) {
-        this.iconLabel.setText(title);
+        this.iconLabel.setText(title == null ? null : HTMLConverter.HTML_TAG.on(title));
         if (title == null) {
             remove(getButton());
         } else if (this.hasButton) {
@@ -260,8 +261,10 @@ public class TabLabel extends JPanel {
     }
 
     private static enum Kind {
-        RESOURCE(1, Options.CANCEL_EDIT_ACTION_NAME), DISPLAY(3, Options.DETACH_ACTION_NAME), STATE(
-                5, Options.DETACH_ACTION_NAME), LIST(5, "Close");
+        RESOURCE(1, Options.CANCEL_EDIT_ACTION_NAME),
+        DISPLAY(3, Options.DETACH_ACTION_NAME),
+        STATE(5, Options.DETACH_ACTION_NAME),
+        LIST(5, "Close");
 
         private Kind(int hGap, String name) {
             this.hGap = hGap;
