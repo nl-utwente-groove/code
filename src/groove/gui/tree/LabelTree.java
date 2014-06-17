@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: LabelList.java,v 1.20 2007-12-03 08:56:08 rensink Exp $
  */
 package groove.gui.tree;
@@ -75,7 +75,7 @@ import org.jgraph.event.GraphSelectionListener;
  * @version $Revision: 1915 $
  */
 public class LabelTree<G extends Graph> extends CheckboxTree implements GraphModelListener,
-        TreeSelectionListener {
+TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
@@ -101,11 +101,11 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
     void installListeners() {
         getJGraph().addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    updateModel();
-                }
-            });
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateModel();
+            }
+        });
         getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
             @Override
             public void valueChanged(GraphSelectionEvent e) {
@@ -184,7 +184,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         return result;
     }
 
-    /** 
+    /**
      * Refreshes the labels according to the jModel,
      * if the jModel has changed.
      */
@@ -222,7 +222,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         setEnabled(this.jModel != null);
     }
 
-    /** 
+    /**
      * Clears the filter, in preparation to updating it from the model.
      * Only called when {@link #hasFilter()} holds.
      */
@@ -236,7 +236,9 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      */
     void updateFilter() {
         for (JCell<G> cell : this.jModel.getRoots()) {
-            getFilter().addJCell(cell);
+            if (cell.getVisuals().isVisible()) {
+                getFilter().addJCell(cell);
+            }
         }
     }
 
@@ -637,7 +639,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
                 boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JComponent result =
-                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+                    super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
             if (getTreeNode() instanceof LabelTree.EntryNode) {
@@ -670,12 +672,12 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
                 if (entry instanceof TypeEntry) {
                     TypeElement typeElement = ((TypeEntry) entry).getType();
                     TypeNode typeNode =
-                        typeElement instanceof TypeNode ? (TypeNode) typeElement
-                                : ((TypeEdge) typeElement).source();
-                    Color color = typeNode.getColor();
-                    if (color != null) {
-                        getInner().setForeground(color);
-                    }
+                            typeElement instanceof TypeNode ? (TypeNode) typeElement
+                                    : ((TypeEdge) typeElement).source();
+                            Color color = typeNode.getColor();
+                            if (color != null) {
+                                getInner().setForeground(color);
+                            }
                 }
             }
             getInner().setIcon(labelIcon);

@@ -148,10 +148,17 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     protected void addNodes(Collection<? extends Node> nodeSet) {
         int nodesAdded = 0;
         for (Node node : nodeSet) {
+            GraphState state = (GraphState) node;
+            if (state.isInternalState() && !getJGraph().isShowRecipeSteps()) {
+                continue;
+            }
+            if (state.isAbsent() && !getJGraph().isShowAbsentStates()) {
+                continue;
+            }
             addNode(node);
             nodesAdded++;
             if (nodesAdded > getStateBound()) {
-                return;
+                break;
             }
         }
     }
@@ -160,6 +167,14 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     @Override
     protected void addEdges(Collection<? extends Edge> edgeSet) {
         for (Edge edge : edgeSet) {
+            GraphTransition trans = (GraphTransition) edge;
+            if (trans.isInternalStep() && !getJGraph().isShowRecipeSteps()) {
+                continue;
+            }
+            if ((trans.source().isAbsent() || trans.target().isAbsent())
+                && !getJGraph().isShowAbsentStates()) {
+                continue;
+            }
             // Only add the edges for which we know the state was added.
             if (edge.source().getNumber() <= getStateBound()
                     && edge.target().getNumber() <= getStateBound()) {

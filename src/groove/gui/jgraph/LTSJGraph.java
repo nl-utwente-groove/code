@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import static groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
-import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_STATE_STATUS_OPTION;
@@ -80,7 +79,35 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     @Override
     protected RefreshListener getRefreshListener(String option) {
         RefreshListener result = null;
-        if (!SHOW_NODE_IDS_OPTION.equals(option)) {
+        if (SHOW_RECIPE_STEPS_OPTION.equals(option)) {
+            result = new RefreshListener() {
+                @Override
+                protected void doRefresh() {
+                    LTSJModel model = getModel();
+                    if (model != null) {
+                        GTS gts = getModel().getGraph();
+                        if (gts != null && gts.hasTransientStates()) {
+                            model.loadGraph(model.getGraph());
+                            refreshAllCells();
+                        }
+                    }
+                }
+            };
+        } else if (SHOW_ABSENT_STATES_OPTION.equals(option)) {
+            result = new RefreshListener() {
+                @Override
+                protected void doRefresh() {
+                    LTSJModel model = getModel();
+                    if (model != null) {
+                        GTS gts = getModel().getGraph();
+                        if (gts != null && gts.hasAbsentStates()) {
+                            model.loadGraph(model.getGraph());
+                            refreshAllCells();
+                        }
+                    }
+                }
+            };
+        } else {
             result = super.getRefreshListener(option);
         }
         return result;
