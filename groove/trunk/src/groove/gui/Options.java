@@ -84,6 +84,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_ABSENT_STATES_OPTION);
         addCheckbox(SHOW_RECIPE_STEPS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
+        addCheckbox(SHOW_STATE_STATUS_OPTION);
         addCheckbox(SHOW_CONTROL_STATE_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
@@ -439,21 +440,21 @@ public class Options implements Cloneable {
     public static final String CHECK_CTL_FULL_ACTION_NAME = "Check CTL property (full state space)";
     /** Action name for checking CTL on current state space */
     public static final String CHECK_CTL_AS_IS_ACTION_NAME =
-        "Check CTL property (current state space)";
+            "Check CTL property (current state space)";
     /** Action name for checking LTL. */
     public static final String CHECK_LTL_ACTION_NAME = "Check LTL property (full state space)";
     /** Action name for checking LTL on bounded state space */
     public static final String CHECK_LTL_BOUNDED_ACTION_NAME =
-        "Check LTL property (bounded state space)";
+            "Check LTL property (bounded state space)";
     /** Action name for checking LTL on bounded state space */
     public static final String CHECK_LTL_POCKET_ACTION_NAME =
-        "Check LTL property (bounded pocket strategy)";
+            "Check LTL property (bounded pocket strategy)";
     /** Action name for checking LTL on bounded state space */
     public static final String CHECK_LTL_OPTIMIZED_ACTION_NAME =
-        "Check LTL property (optimised bounded state space)";
+            "Check LTL property (optimised bounded state space)";
     /** Action name for checking LTL on bounded state space */
     public static final String CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME =
-        "Check LTL property (optimised bounded pocket strategy)";
+            "Check LTL property (optimised bounded pocket strategy)";
     /** Close action name */
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Close all editors action name */
@@ -484,7 +485,7 @@ public class Options implements Cloneable {
     public static final String EXPLORATION_DIALOG_ACTION_NAME = "Customize Exploration ...";
     /** Exploration statistics dialog action name */
     public static final String EXPLORATION_STATS_DIALOG_ACTION_NAME =
-        "Last Exploration Statistics ...";
+            "Last Exploration Statistics ...";
     /** Layout dialog action name */
     public static final String LAYOUT_DIALOG_ACTION_NAME = "Customize Layout ...";
     /** Explore single state action name */
@@ -699,7 +700,7 @@ public class Options implements Cloneable {
      * Keystroke for the 'default exploration' action.
      */
     public static final KeyStroke DEFAULT_EXPLORATION_KEY =
-        KeyStroke.getKeyStroke("control shift X");
+            KeyStroke.getKeyStroke("control shift X");
     /**
      * Delete keystroke
      */
@@ -721,10 +722,10 @@ public class Options implements Cloneable {
     public static final KeyStroke FORWARD_KEY = KeyStroke.getKeyStroke("alt RIGHT");
     /** Find and go to final state keystroke */
     public static final KeyStroke GOTO_FINAL_STATE_KEY =
-        KeyStroke.getKeyStroke("control shift END");
+            KeyStroke.getKeyStroke("control shift END");
     /** Goto start state keystroke */
     public static final KeyStroke GOTO_START_STATE_KEY =
-        KeyStroke.getKeyStroke("control shift HOME");
+            KeyStroke.getKeyStroke("control shift HOME");
     /**
      * Insert keystroke
      */
@@ -821,7 +822,7 @@ public class Options implements Cloneable {
     }
 
     private static final Map<ResourceKind,String> showTabOptionMap =
-        new EnumMap<ResourceKind,String>(ResourceKind.class);
+            new EnumMap<ResourceKind,String>(ResourceKind.class);
 
     /** Returns the resource kinds for which the display tab is optional. */
     public static final Set<ResourceKind> getOptionalTabs() {
@@ -842,6 +843,8 @@ public class Options implements Cloneable {
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
+    /** Show state status option */
+    static public final String SHOW_STATE_STATUS_OPTION = "Show state status";
     /** Show control state option */
     static public final String SHOW_CONTROL_STATE_OPTION = "Show control information";
     /** Show absent states option */
@@ -871,6 +874,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
+        boolOptionDefaults.put(SHOW_STATE_STATUS_OPTION, true);
         boolOptionDefaults.put(SHOW_CONTROL_STATE_OPTION, true);
         boolOptionDefaults.put(SHOW_RECIPE_STEPS_OPTION, true);
         boolOptionDefaults.put(SHOW_ABSENT_STATES_OPTION, true);
