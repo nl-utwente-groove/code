@@ -327,6 +327,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
+     * Indicates whether we have found a result state during exploration.
+     * Convenience method for <tt>getResultStateCount() > 0</tt>.
+     */
+    public boolean hasResultStates() {
+        return hasStates(Flag.RESULT);
+    }
+
+    /**
      * Returns the set of result states.
      */
     public Collection<GraphState> getResultStates() {
@@ -339,9 +347,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Indicates if the GTS currently has open states. Equivalent to (but more
-     * efficient than) <code>getOpenStateIter().hasNext()</code> or
-     * <code>!getOpenStates().isEmpty()</code>.
+     * Indicates if the GTS currently has open (real) states.
      * @return <code>true</code> if the GTS currently has open states
      */
     public boolean hasOpenStates() {
