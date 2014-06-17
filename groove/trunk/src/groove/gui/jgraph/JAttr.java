@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: JAttr.java,v 1.20 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
@@ -50,6 +50,9 @@ public class JAttr {
 
     /** Default background for state panels. */
     public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
+
+    /** Error background for state panels. */
+    public static final Color ERROR_BACKGROUND = new Color(255, 245, 245);
 
     /** Default background for LTS with filtering. */
     public static final Color FILTER_BACKGROUND = new Color(230, 230, 255);
@@ -95,9 +98,9 @@ public class JAttr {
     /** Difference in line width between emphasised and non-emphasised. */
     public static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
 
-    /** 
+    /**
      * Static flag determining if gradient background paint should be used.
-     * Gradient paint looks better, but there is a performance hit. 
+     * Gradient paint looks better, but there is a performance hit.
      */
     static final private boolean GRADIENT_PAINT = false;
     /** Key value for vertex shapes in the attribute map. */
@@ -110,8 +113,8 @@ public class JAttr {
             result = new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
         } else {
             result =
-                new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash,
-                    1.0f);
+                    new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash,
+                        1.0f);
         }
         return result;
     }
@@ -132,8 +135,8 @@ public class JAttr {
             int ry = b.height - fy;
             float r = (float) Math.sqrt(rx * rx + ry * ry);
             Paint newPaint =
-                new RadialGradientPaint(cx, cy, r, fx, fy, new float[] {0f, 1f}, getGradient(c),
-                    CycleMethod.NO_CYCLE);
+                    new RadialGradientPaint(cx, cy, r, fx, fy, new float[] {0f, 1f}, getGradient(c),
+                        CycleMethod.NO_CYCLE);
             return newPaint;
         }
     }
@@ -144,11 +147,11 @@ public class JAttr {
         if (result == null) {
             float factor = .9f;
             Color inC =
-                new Color((int) Math.min(c.getRed() / factor, 255), (int) Math.min(c.getGreen()
-                    / factor, 255), (int) Math.min(c.getBlue() / factor, 255), c.getAlpha());
+                    new Color((int) Math.min(c.getRed() / factor, 255), (int) Math.min(c.getGreen()
+                        / factor, 255), (int) Math.min(c.getBlue() / factor, 255), c.getAlpha());
             Color outC =
-                new Color((int) (c.getRed() * factor), (int) (c.getGreen() * factor),
-                    (int) (c.getBlue() * factor), c.getAlpha());
+                    new Color((int) (c.getRed() * factor), (int) (c.getGreen() * factor),
+                        (int) (c.getBlue() * factor), c.getAlpha());
             gradientMap.put(c, result = new Color[] {inC, outC});
         }
         return result;

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: LTSPanel.java,v 1.21 2008-02-05 13:28:06 rensink Exp $
  */
 package groove.gui.display;
@@ -88,7 +88,7 @@ import org.jgraph.event.GraphSelectionListener;
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
  * Simulator.
- * 
+ *
  * @author Arend Rensink
  * @version $Revision: 4278 $ $Date: 2008-02-05 13:28:06 $
  */
@@ -126,8 +126,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     protected JComponent createInfoPanel() {
         TypeTree labelTree = getLabelTree();
         TitledPanel result =
-            new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
-                labelTree.createToolBar(), true);
+                new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(), true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         return result;
     }
@@ -173,8 +172,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     private boolean suspendListening() {
         boolean result = this.listening;
         if (result) {
-            getJGraph().removeGraphSelectionListener(
-                this.graphSelectionListener);
+            getJGraph().removeGraphSelectionListener(this.graphSelectionListener);
             this.listening = false;
         }
         return result;
@@ -197,8 +195,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     private JSplitPane getDisplayPanel() {
         JSplitPane result = this.displayPanel;
         if (result == null) {
-            this.displayPanel =
-                result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            this.displayPanel = result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             result.setTopComponent(getGraphPanel());
             result.setBottomComponent(getErrorPanel());
             result.setDividerSize(0);
@@ -222,15 +219,13 @@ public class StateDisplay extends Display implements SimulatorListener {
     public JGraphPanel<AspectGraph> getGraphPanel() {
         JGraphPanel<AspectGraph> result = this.stateGraphPanel;
         if (result == null) {
-            result =
-                this.stateGraphPanel =
-                    new JGraphPanel<AspectGraph>(getJGraph()) {
-                        @Override
-                        public void setEnabled(boolean enabled) {
-                            super.setEnabled(enabled);
-                            getInfoPanel().setEnabled(enabled);
-                        }
-                    };
+            result = this.stateGraphPanel = new JGraphPanel<AspectGraph>(getJGraph()) {
+                @Override
+                public void setEnabled(boolean enabled) {
+                    super.setEnabled(enabled);
+                    getInfoPanel().setEnabled(enabled);
+                }
+            };
             result.initialise();
             result.setBorder(null);
             result.setEnabledBackground(JAttr.STATE_BACKGROUND);
@@ -258,9 +253,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     final public AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
         if (result == null) {
-            result =
-                this.jGraph =
-                    new AspectJGraph(getSimulator(), getKind(), false);
+            result = this.jGraph = new AspectJGraph(getSimulator(), getKind(), false);
             result.setLabelTree(getLabelTree());
         }
         return result;
@@ -287,8 +280,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    AspectJCell errorCell =
-                        getJGraph().getModel().getErrorMap().get(arg);
+                    AspectJCell errorCell = getJGraph().getModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -298,15 +290,14 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (!suspendListening()) {
             return;
         }
         // check if layout should be transferred
         GraphTransition oldTtrans = oldModel.getTransition();
         boolean transferLayout =
-            oldTtrans != null && oldTtrans != source.getTransition()
+                oldTtrans != null && oldTtrans != source.getTransition()
                 && oldTtrans.target() == source.getState();
         if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
@@ -331,8 +322,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             if (source.getMatch() == null) {
                 clearSelectedMatch(true);
             } else {
-                selectMatch(source.getMatch().getEvent().getMatch(
-                    source.getState().getGraph()));
+                selectMatch(source.getMatch().getEvent().getMatch(source.getState().getGraph()));
             }
             // all cells repainted, even though everything but the
             // edge colour seems to be OK even without doing this
@@ -359,19 +349,16 @@ public class StateDisplay extends Display implements SimulatorListener {
         assert match != null : "Match update should not be called with empty match";
         displayState(getSimulatorModel().getState());
         AspectJModel jModel = getJGraph().getModel();
-        HostToAspectMap aspectMap =
-            getAspectMap(getSimulatorModel().getState());
+        HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectJCell> emphElems = new HashSet<AspectJCell>();
         for (HostNode matchedNode : match.getNodeValues()) {
-            AspectJCell jCell =
-                jModel.getJCellForNode(aspectMap.getNode(matchedNode));
+            AspectJCell jCell = jModel.getJCellForNode(aspectMap.getNode(matchedNode));
             if (jCell != null) {
                 emphElems.add(jCell);
             }
         }
         for (HostEdge matchedEdge : match.getEdgeValues()) {
-            AspectJCell jCell =
-                jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge));
+            AspectJCell jCell = jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge));
             if (jCell != null) {
                 emphElems.add(jCell);
             }
@@ -389,8 +376,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             String stateID = getSimulatorModel().getState().toString();
             result.append(HTMLConverter.STRONG_TAG.on(stateID));
             if (stateID.equals("s0")) {
-                HostModel startGraph =
-                    getSimulatorModel().getGrammar().getStartGraphModel();
+                HostModel startGraph = getSimulatorModel().getGrammar().getStartGraphModel();
                 if (startGraph != null) {
                     result.append("=");
                     result.append(startGraph.getLastName());
@@ -399,16 +385,14 @@ public class StateDisplay extends Display implements SimulatorListener {
             MatchResult match = getSimulatorModel().getMatch();
             if (match != null) {
                 if (getJGraph().isShowAnchors()) {
-                    result.append(String.format(" (with match %s)",
-                        match.getEvent()));
+                    result.append(String.format(" (with match %s)", match.getEvent()));
                 } else {
                     result.append(String.format(" (with match of %s)",
                         match.getEvent().getRule().getFullName()));
                 }
             }
         }
-        getGraphPanel().getStatusLabel().setText(
-            HTMLConverter.HTML_TAG.on(result).toString());
+        getGraphPanel().getStatusLabel().setText(HTMLConverter.HTML_TAG.on(result).toString());
     }
 
     /** Changes the display to a given state. */
@@ -422,17 +406,22 @@ public class StateDisplay extends Display implements SimulatorListener {
             getJGraph().setModel(model);
             errors = model.getResourceModel().getErrors();
         }
+        Color background;
         if (state != null && state.isError()) {
             getErrorPanel().setEntries(errors);
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
+            background = JAttr.ERROR_BACKGROUND;
         } else {
             getErrorPanel().clearEntries();
             getDisplayPanel().remove(getErrorPanel());
+            background = JAttr.STATE_BACKGROUND;
         }
+        getGraphPanel().setEnabledBackground(background);
+        getLabelTree().setBackground(background);
     }
 
-    /** 
+    /**
      * Clears the emphasis due to the currently selected match, if any.
      * Also changes the match selection in the rule tree to the corresponding
      * rule.
@@ -484,8 +473,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             GraphTransition trans = (GraphTransition) source;
             stack.push(trans);
             source = trans.source();
-        } while (source instanceof GraphNextState
-            && !this.stateToJModel.containsKey(source));
+        } while (source instanceof GraphNextState && !this.stateToJModel.containsKey(source));
         AspectJModel model = getAspectJModel(source);
         AttributesMap map = extractAttributes(model, getAspectMap(source));
         while (!stack.isEmpty()) {
@@ -499,8 +487,7 @@ public class StateDisplay extends Display implements SimulatorListener {
      * Returns a map from host graph elements to layout attributes,
      * extracted from a given aspect model under a host-to-aspect map.
      */
-    private AttributesMap extractAttributes(AspectJModel model,
-            HostToAspectMap aspectMap) {
+    private AttributesMap extractAttributes(AspectJModel model, HostToAspectMap aspectMap) {
         AttributesMap result = new AttributesMap();
         for (Map.Entry<HostNode,? extends AspectNode> entry : aspectMap.nodeMap().entrySet()) {
             AspectNode aspectNode = entry.getValue();
@@ -513,8 +500,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             AspectEdge aspectEdge = entry.getValue();
             AspectJCell jCell = model.getJCellForEdge(aspectEdge);
             if (jCell instanceof AspectJEdge) {
-                result.edgeMap.put(entry.getKey(), new Attributes(
-                    (AspectJEdge) jCell));
+                result.edgeMap.put(entry.getKey(), new Attributes((AspectJEdge) jCell));
             }
         }
         return result;
@@ -524,15 +510,13 @@ public class StateDisplay extends Display implements SimulatorListener {
      * the target graph of a transition, given the attributes mapping for
      * the source graph.
      */
-    private AttributesMap transferAttributes(AttributesMap map,
-            GraphTransition trans) {
+    private AttributesMap transferAttributes(AttributesMap map, GraphTransition trans) {
         AttributesMap result = new AttributesMap();
         HostGraphMorphism morphism = trans.getMorphism();
         Map<HostNode,Attributes> sourceNodeMap = map.nodeMap;
         Map<HostNode,Attributes> resultNodeMap = result.nodeMap;
         Map<HostNode,Color> newColorMap = extractNewColors(trans);
-        HostNodeSet newNodes =
-            new HostNodeSet(trans.target().getGraph().nodeSet());
+        HostNodeSet newNodes = new HostNodeSet(trans.target().getGraph().nodeSet());
         // transfer node attributes
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             HostNode sourceNode = entry.getKey();
@@ -575,16 +559,14 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** Stores the computed attributes into an aspect model. */
-    private void applyAttributes(AttributesMap map, AspectJModel result,
-            HostToAspectMap aspectMap) {
+    private void applyAttributes(AttributesMap map, AspectJModel result, HostToAspectMap aspectMap) {
         // initially set all cells to layoutable,
         // (which is partially undone later)
         // so the new nodes and edges get a change of being layed out
         result.setLayoutable(true);
         for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
             AspectNode aspectNode = aspectMap.getNode(e.getKey());
-            assert aspectNode != null : "Target element " + e.getKey()
-                + " unknown";
+            assert aspectNode != null : "Target element " + e.getKey() + " unknown";
             AspectJVertex jCell = result.getJCellForNode(aspectNode);
             assert jCell != null : "Target element " + aspectNode + " unknown";
             Attributes attrs = e.getValue();
@@ -604,8 +586,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         // store target edge attributes
         for (Map.Entry<HostEdge,Attributes> e : map.edgeMap.entrySet()) {
             AspectEdge aspectEdge = aspectMap.getEdge(e.getKey());
-            assert aspectEdge != null : "Target element " + e.getKey()
-                + " unknown";
+            assert aspectEdge != null : "Target element " + e.getKey() + " unknown";
             AspectJCell jCell = result.getJCellForEdge(aspectEdge);
             if (jCell instanceof AspectJVertex) {
                 continue;
@@ -621,15 +602,13 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Transfers colours and layout from the source to the target of a given transition. */
     private void transferLayout(GraphTransition trans) {
         AttributesMap map =
-            extractAttributes(this.stateToJModel.get(trans.source()),
-                getAspectMap(trans.source()));
+                extractAttributes(this.stateToJModel.get(trans.source()), getAspectMap(trans.source()));
         map = transferAttributes(map, trans);
-        applyAttributes(map, this.stateToJModel.get(trans.target()),
-            getAspectMap(trans.target()));
+        applyAttributes(map, this.stateToJModel.get(trans.target()), getAspectMap(trans.target()));
     }
 
     /**
-     * Creates a mapping from host nodes to colours 
+     * Creates a mapping from host nodes to colours
      * as newly generated by a given transition.
      */
     private Map<HostNode,Color> extractNewColors(GraphTransition trans) {
@@ -645,15 +624,14 @@ public class StateDisplay extends Display implements SimulatorListener {
         return result;
     }
 
-    /** 
+    /**
      * Transforms a colour map of a transition source graph
      * into a colour map for the transition target graph.
      * @param colorMap original colour map for the source graph
      * @param trans transition from source to target
      * @return colour map for the target graph
      */
-    private Map<HostNode,Color> transferColors(Map<HostNode,Color> colorMap,
-            RuleTransition trans) {
+    private Map<HostNode,Color> transferColors(Map<HostNode,Color> colorMap, RuleTransition trans) {
         Map<HostNode,Color> result = new HashMap<HostNode,Color>();
         // extract new colours from target
         RuleApplication application = trans.createRuleApplication();
@@ -721,16 +699,15 @@ public class StateDisplay extends Display implements SimulatorListener {
         return getSimulatorModel().getGrammar();
     }
 
-    /** 
-     * Returns the aspect map for a given state. 
+    /**
+     * Returns the aspect map for a given state.
      * Retrieves the result from {@link #stateToAspectMap},
      * creating and inserting it if necessary.
      */
     private HostToAspectMap getAspectMap(GraphState state) {
         HostToAspectMap result = this.stateToAspectMap.get(state);
         if (result == null) {
-            this.stateToAspectMap.put(state,
-                result = GraphConverter.toAspectMap(state.getGraph()));
+            this.stateToAspectMap.put(state, result = GraphConverter.toAspectMap(state.getGraph()));
         }
         return result;
     }
@@ -739,12 +716,12 @@ public class StateDisplay extends Display implements SimulatorListener {
      * Mapping from graphs to the corresponding graph models.
      */
     private final Map<GraphState,AspectJModel> stateToJModel =
-        new WeakHashMap<GraphState,AspectJModel>();
+            new WeakHashMap<GraphState,AspectJModel>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
-        new WeakHashMap<GraphState,HostToAspectMap>();
+            new WeakHashMap<GraphState,HostToAspectMap>();
 
     /** Flag indicating that the listeners are activated. */
     private boolean listening;
@@ -813,9 +790,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Mapping from host elements to attributes. */
     private static class AttributesMap {
-        final Map<HostNode,Attributes> nodeMap =
-            new HashMap<HostNode,StateDisplay.Attributes>();
-        final Map<HostEdge,Attributes> edgeMap =
-            new HashMap<HostEdge,StateDisplay.Attributes>();
+        final Map<HostNode,Attributes> nodeMap = new HashMap<HostNode,StateDisplay.Attributes>();
+        final Map<HostEdge,Attributes> edgeMap = new HashMap<HostEdge,StateDisplay.Attributes>();
     }
 }
