@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -36,12 +36,11 @@ import java.util.Set;
  */
 class ExploreData {
     /**
-     * Creates a record for a given state. 
-    */
+     * Creates a record for a given state.
+     */
     ExploreData(StateCache cache) {
         GraphState state = this.state = cache.getState();
-        this.absence =
-            this.state.isError() ? Status.MAX_ABSENCE : this.state.getActualFrame().getTransience();
+        this.absence = this.state.getActualFrame().getTransience();
         this.inRecipe = state.isInternalState();
         if (!state.isClosed()) {
             this.recipeTargets = new ArrayList<GraphState>();
@@ -50,12 +49,12 @@ class ExploreData {
             }
         }
         this.recipeInits =
-            state.isInternalState() ? new ArrayList<Pair<ExploreData,RuleTransition>>() : null;
+                state.isInternalState() ? new ArrayList<Pair<ExploreData,RuleTransition>>() : null;
     }
 
     private final AbstractGraphState state;
 
-    /** 
+    /**
      * Notifies the cache of the addition of an outgoing partial transition.
      * @param partial new outgoing partial rule transition from this state
      */
@@ -81,7 +80,7 @@ class ExploreData {
                 }
             }
         } else if (partial.getStep().isInitial()) {
-            // immediately add recipe transitions to the 
+            // immediately add recipe transitions to the
             // previously found surface descendants of the child
             for (GraphState target : childCache.getRecipeTargets()) {
                 addRecipeTransition(this.state, partial, target);
@@ -92,7 +91,7 @@ class ExploreData {
         }
     }
 
-    /** 
+    /**
      * Callback method invoked when the state has been closed.
      */
     void notifyClosed() {
@@ -146,8 +145,8 @@ class ExploreData {
         }
     }
 
-    /** 
-     * Callback method invoked when a given reachable state changed. 
+    /**
+     * Callback method invoked when a given reachable state changed.
      * Notifies all raw parents and adds recipe transitions, as appropriate.
      */
     private void fireChanged(GraphState child, Change change) {
@@ -170,7 +169,7 @@ class ExploreData {
     private void notifyChildChanged(GraphState child, Change change) {
         int childAbsence = child.getAbsence();
         if ((!child.isTransient() || child.isClosed()) && this.transientOpens.remove(child)
-            || this.transientOpens.contains(child)) {
+                || this.transientOpens.contains(child)) {
             if (childAbsence < this.absence) {
                 this.absence = childAbsence;
             }
@@ -207,7 +206,7 @@ class ExploreData {
         }
     }
 
-    /** 
+    /**
      * Returns the absence level of the state.
      * This is {@link Status#MAX_ABSENCE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
@@ -240,12 +239,12 @@ class ExploreData {
      */
     private List<GraphState> recipeTargets = new ArrayList<GraphState>();
 
-    /** 
+    /**
      * Collection of direct parent top-level states, with transitions from parent to this.
      * Only non-{@code null} for states whose prime frame is in-recipe.
      */
     private final List<Pair<ExploreData,RuleTransition>> recipeInits;
-    /** 
+    /**
      * Collection of direct parent transient states.
      */
     private final List<ExploreData> rawParents = new ArrayList<ExploreData>();
@@ -343,13 +342,13 @@ class ExploreData {
 
         /** backward map from states to direct predecessors. */
         private final Map<ExploreData,Set<ExploreData>> backward =
-            new LinkedHashMap<ExploreData,Set<ExploreData>>();
+                new LinkedHashMap<ExploreData,Set<ExploreData>>();
         /** map from states to top level reachables. */
         private final Map<ExploreData,Set<GraphState>> resultMap =
-            new LinkedHashMap<ExploreData,Set<GraphState>>();
+                new LinkedHashMap<ExploreData,Set<GraphState>>();
         /** List of pairs that are actually being built. */
         private final List<Pair<ExploreData,Set<GraphState>>> resultList =
-            new ArrayList<Pair<ExploreData,Set<GraphState>>>();
+                new ArrayList<Pair<ExploreData,Set<GraphState>>>();
         // queue of outstanding states to be explored
         private final Queue<ExploreData> queue = new LinkedList<ExploreData>();
     }

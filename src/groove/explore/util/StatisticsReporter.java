@@ -166,7 +166,7 @@ public class StatisticsReporter extends AExplorationReporter {
             this.sb.append(sw.toString());
         }
         emit(HIGH,
-                "===============================================================================%n");
+            "===============================================================================%n");
     }
 
     private void reportStatistics() {
@@ -209,6 +209,9 @@ public class StatisticsReporter extends AExplorationReporter {
         if (getGTS().hasResultStates()) {
             emit(HIGH, subFormatString, "Result:", getGTS().getResultStateCount());
         }
+        if (getGTS().hasErrorStates()) {
+            emit(HIGH, subFormatString, "Errors:", getGTS().getErrorStateCount());
+        }
         if (getGTS().hasFinalStates()) {
             emit(HIGH, subFormatString, "Final:", getGTS().getFinalStateCount());
         }
@@ -244,7 +247,7 @@ public class StatisticsReporter extends AExplorationReporter {
         int predicted = IsoChecker.getTotalCheckCount();
         int falsePos2 = IsoChecker.getDistinctSimCount();
         int falsePos1 =
-                falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
+            falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
         int equalGraphCount = IsoChecker.getEqualGraphsCount();
         int equalCertsCount = IsoChecker.getEqualCertsCount();
         int equalSimCount = IsoChecker.getEqualSimCount();
