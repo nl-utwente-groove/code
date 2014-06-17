@@ -166,7 +166,7 @@ public class StatisticsReporter extends AExplorationReporter {
             this.sb.append(sw.toString());
         }
         emit(HIGH,
-            "===============================================================================%n");
+                "===============================================================================%n");
     }
 
     private void reportStatistics() {
@@ -198,19 +198,21 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports data on the LTS generated. */
     private void reportLTS() {
-        int openRecipeStageCount = this.gtsCounter.getOpenRecipeStateCount();
-        int closedRecipeStageCount = this.gtsCounter.getClosedRecipeStateCount();
-        int realStateCount = getGTS().nodeCount() - openRecipeStageCount - closedRecipeStageCount;
         String formatString = "%-14s%d%n";
+        String subFormatString = "    " + formatString;
         emit(MEDIUM, "%n");
-        emit(MEDIUM, formatString, "States:", realStateCount);
-        int openRealStateCount = getGTS().getOpenStateCount() - openRecipeStageCount;
-        if (openRealStateCount > 0) {
-            emit(MEDIUM, formatString, "Explored:", (realStateCount - openRealStateCount));
+        emit(MEDIUM, formatString, "States:", getGTS().getStateCount());
+        if (getGTS().hasOpenStates()) {
+            emit(HIGH, subFormatString, "Closed:", getGTS().getStateCount()
+                - getGTS().getOpenStateCount());
         }
-        int recipeStepCount = this.gtsCounter.getRecipeStepCount();
-        int realTransitionCount = getGTS().edgeCount() - recipeStepCount;
-        emit(MEDIUM, formatString, "Transitions:", realTransitionCount);
+        if (getGTS().hasResultStates()) {
+            emit(HIGH, subFormatString, "Result:", getGTS().getResultStateCount());
+        }
+        if (getGTS().hasFinalStates()) {
+            emit(HIGH, subFormatString, "Final:", getGTS().getFinalStateCount());
+        }
+        emit(MEDIUM, formatString, "Transitions:", getGTS().getTransitionCount());
     }
 
     /** Gives some statistics regarding the graphs and deltas. */
@@ -242,7 +244,7 @@ public class StatisticsReporter extends AExplorationReporter {
         int predicted = IsoChecker.getTotalCheckCount();
         int falsePos2 = IsoChecker.getDistinctSimCount();
         int falsePos1 =
-            falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
+                falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
         int equalGraphCount = IsoChecker.getEqualGraphsCount();
         int equalCertsCount = IsoChecker.getEqualCertsCount();
         int equalSimCount = IsoChecker.getEqualSimCount();
