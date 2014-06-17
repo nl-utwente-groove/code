@@ -21,11 +21,14 @@ import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphProperties.Key;
+import groove.gui.Icons;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.swing.Icon;
 
 /**
  * Rule nodes (= level 1 nodes) of the directory
@@ -38,6 +41,15 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     public RuleTreeNode(ResourceDisplay display, String ruleName) {
         super(display, ruleName, true);
         this.tried = true;
+    }
+
+    @Override
+    public Icon getIcon() {
+        Icon result = super.getIcon();
+        if (result != Icons.EDIT_ICON && getRule().isProperty()) {
+            result = Icons.PROPERTY_LIST_ICON;
+        }
+        return result;
     }
 
     /**
@@ -110,12 +122,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                !isPartial() || (getParent() instanceof RecipeTreeNode)
+                    !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         return getDisplay().getLabelText(getName(), showEnabled)
-            + (isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX
-                        : RULE_SUFFIX);
+                + (isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX
+                    : RULE_SUFFIX);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */

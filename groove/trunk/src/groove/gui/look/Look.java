@@ -280,10 +280,14 @@ public enum Look {
         public void apply(VisualMap map) {
             boolean inRecipe = (map.getForeground() == Values.RECIPE_COLOR);
             boolean isStart = (map.getForeground() == Values.START_FOREGROUND);
+            boolean isFinal = (map.getBackground() == Values.FINAL_BACKGROUND);
             super.apply(map);
-            if (inRecipe || isStart) {
-                map.put(VisualKey.FOREGROUND, inRecipe ? Values.ACTIVE_RECIPE_COLOR
-                        : Values.ACTIVE_START_COLOR, false);
+            if (inRecipe) {
+                map.put(VisualKey.FOREGROUND, Values.ACTIVE_RECIPE_COLOR, false);
+            } else if (isFinal) {
+                map.put(VisualKey.FOREGROUND, Values.ACTIVE_FINAL_COLOR, false);
+            } else if (isStart) {
+                map.put(VisualKey.FOREGROUND, Values.ACTIVE_START_COLOR, false);
             }
         }
     },

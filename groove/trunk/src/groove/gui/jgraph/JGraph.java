@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: JGraph.java,v 1.30 2008-02-05 13:27:59 rensink Exp $
  */
 package groove.gui.jgraph;
@@ -164,7 +164,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /**
      * Removes this {@link JGraph} as listener,
-     * so as to avoid memory leaks. 
+     * so as to avoid memory leaks.
      */
     public void removeListeners() {
         getActions().removeRefreshable(getExportAction());
@@ -214,7 +214,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private final List<Pair<JMenuItem,RefreshListener>> optionListeners =
-        new LinkedList<Pair<JMenuItem,RefreshListener>>();
+            new LinkedList<Pair<JMenuItem,RefreshListener>>();
 
     /**
      * Returns the refresh listener for a given option.
@@ -262,7 +262,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /**
      * Indicates whether arrow head should be shown on labels, rather than
-     * on edges. 
+     * on edges.
      */
     public boolean isShowArrowsOnLabels() {
         return getOptionValue(SHOW_ARROWS_ON_LABELS_OPTION);
@@ -290,7 +290,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return getSimulator() == null ? null : getSimulator().getActions();
     }
 
-    /** 
+    /**
      * The properties of the grammar to which the displayed graph belongs.
      * May return {@code null} if the simulator is not set.
      */
@@ -373,7 +373,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     @Override
     public boolean isCellEditable(Object cell) {
         return !(cell instanceof JCell && ((JCell<?>) cell).isGrayedOut())
-            && super.isCellEditable(cell);
+                && super.isCellEditable(cell);
     }
 
     /**
@@ -385,7 +385,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         for (Object element : cells) {
             res.add(element);
             if (element instanceof DefaultGraphCell
-                && ((DefaultGraphCell) element).getChildCount() > 0) {
+                    && ((DefaultGraphCell) element).getChildCount() > 0) {
                 res.add(((DefaultGraphCell) element).getChildAt(0));
             }
         }
@@ -400,33 +400,33 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public void updateAutoSize(CellView view) {
         if (view != null && !isEditing()) {
             Rectangle2D bounds =
-                (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
-                        : null;
-            AttributeMap attrs = getModel().getAttributes(view.getCell());
-            if (bounds == null) {
-                bounds = GraphConstants.getBounds(attrs);
-            }
-            if (bounds != null) {
-                boolean autosize = GraphConstants.isAutoSize(view.getAllAttributes());
-                boolean resize = GraphConstants.isResize(view.getAllAttributes());
-                if (autosize || resize) {
-                    Dimension2D d = getUI().getPreferredSize(this, view);
-                    // adjust the x,y corner so that the center stays in place
-                    double shiftX = (bounds.getWidth() - d.getWidth()) / 2;
-                    double shiftY = (bounds.getHeight() - d.getHeight()) / 2;
-                    bounds.setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
-                        d.getHeight());
-                    // Remove resize attribute
-                    snap(bounds);
-                    if (resize) {
-                        if (view.getAttributes() != null) {
-                            view.getAttributes().remove(GraphConstants.RESIZE);
-                        }
-                        attrs.remove(GraphConstants.RESIZE);
+                    (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
+                            : null;
+                    AttributeMap attrs = getModel().getAttributes(view.getCell());
+                    if (bounds == null) {
+                        bounds = GraphConstants.getBounds(attrs);
                     }
-                    view.refresh(getGraphLayoutCache(), getGraphLayoutCache(), false);
-                }
-            }
+                    if (bounds != null) {
+                        boolean autosize = GraphConstants.isAutoSize(view.getAllAttributes());
+                        boolean resize = GraphConstants.isResize(view.getAllAttributes());
+                        if (autosize || resize) {
+                            Dimension2D d = getUI().getPreferredSize(this, view);
+                            // adjust the x,y corner so that the center stays in place
+                            double shiftX = (bounds.getWidth() - d.getWidth()) / 2;
+                            double shiftY = (bounds.getHeight() - d.getHeight()) / 2;
+                            bounds.setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
+                                d.getHeight());
+                            // Remove resize attribute
+                            snap(bounds);
+                            if (resize) {
+                                if (view.getAttributes() != null) {
+                                    view.getAttributes().remove(GraphConstants.RESIZE);
+                                }
+                                attrs.remove(GraphConstants.RESIZE);
+                            }
+                            view.refresh(getGraphLayoutCache(), getGraphLayoutCache(), false);
+                        }
+                    }
         }
     }
 
@@ -522,7 +522,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         refreshCells(changedJCells);
     }
 
-    /** 
+    /**
      * Indicates if this {@link JGraph} is in the course of processing
      * a {@link #refreshCells(Collection)}. This allows listeners to ignore the
      * resulting graph view update, if they wish.
@@ -556,7 +556,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             @SuppressWarnings("unchecked")
             JCell<G> jCell = (JCell<G>) jCellView.getCell();
             boolean typeCorrect =
-                vertex ? jCell instanceof JVertex : edge ? jCell instanceof JEdge : true;
+                    vertex ? jCell instanceof JVertex : edge ? jCell instanceof JEdge : true;
             if (typeCorrect && !jCell.isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
                 if (jCellView.intersects(this, xyArea)) {
@@ -658,7 +658,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return this.factory;
     }
 
-    /** 
+    /**
      * Sets the factory to be used.
      * Must be called before the first invocation of {@link #getFactory()}.
      */
@@ -724,7 +724,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return (JGraphUI<GTS>) super.getUI();
     }
 
-    /** 
+    /**
      * Returns the nearest ancestor that is a {@link JViewport},
      * if there is any.
      */
@@ -739,7 +739,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return result;
     }
 
-    /** 
+    /**
      * Returns the nearest ancestor that is a {@link JFrame},
      * if there is any.
      */
@@ -768,8 +768,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             int extraSpace = 5;
             // Create a Buffered Image
             BufferedImage img =
-                new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
-                    (int) bounds.getHeight() + 2 * extraSpace, BufferedImage.TYPE_INT_RGB);
+                    new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
+                        (int) bounds.getHeight() + 2 * extraSpace, BufferedImage.TYPE_INT_RGB);
             final Graphics2D graphics = img.createGraphics();
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
@@ -904,7 +904,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return result;
     }
 
-    /** 
+    /**
      * Returns the current JGraph mode.
      */
     public JGraphMode getMode() {
@@ -964,9 +964,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return this.labelTree;
     }
 
-    /** 
+    /**
      * Zooms and centres a given portion of the JGraph, as
-     * defined by a certain rectangle. 
+     * defined by a certain rectangle.
      */
     public void zoomTo(Rectangle2D bounds) {
         Rectangle2D viewBounds = getViewPortBounds();
@@ -1141,7 +1141,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     /**
-     * Returns a menu consisting of the menu items from the layouter 
+     * Returns a menu consisting of the menu items from the layouter
      * setting menu of this JGraph.
      */
     public SetLayoutMenu getSetLayoutMenu() {
@@ -1210,8 +1210,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         }
     }
 
-    /** 
-     * Lazily creates and returns an action setting the mode of this 
+    /**
+     * Lazily creates and returns an action setting the mode of this
      * JGraph. The actual setting is done by a call to {@link #setMode(JGraphMode)}.
      */
     public Action getModeAction(JGraphMode mode) {
@@ -1237,7 +1237,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     private Map<JGraphMode,Action> modeActionMap;
 
-    /** 
+    /**
      * Lazily creates and returns a button wrapping
      * {@link #getModeAction(JGraphMode)}.
      */
@@ -1288,7 +1288,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 // don't make the change directly in the cell,
                 // as this messes up the undo history
                 List<Point2D> newPoints =
-                    Arrays.asList(points.get(0), points.get(points.size() - 1));
+                        Arrays.asList(points.get(0), points.get(points.size() - 1));
                 AttributeMap newAttributes = new AttributeMap();
                 GraphConstants.setPoints(newAttributes, newPoints);
                 change.put(jCell, newAttributes);
@@ -1341,7 +1341,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private final Map<VisualKey,VisualValue<?>> visualValueMap =
-        new EnumMap<VisualKey,VisualValue<?>>(VisualKey.class);
+            new EnumMap<VisualKey,VisualValue<?>>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;
@@ -1389,7 +1389,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public static final float ZOOM_FACTOR = 1.4f;
 
     /**
-     * Property name of the JGraph mode. 
+     * Property name of the JGraph mode.
      * Values are of type {@link GraphRole}.
      */
     static public final String JGRAPH_MODE_PROPERTY = "JGraphMode";
@@ -1463,12 +1463,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
-                && isEnabled()) {
+                    && isEnabled()) {
                 doRefresh();
             }
         }
 
-        private void doRefresh() {
+        /** Callback option to refresh as this listener demands. */
+        protected void doRefresh() {
             getModel().refreshVisuals();
             refreshAllCells();
         }
@@ -1476,15 +1477,15 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Interface for obtaining display attributes for graph elements. */
     static public interface AttributeFactory {
-        /** 
+        /**
          * Returns display attributes for a given graph node.
-         * If {@code null}, the default attributes will be used. 
+         * If {@code null}, the default attributes will be used.
          */
         AttributeMap getAttributes(Node node);
 
-        /** 
+        /**
          * Returns display attributes for a given graph edge.
-         * If {@code null}, the default attributes will be used. 
+         * If {@code null}, the default attributes will be used.
          */
         AttributeMap getAttributes(Edge edge);
     }

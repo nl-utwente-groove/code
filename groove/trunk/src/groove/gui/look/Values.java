@@ -79,7 +79,7 @@ public class Values {
     /** Background colour of (normal) open states. */
     public static final Color OPEN_BACKGROUND = Color.GRAY.brighter();
     /** Background colour of final states. */
-    public static final Color FINAL_BACKGROUND = Colors.findColor("255 165 0");
+    public static final Color FINAL_BACKGROUND = Colors.findColor("0 200 0");
     /** Foreground colour of result states. */
     public static final Color RESULT_FOREGROUND = JAttr.STATE_BACKGROUND;
     /** Background colour of result states. */
@@ -95,7 +95,9 @@ public class Values {
     /** Foreground colour for active nodes and edges. */
     public static final Color ACTIVE_COLOR = Color.BLUE;
     /** Foreground colour for the active start node. */
-    public static final Color ACTIVE_START_COLOR = Colors.findColor("30 190 255");
+    public static final Color ACTIVE_START_COLOR = Colors.findColor("40 200 255");
+    /** Foreground colour for an active final node. */
+    public static final Color ACTIVE_FINAL_COLOR = Colors.findColor("30 100 200");
     /** Colour used for transient states. */
     static public final Color RECIPE_COLOR = Colors.findColor("165 42 42");
     /** Colour used for transient active states. */
