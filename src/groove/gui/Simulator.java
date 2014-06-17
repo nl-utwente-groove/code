@@ -18,7 +18,6 @@ package groove.gui;
 
 import static groove.gui.Options.DELETE_RESOURCE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
-import static groove.gui.Options.OPTIONS_MENU_NAME;
 import static groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
@@ -28,6 +27,7 @@ import static groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
@@ -461,212 +461,79 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Creates and returns an edit menu for the menu bar.
+     * Creates and returns an edit menu for the menu bar. The menu is filled
+     * out each time it gets selected so as to be sure it applies to the current
+     * jgraph.
+     * @see #fillEditMenu(MyJMenu)
      */
-    private JMenu createEditMenu() {
-        JMenu result = new JMenu(Options.EDIT_MENU_NAME);
-
+    private MyJMenu createEditMenu() {
+        // fills the menu depending on the currently displayed graph panel
+        MyJMenu result = new MyJMenu(Options.EDIT_MENU_NAME) {
+            @Override
+            public void menuSelectionChanged(boolean selected) {
+                removeAll();
+                fillEditMenu(this);
+                super.menuSelectionChanged(selected);
+            }
+        };
         result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
-        result.add(this.actions.getUndoAction());
-        result.add(this.actions.getRedoAction());
+        return result;
+    }
 
-        result.addSeparator();
+    /**
+     * Fills the edit menu for the menu bar.
+     */
+    private void fillEditMenu(MyJMenu menu) {
+        // do/undo
+        menu.add(this.actions.getUndoAction());
+        menu.add(this.actions.getRedoAction());
 
+        // new submenu
+        menu.addSeparator();
         JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
         for (ResourceKind resource : ResourceKind.values()) {
             if (resource != ResourceKind.PROPERTIES && resource != ResourceKind.CONFIG) {
                 newMenu.add(this.actions.getNewAction(resource));
             }
         }
-        result.add(newMenu);
+        menu.add(newMenu);
 
-        result.addSeparator();
+        menu.addSeparator();
+        menu.add(getEditMenuItem());
+        menu.add(getCopyMenuItem());
+        menu.add(getDeleteMenuItem());
+        menu.add(getRenameMenuItem());
+        menu.add(getEnableMenuItem());
 
-        result.add(getEditMenuItem());
-        result.add(getCopyMenuItem());
-        result.add(getDeleteMenuItem());
-        result.add(getRenameMenuItem());
-        result.add(getEnableMenuItem());
+        menu.addSeparator();
+        menu.add(this.actions.getFindReplaceAction());
+        menu.add(this.actions.getRenumberAction());
 
-        result.addSeparator();
+        // resource edits
+        menu.addSeparator();
+        menu.add(this.actions.getShiftPriorityAction(true));
+        menu.add(this.actions.getShiftPriorityAction(false));
+        menu.add(this.actions.getEditRulePropertiesAction());
 
-        result.add(this.actions.getFindReplaceAction());
-        result.add(this.actions.getRenumberAction());
-
-        result.addSeparator();
-
-        result.add(this.actions.getShiftPriorityAction(true));
-        result.add(this.actions.getShiftPriorityAction(false));
-        result.add(this.actions.getEditRulePropertiesAction());
-        result.add(this.actions.getEditSystemPropertiesAction());
-
-        return result;
-    }
-
-    private List<RefreshableMenuItem> getRefreshableMenuItems() {
-        if (this.menuItems == null) {
-            this.menuItems = new ArrayList<Simulator.RefreshableMenuItem>();
-            this.menuItems.add(getEditMenuItem());
-            this.menuItems.add(getCopyMenuItem());
-            this.menuItems.add(getDeleteMenuItem());
-            this.menuItems.add(getRenameMenuItem());
-            this.menuItems.add(getEnableMenuItem());
-            this.menuItems.add(getSaveAsMenuItem());
-            this.menuItems.add(getExportMenuItem());
-        }
-        return this.menuItems;
-    }
-
-    /**
-     * Returns the menu item in the edit menu that specifies editing the
-     * currently displayed graph or rule.
-     */
-    private RefreshableMenuItem getEditMenuItem() {
-        if (this.editGraphItem == null) {
-            this.editGraphItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(ResourceKind resource) {
-                    setAction(getActions().getEditAction(resource));
-                }
-            };
-            this.editGraphItem.setAccelerator(Options.EDIT_KEY);
-        }
-        return this.editGraphItem;
-    }
-
-    /**
-     * Creates a menu item that can be refreshed with a {@link DisplayKind}-
-     * or {@link ResourceKind}-dependent action.
-     */
-    private abstract static class RefreshableMenuItem extends JMenuItem {
-        /** Refreshes or disables the menu item, based on the
-         * given {@link DisplayKind}.
-         */
-        protected void refresh(DisplayKind display) {
-            if (display.hasResource()) {
-                refresh(display.getResource());
-            } else {
-                setEnabled(false);
+        // add graph edit menu when appropriate
+        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
+        if (panel != null) {
+            JGraph<?> jGraph = panel.getJGraph();
+            if (jGraph instanceof AspectJGraph) {
+                menu.addSubmenu(((AspectJGraph) jGraph).createEditMenu(null));
             }
         }
 
-        /** Refreshes or disables the menu item, based on a
-         * given {@link DisplayKind}.
-         */
-        protected void refresh(ResourceKind resource) {
-            // does noting
-        }
-
-        @Override
-        public void setAction(Action a) {
-            if (a == null) {
-                setEnabled(false);
-            } else {
-                super.setAction(a);
-            }
-        }
-    }
-
-    /**
-     * Returns the menu item in the edit menu that specifies copy the currently
-     * displayed graph or rule.
-     */
-    private RefreshableMenuItem getCopyMenuItem() {
-        if (this.copyGraphItem == null) {
-            this.copyGraphItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(ResourceKind resource) {
-                    setAction(getActions().getCopyAction(resource));
-                }
-            };
-        }
-        return this.copyGraphItem;
-    }
-
-    /**
-     * Returns the menu item in the edit menu that specifies delete the
-     * currently displayed graph or rule.
-     */
-    private RefreshableMenuItem getDeleteMenuItem() {
-        if (this.deleteGraphItem == null) {
-            this.deleteGraphItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(ResourceKind resource) {
-                    setAction(getActions().getDeleteAction(resource));
-                }
-            };
-        }
-        return this.deleteGraphItem;
-    }
-
-    /**
-     * Returns the menu item in the edit menu that specifies delete the
-     * currently displayed graph or rule.
-     */
-    private RefreshableMenuItem getRenameMenuItem() {
-        if (this.renameMenuItem == null) {
-            this.renameMenuItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(ResourceKind resource) {
-                    setAction(getActions().getRenameAction(resource));
-                }
-            };
-        }
-        return this.renameMenuItem;
-    }
-
-    /**
-     * Returns the menu item in the edit menu that specifies deletion of
-     * the currently selected resource.
-     */
-    private RefreshableMenuItem getEnableMenuItem() {
-        if (this.enableMenuItem == null) {
-            this.enableMenuItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(ResourceKind resource) {
-                    setAction(getActions().getEnableAction(resource));
-                }
-            };
-        }
-        return this.enableMenuItem;
-    }
-
-    /**
-     * Returns the menu item that will contain the current export action.
-     */
-    private RefreshableMenuItem getExportMenuItem() {
-        // lazily create the menu item
-        if (this.exportMenuItem == null) {
-            this.exportMenuItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(DisplayKind display) {
-                    setAction(getActions().getExportAction(display));
-                }
-            };
-        }
-        return this.exportMenuItem;
-    }
-
-    /**
-     * Returns the menu item that will contain the current export action.
-     */
-    private RefreshableMenuItem getSaveAsMenuItem() {
-        // lazily create the menu item
-        if (this.saveMenuItem == null) {
-            this.saveMenuItem = new RefreshableMenuItem() {
-                @Override
-                protected void refresh(ResourceKind resource) {
-                    setAction(getActions().getSaveAsAction(resource));
-                }
-            };
-        }
-        return this.saveMenuItem;
+        // system properties
+        menu.addSeparator();
+        menu.add(this.actions.getEditSystemPropertiesAction());
     }
 
     /**
      * Creates and returns a display menu for the menu bar. The menu is filled
      * out each time it gets selected so as to be sure it applies to the current
      * jgraph
+     * @see #fillDisplayMenu(MyJMenu)
      */
     private MyJMenu createDisplayMenu() {
         // fills the menu depending on the currently displayed graph panel
@@ -674,16 +541,7 @@ public class Simulator implements SimulatorListener {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
-                JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
-                if (panel != null) {
-                    JGraph<?> jGraph = panel.getJGraph();
-                    if (jGraph instanceof AspectJGraph) {
-                        addSubmenu(((AspectJGraph) jGraph).createEditMenu(null));
-                    }
-                    add(jGraph.createShowHideMenu());
-                    add(jGraph.createZoomMenu());
-                }
-                addSubmenu(createOptionsMenu());
+                fillDisplayMenu(this);
                 super.menuSelectionChanged(selected);
             }
         };
@@ -692,28 +550,52 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
+     * Fills the show menu with items (upon refresh).
+     */
+    private void fillDisplayMenu(MyJMenu menu) {
+        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
+        if (panel != null) {
+            JGraph<?> jGraph = panel.getJGraph();
+            menu.add(jGraph.createShowHideMenu());
+            menu.add(jGraph.createZoomMenu());
+        }
+        menu.addSubmenu(createOptionsMenu());
+    }
+
+    /**
      * Creates and returns an options menu for the menu bar.
      */
-    private MyJMenu createOptionsMenu() {
-        MyJMenu result = new MyJMenu(OPTIONS_MENU_NAME);
+    private JMenu createOptionsMenu() {
+        // fills the menu depending on the currently displayed graph panel
+        JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
         for (ResourceKind kind : Options.getOptionalTabs()) {
             String showTabOption = Options.getShowTabOption(kind);
             result.add(getOptions().getItem(showTabOption));
         }
-        result.addSeparator();
-        result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
-        result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
-        result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
-        result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
-        result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
-        result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
-        result.add(getOptions().getItem(SHOW_ARROWS_ON_LABELS_OPTION));
-        result.addSeparator();
-        result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
-        result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
-        result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
-        result.add(getOptions().getItem(SHOW_ABSENT_STATES_OPTION));
+        switch (getDisplaysPanel().getSelectedDisplay().getKind()) {
+        case HOST:
+        case RULE:
+        case STATE:
+        case TYPE:
+            result.addSeparator();
+            result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
+            result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
+            result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
+            result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
+            result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
+            result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
+            result.add(getOptions().getItem(SHOW_ARROWS_ON_LABELS_OPTION));
+            break;
+        case LTS:
+            result.addSeparator();
+            result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+            result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+            result.add(getOptions().getItem(SHOW_STATE_STATUS_OPTION));
+            result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
+            result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
+            result.add(getOptions().getItem(SHOW_ABSENT_STATES_OPTION));
+        }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
@@ -760,6 +642,187 @@ public class Simulator implements SimulatorListener {
         }
         return result;
     }
+
+    private List<RefreshableMenuItem> getRefreshableMenuItems() {
+        if (this.refreshableMenuItems == null) {
+            this.refreshableMenuItems = new ArrayList<Simulator.RefreshableMenuItem>();
+            this.refreshableMenuItems.add(getEditMenuItem());
+            this.refreshableMenuItems.add(getCopyMenuItem());
+            this.refreshableMenuItems.add(getDeleteMenuItem());
+            this.refreshableMenuItems.add(getRenameMenuItem());
+            this.refreshableMenuItems.add(getEnableMenuItem());
+            this.refreshableMenuItems.add(getSaveAsMenuItem());
+            this.refreshableMenuItems.add(getExportMenuItem());
+        }
+        return this.refreshableMenuItems;
+    }
+
+    private List<RefreshableMenuItem> refreshableMenuItems;
+
+    /**
+     * Creates a menu item that can be refreshed with a {@link DisplayKind}-
+     * or {@link ResourceKind}-dependent action.
+     */
+    private abstract static class RefreshableMenuItem extends JMenuItem {
+        /** Refreshes or disables the menu item, based on the
+         * given {@link DisplayKind}.
+         */
+        protected void refresh(DisplayKind display) {
+            if (display.hasResource()) {
+                refresh(display.getResource());
+            } else {
+                setEnabled(false);
+            }
+        }
+
+        /** Refreshes or disables the menu item, based on a
+         * given {@link DisplayKind}.
+         */
+        protected void refresh(ResourceKind resource) {
+            // does noting
+        }
+
+        @Override
+        public void setAction(Action a) {
+            if (a == null) {
+                setEnabled(false);
+            } else {
+                super.setAction(a);
+            }
+        }
+    }
+
+    /**
+     * Returns the menu item in the edit menu that specifies editing the
+     * currently displayed graph or rule.
+     */
+    private RefreshableMenuItem getEditMenuItem() {
+        if (this.editMenuItem == null) {
+            this.editMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getEditAction(resource));
+                }
+            };
+            this.editMenuItem.setAccelerator(Options.EDIT_KEY);
+        }
+        return this.editMenuItem;
+    }
+
+    /**
+     * Menu items in the edit menu for one of the graph or rule edit actions.
+     */
+    private RefreshableMenuItem editMenuItem;
+
+    /**
+     * Returns the menu item in the edit menu that specifies copy the currently
+     * displayed graph or rule.
+     */
+    private RefreshableMenuItem getCopyMenuItem() {
+        if (this.copyMenuItem == null) {
+            this.copyMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getCopyAction(resource));
+                }
+            };
+        }
+        return this.copyMenuItem;
+    }
+
+    private RefreshableMenuItem copyMenuItem;
+
+    /**
+     * Returns the menu item in the edit menu that specifies delete the
+     * currently displayed graph or rule.
+     */
+    private RefreshableMenuItem getDeleteMenuItem() {
+        if (this.deleteMenuItem == null) {
+            this.deleteMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getDeleteAction(resource));
+                }
+            };
+        }
+        return this.deleteMenuItem;
+    }
+
+    private RefreshableMenuItem deleteMenuItem;
+
+    /**
+     * Returns the menu item in the edit menu that specifies delete the
+     * currently displayed graph or rule.
+     */
+    private RefreshableMenuItem getRenameMenuItem() {
+        if (this.renameMenuItem == null) {
+            this.renameMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getRenameAction(resource));
+                }
+            };
+        }
+        return this.renameMenuItem;
+    }
+
+    private RefreshableMenuItem renameMenuItem;
+
+    /**
+     * Returns the menu item in the edit menu that specifies deletion of
+     * the currently selected resource.
+     */
+    private RefreshableMenuItem getEnableMenuItem() {
+        if (this.enableMenuItem == null) {
+            this.enableMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getEnableAction(resource));
+                }
+            };
+        }
+        return this.enableMenuItem;
+    }
+
+    private RefreshableMenuItem enableMenuItem;
+
+    /**
+     * Returns the menu item that will contain the current export action.
+     */
+    private RefreshableMenuItem getExportMenuItem() {
+        // lazily create the menu item
+        if (this.exportMenuItem == null) {
+            this.exportMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(DisplayKind display) {
+                    setAction(getActions().getExportAction(display));
+                }
+            };
+        }
+        return this.exportMenuItem;
+    }
+
+    /** The menu item containing the (current) export action. */
+    private RefreshableMenuItem exportMenuItem;
+
+    /**
+     * Returns the menu item that will contain the current export action.
+     */
+    private RefreshableMenuItem getSaveAsMenuItem() {
+        // lazily create the menu item
+        if (this.saveAsMenuItem == null) {
+            this.saveAsMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getSaveAsAction(resource));
+                }
+            };
+        }
+        return this.saveAsMenuItem;
+    }
+
+    /** The menu item containing the current save-as action. */
+    private RefreshableMenuItem saveAsMenuItem;
 
     /**
      * Lazily creates and returns a menu for externally provided actions in the
@@ -888,25 +951,8 @@ public class Simulator implements SimulatorListener {
     /** Menu for externally provided actions. */
     private JMenu externalMenu;
 
-    /** The menu item containing the (current) export action. */
-    private RefreshableMenuItem exportMenuItem;
-
-    /** The menu item containing the current save-as action. */
-    private RefreshableMenuItem saveMenuItem;
-
     /** Dummy action for the {@link #externalMenu}. */
     private Action dummyExternalAction;
-
-    /**
-     * Menu items in the edit menu for one of the graph or rule edit actions.
-     */
-    private RefreshableMenuItem editGraphItem;
-    private RefreshableMenuItem copyGraphItem;
-    private RefreshableMenuItem deleteGraphItem;
-    private RefreshableMenuItem renameMenuItem;
-    private RefreshableMenuItem enableMenuItem;
-
-    private List<RefreshableMenuItem> menuItems;
 
     /** Returns the undo manager of this simulator. */
     public final SimulatorUndoManager getUndoManager() {

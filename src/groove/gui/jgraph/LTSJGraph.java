@@ -21,6 +21,7 @@ import static groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -70,6 +71,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     protected void installListeners() {
         super.installListeners();
         addOptionListener(SHOW_STATE_IDS_OPTION);
+        addOptionListener(SHOW_STATE_STATUS_OPTION);
         addOptionListener(SHOW_CONTROL_STATE_OPTION);
         addOptionListener(SHOW_ABSENT_STATES_OPTION);
         addOptionListener(SHOW_RECIPE_STEPS_OPTION);
@@ -106,6 +108,11 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Indicates if state identities should be shown on states. */
     public boolean isShowStateIdentities() {
         return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
+    }
+
+    /** Indicates if state status should be shown on states. */
+    public boolean isShowStateStatus() {
+        return getOptionValue(Options.SHOW_STATE_STATUS_OPTION);
     }
 
     /** Indicates if control state info should be shown on states. */

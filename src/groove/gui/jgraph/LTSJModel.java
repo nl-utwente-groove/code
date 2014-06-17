@@ -27,6 +27,7 @@ import groove.lts.GraphTransition;
 import groove.lts.Status.Flag;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Graph model adding a concept of active state and transition, with special
@@ -113,18 +114,16 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                         }
                         jCell.setLook(Look.ABSENT, true);
                     }
-                    if (explored.isInternalState()) {
-                        for (JEdge<GTS> jEdge : jCell.getContext()) {
-                            jEdge.setLook(Look.RECIPE, true);
-                        }
-                        jCell.setLook(Look.RECIPE, true);
-                    }
+                    jCell.setLook(Look.RECIPE, explored.isInternalState());
+                    jCell.setLook(Look.TRANSIENT, explored.isTransient());
                     jCell.setLook(Look.FINAL, explored.isFinal());
                     break;
                 case RESULT:
                     jCell.setLook(Look.RESULT, explored.isResult());
                 }
             }
+            jCell.setStale(VisualKey.refreshables());
+            getJGraph().refreshCells(Collections.singleton(jCell));
         }
     }
 
@@ -163,7 +162,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         for (Edge edge : edgeSet) {
             // Only add the edges for which we know the state was added.
             if (edge.source().getNumber() <= getStateBound()
-                && edge.target().getNumber() <= getStateBound()) {
+                    && edge.target().getNumber() <= getStateBound()) {
                 addEdge(edge);
             }
         }
