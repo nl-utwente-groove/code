@@ -67,18 +67,16 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     /**
-     * @return true if the state is a result state.
+     * Returns {@code true} if the state is a result state.
      */
     public boolean isResult() {
         return getNode().isResult();
     }
 
-    /**
-     * @return true if the state is an error state.
-     */
+    /* Always false: error states are reported through other means. */
     @Override
     public boolean hasErrors() {
-        return getNode().isError();
+        return false;
     }
 
     /**

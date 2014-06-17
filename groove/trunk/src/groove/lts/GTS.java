@@ -307,6 +307,26 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private int realStateCount;
 
     /**
+     * Returns the set of error states found so far.
+     */
+    public Collection<GraphState> getErrorStates() {
+        return getStates(Flag.ERROR);
+    }
+
+    /**
+     * Indicates whether we have found an error state during exploration.
+     * Convenience method for <tt>getErrorStateCount() > 0</tt>.
+     */
+    public boolean hasErrorStates() {
+        return hasStates(Flag.ERROR);
+    }
+
+    /** Returns the set of error states. */
+    public int getErrorStateCount() {
+        return getStateCount(Flag.ERROR);
+    }
+
+    /**
      * Returns the set of final states explored so far.
      */
     public Collection<GraphState> getFinalStates() {
@@ -736,7 +756,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private Set<GTSListener> listeners = new HashSet<GTSListener>();
 
     /** Set of all flags of which state sets are recorded. */
-    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.RESULT);
+    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.RESULT,
+        Flag.ERROR);
     /** Array of all flags of which state sets are recorded. */
     private static final Flag[] FLAG_ARRAY = FLAG_SET.toArray(new Flag[FLAG_SET.size()]);
 

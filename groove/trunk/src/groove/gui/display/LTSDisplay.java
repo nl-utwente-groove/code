@@ -438,37 +438,45 @@ public class LTSDisplay extends Display implements SimulatorListener {
             text.append(stateCount);
             text.append(" states");
             boolean brackets = false;
-            int openCount = gts.getOpenStateCount();
-            if (openCount > 0) {
+            if (gts.hasOpenStates()) {
                 if (brackets) {
                     text.append(", ");
                 } else {
                     text.append(" (");
                     brackets = true;
                 }
-                text.append(openCount + " open");
+                text.append(gts.getOpenStateCount() + " open");
             }
-            int finalCount = gts.getFinalStateCount();
-            if (finalCount > 0) {
+            if (gts.hasFinalStates()) {
                 if (brackets) {
                     text.append(", ");
                 } else {
                     text.append(" (");
                     brackets = true;
                 }
-                text.append(finalCount + " final");
+                text.append(gts.getFinalStateCount() + " final");
             }
-            int resultCount = gts.getResultStateCount();
-            if (resultCount > 0) {
+            if (gts.hasResultStates()) {
                 if (brackets) {
                     text.append(", ");
                 } else {
                     text.append(" (");
                     brackets = true;
                 }
-                text.append(resultCount + " result");
+                text.append(gts.getResultStateCount() + " result");
             }
-            text.append(")");
+            if (gts.hasErrorStates()) {
+                if (brackets) {
+                    text.append(", ");
+                } else {
+                    text.append(" (");
+                    brackets = true;
+                }
+                text.append(gts.getErrorStateCount() + " error");
+            }
+            if (brackets) {
+                text.append(")");
+            }
             text.append(", ");
             text.append(gts.getTransitionCount());
             text.append(" transitions");

@@ -287,7 +287,9 @@ GraphState {
         if (result) {
             setAbsence(absence);
             setStatus(Flag.ABSENT, absence > 0);
-            setStatus(Flag.FINAL, hasFinalProperties(absence == 0));
+            if (!isAbsent() && !isError()) {
+                setStatus(Flag.FINAL, hasFinalProperties());
+            }
             getCache().notifyDone();
             setCacheCollectable();
             fireStatus(Flag.DONE, oldStatus);
@@ -299,15 +301,13 @@ GraphState {
      * Tests if this is present and has no non-property transitions to
      * a distinct present state.
      */
-    private boolean hasFinalProperties(boolean present) {
-        boolean result = present;
-        if (result) {
-            for (RuleTransition trans : getRuleTransitions()) {
-                if (!trans.target().isAbsent()) {
-                    if (!trans.getStep().getRule().isProperty() || !trans.target().equals(this)) {
-                        result = false;
-                        break;
-                    }
+    private boolean hasFinalProperties() {
+        boolean result = true;
+        for (RuleTransition trans : getRuleTransitions()) {
+            if (!trans.target().isAbsent()) {
+                if (!trans.getStep().getRule().isProperty() || !trans.target().equals(this)) {
+                    result = false;
+                    break;
                 }
             }
         }
