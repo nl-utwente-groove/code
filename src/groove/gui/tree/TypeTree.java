@@ -16,6 +16,7 @@
  */
 package groove.gui.tree;
 
+import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.grammar.aspect.AspectGraph;
@@ -364,7 +365,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             result.append("Type graph '");
             result.append(((TypeGraphTreeNode) value).getName());
             result.append("'");
-            return ITALIC_TAG.on(STRONG_TAG.on(result)).toString();
+            return HTML_TAG.on(ITALIC_TAG.on(STRONG_TAG.on(result)).toString());
         } else {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
