@@ -61,7 +61,7 @@ public class PredicateAcceptor extends Acceptor {
      */
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        if (this.P.forStates() && this.P.eval(state)) {
+        if (this.P != null && this.P.eval(state)) {
             this.getResult().add(state);
         }
     }
