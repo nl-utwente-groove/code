@@ -75,7 +75,7 @@ import org.jgraph.event.GraphSelectionListener;
  * @version $Revision: 1915 $
  */
 public class LabelTree<G extends Graph> extends CheckboxTree implements GraphModelListener,
-TreeSelectionListener {
+        TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
@@ -101,11 +101,11 @@ TreeSelectionListener {
     void installListeners() {
         getJGraph().addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateModel();
-            }
-        });
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateModel();
+                }
+            });
         getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
             @Override
             public void valueChanged(GraphSelectionEvent e) {
@@ -639,7 +639,7 @@ TreeSelectionListener {
         public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
                 boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JComponent result =
-                    super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
             if (getTreeNode() instanceof LabelTree.EntryNode) {
@@ -672,12 +672,12 @@ TreeSelectionListener {
                 if (entry instanceof TypeEntry) {
                     TypeElement typeElement = ((TypeEntry) entry).getType();
                     TypeNode typeNode =
-                            typeElement instanceof TypeNode ? (TypeNode) typeElement
-                                    : ((TypeEdge) typeElement).source();
-                            Color color = typeNode.getColor();
-                            if (color != null) {
-                                getInner().setForeground(color);
-                            }
+                        typeElement instanceof TypeNode ? (TypeNode) typeElement
+                                : ((TypeEdge) typeElement).source();
+                    Color color = typeNode.getColor();
+                    if (color != null) {
+                        getInner().setForeground(color);
+                    }
                 }
             }
             getInner().setIcon(labelIcon);
