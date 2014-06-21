@@ -28,12 +28,12 @@ import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNodeSet;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
-import groove.grammar.model.PostApplicationError;
-import groove.grammar.type.EdgeMultiplicityVerifier;
 import groove.graph.AGraph;
 import groove.graph.ElementFactory;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
@@ -75,12 +75,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     private static int spuriousTransitionCount;
 
-    /** Post application errors of states in the GTS. */
-    private final Map<GraphState,Set<PostApplicationError>> postErrors;
-
-    /** The edge verifiers associated with the (constant) type graph. */
-    private final EdgeMultiplicityVerifier verifier;
-
     /**
      * Returns the number of confluent diamonds found during generation.
      */
@@ -102,8 +96,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
-        this.postErrors = new HashMap<GraphState,Set<PostApplicationError>>();
-        this.verifier = new EdgeMultiplicityVerifier(grammar.getTypeGraph());
     }
 
     /**
@@ -158,40 +150,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return getGrammar().getProperties().getAlgebraFamily();
     }
 
-    /** Checks if this GTS has a state with a post application error. */
-    public boolean hasPostError() {
-        return !this.postErrors.isEmpty();
-    }
-
-    /** Adds a {@link PostApplicationError} of a {@link GraphState}. */
-    public void addPostError(GraphState state, PostApplicationError error) {
-        Set<PostApplicationError> errors = this.postErrors.get(state);
-        if (errors == null) {
-            errors = new HashSet<PostApplicationError>();
-        }
-        errors.add(error);
-        this.postErrors.put(state, errors);
-    }
-
-    /** Adds a set of {@link PostApplicationError}s of a {@link GraphState}. */
-    public void addPostErrors(GraphState state, Set<PostApplicationError> errors) {
-        Set<PostApplicationError> old = this.postErrors.get(state);
-        if (old == null) {
-            this.postErrors.put(state, errors);
-        } else {
-            errors.addAll(old);
-        }
-    }
-
-    /**
-     * Gets the {@link PostApplicationError}s that are associated with a
-     * {@link GraphState}. May return <code>null</code> if the state has no
-     * errors.
-     */
-    public Set<? extends PostApplicationError> getPostErrors(GraphState state) {
-        return this.postErrors.get(state);
-    }
-
     // ----------------------- OBJECT OVERRIDES ------------------------
 
     /** The default is not to create any graph elements. */
@@ -222,16 +180,19 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             // and then add it to the GTS
             fireAddNode(newState);
 
-            // first check the validity of edge multiplicities ...
-            this.verifier.reset();
-            this.verifier.count(newState.getGraph());
-            if (!this.verifier.check(newState)) {
-                addPostErrors(newState, this.verifier.getErrors());
+            if (isCheckTypeErrors() && GraphInfo.hasErrors(newState.getGraph())) {
                 newState.setError();
+                GraphInfo.addError(this, new FormatError(
+                    "State %s has multiplicity or containment errors", newState));
             }
         }
 
         return result;
+    }
+
+    /** Indicates if the non-statically-guaranteed type errors should be checked on all graphs. */
+    public boolean isCheckTypeErrors() {
+        return true;
     }
 
     @Override

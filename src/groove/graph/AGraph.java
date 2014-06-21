@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstractGraph.java,v 1.25 2008-02-19 10:35:31 fladder Exp $
  */
 package groove.graph;
@@ -33,8 +33,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AGraph<N extends Node,E extends Edge> extends
-        AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
+public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
+AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     /**
      * Constructs an abstract named graph.
      * @param name the (non-{@code null}) name of the graph.
@@ -199,7 +199,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     // -------------------- Graph listener methods ---------------------------
 
     /**
-     * Calls {@link GraphCache#addUpdate(Node)} 
+     * Calls {@link GraphCache#addUpdate(Node)}
      * if the cache is not cleared.
      * @param node the node being added
      */
@@ -210,7 +210,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Calls {@link GraphCache#addUpdate(Edge)}
+     * Calls {@link GraphCache#addUpdate}
      * if the cache is not cleared.
      * @param edge the edge being added
      */
@@ -221,7 +221,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Calls {@link GraphCache#removeUpdate(Node)}
+     * Calls {@link GraphCache#removeUpdate}
      * if the cache is not cleared.
      * @param node the node being removed
      */
@@ -232,7 +232,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Calls {@link GraphCache#removeUpdate(Edge)}
+     * Calls {@link GraphCache#removeUpdate}
      * if the cache is not cleared.
      * @param edge the edge being removed
      */
@@ -242,21 +242,21 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         }
     }
 
-    /** 
+    /**
      * Tests if a node is of the correct type to be included in this graph.
      */
     protected boolean isTypeCorrect(Node node) {
         return true;
     }
 
-    /** 
+    /**
      * Tests if a label is of the correct type to be included in this graph.
      */
     protected boolean isTypeCorrect(Label node) {
         return true;
     }
 
-    /** 
+    /**
      * Tests if an edge is of the correct type to be included in this graph.
      */
     protected boolean isTypeCorrect(Edge edge) {
@@ -318,18 +318,17 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /**
-     * This implementation calls {@link #addNode(Node)} and
-     * {@link #addEdge(Edge)} for the actual addition of
+     * This implementation calls {@link #addNode} and
+     * {@link #addEdge} for the actual addition of
      * the edge and its incident nodes.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public boolean addEdgeContext(E edge) {
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !containsEdge(edge);
         if (added) {
-            addNode((N) edge.source());
-            addNode((N) edge.target());
+            addNode(edge.source());
+            addNode(edge.target());
             addEdge(edge);
         }
         return added;
@@ -345,7 +344,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /*
-     * This implementation calls {@link #removeEdge(Edge)} and 
+     * This implementation calls {@link #removeEdge(Edge)} and
      * {@link #removeNodeWithoutCheck(Node)} for the actual removal
      * of the incident edges and the node.
      */
@@ -397,7 +396,6 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * @return {@code true} if {@code from} is distinct from
      *         {@code to}, so a merge actually took place
      */
-    @SuppressWarnings("unchecked")
     public boolean mergeNodes(N from, N to) {
         assert isTypeCorrect(from);
         assert isTypeCorrect(to);
@@ -405,12 +403,12 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
             // compute edge replacements and add new edges
             for (E edge : new HashSet<E>(edgeSet(from))) {
                 boolean changed = false;
-                N source = (N) edge.source();
+                N source = edge.source();
                 if (source.equals(from)) {
                     source = to;
                     changed = true;
                 }
-                N target = (N) edge.target();
+                N target = edge.target();
                 if (target.equals(from)) {
                     target = to;
                     changed = true;
@@ -529,7 +527,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
      * @see #getCertifier(boolean)
      */
     static private CertificateStrategy certificateFactory = new PartitionRefiner(
-        (GGraph<Node,Edge>) null);
+        (GGraph<Node,GEdge<Node>>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.

@@ -1,28 +1,30 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: NewDeltaGraph.java,v 1.11 2008-01-21 14:59:48 rensink Exp $
  */
 package groove.grammar.host;
 
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.AlgebraFamily;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AGraph;
 import groove.graph.Edge;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -115,15 +117,15 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         return new DefaultHostGraph(name, getFactory());
     }
 
-    /** 
-     * Creates a new delta graph from a given basis and delta applier. 
+    /**
+     * Creates a new delta graph from a given basis and delta applier.
      * @param name the name of the new graph
      */
     public DeltaHostGraph newGraph(String name, DeltaHostGraph graph, DeltaApplier applier) {
         return new DeltaHostGraph(name, graph, applier, this.copyData);
     }
 
-    /** Creates a new delta graph from a given element array. 
+    /** Creates a new delta graph from a given element array.
      * @param name the name of the new graph
      */
     public DeltaHostGraph newGraph(String name, HostElement[] elements, HostFactory factory) {
@@ -444,6 +446,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         return this.factory;
     }
 
+    /** The element factory of this host graph. */
+    private HostFactory factory;
+
     @Override
     public TypeGraph getTypeGraph() {
         return getFactory().getTypeFactory().getGraph();
@@ -454,8 +459,6 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         return typeGraph.analyzeHost(this).createImage(getName());
     }
 
-    /** The element factory of this host graph. */
-    private HostFactory factory;
     /** The fixed (possibly <code>null</code> basis of this graph. */
     DeltaHostGraph basis;
     /** The fixed delta of this graph. */
@@ -478,6 +481,16 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
      * {@link #getDataTarget(int,int)}.
      */
     private boolean copyData = true;
+
+    @Override
+    public FormatErrorSet checkTypeConstraints() {
+        FormatErrorSet result = getTypeGraph().check(this);
+        if (!result.isEmpty()) {
+            GraphInfo.addErrors(this, result);
+        }
+        return result;
+    }
+
     /** Maximum basis chain length at which the data target is set
      * to a {@link CopyTarget} regardless of the value of {@link #copyData}.
      */
@@ -619,7 +632,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         }
 
         /** Removes either a key from a given mapping,
-         * if the mapping is not {@code null}. 
+         * if the mapping is not {@code null}.
          */
         private <T> HostEdgeSet removeKeyFromStore(HostEdgeStore<T> map, T key) {
             HostEdgeSet result = null;
@@ -648,7 +661,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         }
 
         /** Removes an edge from a given mapping,
-         * if the mapping is not {@code null}. 
+         * if the mapping is not {@code null}.
          */
         private <T> HostEdgeSet removeEdgeFromStore(HostEdgeStore<T> store, T key, HostEdge edge,
                 boolean refresh) {
@@ -720,7 +733,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
 
     /** Delta target to initialise the data structures. */
     private class CopyTarget extends DataTarget {
-        /** 
+        /**
          * Constructs and instance for a given node and edge set.
          * @param deepCopy if {@code true}, the maps are completely copied;
          * otherwise, the image maps are shared. Deep copying is necessary if
@@ -764,7 +777,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
-                this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
+                    this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
             return super.addEdge(edge, refreshSource, refreshTarget, refreshLabel);
         }
 
@@ -779,7 +792,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
-                this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
+                    this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
             return super.removeEdge(edge, refreshSource, refreshTarget, refreshLabel);
         }
 

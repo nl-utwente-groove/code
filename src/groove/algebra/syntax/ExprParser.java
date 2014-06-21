@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-06-12 08:10:01
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-06-21 13:41:49
 
 package groove.algebra.syntax;
 import groove.grammar.model.FormatErrorSet;
@@ -92,7 +92,7 @@ public TreeAdaptor getTreeAdaptor() {
     return adaptor;
 }
     public String[] getTokenNames() { return ExprParser.tokenNames; }
-    public String getGrammarFileName() { return "D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g"; }
+    public String getGrammarFileName() { return "E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g"; }
 
 
         private FormatErrorSet errors = new FormatErrorSet();
@@ -116,7 +116,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "assignment"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:45:1: assignment : ID ASSIGN ^ expression ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:45:1: assignment : ID ASSIGN ^ expression ;
     public final ExprParser.assignment_return assignment() throws RecognitionException {
         ExprParser.assignment_return retval = new ExprParser.assignment_return();
         retval.start = input.LT(1);
@@ -133,8 +133,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree ASSIGN2_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:46:3: ( ID ASSIGN ^ expression )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:46:5: ID ASSIGN ^ expression
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:46:3: ( ID ASSIGN ^ expression )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:46:5: ID ASSIGN ^ expression
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -191,7 +191,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "test_expression"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:50:1: test_expression : ( ID op= ASSIGN expression -> ^( EQ[$op,\"==\"] ^( FIELD ID ) expression ) | expression );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:50:1: test_expression : ( ID op= ASSIGN expression -> ^( EQ[$op,\"==\"] ^( FIELD ID ) expression ) | expression );
     public final ExprParser.test_expression_return test_expression() throws RecognitionException {
         ExprParser.test_expression_return retval = new ExprParser.test_expression_return();
         retval.start = input.LT(1);
@@ -212,7 +212,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_ASSIGN=new RewriteRuleTokenStream(adaptor,"token ASSIGN");
         RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:51:3: ( ID op= ASSIGN expression -> ^( EQ[$op,\"==\"] ^( FIELD ID ) expression ) | expression )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:51:3: ( ID op= ASSIGN expression -> ^( EQ[$op,\"==\"] ^( FIELD ID ) expression ) | expression )
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -245,7 +245,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt1) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:53:5: ID op= ASSIGN expression
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:53:5: ID op= ASSIGN expression
                     {
                     ID4=(Token)match(input,ID,FOLLOW_ID_in_test_expression150);  
                     stream_ID.add(ID4);
@@ -263,7 +263,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_expression.add(expression5.getTree());
 
                     // AST REWRITE
-                    // elements: expression, ID
+                    // elements: ID, expression
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -275,14 +275,14 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 53:29: -> ^( EQ[$op,\"==\"] ^( FIELD ID ) expression )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:53:32: ^( EQ[$op,\"==\"] ^( FIELD ID ) expression )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:53:32: ^( EQ[$op,\"==\"] ^( FIELD ID ) expression )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
                         (ExprTree)adaptor.create(EQ, op, "==")
                         , root_1);
 
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:53:47: ^( FIELD ID )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:53:47: ^( FIELD ID )
                         {
                         ExprTree root_2 = (ExprTree)adaptor.nil();
                         root_2 = (ExprTree)adaptor.becomeRoot(
@@ -309,7 +309,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:54:5: expression
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:54:5: expression
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -354,7 +354,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "expression"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:58:1: expression : or_expr EOF !;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:58:1: expression : or_expr EOF !;
     public final ExprParser.expression_return expression() throws RecognitionException {
         ExprParser.expression_return retval = new ExprParser.expression_return();
         retval.start = input.LT(1);
@@ -369,8 +369,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree EOF8_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:59:3: ( or_expr EOF !)
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:59:5: or_expr EOF !
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:59:3: ( or_expr EOF !)
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:59:5: or_expr EOF !
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -415,7 +415,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "or_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:62:1: or_expr : and_expr ( BAR ^ and_expr )* ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:62:1: or_expr : and_expr ( BAR ^ and_expr )* ;
     public final ExprParser.or_expr_return or_expr() throws RecognitionException {
         ExprParser.or_expr_return retval = new ExprParser.or_expr_return();
         retval.start = input.LT(1);
@@ -432,8 +432,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree BAR10_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:3: ( and_expr ( BAR ^ and_expr )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:5: and_expr ( BAR ^ and_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:3: ( and_expr ( BAR ^ and_expr )* )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:5: and_expr ( BAR ^ and_expr )*
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -445,7 +445,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, and_expr9.getTree());
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:14: ( BAR ^ and_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:14: ( BAR ^ and_expr )*
             loop2:
             do {
                 int alt2=2;
@@ -458,7 +458,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt2) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:15: BAR ^ and_expr
+            	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:63:15: BAR ^ and_expr
             	    {
             	    BAR10=(Token)match(input,BAR,FOLLOW_BAR_in_or_expr211); 
             	    BAR10_tree = 
@@ -514,7 +514,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "and_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:66:1: and_expr : not_expr ( AMP ^ not_expr )* ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:66:1: and_expr : not_expr ( AMP ^ not_expr )* ;
     public final ExprParser.and_expr_return and_expr() throws RecognitionException {
         ExprParser.and_expr_return retval = new ExprParser.and_expr_return();
         retval.start = input.LT(1);
@@ -531,8 +531,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree AMP13_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:3: ( not_expr ( AMP ^ not_expr )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:5: not_expr ( AMP ^ not_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:3: ( not_expr ( AMP ^ not_expr )* )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:5: not_expr ( AMP ^ not_expr )*
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -544,7 +544,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, not_expr12.getTree());
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:14: ( AMP ^ not_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:14: ( AMP ^ not_expr )*
             loop3:
             do {
                 int alt3=2;
@@ -557,7 +557,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt3) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:15: AMP ^ not_expr
+            	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:67:15: AMP ^ not_expr
             	    {
             	    AMP13=(Token)match(input,AMP,FOLLOW_AMP_in_and_expr232); 
             	    AMP13_tree = 
@@ -613,7 +613,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "not_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:70:1: not_expr : ( NOT ^ not_expr | equal_expr );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:70:1: not_expr : ( NOT ^ not_expr | equal_expr );
     public final ExprParser.not_expr_return not_expr() throws RecognitionException {
         ExprParser.not_expr_return retval = new ExprParser.not_expr_return();
         retval.start = input.LT(1);
@@ -630,7 +630,7 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree NOT15_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:71:3: ( NOT ^ not_expr | equal_expr )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:71:3: ( NOT ^ not_expr | equal_expr )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -649,7 +649,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt4) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:71:5: NOT ^ not_expr
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:71:5: NOT ^ not_expr
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -671,7 +671,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:72:5: equal_expr
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:72:5: equal_expr
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -716,7 +716,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "equal_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:74:1: equal_expr : compare_expr ( ( EQ | NEQ ) ^ compare_expr )* ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:74:1: equal_expr : compare_expr ( ( EQ | NEQ ) ^ compare_expr )* ;
     public final ExprParser.equal_expr_return equal_expr() throws RecognitionException {
         ExprParser.equal_expr_return retval = new ExprParser.equal_expr_return();
         retval.start = input.LT(1);
@@ -733,8 +733,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree set19_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:3: ( compare_expr ( ( EQ | NEQ ) ^ compare_expr )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:5: compare_expr ( ( EQ | NEQ ) ^ compare_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:3: ( compare_expr ( ( EQ | NEQ ) ^ compare_expr )* )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:5: compare_expr ( ( EQ | NEQ ) ^ compare_expr )*
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -746,7 +746,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, compare_expr18.getTree());
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:18: ( ( EQ | NEQ ) ^ compare_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:18: ( ( EQ | NEQ ) ^ compare_expr )*
             loop5:
             do {
                 int alt5=2;
@@ -759,7 +759,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt5) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:19: ( EQ | NEQ ) ^ compare_expr
+            	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:75:19: ( EQ | NEQ ) ^ compare_expr
             	    {
             	    set19=(Token)input.LT(1);
 
@@ -825,7 +825,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "compare_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:77:1: compare_expr : assign_expr ( ( LT | LE | GT | GE ) ^ assign_expr )* ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:77:1: compare_expr : assign_expr ( ( LT | LE | GT | GE ) ^ assign_expr )* ;
     public final ExprParser.compare_expr_return compare_expr() throws RecognitionException {
         ExprParser.compare_expr_return retval = new ExprParser.compare_expr_return();
         retval.start = input.LT(1);
@@ -842,8 +842,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree set22_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:3: ( assign_expr ( ( LT | LE | GT | GE ) ^ assign_expr )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:5: assign_expr ( ( LT | LE | GT | GE ) ^ assign_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:3: ( assign_expr ( ( LT | LE | GT | GE ) ^ assign_expr )* )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:5: assign_expr ( ( LT | LE | GT | GE ) ^ assign_expr )*
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -855,7 +855,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, assign_expr21.getTree());
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:17: ( ( LT | LE | GT | GE ) ^ assign_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:17: ( ( LT | LE | GT | GE ) ^ assign_expr )*
             loop6:
             do {
                 int alt6=2;
@@ -868,7 +868,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt6) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:18: ( LT | LE | GT | GE ) ^ assign_expr
+            	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:78:18: ( LT | LE | GT | GE ) ^ assign_expr
             	    {
             	    set22=(Token)input.LT(1);
 
@@ -934,7 +934,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "assign_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:81:1: assign_expr : add_expr ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:81:1: assign_expr : add_expr ;
     public final ExprParser.assign_expr_return assign_expr() throws RecognitionException {
         ExprParser.assign_expr_return retval = new ExprParser.assign_expr_return();
         retval.start = input.LT(1);
@@ -947,8 +947,8 @@ public TreeAdaptor getTreeAdaptor() {
 
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:82:3: ( add_expr )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:82:5: add_expr
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:82:3: ( add_expr )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:82:5: add_expr
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -991,7 +991,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "add_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:85:1: add_expr : mult_expr ( ( PLUS | MINUS ) ^ mult_expr )* ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:85:1: add_expr : mult_expr ( ( PLUS | MINUS ) ^ mult_expr )* ;
     public final ExprParser.add_expr_return add_expr() throws RecognitionException {
         ExprParser.add_expr_return retval = new ExprParser.add_expr_return();
         retval.start = input.LT(1);
@@ -1008,8 +1008,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree set26_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:3: ( mult_expr ( ( PLUS | MINUS ) ^ mult_expr )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:5: mult_expr ( ( PLUS | MINUS ) ^ mult_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:3: ( mult_expr ( ( PLUS | MINUS ) ^ mult_expr )* )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:5: mult_expr ( ( PLUS | MINUS ) ^ mult_expr )*
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -1021,7 +1021,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, mult_expr25.getTree());
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:15: ( ( PLUS | MINUS ) ^ mult_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:15: ( ( PLUS | MINUS ) ^ mult_expr )*
             loop7:
             do {
                 int alt7=2;
@@ -1034,7 +1034,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt7) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:16: ( PLUS | MINUS ) ^ mult_expr
+            	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:86:16: ( PLUS | MINUS ) ^ mult_expr
             	    {
             	    set26=(Token)input.LT(1);
 
@@ -1100,7 +1100,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "mult_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:89:1: mult_expr : unary_expr ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )* ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:89:1: mult_expr : unary_expr ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )* ;
     public final ExprParser.mult_expr_return mult_expr() throws RecognitionException {
         ExprParser.mult_expr_return retval = new ExprParser.mult_expr_return();
         retval.start = input.LT(1);
@@ -1117,8 +1117,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree set29_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:3: ( unary_expr ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:5: unary_expr ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:3: ( unary_expr ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )* )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:5: unary_expr ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )*
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -1130,7 +1130,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, unary_expr28.getTree());
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:16: ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )*
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:16: ( ( ASTERISK | SLASH | PERCENT ) ^ unary_expr )*
             loop8:
             do {
                 int alt8=2;
@@ -1143,7 +1143,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt8) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:17: ( ASTERISK | SLASH | PERCENT ) ^ unary_expr
+            	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:90:17: ( ASTERISK | SLASH | PERCENT ) ^ unary_expr
             	    {
             	    set29=(Token)input.LT(1);
 
@@ -1209,7 +1209,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "unary_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:93:1: unary_expr : ( MINUS ^ unary_expr | atom_expr );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:93:1: unary_expr : ( MINUS ^ unary_expr | atom_expr );
     public final ExprParser.unary_expr_return unary_expr() throws RecognitionException {
         ExprParser.unary_expr_return retval = new ExprParser.unary_expr_return();
         retval.start = input.LT(1);
@@ -1226,7 +1226,7 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree MINUS31_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:94:3: ( MINUS ^ unary_expr | atom_expr )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:94:3: ( MINUS ^ unary_expr | atom_expr )
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1245,7 +1245,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt9) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:94:5: MINUS ^ unary_expr
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:94:5: MINUS ^ unary_expr
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -1267,7 +1267,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:95:5: atom_expr
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:95:5: atom_expr
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -1312,7 +1312,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "atom_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:99:1: atom_expr : ( constant | typedFieldOrVar | call | par_expr );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:99:1: atom_expr : ( constant | typedFieldOrVar | call | par_expr );
     public final ExprParser.atom_expr_return atom_expr() throws RecognitionException {
         ExprParser.atom_expr_return retval = new ExprParser.atom_expr_return();
         retval.start = input.LT(1);
@@ -1331,7 +1331,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:100:3: ( constant | typedFieldOrVar | call | par_expr )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:100:3: ( constant | typedFieldOrVar | call | par_expr )
             int alt10=4;
             switch ( input.LA(1) ) {
             case ID:
@@ -1430,7 +1430,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             switch (alt10) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:100:5: constant
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:100:5: constant
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -1445,7 +1445,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:101:5: typedFieldOrVar
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:101:5: typedFieldOrVar
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -1460,7 +1460,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:102:5: call
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:102:5: call
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -1475,7 +1475,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 4 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:103:5: par_expr
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:103:5: par_expr
                     {
                     root_0 = (ExprTree)adaptor.nil();
 
@@ -1520,7 +1520,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "par_expr"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:107:1: par_expr : LPAR ^ or_expr RPAR ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:107:1: par_expr : LPAR ^ or_expr RPAR ;
     public final ExprParser.par_expr_return par_expr() throws RecognitionException {
         ExprParser.par_expr_return retval = new ExprParser.par_expr_return();
         retval.start = input.LT(1);
@@ -1537,8 +1537,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree RPAR40_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:108:3: ( LPAR ^ or_expr RPAR )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:108:5: LPAR ^ or_expr RPAR
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:108:3: ( LPAR ^ or_expr RPAR )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:108:5: LPAR ^ or_expr RPAR
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -1595,7 +1595,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "constant"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:111:1: constant : (prefix= ID COLON ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) ) | literal -> ^( CONST literal ) );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:111:1: constant : (prefix= ID COLON ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) ) | literal -> ^( CONST literal ) );
     public final ExprParser.constant_return constant() throws RecognitionException {
         ExprParser.constant_return retval = new ExprParser.constant_return();
         retval.start = input.LT(1);
@@ -1621,7 +1621,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_literal=new RewriteRuleSubtreeStream(adaptor,"rule literal");
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:112:3: (prefix= ID COLON ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) ) | literal -> ^( CONST literal ) )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:112:3: (prefix= ID COLON ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) ) | literal -> ^( CONST literal ) )
             int alt12=2;
             int LA12_0 = input.LA(1);
 
@@ -1640,7 +1640,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt12) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:112:5: prefix= ID COLON ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) )
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:112:5: prefix= ID COLON ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) )
                     {
                     prefix=(Token)match(input,ID,FOLLOW_ID_in_constant480);  
                     stream_ID.add(prefix);
@@ -1650,7 +1650,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_COLON.add(COLON41);
 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:5: ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) )
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:5: ( literal -> ^( CONST literal ID ) | MINUS literal -> ^( CONST ^( MINUS literal ) ID ) )
                     int alt11=2;
                     int LA11_0 = input.LA(1);
 
@@ -1669,7 +1669,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     switch (alt11) {
                         case 1 :
-                            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:7: literal
+                            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:7: literal
                             {
                             pushFollow(FOLLOW_literal_in_constant490);
                             literal42=literal();
@@ -1679,7 +1679,7 @@ public TreeAdaptor getTreeAdaptor() {
                             stream_literal.add(literal42.getTree());
 
                             // AST REWRITE
-                            // elements: literal, ID
+                            // elements: ID, literal
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1691,7 +1691,7 @@ public TreeAdaptor getTreeAdaptor() {
                             root_0 = (ExprTree)adaptor.nil();
                             // 113:15: -> ^( CONST literal ID )
                             {
-                                // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:18: ^( CONST literal ID )
+                                // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:18: ^( CONST literal ID )
                                 {
                                 ExprTree root_1 = (ExprTree)adaptor.nil();
                                 root_1 = (ExprTree)adaptor.becomeRoot(
@@ -1715,7 +1715,7 @@ public TreeAdaptor getTreeAdaptor() {
                             }
                             break;
                         case 2 :
-                            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:114:7: MINUS literal
+                            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:114:7: MINUS literal
                             {
                             MINUS43=(Token)match(input,MINUS,FOLLOW_MINUS_in_constant508);  
                             stream_MINUS.add(MINUS43);
@@ -1729,7 +1729,7 @@ public TreeAdaptor getTreeAdaptor() {
                             stream_literal.add(literal44.getTree());
 
                             // AST REWRITE
-                            // elements: literal, ID, MINUS
+                            // elements: MINUS, ID, literal
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1741,14 +1741,14 @@ public TreeAdaptor getTreeAdaptor() {
                             root_0 = (ExprTree)adaptor.nil();
                             // 114:21: -> ^( CONST ^( MINUS literal ) ID )
                             {
-                                // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:114:24: ^( CONST ^( MINUS literal ) ID )
+                                // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:114:24: ^( CONST ^( MINUS literal ) ID )
                                 {
                                 ExprTree root_1 = (ExprTree)adaptor.nil();
                                 root_1 = (ExprTree)adaptor.becomeRoot(
                                 (ExprTree)adaptor.create(CONST, "CONST")
                                 , root_1);
 
-                                // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:114:32: ^( MINUS literal )
+                                // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:114:32: ^( MINUS literal )
                                 {
                                 ExprTree root_2 = (ExprTree)adaptor.nil();
                                 root_2 = (ExprTree)adaptor.becomeRoot(
@@ -1781,7 +1781,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:116:5: literal
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:116:5: literal
                     {
                     pushFollow(FOLLOW_literal_in_constant536);
                     literal45=literal();
@@ -1803,7 +1803,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 117:5: -> ^( CONST literal )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:117:8: ^( CONST literal )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:117:8: ^( CONST literal )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -1853,7 +1853,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "parameter"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:120:1: parameter : (prefix= ID DOLLAR NAT_LIT -> ^( PAR NAT_LIT $prefix) | DOLLAR NAT_LIT -> ^( PAR NAT_LIT ) );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:120:1: parameter : (prefix= ID DOLLAR NAT_LIT -> ^( PAR NAT_LIT $prefix) | DOLLAR NAT_LIT -> ^( PAR NAT_LIT ) );
     public final ExprParser.parameter_return parameter() throws RecognitionException {
         ExprParser.parameter_return retval = new ExprParser.parameter_return();
         retval.start = input.LT(1);
@@ -1877,7 +1877,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:121:3: (prefix= ID DOLLAR NAT_LIT -> ^( PAR NAT_LIT $prefix) | DOLLAR NAT_LIT -> ^( PAR NAT_LIT ) )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:121:3: (prefix= ID DOLLAR NAT_LIT -> ^( PAR NAT_LIT $prefix) | DOLLAR NAT_LIT -> ^( PAR NAT_LIT ) )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -1896,7 +1896,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt13) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:121:5: prefix= ID DOLLAR NAT_LIT
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:121:5: prefix= ID DOLLAR NAT_LIT
                     {
                     prefix=(Token)match(input,ID,FOLLOW_ID_in_parameter563);  
                     stream_ID.add(prefix);
@@ -1911,7 +1911,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: prefix, NAT_LIT
+                    // elements: NAT_LIT, prefix
                     // token labels: prefix
                     // rule labels: retval
                     // token list labels: 
@@ -1924,7 +1924,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 122:5: -> ^( PAR NAT_LIT $prefix)
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:122:8: ^( PAR NAT_LIT $prefix)
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:122:8: ^( PAR NAT_LIT $prefix)
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -1948,7 +1948,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:123:5: DOLLAR NAT_LIT
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:123:5: DOLLAR NAT_LIT
                     {
                     DOLLAR48=(Token)match(input,DOLLAR,FOLLOW_DOLLAR_in_parameter588);  
                     stream_DOLLAR.add(DOLLAR48);
@@ -1971,7 +1971,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 124:5: -> ^( PAR NAT_LIT )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:124:8: ^( PAR NAT_LIT )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:124:8: ^( PAR NAT_LIT )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2023,7 +2023,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "typedFieldOrVar"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:127:1: typedFieldOrVar : ( ID COLON fieldOrVar -> ^( FIELD fieldOrVar ID ) | fieldOrVar -> ^( FIELD fieldOrVar ) );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:127:1: typedFieldOrVar : ( ID COLON fieldOrVar -> ^( FIELD fieldOrVar ID ) | fieldOrVar -> ^( FIELD fieldOrVar ) );
     public final ExprParser.typedFieldOrVar_return typedFieldOrVar() throws RecognitionException {
         ExprParser.typedFieldOrVar_return retval = new ExprParser.typedFieldOrVar_return();
         retval.start = input.LT(1);
@@ -2044,7 +2044,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_fieldOrVar=new RewriteRuleSubtreeStream(adaptor,"rule fieldOrVar");
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:128:3: ( ID COLON fieldOrVar -> ^( FIELD fieldOrVar ID ) | fieldOrVar -> ^( FIELD fieldOrVar ) )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:128:3: ( ID COLON fieldOrVar -> ^( FIELD fieldOrVar ID ) | fieldOrVar -> ^( FIELD fieldOrVar ) )
             int alt14=2;
             int LA14_0 = input.LA(1);
 
@@ -2074,7 +2074,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt14) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:128:5: ID COLON fieldOrVar
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:128:5: ID COLON fieldOrVar
                     {
                     ID50=(Token)match(input,ID,FOLLOW_ID_in_typedFieldOrVar615);  
                     stream_ID.add(ID50);
@@ -2092,7 +2092,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_fieldOrVar.add(fieldOrVar52.getTree());
 
                     // AST REWRITE
-                    // elements: ID, fieldOrVar
+                    // elements: fieldOrVar, ID
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2104,7 +2104,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 129:5: -> ^( FIELD fieldOrVar ID )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:129:8: ^( FIELD fieldOrVar ID )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:129:8: ^( FIELD fieldOrVar ID )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2128,7 +2128,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:130:5: fieldOrVar
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:130:5: fieldOrVar
                     {
                     pushFollow(FOLLOW_fieldOrVar_in_typedFieldOrVar639);
                     fieldOrVar53=fieldOrVar();
@@ -2150,7 +2150,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 131:5: -> ^( FIELD fieldOrVar )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:131:8: ^( FIELD fieldOrVar )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:131:8: ^( FIELD fieldOrVar )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2200,7 +2200,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "fieldOrVar"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:134:1: fieldOrVar : ID ( DOT ^ ID )? ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:134:1: fieldOrVar : ID ( DOT ^ ID )? ;
     public final ExprParser.fieldOrVar_return fieldOrVar() throws RecognitionException {
         ExprParser.fieldOrVar_return retval = new ExprParser.fieldOrVar_return();
         retval.start = input.LT(1);
@@ -2217,8 +2217,8 @@ public TreeAdaptor getTreeAdaptor() {
         ExprTree ID56_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:3: ( ID ( DOT ^ ID )? )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:5: ID ( DOT ^ ID )?
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:3: ( ID ( DOT ^ ID )? )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:5: ID ( DOT ^ ID )?
             {
             root_0 = (ExprTree)adaptor.nil();
 
@@ -2230,7 +2230,7 @@ public TreeAdaptor getTreeAdaptor() {
             adaptor.addChild(root_0, ID54_tree);
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:8: ( DOT ^ ID )?
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:8: ( DOT ^ ID )?
             int alt15=2;
             int LA15_0 = input.LA(1);
 
@@ -2239,7 +2239,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt15) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:9: DOT ^ ID
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:135:9: DOT ^ ID
                     {
                     DOT55=(Token)match(input,DOT,FOLLOW_DOT_in_fieldOrVar667); 
                     DOT55_tree = 
@@ -2292,7 +2292,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "call"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:138:1: call : oper LPAR ( or_expr ( COMMA or_expr )* )? close= RPAR -> ^( CALL oper ( or_expr )* RPAR[$close,\"\"] ) ;
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:138:1: call : oper LPAR ( or_expr ( COMMA or_expr )* )? close= RPAR -> ^( CALL oper ( or_expr )* RPAR[$close,\"\"] ) ;
     public final ExprParser.call_return call() throws RecognitionException {
         ExprParser.call_return retval = new ExprParser.call_return();
         retval.start = input.LT(1);
@@ -2319,8 +2319,8 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleSubtreeStream stream_or_expr=new RewriteRuleSubtreeStream(adaptor,"rule or_expr");
         RewriteRuleSubtreeStream stream_oper=new RewriteRuleSubtreeStream(adaptor,"rule oper");
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:3: ( oper LPAR ( or_expr ( COMMA or_expr )* )? close= RPAR -> ^( CALL oper ( or_expr )* RPAR[$close,\"\"] ) )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:5: oper LPAR ( or_expr ( COMMA or_expr )* )? close= RPAR
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:3: ( oper LPAR ( or_expr ( COMMA or_expr )* )? close= RPAR -> ^( CALL oper ( or_expr )* RPAR[$close,\"\"] ) )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:5: oper LPAR ( or_expr ( COMMA or_expr )* )? close= RPAR
             {
             pushFollow(FOLLOW_oper_in_call685);
             oper57=oper();
@@ -2333,7 +2333,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_LPAR.add(LPAR58);
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:15: ( or_expr ( COMMA or_expr )* )?
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:15: ( or_expr ( COMMA or_expr )* )?
             int alt17=2;
             int LA17_0 = input.LA(1);
 
@@ -2342,7 +2342,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt17) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:16: or_expr ( COMMA or_expr )*
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:16: or_expr ( COMMA or_expr )*
                     {
                     pushFollow(FOLLOW_or_expr_in_call690);
                     or_expr59=or_expr();
@@ -2351,7 +2351,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                     stream_or_expr.add(or_expr59.getTree());
 
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:24: ( COMMA or_expr )*
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:24: ( COMMA or_expr )*
                     loop16:
                     do {
                         int alt16=2;
@@ -2364,7 +2364,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                         switch (alt16) {
                     	case 1 :
-                    	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:25: COMMA or_expr
+                    	    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:139:25: COMMA or_expr
                     	    {
                     	    COMMA60=(Token)match(input,COMMA,FOLLOW_COMMA_in_call693);  
                     	    stream_COMMA.add(COMMA60);
@@ -2397,7 +2397,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: or_expr, oper, RPAR
+            // elements: RPAR, oper, or_expr
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2409,7 +2409,7 @@ public TreeAdaptor getTreeAdaptor() {
             root_0 = (ExprTree)adaptor.nil();
             // 140:4: -> ^( CALL oper ( or_expr )* RPAR[$close,\"\"] )
             {
-                // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:140:7: ^( CALL oper ( or_expr )* RPAR[$close,\"\"] )
+                // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:140:7: ^( CALL oper ( or_expr )* RPAR[$close,\"\"] )
                 {
                 ExprTree root_1 = (ExprTree)adaptor.nil();
                 root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2418,7 +2418,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 adaptor.addChild(root_1, stream_oper.nextTree());
 
-                // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:140:19: ( or_expr )*
+                // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:140:19: ( or_expr )*
                 while ( stream_or_expr.hasNext() ) {
                     adaptor.addChild(root_1, stream_or_expr.nextTree());
 
@@ -2468,7 +2468,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "oper"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:143:1: oper : (prefix= ID COLON name= ID -> ^( OPER $name $prefix) | ID -> ^( OPER ID ) );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:143:1: oper : (prefix= ID COLON name= ID -> ^( OPER $name $prefix) | ID -> ^( OPER ID ) );
     public final ExprParser.oper_return oper() throws RecognitionException {
         ExprParser.oper_return retval = new ExprParser.oper_return();
         retval.start = input.LT(1);
@@ -2489,7 +2489,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:144:3: (prefix= ID COLON name= ID -> ^( OPER $name $prefix) | ID -> ^( OPER ID ) )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:144:3: (prefix= ID COLON name= ID -> ^( OPER $name $prefix) | ID -> ^( OPER ID ) )
             int alt18=2;
             int LA18_0 = input.LA(1);
 
@@ -2519,7 +2519,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt18) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:144:5: prefix= ID COLON name= ID
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:144:5: prefix= ID COLON name= ID
                     {
                     prefix=(Token)match(input,ID,FOLLOW_ID_in_oper735);  
                     stream_ID.add(prefix);
@@ -2534,21 +2534,21 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: prefix, name
-                    // token labels: name, prefix
+                    // elements: name, prefix
+                    // token labels: prefix, name
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
                     // wildcard labels: 
                     retval.tree = root_0;
-                    RewriteRuleTokenStream stream_name=new RewriteRuleTokenStream(adaptor,"token name",name);
                     RewriteRuleTokenStream stream_prefix=new RewriteRuleTokenStream(adaptor,"token prefix",prefix);
+                    RewriteRuleTokenStream stream_name=new RewriteRuleTokenStream(adaptor,"token name",name);
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (ExprTree)adaptor.nil();
                     // 144:29: -> ^( OPER $name $prefix)
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:144:32: ^( OPER $name $prefix)
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:144:32: ^( OPER $name $prefix)
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2570,7 +2570,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:145:5: ID
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:145:5: ID
                     {
                     ID63=(Token)match(input,ID,FOLLOW_ID_in_oper759);  
                     stream_ID.add(ID63);
@@ -2589,7 +2589,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 145:8: -> ^( OPER ID )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:145:11: ^( OPER ID )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:145:11: ^( OPER ID )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2641,7 +2641,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "literal"
-    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:148:1: literal : ( REAL_LIT -> ^( REAL REAL_LIT ) | NAT_LIT -> ^( INT NAT_LIT ) | STRING_LIT -> ^( STRING STRING_LIT ) | TRUE -> ^( BOOL TRUE ) | FALSE -> ^( BOOL FALSE ) );
+    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:148:1: literal : ( REAL_LIT -> ^( REAL REAL_LIT ) | NAT_LIT -> ^( INT NAT_LIT ) | STRING_LIT -> ^( STRING STRING_LIT ) | TRUE -> ^( BOOL TRUE ) | FALSE -> ^( BOOL FALSE ) );
     public final ExprParser.literal_return literal() throws RecognitionException {
         ExprParser.literal_return retval = new ExprParser.literal_return();
         retval.start = input.LT(1);
@@ -2667,7 +2667,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_STRING_LIT=new RewriteRuleTokenStream(adaptor,"token STRING_LIT");
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:149:3: ( REAL_LIT -> ^( REAL REAL_LIT ) | NAT_LIT -> ^( INT NAT_LIT ) | STRING_LIT -> ^( STRING STRING_LIT ) | TRUE -> ^( BOOL TRUE ) | FALSE -> ^( BOOL FALSE ) )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:149:3: ( REAL_LIT -> ^( REAL REAL_LIT ) | NAT_LIT -> ^( INT NAT_LIT ) | STRING_LIT -> ^( STRING STRING_LIT ) | TRUE -> ^( BOOL TRUE ) | FALSE -> ^( BOOL FALSE ) )
             int alt19=5;
             switch ( input.LA(1) ) {
             case REAL_LIT:
@@ -2705,7 +2705,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             switch (alt19) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:149:5: REAL_LIT
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:149:5: REAL_LIT
                     {
                     REAL_LIT64=(Token)match(input,REAL_LIT,FOLLOW_REAL_LIT_in_literal780);  
                     stream_REAL_LIT.add(REAL_LIT64);
@@ -2724,7 +2724,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 149:14: -> ^( REAL REAL_LIT )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:149:17: ^( REAL REAL_LIT )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:149:17: ^( REAL REAL_LIT )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2746,7 +2746,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:150:5: NAT_LIT
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:150:5: NAT_LIT
                     {
                     NAT_LIT65=(Token)match(input,NAT_LIT,FOLLOW_NAT_LIT_in_literal794);  
                     stream_NAT_LIT.add(NAT_LIT65);
@@ -2765,7 +2765,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 150:13: -> ^( INT NAT_LIT )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:150:16: ^( INT NAT_LIT )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:150:16: ^( INT NAT_LIT )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2787,7 +2787,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:151:5: STRING_LIT
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:151:5: STRING_LIT
                     {
                     STRING_LIT66=(Token)match(input,STRING_LIT,FOLLOW_STRING_LIT_in_literal808);  
                     stream_STRING_LIT.add(STRING_LIT66);
@@ -2806,7 +2806,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 151:16: -> ^( STRING STRING_LIT )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:151:19: ^( STRING STRING_LIT )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:151:19: ^( STRING STRING_LIT )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2828,7 +2828,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 4 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:152:5: TRUE
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:152:5: TRUE
                     {
                     TRUE67=(Token)match(input,TRUE,FOLLOW_TRUE_in_literal822);  
                     stream_TRUE.add(TRUE67);
@@ -2847,7 +2847,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 152:10: -> ^( BOOL TRUE )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:152:13: ^( BOOL TRUE )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:152:13: ^( BOOL TRUE )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(
@@ -2869,7 +2869,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 5 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:153:5: FALSE
+                    // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:153:5: FALSE
                     {
                     FALSE68=(Token)match(input,FALSE,FOLLOW_FALSE_in_literal836);  
                     stream_FALSE.add(FALSE68);
@@ -2888,7 +2888,7 @@ public TreeAdaptor getTreeAdaptor() {
                     root_0 = (ExprTree)adaptor.nil();
                     // 153:11: -> ^( BOOL FALSE )
                     {
-                        // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:153:14: ^( BOOL FALSE )
+                        // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:153:14: ^( BOOL FALSE )
                         {
                         ExprTree root_1 = (ExprTree)adaptor.nil();
                         root_1 = (ExprTree)adaptor.becomeRoot(

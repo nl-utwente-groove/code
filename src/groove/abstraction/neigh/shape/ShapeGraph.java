@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -25,6 +25,7 @@ import groove.algebra.AlgebraFamily;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -229,8 +230,8 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     }
 
     /**
-     * Returns the equivalence class of the given node. 
-     * Fails in an assertion if the given node is in the shape. 
+     * Returns the equivalence class of the given node.
+     * Fails in an assertion if the given node is in the shape.
      */
     public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
         assert this.nodeSet().contains(node) : "Node " + node + " is not in the shape!";
@@ -265,6 +266,15 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     ShapeStore store;
     /** The element factory of this host graph. */
     private final ShapeFactory factory;
+
+    @Override
+    public FormatErrorSet checkTypeConstraints() {
+        FormatErrorSet result = getTypeGraph().check(this);
+        if (!result.isEmpty()) {
+            GraphInfo.addErrors(this, result);
+        }
+        return result;
+    }
 
     /** Flag controlling if a memory-optimal implementation should be preferred. */
     private final static boolean COMPACT = true;

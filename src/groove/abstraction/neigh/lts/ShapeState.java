@@ -82,13 +82,16 @@ public class ShapeState extends AbstractGraphState {
      */
     protected ShapeState(CacheReference<StateCache> reference, Shape shape, Frame frame, int number) {
         super(reference, number);
-        this.shape = shape;
-        if (!this.shape.isFixed()) {
+        if (!shape.isFixed()) {
             // AR: commented out to save memory
             // this.shape.setName(toString());
             // Fix the shape to avoid modifications.
-            this.shape.setFixed();
+            shape.setFixed();
+            if (getGTS().isCheckTypeErrors()) {
+                shape.checkTypeConstraints();
+            }
         }
+        this.shape = shape;
         this.transitions = new ArrayList<GraphTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
         setFrame(frame);
@@ -131,8 +134,8 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition || transition instanceof ShapeNextState : "Invalid transition type.";
-        this.transitions.add(transition);
-        return true;
+    this.transitions.add(transition);
+    return true;
     }
 
     @Override

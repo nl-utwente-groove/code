@@ -22,7 +22,9 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.GrammarModel;
+import groove.graph.GraphInfo;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
@@ -35,6 +37,7 @@ import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.gui.jgraph.LTSJVertex;
+import groove.gui.list.ErrorListPanel;
 import groove.gui.tree.LabelTree;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -49,6 +52,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
@@ -63,6 +68,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.NumberEditor;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
@@ -91,7 +97,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         JToolBar toolBar = Options.createToolBar();
         fillToolBar(toolBar);
         add(toolBar, BorderLayout.NORTH);
-        add(getGraphPanel());
+        add(getMainPanel());
     }
 
     @Override
@@ -261,7 +267,24 @@ public class LTSDisplay extends Display implements SimulatorListener {
         getJGraph().setSelectionCells(jCells.toArray());
     }
 
-    /** Returns the LTS tab on this display. */
+    /** Creates a panel consisting of the error panel and the status bar. */
+    private JSplitPane getMainPanel() {
+        if (this.mainPanel == null) {
+            this.mainPanel =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
+            this.mainPanel.setDividerSize(1);
+            this.mainPanel.setContinuousLayout(true);
+            this.mainPanel.setResizeWeight(0.9);
+            this.mainPanel.resetToPreferredSizes();
+            this.mainPanel.setBorder(null);
+        }
+        return this.mainPanel;
+    }
+
+    /** Panel containing the LTS graph panel and error panel. */
+    private JSplitPane mainPanel;
+
+    /** Returns the LTS graph panel on this display. */
     public LTSGraphPanel getGraphPanel() {
         LTSGraphPanel result = this.graphPanel;
         if (result == null) {
@@ -272,6 +295,50 @@ public class LTSDisplay extends Display implements SimulatorListener {
     }
 
     private LTSGraphPanel graphPanel;
+
+    /** Lazily creates and returns the error panel. */
+    private groove.gui.list.ListPanel getErrorPanel() {
+        if (this.errorPanel == null) {
+            this.errorPanel = new ErrorListPanel("State errors");
+            this.errorPanel.addSelectionListener(createErrorListener());
+        }
+        return this.errorPanel;
+    }
+
+    /** Panel displaying format error messages. */
+    private groove.gui.list.ListPanel errorPanel;
+
+    private Observer createErrorListener() {
+        return new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                FormatError error = (FormatError) arg;
+                getSimulatorModel().setState(error.getState());
+            }
+        };
+    }
+
+    /**
+     * Displays a list of errors, or hides the error panel if the list is empty.
+     */
+    final private void updateErrors() {
+        Collection<FormatError> errors;
+        GTS gts = getJModel() == null ? null : getJModel().getGraph();
+        if (gts == null) {
+            errors = Collections.emptyList();
+        } else {
+            errors = GraphInfo.getErrors(gts);
+        }
+        getErrorPanel().setEntries(errors);
+        if (getErrorPanel().isVisible()) {
+            getMainPanel().setBottomComponent(getErrorPanel());
+            getMainPanel().setDividerSize(1);
+            getMainPanel().resetToPreferredSizes();
+        } else {
+            getMainPanel().remove(getErrorPanel());
+            getMainPanel().setDividerSize(0);
+        }
+    }
 
     /** Returns the LTS' JGraph. */
     public LTSJGraph getJGraph() {
@@ -349,6 +416,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     updateStatus(gts);
                 }
             }
+            updateErrors();
         }
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             if (getJModel() != null) {
@@ -421,6 +489,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void statusUpdate(GTS gts, GraphState closed, Flag flag, int oldStatus) {
             assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            if (flag == Flag.ERROR) {
+                updateErrors();
+            }
             updateStatus(gts);
         }
     }

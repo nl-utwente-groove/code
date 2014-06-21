@@ -24,6 +24,7 @@ import groove.graph.Element;
 import groove.graph.Node;
 import groove.graph.NodeComparator;
 import groove.gui.list.ListPanel.SelectableListEntry;
+import groove.lts.GraphState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +63,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         if (par instanceof FormatError) {
             this.subError = (FormatError) par;
             this.subError.transferTo(null, this);
+        } else if (par instanceof GraphState) {
+            this.state = (GraphState) par;
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
             this.resourceName = this.graph.getName();
@@ -127,6 +130,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return this.message;
     }
 
+    /** The error message. */
+    private final String message;
+
     /**
      * Compares only the error element and message.
      * This means that identically worded errors with the same element but for different graphs will be collapsed.
@@ -152,20 +158,40 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return this.control;
     }
 
+    /** The control view in which the error occurs. */
+    private ControlModel control;
+
     /** Returns the prolog view in which the error occurs. May be {@code null}. */
     public final PrologModel getProlog() {
         return this.prolog;
     }
+
+    /** The prolog view in which the error occurs. */
+    private PrologModel prolog;
 
     /** Returns the sub-error on which this one builds. May be {@code null}. */
     public final FormatError getSubError() {
         return this.subError;
     }
 
+    /** Possible suberror. */
+    private FormatError subError;
+
     /** Returns the graph in which the error occurs. May be {@code null}. */
     public final AspectGraph getGraph() {
         return this.graph;
     }
+
+    /** The graph in which the error occurs. */
+    private AspectGraph graph;
+
+    /** Returns the state in which the error occurs. May be {@code null}. */
+    public final GraphState getState() {
+        return this.state;
+    }
+
+    /** The state in which the error occurs. */
+    private GraphState state;
 
     /** Returns the list of elements in which the error occurs. May be empty. */
     @Override
@@ -173,11 +199,17 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return this.elements;
     }
 
+    /** List of erroneous elements. */
+    private final List<Element> elements = new ArrayList<Element>();
+
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
     public final List<Integer> getNumbers() {
         return this.numbers;
     }
+
+    /** List of numbers; typically the line and column number in a textual program. */
+    private final List<Integer> numbers = new ArrayList<Integer>();
 
     /** Returns the resource kind for which this error occurs. */
     @Override
@@ -185,11 +217,17 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return this.resourceKind;
     }
 
+    /** The resource kind for which the error occurs. May be {@code null}. */
+    private ResourceKind resourceKind;
+
     /** Returns the resource kind for which this error occurs. */
     @Override
     public final String getResourceName() {
         return this.resourceName;
     }
+
+    /** The name of the resource on which the error occurs. May be {@code null}. */
+    private String resourceName;
 
     /** Returns a new format error that extends this one with context information. */
     public FormatError extend(Object... par) {
@@ -235,25 +273,6 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         }
         return newArguments.toArray();
     }
-
-    /** The prolog view in which the error occurs. */
-    private PrologModel prolog;
-    /** The control view in which the error occurs. */
-    private ControlModel control;
-    /** The graph in which the error occurs. */
-    private AspectGraph graph;
-    /** The resource kind for which the error occurs. May be {@code null}. */
-    private ResourceKind resourceKind;
-    /** The name of the resource on which the error occurs. May be {@code null}. */
-    private String resourceName;
-    /** List of erroneous elements. */
-    private final List<Element> elements = new ArrayList<Element>();
-    /** List of numbers; typically the line and column number in a textual program. */
-    private final List<Integer> numbers = new ArrayList<Integer>();
-    /** Possible suberror. */
-    private FormatError subError;
-    /** The error message. */
-    private final String message;
 
     private static int compare(Element o1, Element o2) {
         int result = o1.getClass().getName().compareTo(o2.getClass().getName());

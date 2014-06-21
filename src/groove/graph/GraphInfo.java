@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: GraphInfo.java,v 1.13 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
@@ -143,8 +143,7 @@ public class GraphInfo extends DefaultFixable {
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static void transfer(Graph source, Graph target,
-            ElementMap elementMap) {
+    public static void transfer(Graph source, Graph target, ElementMap elementMap) {
         if (source.hasInfo()) {
             // copy all the info
             GraphInfo sourceInfo = source.getInfo();
@@ -204,13 +203,22 @@ public class GraphInfo extends DefaultFixable {
     }
 
     /**
-     * Adds a list of format errors to a graph.
+     * Adds a format error to a graph.
      * @param graph the graph to be modified; non-{@code null} and not fixed
+     * @param error error to be added; non-{@code null}
+     */
+    public static void addError(Graph graph, FormatError error) {
+        assert !graph.isFixed();
+        graph.getInfo().getErrors().add(error);
+    }
+
+    /**
+     * Adds a list of format errors to a graph.
+     * @param graph the graph to be modified; non-{@code null}
      * @param errors list of errors to be added; non-{@code null}
      */
     public static void addErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
-            assert !graph.isFixed();
             graph.getInfo().getErrors().addAll(errors);
         }
     }
@@ -227,7 +235,7 @@ public class GraphInfo extends DefaultFixable {
     /**
      * Retrieves the layout map from a given graph.
      * @param graph the queried graph; non-{@code null}
-     * @return an alias to the layout map of the graph, 
+     * @return an alias to the layout map of the graph,
      * or {@code null} if the graph has no associated layout map
      */
     public static LayoutMap getLayoutMap(Graph graph) {
@@ -286,7 +294,7 @@ public class GraphInfo extends DefaultFixable {
         return Integer.parseInt(getProperty(graph, PRIORITY));
     }
 
-    /** 
+    /**
      * Sets the priority of a given graph to a certain value.
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param priority the new priority value; should be non-negative
@@ -296,7 +304,7 @@ public class GraphInfo extends DefaultFixable {
     }
 
     /**
-     * Returns the enabledness property of a given graph. 
+     * Returns the enabledness property of a given graph.
      * Yields <code>true</code> by default.
      * @param graph the queried graph; non-{@code null}
      * @see Key#ENABLED
@@ -305,7 +313,7 @@ public class GraphInfo extends DefaultFixable {
         return Boolean.parseBoolean(getProperty(graph, ENABLED));
     }
 
-    /** 
+    /**
      * Sets the enabledness of a given graph to a certain value.
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param enabled the new enabledness value
@@ -324,7 +332,7 @@ public class GraphInfo extends DefaultFixable {
         return getProperty(graph, Key.REMARK);
     }
 
-    /** 
+    /**
      * Sets the remark for a given graph to a certain value.
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param remark the remark for this graph; non-{@code null}
@@ -344,7 +352,7 @@ public class GraphInfo extends DefaultFixable {
         return getProperty(graph, Key.FORMAT);
     }
 
-    /** 
+    /**
      * Sets the format string for a given graph to a certain value.
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param formatString the format string for this graph; may be {@code null}
@@ -363,7 +371,7 @@ public class GraphInfo extends DefaultFixable {
         return getProperty(graph, Key.TRANSITION_LABEL);
     }
 
-    /** 
+    /**
      * Convenience method to set the transition label for a given graph to a certain value.
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param label the transition label for this graph; may be {@code null}
@@ -385,7 +393,7 @@ public class GraphInfo extends DefaultFixable {
 
     /**
      * Convenience method to retrieve a graph property from a given graph.
-     * Delegates to {@link GraphProperties#getProperty(Key)} 
+     * Delegates to {@link GraphProperties#getProperty(Key)}
      * @param graph the queried graph; non-{@code null}
      * @return the stored or default property value for the given key;
      * non-{@code null}
@@ -402,7 +410,7 @@ public class GraphInfo extends DefaultFixable {
 
     /**
      * Convenience method to change a graph property of a given graph.
-     * Delegates to {@link GraphProperties#setProperty} 
+     * Delegates to {@link GraphProperties#setProperty}
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      */
     private static void setProperty(Graph graph, Key key, String value) {

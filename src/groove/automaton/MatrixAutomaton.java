@@ -16,8 +16,8 @@
  */
 package groove.automaton;
 
-import static groove.automaton.Direction.BACKWARD;
-import static groove.automaton.Direction.FORWARD;
+import static groove.graph.Direction.INCOMING;
+import static groove.graph.Direction.OUTGOING;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -29,6 +29,7 @@ import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Direction;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
@@ -388,15 +389,15 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         }
         if (startImage != null) {
             // do forward matching from the start images
-            return getMatchingAlgorithm(FORWARD).computeMatches(graph, startImage, endImage,
+            return getMatchingAlgorithm(OUTGOING).computeMatches(graph, startImage, endImage,
                 valuation);
         } else if (endImage != null) {
             // do backwards matching from the end images
-            return getMatchingAlgorithm(BACKWARD).computeMatches(graph, endImage, null, valuation);
+            return getMatchingAlgorithm(INCOMING).computeMatches(graph, endImage, null, valuation);
         } else {
             // if we don't have any start or end images,
             // create a set of start images using the automaton's initial edges
-            return getMatchingAlgorithm(FORWARD).computeMatches(graph, null, null, valuation);
+            return getMatchingAlgorithm(OUTGOING).computeMatches(graph, null, null, valuation);
 
         }
     }
@@ -442,14 +443,14 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      * Returns a matching algorithm for a given matching direction. The
      * algorithm is created on demand, using
      * {@link #createMatchingAlgorithm(Direction)}.
-     * @param direction the matching direction: either {@link #FORWARD} or
-     *        {@link #BACKWARD}
+     * @param direction the matching direction: either {@link #OUTGOING} or
+     *        {@link #INCOMING}
      */
     final MatchingAlgorithm getMatchingAlgorithm(Direction direction) {
         if (this.algorithm == null) {
             this.algorithm = new EnumMap<Direction,MatchingAlgorithm>(Direction.class);
-            this.algorithm.put(FORWARD, createMatchingAlgorithm(FORWARD));
-            this.algorithm.put(BACKWARD, createMatchingAlgorithm(BACKWARD));
+            this.algorithm.put(OUTGOING, createMatchingAlgorithm(OUTGOING));
+            this.algorithm.put(INCOMING, createMatchingAlgorithm(INCOMING));
         }
         return this.algorithm.get(direction);
     }
@@ -458,8 +459,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      * Callback factory method to create a matching algorithm for a given
      * matching direction. This implementation returns an
      * {@link MatchingAlgorithm}
-     * @param direction the matching direction: either {@link #FORWARD} or
-     *        {@link #BACKWARD}
+     * @param direction the matching direction: either {@link #OUTGOING} or
+     *        {@link #INCOMING}
      */
     final MatchingAlgorithm createMatchingAlgorithm(Direction direction) {
         return new MatchingAlgorithm(direction);
@@ -1134,15 +1135,15 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
 
         /**
          * Creates a matching algorithm for a given direction of matching
-         * @param direction either {@link #FORWARD} or {@link #BACKWARD}.
+         * @param direction either {@link #OUTGOING} or {@link #INCOMING}.
          */
         public MatchingAlgorithm(Direction direction) {
             switch (direction) {
-            case FORWARD:
+            case OUTGOING:
                 this.startIndex = getStartNodeIndex();
                 this.endIndex = getEndNodeIndex();
                 break;
-            case BACKWARD:
+            case INCOMING:
                 this.startIndex = getEndNodeIndex();
                 this.endIndex = getStartNodeIndex();
                 break;
@@ -1226,7 +1227,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
          */
         protected Collection<? extends HostEdge> getPosEdgeSet(HostNode node) {
             switch (this.direction) {
-            case FORWARD:
+            case OUTGOING:
                 return this.graph.outEdgeSet(node);
             default:
                 return this.graph.inEdgeSet(node);
@@ -1241,7 +1242,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
          */
         protected Collection<? extends HostEdge> getInvEdgeSet(HostNode node) {
             switch (this.direction) {
-            case FORWARD:
+            case OUTGOING:
                 return this.graph.inEdgeSet(node);
             default:
                 return this.graph.outEdgeSet(node);
@@ -1255,7 +1256,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
          */
         protected HostNode getThisEnd(HostEdge edge) {
             switch (this.direction) {
-            case FORWARD:
+            case OUTGOING:
                 return edge.source();
             default:
                 return edge.target();
@@ -1269,7 +1270,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
          */
         protected HostNode getOpposite(HostEdge edge) {
             switch (this.direction) {
-            case FORWARD:
+            case OUTGOING:
                 return edge.target();
             default:
                 return edge.source();
@@ -1283,7 +1284,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
          */
         protected int getOpposite(int edgeIndex) {
             switch (this.direction) {
-            case FORWARD:
+            case OUTGOING:
                 return getTarget(edgeIndex);
             default:
                 return getSource(edgeIndex);
@@ -1297,7 +1298,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
          */
         protected boolean addRelated(HostNode startImage, HostNode endImage) {
             switch (this.direction) {
-            case FORWARD:
+            case OUTGOING:
                 return this.result.add(createResult(startImage, endImage));
             default:
                 return this.result.add(createResult(endImage, startImage));

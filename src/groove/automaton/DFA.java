@@ -16,10 +16,11 @@
  */
 package groove.automaton;
 
-import static groove.automaton.Direction.BACKWARD;
-import static groove.automaton.Direction.FORWARD;
+import static groove.graph.Direction.INCOMING;
+import static groove.graph.Direction.OUTGOING;
 import groove.grammar.host.HostGraph;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Direction;
 import groove.util.Duo;
 
 import java.util.Arrays;
@@ -110,7 +111,7 @@ public class DFA {
             for (Direction dir : Direction.values()) {
                 for (Map.Entry<TypeLabel,DFAState> labelEntry : state.getLabelMap().get(
                     dir).entrySet()) {
-                    result.append(dir == FORWARD ? "   " : "  -");
+                    result.append(dir == OUTGOING ? "   " : "  -");
                     result.append(labelEntry.getKey());
                     result.append(" --> ");
                     result.append(labelEntry.getValue());
@@ -123,8 +124,8 @@ public class DFA {
 
     /** Tests if this DFA has an empty language. */
     public boolean isEmpty() {
-        return getStartState().getLabelMap().get(FORWARD).isEmpty()
-            && getStartState().getLabelMap().get(BACKWARD).isEmpty()
+        return getStartState().getLabelMap().get(OUTGOING).isEmpty()
+            && getStartState().getLabelMap().get(INCOMING).isEmpty()
             && !getStartState().isFinal();
     }
 
