@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -19,6 +19,7 @@ package groove.grammar.host;
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.graph.AElementMap;
@@ -34,8 +35,7 @@ import groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
-        implements HostGraph {
+public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> implements HostGraph {
     /**
      * Constructs an empty host graph.
      * @param name name of the new host graph.
@@ -70,9 +70,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             if (sn instanceof ValueNode && family != null) {
                 ValueNode vn = (ValueNode) sn;
                 tn =
-                    getFactory().createNode(
-                        family.getAlgebra(vn.getSignature()),
-                        family.toValue(vn.getTerm()));
+                        getFactory().createNode(family.getAlgebra(vn.getSignature()),
+                            family.toValue(vn.getTerm()));
             } else {
                 tn = sn;
             }
@@ -84,16 +83,16 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         }
     }
 
-    /** 
+    /**
      * Turns a given graph into a host graph,
      * by creating the appropriate types of nodes and edges.
      */
     public DefaultHostGraph(Graph graph) {
         this(graph.getName());
         AElementMap<Node,Edge,HostNode,HostEdge> map =
-            new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
-                // empty
-            };
+                new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
+            // empty
+        };
         for (Node node : graph.nodeSet()) {
             HostNode newNode = addNode(node.getNumber());
             map.putNode(node, newNode);
@@ -101,8 +100,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         for (Edge edge : graph.edgeSet()) {
             HostNode sourceImage = map.getNode(edge.source());
             HostNode targetImage = map.getNode(edge.target());
-            HostEdge edgeImage =
-                addEdge(sourceImage, edge.label().text(), targetImage);
+            HostEdge edgeImage = addEdge(sourceImage, edge.label().text(), targetImage);
             map.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(graph, this, map);
@@ -153,6 +151,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         return this.factory;
     }
 
+    /** The element factory of this host graph. */
+    private final HostFactory factory;
+
     @Override
     public TypeGraph getTypeGraph() {
         return getFactory().getTypeFactory().getGraph();
@@ -163,6 +164,12 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         return typeGraph.analyzeHost(this).createImage(getName());
     }
 
-    /** The element factory of this host graph. */
-    private final HostFactory factory;
+    @Override
+    public FormatErrorSet checkTypeConstraints() {
+        FormatErrorSet result = getTypeGraph().check(this);
+        if (!result.isEmpty()) {
+            GraphInfo.addErrors(this, result);
+        }
+        return result;
+    }
 }

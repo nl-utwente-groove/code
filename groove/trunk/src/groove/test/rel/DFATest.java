@@ -16,8 +16,8 @@
  */
 package groove.test.rel;
 
-import static groove.automaton.Direction.BACKWARD;
-import static groove.automaton.Direction.FORWARD;
+import static groove.graph.Direction.INCOMING;
+import static groove.graph.Direction.OUTGOING;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -161,31 +161,31 @@ public class DFATest {
     @Test
     public void testConstruction() {
         SimpleNFA a = createNFA("a.-a");
-        DFA forward = a.getDFA(FORWARD, null);
+        DFA forward = a.getDFA(OUTGOING, null);
         assertTrue(forward.isEquivalent(forward.toMinimised()));
         assertTrue(forward.toString() != null);
         DFAState state = forward.getStartState();
         assertTrue(state.isInitial());
         assertFalse(state.isFinal());
-        Map<TypeLabel,DFAState> succMap = state.getLabelMap().get(FORWARD);
-        Map<TypeLabel,DFAState> predMap = state.getLabelMap().get(BACKWARD);
+        Map<TypeLabel,DFAState> succMap = state.getLabelMap().get(OUTGOING);
+        Map<TypeLabel,DFAState> predMap = state.getLabelMap().get(INCOMING);
         assertEquals(Collections.singleton(this.aLabel), succMap.keySet());
         assertTrue(predMap.isEmpty());
         state = succMap.get(this.aLabel);
         assertFalse(state.isInitial());
         assertFalse(state.isFinal());
-        succMap = state.getLabelMap().get(FORWARD);
-        predMap = state.getLabelMap().get(BACKWARD);
+        succMap = state.getLabelMap().get(OUTGOING);
+        predMap = state.getLabelMap().get(INCOMING);
         assertTrue(succMap.isEmpty());
         assertEquals(Collections.singleton(this.aLabel), predMap.keySet());
         state = predMap.get(this.aLabel);
         assertFalse(state.isInitial());
         assertTrue(state.isFinal());
-        succMap = state.getLabelMap().get(FORWARD);
-        predMap = state.getLabelMap().get(BACKWARD);
+        succMap = state.getLabelMap().get(OUTGOING);
+        predMap = state.getLabelMap().get(INCOMING);
         assertTrue(succMap.isEmpty());
         assertTrue(predMap.isEmpty());
-        DFA backward = a.getDFA(BACKWARD, null);
+        DFA backward = a.getDFA(INCOMING, null);
         backward.isEquivalent(forward);
     }
 
@@ -202,7 +202,7 @@ public class DFATest {
      */
     private void assertEmpty(String e, Valuation val, boolean empty) {
         SimpleNFA a = createNFA(e);
-        assertEquals(empty, a.getDFA(FORWARD, val).isEmpty());
+        assertEquals(empty, a.getDFA(OUTGOING, val).isEmpty());
     }
 
     /**
@@ -222,7 +222,7 @@ public class DFATest {
         SimpleNFA a1 = createNFA(e1);
         SimpleNFA a2 = createNFA(e2);
         assertEquals(equiv,
-            a1.getDFA(FORWARD, val).isEquivalent(a2.getDFA(FORWARD, val)));
+            a1.getDFA(OUTGOING, val).isEquivalent(a2.getDFA(OUTGOING, val)));
     }
 
     /** Creates an NFA for a given regular expression. */

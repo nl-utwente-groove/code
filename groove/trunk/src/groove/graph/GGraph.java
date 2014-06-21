@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: Graph.java,v 1.11 2008-01-30 09:32:52 iovka Exp $
  */
 package groove.graph;
@@ -22,12 +22,10 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Provides a model of a graph whose nodes and edges are unstructured, in the
- * sense that they are immutable and edges are completely determined by source
- * and target nodes and edge label.
+ * Generically typed specialisation of the {@link Graph} interface.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
-public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
+public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixable {
     /* Specialises the return type. */
     @Override
     Set<? extends N> nodeSet();
@@ -60,7 +58,7 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     @Override
     GGraph<N,E> newGraph(String name);
 
-    /** 
+    /**
      * Sets a new (non-{@code null}) name of this graph.
      * Only allowed if the graph is not fixed.
      */
@@ -83,11 +81,11 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     /**
      * Adds a node to this graph. This is allowed only if the graph is not
      * fixed. If the node is already in the graph then the method has no effect.
-     * 
+     *
      * @param node the node to be added.
      * @return <tt>true</tt> if the node was indeed added (and not yet
      *         present)
-     * @see #addEdge(Edge)
+     * @see #addEdge
      * @see #isFixed()
      */
     boolean addNode(N node);
@@ -95,7 +93,7 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
      * label text, and returns the edge. The end nodes are assumed to be in the
-     * graph already. 
+     * graph already.
      * If an edge with these properties already exists, the method
      * returns the existing edge.
      * This method is equivalent to {@code addEdge(getFactory().createEdge(source,label,target))}.
@@ -104,7 +102,7 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
      * @param target the (non-{@code null}) target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
-     * @see GGraph#addEdge(Edge)
+     * @see GGraph#addEdge
      */
     E addEdge(N source, String label, N target);
 
@@ -119,7 +117,7 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
      * @param target the (non-{@code null}) target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
-     * @see GGraph#addEdge(Edge)
+     * @see GGraph#addEdge
      */
     E addEdge(N source, Label label, N target);
 
@@ -155,12 +153,12 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
 
     /**
      * Convenience method to add a set of edges and their end nodes to this graph.
-     * The effect is equivalent to calling {@link #addEdgeContext(Edge)} for
+     * The effect is equivalent to calling {@link #addEdgeContext} for
      * every element of {@code edgeSet}.
      * @param edgeSet the (non-{@code null}) set of edges to be added, together
      * with their end nodes
      * @return <tt>true</tt> if the graph changed as a result of this call
-     * @see #addEdgeContext(Edge)
+     * @see #addEdgeContext
      */
     boolean addEdgeSetContext(Collection<? extends E> edgeSet);
 
@@ -206,7 +204,7 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
      * @param edgeSet the (non-{@code null}) collection of edges to be removed from the graph
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #isFixed()
-     * @see #removeEdge(Edge)
+     * @see #removeEdge
      * @see #removeNodeSetContext(Collection)
      */
     boolean removeEdgeSet(Collection<? extends E> edgeSet);

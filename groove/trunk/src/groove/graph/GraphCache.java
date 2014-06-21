@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: GraphCache.java,v 1.6 2008-01-30 09:32:51 iovka Exp $
  */
 package groove.graph;
@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphCache<N extends Node,E extends Edge> {
+public class GraphCache<N extends Node,E extends GEdge<N>> {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
@@ -323,10 +323,9 @@ public class GraphCache<N extends Node,E extends Edge> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
     private void addToNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
+            addToNodeEdgeMap(currentMap, edge.target(), edge);
         }
     }
 
@@ -335,10 +334,9 @@ public class GraphCache<N extends Node,E extends Edge> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
     private void addToNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
+            addToNodeEdgeMap(currentMap, edge.source(), edge);
         }
     }
 
@@ -347,11 +345,10 @@ public class GraphCache<N extends Node,E extends Edge> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
     private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
-            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
+            addToNodeEdgeMap(currentMap, edge.source(), edge);
+            addToNodeEdgeMap(currentMap, edge.target(), edge);
         }
     }
 
@@ -500,13 +497,12 @@ public class GraphCache<N extends Node,E extends Edge> {
         return this.nodeCounter;
     }
 
-    /** 
+    /**
      * Tests if a certificate strategy of the right strength has been instantiated.
      * @param strong the desired strength of the certifier
      */
     protected boolean hasCertifier(boolean strong) {
-        return this.certificateStrategy != null
-            && this.certificateStrategy.getStrength() == strong;
+        return this.certificateStrategy != null && this.certificateStrategy.getStrength() == strong;
     }
 
     /**
@@ -521,8 +517,7 @@ public class GraphCache<N extends Node,E extends Edge> {
         if (hasCertifier(strong)) {
             result = this.certificateStrategy;
         } else {
-            result =
-                AGraph.getCertificateFactory().newInstance(getGraph(), strong);
+            result = AGraph.getCertificateFactory().newInstance(getGraph(), strong);
             if (this.graph.isFixed()) {
                 this.certificateStrategy = result;
             }

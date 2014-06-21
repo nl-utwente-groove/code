@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.type;
@@ -67,16 +67,16 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
-    /** Constructs a fresh type graph. 
-     * @param name the (non-{@code null}) name of the type graph 
+public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements TypeChecker {
+    /** Constructs a fresh type graph.
+     * @param name the (non-{@code null}) name of the type graph
      */
     public TypeGraph(String name) {
         this(name, false);
     }
 
-    /** Constructs a fresh type graph. 
-     * @param name the (non-{@code null}) name of the type graph 
+    /** Constructs a fresh type graph.
+     * @param name the (non-{@code null}) name of the type graph
      */
     public TypeGraph(String name, boolean implicit) {
         super(name);
@@ -89,7 +89,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return TYPE;
     }
 
-    /** 
+    /**
      * Adds type nodes and edges from another type graph.
      * Equally labelled type nodes are merged.
      * This may change the node numbering of the other type graph.
@@ -353,18 +353,31 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return this.factory;
     }
 
+    /** Type factory associated with this type graph. */
+    private final TypeFactory factory;
+
     /** Returns the set of imported node types. */
     public Set<TypeNode> getImports() {
         return this.imports;
     }
 
+    /** Set of imported nodes. */
+    private final Set<TypeNode> imports = new HashSet<TypeNode>();
+
     /**
      * Indicates if this is a degenerate type graph,
-     * i.e. one without true node types  
+     * i.e. one without true node types
      */
     public boolean isImplicit() {
         return this.implicit;
     }
+
+    /**
+     * Flag indicating that this is an implicit type graph.
+     * This affects the type analysis: an implicit type graph cannot
+     * give rise to typing errors.
+     */
+    private final boolean implicit;
 
     /** Indicates if a given label kind is used to determine node types. */
     public boolean isNodeType(EdgeRole role) {
@@ -542,10 +555,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 getTypeEdge(sourceImage.getType(), edgeLabel.getTypeLabel(), targetImage.getType(),
                     false);
             if (typeEdge == null) {
-                // if the source type is the top type, we must be in a 
+                // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
-                // the graph has not yet been saved. This will be solved 
-                // upon saving, and the error is confusing, so dont't 
+                // the graph has not yet been saved. This will be solved
+                // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceType.isTopType()) {
                     errors.add("%s-node has unknown %s-%s", sourceType, edgeLabel,
@@ -565,10 +578,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             RegExpr expr = checkLabel.getMatchExpr();
             Result typeResult = expr.apply(regExprTyper);
             if (typeResult.hasErrors()) {
-                // if the source type is the top type, we must be in a 
+                // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
-                // the graph has not yet been saved. This will be solved 
-                // upon saving, and the error is confusing, so dont't 
+                // the graph has not yet been saved. This will be solved
+                // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceImage.getType().isTopType()) {
                     for (FormatError error : typeResult.getErrors()) {
@@ -598,7 +611,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     }
 
-    /** 
+    /**
      * Creates a rule node with a type to be determined by a list
      * of typing edges.
      * @param varTyping predetermined typing of the variable edges
@@ -606,7 +619,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @param node the node for which we want an image
      * @return a non-{@code null} node with number {@code nr} and type
      * determined by {@code typingEdges}
-     * @throws FormatException if no unambiguous node type can be derived 
+     * @throws FormatException if no unambiguous node type can be derived
      */
     private RuleNode createRuleNode(RuleGraphMorphism parentTyping, RuleGraph graph, RuleNode node,
             Map<LabelVar,Set<? extends TypeElement>> varTyping) throws FormatException {
@@ -688,7 +701,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Returns a fresh set of all type nodes that may be matched
      * by a given (typed) rule node.
      * These are either only the rule node type itself, or all subtypes,
@@ -775,10 +788,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
             TypeEdge typeEdge = getTypeEdge(sourceType, edgeType, targetType, false);
             if (typeEdge == null) {
-                // if the source type is the top type, we must be in a 
+                // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
-                // the graph has not yet been saved. This will be solved 
-                // upon saving, and the error is confusing, so dont't 
+                // the graph has not yet been saved. This will be solved
+                // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceType.isTopType()) {
                     errors.add("%s-node has unknown %s-%s", sourceType, edgeType.text(),
@@ -792,7 +805,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
         }
         errors.throwException();
-        EdgeMultiplicityVerifier.verifyMultiplicities(source, this);
         return morphism;
     }
 
@@ -842,6 +854,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         }
         return result;
     }
+
+    /** Node-label-edge-map for precisely matching type edges. */
+    private TypeEdgeMap exactEdgeMap;
+    /** Node-label-edge-map for type edges starting at supertypes. */
+    private TypeEdgeMap superEdgeMap;
 
     private TypeEdgeMap computeEdgeMap(boolean precise) {
         TypeEdgeMap result = new TypeEdgeMap();
@@ -897,8 +914,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return precise ? supertype.equals(subtype) : isSubtype(subtype, supertype);
     }
 
-    /** 
-     * Returns the type node with a node type label, given as a 
+    /**
+     * Returns the type node with a node type label, given as a
      * string. The string should be in prefix form (see {@link TypeLabel#createLabel(String)}).
      * @param label the label to look up.
      * @return the type node labelled with {@code label}, or {@code null}
@@ -908,9 +925,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return getNode(TypeLabel.createLabel(label));
     }
 
-    /** 
+    /**
      * Returns the type node with a given node type label,
-     * if there is such a node in the type graph. Returns {@code null} 
+     * if there is such a node in the type graph. Returns {@code null}
      * if the label is not a known node type.
      */
     public TypeNode getNode(Label label) {
@@ -921,6 +938,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             return this.typeNodeMap.get(getActualType(label));
         }
     }
+
+    /** Mapping from node type labels to the corresponding type nodes. */
+    private final Map<Label,TypeNode> typeNodeMap = new HashMap<Label,TypeNode>();
 
     /**
      * Returns the actual type label wrapped inside a (possibly sharp) type.
@@ -978,15 +998,32 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return this.labels;
     }
 
+    /** Set of all labels occurring in the type graph. */
+    private Set<TypeLabel> labels;
+
     /** Returns an unmodifiable view on the mapping from node type labels to direct supertypes. */
     public Map<TypeNode,Set<TypeNode>> getDirectSupertypeMap() {
         return Collections.unmodifiableMap(this.nodeDirectSupertypeMap);
     }
 
+    /**
+     * Mapping from node types to direct supertypes.
+     * The inverse of {@link #nodeDirectSubtypeMap}.
+     * Built at the moment of fixing the type graph.
+     */
+    private final NodeTypeMap nodeDirectSupertypeMap = new NodeTypeMap(false);
+
     /** Returns an unmodifiable view on the mapping from node type labels to direct subtypes. */
     public Map<TypeNode,Set<TypeNode>> getDirectSubtypeMap() {
         return Collections.unmodifiableMap(this.nodeDirectSubtypeMap);
     }
+
+    /**
+     * Mapping from node types to direct subtypes.
+     * The inverse of {@link #nodeDirectSupertypeMap}.
+     * Built at the moment of fixing the type graph.
+     */
+    private final NodeTypeMap nodeDirectSubtypeMap = new NodeTypeMap(false);
 
     /** Returns the set of subtypes of a given node type. */
     public Set<TypeNode> getSubtypes(TypeNode node) {
@@ -1001,6 +1038,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return result;
     }
 
+    /**
+     * Reflexive and transitive mapping from node types to node subtypes.
+     * The closure of {@link #nodeDirectSubtypeMap}, and the inverse of {@link #nodeSupertypeMap}.
+     * Built at the moment of fixing the type graph.
+     */
+    private final NodeTypeMap nodeSubtypeMap = new NodeTypeMap(true);
+
     /** Returns the set of subtypes of a given edge type. */
     public Set<TypeEdge> getSubtypes(TypeEdge edge) {
         Set<TypeEdge> result;
@@ -1013,6 +1057,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         assert result != null;
         return result;
     }
+
+    /**
+     * Mapping from abstract edge types to edge subtypes.
+     * Built at the moment of fixing the type graph.
+     */
+    private final Map<TypeEdge,Set<TypeEdge>> edgeSubtypeMap =
+        new HashMap<TypeEdge,Set<TypeEdge>>();
 
     /** Returns the set of supertypes of a given node type. */
     public Set<TypeNode> getSupertypes(TypeNode node) {
@@ -1027,6 +1078,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return result;
     }
 
+    /**
+     * Reflexive and transitive mapping from node types to node supertypes.
+     * The closure of {@link #nodeDirectSupertypeMap}, and the inverse of {@link #nodeSubtypeMap}.
+     * Built at the moment of fixing the type graph.
+     */
+    private final NodeTypeMap nodeSupertypeMap = new NodeTypeMap(true);
+
     /** Returns the set of supertypes of a given edge type. */
     public Set<TypeEdge> getSupertypes(TypeEdge edge) {
         Set<TypeEdge> result;
@@ -1039,6 +1097,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         assert result != null;
         return result;
     }
+
+    /**
+     * Mapping from edge types to abstract edge supertypes.
+     * Built at the moment of fixing the type graph.
+     */
+    private final Map<TypeEdge,Set<TypeEdge>> edgeSupertypeMap =
+        new HashMap<TypeEdge,Set<TypeEdge>>();
 
     /**
      * Returns the set of type nodes and edges in this type graph
@@ -1092,7 +1157,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Returns the most abstract element with respect to subtyping from a given set of types,
      * if one of the types is maximal.
      * @param types the set of types in which the maximum is sought
@@ -1167,6 +1232,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return !this.componentMap.isEmpty();
     }
 
+    /** Mapping from component type graph names to the type elements in this type graph. */
+    private final SortedMap<String,Sub> componentMap = new TreeMap<String,Sub>();
+
     @Override
     protected boolean isTypeCorrect(Node node) {
         return node instanceof TypeNode;
@@ -1177,66 +1245,41 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return edge instanceof TypeEdge;
     }
 
-    /** Type factory associated with this type graph. */
-    private final TypeFactory factory;
-    /** Mapping from node type labels to the corresponding type nodes. */
-    private final Map<Label,TypeNode> typeNodeMap = new HashMap<Label,TypeNode>();
+    @Override
+    public TypeGraph getTypeGraph() {
+        return this;
+    }
 
-    /** Set of imported nodes. */
-    private final Set<TypeNode> imports = new HashSet<TypeNode>();
-    /**
-     * Flag indicating that this is an implicit type graph.
-     * This affects the type analysis: an implicit type graph cannot
-     * give rise to typing errors.
-     */
-    private final boolean implicit;
-    /**
-     * Mapping from node types to direct subtypes.
-     * The inverse of {@link #nodeDirectSupertypeMap}.
-     * Built at the moment of fixing the type graph.
-     */
-    private final NodeTypeMap nodeDirectSubtypeMap = new NodeTypeMap(false);
-    /**
-     * Mapping from node types to direct supertypes.
-     * The inverse of {@link #nodeDirectSubtypeMap}.
-     * Built at the moment of fixing the type graph.
-     */
-    private final NodeTypeMap nodeDirectSupertypeMap = new NodeTypeMap(false);
-    /**
-     * Reflexive and transitive mapping from node types to node subtypes.
-     * The closure of {@link #nodeDirectSubtypeMap}, and the inverse of {@link #nodeSupertypeMap}.
-     * Built at the moment of fixing the type graph.
-     */
-    private final NodeTypeMap nodeSubtypeMap = new NodeTypeMap(true);
-    /**
-     * Reflexive and transitive mapping from node types to node supertypes.
-     * The closure of {@link #nodeDirectSupertypeMap}, and the inverse of {@link #nodeSubtypeMap}.
-     * Built at the moment of fixing the type graph.
-     */
-    private final NodeTypeMap nodeSupertypeMap = new NodeTypeMap(true);
-    /**
-    * Mapping from abstract edge types to edge subtypes.
-    * Built at the moment of fixing the type graph.
-    */
-    private final Map<TypeEdge,Set<TypeEdge>> edgeSubtypeMap =
-        new HashMap<TypeEdge,Set<TypeEdge>>();
-    /**
-    * Mapping from edge types to abstract edge supertypes.
-    * Built at the moment of fixing the type graph.
-    */
-    private final Map<TypeEdge,Set<TypeEdge>> edgeSupertypeMap =
-        new HashMap<TypeEdge,Set<TypeEdge>>();
+    @Override
+    public boolean isTrivial() {
+        return getCheckers().isEmpty();
+    }
 
-    /** Mapping from component type graph names to the type elements in this type graph. */
-    private final SortedMap<String,Sub> componentMap = new TreeMap<String,Sub>();
+    @Override
+    public FormatErrorSet check(HostGraph graph) {
+        FormatErrorSet result = new FormatErrorSet();
+        for (TypeChecker checker : getCheckers()) {
+            result.addAll(checker.check(graph));
+        }
+        return result;
+    }
 
-    /** Set of all labels occurring in the type graph. */
-    private Set<TypeLabel> labels;
+    /** Returns the list of type checkers for this type graph. */
+    public List<TypeChecker> getCheckers() {
+        assert isFixed();
+        if (this.checkers == null) {
+            this.checkers = new ArrayList<TypeChecker>();
+            if (!isImplicit()) {
+                MultiplicityChecker checker = new MultiplicityChecker(this);
+                if (!checker.isTrivial()) {
+                    this.checkers.add(checker);
+                }
+            }
+        }
+        return this.checkers;
+    }
 
-    /** Node-label-edge-map for precisely matching type edges. */
-    private TypeEdgeMap exactEdgeMap;
-    /** Node-label-edge-map for type edges starting at supertypes. */
-    private TypeEdgeMap superEdgeMap;
+    private List<TypeChecker> checkers;
 
     /** Class holding a mapping from type nodes to sets of type nodes. */
     private static class NodeTypeMap extends HashMap<TypeNode,Set<TypeNode>> {
@@ -1245,7 +1288,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             this.reflexive = reflexive;
         }
 
-        /** 
+        /**
          * Adds a node to the keys of the map, with an initially empty image.
          * If the map is reflexive, the node itself is added to the image.
          * @param node the node to be added.

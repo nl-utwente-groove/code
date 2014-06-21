@@ -16,13 +16,14 @@
  */
 package groove.automaton;
 
-import static groove.automaton.Direction.FORWARD;
+import static groove.graph.Direction.OUTGOING;
 import groove.automaton.RegAut.Result;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Direction;
 import groove.util.Pair;
 
 import java.util.HashMap;
@@ -144,7 +145,7 @@ public class Recogniser {
                 from.two().getLabelMap();
             // Add successor according to node type label
             DFAState ns =
-                succMaps.get(Direction.FORWARD).get(fromNode.getType().label());
+                succMaps.get(Direction.OUTGOING).get(fromNode.getType().label());
             if (ns != null) {
                 result.add(new Tuple(fromNode, ns));
             }
@@ -208,7 +209,7 @@ public class Recogniser {
     }
 
     private Result createResult(HostNode from, HostNode to) {
-        return this.aut.getDirection() == FORWARD ? new Result(from, to)
+        return this.aut.getDirection() == OUTGOING ? new Result(from, to)
                 : new Result(to, from);
     }
 

@@ -20,7 +20,7 @@ import groove.control.template.Switch;
 import groove.grammar.Action;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.model.FormatException;
-import groove.graph.Edge;
+import groove.graph.GEdge;
 import groove.transform.Event;
 
 /**
@@ -28,15 +28,7 @@ import groove.transform.Event;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransition extends Edge {
-    /** Overrides the method to specialise the result type. */
-    @Override
-    GraphState source();
-
-    /** Overrides the method to specialise the result type. */
-    @Override
-    GraphState target();
-
+public interface GraphTransition extends GEdge<GraphState> {
     /** Overrides the method to specialise the result type. */
     @Override
     ActionLabel label();

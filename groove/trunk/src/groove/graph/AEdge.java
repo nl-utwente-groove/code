@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstractEdge.java,v 1.10 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
@@ -21,7 +21,7 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AEdge<N extends Node,L extends Label> implements Edge {
+public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> {
     /**
      * Creates a numbered edge with a given source and target node and label.
      */
@@ -155,7 +155,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements Edge {
         int sourceCode = 3 * this.source.hashCode();
         int targetCode = (labelCode + 2) * this.target.hashCode();
         int result =
-            labelCode // + 3 * sourceCode - 2 * targetCode;
+                labelCode // + 3 * sourceCode - 2 * targetCode;
                 ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
                 + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
         if (!isSimple()) {

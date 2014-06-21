@@ -17,6 +17,7 @@
 package groove.automaton;
 
 import groove.grammar.type.TypeLabel;
+import groove.graph.Direction;
 
 import java.util.EnumMap;
 import java.util.HashMap;

@@ -26,11 +26,11 @@ public class StartGraphState extends AbstractGraphState {
         return this.graph;
     }
 
+    /** The stored graph. */
+    private final DeltaHostGraph graph;
+
     @Override
     protected void updateClosed() {
         // empty
     }
-
-    /** The stored graph. */
-    private final DeltaHostGraph graph;
 }

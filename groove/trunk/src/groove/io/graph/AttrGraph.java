@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -39,6 +39,7 @@ import groove.grammar.type.TypeGraph;
 import groove.graph.AElementMap;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
+import groove.graph.GEdge;
 import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -59,8 +60,8 @@ import java.util.Map;
  * Intermediate graph format used for loading and saving graphs.
  * Characteristics are:
  * <li> Nodes and edge may have string attributes
- * (corresponding to XML attributes). 
- * <li> The graph maintains a 
+ * (corresponding to XML attributes).
+ * <li> The graph maintains a
  * mapping from string identifiers to nodes.
  * <li> The graph maintains a set of node tuples, stored as lists of nodes.
  * (This is used to serialise shape equivalence relations.)
@@ -126,8 +127,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         int nodeNr = 0;
         int unit = 1;
         int charIx;
-        for (charIx = id.length() - 1; charIx >= 0
-            && Character.isDigit(id.charAt(charIx)); charIx--) {
+        for (charIx = id.length() - 1; charIx >= 0 && Character.isDigit(id.charAt(charIx)); charIx--) {
             nodeNr += unit * (id.charAt(charIx) - '0');
             unit *= 10;
             digitFound = true;
@@ -178,8 +178,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     public AttrEdge getEdge(AttrNode source, String text, AttrNode target) {
         AttrEdge result = null;
         for (AttrEdge edge : outEdgeSet(source)) {
-            if (edge.label().text().equals(text)
-                && edge.target().equals(target)) {
+            if (edge.label().text().equals(text) && edge.target().equals(target)) {
                 result = edge;
                 break;
             }
@@ -235,7 +234,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         this.tuples.add(tuple);
     }
 
-    /** 
+    /**
      * Returns the list of node tuples in this XML graph.
      */
     public List<AttrTuple> getTuples() {
@@ -244,17 +243,16 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
 
     private final List<AttrTuple> tuples;
 
-    /** 
+    /**
      * Copies the structure of this XML graph over to another graph.
      * Node numbers are preserved.
      * Any attributes and hyperedges of the XML graph are discarded.
-     * If the target graph is not initially empty, this may mean that 
+     * If the target graph is not initially empty, this may mean that
      * copied nodes coincide with pre-existing nodes.
      * The target graph is left unfixed.
      * @param target the target of the copy operation; non-{@code null}
      */
-    public <N extends Node,E extends Edge,G extends GGraph<N,E>> void copyTo(
-            G target) {
+    public <N extends Node,E extends GEdge<N>,G extends GGraph<N,E>> void copyTo(G target) {
         AttrToGraphMap<N,E> map = new AttrToGraphMap<N,E>(target.getFactory());
         for (AttrNode node : nodeSet()) {
             N nodeImage = target.addNode(node.getNumber());
@@ -289,8 +287,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
 
     /** Converts this XML graph to a shape, under a given type graph. */
     public Shape toShape(TypeGraph typeGraph) {
-        ShapeFactory shapeFactory =
-            ShapeFactory.newInstance(typeGraph.getFactory());
+        ShapeFactory shapeFactory = ShapeFactory.newInstance(typeGraph.getFactory());
         Shape result = new Shape(getName(), shapeFactory);
         AttrToShapeMap map = new AttrToShapeMap(shapeFactory);
         // add nodes
@@ -300,14 +297,12 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             map.putNode(node, nodeImage);
             // set the node multiplicity
             String nodeMultStr = node.getAttribute(NODE_MULT_ATTR_NAME);
-            Multiplicity nodeMult =
-                getMultiplicity(nodeMultStr, MultKind.NODE_MULT);
+            Multiplicity nodeMult = getMultiplicity(nodeMultStr, MultKind.NODE_MULT);
             result.setNodeMult(nodeImage, nodeMult);
         }
         // add equivalence classes
         for (AttrTuple tuple : getTuples()) {
-            NodeEquivClass<ShapeNode> ec =
-                new NodeEquivClass<ShapeNode>(shapeFactory);
+            NodeEquivClass<ShapeNode> ec = new NodeEquivClass<ShapeNode>(shapeFactory);
             for (AttrNode node : tuple.getNodes()) {
                 ShapeNode nodeImage = map.getNode(node);
                 ec.add(nodeImage);
@@ -321,14 +316,12 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             // add multiplicities
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 String attrName =
-                    direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
-                            : EDGE_IN_MULT_ATTR_NAME;
+                        direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
+                                : EDGE_IN_MULT_ATTR_NAME;
                 String multStr = edge.getAttribute(attrName);
                 if (multStr != null) {
-                    Multiplicity mult =
-                        getMultiplicity(multStr, MultKind.EDGE_MULT);
-                    EdgeSignature es =
-                        result.getEdgeSignature(edgeImage, direction);
+                    Multiplicity mult = getMultiplicity(multStr, MultKind.EDGE_MULT);
+                    EdgeSignature es = result.getEdgeSignature(edgeImage, direction);
                     result.setEdgeSigMult(es, mult);
                 }
             }
@@ -338,8 +331,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     /** Converts this XML graph to a pattern shape, under a given type graph. */
-    public PatternShape toPattern(
-            groove.abstraction.pattern.shape.TypeGraph typeGraph) {
+    public PatternShape toPattern(groove.abstraction.pattern.shape.TypeGraph typeGraph) {
         PatternShape result = new PatternShape(getName(), typeGraph);
         AttrToPatternMap map = new AttrToPatternMap(result.getFactory());
         // add nodes
@@ -349,8 +341,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             map.putNode(node, nodeImage);
             // set the node multiplicity
             String nodeMultStr = node.getAttribute(NODE_MULT_ATTR_NAME);
-            Multiplicity nodeMult =
-                getMultiplicity(nodeMultStr, MultKind.NODE_MULT);
+            Multiplicity nodeMult = getMultiplicity(nodeMultStr, MultKind.NODE_MULT);
             result.setMult(nodeImage, nodeMult);
         }
         // add edges
@@ -402,7 +393,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Construct an XML graph on the basis of a given shape.
      * This operation is inverse to {@link #toShape(TypeGraph)}.
      */
@@ -416,8 +407,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             map.putNode(node, nodeImage);
             // add the multiplicity
             Multiplicity nodeMult = shape.getNodeMult(node);
-            nodeImage.setAttribute(NODE_MULT_ATTR_NAME,
-                nodeMult.toSerialString());
+            nodeImage.setAttribute(NODE_MULT_ATTR_NAME, nodeMult.toSerialString());
         }
         // add the tuples
         for (EquivClass<ShapeNode> ec : shape.getEquivRelation()) {
@@ -431,8 +421,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 Multiplicity edgeMult = shape.getEdgeMult(edge, direction);
                 String attrName =
-                    direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
-                            : EDGE_IN_MULT_ATTR_NAME;
+                        direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
+                                : EDGE_IN_MULT_ATTR_NAME;
                 edgeImage.setAttribute(attrName, edgeMult.toSerialString());
             }
         }
@@ -441,7 +431,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Constructs an XML graph on the basis of a given pattern shape.
      * This operation is inverse to {@link #toPattern(groove.abstraction.pattern.shape.TypeGraph)}.
      */
@@ -455,8 +445,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             map.putNode(node, nodeImage);
             // add the multiplicity
             Multiplicity nodeMult = shape.getMult(node);
-            nodeImage.setAttribute(NODE_MULT_ATTR_NAME,
-                nodeMult.toSerialString());
+            nodeImage.setAttribute(NODE_MULT_ATTR_NAME, nodeMult.toSerialString());
         }
         // add the edges
         for (PatternEdge edge : shape.edgeSet()) {
@@ -464,8 +453,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             result.addEdge(edgeImage);
             // add the edge multiplicities
             Multiplicity edgeMult = shape.getMult(edge);
-            edgeImage.setAttribute(EDGE_MULT_ATTR_NAME,
-                edgeMult.toSerialString());
+            edgeImage.setAttribute(EDGE_MULT_ATTR_NAME, edgeMult.toSerialString());
         }
         GraphInfo.transfer(shape, result, map);
         result.setFixed();
@@ -486,7 +474,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     private static final String EDGE_MULT_ATTR_NAME = "emult";
 
     private static class AspectToAttrMap extends
-            AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
+    AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public AspectToAttrMap() {
             super(AttrFactory.instance());
@@ -502,21 +490,19 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             if (imageTarget == null) {
                 return null;
             }
-            return getFactory().createEdge(imageSource, key.getPlainLabel(),
-                imageTarget);
+            return getFactory().createEdge(imageSource, key.getPlainLabel(), imageTarget);
         }
     }
 
     private static class AttrToGraphMap<N extends Node,E extends Edge> extends
-            AElementMap<AttrNode,AttrEdge,N,E> {
+    AElementMap<AttrNode,AttrEdge,N,E> {
         /** Constructs a new, empty map. */
         public AttrToGraphMap(ElementFactory<N,E> factory) {
             super(factory);
         }
     }
 
-    private static class AttrToShapeMap extends
-            AttrToGraphMap<HostNode,HostEdge> {
+    private static class AttrToShapeMap extends AttrToGraphMap<HostNode,HostEdge> {
         /** Constructs a new, empty map. */
         public AttrToShapeMap(ShapeFactory factory) {
             super(factory);
@@ -534,8 +520,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         }
     }
 
-    private static class ShapeToAttrMap extends
-            AElementMap<HostNode,HostEdge,AttrNode,AttrEdge> {
+    private static class ShapeToAttrMap extends AElementMap<HostNode,HostEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public ShapeToAttrMap() {
             super(AttrFactory.instance());
@@ -554,8 +539,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         }
     }
 
-    private static class AttrToPatternMap extends
-            AttrToGraphMap<PatternNode,PatternEdge> {
+    private static class AttrToPatternMap extends AttrToGraphMap<PatternNode,PatternEdge> {
         /** Constructs a new, empty map. */
         public AttrToPatternMap(PatternFactory factory) {
             super(factory);
@@ -563,7 +547,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class PatternToXmlMap extends
-            AElementMap<PatternNode,PatternEdge,AttrNode,AttrEdge> {
+    AElementMap<PatternNode,PatternEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public PatternToXmlMap() {
             super(AttrFactory.instance());

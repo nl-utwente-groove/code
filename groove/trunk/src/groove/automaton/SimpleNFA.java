@@ -16,8 +16,8 @@
  */
 package groove.automaton;
 
-import static groove.automaton.Direction.BACKWARD;
-import static groove.automaton.Direction.FORWARD;
+import static groove.graph.Direction.INCOMING;
+import static groove.graph.Direction.OUTGOING;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.rule.LabelVar;
@@ -28,6 +28,7 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Direction;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
@@ -162,7 +163,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
     /** Creates a normalised automaton for exploration in a given direction. */
     private DFA computeDFA(Direction dir, Valuation valuation) {
         DFA result =
-            new DFA(dir, dir == FORWARD ? getStartNode() : getEndNode(), isAcceptsEmptyWord());
+            new DFA(dir, dir == OUTGOING ? getStartNode() : getEndNode(), isAcceptsEmptyWord());
         // set of unexplored states
         Set<DFAState> unexplored = new HashSet<DFAState>();
         unexplored.add(result.getStartState());
@@ -203,7 +204,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
                     Set<RegNode> ns = le.getValue();
                     DFAState target = result.getState(ns);
                     if (target == null) {
-                        RegNode finalNode = dir == FORWARD ? getEndNode() : getStartNode();
+                        RegNode finalNode = dir == OUTGOING ? getEndNode() : getStartNode();
                         target = result.addState(ns, ns.contains(finalNode));
                         unexplored.add(target);
                     }
@@ -273,7 +274,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
     @Override
     public boolean accepts(List<String> word) {
         assert isFixed();
-        DFA dfa = getDFA(FORWARD, null);
+        DFA dfa = getDFA(OUTGOING, null);
         DFAState dfaState = dfa.getStartState();
         String invOp = "" + RegExpr.INV_OPERATOR;
         TypeFactory typeFactory = getTypeGraph().getFactory();
@@ -283,7 +284,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
                 letter = letter.substring(invOp.length());
             }
             TypeLabel label = typeFactory.createLabel(letter);
-            dfaState = dfaState.getLabelMap().get(inverse ? BACKWARD : FORWARD).get(label);
+            dfaState = dfaState.getLabelMap().get(inverse ? INCOMING : OUTGOING).get(label);
             if (dfaState == null) {
                 break;
             }
@@ -301,11 +302,11 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
         HostNode fromNode, toNode;
         Direction dir;
         if (endImage == null || startImage != null) {
-            dir = FORWARD;
+            dir = OUTGOING;
             fromNode = startImage;
             toNode = endImage;
         } else {
-            dir = BACKWARD;
+            dir = INCOMING;
             fromNode = endImage;
             toNode = startImage;
         }
