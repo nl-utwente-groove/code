@@ -269,11 +269,7 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
 
     @Override
     public FormatErrorSet checkTypeConstraints() {
-        FormatErrorSet result = getTypeGraph().check(this);
-        if (!result.isEmpty()) {
-            GraphInfo.addErrors(this, result);
-        }
-        return result;
+        return getTypeGraph().check(this);
     }
 
     /** Flag controlling if a memory-optimal implementation should be preferred. */

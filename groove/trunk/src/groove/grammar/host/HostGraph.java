@@ -55,8 +55,7 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
     /**
      * Checks the graph for type constraints that cannot be
      * prevented statically: in particular, multiplicity and containment
-     * violations. Any errors found are collected and returned, and
-     * also put into the graph information.
+     * violations. Any errors found are collected and returned.
      * @see GraphInfo#getErrors
      */
     public FormatErrorSet checkTypeConstraints();

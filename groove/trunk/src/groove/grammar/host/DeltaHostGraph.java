@@ -24,7 +24,6 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AGraph;
 import groove.graph.Edge;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -484,11 +483,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
 
     @Override
     public FormatErrorSet checkTypeConstraints() {
-        FormatErrorSet result = getTypeGraph().check(this);
-        if (!result.isEmpty()) {
-            GraphInfo.addErrors(this, result);
-        }
-        return result;
+        return getTypeGraph().check(this);
     }
 
     /** Maximum basis chain length at which the data target is set
@@ -777,7 +772,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
-                    this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
+                this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
             return super.addEdge(edge, refreshSource, refreshTarget, refreshLabel);
         }
 
@@ -792,7 +787,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
-                    this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
+                this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
             return super.removeEdge(edge, refreshSource, refreshTarget, refreshLabel);
         }
 

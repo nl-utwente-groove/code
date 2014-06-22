@@ -70,8 +70,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
             if (sn instanceof ValueNode && family != null) {
                 ValueNode vn = (ValueNode) sn;
                 tn =
-                        getFactory().createNode(family.getAlgebra(vn.getSignature()),
-                            family.toValue(vn.getTerm()));
+                    getFactory().createNode(family.getAlgebra(vn.getSignature()),
+                        family.toValue(vn.getTerm()));
             } else {
                 tn = sn;
             }
@@ -90,9 +90,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
     public DefaultHostGraph(Graph graph) {
         this(graph.getName());
         AElementMap<Node,Edge,HostNode,HostEdge> map =
-                new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
-            // empty
-        };
+            new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
+                // empty
+            };
         for (Node node : graph.nodeSet()) {
             HostNode newNode = addNode(node.getNumber());
             map.putNode(node, newNode);
@@ -166,10 +166,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
 
     @Override
     public FormatErrorSet checkTypeConstraints() {
-        FormatErrorSet result = getTypeGraph().check(this);
-        if (!result.isEmpty()) {
-            GraphInfo.addErrors(this, result);
-        }
-        return result;
+        return getTypeGraph().check(this);
     }
 }

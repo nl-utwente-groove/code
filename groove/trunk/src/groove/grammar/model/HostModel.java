@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AspectualGraphView.java,v 1.18 2008-01-30 09:33:25 iovka Exp $
  */
 package groove.grammar.model;
@@ -62,9 +62,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         source.testFixed(true);
     }
 
-    /** 
+    /**
      * Constructs the host graph from this resource.
-     * @throws FormatException if the resource contains errors. 
+     * @throws FormatException if the resource contains errors.
      */
     public HostGraph toHost() throws FormatException {
         return toResource();
@@ -100,14 +100,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return this.labelSet;
     }
 
-    /** 
+    /**
      * The algebra is the term algebra at this point.
      */
     private AlgebraFamily getFamily() {
         // if there is a grammar involved, the real algebra family
         // will be set only later
-        return getGrammar() == null ? AlgebraFamily.DEFAULT
-                : AlgebraFamily.TERM;
+        return getGrammar() == null ? AlgebraFamily.DEFAULT : AlgebraFamily.TERM;
     }
 
     private AspectGraph getNormalSource() {
@@ -129,13 +128,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
         GraphInfo.throwException(getSource());
-        Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
-            computeModel(getSource());
+        Pair<DefaultHostGraph,HostModelMap> modelPlusMap = computeModel(getSource());
         HostGraph result = modelPlusMap.one();
         GraphInfo.throwException(result);
         HostModelMap hostModelMap = modelPlusMap.two();
-        TypeModelMap typeMap =
-            new TypeModelMap(result.getTypeGraph().getFactory());
+        TypeModelMap typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
         for (Map.Entry<AspectNode,HostNode> nodeEntry : hostModelMap.nodeMap().entrySet()) {
             typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
         }
@@ -163,8 +160,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
         }
-        FormatErrorSet errors =
-            new FormatErrorSet(GraphInfo.getErrors(normalSource));
+        FormatErrorSet errors = new FormatErrorSet(GraphInfo.getErrors(normalSource));
         DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
         // we need to record the model-to-resource element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());
@@ -191,8 +187,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         // remove isolated value nodes from the result graph
         for (HostNode modelNode : elementMap.nodeMap().values()) {
-            if (modelNode instanceof ValueNode
-                && result.edgeSet(modelNode).isEmpty()) {
+            if (modelNode instanceof ValueNode && result.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
                 result.removeNode(modelNode);
             }
@@ -203,8 +198,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 TypeGraph type = getGrammar().getTypeGraph();
                 HostGraphMorphism typing = type.analyzeHost(result);
                 result = typing.createImage(result.getName());
-                HostModelMap newElementMap =
-                    new HostModelMap(result.getFactory());
+                HostModelMap newElementMap = new HostModelMap(result.getFactory());
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     HostNode typedNode = typing.getNode(nodeEntry.getValue());
                     if (typedNode != null) {
@@ -219,15 +213,14 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     }
                     HostEdge hostEdge = elementMap.getEdge(normalEdge);
                     if (hostEdge != null) {
-                        newElementMap.putEdge(normalEdge,
-                            typing.getEdge(hostEdge));
+                        newElementMap.putEdge(normalEdge, typing.getEdge(hostEdge));
                     }
                 }
                 elementMap = newElementMap;
+                result.checkTypeConstraints().throwException();
             } catch (FormatException e) {
                 // compute inverse element map
-                Map<Element,Element> inverseMap =
-                    new HashMap<Element,Element>();
+                Map<Element,Element> inverseMap = new HashMap<Element,Element>();
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
                 }
@@ -250,8 +243,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * Processes the information in a model node by updating the model and
      * element map.
      */
-    private void processModelNode(DefaultHostGraph result,
-            HostModelMap elementMap, AspectNode modelNode) {
+    private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
+            AspectNode modelNode) {
         // include the node in the model if it is not virtual
         if (!modelNode.getKind().isMeta()) {
             HostNode nodeImage = null;
@@ -261,9 +254,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     this.algebraFamily.getAlgebra(SignatureKind.getKind(attrType.getName()));
                 Aspect dataType = modelNode.getAttrAspect();
                 Expression term = (Expression) dataType.getContent();
-                nodeImage =
-                    result.getFactory().createNode(nodeAlgebra,
-                        nodeAlgebra.toValue(term));
+                nodeImage = result.getFactory().createNode(nodeAlgebra, nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
             } else {
                 nodeImage = result.addNode(modelNode.getNumber());
@@ -277,19 +268,17 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processModelEdge(HostGraph result, HostModelMap elementMap,
-            AspectEdge modelEdge) throws FormatException {
+    private void processModelEdge(HostGraph result, HostModelMap elementMap, AspectEdge modelEdge)
+            throws FormatException {
         if (modelEdge.getKind().isMeta()) {
             return;
         }
         HostNode hostSource = elementMap.getNode(modelEdge.source());
-        assert hostSource != null : String.format(
-            "Source of '%s' is not in element map %s", modelEdge.source(),
-            elementMap);
+        assert hostSource != null : String.format("Source of '%s' is not in element map %s",
+            modelEdge.source(), elementMap);
         HostNode hostNode = elementMap.getNode(modelEdge.target());
-        assert hostNode != null : String.format(
-            "Target of '%s' is not in element map %s", modelEdge.target(),
-            elementMap);
+        assert hostNode != null : String.format("Target of '%s' is not in element map %s",
+            modelEdge.target(), elementMap);
         TypeLabel hostLabel = modelEdge.getTypeLabel();
         assert hostLabel != null && !hostLabel.isDataType() : String.format(
             "Inappropriate label %s", hostLabel);

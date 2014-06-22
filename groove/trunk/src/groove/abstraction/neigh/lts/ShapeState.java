@@ -24,6 +24,8 @@ import groove.control.instance.Step;
 import groove.grammar.Rule;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatErrorSet;
+import groove.graph.GraphInfo;
 import groove.lts.AbstractGraphState;
 import groove.lts.ActionLabel;
 import groove.lts.GraphState;
@@ -88,7 +90,10 @@ public class ShapeState extends AbstractGraphState {
             // Fix the shape to avoid modifications.
             shape.setFixed();
             if (getGTS().isCheckTypeErrors()) {
-                shape.checkTypeConstraints();
+                FormatErrorSet errors = shape.checkTypeConstraints();
+                if (!errors.isEmpty()) {
+                    GraphInfo.addErrors(shape, errors);
+                }
             }
         }
         this.shape = shape;
@@ -134,8 +139,8 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition || transition instanceof ShapeNextState : "Invalid transition type.";
-    this.transitions.add(transition);
-    return true;
+        this.transitions.add(transition);
+        return true;
     }
 
     @Override
