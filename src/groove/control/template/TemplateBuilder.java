@@ -247,7 +247,7 @@ public class TemplateBuilder {
     }
 
     /** Map from procedures to corresponding templates. */
-    private final Map<Procedure,Template> templateMap = new HashMap<Procedure,Template>();
+    private final Map<Procedure,Template> templateMap = new LinkedHashMap<Procedure,Template>();
 
     /** Clears the auxiliary data structures. */
     private void clearBuildData() {
@@ -301,7 +301,7 @@ public class TemplateBuilder {
      */
     private Partition initPartition() {
         Partition result = new Partition();
-        Map<LocationKey,Cell> cellMap = new HashMap<LocationKey,Cell>();
+        Map<LocationKey,Cell> cellMap = new LinkedHashMap<LocationKey,Cell>();
         for (Location loc : this.recordMap.keySet()) {
             LocationKey key = new LocationKey(loc);
             Cell cell = cellMap.get(key);
@@ -323,7 +323,7 @@ public class TemplateBuilder {
     private Partition refinePartition(Partition orig) {
         Partition result = new Partition();
         for (Cell cell : orig) {
-            Map<Record<Cell>,Cell> split = new HashMap<Record<Cell>,Cell>();
+            Map<Record<Cell>,Cell> split = new LinkedHashMap<Record<Cell>,Cell>();
             for (Location loc : cell) {
                 Record<Cell> rec = append(this.recordMap.get(loc), orig);
                 Cell locCell = split.get(rec);
@@ -447,7 +447,7 @@ public class TemplateBuilder {
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
-        new HashMap<Location,Record<Location>>();
+        new LinkedHashMap<Location,Record<Location>>();
 
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);
