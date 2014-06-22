@@ -338,7 +338,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
             GraphState state = jVertex.getNode();
             Frame frame = state.getPrimeFrame();
             Object[] values = state.getPrimeValues();
-            result.add(getStackLine(frame.getLocation(), values));
+            if (!frame.isStart() || values.length > 0) {
+                result.add(getStackLine(frame.getLocation(), values));
+            }
             Stack<Switch> stack = frame.getSwitchStack();
             for (int i = stack.size() - 1; i >= 0; i--) {
                 values = Valuator.pop(values);
@@ -494,8 +496,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // add location variables
         for (CtrlVar var : state.getVars()) {
             Line line =
-                    Line.atom(var.getType().toString()).style(Style.BOLD).append(
-                        Line.atom(" " + var.getName()));
+                    Line.atom(var.getName()).append(" : ").append(
+                        Line.atom(var.getType().toString()).style(Style.BOLD));
             result.add(line);
         }
         // add self-edges
