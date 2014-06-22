@@ -21,6 +21,8 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatErrorSet;
+import groove.graph.GraphInfo;
 import groove.transform.DeltaApplier;
 import groove.transform.Record;
 import groove.transform.RuleApplication;
@@ -205,8 +207,13 @@ public class StateCache {
                 state.setFrozenGraph(computeFrozenGraph(result));
             }
         }
-        if (getState().getGTS().isCheckTypeErrors()) {
-            result.checkTypeConstraints().isEmpty();
+        if (getState().isDone() && getState().isError() && getState().getGTS().isCheckTypeErrors()) {
+            // apparently we're reconstructing the graph after the state was already
+            // done and found to be erroneous; so reconstruct the type errors
+            FormatErrorSet errors = result.checkTypeConstraints();
+            if (!errors.isEmpty()) {
+                GraphInfo.addErrors(result, errors);
+            }
         }
         return result;
     }

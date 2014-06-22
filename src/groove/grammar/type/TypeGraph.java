@@ -1266,11 +1266,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
 
     /** Returns the list of type checkers for this type graph. */
     public List<TypeChecker> getCheckers() {
-        assert isFixed();
         if (this.checkers == null) {
             this.checkers = new ArrayList<TypeChecker>();
             if (!isImplicit()) {
-                MultiplicityChecker checker = new MultiplicityChecker(this);
+                TypeChecker checker = new MultiplicityChecker(this);
+                if (!checker.isTrivial()) {
+                    this.checkers.add(checker);
+                }
+                checker = new ContainmentChecker(this);
                 if (!checker.isTrivial()) {
                     this.checkers.add(checker);
                 }

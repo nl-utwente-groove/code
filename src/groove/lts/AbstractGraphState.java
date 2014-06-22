@@ -20,8 +20,10 @@ import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatErrorSet;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.lts.Status.Flag;
 import groove.transform.Record;
 import groove.util.cache.AbstractCacheHolder;
@@ -227,6 +229,18 @@ GraphState {
     @Override
     public boolean isResult() {
         return hasFlag(Flag.RESULT);
+    }
+
+    @Override
+    public boolean checkTypeErrors() {
+        boolean result = false;
+        FormatErrorSet errors = getGraph().checkTypeConstraints();
+        if (!errors.isEmpty()) {
+            GraphInfo.addErrors(getGraph(), errors);
+            setError();
+            result = true;
+        }
+        return result;
     }
 
     @Override

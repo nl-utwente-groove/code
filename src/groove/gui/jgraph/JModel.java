@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: GraphJModel.java,v 1.21 2008-02-29 11:02:19 fladder Exp $
  */
 
@@ -123,19 +123,19 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         return this.graph;
     }
 
-    /** 
+    /**
      * Returns the (non-{@code null}) layout map of the graph.
-     * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}. 
+     * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}.
      */
     public LayoutMap getLayoutMap() {
         return this.layoutMap;
     }
 
-    /** 
+    /**
      * Changes the underlying graph to the one passed in as a parameter.
      * Note that this should only be done as part of an action that also
      * changes the {@link JCell}s of the {@link JModel}, as well as the
-     * mapping from graph elements to {@link JCell}s. 
+     * mapping from graph elements to {@link JCell}s.
      */
     void setGraph(G graph) {
         this.graph = graph;
@@ -156,6 +156,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /** Adds a set of new graph elements from the current graph to this JModel. */
     protected void addElements(Collection<? extends Node> nodeSet,
             Collection<? extends Edge> edgeSet, boolean replace) {
+        System.out.println("addElements called");
         prepareInsert();
         getJGraph().notifyProgress("Loading");
         addNodes(nodeSet);
@@ -246,7 +247,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     }
 
     /**
-     * Sets the layoutability of all cells. 
+     * Sets the layoutability of all cells.
      * @param layoutable the new value for {@link JVertex#setLayoutable(boolean)}
      */
     public void setLayoutable(boolean layoutable) {
@@ -397,7 +398,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         return result;
     }
 
-    /** 
+    /**
      * Adds a given JEdge to the fresh incident edges of a fresh JVertex.
      * Does nothing if the JVertex is not fresh.
      */
@@ -488,6 +489,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     @SuppressWarnings("unchecked")
     protected void doInsert(boolean replace) {
+        System.out.println("doInsert called");
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null).execute();

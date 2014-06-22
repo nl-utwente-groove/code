@@ -271,7 +271,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
             this.mainPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
+                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -313,7 +313,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
             @Override
             public void update(Observable o, Object arg) {
                 FormatError error = (FormatError) arg;
-                getSimulatorModel().setState(error.getState());
+                if (error != null) {
+                    getSimulatorModel().setState(error.getState());
+                }
             }
         };
     }

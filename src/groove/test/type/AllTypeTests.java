@@ -14,7 +14,7 @@
 /*
  * $Id: AllGraphTests.java,v 1.4 2008-01-30 09:32:47 iovka Exp $
  */
-package groove.test.rule;
+package groove.test.type;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -24,7 +24,7 @@ import org.junit.runners.Suite;
  * @version $Revision: 2891 $
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({RuleApplicationTest.class})
-public class AllRuleTests {
+@Suite.SuiteClasses({TypeCheckTest.class, DynamicConstraintTest.class})
+public class AllTypeTests {
     // Empty by design.
 }

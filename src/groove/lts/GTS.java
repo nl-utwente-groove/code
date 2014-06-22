@@ -180,8 +180,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             // and then add it to the GTS
             fireAddNode(newState);
 
-            if (isCheckTypeErrors() && GraphInfo.hasErrors(newState.getGraph())) {
-                newState.setError();
+            if (isCheckTypeErrors() && newState.checkTypeErrors()) {
                 GraphInfo.addError(this, new FormatError(
                     "State %s has multiplicity or containment errors", newState));
             }
