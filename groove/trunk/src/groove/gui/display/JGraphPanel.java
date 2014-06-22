@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: JGraphPanel.java,v 1.20 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui.display;
@@ -34,14 +34,14 @@ import javax.swing.JScrollPane;
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
  * {@link groove.gui.tree.LabelTree}.
- * 
+ *
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
  */
 public class JGraphPanel<G extends Graph> extends JPanel {
     /**
      * Constructs a view upon a given jgraph, possibly with a status bar.
-     * 
+     *
      * @param jGraph the jgraph on which this panel is a view
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
@@ -53,7 +53,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         this.jGraph = jGraph;
     }
 
-    /** 
+    /**
      * Initialises the GUI.
      * Should be called immediately after the constructor.
      */
@@ -73,18 +73,17 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         getJGraph().addJGraphModeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                getScrollPane().setWheelScrollingEnabled(
-                    evt.getNewValue() != PAN_MODE);
+                getScrollPane().setWheelScrollingEnabled(evt.getNewValue() != PAN_MODE);
             }
         });
         getJGraph().addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    JModel<?> jModel = (JModel<?>) evt.getNewValue();
-                    setEnabled(jModel != null);
-                }
-            });
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                JModel<?> jModel = (JModel<?>) evt.getNewValue();
+                setEnabled(jModel != null);
+            }
+        });
     }
 
     /**
@@ -185,9 +184,13 @@ public class JGraphPanel<G extends Graph> extends JPanel {
 
     /** Sets the background colour for an enabled panel. */
     protected void setEnabledBackground(Color enabledBackground) {
-        this.enabledBackground = enabledBackground;
-        if (isEnabled()) {
-            getJGraph().setBackground(enabledBackground);
+        // only do something when it actually changes the background colour
+        if (enabledBackground == null ? this.enabledBackground != null
+                : !enabledBackground.equals(this.enabledBackground)) {
+            this.enabledBackground = enabledBackground;
+            if (isEnabled()) {
+                getJGraph().setBackground(enabledBackground);
+            }
         }
     }
 

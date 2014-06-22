@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -38,6 +38,11 @@ import java.util.Map;
  * @version $Revision $
  */
 public class MultiLabel {
+    /** Adds an undirected directed line to this multiline label. */
+    public void add(Line line) {
+        add(line, Direct.NONE);
+    }
+
     /** Adds a directed line to this multiline label. */
     public void add(Line line, Direct direct) {
         // always add the line, also if it is empty
@@ -88,16 +93,15 @@ public class MultiLabel {
 
     /** Indicates if the list of lines contains only an Empty line. */
     public boolean isEmptyLine() {
-        return this.parts.size() == 1
-            && this.parts.keySet().iterator().next().isEmpty();
+        return this.parts.size() == 1 && this.parts.keySet().iterator().next().isEmpty();
     }
 
     /**
      * Computes a string representation of this label, for a given renderer
-     * and with or without orientation decorations. 
+     * and with or without orientation decorations.
      */
-    public <R extends Builder<R>> StringBuilder toString(
-            LineFormat<R> renderer, Point2D start, Point2D end) {
+    public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer, Point2D start,
+            Point2D end) {
         R result = renderer.createResult();
         for (Map.Entry<Line,DirectBag> entry : this.parts.entrySet()) {
             Line line = entry.getKey();
@@ -125,7 +129,7 @@ public class MultiLabel {
 
     /**
      * Computes a string representation of this label, for a given renderer
-     * and without orientation decorations. 
+     * and without orientation decorations.
      */
     public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer) {
         return toString(renderer, null, null);
@@ -136,8 +140,7 @@ public class MultiLabel {
         return this.parts.toString();
     }
 
-    private final Map<Line,DirectBag> parts =
-        new LinkedHashMap<Line,DirectBag>();
+    private final Map<Line,DirectBag> parts = new LinkedHashMap<Line,DirectBag>();
     /** The combined direction of this label. */
     private Direct direct = Direct.NONE;
 
@@ -359,14 +362,14 @@ public class MultiLabel {
         }
 
         /** Counts for each of the directions in this multiset. */
-        private final Map<Direct,Integer> values =
-            new EnumMap<MultiLabel.Direct,Integer>(Direct.class);
+        private final Map<Direct,Integer> values = new EnumMap<MultiLabel.Direct,Integer>(
+            Direct.class);
         /** Successor multisets after increasing one of the directions. */
         private final Map<Direct,DirectBag> incMap =
-            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+                new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
         /** Successor multisets after decreasing one of the directions. */
         private final Map<Direct,DirectBag> decMap =
-            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+                new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
 
         /** Returns a normalised representation of a given multiset. */
         public static DirectBag norm(DirectBag bag) {
@@ -379,7 +382,7 @@ public class MultiLabel {
 
         /** Pool of representatives. */
         private final static Map<DirectBag,DirectBag> pool =
-            new HashMap<MultiLabel.DirectBag,MultiLabel.DirectBag>();
+                new HashMap<MultiLabel.DirectBag,MultiLabel.DirectBag>();
         /** The zero element. */
         public final static DirectBag ZERO = norm(new DirectBag());
     }

@@ -410,7 +410,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                         boolean autosize = GraphConstants.isAutoSize(view.getAllAttributes());
                         boolean resize = GraphConstants.isResize(view.getAllAttributes());
                         if (autosize || resize) {
-                            Dimension2D d = getUI().getPreferredSize(this, view);
+                            Dimension2D d = getPreferredSize(view);
                             // adjust the x,y corner so that the center stays in place
                             double shiftX = (bounds.getWidth() - d.getWidth()) / 2;
                             double shiftY = (bounds.getHeight() - d.getHeight()) / 2;
@@ -428,6 +428,22 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                         }
                     }
         }
+    }
+
+    private Dimension2D getPreferredSize(CellView view) {
+        Dimension2D result;
+        JVertex<?> vertex = view instanceof JVertexView ? ((JVertexView) view).getCell() : null;
+        if (vertex == null) {
+            result = getUI().getPreferredSize(this, view);
+        } else {
+            if (vertex.isStale(VisualKey.TEXT_SIZE)) {
+                result = getUI().getPreferredSize(this, view);
+                vertex.putVisual(VisualKey.TEXT_SIZE, result);
+            } else {
+                result = vertex.getVisuals().getTextSize();
+            }
+        }
+        return result;
     }
 
     /**
@@ -600,7 +616,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     @Override
     public void setModel(GraphModel model) {
-        if (model == null || model instanceof JModel) {
+        // Added a check that the new model differs from the current one
+        // This should be OK, but if not, please comment here!
+        if ((model == null || model instanceof JModel) && model != getModel()) {
             JModel<G> oldJModel = getModel();
             @SuppressWarnings("unchecked")
             JModel<G> newJModel = (JModel<G>) model;
