@@ -106,8 +106,10 @@ public enum VisualKey {
     OPAQUE(Boolean.class, false, DERIVED),
     /** Intermediate edge points. */
     POINTS(List.class, Arrays.asList(new Point2D.Double(), new Point2D.Double()), CONTROLLED),
-        /** Node or edge visibility. Defaults to {@code true}. */
-        VISIBLE(Boolean.class, true, REFRESHABLE);
+    /** Computed text bounds. */
+    TEXT_SIZE(Dimension2D.class, null, REFRESHABLE),
+    /** Node or edge visibility. Defaults to {@code true}. */
+    VISIBLE(Boolean.class, true, REFRESHABLE);
 
     /** Constructs a visual key that is possibly derived from a looks value. */
     private VisualKey(Class<?> type, Object defaultValue, Nature nature) {

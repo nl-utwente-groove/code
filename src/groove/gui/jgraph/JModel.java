@@ -156,7 +156,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /** Adds a set of new graph elements from the current graph to this JModel. */
     protected void addElements(Collection<? extends Node> nodeSet,
             Collection<? extends Edge> edgeSet, boolean replace) {
-        System.out.println("addElements called");
         prepareInsert();
         getJGraph().notifyProgress("Loading");
         addNodes(nodeSet);
@@ -489,7 +488,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     @SuppressWarnings("unchecked")
     protected void doInsert(boolean replace) {
-        System.out.println("doInsert called");
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null).execute();
@@ -567,7 +565,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Used in the process of constructing a GraphJModel.
      */
     protected final Map<JVertex<G>,Set<JEdge<G>>> addedJEdges =
-        new HashMap<JVertex<G>,Set<JEdge<G>>>();
+            new HashMap<JVertex<G>,Set<JEdge<G>>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
      * GraphJModel.

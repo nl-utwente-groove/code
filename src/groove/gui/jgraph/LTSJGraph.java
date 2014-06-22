@@ -373,19 +373,22 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Filters the LTS. */
     public void refreshFiltering() {
+        boolean changed = false;
         if (isFiltering()) {
             Set<JCell<GTS>> trace = findTraces(getModel().getGraph().getResultStates());
             for (Object element : getRoots()) {
                 LTSJCell jCell = (LTSJCell) element;
-                jCell.setVisibleFlag(trace.isEmpty() || trace.contains(jCell));
+                changed |= jCell.setVisibleFlag(trace.isEmpty() || trace.contains(jCell));
             }
         } else {
             for (Object element : getRoots()) {
                 LTSJCell jCell = (LTSJCell) element;
-                jCell.setVisibleFlag(true);
+                changed |= jCell.setVisibleFlag(true);
             }
         }
-        refreshAllCells();
+        if (changed) {
+            refreshAllCells();
+        }
     }
 
     /** Set the filtering flag of this model to the given value. */

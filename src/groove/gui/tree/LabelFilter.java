@@ -329,7 +329,7 @@ public class LabelFilter<G extends Graph> extends Observable {
     private final Map<Label,LabelEntry> labelEntryMap = new HashMap<Label,LabelEntry>();
     /** The keys that may change if a filter is (de)selected. */
     private static VisualKey[] changedKeys = new VisualKey[] {VisualKey.VISIBLE, VisualKey.LABEL,
-        VisualKey.NODE_SIZE};
+        VisualKey.NODE_SIZE, VisualKey.TEXT_SIZE};
 
     /** Type of the keys in a label filter. */
     public static interface Entry extends Comparable<Entry> {

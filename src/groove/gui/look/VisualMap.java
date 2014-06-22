@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -118,7 +118,7 @@ public class VisualMap extends DefaultFixable {
                     Object oldValue = this.map.put(key, newValue);
                     refresh = !newValue.equals(oldValue);
                 }
-                // tell the attribute to refresh 
+                // tell the attribute to refresh
                 // if something actually changed
                 if (refresh) {
                     staleKeys.add(key);
@@ -128,7 +128,7 @@ public class VisualMap extends DefaultFixable {
         this.attrMap.setStale(staleKeys);
     }
 
-    /** 
+    /**
      * Returns the value for a given key.
      * If the map contains no value for the key, the default value is returned.
      * @see VisualKey#getDefaultValue()
@@ -176,7 +176,7 @@ public class VisualMap extends DefaultFixable {
         }
     }
 
-    /** 
+    /**
      * Returns the node adornment text stored in this attribute map.
      * @return the stored adornment text (possibly {@code null})
      * @see VisualKey#ADORNMENT
@@ -193,7 +193,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.ADORNMENT, newValue);
     }
 
-    /** 
+    /**
      * Returns the node shape stored in this attribute map.
      * @return the stored node shape, or the default value if
      * there is nothing stored.
@@ -203,13 +203,13 @@ public class VisualMap extends DefaultFixable {
         return (NodeShape) get(VisualKey.NODE_SHAPE);
     }
 
-    /** 
+    /**
      * Returns the background colour according to this attribute map.
      * If {@link #getColor()} is non-{@code null}, the result is a whitewashed
      * version of that; otherwise, if the stored value for
      * {@link VisualKey#BACKGROUND} is {@code null}, the result is a
      * whitewashed version of the value for {@link VisualKey#FOREGROUND}.
-     * In all other circumstances, the value is the stored value for 
+     * In all other circumstances, the value is the stored value for
      * {@link VisualKey#BACKGROUND}.
      * @return the background colour, computed as described above
      * @see VisualKey#BACKGROUND
@@ -229,7 +229,7 @@ public class VisualMap extends DefaultFixable {
         return result;
     }
 
-    /** 
+    /**
      * Returns the controlled colour stored in this attribute map.
      * @return the controlled colour, or {@code null} if
      * there is nothing stored.
@@ -247,7 +247,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.COLOR, newValue);
     }
 
-    /** 
+    /**
      * Returns the dash pattern stored in this attribute map.
      * @return the stored dash pattern, or the default value if
      * there is nothing stored.
@@ -257,7 +257,7 @@ public class VisualMap extends DefaultFixable {
         return (float[]) get(VisualKey.DASH);
     }
 
-    /** 
+    /**
      * Returns the edge source decoration stored in this attribute map.
      * @return the stored edge source decoration, or the default value if
      * there is nothing stored.
@@ -267,7 +267,7 @@ public class VisualMap extends DefaultFixable {
         return (EdgeEnd) get(VisualKey.EDGE_SOURCE_SHAPE);
     }
 
-    /** 
+    /**
      * Returns the edge source label stored in this attribute map.
      * @return the stored edge source label; may be {@code null}
      * @see VisualKey#EDGE_SOURCE_LABEL
@@ -284,7 +284,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.EDGE_SOURCE_LABEL, newValue);
     }
 
-    /** 
+    /**
      * Returns the edge source label position stored in this attribute map.
      * @return the stored edge source label position, or the default value if
      * there is nothing stored
@@ -302,7 +302,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.EDGE_SOURCE_POS, newValue);
     }
 
-    /** 
+    /**
      * Returns the edge target decoration stored in this attribute map.
      * @return the stored edge target decoration, or the default value if
      * there is nothing stored
@@ -312,7 +312,7 @@ public class VisualMap extends DefaultFixable {
         return (EdgeEnd) get(VisualKey.EDGE_TARGET_SHAPE);
     }
 
-    /** 
+    /**
      * Returns the edge target label stored in this attribute map.
      * @return the stored edge target label; may be {@code null}
      * @see VisualKey#EDGE_TARGET_LABEL
@@ -329,7 +329,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.EDGE_TARGET_LABEL, newValue);
     }
 
-    /** 
+    /**
      * Returns the edge target label position stored in this attribute map.
      * @return the stored edge target label position, or the default value if
      * there is nothing stored
@@ -347,7 +347,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.EDGE_TARGET_POS, newValue);
     }
 
-    /** 
+    /**
      * Returns the emphasised property stored in this attribute map.
      * @return the stored emphasis, or the default value if
      * there is nothing stored
@@ -365,7 +365,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.EMPHASIS, newValue);
     }
 
-    /** 
+    /**
      * Returns the error property stored in this attribute map.
      * @return the stored emphasis, or the default value if
      * there is nothing stored
@@ -383,7 +383,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.ERROR, newValue);
     }
 
-    /** 
+    /**
      * Returns the font value stored in this attribute map.
      * @return the stored font value, or the default value if
      * there is nothing stored
@@ -393,7 +393,7 @@ public class VisualMap extends DefaultFixable {
         return (Integer) get(VisualKey.FONT);
     }
 
-    /** 
+    /**
      * Returns the foreground colour according to this attribute map.
      * This is the value of {@link #getColor()} if non-{@code null},
      * or the stored of default value for {@link VisualKey#FOREGROUND}.
@@ -408,7 +408,7 @@ public class VisualMap extends DefaultFixable {
         return result;
     }
 
-    /** 
+    /**
      * Returns the optional inner line colour stored in this attribute map.
      * @return the stored inner line colour; may be {@code null}
      * @see VisualKey#INNER_LINE
@@ -417,7 +417,7 @@ public class VisualMap extends DefaultFixable {
         return (Color) get(VisualKey.INNER_LINE);
     }
 
-    /** 
+    /**
      * Returns the inset distance stored in this attribute map.
      * @return the stored inset distance, or the default value if
      * there is nothing stored
@@ -427,7 +427,7 @@ public class VisualMap extends DefaultFixable {
         return (Integer) get(VisualKey.INSET);
     }
 
-    /** 
+    /**
      * Returns the label text stored in this attribute map.
      * @return the stored label text, or the empty string if
      * there is nothing stored
@@ -445,7 +445,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.LABEL, newValue);
     }
 
-    /** 
+    /**
      * Returns the label position stored in this attribute map.
      * @return the stored label position, or the empty string if
      * there is nothing stored
@@ -463,7 +463,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.LABEL_POS, newValue);
     }
 
-    /** 
+    /**
      * Returns the line style stored in this attribute map.
      * @return the stored line style, or the default value if
      * there is nothing stored
@@ -481,7 +481,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.LINE_STYLE, newValue);
     }
 
-    /** 
+    /**
      * Returns the line width stored in this attribute map.
      * @return the stored line width, or the default value if
      * there is nothing stored
@@ -491,7 +491,7 @@ public class VisualMap extends DefaultFixable {
         return (Float) get(VisualKey.LINE_WIDTH);
     }
 
-    /** 
+    /**
      * Returns the node position stored in this attribute map.
      * @return the stored node position, or the default value if
      * there is nothing stored.
@@ -509,7 +509,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.NODE_POS, newValue);
     }
 
-    /** 
+    /**
      * Returns the node size stored in this attribute map.
      * @return the stored node size, or the default value if
      * there is nothing stored.
@@ -527,7 +527,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.NODE_SIZE, newValue);
     }
 
-    /** 
+    /**
      * Returns the node opacity property stored in this attribute map.
      * @return the stored node opacity, or the default value if
      * there is nothing stored
@@ -545,7 +545,7 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.OPAQUE, newValue);
     }
 
-    /** 
+    /**
      * Returns the intermediate edge points stored in this attribute map.
      * @return the stored edge points, or the empty list if
      * there is nothing stored
@@ -565,7 +565,17 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.POINTS, newValue);
     }
 
-    /** 
+    /**
+     * Returns the text size stored in this attribute map.
+     * @return the stored text size, or the default value if
+     * there is nothing stored.
+     * @see VisualKey#TEXT_SIZE
+     */
+    public Dimension2D getTextSize() {
+        return (Dimension2D) get(VisualKey.TEXT_SIZE);
+    }
+
+    /**
      * Returns the visibility property stored in this attribute map.
      * @return the stored visibility, or the default value if
      * there is nothing stored

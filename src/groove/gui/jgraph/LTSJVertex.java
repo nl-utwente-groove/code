@@ -44,9 +44,13 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     @Override
-    public void setVisibleFlag(boolean visible) {
-        this.visibleFlag = visible;
-        setStale(VisualKey.VISIBLE);
+    public boolean setVisibleFlag(boolean visible) {
+        boolean result = this.visibleFlag != visible;
+        if (result) {
+            this.visibleFlag = visible;
+            setStale(VisualKey.VISIBLE);
+        }
+        return result;
     }
 
     @Override

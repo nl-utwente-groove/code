@@ -122,7 +122,8 @@ public class JVertexView extends VertexView {
         Color color = getCellVisuals().getForeground();
         // refresh the text if label or colour have changed
         if (label != this.label || color != this.color) {
-            this.text = HTMLLineFormat.toHtml(label.toString(HTMLLineFormat.instance()), color);
+            String text = HTMLLineFormat.toHtml(label.toString(HTMLLineFormat.instance()), color);
+            this.text = text;
             this.label = label;
             this.color = color;
         }
@@ -713,8 +714,8 @@ public class JVertexView extends VertexView {
          */
         @Override
         protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-            // Strings get interned...
-            if ("text".equals(propertyName)) {
+            // we test for equality here; equals rather than == catches a few more
+            if ("text".equals(propertyName) && oldValue != newValue) {
                 super.firePropertyChange(propertyName, oldValue, newValue);
             }
         }
