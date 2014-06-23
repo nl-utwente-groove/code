@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -46,8 +46,8 @@ import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout;
 import com.jgraph.layout.tree.JGraphCompactTreeLayout;
 
 /**
- * JGraph class for displaying pattern graphs. 
- * 
+ * JGraph class for displaying pattern graphs.
+ *
  * @author Eduardo Zambon
  */
 public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
@@ -112,8 +112,9 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
             finishLayouting();
         }
 
-        PatternJGraph getJGraph() {
-            return (PatternJGraph) this.jGraph;
+        @Override
+        protected PatternJModel getJModel() {
+            return (PatternJModel) super.getJModel();
         }
 
         void prepareLayouting() {
@@ -126,13 +127,12 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
 
         void run() {
             // First layout each individual pattern.
-            for (List<PatternJCell> roots : getJGraph().getModel().getReverseParentMap().values()) {
+            for (List<PatternJCell> roots : getJModel().getReverseParentMap().values()) {
                 layoutPattern(roots);
             }
             // The layout the pattern graph structure.
             this.facade.setVerticesFilter(null);
-            List<JCell<AbstractPatternGraph<?,?>>> roots =
-                getJGraph().getModel().getPatternRoots();
+            List<JCell<AbstractPatternGraph<?,?>>> roots = getJModel().getPatternRoots();
             this.facade.setRoots(roots);
             this.facade.setIgnoresCellsInGroups(true);
             JGraphHierarchicalLayout hLayout = new JGraphHierarchicalLayout();
@@ -141,8 +141,7 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
         }
 
         void layoutPattern(List<PatternJCell> roots) {
-            Set<PatternJVertex> verticesFilter =
-                new MyHashSet<PatternJVertex>();
+            Set<PatternJVertex> verticesFilter = new MyHashSet<PatternJVertex>();
             for (PatternJCell jCell : roots) {
                 if (jCell instanceof JVertex) {
                     verticesFilter.add((PatternJVertex) jCell);

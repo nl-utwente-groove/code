@@ -99,7 +99,7 @@ public class SpringLayouter extends AbstractLayouter {
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
         List<LayoutNode> edgeSourceList = new LinkedList<LayoutNode>();
         List<LayoutNode> edgeTargetList = new LinkedList<LayoutNode>();
-        for (Object jCell : this.jGraph.getRoots()) {
+        for (Object jCell : getJGraph().getRoots()) {
             if (!(jCell instanceof JEdge)) {
                 continue;
             }
@@ -141,10 +141,10 @@ public class SpringLayouter extends AbstractLayouter {
             // still>1, damp away
             // We never want the damper to be negative though
             if ((this.maxMotion < FAST_DAMPING_MOTION_TRESHHOLD || this.damper < FAST_DAMPING_DAMPER_TRESHHOLD)
-                    && this.damper > FAST_DAMPING) {
+                && this.damper > FAST_DAMPING) {
                 this.damper -= FAST_DAMPING;
             } else if (this.maxMotion < MEDIUM_DAMPING_MOTION_TRESHHOLD
-                    && this.damper > MEDIUM_DAMPING) {
+                && this.damper > MEDIUM_DAMPING) {
                 this.damper -= MEDIUM_DAMPING;
             } else if (this.damper > SLOW_DAMPING) {
                 this.damper -= SLOW_DAMPING;
