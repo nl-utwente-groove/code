@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -45,8 +45,8 @@ import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.tree.JGraphCompactTreeLayout;
 
 /**
- * JGraph class for displaying Shapes. 
- * 
+ * JGraph class for displaying Shapes.
+ *
  * @author Eduardo Zambon
  */
 public final class ShapeJGraph extends JGraph<Shape> {
@@ -94,8 +94,7 @@ public final class ShapeJGraph extends JGraph<Shape> {
     }
 
     @Override
-    protected ShapeJCell getFirstCellForLocation(double x, double y,
-            boolean vertex, boolean edge) {
+    protected ShapeJCell getFirstCellForLocation(double x, double y, boolean vertex, boolean edge) {
         x /= this.scale;
         y /= this.scale;
         ShapeJCell vertexOrEdgeResult = null;
@@ -110,39 +109,37 @@ public final class ShapeJGraph extends JGraph<Shape> {
             }
             ShapeJCell jCell = (ShapeJCell) jCellView.getCell();
             boolean typeCorrect =
-                vertex ? (jCell instanceof JVertex) : edge
-                        ? jCell instanceof JEdge : true;
-            if (typeCorrect && jCell instanceof EcJVertex) {
-                // We have an equivalence class.
-                for (CellView childView : jCellView.getChildViews()) {
-                    // Check proximity with all nodes inside.
-                    ShapeJCell jCellChild = (ShapeJCell) childView.getCell();
-                    if (typeCorrect && !jCellChild.isGrayedOut()) {
-                        // Now see if this child is sufficiently close to the point.
-                        if (childView.intersects(this, xyArea)) {
-                            vertexOrEdgeResult = jCellChild;
+                    vertex ? (jCell instanceof JVertex) : edge ? jCell instanceof JEdge : true;
+                    if (typeCorrect && jCell instanceof EcJVertex) {
+                        // We have an equivalence class.
+                        for (CellView childView : jCellView.getChildViews()) {
+                            // Check proximity with all nodes inside.
+                            ShapeJCell jCellChild = (ShapeJCell) childView.getCell();
+                            if (typeCorrect && !jCellChild.isGrayedOut()) {
+                                // Now see if this child is sufficiently close to the point.
+                                if (childView.intersects(this, xyArea)) {
+                                    vertexOrEdgeResult = jCellChild;
+                                    break outerLoop;
+                                }
+                            }
+                        }
+                        // Failed, check intersection with the equivalence class.
+                        if (jCellView.intersects(this, xyArea)) {
+                            // We found a class with an intersection.
+                            ecResult = jCell;
+                            continue outerLoop;
+                        }
+                    }
+                    if (typeCorrect && !jCell.isGrayedOut()) {
+                        // We are interested in edges and this jCell is an edge.
+                        if (jCellView.intersects(this, xyArea)) {
+                            // We found our edge.
+                            vertexOrEdgeResult = jCell;
                             break outerLoop;
                         }
                     }
-                }
-                // Failed, check intersection with the equivalence class.
-                if (jCellView.intersects(this, xyArea)) {
-                    // We found a class with an intersection.
-                    ecResult = jCell;
-                    continue outerLoop;
-                }
-            }
-            if (typeCorrect && !jCell.isGrayedOut()) {
-                // We are interested in edges and this jCell is an edge.
-                if (jCellView.intersects(this, xyArea)) {
-                    // We found our edge.
-                    vertexOrEdgeResult = jCell;
-                    break outerLoop;
-                }
-            }
         }
-        ShapeJCell result =
-            vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
+        ShapeJCell result = vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
         return result;
     }
 
@@ -213,10 +210,6 @@ public final class ShapeJGraph extends JGraph<Shape> {
             prepareLayouting();
             run();
             finishLayouting();
-        }
-
-        ShapeJGraph getJGraph() {
-            return (ShapeJGraph) this.jGraph;
         }
 
         void prepareLayouting() {

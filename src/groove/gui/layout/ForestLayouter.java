@@ -74,7 +74,7 @@ public class ForestLayouter extends AbstractLayouter {
      */
     @Override
     public void start() {
-        synchronized (this.jGraph) {
+        synchronized (getJGraph()) {
             prepare();
             computeBranchMap();
             computeRoots();
@@ -205,7 +205,7 @@ public class ForestLayouter extends AbstractLayouter {
      */
     protected Collection<?> getSuggestedRoots() {
         Collection<?> result;
-        JGraph<?> jGraph = this.jGraph;
+        JGraph<?> jGraph = getJGraph();
         if (jGraph instanceof LTSJGraph) {
             LTSJModel jModel = ((LTSJGraph) jGraph).getModel();
             result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
@@ -220,7 +220,7 @@ public class ForestLayouter extends AbstractLayouter {
             }
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {
-            result = Arrays.asList(this.jGraph.getSelectionCells());
+            result = Arrays.asList(jGraph.getSelectionCells());
         }
         return result;
     }
@@ -239,12 +239,12 @@ public class ForestLayouter extends AbstractLayouter {
             Layout right = layout(branch, height);
             result = new Layout(Math.max(left.count, right.count));
             int fit =
-                (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
-                    - MIN_CHILD_DISTANCE;
+                    (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
+                            - MIN_CHILD_DISTANCE;
             for (int level = 0; level < Math.min(left.count, right.count); level++) {
                 fit =
-                    Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
-                        - MIN_NODE_DISTANCE);
+                        Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
+                                - MIN_NODE_DISTANCE);
             }
             for (int level = 0; level < result.count; level++) {
                 if (level < left.count) {
@@ -355,7 +355,7 @@ public class ForestLayouter extends AbstractLayouter {
      * own. If the branch set is empty, the cell is a leaf.
      */
     private final Map<LayoutNode,Set<LayoutNode>> branchMap =
-        new LinkedHashMap<LayoutNode,Set<LayoutNode>>();
+            new LinkedHashMap<LayoutNode,Set<LayoutNode>>();
     /** The roots of the forest. */
     private final Collection<LayoutNode> roots = new LinkedList<LayoutNode>();
 

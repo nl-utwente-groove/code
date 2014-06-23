@@ -86,7 +86,6 @@ abstract public class AbstractLayouter implements Layouter {
         this.jGraph.notifyProgress("Layouting");
         this.jGraph.setLayouting(true);
         this.jGraph.clearAllEdgePoints();
-        this.jmodel = this.jGraph.getModel();
         // clear the transient information
         this.layoutMap.clear();
         this.immovableSet.clear();
@@ -116,7 +115,7 @@ abstract public class AbstractLayouter implements Layouter {
      */
     protected void finish() {
         final Map<JCell<?>,AttributeMap> change = new HashMap<JCell<?>,AttributeMap>();
-        CellView[] cellViews = this.jGraph.getGraphLayoutCache().getRoots();
+        CellView[] cellViews = getJGraph().getGraphLayoutCache().getRoots();
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
                 JCell<?> cell = (JCell<?>) view.getCell();
@@ -130,18 +129,19 @@ abstract public class AbstractLayouter implements Layouter {
                 change.put(cell, visuals.getAttributes());
             }
         }
-        // do the following in the event dispatch thread
+        // do the following in the event dispatch thread\
+        final JModel<?> jModel = getJModel();
         Runnable edit = new Runnable() {
             @Override
             public void run() {
                 if (change.size() != 0) {
-                    AbstractLayouter.this.jmodel.edit(change, null, null, null);
+                    jModel.edit(change, null, null, null);
                     // taking out the refresh as probably superfluous and
                     // certainly performance impacting
                     //                    AbstractLayouter.this.jgraph.refresh();
                 }
-                AbstractLayouter.this.jGraph.notifyProgress("");
-                AbstractLayouter.this.jGraph.setLayouting(false);
+                getJGraph().notifyProgress("");
+                getJGraph().setLayouting(false);
             }
         };
         // do this now (if invoked from the event thread) or defer to event thread
@@ -152,21 +152,26 @@ abstract public class AbstractLayouter implements Layouter {
         }
     }
 
+    /** Returns the (fixed) jGraph for this layouter. */
+    protected JGraph<?> getJGraph() {
+        return this.jGraph;
+    }
+
+    /** Returns the jModel currently being layed out. */
+    protected JModel<?> getJModel() {
+        return getJGraph().getModel();
+    }
+
     /**
      * The underlying jGraph for this layout action.
      */
-    protected final JGraph<?> jGraph;
-
-    /**
-     * The model that is being layed out.
-     */
-    protected JModel<?> jmodel;
+    private final JGraph<?> jGraph;
 
     /**
      * Map from graph nodes to layoutables.
      */
     protected final Map<JVertex<?>,LayoutNode> layoutMap =
-        new LinkedHashMap<JVertex<?>,LayoutNode>();
+            new LinkedHashMap<JVertex<?>,LayoutNode>();
 
     /**
      * The subset of layoutables that should be immovable, according to the
@@ -212,7 +217,7 @@ abstract public class AbstractLayouter implements Layouter {
         @Override
         public String toString() {
             return "VertexLayoutable[x=" + getX() + ",y=" + getY() + ",width=" + getWidth()
-                + ",height=" + getHeight() + "]";
+                    + ",height=" + getHeight() + "]";
         }
 
         /** The internally stored bounds of this layoutable. */
