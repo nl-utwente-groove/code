@@ -1,22 +1,21 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: SpringLayouter.java,v 1.6 2008-01-30 09:33:00 iovka Exp $
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 
@@ -78,7 +77,7 @@ public class SpringLayouter extends AbstractLayouter {
         if (DEBUG) {
             System.out.println("Starting automatic layout");
         }
-        // 
+        //
         // initialise the layoutables, positions and deltas
         this.deltaMap.clear();
         int layoutableIndex = 0;
@@ -87,9 +86,6 @@ public class SpringLayouter extends AbstractLayouter {
         this.deltas = new Point2D.Float[this.layoutMap.size()];
         for (LayoutNode layoutable : this.layoutMap.values()) {
             this.layoutables[layoutableIndex] = layoutable;
-            // CellView vertexView = jview.getMapping(cell, false);
-            // assert vertexView != null : "Node " + graphVertices[i] + " does
-            // not have a view";
             if (!this.immovableSet.contains(layoutable)) {
                 this.deltas[layoutableIndex] = new Point2D.Float(0, 0);
                 this.deltaMap.put(layoutable, this.deltas[layoutableIndex]);
@@ -103,17 +99,27 @@ public class SpringLayouter extends AbstractLayouter {
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
         List<LayoutNode> edgeSourceList = new LinkedList<LayoutNode>();
         List<LayoutNode> edgeTargetList = new LinkedList<LayoutNode>();
-        for (int i = 0; i < this.jmodel.getRootCount(); i++) {
-            JCell<?> jCell = (JCell<?>) this.jmodel.getRootAt(i);
-            if (jCell instanceof JEdge && jCell.getVisuals().isVisible() && !jCell.isGrayedOut()) {
-                JEdge<?> jEdge = (JEdge<?>) jCell;
-                LayoutNode source = this.layoutMap.get(jEdge.getSourceVertex());
-                LayoutNode target = this.layoutMap.get(jEdge.getTargetVertex());
-                if (source != null && target != null) {
-                    edgeSourceList.add(source);
-                    edgeTargetList.add(target);
-                }
+        for (Object jCell : this.jGraph.getRoots()) {
+            if (!(jCell instanceof JEdge)) {
+                continue;
             }
+            JEdge<?> jEdge = (JEdge<?>) jCell;
+            if (!jEdge.getVisuals().isVisible()) {
+                continue;
+            }
+            if (jEdge.isGrayedOut()) {
+                continue;
+            }
+            LayoutNode source = this.layoutMap.get(jEdge.getSourceVertex());
+            if (source == null) {
+                continue;
+            }
+            LayoutNode target = this.layoutMap.get(jEdge.getTargetVertex());
+            if (target == null) {
+                continue;
+            }
+            edgeSourceList.add(source);
+            edgeTargetList.add(target);
         }
         this.edgeSources = edgeSourceList.toArray(new LayoutNode[edgeSourceList.size()]);
         this.edgeTargets = edgeTargetList.toArray(new LayoutNode[edgeTargetList.size()]);
@@ -121,7 +127,7 @@ public class SpringLayouter extends AbstractLayouter {
 
     private void damp() {
         if (this.motionRatio <= 0.001) { // This is important. Only damp when
-                                         // the graph starts to move
+            // the graph starts to move
             // faster
             // When there is noise, you damp roughly half the time. (Which is a
             // lot)
@@ -135,10 +141,10 @@ public class SpringLayouter extends AbstractLayouter {
             // still>1, damp away
             // We never want the damper to be negative though
             if ((this.maxMotion < FAST_DAMPING_MOTION_TRESHHOLD || this.damper < FAST_DAMPING_DAMPER_TRESHHOLD)
-                && this.damper > FAST_DAMPING) {
+                    && this.damper > FAST_DAMPING) {
                 this.damper -= FAST_DAMPING;
             } else if (this.maxMotion < MEDIUM_DAMPING_MOTION_TRESHHOLD
-                && this.damper > MEDIUM_DAMPING) {
+                    && this.damper > MEDIUM_DAMPING) {
                 this.damper -= MEDIUM_DAMPING;
             } else if (this.damper > SLOW_DAMPING) {
                 this.damper -= SLOW_DAMPING;
@@ -156,8 +162,8 @@ public class SpringLayouter extends AbstractLayouter {
             LayoutNode bf = this.edgeSources[i];
             LayoutNode bt = this.edgeTargets[i];
             double dx = (bt.getX() - bf.getX()) * this.workingRigidity / 100; // rigidity
-                                                                              // makes
-                                                                              // edges
+            // makes
+            // edges
             // tighter
             double dy = (bt.getY() - bf.getY()) * this.workingRigidity / 100;
             shiftDelta(bt, -dx, -dy);
@@ -178,8 +184,8 @@ public class SpringLayouter extends AbstractLayouter {
                 double vy = bf.y - bt.y;
                 if (Math.abs(vx) < repSum && Math.abs(vy) < repSum) {
                     double len = (vx * vx + vy * vy) / repSum; // so it's
-                                                               // length
-                                                               // squared
+                    // length
+                    // squared
                     double dx, dy;
                     if (len < 1 / repSum) {
                         dx = repSum * (float) Math.random();
@@ -219,12 +225,12 @@ public class SpringLayouter extends AbstractLayouter {
                     }
                     Point2D.Double position = this.positions[i];
                     position.x += Math.max(-5, Math.min(5, dx)) - shiftX; // prevents
-                                                                          // too
-                                                                          // wild
+                    // too
+                    // wild
                     // oscillations
                     position.y += Math.max(-5, Math.min(5, dy)) - shiftY; // prevents
-                                                                          // too
-                                                                          // wild
+                    // too
+                    // wild
                     // oscillations
                     if (position.x < 0) {
                         shiftX += position.x;
@@ -315,16 +321,16 @@ public class SpringLayouter extends AbstractLayouter {
     private LayoutNode[] edgeTargets;
 
     double damper = 1.0; // A low damper value causes the graph to move
-                         // slowly
+    // slowly
 
     private double maxMotion = 0; // Keep an eye on the fastest moving node to
-                                  // see if the graph is
+    // see if the graph is
     // stabilizing
 
     private double lastMaxMotion = 0;
 
     private double motionRatio = 0; // It's sort of a ratio, equal to
-                                    // lastMaxMotion/maxMotion-1
+    // lastMaxMotion/maxMotion-1
 
     private float workingRigidity = DEFAULT_RIGIDITY;
 
@@ -371,11 +377,11 @@ public class SpringLayouter extends AbstractLayouter {
 
     /** Bound for <tt>maxMotion</tt> below which we start damping medium */
     static private final float MEDIUM_DAMPING_MOTION_TRESHHOLD = 0.8f; // was
-                                                                       // 0.4
+    // 0.4
 
     /** Bound for <tt>maxMotion</tt> below which we start damping fast */
     static private final float FAST_DAMPING_MOTION_TRESHHOLD = 0.4f; // was
-                                                                     // 0.2
+    // 0.2
 
     /** Bound for <tt>damper</tt> below which we start damping fast */
     static private final float FAST_DAMPING_DAMPER_TRESHHOLD = 0.9f;
