@@ -41,7 +41,7 @@ public class EncodedRuleList implements EncodedType<List<Rule>,String> {
     public List<Rule> parse(Grammar rules, String source) throws FormatException {
         ArrayList<Rule> result;
         if (source == null || source.length() == 0) {
-            result = new ArrayList<Rule>(0); //return a disabled rule list as a zero-length list
+            result = new ArrayList<Rule>(0); //return a disabled rule list as a zero-length list 
         } else {
             result = new ArrayList<Rule>();
             //trim spaces and split on ;
