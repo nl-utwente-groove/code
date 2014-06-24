@@ -29,7 +29,7 @@ import groove.lts.Status.Flag;
 import groove.transform.RuleEvent;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -39,27 +39,28 @@ import java.util.LinkedList;
 import java.util.Set;
 
 /**
- * TODO javadoc
- * TODO catch exception when rule without parameter is evaluated
+ * An exploration strategy which calculates the Minimax value of the starting state and all states reachable from it.
  */
 public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     /** Constant used to disable bounded exploration */
     public static final int DEPTH_INFINITE = 0;
     private static final boolean DEBUG = false;
+    private static final boolean VERBOSE = DEBUG && false;
+
+    private long timer;
 
     //internal storage
     private final LinkedList<MinimaxTree> nodes = new LinkedList<MinimaxTree>(); //contains the heuristic values for Minimax
 
     //exploration stack (DFS)
-    private final ArrayDeque<GraphState> explorationStack = new ArrayDeque<GraphState>(); //thread unsafe stack
+    private final ArrayDeque<GraphState> explorationStack = new ArrayDeque<GraphState>(); //unsynchronized stack
 
     //configurable parameters
-    private final ArrayList<String> enabledrules;
-    private final boolean startmax; //determines whether we should maximize or minimize in the first state
     private final int heuristicparam; //index of the heuristic parameter used
+    private final int minmaxparam; //index of the turn parameter used
+    private final ArrayList<String> enabledrules; //names of evaluation rules
+    private final String minmaxRule; //name of the turn rule
     private final int maxdepth; //maximum depth of the exploration
-    private final String minmaxRule;
-    private final int minmaxparam;
 
     /**
      * Constructs a strategy which uses the Minimax algorithm to generate a strategy while performing an optionally depth-bound DFS
@@ -67,7 +68,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param maxdepth the maximum depth of the exploration, below 1 is infinite
      */
     public MinimaxStrategy(int heuristicparam, int maxdepth, Rule evalrule, int minmaxparam) {
-        this(heuristicparam, maxdepth, null, true, evalrule, minmaxparam);
+        this(heuristicparam, maxdepth, null, evalrule, minmaxparam);
     }
 
     /**
@@ -75,10 +76,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param heuristicparam parameter index which will contain the heuristic score
      * @param maxdepth the maximum depth of the exploration, below 1 is infinite
      * @param enabledrules a collection of enabled rules, duplicates will be removed
-     * @param startmax true when the search should attempt to maximize the gains, false when the gains should be minimized
      */
     public MinimaxStrategy(int heuristicparam, int maxdepth, Collection<Rule> enabledrules,
-            boolean startmax, Rule evalrule, int minmaxparam) {
+            Rule evalrule, int minmaxparam) {
         super();
 
         //parameters
@@ -115,15 +115,13 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         } else {
             this.minmaxRule = evalrule.getTransitionLabel();
         }
-
-        //starting operation (min or max)
-        this.startmax = startmax;
     }
 
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         getGTS().addLTSListener(this);
+        this.timer = System.currentTimeMillis();
     }
 
     @Override
@@ -209,27 +207,28 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new RuntimeException("Parameter does not exist");
         } catch (ClassCastException e) {
-            e.printStackTrace();
             throw new RuntimeException("Parameter should be of type boolean");
         }
     }
 
     /**
-     * function which prints a tree like string
+     * Function which exports a tree like string to a file
+     * The file is overwritten by this method
      */
-    public void printMinimaxDebugTree() {
-        //TODO tree representation
+    public void printMinimaxDebugTree(File out) {
         MinimaxTree mt = getNodeValue(this.getStartState().getNumber());
-        try { //write to a file, as tree representations can get quite large
-            File f = new File("tree.txt");
+        try { //write to a file, as tree representations can get quite large (10MB for tic-tac-toe)
+            File f = out;
+            if (f.exists()) {
+                f.delete();
+                f.createNewFile();
+            }
             PrintWriter pw = new PrintWriter(f);
             pw.println(mt.toString());
             pw.flush();
             pw.close();
-            if (DEBUG) {
-                System.out.println("Wrote tree to file: " + f.getAbsolutePath());
-            }
-        } catch (FileNotFoundException e) {
+            System.out.println("Wrote tree to file: " + f.getAbsolutePath());
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -239,6 +238,11 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     //
     //Minimax storage functions
 
+    /**
+     * Set the tree node at the given position
+     * @param node the position of the assigned tree node
+     * @param value the assigned tree node
+     */
     private void setNodeValue(int node, MinimaxTree value) {
         while (this.nodes.size() - 1 < node) { //grow the array
             this.nodes.add(null);
@@ -246,6 +250,11 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         this.nodes.set(node, value);
     }
 
+    /**
+     * Obtain the tree node stored at the given position
+     * @param node the position
+     * @return the tree node stored at the given position, or null if no tree node has been stored at that position.
+     */
     private MinimaxTree getNodeValue(int node) {
         if (node > this.nodes.size() - 1) {
             return null;
@@ -272,8 +281,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     public void finish() {
         super.finish();
         if (DEBUG) {
-            System.out.println("Exploration Finished!");
-            printMinimaxDebugTree();
+            System.out.println("Exploration Finished! It took "
+                    + (System.currentTimeMillis() - this.timer) + "ms");
+            printMinimaxDebugTree(new File("tree.txt"));
         }
     }
 
@@ -293,7 +303,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             mtt = new MinimaxTree(target.getNumber());
             setNodeValue(mtt.getNodeno(), mtt);
         }
-        if (DEBUG) {
+        if (VERBOSE) {
             System.out.println("State added: " + transition.target().getNumber());
         }
         //if we have a minmax rule, update the variable in the tree, and dont add tree nodes
@@ -309,7 +319,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             }
         }
         mts.addChild(mtt); //add child reference, set interface ensures uniqueness
-        if (DEBUG) {
+        if (VERBOSE) {
             System.out.printf("Child added: %s for %s%n", mtt.getNodeno(), mts.getNodeno());
         }
     }
@@ -346,24 +356,41 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             this.nodeno = nodeno;
         }
 
+        /**
+         * Obtain the node number of this tree node
+         * @return the node number
+         */
         public int getNodeno() {
             return this.nodeno;
         }
 
+        /**
+         * Set whether to maximize or minimize the values of children nodes
+         * @param max true to maximize, false to minimize
+         */
         public void setMinMax(boolean max) {
             this.max = max;
         }
 
+        /**
+         * Obtains whether this node will maximize or minimize the values of children nodes
+         * @return true when this node will maximize the values of children nodes
+         */
         public boolean getMinMax() {
             return this.max;
         }
 
+        /**
+         * Checks whether this tree node functions as a leaf node
+         * @return true when this node is a leaf node
+         */
         public boolean isLeafNode() {
             return this.score != null;
         }
 
         /**
-         * Returns the children of this node.
+         * Obtain the children of this node, converts this node to a tree node
+         * @return a set with the children of this node
          */
         public Set<MinimaxTree> getChildren() {
             ensureChildren();
@@ -371,25 +398,31 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         }
 
         /**
-         * Adds a child to this node.
+         * Add a child to this node, converts this node to a tree node
+         * @param mt the node to be added as a child of this node
          */
         public void addChild(MinimaxTree mt) {
             ensureChildren();
-            if (mt != this && !mt.isChild(this)) {
+            if (mt != this && !mt.isDescendant(this)) {
                 getChildren().add(mt);
             } else {
-                if (DEBUG) {
+                if (VERBOSE) {
                     System.out.println("Prevented cycle to node: " + mt.getNodeno());
                 }
             }
         }
 
-        public boolean isChild(MinimaxTree mt) {
+        /**
+         * Checks whether a node is a descendant of this node
+         * @param mt the node to look for
+         * @return true if mt is a descendant of this node
+         */
+        public boolean isDescendant(MinimaxTree mt) {
             if (isLeafNode()) {
                 return false;
             } else {
                 for (MinimaxTree child : getChildren()) {
-                    if (child.isChild(mt)) {
+                    if (child.isDescendant(mt)) {
                         return true;
                     }
                 }
@@ -397,6 +430,10 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             }
         }
 
+        /**
+         * Obtain the minimax score of this node
+         * @return the minimax score of this node
+         */
         public Integer getScore() {
             Integer result = null;
             if (isLeafNode()) {
@@ -423,6 +460,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         }
 
         /**
+         * Sets the heuristic score of this node. Converts this node to a leaf node.
          * @param score The score to set.
          */
         public void setScore(Integer score) {
@@ -430,7 +468,11 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             this.score = score;
         }
 
-        public String getText() {
+        /**
+         * Helper method for recursive printing of tree nodes.
+         * @return a string representation of the score of this node, and the representations of all child nodes.
+         */
+        private String getText() {
             String result = getScore() + "";
             if (!isLeafNode()) {
                 result = result + " ";
@@ -443,20 +485,14 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
 
         @Override
         public String toString() {
-            //String result = "[" + getNodeno() + ";" + getMinMax() + ": \n" + getText() + "]";
-            String result = "[" + getNodeno() + ";" + getMinMax() + ":" + getText() + "]";
-            //String result = "[" + getText(MinimaxStrategy.this.startmax) + "]";
+            String result =
+                    "[" + getNodeno() + ";" + (getMinMax() ? "min()" : "max()") + ":" + getText() + "]";
             return result;
         }
 
-        /*@Override
-        public boolean equals(Object obj) {
-            if (obj instanceof MinimaxTree) {
-                return this.nodeno == ((MinimaxTree) obj).nodeno;
-            }
-            return super.equals(obj);
-        }*/
-
+        /**
+         * Converts this node to a tree node if it is not already a tree node.
+         */
         private void ensureChildren() {
             if (this.children == null) {
                 this.children = new HashSet<MinimaxTree>();

@@ -8,7 +8,6 @@ import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedHostName;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedLtlProperty;
-import groove.explore.encode.EncodedMinMaxMode;
 import groove.explore.encode.EncodedRuleList;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.EncodedType;
@@ -59,77 +58,75 @@ import java.util.Map;
 public enum StrategyValue implements ParsableValue {
     /** Standard breadth-first strategy. */
     BFS("bfs", "Breadth-First Exploration",
-            "This strategy first generates all possible transitions from each "
-                + "open state, and then continues in a breadth-first fashion."),
+        "This strategy first generates all possible transitions from each "
+            + "open state, and then continues in a breadth-first fashion."),
     /** Standard depth-first strategy. */
     DFS("dfs", "Depth-First Exploration",
-            "This strategy first generates all possible transitions from each "
-                + "open state, and then continues in a depth-first fashion."),
+        "This strategy first generates all possible transitions from each "
+            + "open state, and then continues in a depth-first fashion."),
     /** Linear strategy. */
     LINEAR("linear", "Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition of choice will be the same within one "
-                + "incarnation of Groove."),
+        "This strategy chooses one transition from each open state. "
+            + "The transition of choice will be the same within one " + "incarnation of Groove."),
     /** Random linear strategy. */
     RANDOM("random", "Random Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition is chosen randomly."),
+        "This strategy chooses one transition from each open state. "
+            + "The transition is chosen randomly."),
     /** Single-state strategy. */
     STATE("state", "Single-State Exploration", "This strategy fully explores the current state."),
     /** Depth-first RETE strategy. */
     RETE("rete", "Rete Strategy (DFS based)",
-            "This strategy finds all possible transitions from the Rete "
-                + "network, and continues in a depth-first fashion using "
-                + "virtual events when possible. Rete updates are applied " + "accumulatively"),
+        "This strategy finds all possible transitions from the Rete "
+            + "network, and continues in a depth-first fashion using "
+            + "virtual events when possible. Rete updates are applied " + "accumulatively"),
     /** Linear RETE strategy. */
     RETE_LINEAR("retelinear", "Rete Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition of choice will be the same within one "
-                + "incarnation of Groove."),
+        "This strategy chooses one transition from each open state. "
+            + "The transition of choice will be the same within one " + "incarnation of Groove."),
     /** Random linear RETE strategy. */
     RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition is chosen randomly."),
+        "This strategy chooses one transition from each open state. "
+            + "The transition is chosen randomly."),
     /** Rule conditional strategy. */
     CONDITIONAL("crule", "Conditional Exploration (Rule Condition)",
-            "This strategy performs a conditional breadth-first exploration. "
-                + "If a given rule is applicable in a newly reached state, it "
-                + " is not explored further. " + "All other states are explored normally."),
+        "This strategy performs a conditional breadth-first exploration. "
+            + "If a given rule is applicable in a newly reached state, it "
+            + " is not explored further. " + "All other states are explored normally."),
     /** Node bound conditional strategy. */
     CONDITIONAL_NODE_BOUND("cnbound", "Conditional Exploration (Node Bound)",
-            "This strategy performs a conditional breadth-first exploration. "
-                + "If the number of nodes in a newly reached state exceeds a "
-                + "given bound, it is not explored further. "
-                + "All other states are explored normally."),
+        "This strategy performs a conditional breadth-first exploration. "
+            + "If the number of nodes in a newly reached state exceeds a "
+            + "given bound, it is not explored further. "
+            + "All other states are explored normally."),
     /** Edge bound conditional strategy. */
     CONDITIONAL_EDGE_BOUND("cebound", "Conditional Exploration (Edge Bound)",
-            "This strategy performs a conditional breadth-first exploration. "
-                + "If the number of edges in a newly reached state exceeds a "
-                + "given bound, it is not explored further. "
-                + "All other states are explored normally."),
+        "This strategy performs a conditional breadth-first exploration. "
+            + "If the number of edges in a newly reached state exceeds a "
+            + "given bound, it is not explored further. "
+            + "All other states are explored normally."),
     /** LTL model checking strategy. */
     LTL("ltl", "LTL Model Checking", "Nested Depth-First Search for a given LTL formula."),
     /** Bounded LTL model checking  strategy. */
     LTL_BOUNDED("ltlbounded", "Bounded LTL Model Checking",
-            "Nested Depth-First Search for a given LTL formula,"
-                + "using incremental bounds based on graph size or rule applications"),
+        "Nested Depth-First Search for a given LTL formula,"
+            + "using incremental bounds based on graph size or rule applications"),
     /** Bounded LTL model checking strategy. */
     LTL_POCKET("ltlpocket", "Pocket LTL Model Checking",
-            "Nested Depth-First Search for a given LTL formula,"
-                + "using incremental bounds based on graph size or rule applications"
-                + "and optimised to avoid reexploring connected components ('pockets')"),
+        "Nested Depth-First Search for a given LTL formula,"
+            + "using incremental bounds based on graph size or rule applications"
+            + "and optimised to avoid reexploring connected components ('pockets')"),
     /** Shape exploration strategy. */
     SHAPE_DFS("shapedfs", "Shape Depth-First Exploration",
-            "This strategy is used for abstract state space exploration."),
+        "This strategy is used for abstract state space exploration."),
     /** Shape exploration strategy. */
     SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
-            "This strategy is used for abstract state space exploration."),
+        "This strategy is used for abstract state space exploration."),
     /** Minimax strategy. */
     MINIMAX("minimax", "Minimax Strategy Generation",
-            "This strategy generates a strategy for a two-player game."),
+        "This strategy generates a strategy for a two-player game."),
     /** Remote strategy. */
     REMOTE("remote", "Remote Exploration",
-            "This strategy sends the result as an STS to a remote server.");
+        "This strategy sends the result as an STS to a remote server.");
 
     private StrategyValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -353,7 +350,7 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
         case MINIMAX:
-            return new MyTemplate6<Integer,Integer,List<Rule>,Boolean,Rule,Integer>(new PSequence(
+            return new MyTemplate5<Integer,Integer,List<Rule>,Rule,Integer>(new PSequence(
                 new PNumber("heuristic-parameter-index"), new PLiteral(","), new PNumber(
                     "maximum-search-depth"), new PLiteral(","), new PSeparated(new PIdentifier(
                     "enabled-rule-names"), /*delimiter*/
@@ -361,9 +358,9 @@ public enum StrategyValue implements ParsableValue {
                     "start-max"), new PLiteral(","), new PIdentifier("minmax-rule"), new PLiteral(
                     ","), new PNumber("minmax-rule-parameter-index")), "heuristic-parameter-index",
                 new EncodedInt(0, Integer.MAX_VALUE), "maximum-search-depth", new EncodedInt(0,
-                    Integer.MAX_VALUE), "enabled-rule-names", new EncodedRuleList(), "start-max",
-                new EncodedMinMaxMode(), "minmax-rule", new EncodedEnabledRule(),
-                "minmax-rule-parameter-index", new EncodedInt(0, Integer.MAX_VALUE)) {
+                    Integer.MAX_VALUE), "enabled-rule-names", new EncodedRuleList(), "minmax-rule",
+                new EncodedEnabledRule(), "minmax-rule-parameter-index", new EncodedInt(0,
+                    Integer.MAX_VALUE)) {
 
                 @Override
                 public Strategy create(Object[] arguments) {
@@ -371,10 +368,9 @@ public enum StrategyValue implements ParsableValue {
                     Integer searchdepth = (Integer) arguments[1];
                     @SuppressWarnings("unchecked")
                     List<Rule> labels = (List<Rule>) arguments[2];
-                    Boolean max = (Boolean) arguments[3];
-                    Rule minmaxrule = (Rule) arguments[4];
-                    Integer minmaxparam = (Integer) arguments[5];
-                    return new MinimaxStrategy(parindex, searchdepth, labels, max, minmaxrule,
+                    Rule minmaxrule = (Rule) arguments[3];
+                    Integer minmaxparam = (Integer) arguments[4];
+                    return new MinimaxStrategy(parindex, searchdepth, labels, minmaxrule,
                         minmaxparam);
                 }
             };
@@ -431,16 +427,15 @@ public enum StrategyValue implements ParsableValue {
     }
 
     /** Specialised 5-parameter template that uses the strategy value's keyword, name and description. */
-    abstract private class MyTemplate6<T1,T2,T3,T4,T5,T6> extends TemplateN<Strategy> {
+    abstract private class MyTemplate5<T1,T2,T3,T4,T5> extends TemplateN<Strategy> {
         @SuppressWarnings("unchecked")
         //cast to Object won't go wrong
-        public MyTemplate6(SerializedParser parser, String name1, EncodedType<T1,String> type1,
+        public MyTemplate5(SerializedParser parser, String name1, EncodedType<T1,String> type1,
                 String name2, EncodedType<T2,String> type2, String name3,
                 EncodedType<T3,String> type3, String name4, EncodedType<T4,String> type4,
-                String name5, EncodedType<T5,String> type5, String name6,
-                EncodedType<T6,String> type6) {
-            super(StrategyValue.this, parser, new String[] {name1, name2, name3, name4, name5,
-                name6}, type1, type2, type3, type4, type5, type6);
+                String name5, EncodedType<T5,String> type5) {
+            super(StrategyValue.this, parser, new String[] {name1, name2, name3, name4, name5},
+                type1, type2, type3, type4, type5);
 
         }
     }
