@@ -31,7 +31,7 @@ import java.util.Set;
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex>
-implements AspectJCell {
+        implements AspectJCell {
     /**
      * Creates an uninitialised instance.
      */
@@ -108,11 +108,11 @@ implements AspectJCell {
             error = new FormatError("Node label '%s' not allowed on edges", edge.label(), this);
         } else if (oldEdge != null && !edge.isCompatible(oldEdge)) {
             error =
-                    new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
-                        edge.label(), this);
+                new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
+                    edge.label(), this);
         }
         if (error != null) {
-            edge = new AspectEdge(edge.source(), edge.label(), edge.target());
+            edge = new AspectEdge(edge.source(), edge.label(), edge.target(), edge.getNumber());
             edge.addError(error);
             edge.setFixed();
         }
@@ -127,7 +127,7 @@ implements AspectJCell {
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
             if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR || ruleLabel.isNeg()
-                    && ruleLabel.getNegOperand().isEmpty()) {
+                && ruleLabel.getNegOperand().isEmpty()) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
             } else if (!ruleLabel.isAtom()) {
@@ -223,7 +223,7 @@ implements AspectJCell {
             return false;
         }
         if (getJGraph().getGraphRole() != GraphRole.TYPE
-                && !getTargetNode().getAttrAspect().hasContent()) {
+            && !getTargetNode().getAttrAspect().hasContent()) {
             return false;
         }
         return true;

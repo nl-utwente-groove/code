@@ -290,17 +290,15 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         // collect edges to be added explicitly
         List<AspectEdge> newEdges = new ArrayList<AspectEdge>();
         // now process the edge labels
+        int remarkCount = 0;
         for (AspectLabel label : edgeLabels) {
-            AspectEdge edge = new AspectEdge(node, label, node);
-            edge.setFixed();
-            if (edge.getAspect() != null && edge.getAspect().getKind() == REMARK) {
-                if (remarkText.length() > 0) {
-                    remarkText.append('\n');
-                }
-                remarkText.append(label.getInnerText());
-            } else {
-                newEdges.add(edge);
+            int nr = 0;
+            if (label.containsAspect(REMARK)) {
+                nr = remarkCount;
+                remarkCount++;
             }
+            AspectEdge edge = new AspectEdge(node, label, node, nr);
+            newEdges.add(edge);
         }
         // turn the collected remark text into a single edge
         if (remarkText.length() > 0) {

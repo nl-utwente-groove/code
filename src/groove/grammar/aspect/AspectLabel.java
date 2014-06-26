@@ -239,6 +239,18 @@ public class AspectLabel extends ALabel implements Fixable {
     /** The mapping from aspects to (declared or inferred) aspect values. */
     private final List<Aspect> aspects = new ArrayList<Aspect>();
 
+    /** Tests if this label contains an aspect of a given kind. */
+    public boolean containsAspect(AspectKind kind) {
+        boolean result = false;
+        for (Aspect aspect : getAspects()) {
+            if (aspect.getKind() == kind) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
     /** 
      * Indicates whether this label is only suited for edges.
      * This is the case if either it contains an aspect that is not
