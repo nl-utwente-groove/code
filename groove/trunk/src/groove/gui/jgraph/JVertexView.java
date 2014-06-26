@@ -145,8 +145,8 @@ public class JVertexView extends VertexView {
         // extra border space
         float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
         bounds =
-                new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
-                    bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+            new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
+                bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
         double left = bounds.getMinX();
         double right = bounds.getMaxX();
         double top = bounds.getMinY();
@@ -163,14 +163,14 @@ public class JVertexView extends VertexView {
                     double dy = qy - cy;
                     double room = bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
                     qy =
-                            cy + room * Math.signum(dy)
+                        cy + room * Math.signum(dy)
                             * Math.min(Math.abs(dy) / MAX_RATIO_DISTANCE, 1);
                 } else {
                     // move qx into vertical reach
                     double dx = qx - cx;
                     double room = bounds.getWidth() * (1 - 2 / DROP_FRACTION) * 0.5;
                     qx =
-                            cx + room * Math.signum(dx)
+                        cx + room * Math.signum(dx)
                             * Math.min(Math.abs(dx) / MAX_RATIO_DISTANCE, 1);
                 }
                 q = new Point2D.Double(qx, qy);
@@ -195,30 +195,30 @@ public class JVertexView extends VertexView {
         Rectangle2D adornBounds = getAdornBounds();
         // possibly adjust if the target point lies northwest of the adornment
         boolean adorn =
-                adornBounds != null && adornBounds.getMaxX() > qx && adornBounds.getMaxY() > qy;
-                if (adorn) {
-                    double rx = result.getX();
-                    double ry = result.getY();
-                    double dx = qx - result.getX();
-                    double dy = qy - result.getY();
-                    if (adornBounds.intersectsLine(rx, ry, qx, qy)) {
-                        if (dy == 0) {
-                            // target lies straight to the west
-                            result.setLocation(adornBounds.getMinX(), result.getY());
-                        } else {
-                            // first try out the intersection with the upper edge
-                            double shiftY = ry - adornBounds.getMinY();
-                            double shiftX = shiftY * dx / dy;
-                            if (result.getX() - shiftX < adornBounds.getMinX()) {
-                                // too far left; we need the left edge
-                                shiftX = rx - adornBounds.getMinX();
-                                shiftY = shiftX * dy / dx;
-                            }
-                            result.setLocation(rx - shiftX, ry - shiftY);
-                        }
+            adornBounds != null && adornBounds.getMaxX() > qx && adornBounds.getMaxY() > qy;
+        if (adorn) {
+            double rx = result.getX();
+            double ry = result.getY();
+            double dx = qx - result.getX();
+            double dy = qy - result.getY();
+            if (adornBounds.intersectsLine(rx, ry, qx, qy)) {
+                if (dy == 0) {
+                    // target lies straight to the west
+                    result.setLocation(adornBounds.getMinX(), result.getY());
+                } else {
+                    // first try out the intersection with the upper edge
+                    double shiftY = ry - adornBounds.getMinY();
+                    double shiftX = shiftY * dx / dy;
+                    if (result.getX() - shiftX < adornBounds.getMinX()) {
+                        // too far left; we need the left edge
+                        shiftX = rx - adornBounds.getMinX();
+                        shiftY = shiftX * dy / dx;
                     }
+                    result.setLocation(rx - shiftX, ry - shiftY);
                 }
-                return result;
+            }
+        }
+        return result;
     }
 
     /** Returns the cell bounds including the parameter adornment, if any. */
@@ -228,10 +228,10 @@ public class JVertexView extends VertexView {
         if (adornment != null) {
             result = getBounds();
             MyRenderer renderer =
-                    ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
+                ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
             result =
-                    new Rectangle2D.Double(result.getX(), result.getY(), renderer.adornWidth,
-                        renderer.adornHeight);
+                new Rectangle2D.Double(result.getX(), result.getY(), renderer.adornWidth,
+                    renderer.adornHeight);
         }
         return result;
     }
@@ -316,57 +316,57 @@ public class JVertexView extends VertexView {
                 boolean focus, boolean preview) {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
-        this.view = (JVertexView) view;
-        this.cell = this.view.getCell();
-        VisualMap visuals = this.visuals = this.view.getCellVisuals();
-        this.adornment = this.visuals.getAdornment();
-        if (this.adornment == null) {
-            this.adornHeight = 0;
-            this.adornWidth = 0;
-        } else {
-            this.adornHeight = 12;
-            this.adornWidth = getAdornWidth(this.adornment);
-        }
-        this.selectionColor = graph.getHighlightColor();
-        this.dash = visuals.getDash();
-        this.lineColor = visuals.getForeground();
-        this.selected = visuals.isEmphasised();
-        boolean emph = this.view.armed || this.selected;
-        float lineWidth = visuals.getLineWidth();
-        if (emph) {
-            lineWidth += JAttr.EMPH_INCREMENT;
-        }
-        this.lineWidth = lineWidth;
+            this.view = (JVertexView) view;
+            this.cell = this.view.getCell();
+            VisualMap visuals = this.visuals = this.view.getCellVisuals();
+            this.adornment = this.visuals.getAdornment();
+            if (this.adornment == null) {
+                this.adornHeight = 0;
+                this.adornWidth = 0;
+            } else {
+                this.adornHeight = 12;
+                this.adornWidth = getAdornWidth(this.adornment);
+            }
+            this.selectionColor = graph.getHighlightColor();
+            this.dash = visuals.getDash();
+            this.lineColor = visuals.getForeground();
+            this.selected = visuals.isEmphasised();
+            boolean emph = this.view.armed || this.selected;
+            float lineWidth = visuals.getLineWidth();
+            if (emph) {
+                lineWidth += JAttr.EMPH_INCREMENT;
+            }
+            this.lineWidth = lineWidth;
 
-        Color innerLineColor = visuals.getInnerLine();
-        if (innerLineColor != null) {
-            this.twoLines = true;
-            this.line2color = innerLineColor;
-            this.line2width = 1;
-            this.line2dash = (float[]) VisualKey.DASH.getDefaultValue();
-        } else {
-            this.twoLines = false;
-        }
-        setOpaque(visuals.isOpaque());
-        Color foreground = visuals.getForeground();
-        setForeground((foreground != null) ? foreground : graph.getForeground());
-        Color background = visuals.getBackground();
-        background = (background != null) ? background : graph.getBackground();
-        if (emph) {
-            float darken = .95f;
-            background =
+            Color innerLineColor = visuals.getInnerLine();
+            if (innerLineColor != null) {
+                this.twoLines = true;
+                this.line2color = innerLineColor;
+                this.line2width = 1;
+                this.line2dash = (float[]) VisualKey.DASH.getDefaultValue();
+            } else {
+                this.twoLines = false;
+            }
+            setOpaque(visuals.isOpaque());
+            Color foreground = visuals.getForeground();
+            setForeground((foreground != null) ? foreground : graph.getForeground());
+            Color background = visuals.getBackground();
+            background = (background != null) ? background : graph.getBackground();
+            if (emph) {
+                float darken = .95f;
+                background =
                     new Color(Math.max((int) (background.getRed() * darken), 0), Math.max(
                         (int) (background.getGreen() * darken), 0), Math.max(
-                            (int) (background.getBlue() * darken), 0), background.getAlpha());
-        }
-        setBackground(background);
-        Font font = Options.getLabelFont().deriveFont(visuals.getFont());
-        setFont((font != null) ? font : graph.getFont());
-        setBorder(createEmptyBorder());
-        setText(this.view.getText());
-        this.error = visuals.isError();
-        this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
-        return this;
+                        (int) (background.getBlue() * darken), 0), background.getAlpha());
+            }
+            setBackground(background);
+            Font font = Options.getLabelFont().deriveFont(visuals.getFont());
+            setFont((font != null) ? font : graph.getFont());
+            setBorder(createEmptyBorder());
+            setText(this.view.getText());
+            this.error = visuals.isError();
+            this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
+            return this;
         }
 
         /**
@@ -463,7 +463,7 @@ public class JVertexView extends VertexView {
             Insets i = this.view.getInsets();
             return i == null ? null : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
                 i.left + EXTRA_BORDER_SPACE, i.bottom + EXTRA_BORDER_SPACE, i.right
-                + EXTRA_BORDER_SPACE);
+                    + EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -488,8 +488,8 @@ public class JVertexView extends VertexView {
             // adjust for view insets
             Insets i = computeInsets(result.width, result.height);
             result =
-                    new Dimension(result.width + i.left + i.right + 2 * EXTRA_BORDER_SPACE,
-                        result.height + i.top + i.bottom + 2 * EXTRA_BORDER_SPACE);
+                new Dimension(result.width + i.left + i.right + 2 * EXTRA_BORDER_SPACE,
+                    result.height + i.top + i.bottom + 2 * EXTRA_BORDER_SPACE);
             // store the insets in the view, to be used
             // when actually drawing the view
             this.view.setInsets(i);
@@ -512,9 +512,6 @@ public class JVertexView extends VertexView {
                         // reset the border to make sure only the text size gets
                         // measured
                         setBorder(null);
-                        // set a large size to avoid spurious line breaks
-                        // which would mess up the size calculation
-                        // setSize(1000, 1000);
                         result = super.getPreferredSize();
                         // reset the border
                         setBorder(border);
