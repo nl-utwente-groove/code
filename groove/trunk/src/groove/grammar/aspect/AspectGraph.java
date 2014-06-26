@@ -893,7 +893,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             for (AspectEdge edge : graph.edgeSet()) {
                 AspectEdge fresh =
                     new AspectEdge(nodeMap.get(edge.source()), edge.label(),
-                        nodeMap.get(edge.target()));
+                        nodeMap.get(edge.target()), edge.getNumber());
                 newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap, offsetX, offsetY);
                 result.addEdgeContext(fresh);
             }
@@ -939,8 +939,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
         @Override
         public AspectEdge createEdge(AspectNode source, Label label, AspectNode target) {
-            return new AspectEdge(source, (AspectLabel) label, target);
+            int nr = 0;
+            AspectLabel aLabel = (AspectLabel) label;
+            if (aLabel.containsAspect(AspectKind.REMARK)) {
+                nr = this.remarkCount;
+                this.remarkCount++;
+            }
+            return new AspectEdge(source, (AspectLabel) label, target, nr);
         }
+
+        /** Number of remark edges encountered thus far. */
+        private int remarkCount;
 
         @Override
         public AspectGraphMorphism createMorphism() {

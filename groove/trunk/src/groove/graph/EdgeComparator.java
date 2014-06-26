@@ -19,7 +19,7 @@ package groove.graph;
 import java.util.Comparator;
 
 /**
- * Compares nodes by (successively) their source node numbers, labels, and target node numbers.
+ * Compares nodes by (successively) their source node numbers, edge numbers, labels, and target node numbers.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -31,6 +31,10 @@ public class EdgeComparator implements Comparator<Edge> {
     @Override
     public int compare(Edge o1, Edge o2) {
         int result = o1.source().getNumber() - o2.source().getNumber();
+        if (result != 0) {
+            return result;
+        }
+        result = o1.getNumber() - o2.getNumber();
         if (result != 0) {
             return result;
         }

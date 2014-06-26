@@ -72,8 +72,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
      * @param label the label for this edge
      * @param target the target node for this edge
      */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
-        super(source, label, target);
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target, int number) {
+        super(source, label, target, number);
         assert label.isFixed();
         if (!label.hasErrors() && label.isNodeOnly()) {
             if (label.getNodeOnlyAspect() == null) {
@@ -89,9 +89,19 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         this.graphRole = label.getGraphRole();
     }
 
+    /**
+     * Constructs a new edge.
+     * @param source the source node for this edge
+     * @param label the label for this edge
+     * @param target the target node for this edge
+     */
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
+        this(source, label, target, 0);
+    }
+
     @Override
     public boolean isSimple() {
-        return true;
+        return false;
     }
 
     /** Returns the graph role set for this aspect edge. */
@@ -523,10 +533,10 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         String name = getLevelName();
         // only consider proper names unequal to source or target level
         if (name != null && name.length() != 0 && !name.equals(source().getLevelName())
-                && !name.equals(target().getLevelName())) {
+            && !name.equals(target().getLevelName())) {
             result =
-                    Line.atom(LEVEL_NAME_SEPARATOR).append(Line.atom(name).style(Style.ITALIC)).color(
-                        Values.NESTED_COLOR);
+                Line.atom(LEVEL_NAME_SEPARATOR).append(Line.atom(name).style(Style.ITALIC)).color(
+                    Values.NESTED_COLOR);
         }
         return result;
     }
@@ -574,7 +584,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
         if (getKind() == REMARK || isAssign() || isPredicate() || getGraphRole() == GraphRole.TYPE
-                && getAttrKind().hasSignature()) {
+            && getAttrKind().hasSignature()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
