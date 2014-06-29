@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2014 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  *
@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * CriticalPairs consist of two dependent transformations (RuleApplications)
  * which are applied to the same hostGraph
- * 
+ *
  * @author Ruud Welling
  */
 public class CriticalPair {
@@ -347,10 +347,10 @@ public class CriticalPair {
         RuleGraph ruleGraph;
         if (matchnum == MatchNumber.ONE) {
             ruleGraph = rule1.lhs();
-            injectiveOnly = rule1.getGrammarProperties().isInjective();
+            injectiveOnly = rule1.getCondition().isInjective();
         } else if (matchnum == MatchNumber.TWO) {
             ruleGraph = rule2.lhs();
-            injectiveOnly = rule2.getGrammarProperties().isInjective();
+            injectiveOnly = rule2.getCondition().isInjective();
         } else {
             throw new IllegalArgumentException("matchnum must be ONE or TWO");
         }
@@ -387,7 +387,7 @@ public class CriticalPair {
                 //from large to small, we handle case 1 and case 2 in separate loops
                 for (ParallelPair pair : parrPairs) {
                     ParallelPair newPair;
-                    //case 2: 
+                    //case 2:
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
                     for (Long group : pair.getCombinationGroups()) {
@@ -543,7 +543,7 @@ public class CriticalPair {
      * Computes the set of ruleNodes which are DefaultRuleNodes, non-constant VariableNodes
      * or Constant VariableNodes which are connected to a DefaultRuleNode
      * These are the ruleNodes which are required in a match for the rule
-     * 
+     *
      * In addition, also nodes which are targets of OperatorNodes are not included
      * Since these need to be the result of a call expression, if these nodes
      * any edges, an exception will be thrown
@@ -650,7 +650,8 @@ public class CriticalPair {
 }
 
 enum MatchNumber {
-    ONE, TWO;
+    ONE,
+    TWO;
 
     MatchNumber getOther() {
         if (this == ONE) {

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstractCondition.java,v 1.15 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.grammar;
@@ -47,8 +47,8 @@ import java.util.Set;
  * Type of conditions over graphs.
  * A condition is a hierarchical structure, the levels of which are
  * essentially first-order operators, in particular existential or
- * universal quantifiers. Each quantifier or negation has an associated 
- * <i>pattern</i>, which is the graph that should be matched (existentially 
+ * universal quantifiers. Each quantifier or negation has an associated
+ * <i>pattern</i>, which is the graph that should be matched (existentially
  * or universally) on that level.
  * <p>
  * A condition consists of the following elements:
@@ -83,7 +83,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class Condition implements Fixable {
-    /** 
+    /**
      * Constructs a (named) condition for a non-pattern operator.
      * @param name the (non-{@code null}) name for this condition
      * @param operator the top-level operator for the condition;
@@ -146,7 +146,7 @@ public class Condition implements Fixable {
         return this.typeGraph;
     }
 
-    /** 
+    /**
      * Returns the root graph of this condition.
      * The root graph is the subgraph of the pattern that the
      * condition has in common with its parent in the condition tree.
@@ -167,7 +167,7 @@ public class Condition implements Fixable {
     }
 
     /**
-     * Computes the set of input nodes nodes of this condition. 
+     * Computes the set of input nodes nodes of this condition.
      * These are the nodes that are certainly
      * bound before the condition has to be matched.
      */
@@ -323,7 +323,7 @@ public class Condition implements Fixable {
     /**
      * Tests if the condition is fixed or not. Throws an exception if the
      * fixedness does not coincide with the given value.
-     * 
+     *
      * @param value the expected fixedness state
      * @throws IllegalStateException if {@link #isFixed()} does not yield
      *         <code>value</code>
@@ -345,7 +345,7 @@ public class Condition implements Fixable {
      * Tests if the condition can be used to tests on graphs rather than
      * morphisms. This is the case if and only if the condition is ground (i.e.,
      * the root graph is empty), as determined by {@link #isGround()}.
-     * 
+     *
      * @throws IllegalStateException if this condition is not ground.
      * @see #isGround()
      */
@@ -374,7 +374,7 @@ public class Condition implements Fixable {
         errors.throwException();
     }
 
-    /** 
+    /**
      * Creates a mapping from unresolved variables to potential resolvers.
      * Each resolver is a set of variables that all have to be resolved in order
      * for the key to be resolved.
@@ -572,14 +572,14 @@ public class Condition implements Fixable {
         return this.factory;
     }
 
-    /** Sets a count node for this universal condition. 
+    /** Sets a count node for this universal condition.
      * @see #getCountNode() */
     public void setCountNode(VariableNode countNode) {
         assert !isFixed();
         this.countNode = countNode;
     }
 
-    /** 
+    /**
      * Returns the count node of this universal condition, if any.
      * The count node is bound to the number of matches of the condition.
      * @return the count node, or {@code null} if there is none
@@ -588,7 +588,7 @@ public class Condition implements Fixable {
         return this.countNode;
     }
 
-    /** 
+    /**
      * Tests if this is a universal condition with a count node.
      */
     public boolean hasCountNode() {
@@ -613,7 +613,7 @@ public class Condition implements Fixable {
 
     /** Indicates if this condition should be matched injectively. */
     public boolean isInjective() {
-        return getGrammarProperties() != null && getGrammarProperties().isInjective();
+        return hasPattern() && getPattern().isInjective();
     }
 
     /** Sets the associated rule of this condition. */
@@ -647,7 +647,7 @@ public class Condition implements Fixable {
      * Returns a new condition object that is the reverse of this one. Hence,
      * a NAC becomes a Positive Application Condition.
      * Used in the abstraction code.
-     * Fails in an assertion if this condition is not a NAC. 
+     * Fails in an assertion if this condition is not a NAC.
      */
     public Condition reverse() {
         assert getOp() == Op.NOT;
@@ -818,7 +818,7 @@ public class Condition implements Fixable {
         return result;
     }
 
-    /** 
+    /**
      * Condition operator.
      */
     public static enum Op {
@@ -866,7 +866,7 @@ public class Condition implements Fixable {
             return this == FORALL || this == EXISTS;
         }
 
-        /** 
+        /**
          * Indicates if this operator has an associated graph pattern.
          * This is the case if it is a quantifier or {@link #NOT}.
          */
@@ -874,15 +874,15 @@ public class Condition implements Fixable {
             return isQuantifier() || this == NOT;
         }
 
-        /** 
+        /**
          * Indicates if this operator may have operands,
-         * i.e., sub-conditions (apart from the possible graph pattern). 
+         * i.e., sub-conditions (apart from the possible graph pattern).
          */
         public boolean hasOperands() {
             return isQuantifier() || this == AND || this == OR;
         }
 
-        /** 
+        /**
          * Indicates if this is a conjunctive operator,
          * meaning that its operands (i.e., subconditions) should all be satisfied.
          */

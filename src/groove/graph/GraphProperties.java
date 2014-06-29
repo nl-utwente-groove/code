@@ -55,8 +55,8 @@ public class GraphProperties extends Properties implements Fixable {
     @Override
     public synchronized Object put(Object key, Object value) {
         if (!isValidKey(key)) {
-            throw new IllegalArgumentException(
-                String.format("User property key '%s' not allowed: use identifier", key));
+            throw new IllegalArgumentException(String.format(
+                "User property key '%s' not allowed: use identifier", key));
         }
         return super.put(key, value);
     }
@@ -196,7 +196,7 @@ public class GraphProperties extends Properties implements Fixable {
             }
         }),
         /** Rule enabledness. */
-        ENABLED("enabled", Boolean.toString(true), new Property<String>() {
+        ENABLED("enabled", "" + true, new Property<String>() {
             @Override
             public boolean isSatisfied(String value) {
                 return value.equals("" + true) || value.equals("" + false);
@@ -246,6 +246,24 @@ public class GraphProperties extends Properties implements Fixable {
                 return "If nonempty, rule application prints this (instantiated) string on System.out";
             }
         }, false),
+        /** Alternative transition label. */
+        INJECTIVE("injective", "" + false, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.equals("" + true) || value.equals("" + false);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Flag controlling injective matching; false by default";
+            }
+
+            @Override
+            public String getComment() {
+                return "Boolean property determining if the rule is to be matched injectively."
+                    + "Disregarded if injective matching is set on the grammar level.";
+            }
+        }),
         /** Alternative transition label. */
         TRANSITION_LABEL("transitionLabel", new Property<String>() {
             @Override

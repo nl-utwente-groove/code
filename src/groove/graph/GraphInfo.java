@@ -17,6 +17,7 @@
 package groove.graph;
 
 import static groove.graph.GraphProperties.Key.ENABLED;
+import static groove.graph.GraphProperties.Key.INJECTIVE;
 import static groove.graph.GraphProperties.Key.PRIORITY;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatError;
@@ -320,6 +321,25 @@ public class GraphInfo extends DefaultFixable {
      */
     static public void setEnabled(Graph graph, boolean enabled) {
         setProperty(graph, ENABLED, Boolean.toString(enabled));
+    }
+
+    /**
+     * Returns the injectivity property of a given graph.
+     * Yields <code>false</code> by default.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#INJECTIVE
+     */
+    static public boolean isInjective(Graph graph) {
+        return Boolean.parseBoolean(getProperty(graph, INJECTIVE));
+    }
+
+    /**
+     * Sets the injectivity of a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param injective the new injectivity value
+     */
+    static public void setInjective(Graph graph, boolean injective) {
+        setProperty(graph, INJECTIVE, Boolean.toString(injective));
     }
 
     /**
