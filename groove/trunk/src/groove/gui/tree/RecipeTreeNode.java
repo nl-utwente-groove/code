@@ -43,7 +43,7 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
 
     @Override
     public Icon getIcon() {
-        return Icons.RECIPE_LIST_ICON;
+        return Icons.RECIPE_TREE_ICON;
     }
 
     @Override

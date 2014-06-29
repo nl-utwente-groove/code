@@ -47,7 +47,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     public Icon getIcon() {
         Icon result = super.getIcon();
         if (result != Icons.EDIT_ICON && getRule().isProperty()) {
-            result = Icons.PROPERTY_LIST_ICON;
+            result = Icons.PROPERTY_TREE_ICON;
         }
         return result;
     }

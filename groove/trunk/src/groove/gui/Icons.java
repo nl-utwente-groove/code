@@ -159,7 +159,7 @@ public final class Icons {
         case GROOVY:
             return GROOVY_LIST_ICON;
         case RULE:
-            return RULE_LIST_ICON;
+            return RULE_TREE_ICON;
         case TYPE:
             return TYPE_LIST_ICON;
         default:
@@ -305,7 +305,9 @@ public final class Icons {
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON = createIcon("prolog-file.gif");
     /** Small icon for property rules, as shown in the rule tree. */
-    public static final ImageIcon PROPERTY_LIST_ICON = createIcon("rule-property-small.gif");
+    public static final ImageIcon PROPERTY_TREE_ICON = createIcon("rule-property.gif");
+    /** Small icon for injective property rules, as shown in the rule tree. */
+    public static final ImageIcon PROPERTY_I_TREE_ICON = createIcon("rule-property-I.gif");
     /** Icon for Groovy Panel. */
     public static final ImageIcon GROOVY_FRAME_ICON = createIcon("groovy-frame.gif");
     /** Icon for Groovy Files. */
@@ -316,10 +318,12 @@ public final class Icons {
     public static final ImageIcon PROPERTIES_FRAME_ICON = createIcon("properties-frame.gif");
     /** Redo action icon. */
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
+    /** Small icon for injective production rules, as shown in the rule tree. */
+    public static final ImageIcon RULE_I_TREE_ICON = createIcon("rule-standard-I.gif");
     /** Small icon for production rules, as shown in the rule tree. */
-    public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
+    public static final ImageIcon RULE_TREE_ICON = createIcon("rule-standard.gif");
     /** Small icon for transactional rules, as shown in the rule tree. */
-    public static final ImageIcon RECIPE_LIST_ICON = createIcon("rule-small-multi.gif");
+    public static final ImageIcon RECIPE_TREE_ICON = createIcon("rule-recipe.gif");
     /** Icon for rule (GPR) files. */
     public static final ImageIcon RULE_FILE_ICON = createIcon("rule-file.gif");
     /** Icon for the rule panel of the simulator. */
@@ -336,12 +340,19 @@ public final class Icons {
     public static final ImageIcon SEARCH_ICON = createIcon("search.gif");
     /** Rename action icon. */
     public static final ImageIcon RENAME_ICON = createIcon("rename.gif");
+    /** Absent state icon. */
+    public static final ImageIcon STATE_ABSENT_ICON = createIcon("state-absent.gif");
     /** Closed state icon. */
     public static final ImageIcon STATE_CLOSED_ICON = createIcon("state-closed.gif");
     /** Closed state icon. */
     public static final ImageIcon STATE_FINAL_ICON = createIcon("state-final.gif");
     /** Icon for the state panel of the simulator. */
     public static final ImageIcon STATE_FRAME_ICON = createIcon("state-frame.gif");
+    /** Internal state icon. */
+    public static final ImageIcon STATE_INTERNAL_ICON = createIcon("state-internal.gif");
+    /** Absent internal state icon. */
+    public static final ImageIcon STATE_INTERNAL_ABSENT_ICON =
+            createIcon("state-internal-absent.gif");
     /** State display mode icon. */
     public static final ImageIcon STATE_MODE_ICON = createIcon("state-mode.gif");
     /** Open state icon. */
@@ -350,6 +361,8 @@ public final class Icons {
     public static final ImageIcon STATE_RESULT_ICON = createIcon("state-result.gif");
     /** Start state icon. */
     public static final ImageIcon STATE_START_ICON = createIcon("state-start.gif");
+    /** Transient state icon. */
+    public static final ImageIcon STATE_TRANSIENT_ICON = createIcon("state-transient.gif");
     /** Icon for type (GTY) files. */
     public static final ImageIcon TYPE_FILE_ICON = createIcon("type-file.gif");
     /** Icon for Type Panel. */
