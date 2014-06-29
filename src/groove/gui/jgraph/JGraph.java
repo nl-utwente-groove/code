@@ -37,7 +37,6 @@ import groove.gui.action.ExportAction;
 import groove.gui.action.LayoutAction;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.Layouter;
-import groove.gui.layout.SpringLayouter;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
@@ -432,9 +431,19 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private Dimension2D getPreferredSize(CellView view) {
-        // previous attempt to use VisualKey.TEXT_SIZE failed,
-        // because JVertexView.MyRenderer also refreshes the insets when getPreferredSize() is called
-        return getUI().getPreferredSize(this, view);
+        Dimension2D result;
+        JVertex<?> vertex = view instanceof JVertexView ? ((JVertexView) view).getCell() : null;
+        if (vertex == null) {
+            result = getUI().getPreferredSize(this, view);
+        } else {
+            if (vertex.isStale(VisualKey.TEXT_SIZE)) {
+                result = getUI().getPreferredSize(this, view);
+                vertex.putVisual(VisualKey.TEXT_SIZE, result);
+            } else {
+                result = vertex.getVisuals().getTextSize();
+            }
+        }
+        return result;
     }
 
     /**
@@ -855,26 +864,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     public Layouter doLayout(boolean complete) {
         Layouter result = null;
-        // Test if we do any layouting
-        // any means there is a layoutable
-        boolean any = complete;
-        if (!any) {
-            for (JCell<G> jCell : getModel().getRoots()) {
-                if (jCell instanceof JVertex && ((JVertex<?>) jCell).isLayoutable()) {
-                    any = true;
-                    break;
-                }
-            }
+        if (complete) {
+            getModel().setLayoutable(true);
+            result = getLayouter();
+        } else {
+            result = getLayouter().getIncremental();
         }
-        if (any) {
-            if (complete) {
-                getModel().setLayoutable(true);
-                result = getLayouter();
-            } else {
-                result = this.incrementalLayouter;
-            }
-            result.start();
-        }
+        result.start();
         return result;
     }
 
@@ -1390,9 +1386,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * {@link ToolTipManager}.
      */
     private boolean toolTipEnabled;
-
-    /** Layouter used if only part of the model should be layed out. */
-    private final Layouter incrementalLayouter = SpringLayouter.PROTOTYPE.newInstance(this);
 
     /** The factor by which the zoom is adapted. */
     public static final float ZOOM_FACTOR = 1.4f;

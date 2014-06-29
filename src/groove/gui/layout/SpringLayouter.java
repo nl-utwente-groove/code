@@ -86,7 +86,7 @@ public class SpringLayouter extends AbstractLayouter {
         this.deltas = new Point2D.Float[this.layoutMap.size()];
         for (LayoutNode layoutable : this.layoutMap.values()) {
             this.layoutables[layoutableIndex] = layoutable;
-            if (!this.immovableSet.contains(layoutable)) {
+            if (!this.immovableMap.containsKey(layoutable.getVertex())) {
                 this.deltas[layoutableIndex] = new Point2D.Float(0, 0);
                 this.deltaMap.put(layoutable, this.deltas[layoutableIndex]);
             }
@@ -141,10 +141,10 @@ public class SpringLayouter extends AbstractLayouter {
             // still>1, damp away
             // We never want the damper to be negative though
             if ((this.maxMotion < FAST_DAMPING_MOTION_TRESHHOLD || this.damper < FAST_DAMPING_DAMPER_TRESHHOLD)
-                && this.damper > FAST_DAMPING) {
+                    && this.damper > FAST_DAMPING) {
                 this.damper -= FAST_DAMPING;
             } else if (this.maxMotion < MEDIUM_DAMPING_MOTION_TRESHHOLD
-                && this.damper > MEDIUM_DAMPING) {
+                    && this.damper > MEDIUM_DAMPING) {
                 this.damper -= MEDIUM_DAMPING;
             } else if (this.damper > SLOW_DAMPING) {
                 this.damper -= SLOW_DAMPING;

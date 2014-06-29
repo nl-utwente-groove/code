@@ -106,16 +106,6 @@ public class JVertexView extends VertexView {
         return editor;
     }
 
-    /** Stores the insets value for this view. */
-    void setInsets(Insets insets) {
-        this.insets = insets;
-    }
-
-    /** Returns the insets computed for this vertex view. */
-    final Insets getInsets() {
-        return this.insets;
-    }
-
     /** Returns the (html formatted) text to be displayed in this vertex view. */
     final String getText() {
         MultiLabel label = getCellVisuals().getLabel();
@@ -266,8 +256,6 @@ public class JVertexView extends VertexView {
     private MultiLabel label;
     /** The text on this vertex. */
     private String text;
-    /** Additional space to add to view bounds to make room for special borders. */
-    private Insets insets;
     /**
      * Temporary flag set to indicate that this cell should be painted
      * as selected.
@@ -359,11 +347,13 @@ public class JVertexView extends VertexView {
                         (int) (background.getGreen() * darken), 0), Math.max(
                         (int) (background.getBlue() * darken), 0), background.getAlpha());
             }
-            setBackground(background);
+            if (background == null ? getBackground() != null : !background.equals(getBackground())) {
+                setBackground(background);
+            }
             Font font = Options.getLabelFont().deriveFont(visuals.getFont());
             setFont((font != null) ? font : graph.getFont());
-            setBorder(createEmptyBorder());
             setText(this.view.getText());
+            setBorder(createEmptyBorder());
             this.error = visuals.isError();
             this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
             return this;
@@ -460,7 +450,7 @@ public class JVertexView extends VertexView {
          * text correctly.
          */
         private Border createEmptyBorder() {
-            Insets i = this.view.getInsets();
+            Insets i = computeInsets();
             return i == null ? null : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
                 i.left + EXTRA_BORDER_SPACE, i.bottom + EXTRA_BORDER_SPACE, i.right
                     + EXTRA_BORDER_SPACE);
@@ -477,27 +467,35 @@ public class JVertexView extends VertexView {
 
         @Override
         public Dimension getPreferredSize() {
-            Dimension result = null;
-            if (this.cell.isStale(VisualKey.NODE_SIZE)) {
-                result = computePreferredSize();
-                this.cell.putVisual(VisualKey.NODE_SIZE, result);
-            } else {
-                result = new Dimension();
-                result.setSize(this.visuals.getNodeSize());
-            }
+            Dimension result = getTextSize();
             // adjust for view insets
             Insets i = computeInsets(result.width, result.height);
             result =
                 new Dimension(result.width + i.left + i.right + 2 * EXTRA_BORDER_SPACE,
                     result.height + i.top + i.bottom + 2 * EXTRA_BORDER_SPACE);
-            // store the insets in the view, to be used
-            // when actually drawing the view
-            this.view.setInsets(i);
+            return result;
+        }
+
+        /** Reconstructs the insets from the total (preferred) size. */
+        private Insets computeInsets() {
+            Dimension size = getTextSize();
+            return computeInsets(size.width, size.height);
+        }
+
+        private Dimension getTextSize() {
+            Dimension result;
+            if (this.cell.isStale(VisualKey.NODE_SIZE)) {
+                result = computeTextSize();
+                this.cell.putVisual(VisualKey.NODE_SIZE, result);
+            } else {
+                result = new Dimension();
+                result.setSize(this.visuals.getNodeSize());
+            }
             return result;
         }
 
         /** Computes the size of the text inscription. */
-        private Dimension computePreferredSize() {
+        private Dimension computeTextSize() {
             Dimension result;
             if (this.nodeEdge) {
                 result = JAttr.NODE_EDGE_DIMENSION;
