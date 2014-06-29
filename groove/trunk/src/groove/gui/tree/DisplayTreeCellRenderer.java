@@ -44,8 +44,8 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         boolean cellSelected = isSelected || hasFocus;
         boolean cellFocused = cellSelected && this.displayList.isFocusOwner();
         Component result =
-            super.getTreeCellRendererComponent(tree, value, cellSelected, expanded, leaf, row,
-                false);
+                super.getTreeCellRendererComponent(tree, value, cellSelected, expanded, leaf, row,
+                    false);
         Icon icon = null;
         String tip = null;
         String text = value.toString();
@@ -67,29 +67,21 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         setText(text == null ? null : HTMLConverter.HTML_TAG.on(text));
         setToolTipText(tip);
         Values.ColorSet colors =
-            inRecipe ? Values.RECIPE_COLORS : error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
-        Color background = colors.getBackground(cellSelected, cellFocused);
+                inRecipe ? Values.RECIPE_COLORS : error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
         Color foreground = colors.getForeground(cellSelected, cellFocused);
-        setForeground(enabled ? foreground : transparent(foreground));
+        setForeground(foreground);
+        Color background = colors.getBackground(cellSelected, cellFocused);
         if (background == Color.WHITE) {
-            background = null;//this.displayList.getBackground();
+            background = null;
         }
         if (cellSelected) {
             setBackgroundSelectionColor(background);
         } else {
             setBackgroundNonSelectionColor(background);
         }
+        setTransparent(!enabled);
         setOpaque(false);
         return result;
-    }
-
-    /** Returns a transparent version of a given colour. */
-    private Color transparent(Color c) {
-        if (c.equals(Color.WHITE)) {
-            return c;
-        } else {
-            return new Color(c.getRed(), c.getGreen(), c.getBlue(), DISABLED_TRANSPARANCY);
-        }
     }
 
     /**
@@ -97,14 +89,25 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
      */
     private final Component displayList;
 
-    /* Overridden to deadl correctly with transpacency in HTML. */
+    /** Sets the transparency of the node display. */
+    private void setTransparent(boolean transparent) {
+        this.transparent = transparent;
+    }
+
+    /** Indicates if the node is to be displayed transparently. */
+    private boolean isTransparent() {
+        return this.transparent;
+    }
+
+    private boolean transparent;
+
+    /* Overridden to deal correctly with transparency in HTML. */
     @Override
     protected void paintComponent(Graphics g) {
-        int alpha = getForeground().getAlpha();
-        if (alpha == DISABLED_TRANSPARANCY) {
+        if (isTransparent()) {
             Graphics2D g2 = (Graphics2D) g;
             final Composite oldComposite = g2.getComposite();
-            g2.setComposite(DISABLED_COMPOSITE);
+            g2.setComposite(TRANSPARENT_COMPOSITE);
             super.paintComponent(g);
             g2.setComposite(oldComposite);
         } else {
@@ -113,8 +116,8 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
     }
 
     /** Transparency value for disabled entries. */
-    private static final int DISABLED_TRANSPARANCY = 125;
+    private static final int TRANSPARANCY = 125;
     /** Transparency composite for disabled entries. */
-    private static final Composite DISABLED_COMPOSITE = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER, DISABLED_TRANSPARANCY / 255.0f);
+    private static final Composite TRANSPARENT_COMPOSITE = AlphaComposite.getInstance(
+        AlphaComposite.SRC_OVER, TRANSPARANCY / 255.0f);
 }

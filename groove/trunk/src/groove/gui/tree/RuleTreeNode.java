@@ -122,12 +122,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                    !isPartial() || (getParent() instanceof RecipeTreeNode)
+                !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
-        return getDisplay().getLabelText(getName(), showEnabled)
-                + (isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX
-                    : RULE_SUFFIX);
+        String suffix =
+            isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX : RULE_SUFFIX;
+        return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */
