@@ -46,8 +46,13 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public Icon getIcon() {
         Icon result = super.getIcon();
-        if (result != Icons.EDIT_ICON && getRule().isProperty()) {
-            result = Icons.PROPERTY_TREE_ICON;
+        if (result != Icons.EDIT_ICON) {
+            boolean injective = getRule().isInjective();
+            if (getRule().isProperty()) {
+                result = injective ? Icons.PROPERTY_I_TREE_ICON : Icons.PROPERTY_TREE_ICON;
+            } else {
+                result = injective ? Icons.RULE_I_TREE_ICON : Icons.RULE_TREE_ICON;
+            }
         }
         return result;
     }
@@ -68,7 +73,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        result.append("Rule ");
+        result.append(getRule().isProperty() ? "Property " : "Rule ");
         result.append(HTMLConverter.STRONG_TAG.on(getName()));
         AspectGraph source = getRule().getSource();
         String remark = GraphInfo.getRemark(source);
@@ -122,11 +127,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                !isPartial() || (getParent() instanceof RecipeTreeNode)
+                    !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         String suffix =
-            isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX : RULE_SUFFIX;
+                isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX : RULE_SUFFIX;
         return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 

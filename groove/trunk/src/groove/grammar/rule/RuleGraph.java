@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -18,6 +18,7 @@ package groove.grammar.rule;
 
 import static groove.graph.GraphRole.RULE;
 import groove.grammar.type.TypeGuard;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.NodeSetEdgeSetGraph;
 
@@ -35,20 +36,15 @@ import java.util.Set;
  */
 public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     /**
-     * Constructs a new, empty rule graph with a fresh rule factory.
-     * @param name the name of the new rule graph
-     */
-    public RuleGraph(String name) {
-        this(name, RuleFactory.newInstance());
-    }
-
-    /**
      * Constructs a new, empty rule graph.
      * @param name the name of the new rule graph
      */
-    public RuleGraph(String name, RuleFactory factory) {
+    public RuleGraph(String name, boolean injective, RuleFactory factory) {
         super(name);
         this.factory = factory;
+        if (injective) {
+            GraphInfo.setInjective(this, true);
+        }
     }
 
     /**
@@ -71,7 +67,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
 
     @Override
     public RuleGraph newGraph(String name) {
-        return new RuleGraph(name, getFactory());
+        return new RuleGraph(name, isInjective(), getFactory());
     }
 
     @SuppressWarnings("unchecked")
@@ -90,6 +86,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     public RuleFactory getFactory() {
         return this.factory;
     }
+
+    private final RuleFactory factory;
 
     @Override
     public boolean addNode(RuleNode node) {
@@ -142,6 +140,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
         return this.binderMap.get(var);
     }
 
+    /** Mapping from label variables to rule elements that bind them. */
+    private final Map<LabelVar,Set<RuleElement>> binderMap =
+        new HashMap<LabelVar,Set<RuleElement>>();
+
     /** Adds a variable to those known in this graph. */
     public boolean addVar(LabelVar var) {
         boolean result = !this.varMap.containsKey(var);
@@ -173,9 +175,11 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
         return this.varMap;
     }
 
+    /** Set of all known variables. */
+    private final Map<LabelVar,Set<RuleElement>> varMap = new HashMap<LabelVar,Set<RuleElement>>();
+
     /** Lazily creates and returns the set of binders for a given label variable. */
-    private Set<RuleElement> addKey(Map<LabelVar,Set<RuleElement>> map,
-            LabelVar var) {
+    private Set<RuleElement> addKey(Map<LabelVar,Set<RuleElement>> map, LabelVar var) {
         Set<RuleElement> result = map.get(var);
         if (result == null) {
             map.put(var, result = new HashSet<RuleElement>());
@@ -183,11 +187,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
         return result;
     }
 
-    /** Mapping from label variables to rule elements that bind them. */
-    private final Map<LabelVar,Set<RuleElement>> binderMap =
-        new HashMap<LabelVar,Set<RuleElement>>();
-    /** Set of all known variables. */
-    private final Map<LabelVar,Set<RuleElement>> varMap =
-        new HashMap<LabelVar,Set<RuleElement>>();
-    private final RuleFactory factory;
+    /** Indicates if this rule graph is to be injectively mapped. */
+    public boolean isInjective() {
+        return GraphInfo.isInjective(this);
+    }
 }

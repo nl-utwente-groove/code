@@ -289,7 +289,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /**
      * @return Returns the properties.
      */
-    final GrammarProperties getSystemProperties() {
+    final GrammarProperties getGrammarProperties() {
         return getGrammar().getProperties();
     }
 
@@ -299,16 +299,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * checked.
      * @return <code>true</code> if the rule is to be matched injectively.
      */
-    final boolean isInjective() {
-        return getSystemProperties() != null && getSystemProperties().isInjective();
+    final public boolean isInjective() {
+        return GraphInfo.isInjective(getSource()) || getGrammarProperties().isInjective();
     }
 
     final boolean isRhsAsNac() {
-        return getSystemProperties() != null && getSystemProperties().isRhsAsNac();
+        return getGrammarProperties().isRhsAsNac();
     }
 
     final boolean isCheckCreatorEdges() {
-        return getSystemProperties() != null && getSystemProperties().isCheckCreatorEdges();
+        return getGrammarProperties().isCheckCreatorEdges();
     }
 
     /**
@@ -370,7 +370,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             result = conditionTree.firstEntry().getValue().getRule();
             if (result != null) {
                 result.setProperties(GraphInfo.getProperties(getSource()));
-                result.setCheckDangling(getSystemProperties().isCheckDangling());
+                result.setCheckDangling(getGrammarProperties().isCheckDangling());
                 Parameters parameters = new Parameters();
                 result.setSignature(parameters.getSignature(), parameters.getHiddenPars());
             }
@@ -1746,7 +1746,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @see #getSource()
          */
         private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, this.factory);
+            return new RuleGraph(name, isInjective(), this.factory);
         }
 
         @Override
@@ -1954,7 +1954,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
             }
             // check for non-injectively matched merge sources
-            if (!getGrammar().getProperties().isInjective()) {
+            if (!isInjective()) {
                 outer: for (RuleEdge merger1 : mergers) {
                     for (RuleEdge merger2 : mergers) {
                         // only check lower left half of matrix
@@ -2083,7 +2083,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @see #getSource()
          */
         private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, this.factory);
+            return new RuleGraph(name, isInjective(), this.factory);
         }
 
         private final Level3 parent;
@@ -2252,7 +2252,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @see #toResource()
          */
         private EdgeEmbargo createEdgeEmbargo(RuleGraph context, RuleEdge embargoEdge) {
-            return new EdgeEmbargo(context, embargoEdge, getSystemProperties());
+            return new EdgeEmbargo(context, embargoEdge, getGrammarProperties());
         }
 
         /**
@@ -2264,7 +2264,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private Condition createNAC(RuleGraph lhs, RuleGraph nac) {
             String name = nac.getName();
             return new Condition(name, Condition.Op.NOT, nac, getIntersection(lhs, nac),
-                getSystemProperties());
+                getGrammarProperties());
         }
 
         /**
@@ -2289,7 +2289,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private Condition createCondition(RuleGraph root, RuleGraph pattern) {
             Condition result =
                 new Condition(this.index.getName(), this.index.getOperator(), pattern, root,
-                    getSystemProperties());
+                    getGrammarProperties());
             result.setTypeGraph(getType());
             if (this.index.isPositive()) {
                 result.setPositive();
