@@ -116,13 +116,16 @@ public class StatisticsReporter extends AExplorationReporter {
         this.fm = null;
     }
 
-    /** Reports the statistics of the GTS.
-     * Should be called right after the exploration finishes. */
     @Override
-    public void report() {
+    public void stop(GTS gts) {
         this.endTime = System.currentTimeMillis();
         getGTS().removeLTSListener(this.gtsCounter);
         getGTS().removeLTSListener(this.graphCounter);
+    }
+
+    @Override
+    public void report() {
+        stop(getGTS());
     }
 
     /**

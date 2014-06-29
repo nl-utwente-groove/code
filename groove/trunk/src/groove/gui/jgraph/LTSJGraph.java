@@ -87,8 +87,10 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                     if (model != null) {
                         GTS gts = getModel().getGraph();
                         if (gts != null && gts.hasTransientStates()) {
+                            model.setLayoutable(false);
                             model.loadGraph(model.getGraph());
                             refreshAllCells();
+                            doLayout(false);
                         }
                     }
                 }
@@ -101,8 +103,10 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                     if (model != null) {
                         GTS gts = getModel().getGraph();
                         if (gts != null && gts.hasAbsentStates()) {
+                            model.setLayoutable(false);
                             model.loadGraph(model.getGraph());
                             refreshAllCells();
+                            doLayout(false);
                         }
                     }
                 }

@@ -65,7 +65,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.NumberEditor;
 import javax.swing.JSplitPane;
@@ -348,7 +347,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (result == null) {
             result = this.jGraph = new LTSJGraph(getSimulator());
             result.setLabelTree(getLabelTree());
-            result.addProgressObserver(new ProgressObserver());
+            //result.addProgressObserver(new ProgressObserver());
         }
         return result;
     }
@@ -397,16 +396,17 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 } else {
                     ltsModel = getJModel();
                     // (re)load the GTS if it is not the same size as the model
-                    if (ltsModel.size() != gts.size()) {
-                        ltsModel.loadGraph(gts);
-                    }
+                    //                    if (ltsModel.size() != gts.size()) {
+                    //                        ltsModel.setLayoutable(false);
+                    //                        ltsModel.incrementGraph();
+                    //                    }
                     GraphState state = source.getState();
                     GraphTransition transition = source.getTransition();
                     getJGraph().setActive(state, transition);
                 }
                 getGraphPanel().refreshBackground();
                 getJGraph().refreshFiltering();
-                getJGraph().doLayout(true);
+                getJGraph().doLayout(false);
                 setEnabled(true);
             }
             if (gts != oldModel.getGts()) {
@@ -629,37 +629,5 @@ public class LTSDisplay extends Display implements SimulatorListener {
             Color background = incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;
             setEnabledBackground(background);
         }
-    }
-
-    /** Class showing a progress bar on the status bar on demand. */
-    private class ProgressObserver implements Observer {
-        ProgressObserver() {
-            this.bar = new JProgressBar();
-            this.bar.setStringPainted(true);
-            this.bar.setIndeterminate(true);
-            getGraphPanel().getStatusBar().add(this.bar, BorderLayout.EAST);
-            this.bar.setVisible(false);
-        }
-
-        @Override
-        public void update(Observable o, Object arg) {
-            String message = (String) arg;
-            if (message.length() == 0) {
-                hideProgressBar();
-            } else {
-                showProgressBar(message);
-            }
-        }
-
-        private void showProgressBar(String message) {
-            this.bar.setVisible(true);
-            this.bar.setString(message);
-        }
-
-        private void hideProgressBar() {
-            this.bar.setVisible(false);
-        }
-
-        private final JProgressBar bar;
     }
 }

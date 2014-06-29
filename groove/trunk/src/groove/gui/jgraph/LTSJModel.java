@@ -26,8 +26,10 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.Status.Flag;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Graph model adding a concept of active state and transition, with special
@@ -60,30 +62,23 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         return result;
     }
 
-    /**
-     * Reacts to a (node of edge) extension of the underlying Graph by mimicking
-     * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
-     * additions.
-     */
     @Override
     public synchronized void addUpdate(GTS gts, GraphState state) {
-        if (this.listening) {
+        if (isExploring()) {
+            this.addedNodes.add(state);
+        } else {
             prepareInsert();
             // add a corresponding GraphCell to the GraphModel
             addNode(state);
-            // insert(cells.toArray(), connections, null, attributes);
             doInsert(false);
         }
     }
 
-    /**
-     * Reacts to a (node of edge) extension of the underlying Graph by mimicking
-     * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
-     * additions.
-     */
     @Override
     public synchronized void addUpdate(GTS gts, GraphTransition transition) {
-        if (this.listening) {
+        if (isExploring()) {
+            this.addedEdges.add(transition);
+        } else {
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
@@ -97,39 +92,52 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
 
     @Override
     public void statusUpdate(GTS lts, GraphState explored, Flag flag, int oldStatus) {
-        if (this.listening) {
-            JVertex<GTS> jCell = getJCellForNode(explored);
-            if (jCell != null) {
-                switch (flag) {
-                case CLOSED:
-                    jCell.setLook(Look.OPEN, false);
-                    break;
-                case ERROR:
-                    jCell.setStale(VisualKey.ERROR);
-                    break;
-                case DONE:
-                    if (explored.isAbsent()) {
-                        for (JEdge<GTS> jEdge : jCell.getContext()) {
-                            jEdge.setLook(Look.ABSENT, true);
-                        }
-                        jCell.setLook(Look.ABSENT, true);
+        JCell<GTS> jCell = registerChange(explored, flag);
+        if (jCell != null) {
+            if (isExploring()) {
+                this.changedCells.add(jCell);
+            } else {
+                getJGraph().refreshCells(Collections.singleton(jCell));
+            }
+        }
+    }
+
+    /**
+     * Registers a status change in a previously explored state.
+     * @return the cell that was changed as a consequence to the state change;
+     * {@code null} if there was no change.
+     */
+    private JCell<GTS> registerChange(GraphState explored, Flag flag) {
+        JVertex<GTS> jCell = getJCellForNode(explored);
+        if (jCell != null) {
+            switch (flag) {
+            case CLOSED:
+                jCell.setLook(Look.OPEN, false);
+                break;
+            case ERROR:
+                jCell.setStale(VisualKey.ERROR);
+                break;
+            case DONE:
+                if (explored.isAbsent()) {
+                    for (JEdge<GTS> jEdge : jCell.getContext()) {
+                        jEdge.setLook(Look.ABSENT, true);
                     }
-                    jCell.setLook(Look.RECIPE, explored.isInternalState());
-                    jCell.setLook(Look.TRANSIENT, explored.isTransient());
-                    jCell.setLook(Look.FINAL, explored.isFinal());
-                    break;
-                case RESULT:
-                    jCell.setLook(Look.RESULT, explored.isResult());
+                    jCell.setLook(Look.ABSENT, true);
                 }
+                jCell.setLook(Look.RECIPE, explored.isInternalState());
+                jCell.setLook(Look.TRANSIENT, explored.isTransient());
+                jCell.setLook(Look.FINAL, explored.isFinal());
+                break;
+            case RESULT:
+                jCell.setLook(Look.RESULT, explored.isResult());
             }
             jCell.setStale(VisualKey.refreshables());
-            getJGraph().refreshCells(Collections.singleton(jCell));
         }
+        return jCell;
     }
 
     @Override
     public void loadGraph(GTS gts) {
-        this.listening = false;
         GTS oldGTS = getGraph();
         // temporarily remove the model as a graph listener
         if (oldGTS != null && gts != oldGTS) {
@@ -140,10 +148,9 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
             gts.addLTSListener(this);
         }
         getJGraph().reactivate();
-        this.listening = true;
     }
 
-    /** Overriden to ensure that the node rendering limit is used. */
+    /* Overridden to ensure that the node rendering limit is used. */
     @Override
     protected void addNodes(Collection<? extends Node> nodeSet) {
         int nodesAdded = 0;
@@ -163,7 +170,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         }
     }
 
-    /** Overriden to ensure that the node rendering limit is used. */
+    /* Overridden to ensure that the node rendering limit is used. */
     @Override
     protected void addEdges(Collection<? extends Edge> edgeSet) {
         for (Edge edge : edgeSet) {
@@ -172,18 +179,16 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 continue;
             }
             if ((trans.source().isAbsent() || trans.target().isAbsent())
-                && !getJGraph().isShowAbsentStates()) {
+                    && !getJGraph().isShowAbsentStates()) {
                 continue;
             }
             // Only add the edges for which we know the state was added.
             if (edge.source().getNumber() <= getStateBound()
-                    && edge.target().getNumber() <= getStateBound()) {
+                && edge.target().getNumber() <= getStateBound()) {
                 addEdge(edge);
             }
         }
     }
-
-    private boolean listening = true;
 
     /**
      * Sets the maximum state number to be added.
@@ -202,6 +207,47 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
 
     /** The maximum state number to be added. */
     private int stateBound;
+
+    /**
+     * Indicates if the model is set to exploring mode.
+     * In exploring mode, changes to the GTS are registered but not
+     * passed on to the GUI.
+     */
+    public boolean isExploring() {
+        return this.exploring;
+    }
+
+    /**
+     * Sets or resets the exploring mode.
+     * When exploring is set to {@code false}, all registered changes
+     * are pushed to the GUI.
+     */
+    public void setExploring(boolean exploring) {
+        boolean changed = (this.exploring != exploring);
+        if (changed) {
+            this.exploring = exploring;
+            if (exploring) {
+                this.addedNodes.clear();
+                this.addedEdges.clear();
+                this.changedCells.clear();
+            } else {
+                if (!this.addedNodes.isEmpty() || !this.addedEdges.isEmpty()) {
+                    addElements(this.addedNodes, this.addedEdges, false);
+                }
+                if (!this.changedCells.isEmpty()) {
+                    getJGraph().refreshCells(this.changedCells);
+                }
+            }
+        }
+    }
+
+    private boolean exploring;
+    /** Set of nodes added during the last exploration. */
+    private final List<Node> addedNodes = new ArrayList<Node>();
+    /** Set of edges added during the last exploration. */
+    private final List<Edge> addedEdges = new ArrayList<Edge>();
+    /** Set of JCells with status changes during the last exploration. */
+    private final List<JCell<GTS>> changedCells = new ArrayList<JCell<GTS>>();
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

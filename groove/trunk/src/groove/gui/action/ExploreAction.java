@@ -87,17 +87,18 @@ public class ExploreAction extends SimulatorAction {
             getSimulatorModel().setDisplay(DisplayKind.LTS);
         }
         // unhook the lts' jmodel from the lts, for efficiency's sake
-        gts.removeLTSListener(ltsJModel);
+        ltsJModel.setExploring(true);
         this.bound = INITIAL_STATE_BOUND;
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread(exploration);
         // go!
         exploration.addListener(getSimulatorModel().getExplorationStats());
         generateThread.start();
+        exploration.removeListener(getSimulatorModel().getExplorationStats());
         getSimulatorModel().getExplorationStats().report();
         // emphasise the result states, if required
+        ltsJModel.setExploring(false);
         getSimulatorModel().setGts(gts, true);
-        gts.addLTSListener(ltsJModel);
         GraphState lastState = exploration.getLastState();
         if (lastState != null) {
             getSimulatorModel().setState(lastState);

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AbstractLayouter.java,v 1.6 2008-01-30 09:33:01 iovka Exp $
  */
 package groove.gui.layout;
@@ -40,21 +40,18 @@ public class LayouterItem implements Layouter {
         this(kind, null, null);
     }
 
-    private LayouterItem(LayoutKind kind, final JGraph<?> jGraph,
-            JGraphFacade facade) {
+    private LayouterItem(LayoutKind kind, final JGraph<?> jGraph, JGraphFacade facade) {
         this.kind = kind;
         this.jGraph = jGraph;
         this.facade = facade;
         this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
         if (jGraph != null) {
-            jGraph.addPropertyChangeListener(
-                org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
+            jGraph.addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
                 new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         LayouterItem.this.facade =
-                            jGraph.getModel() == null ? null
-                                    : new JGraphFacade(jGraph);
+                                jGraph.getModel() == null ? null : new JGraphFacade(jGraph);
                     }
                 });
         }
@@ -103,4 +100,14 @@ public class LayouterItem implements Layouter {
     private void finishLayouting() {
         this.jGraph.setLayouting(false);
     }
+
+    @Override
+    public Layouter getIncremental() {
+        if (this.incremental == null) {
+            this.incremental = SpringLayouter.PROTOTYPE.newInstance(this.jGraph);
+        }
+        return this.incremental;
+    }
+
+    private Layouter incremental;
 }

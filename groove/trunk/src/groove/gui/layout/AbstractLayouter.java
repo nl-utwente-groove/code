@@ -17,6 +17,7 @@
 package groove.gui.layout;
 
 import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JVertex;
@@ -25,17 +26,17 @@ import groove.gui.look.VisualMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellView;
-import org.jgraph.graph.EdgeView;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.VertexView;
 
 /**
@@ -85,10 +86,15 @@ abstract public class AbstractLayouter implements Layouter {
     protected void prepare() {
         this.jGraph.notifyProgress("Layouting");
         this.jGraph.setLayouting(true);
-        this.jGraph.clearAllEdgePoints();
+        this.jGraph.setToolTipEnabled(false);
+        // edge points are cleared when layout is stored back into view
+        //        this.jGraph.clearAllEdgePoints();
+        // copy the old layout map
+        Map<JVertex<?>,LayoutNode> oldLayoutMap =
+                new LinkedHashMap<JVertex<?>,LayoutNode>(this.layoutMap);
         // clear the transient information
         this.layoutMap.clear();
-        this.immovableSet.clear();
+        this.immovableMap.clear();
         // iterate over the cell views
         CellView[] cellViews = this.jGraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
@@ -100,33 +106,54 @@ abstract public class AbstractLayouter implements Layouter {
             if (jVertex.isGrayedOut()) {
                 continue;
             }
-            LayoutNode layoutable = new LayoutNode(vertexView);
-            this.layoutMap.put(jVertex, layoutable);
+            LayoutNode layout = new LayoutNode(vertexView);
             if (!jVertex.isLayoutable()) {
-                this.immovableSet.add(layoutable);
+                Point2D shift = new Point2D.Double();
+                LayoutNode oldLayout = oldLayoutMap.get(jVertex);
+                if (oldLayout != null) {
+                    double x = layout.getX() - oldLayout.getX();
+                    double y = layout.getY() - oldLayout.getY();
+                    shift = new Point2D.Double(x, y);
+                }
+                this.immovableMap.put(jVertex, shift);
             }
+            this.layoutMap.put(jVertex, layout);
         }
-        this.jGraph.setToolTipEnabled(false);
     }
 
     /**
-     * Finalizes the layouting, by performing an edit on the model that records
+     * Finalises the layouting, by performing an edit on the model that records
      * the node bounds and edge points.
      */
     protected void finish() {
         final Map<JCell<?>,AttributeMap> change = new HashMap<JCell<?>,AttributeMap>();
-        CellView[] cellViews = getJGraph().getGraphLayoutCache().getRoots();
-        for (CellView view : cellViews) {
-            if (view instanceof VertexView || view instanceof EdgeView) {
-                JCell<?> cell = (JCell<?>) view.getCell();
-                VisualMap visuals = new VisualMap();
-                if (view instanceof VertexView) {
-                    // store the bounds back into the model
-                    Rectangle2D bounds = ((VertexView) view).getCachedBounds();
-                    visuals.setNodePos(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
-                    ((JVertex<?>) cell).setLayoutable(false);
-                }
-                change.put(cell, visuals.getAttributes());
+        for (LayoutNode layout : this.layoutMap.values()) {
+            VisualMap visuals = new VisualMap();
+            JVertex<?> jVertex = layout.getVertex();
+            // store the bounds back into the model
+            double x = layout.getCenterX();
+            double y = layout.getCenterY();
+            Point2D shift = this.immovableMap.get(jVertex);
+            if (shift != null) {
+                x += shift.getX();
+                y += shift.getY();
+            }
+            visuals.setNodePos(new Point2D.Double(x, y));
+            jVertex.setLayoutable(false);
+            change.put(jVertex, visuals.getAttributes());
+        }
+        for (Object root : getJGraph().getRoots()) {
+            if (root instanceof JEdge) {
+                JCell<?> jCell = (JEdge<?>) root;
+                VisualMap visuals = jCell.getVisuals();
+                List<Point2D> points = visuals.getPoints();
+                // don't make the change directly in the cell,
+                // as this messes up the undo history
+                List<Point2D> newPoints =
+                        Arrays.asList(points.get(0), points.get(points.size() - 1));
+                AttributeMap newAttributes = new AttributeMap();
+                GraphConstants.setPoints(newAttributes, newPoints);
+                change.put(jCell, newAttributes);
             }
         }
         // do the following in the event dispatch thread\
@@ -171,13 +198,19 @@ abstract public class AbstractLayouter implements Layouter {
      * Map from graph nodes to layoutables.
      */
     protected final Map<JVertex<?>,LayoutNode> layoutMap =
-            new LinkedHashMap<JVertex<?>,LayoutNode>();
+        new LinkedHashMap<JVertex<?>,LayoutNode>();
 
     /**
-     * The subset of layoutables that should be immovable, according to the
-     * movability attribute of the corresponding jCell.
+     * Map from vertices whose position should not be changed
+     * to a point representing the shift between the position determined for them at the
+     * last layout action, and their position at the start of the current layout action.
      */
-    protected final Set<LayoutNode> immovableSet = new HashSet<LayoutNode>();
+    protected final Map<JVertex<?>,Point2D> immovableMap = new HashMap<JVertex<?>,Point2D>();
+
+    @Override
+    public Layouter getIncremental() {
+        return this;
+    }
 
     /**
      * Implements a layoutable that wraps a rectangle.
@@ -185,7 +218,13 @@ abstract public class AbstractLayouter implements Layouter {
     static final protected class LayoutNode {
         /** Constructs a new layoutable from a given vertex. */
         public LayoutNode(VertexView view) {
-            this.r = view.getBounds();
+            this.r = (Rectangle2D) view.getBounds().clone();
+            this.view = view;
+        }
+
+        /** Returns the bounds of this layout node. */
+        public Rectangle2D getBounds() {
+            return this.r;
         }
 
         /** Returns the x-coordinate of this layoutable. */
@@ -208,19 +247,41 @@ abstract public class AbstractLayouter implements Layouter {
             return this.r.getHeight();
         }
 
+        /** Returns the x-coordinate of the centre of this layoutable. */
+        public double getCenterX() {
+            return this.r.getCenterX();
+        }
+
+        /** Returns the y-coordinate of the centre of this layoutable. */
+        public double getCenterY() {
+            return this.r.getCenterY();
+        }
+
         /** Sets a new position of this layoutable. */
         public void setLocation(double x, double y) {
             this.r.setRect(x, y, getWidth(), getHeight());
 
         }
 
+        /** Returns the view for which this is the layout node. */
+        public VertexView getView() {
+            return this.view;
+        }
+
+        /** Returns the vertex for which this is the layout node. */
+        public JVertex<?> getVertex() {
+            return (JVertex<?>) this.view.getCell();
+        }
+
         @Override
         public String toString() {
-            return "VertexLayoutable[x=" + getX() + ",y=" + getY() + ",width=" + getWidth()
-                    + ",height=" + getHeight() + "]";
+            return "Layout[x=" + getX() + ",y=" + getY() + ",width=" + getWidth() + ",height="
+                + getHeight() + "]";
         }
 
         /** The internally stored bounds of this layoutable. */
         private final Rectangle2D r;
+        /** Vertex for which this is the layout node. */
+        private final VertexView view;
     }
 }
