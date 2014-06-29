@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -113,7 +113,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         super.resetList();
     }
 
-    /** 
+    /**
      * Callback method to creates a tool bar for the list panel.
      */
     @Override
@@ -121,7 +121,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return createListToolBar(-1);
     }
 
-    /** 
+    /**
      * Creates a tool bar for the list panel.
      * @param separation width of the separator on the tool bar;
      * if negative, the default separator is used
@@ -147,8 +147,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (kind.isEnableable()) {
             result.add(getEnableButton());
             if (getResourceKind() == ResourceKind.HOST || getResourceKind() == ResourceKind.TYPE
-                || getResourceKind() == ResourceKind.PROLOG
-                || getResourceKind() == ResourceKind.CONTROL) {
+                    || getResourceKind() == ResourceKind.PROLOG
+                    || getResourceKind() == ResourceKind.CONTROL) {
                 result.add(getEnableUniqueAction());
             }
         }
@@ -324,8 +324,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         }
     }
 
-    /** 
-     * Adds an editor panel for the given resource, or selects the 
+    /**
+     * Adds an editor panel for the given resource, or selects the
      * one that already exists.
      */
     public void startEditResource(String name) {
@@ -359,7 +359,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
             AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
+                    getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
@@ -397,7 +397,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /**
-     * Attempts to save all dirty editors on this display, 
+     * Attempts to save all dirty editors on this display,
      * after asking permission from the user.
      * This is done in preparation to changing the grammar.
      * @param dispose if {@code true}, the editors are disposed
@@ -465,7 +465,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /**
-     * Initialises all listening activity on the display, and 
+     * Initialises all listening activity on the display, and
      * calls {@link #activateListening()}.
      */
     @Override
@@ -522,12 +522,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return this.listening;
     }
 
-    /** 
+    /**
      * Tests and sets the listening flag.
      * This should be used by all listeners to test if they are
      * supposed to be active, before they take any actions that can cause circular
      * dependencies.
-     * 
+     *
      * @return {@code true} if the listening flag was on
      * before the call.
      */
@@ -539,7 +539,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return result;
     }
 
-    /** 
+    /**
      * Sets the listening flag to true.
      * This means all listeners to events on this display become active.
      */
@@ -561,7 +561,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         }
     }
 
-    /** 
+    /**
      * Switches to the display of a given (named) resource,
      * either in an open editor or in the main tab.
      * @return the tab in which the resource is shown
@@ -585,14 +585,14 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return result;
     }
 
-    /** 
+    /**
      * Removes the main panel from the display.
      */
     protected void removeMainTab() {
         getTabPane().remove(getMainTab());
     }
 
-    /** 
+    /**
      * Sets the main panel  to a given (named) graph.
      */
     protected void selectMainTab(String name) {
@@ -627,23 +627,25 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /**
-     * Callback method to construct the string description for a 
+     * Callback method to construct the string description for a
      * given (named) resource that should be used in the label list and
      * tab component.
      */
     public final String getLabelText(String name) {
-        return getLabelText(name, getResource(name).isEnabled());
+        return getLabelText(name, "", getResource(name).isEnabled());
     }
 
-    /** 
+    /**
      * Adds HTML formatting to the label text for the main display.
      * Callback method from {@link #getLabelText(String)}.
      * @param name the name of the displayed object. This determines the
      * decoration
+     * @param suffix text to appear after the name
      * @param enabled flag indicating if the name should be shown as enabled
      */
-    public String getLabelText(String name, boolean enabled) {
+    public String getLabelText(String name, String suffix, boolean enabled) {
         StringBuilder result = new StringBuilder(getResource(name).getLastName());
+        result.append(suffix);
         if (isEdited(name)) {
             getEditors().get(name).decorateText(result);
         }
@@ -673,10 +675,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         String result = enabled ? this.enabledText : this.disabledText;
         if (result == null) {
             this.enabledText =
-                String.format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
+                    String.format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
             this.disabledText =
-                String.format("Disabled %s; doubleclick to edit",
-                    getResourceKind().getDescription());
+                    String.format("Disabled %s; doubleclick to edit",
+                        getResourceKind().getDescription());
             result = enabled ? this.enabledText : this.disabledText;
         }
         return result;
