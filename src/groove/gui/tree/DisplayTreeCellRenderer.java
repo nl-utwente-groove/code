@@ -19,8 +19,12 @@ package groove.gui.tree;
 import groove.gui.look.Values;
 import groove.io.HTMLConverter;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Composite;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
@@ -84,7 +88,7 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         if (c.equals(Color.WHITE)) {
             return c;
         } else {
-            return new Color(c.getRed(), c.getGreen(), c.getBlue(), 125);
+            return new Color(c.getRed(), c.getGreen(), c.getBlue(), DISABLED_TRANSPARANCY);
         }
     }
 
@@ -92,4 +96,25 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
      * The component for which this is the renderer.
      */
     private final Component displayList;
+
+    /* Overridden to deadl correctly with transpacency in HTML. */
+    @Override
+    protected void paintComponent(Graphics g) {
+        int alpha = getForeground().getAlpha();
+        if (alpha == DISABLED_TRANSPARANCY) {
+            Graphics2D g2 = (Graphics2D) g;
+            final Composite oldComposite = g2.getComposite();
+            g2.setComposite(DISABLED_COMPOSITE);
+            super.paintComponent(g);
+            g2.setComposite(oldComposite);
+        } else {
+            super.paintComponent(g);
+        }
+    }
+
+    /** Transparency value for disabled entries. */
+    private static final int DISABLED_TRANSPARANCY = 125;
+    /** Transparency composite for disabled entries. */
+    private static final Composite DISABLED_COMPOSITE = AlphaComposite.getInstance(
+        AlphaComposite.SRC_OVER, DISABLED_TRANSPARANCY / 255.0f);
 }
