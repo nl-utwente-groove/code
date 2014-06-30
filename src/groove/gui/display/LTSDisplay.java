@@ -48,6 +48,8 @@ import groove.lts.Status.Flag;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -62,13 +64,13 @@ import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.NumberEditor;
 import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SpinnerNumberModel;
@@ -151,24 +153,46 @@ public class LTSDisplay extends Display implements SimulatorListener {
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         result.addSeparator();
-        result.add(getFilterLTSButton());
+        result.add(getFilterPanel());
         result.add(getBoundSpinnerPanel());
         result.add(Box.createGlue());
     }
 
-    private JToggleButton getFilterLTSButton() {
-        if (this.filterLTSButton == null) {
-            this.filterLTSButton = Options.createToggleButton(getActions().getFilterLTSAction());
+    private JPanel getFilterPanel() {
+        if (this.filterPanel == null) {
+            final JPanel result = this.filterPanel = new JPanel();
+            result.setLayout(new BoxLayout(result, BoxLayout.X_AXIS));
+            result.add(Box.createRigidArea(new Dimension(5, 0)));
+            result.add(new JLabel("Filter: "));
+            result.add(Box.createRigidArea(new Dimension(5, 0)));
+            result.add(getFilterChooser());
+            result.setBorder(null);
         }
-        return this.filterLTSButton;
+        return this.filterPanel;
     }
 
-    private JToggleButton filterLTSButton;
+    private JPanel filterPanel;
 
-    /** Returns true if the LTS JGraph is filtered. */
-    public boolean isFilteringLts() {
-        return getFilterLTSButton().isSelected();
+    private JComboBox getFilterChooser() {
+        if (this.filterChooser == null) {
+            final JComboBox result = this.filterChooser = new JComboBox(Filter.values());
+            result.setMaximumSize(new Dimension(result.getPreferredSize().width, 1000));
+            result.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    doFilterLTS();
+                }
+            });
+        }
+        return this.filterChooser;
     }
+
+    /** Returns the currently selected filter value. */
+    public Filter getFilter() {
+        return (Filter) getFilterChooser().getSelectedItem();
+    }
+
+    private JComboBox filterChooser;
 
     private JPanel getBoundSpinnerPanel() {
         JPanel result = this.boundSpinnerPanel;
@@ -195,7 +219,17 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     if (getJModel() != null) {
-                        getActions().getReloadLTSAction().execute();
+                        int newBound = getStateBound();
+                        int oldBound = getJModel().setStateBound(newBound);
+                        if (oldBound != newBound) {
+                            if (getJModel().reloadGraph()) {
+                                getJGraph().refreshFiltering();
+                                getJGraph().refreshActive();
+                                getJGraph().refreshAllCells();
+                                getJGraph().doLayout(false);
+                            }
+                            refreshBackground();
+                        }
                     }
                 }
             });
@@ -233,8 +267,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         getBoundSpinner().setEnabled(enabled);
-        ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(
-            enabled ? getGraphPanel().getEnabledBackground() : null);
+        refreshBackground();
     }
 
     /**
@@ -270,7 +303,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
             this.mainPanel =
-                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -387,26 +420,20 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 });
             } else {
                 LTSJModel ltsModel;
-                if (gts != oldModel.getGts()) {
+                boolean isNew = gts != oldModel.getGts();
+                if (isNew) {
                     ltsModel = (LTSJModel) getJGraph().newModel();
-                    getJGraph().setFiltering(isFilteringLts());
+                    getJGraph().setFilter(getFilter());
                     ltsModel.setStateBound(getStateBound());
                     ltsModel.loadGraph(gts);
                     getJGraph().setModel(ltsModel);
                 } else {
                     ltsModel = getJModel();
-                    // (re)load the GTS if it is not the same size as the model
-                    //                    if (ltsModel.size() != gts.size()) {
-                    //                        ltsModel.setLayoutable(false);
-                    //                        ltsModel.incrementGraph();
-                    //                    }
-                    GraphState state = source.getState();
-                    GraphTransition transition = source.getTransition();
-                    getJGraph().setActive(state, transition);
                 }
-                getGraphPanel().refreshBackground();
-                getJGraph().refreshFiltering();
-                getJGraph().doLayout(false);
+                GraphState state = source.getState();
+                GraphTransition transition = source.getTransition();
+                getJGraph().setActive(state, transition);
+                getJGraph().doLayout(isNew);
                 setEnabled(true);
             }
             if (gts != oldModel.getGts()) {
@@ -424,7 +451,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
             if (getJModel() != null) {
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
-                getJGraph().setActive(state, transition);
+                if (getJGraph().setActive(state, transition)) {
+                    getJGraph().doLayout(false);
+                }
             }
         }
     }
@@ -432,21 +461,34 @@ public class LTSDisplay extends Display implements SimulatorListener {
     /**
      * Toggles the filtering of the LTS display.
      */
-    public void toggleFilterLts() {
-        boolean isFiltering = isFilteringLts();
-        getJGraph().setFiltering(isFiltering);
-        getJGraph().refreshFiltering();
-        if (!isFiltering) {
-            getJGraph().doLayout(false);
+    public void doFilterLTS() {
+        if (getJGraph().setFilter(getFilter())) {
+            boolean layout = getJGraph().refreshFiltering();
+            layout |= getJGraph().refreshActive();
+            getJGraph().refreshAllCells();
+            if (layout) {
+                getJGraph().doLayout(false);
+            }
+            setEnabled(true);
         }
-        getGraphPanel().refreshBackground();
-        setEnabled(true);
     }
 
     /**
      * The LTS listener permanently associated with this display.
      */
     private final MyLTSListener ltsListener = new MyLTSListener();
+
+    /**
+     * Refreshes the background colour, based on the question whether the LTS is
+     * filtered or incompletely displayed.
+     */
+    public void refreshBackground() {
+        Color background =
+            getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
+        getGraphPanel().setEnabledBackground(background);
+        ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(
+            isEnabled() ? background : null);
+    }
 
     /** Returns an LTS display for a given simulator. */
     public static LTSDisplay newInstance(Simulator simulator) {
@@ -615,19 +657,26 @@ public class LTSDisplay extends Display implements SimulatorListener {
             }
             LTSDisplay.this.setEnabled(enabled);
         }
+    }
 
-        /**
-         * Refreshes the background colour, based on the question whether the LTS is
-         * filtered or incompletely displayed.
-         */
-        public void refreshBackground() {
-            boolean incomplete = isFilteringLts();
-            LTSJModel jModel = (LTSJModel) getJGraph().getModel();
-            if (!incomplete) {
-                incomplete = jModel.getStateBound() < jModel.getGraph().nodeCount();
-            }
-            Color background = incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;
-            setEnabledBackground(background);
+    /** LTS display filter values. */
+    public static enum Filter {
+        /** No filtering: all states shown (up to state bound). */
+        NONE("None"),
+        /** States and transitions of the spanning tree. */
+        SPANNING("Spanning tree"),
+        /** Only traces from start to result states. */
+        RESULT("Result traces"), ;
+
+        private Filter(String name) {
+            this.name = name;
         }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
+
+        private final String name;
     }
 }

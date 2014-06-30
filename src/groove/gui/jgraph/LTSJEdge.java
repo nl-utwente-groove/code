@@ -107,6 +107,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
         if (result) {
             this.visibleFlag = visible;
             setStale(VisualKey.VISIBLE);
+            getSourceVertex().changeOutVisible(visible);
         }
         return result;
     }

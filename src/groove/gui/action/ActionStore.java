@@ -312,16 +312,6 @@ public class ActionStore implements SimulatorListener {
     private Map<StrategyValue,CheckLTLAction> checkLTLMap =
         new EnumMap<StrategyValue,CheckLTLAction>(StrategyValue.class);
 
-    /** Returns the filter LTS action that is associated with the simulator. */
-    public FilterLTSAction getFilterLTSAction() {
-        if (this.filterLTSAction == null) {
-            this.filterLTSAction = new FilterLTSAction(this.simulator);
-        }
-        return this.filterLTSAction;
-    }
-
-    private FilterLTSAction filterLTSAction;
-
     /**
      * Returns the exploration dialog action permanently associated with this
      * simulator.
@@ -576,21 +566,6 @@ public class ActionStore implements SimulatorListener {
      * The redo permanently associated with this simulator.
      */
     private RedoSimulatorAction redoAction;
-
-    /**
-     * Returns the LTS reload action permanently associated with this simulator.
-     */
-    public ReloadLTSAction getReloadLTSAction() {
-        if (this.reloadLTSAction == null) {
-            this.reloadLTSAction = new ReloadLTSAction(this.simulator);
-        }
-        return this.reloadLTSAction;
-    }
-
-    /**
-     * The LTS reload permanently associated with this simulator.
-     */
-    private ReloadLTSAction reloadLTSAction;
 
     /**
      * Returns the grammar refresh action permanently associated with this
@@ -905,6 +880,6 @@ public class ActionStore implements SimulatorListener {
      * the refreshables list in time.
      */
     public void initialiseRemainingActions() {
-        getFilterLTSAction();
+        // none
     }
 }

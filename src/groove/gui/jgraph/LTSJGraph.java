@@ -28,12 +28,16 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.display.LTSDisplay.Filter;
+import groove.gui.layout.ForestLayouter;
+import groove.gui.layout.Layouter;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.MyJMenu;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.GraphTransition.Claz;
 import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
 
@@ -161,6 +165,17 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
     }
 
+    /** Scrolls the view to the active transition or state. */
+    public void scrollToActive() {
+        Element elem = getActiveTransition();
+        if (elem == null) {
+            elem = getActiveState();
+        }
+        if (elem != null) {
+            scrollTo(elem);
+        }
+    }
+
     /**
      * Scrolls the view to a given node or edge of the underlying graph model.
      */
@@ -216,7 +231,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         JMenu result = new JMenu("Go To");
         result.add(getActions().getGotoStartStateAction());
         result.add(getActions().getGotoFinalStateAction());
-        result.add(getScrollToCurrentAction());
+        result.add(getScrollToActiveAction());
         return result;
     }
 
@@ -242,6 +257,15 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     /**
+     * The currently active transition of the LTS. The source node of
+     * emphasizedEdge (if non-null) is also emphasized. Is null if there is no
+     * currently emphasized edge.
+     * @invariant activeTransition == null ||
+     *            ltsJModel.graph().contains(activeTransition)
+     */
+    private GraphTransition activeTransition;
+
+    /**
      * Returns the active state of the LTS, if any. The active transition is the
      * one currently displayed in the state frame. Returns <tt>null</tt> if no
      * state is active (which should occur only if no grammar is loaded and
@@ -252,41 +276,57 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     /**
+     * The active state of the LTS. Is null if there is no active state.
+     * @invariant activeState == null || ltsJModel.graph().contains(activeState)
+     */
+    private GraphState activeState;
+
+    /** Resets the active state and transition.
+     * @return {@code true} if states were added (necessitating a re-layout).
+     */
+    public boolean refreshActive() {
+        return setActive(getActiveState(), getActiveTransition());
+    }
+
+    /**
      * Sets the active state and transition to a new value. Both old and new
      * values may be <tt>null</tt>.
-     * @param state the new active state
-     * @param trans the new active transition
+     * @param activeState the new active state
+     * @param activeTrans the new active transition
+     * @return {@code true} if states were added (necessitating a re-layout).
      */
-    public void setActive(GraphState state, GraphTransition trans) {
+    public boolean setActive(GraphState activeState, GraphTransition activeTrans) {
+        boolean result = false;
         List<JCell<GTS>> activeCells = new ArrayList<JCell<GTS>>();
         List<JCell<GTS>> changedCells = new ArrayList<JCell<GTS>>();
-        GraphTransition previousTrans = getActiveTransition();
-        this.activeTransition = trans;
-        if (previousTrans != null) {
-            for (LTSJCell jCell : getTransitionCells(previousTrans)) {
+        GraphTransition oldActiveTrans = getActiveTransition();
+        this.activeTransition = activeTrans;
+        if (oldActiveTrans != null) {
+            for (LTSJCell jCell : getTransitionCells(oldActiveTrans)) {
                 if (jCell.setActive(false)) {
                     changedCells.add(jCell);
                 }
             }
         }
-        if (trans != null) {
-            for (LTSJCell jCell : getTransitionCells(trans)) {
+        if (activeTrans != null) {
+            for (LTSJCell jCell : getTransitionCells(activeTrans)) {
                 activeCells.add(jCell);
                 if (jCell.setActive(true)) {
                     changedCells.add(jCell);
                 }
             }
         }
-        GraphState previousState = this.activeState;
-        this.activeState = state;
-        if (previousState != null) {
-            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(previousState);
+        GraphState oldActiveState = this.activeState;
+        this.activeState = activeState;
+        if (oldActiveState != null) {
+            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(oldActiveState);
             if (jCell != null && jCell.setActive(false)) {
                 changedCells.add(jCell);
             }
         }
-        if (state != null && getModel() != null) {
-            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(state);
+        if (activeState != null && getModel() != null) {
+            result = addToModel(activeState);
+            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
             if (jCell != null) {
                 if (jCell.setActive(true)) {
                     changedCells.add(jCell);
@@ -296,12 +336,32 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
         if (!changedCells.isEmpty()) {
             setSelectionCells(activeCells.toArray());
+        }
+        if (result) {
+            refreshAllCells();
+        } else if (!changedCells.isEmpty()) {
             refreshCells(changedCells);
         }
-        Element elem = state == null ? trans : state;
-        if (elem != null) {
-            scrollTo(elem);
+        return result;
+    }
+
+    private boolean addToModel(GraphState state) {
+        // add the state and its parents and successors to the jModel
+        Set<GraphState> newStates = new HashSet<GraphState>();
+        newStates.add(state);
+        GraphState parent = state;
+        while (parent instanceof GraphNextState) {
+            parent = ((GraphNextState) parent).getInTransition().source();
+            newStates.add(parent);
         }
+        for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
+            newStates.add(trans.target());
+        }
+        int oldBound = getModel().getStateBound();
+        getModel().setStateBound(Integer.MAX_VALUE);
+        boolean result = getModel().addElements(newStates, null, false);
+        getModel().setStateBound(oldBound);
+        return result;
     }
 
     /**
@@ -355,104 +415,116 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     /** Returns the traces from the given set of states to the start state. */
-    public Set<JCell<GTS>> findTraces(Collection<GraphState> states) {
+    public Set<LTSJCell> findTraces(Collection<GraphState> states) {
         Set<GraphTransition> simulatorTrace = new HashSet<GraphTransition>();
         simulatorTrace.clear();
-        Set<JCell<GTS>> result = new HashSet<JCell<GTS>>();
+        Set<LTSJCell> result = new HashSet<LTSJCell>();
         LTSJModel model = getModel();
-        for (GraphState finalState : states) {
-            GraphState state = finalState;
+        for (GraphState state : states) {
             while (state instanceof GraphNextState) {
-                result.add(model.getJCellForNode(state));
+                result.add((LTSJVertex) model.getJCellForNode(state));
                 GraphTransition trans = ((GraphNextState) state).getInTransition();
-                result.add(model.getJCellForEdge(trans));
+                result.add((LTSJEdge) model.getJCellForEdge(trans));
                 simulatorTrace.add(trans);
                 state = trans.source();
             }
-            result.add(model.getJCellForNode(state));
+            result.add((LTSJCell) model.getJCellForNode(state));
         }
         getSimulatorModel().setTrace(simulatorTrace);
         return result;
     }
 
-    /** Filters the LTS. */
-    public void refreshFiltering() {
-        boolean changed = false;
-        if (isFiltering()) {
-            Set<JCell<GTS>> trace = findTraces(getModel().getGraph().getResultStates());
-            for (Object element : getRoots()) {
-                LTSJCell jCell = (LTSJCell) element;
-                changed |= jCell.setVisibleFlag(trace.isEmpty() || trace.contains(jCell));
-            }
-        } else {
-            for (Object element : getRoots()) {
-                LTSJCell jCell = (LTSJCell) element;
-                changed |= jCell.setVisibleFlag(true);
-            }
+    /** Filters the LTS.
+     * @return {@code true} if any cells were added (necessitating a relayout). */
+    public boolean refreshFiltering() {
+        boolean result = false;
+        Set<LTSJCell> traces = null;
+        if (getFilter() == Filter.RESULT && getModel().getGraph().hasResultStates()) {
+            traces = findTraces(getModel().getGraph().getResultStates());
         }
-        if (changed) {
-            refreshAllCells();
+        for (Object root : getRoots()) {
+            LTSJCell jCell = (LTSJCell) root;
+            boolean visible;
+            if (getFilter() == Filter.NONE) {
+                visible = true;
+            } else if (traces != null) {
+                visible = traces.contains(jCell);
+            } else if (jCell instanceof LTSJVertex) {
+                visible = true;
+            } else if (getFilter() == Filter.SPANNING) {
+                LTSJEdge jEdge = (LTSJEdge) root;
+                visible = jEdge.getEdges().contains(jEdge.getTargetVertex().getNode());
+            } else {
+                visible = true;
+            }
+            boolean thisChanged = jCell.setVisibleFlag(visible);
+            result |= thisChanged & visible;
         }
+        return result;
     }
 
-    /** Set the filtering flag of this model to the given value. */
-    public void setFiltering(boolean filtering) {
-        this.filtering = filtering;
+    /** Set the filtering value of this model to the given value. */
+    public boolean setFilter(Filter filter) {
+        boolean result = this.filter != filter;
+        if (result) {
+            this.filter = filter;
+        }
+        return result;
     }
 
-    /** Returns the filtering flag of this model. */
-    private boolean isFiltering() {
-        return this.filtering;
+    /** Returns the filtering value this model. */
+    private Filter getFilter() {
+        return this.filter;
     }
 
-    private boolean filtering = false;
-
-    /**
-     * The active state of the LTS. Is null if there is no active state.
-     * @invariant activeState == null || ltsJModel.graph().contains(activeState)
-     */
-    private GraphState activeState;
-    /**
-     * The currently active transition of the LTS. The source node of
-     * emphasizedEdge (if non-null) is also emphasized. Is null if there is no
-     * currently emphasized edge.
-     * @invariant activeTransition == null ||
-     *            ltsJModel.graph().contains(activeTransition)
-     */
-    private GraphTransition activeTransition;
+    private Filter filter = Filter.NONE;
 
     /**
      * The simulator to which this j-graph is associated.
      */
     private final Simulator simulator;
 
-    /** Initialises and returns the action to scroll to the active state or transition. */
-    private Action getScrollToCurrentAction() {
-        if (getActiveTransition() == null) {
-            this.scrollToCurrentAction.setState(getSimulatorModel().getState());
-        } else {
-            this.scrollToCurrentAction.setTransition(getSimulatorModel().getTransition());
+    /** Indicates if there are no states not added or invisible due to node bound or filter. */
+    public boolean isComplete() {
+        boolean result = getModel() != null && getFilter() != Filter.SPANNING;
+        if (result) {
+            if (getModel().getStateBound() < getModel().nodeCount()) {
+                result = false;
+            } else if (getFilter() == Filter.RESULT) {
+                result = !getModel().getGraph().hasResultStates();
+            }
         }
-        return this.scrollToCurrentAction;
+        return result;
+    }
+
+    @Override
+    protected Layouter createLayouter() {
+        return ForestLayouter.PROTOTYPE;
+    }
+
+    /** Initialises and returns the action to scroll to the active state or transition. */
+    private Action getScrollToActiveAction() {
+        if (getActiveTransition() == null) {
+            this.scrollToActiveAction.setState(getActiveState());
+        } else {
+            this.scrollToActiveAction.setTransition(getActiveTransition());
+        }
+        return this.scrollToActiveAction;
     }
 
     /**
      * Action to scroll the JGraph to the current state or derivation.
      */
-    private final ScrollToCurrentAction scrollToCurrentAction = new ScrollToCurrentAction();
+    private final ScrollToActiveAction scrollToActiveAction = new ScrollToActiveAction();
 
     /**
      * Action to scroll the LTS display to a (previously set) node or edge.
      * @see #scrollTo(Element)
      */
-    public class ScrollToCurrentAction extends AbstractAction {
+    public class ScrollToActiveAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent evt) {
-            if (getSimulatorModel().getState() == null) {
-                scrollTo(getSimulatorModel().getTransition());
-            } else {
-                scrollTo(getSimulatorModel().getState());
-            }
+            scrollToActive();
         }
 
         /**

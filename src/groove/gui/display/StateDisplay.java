@@ -126,7 +126,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     protected JComponent createInfoPanel() {
         TypeTree labelTree = getLabelTree();
         TitledPanel result =
-                new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(), true);
+            new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(), true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         return result;
     }
@@ -297,7 +297,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         // check if layout should be transferred
         GraphTransition oldTtrans = oldModel.getTransition();
         boolean transferLayout =
-                oldTtrans != null && oldTtrans != source.getTransition()
+            oldTtrans != null && oldTtrans != source.getTransition()
                 && oldTtrans.target() == source.getState();
         if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
@@ -470,7 +470,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         Stack<GraphTransition> stack = new Stack<GraphTransition>();
         GraphState source = state;
         do {
-            GraphTransition trans = (GraphTransition) source;
+            GraphTransition trans = ((GraphNextState) source).getInTransition();
             stack.push(trans);
             source = trans.source();
         } while (source instanceof GraphNextState && !this.stateToJModel.containsKey(source));
@@ -602,7 +602,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Transfers colours and layout from the source to the target of a given transition. */
     private void transferLayout(GraphTransition trans) {
         AttributesMap map =
-                extractAttributes(this.stateToJModel.get(trans.source()), getAspectMap(trans.source()));
+            extractAttributes(this.stateToJModel.get(trans.source()), getAspectMap(trans.source()));
         map = transferAttributes(map, trans);
         applyAttributes(map, this.stateToJModel.get(trans.target()), getAspectMap(trans.target()));
     }
@@ -716,12 +716,12 @@ public class StateDisplay extends Display implements SimulatorListener {
      * Mapping from graphs to the corresponding graph models.
      */
     private final Map<GraphState,AspectJModel> stateToJModel =
-            new WeakHashMap<GraphState,AspectJModel>();
+        new WeakHashMap<GraphState,AspectJModel>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
-            new WeakHashMap<GraphState,HostToAspectMap>();
+        new WeakHashMap<GraphState,HostToAspectMap>();
 
     /** Flag indicating that the listeners are activated. */
     private boolean listening;
