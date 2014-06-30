@@ -356,6 +356,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(Line.atom(text));
             }
         }
+        if (!jVertex.isAllOutVisible()) {
+            result.add(Line.atom("\u2193\u2193\u2193"));
+        }
         return result;
     }
 

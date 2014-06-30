@@ -86,12 +86,17 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
      * @param count the number of additional/fewer visible outgoing transitions
      */
     void changeOutVisible(boolean visible, int count) {
+        boolean oldAllOutVisible = isAllOutVisible();
         if (visible) {
             this.outVisibles += count;
         } else {
             this.outVisibles -= count;
         }
-        setStale(VisualKey.LABEL);
+        if (isAllOutVisible() != oldAllOutVisible) {
+            setStale(VisualKey.LABEL);
+            setStale(VisualKey.TEXT_SIZE);
+            setStale(VisualKey.NODE_SIZE);
+        }
     }
 
     private int outVisibles;
