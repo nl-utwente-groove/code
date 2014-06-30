@@ -498,7 +498,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     @Override
-    protected Layouter createLayouter() {
+    public Layouter getDefaultLayouter() {
         return ForestLayouter.PROTOTYPE;
     }
 

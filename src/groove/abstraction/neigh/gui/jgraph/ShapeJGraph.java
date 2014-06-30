@@ -84,7 +84,7 @@ public final class ShapeJGraph extends JGraph<Shape> {
     }
 
     @Override
-    protected Layouter createLayouter() {
+    public Layouter getDefaultLayouter() {
         return new MyLayouter();
     }
 
