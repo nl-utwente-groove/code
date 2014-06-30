@@ -7,6 +7,7 @@ import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition.Claz;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -57,6 +58,24 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     public boolean hasVisibleFlag() {
         return this.visibleFlag;
     }
+
+    private boolean visibleFlag;
+
+    /** Indicates that all outgoing transitions of this node are also visible. */
+    public boolean isAllOutVisible() {
+        return getNode().isDone()
+                && getNode().getTransitions(Claz.ANY).size() == this.outVisibles + getEdges().size();
+    }
+
+    void changeOutVisible(boolean visible) {
+        if (visible) {
+            this.outVisibles++;
+        } else {
+            this.outVisibles--;
+        }
+    }
+
+    private int outVisibles;
 
     @Override
     StringBuilder getNodeDescription() {
@@ -136,8 +155,6 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
             return Look.STATE;
         }
     }
-
-    private boolean visibleFlag;
 
     /**
      * Returns a fresh instance.

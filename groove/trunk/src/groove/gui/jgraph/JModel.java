@@ -153,30 +153,39 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         addElements(graph.nodeSet(), graph.edgeSet(), true);
     }
 
-    /** Adds a set of new graph elements from the current graph to this JModel. */
-    protected void addElements(Collection<? extends Node> nodeSet,
+    /**
+     * Adds new graph elements from the current graph to this JModel.
+     * @param nodeSet the set of nodes to be added; non-{@code null}
+     * @param edgeSet the set of edges to be added; if{@code null},
+     * the incident edges of {@code nodeSet} are used
+     * @param replace if {@code true}, all existing jCells are removed
+     * @return {@code true} if the jModel was changed
+     */
+    protected boolean addElements(Collection<? extends Node> nodeSet,
             Collection<? extends Edge> edgeSet, boolean replace) {
         prepareInsert();
-        getJGraph().notifyProgress("Loading");
-        addNodes(nodeSet);
-        addEdges(edgeSet);
-        getJGraph().notifyProgress("Rendering");
+        boolean added = addNodes(nodeSet);
+        added |= addEdges(edgeSet);
         doInsert(replace);
-        getJGraph().notifyProgress("");
+        return replace || added;
     }
 
-    /** Adds the given set of nodes to this JModel. */
-    protected void addNodes(Collection<? extends Node> nodeSet) {
+    /** Adds the given set of nodes to this JModel.
+     * @return {@code true} if any nodes were added.*/
+    protected boolean addNodes(Collection<? extends Node> nodeSet) {
         for (Node node : nodeSet) {
             addNode(node);
         }
+        return !nodeSet.isEmpty();
     }
 
-    /** Adds the given set of edges to this JModel. */
-    protected void addEdges(Collection<? extends Edge> edgeSet) {
+    /** Adds the given set of edges to this JModel.
+     * @return {@code true} if any edges were added. */
+    protected boolean addEdges(Collection<? extends Edge> edgeSet) {
         for (Edge edge : edgeSet) {
             addEdge(edge);
         }
+        return !edgeSet.isEmpty();
     }
 
     /**
@@ -231,6 +240,11 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     public JVertex<G> getJCellForNode(Node node) {
         return this.nodeJCellMap.get(node);
+    }
+
+    /** Returns the number of graph nodes currently represented in this {@link JModel}. */
+    public int nodeCount() {
+        return this.nodeJCellMap.size();
     }
 
     /** Stores the layout from the JModel back into the graph. */
@@ -333,7 +347,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         JVertex<G> jVertex = computeJVertex(node);
         // we add nodes in front of the list to get them in front of the display
         this.addedJCells.add(0, jVertex);
-        this.nodeJCellMap.put(node, jVertex);
+        JVertex<G> oldNode = this.nodeJCellMap.put(node, jVertex);
+        assert oldNode == null;
         this.addedJEdges.put(jVertex, new HashSet<JEdge<G>>());
         return jVertex;
     }

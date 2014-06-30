@@ -84,7 +84,6 @@ abstract public class AbstractLayouter implements Layouter {
      * the layouter.
      */
     protected void prepare() {
-        this.jGraph.notifyProgress("Layouting");
         this.jGraph.setLayouting(true);
         this.jGraph.setToolTipEnabled(false);
         // edge points are cleared when layout is stored back into view
@@ -103,7 +102,7 @@ abstract public class AbstractLayouter implements Layouter {
             }
             JVertexView vertexView = (JVertexView) cellView;
             JVertex<?> jVertex = vertexView.getCell();
-            if (jVertex.isGrayedOut()) {
+            if (jVertex.isGrayedOut() || !jVertex.getVisuals().isVisible()) {
                 continue;
             }
             LayoutNode layout = new LayoutNode(vertexView);
@@ -167,7 +166,6 @@ abstract public class AbstractLayouter implements Layouter {
                     // certainly performance impacting
                     //                    AbstractLayouter.this.jgraph.refresh();
                 }
-                getJGraph().notifyProgress("");
                 getJGraph().setLayouting(false);
             }
         };

@@ -458,9 +458,8 @@ public class StateTree extends JTree implements SimulatorListener {
                     DisplayTreeNode ruleNode = (DisplayTreeNode) stateNode.getLastChild();
                     DisplayTreeNode transNode = (DisplayTreeNode) ruleNode.getLastChild();
                     scrollPathToVisible(createPath(transNode));
-                } else {
-                    scrollPathToVisible(statePath);
                 }
+                scrollPathToVisible(statePath);
             }
         }
     }
