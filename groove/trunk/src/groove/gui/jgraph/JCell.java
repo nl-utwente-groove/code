@@ -25,6 +25,7 @@ import groove.gui.look.VisualMap;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.jgraph.graph.GraphCell;
@@ -45,7 +46,7 @@ public interface JCell<G extends Graph> extends GraphCell, Serializable {
     public JModel<G> getJModel();
 
     /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
-    public Set<? extends JCell<G>> getContext();
+    public Iterator<? extends JCell<G>> getContext();
 
     /**
      * Returns the set of keys to be associated with this cell in a label

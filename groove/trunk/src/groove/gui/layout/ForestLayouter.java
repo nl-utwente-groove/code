@@ -124,8 +124,9 @@ public class ForestLayouter extends AbstractLayouter {
             // calculate the incoming edge count and (deterministic) outgoing edge map
             Set<JEdge<?>> outEdges = new TreeSet<JEdge<?>>(edgeComparator);
             // iterate over the incident edges
-            for (Object jCell : key.getPort().getEdges()) {
-                JEdge<?> edge = (JEdge<?>) jCell;
+            Iterator<?> edgeIter = key.getPort().edges();
+            while (edgeIter.hasNext()) {
+                JEdge<?> edge = (JEdge<?>) edgeIter.next();
                 if (!edge.getVisuals().isVisible()) {
                     continue;
                 }
@@ -230,12 +231,12 @@ public class ForestLayouter extends AbstractLayouter {
             Layout right = layout(branch, height);
             result = new Layout(Math.max(left.count, right.count));
             int fit =
-                (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
-                    - MIN_CHILD_DISTANCE;
+                    (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
+                            - MIN_CHILD_DISTANCE;
             for (int level = 0; level < Math.min(left.count, right.count); level++) {
                 fit =
-                    Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
-                        - MIN_NODE_DISTANCE);
+                        Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
+                                - MIN_NODE_DISTANCE);
             }
             for (int level = 0; level < result.count; level++) {
                 if (level < left.count) {

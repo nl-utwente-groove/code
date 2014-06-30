@@ -73,6 +73,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -204,7 +205,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private final List<Pair<JMenuItem,RefreshListener>> optionListeners =
-            new LinkedList<Pair<JMenuItem,RefreshListener>>();
+        new LinkedList<Pair<JMenuItem,RefreshListener>>();
 
     /**
      * Returns the refresh listener for a given option.
@@ -336,7 +337,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     @Override
     public boolean isCellEditable(Object cell) {
         return !(cell instanceof JCell && ((JCell<?>) cell).isGrayedOut())
-                && super.isCellEditable(cell);
+            && super.isCellEditable(cell);
     }
 
     /**
@@ -348,7 +349,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         for (Object element : cells) {
             res.add(element);
             if (element instanceof DefaultGraphCell
-                    && ((DefaultGraphCell) element).getChildCount() > 0) {
+                && ((DefaultGraphCell) element).getChildCount() > 0) {
                 res.add(((DefaultGraphCell) element).getChildAt(0));
             }
         }
@@ -363,34 +364,34 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public void updateAutoSize(CellView view) {
         if (view != null && !isEditing()) {
             Rectangle2D bounds =
-                    (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
-                            : null;
-                    AttributeMap attrs = getModel().getAttributes(view.getCell());
-                    if (bounds == null) {
-                        bounds = GraphConstants.getBounds(attrs);
-                    }
-                    if (bounds != null) {
-                        boolean autosize = GraphConstants.isAutoSize(view.getAllAttributes());
-                        boolean resize = GraphConstants.isResize(view.getAllAttributes());
-                        if (autosize || resize) {
-                            Dimension2D d = getPreferredSize(view);
-                            int inset = 2 * GraphConstants.getInset(view.getAllAttributes());
-                            // adjust the x,y corner so that the center stays in place
-                            double shiftX = (bounds.getWidth() - d.getWidth() - inset) / 2;
-                            double shiftY = (bounds.getHeight() - d.getHeight() - inset) / 2;
-                            bounds.setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
-                                d.getHeight());
-                            // Remove resize attribute
-                            snap(bounds);
-                            if (resize) {
-                                if (view.getAttributes() != null) {
-                                    view.getAttributes().remove(GraphConstants.RESIZE);
-                                }
-                                attrs.remove(GraphConstants.RESIZE);
-                            }
-                            view.refresh(getGraphLayoutCache(), getGraphLayoutCache(), false);
+                (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
+                        : null;
+            AttributeMap attrs = getModel().getAttributes(view.getCell());
+            if (bounds == null) {
+                bounds = GraphConstants.getBounds(attrs);
+            }
+            if (bounds != null) {
+                boolean autosize = GraphConstants.isAutoSize(view.getAllAttributes());
+                boolean resize = GraphConstants.isResize(view.getAllAttributes());
+                if (autosize || resize) {
+                    Dimension2D d = getPreferredSize(view);
+                    int inset = 2 * GraphConstants.getInset(view.getAllAttributes());
+                    // adjust the x,y corner so that the center stays in place
+                    double shiftX = (bounds.getWidth() - d.getWidth() - inset) / 2;
+                    double shiftY = (bounds.getHeight() - d.getHeight() - inset) / 2;
+                    bounds.setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
+                        d.getHeight());
+                    // Remove resize attribute
+                    snap(bounds);
+                    if (resize) {
+                        if (view.getAttributes() != null) {
+                            view.getAttributes().remove(GraphConstants.RESIZE);
                         }
+                        attrs.remove(GraphConstants.RESIZE);
                     }
+                    view.refresh(getGraphLayoutCache(), getGraphLayoutCache(), false);
+                }
+            }
         }
     }
 
@@ -431,7 +432,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 if (isVisible != wasVisible) {
                     changeCells.add(jCell);
                     // test context for visibility
-                    for (JCell<G> c : jCell.getContext()) {
+                    Iterator<? extends JCell<G>> iter = jCell.getContext();
+                    while (iter.hasNext()) {
+                        JCell<G> c = iter.next();
                         if (c.getVisuals().isVisible() != wasVisible) {
                             changeCells.add(c);
                         }
@@ -483,14 +486,18 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 changedJCells.add(jCell);
                 if (grayedOut && jCell instanceof JVertex) {
                     // also gray out incident edges
-                    for (JCell<G> c : jCell.getContext()) {
+                    Iterator<? extends JCell<G>> iter = jCell.getContext();
+                    while (iter.hasNext()) {
+                        JCell<G> c = iter.next();
                         if (c.setGrayedOut(true)) {
                             changedJCells.add(c);
                         }
                     }
                 } else if (!grayedOut && jCell instanceof JEdge) {
                     // also revive end nodes
-                    for (JCell<G> c : jCell.getContext()) {
+                    Iterator<? extends JCell<G>> iter = jCell.getContext();
+                    while (iter.hasNext()) {
+                        JCell<G> c = iter.next();
                         if (c.setGrayedOut(false)) {
                             changedJCells.add(c);
                         }
@@ -536,7 +543,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             @SuppressWarnings("unchecked")
             JCell<G> jCell = (JCell<G>) jCellView.getCell();
             boolean typeCorrect =
-                    vertex ? jCell instanceof JVertex : edge ? jCell instanceof JEdge : true;
+                vertex ? jCell instanceof JVertex : edge ? jCell instanceof JEdge : true;
             if (typeCorrect && !jCell.isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
                 if (jCellView.intersects(this, xyArea)) {
@@ -750,8 +757,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             int extraSpace = 5;
             // Create a Buffered Image
             BufferedImage img =
-                    new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
-                        (int) bounds.getHeight() + 2 * extraSpace, BufferedImage.TYPE_INT_RGB);
+                new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
+                    (int) bounds.getHeight() + 2 * extraSpace, BufferedImage.TYPE_INT_RGB);
             final Graphics2D graphics = img.createGraphics();
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
@@ -1257,7 +1264,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 // don't make the change directly in the cell,
                 // as this messes up the undo history
                 List<Point2D> newPoints =
-                        Arrays.asList(points.get(0), points.get(points.size() - 1));
+                    Arrays.asList(points.get(0), points.get(points.size() - 1));
                 AttributeMap newAttributes = new AttributeMap();
                 GraphConstants.setPoints(newAttributes, newPoints);
                 change.put(jCell, newAttributes);
@@ -1310,7 +1317,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private final Map<VisualKey,VisualValue<?>> visualValueMap =
-            new EnumMap<VisualKey,VisualValue<?>>(VisualKey.class);
+        new EnumMap<VisualKey,VisualValue<?>>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;
@@ -1429,7 +1436,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
-                    && isEnabled()) {
+                && isEnabled()) {
                 doRefresh();
             }
         }

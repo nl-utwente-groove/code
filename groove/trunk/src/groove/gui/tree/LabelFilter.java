@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
@@ -244,8 +245,9 @@ public class LabelFilter<G extends Graph> extends Observable {
             // stale the visibility of the affected cells
             for (JCell<G> jCell : changedCells) {
                 jCell.setStale(changedKeys);
-                for (JCell<G> c : jCell.getContext()) {
-                    c.setStale(changedKeys);
+                Iterator<? extends JCell<G>> iter = jCell.getContext();
+                while (iter.hasNext()) {
+                    iter.next().setStale(changedKeys);
                 }
             }
             setChanged();

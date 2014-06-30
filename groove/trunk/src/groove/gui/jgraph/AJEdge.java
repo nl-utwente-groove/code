@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -33,11 +33,11 @@ import groove.io.HTMLConverter;
 import groove.util.Groove;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.jgraph.graph.DefaultPort;
 
@@ -48,7 +48,7 @@ import org.jgraph.graph.DefaultPort;
  * @version $Revision $
  */
 abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
-        extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
+extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
     /**
      * Constructs an uninitialised model edge.
      */
@@ -63,8 +63,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         this.targetNode = null;
     }
 
-    /** 
-     * The cloned object is equal to this one after a reset. 
+    /**
+     * The cloned object is equal to this one after a reset.
      */
     @Override
     public JEdge<G> clone() {
@@ -95,6 +95,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
      */
     @Override
     public void setSource(Object port) {
+        assert this.sourcePort == null;
         this.sourcePort = (DefaultPort) port;
     }
 
@@ -103,6 +104,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
      */
     @Override
     public void setTarget(Object port) {
+        assert this.targetPort == null;
         this.targetPort = (DefaultPort) port;
     }
 
@@ -172,12 +174,12 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         //            return false;
         //        }
         if (edge.source() == getSourceNode() && edge.target() == getTargetNode()
-            && (getJModel().isMergeAllEdges() || !getLooks().contains(Look.BIDIRECTIONAL))) {
+                && (getJModel().isMergeAllEdges() || !getLooks().contains(Look.BIDIRECTIONAL))) {
             return true;
         }
         if (edge.source() == getTargetNode() && edge.target() == getSourceNode()) {
             return getJModel().isMergeBidirectionalEdges() && getEdges().size() == 1
-                && edge.label().equals(getEdge().label()) || getJModel().isMergeAllEdges();
+                    && edge.label().equals(getEdge().label()) || getJModel().isMergeAllEdges();
         }
         return false;
     }
@@ -195,7 +197,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
             return true;
         }
         if (myLayout.getPoints().size() == 2
-            && (edgeLayout == null || edgeLayout.getPoints().size() == 2)) {
+                && (edgeLayout == null || edgeLayout.getPoints().size() == 2)) {
             return true;
         }
         return false;
@@ -292,7 +294,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         }
         if (hasErrors()) {
             HTMLConverter.HTMLTag errorTag =
-                HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
+                    HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
             for (FormatError error : getErrors()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(errorTag.on(error));
@@ -344,15 +346,14 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         return target == null ? null : (JV) target.getParent();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Set<JV> getContext() {
-        Set<JV> result;
+    public Iterator<JV> getContext() {
+        Iterator<JV> result;
         if (isLoop()) {
-            result = Collections.singleton(getSourceVertex());
+            return Collections.singletonList(getSourceVertex()).iterator();
         } else {
-            result = new HashSet<JV>();
-            result.add(getSourceVertex());
-            result.add(getTargetVertex());
+            result = Arrays.asList(getSourceVertex(), getTargetVertex()).iterator();
         }
         return result;
     }

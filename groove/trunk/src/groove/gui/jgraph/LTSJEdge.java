@@ -30,6 +30,14 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     }
 
     @Override
+    public void setSource(Object port) {
+        super.setSource(port);
+        if (port != null && hasVisibleFlag()) {
+            getSourceVertex().changeOutVisible(true, getEdges().size());
+        }
+    }
+
+    @Override
     public boolean isCompatible(Edge edge) {
         if (!super.isCompatible(edge)) {
             return false;
@@ -50,6 +58,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
         // updates the look on the basis of the edge
         setLook(Look.RECIPE, inRecipe());
         setLook(Look.ABSENT, isAbsent());
+        if (getSource() != null && hasVisibleFlag()) {
+            getSourceVertex().changeOutVisible(true, 1);
+        }
     }
 
     @Override
@@ -107,7 +118,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
         if (result) {
             this.visibleFlag = visible;
             setStale(VisualKey.VISIBLE);
-            getSourceVertex().changeOutVisible(visible);
+            getSourceVertex().changeOutVisible(visible, getEdges().size());
         }
         return result;
     }

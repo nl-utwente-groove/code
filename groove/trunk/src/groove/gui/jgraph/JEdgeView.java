@@ -41,6 +41,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -233,7 +234,9 @@ public class JEdgeView extends EdgeView {
         // flag indicating that this edge has been encountered
         boolean found = false;
         // determine the rank within the incoming/outgoing edges
-        for (JEdge<?> edge : getSourceVertex().getContext()) {
+        Iterator<? extends JEdge<?>> iter = getSourceVertex().getContext();
+        while (iter.hasNext()) {
+            JEdge<?> edge = iter.next();
             // determine if this is a parallel edge
             if (edge.getVisuals().getPoints().size() > 2) {
                 continue;
@@ -308,6 +311,17 @@ public class JEdgeView extends EdgeView {
         double dx = p1.getX() - p0.getX();
         double dy = p1.getY() - p0.getY();
         return new Point2D.Double(dx, dy);
+    }
+
+    /* Overridden for efficiency */
+    @Override
+    protected void checkDefaultLabelPosition() {
+        this.labelPosition = GraphConstants.getLabelPosition(this.allAttributes);
+        if (this.labelPosition == null) {
+            int center = GraphConstants.PERMILLE / 2;
+            this.labelPosition = new Point(center, 0);
+            GraphConstants.setLabelPosition(this.allAttributes, this.labelPosition);
+        }
     }
 
     /** Preferred distance between parallel edges. */
