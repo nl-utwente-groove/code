@@ -34,9 +34,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -374,7 +374,9 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         }
         if (result == null) {
             // try to add the edge to an existing JEdge
-            for (JEdge<G> jEdge : getJEdges(sourceJVertex)) {
+            Iterator<? extends JEdge<G>> edgeIter = getJEdges(sourceJVertex);
+            while (edgeIter.hasNext()) {
+                JEdge<G> jEdge = edgeIter.next();
                 if (jEdge.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
                     jEdge.addEdge(edge);
@@ -404,10 +406,13 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * either from the explicitly stored JEdges (if the JVertex is fresh)
      * or from the stored context of the JVertex.
      */
-    private Set<JEdge<G>> getJEdges(JVertex<G> jVertex) {
-        Set<JEdge<G>> result = this.addedJEdges.get(jVertex);
-        if (result == null) {
-            result = Collections.unmodifiableSet(jVertex.getContext());
+    private Iterator<? extends JEdge<G>> getJEdges(JVertex<G> jVertex) {
+        Iterator<? extends JEdge<G>> result;
+        Set<JEdge<G>> edgeSet = this.addedJEdges.get(jVertex);
+        if (edgeSet == null) {
+            result = jVertex.getContext();
+        } else {
+            result = edgeSet.iterator();
         }
         return result;
     }
@@ -580,7 +585,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Used in the process of constructing a GraphJModel.
      */
     protected final Map<JVertex<G>,Set<JEdge<G>>> addedJEdges =
-            new HashMap<JVertex<G>,Set<JEdge<G>>>();
+        new HashMap<JVertex<G>,Set<JEdge<G>>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
      * GraphJModel.

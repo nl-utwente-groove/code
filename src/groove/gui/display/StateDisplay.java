@@ -44,7 +44,6 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JEdge;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
@@ -69,6 +68,7 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -126,7 +126,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     protected JComponent createInfoPanel() {
         TypeTree labelTree = getLabelTree();
         TitledPanel result =
-            new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(), true);
+                new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(), true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         return result;
     }
@@ -297,7 +297,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         // check if layout should be transferred
         GraphTransition oldTtrans = oldModel.getTransition();
         boolean transferLayout =
-            oldTtrans != null && oldTtrans != source.getTransition()
+                oldTtrans != null && oldTtrans != source.getTransition()
                 && oldTtrans.target() == source.getState();
         if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
@@ -576,7 +576,9 @@ public class StateDisplay extends Display implements SimulatorListener {
             result.synchroniseLayout(jCell);
             if (attrs.color != null) {
                 // also colour all outgoing edges
-                for (JEdge<AspectGraph> jEdge : jCell.getContext()) {
+                Iterator<? extends AspectJEdge> iter = jCell.getContext();
+                while (iter.hasNext()) {
+                    AspectJEdge jEdge = iter.next();
                     if (jEdge.getSourceVertex() == jCell) {
                         jEdge.putVisual(VisualKey.COLOR, attrs.color);
                     }
@@ -602,7 +604,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Transfers colours and layout from the source to the target of a given transition. */
     private void transferLayout(GraphTransition trans) {
         AttributesMap map =
-            extractAttributes(this.stateToJModel.get(trans.source()), getAspectMap(trans.source()));
+                extractAttributes(this.stateToJModel.get(trans.source()), getAspectMap(trans.source()));
         map = transferAttributes(map, trans);
         applyAttributes(map, this.stateToJModel.get(trans.target()), getAspectMap(trans.target()));
     }
@@ -716,12 +718,12 @@ public class StateDisplay extends Display implements SimulatorListener {
      * Mapping from graphs to the corresponding graph models.
      */
     private final Map<GraphState,AspectJModel> stateToJModel =
-        new WeakHashMap<GraphState,AspectJModel>();
+            new WeakHashMap<GraphState,AspectJModel>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
-        new WeakHashMap<GraphState,HostToAspectMap>();
+            new WeakHashMap<GraphState,HostToAspectMap>();
 
     /** Flag indicating that the listeners are activated. */
     private boolean listening;

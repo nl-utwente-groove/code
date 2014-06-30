@@ -26,6 +26,7 @@ import groove.io.HTMLConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -33,8 +34,8 @@ import java.util.Set;
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
 public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge>
-        implements AspectJCell {
-    /** 
+implements AspectJCell {
+    /**
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
      * to initialise.
@@ -87,7 +88,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         return false;
     }
 
-    /** 
+    /**
      * Collects a set of edges that under the current
      * display settings are also to be shown on this label.
      * These are obtained from the outgoing JEdges that
@@ -97,7 +98,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public Set<AspectEdge> getExtraSelfEdges() {
         Set<AspectEdge> result = createEdgeSet();
         // add all outgoing JEdges that are source labels
-        for (AspectJEdge jEdge : getContext()) {
+        Iterator<? extends AspectJEdge> iter = getContext();
+        while (iter.hasNext()) {
+            AspectJEdge jEdge = iter.next();
             if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
                 result.addAll(jEdge.getEdges());
             }
@@ -239,7 +242,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
 
     /**
      * Returns the (possibly {@code null}) edge label pattern, if
-     * this node is a nodified edge. 
+     * this node is a nodified edge.
      */
     public LabelPattern getEdgeLabelPattern() {
         LabelPattern result = null;
@@ -252,9 +255,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         return result;
     }
 
-    /** 
+    /**
      * Retrieves the node type corresponding to the node type label.
-     * The node type may be {@code null} if the graph has typing errors. 
+     * The node type may be {@code null} if the graph has typing errors.
      */
     public TypeNode getNodeType() {
         TypeModelMap typeMap = getTypeMap();
@@ -340,9 +343,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     /** The role of the underlying rule node. */
     private AspectKind aspect;
 
-    /** 
+    /**
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel} and {@link #setNode(Node)} to initialise. 
+     * Call {@link #setJModel} and {@link #setNode(Node)} to initialise.
      */
     public static AspectJVertex newInstance() {
         return new AspectJVertex();

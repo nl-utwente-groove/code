@@ -250,10 +250,8 @@ public interface GraphState extends Node {
 
     /**
      * Indicates if this state is a real part of the GTS.
-     * This is the case if and only if the state is not a recipe state,
-     * or an absent or erroneous state.
+     * This is the case if and only if the state is not internal or absent.
      * @see #isAbsent()
-     * @see #isError()
      * @see #isInternalState()
      */
     public boolean isRealState();

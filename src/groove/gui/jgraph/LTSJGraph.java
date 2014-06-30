@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.SwingUtilities;
 
 import org.jgraph.graph.GraphModel;
 
@@ -91,10 +92,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                     if (model != null) {
                         GTS gts = getModel().getGraph();
                         if (gts != null && gts.hasTransientStates()) {
-                            model.setLayoutable(false);
-                            model.loadGraph(model.getGraph());
-                            refreshAllCells();
-                            doLayout(false);
+                            reloadJModel();
                         }
                     }
                 }
@@ -103,14 +101,10 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             result = new RefreshListener() {
                 @Override
                 protected void doRefresh() {
-                    LTSJModel model = getModel();
-                    if (model != null) {
+                    if (getModel() != null) {
                         GTS gts = getModel().getGraph();
                         if (gts != null && gts.hasAbsentStates()) {
-                            model.setLayoutable(false);
-                            model.loadGraph(model.getGraph());
-                            refreshAllCells();
-                            doLayout(false);
+                            reloadJModel();
                         }
                     }
                 }
@@ -119,6 +113,18 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             result = super.getRefreshListener(option);
         }
         return result;
+    }
+
+    /** Reloads the graph in the {@link JModel}, after
+     * a view option has changed.
+     */
+    private void reloadJModel() {
+        LTSJModel jModel = getModel();
+        jModel.setLayoutable(false);
+        jModel.loadGraph(jModel.getGraph());
+        refreshAllCells();
+        doLayout(true);
+        scrollToActive();
     }
 
     @Override
@@ -165,6 +171,11 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
     }
 
+    /** Returns the class of transitions that is currently being shown in the LTS. */
+    public Claz getTransitionClass() {
+        return Claz.getClass(isShowAbsentStates(), isShowRecipeSteps());
+    }
+
     /** Scrolls the view to the active transition or state. */
     public void scrollToActive() {
         Element elem = getActiveTransition();
@@ -180,9 +191,14 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
      * Scrolls the view to a given node or edge of the underlying graph model.
      */
     public void scrollTo(Element nodeOrEdge) {
-        JCell<GTS> cell = getModel().getJCell(nodeOrEdge);
+        final JCell<GTS> cell = getModel().getJCell(nodeOrEdge);
         if (cell != null) {
-            scrollCellToVisible(cell);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    scrollCellToVisible(cell);
+                }
+            });
         }
     }
 
@@ -348,18 +364,22 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     private boolean addToModel(GraphState state) {
         // add the state and its parents and successors to the jModel
         Set<GraphState> newStates = new HashSet<GraphState>();
+        Set<GraphTransition> newTransitions = new HashSet<GraphTransition>();
         newStates.add(state);
         GraphState parent = state;
         while (parent instanceof GraphNextState) {
-            parent = ((GraphNextState) parent).getInTransition().source();
+            GraphTransition in = ((GraphNextState) parent).getInTransition();
+            newTransitions.add(in);
+            parent = in.source();
             newStates.add(parent);
         }
-        for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
+        for (GraphTransition trans : state.getTransitions(getTransitionClass())) {
+            newTransitions.add(trans);
             newStates.add(trans.target());
         }
         int oldBound = getModel().getStateBound();
         getModel().setStateBound(Integer.MAX_VALUE);
-        boolean result = getModel().addElements(newStates, null, false);
+        boolean result = getModel().addElements(newStates, newTransitions, false);
         getModel().setStateBound(oldBound);
         return result;
     }

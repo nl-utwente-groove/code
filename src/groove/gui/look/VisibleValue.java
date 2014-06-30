@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -38,6 +38,8 @@ import groove.gui.tree.RuleLevelTree;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 
+import java.util.Iterator;
+
 /**
  * Strategy to determine whether a given cell is currently visible.
  * @author Arend Rensink
@@ -50,15 +52,15 @@ public class VisibleValue implements VisualValue<Boolean> {
         boolean isVertex = cell instanceof JVertex;
         if (cell instanceof AspectJCell) {
             result =
-                isVertex ? getAspectVertexValue((AspectJVertex) cell)
-                        : getAspectEdgeValue((AspectJEdge) cell);
+                    isVertex ? getAspectVertexValue((AspectJVertex) cell)
+                            : getAspectEdgeValue((AspectJEdge) cell);
         } else if (cell instanceof LTSJCell) {
             result =
-                isVertex ? getLTSVertexValue((LTSJVertex) cell) : getLTSEdgeValue((LTSJEdge) cell);
+                    isVertex ? getLTSVertexValue((LTSJVertex) cell) : getLTSEdgeValue((LTSJEdge) cell);
         } else if (cell instanceof JVertex) {
             result =
-                isVertex ? getBasicVertexValue((JVertex<?>) cell)
-                        : getBasicEdgeValue((JEdge<?>) cell);
+                    isVertex ? getBasicVertexValue((JVertex<?>) cell)
+                            : getBasicEdgeValue((JEdge<?>) cell);
         }
         return result;
     }
@@ -134,8 +136,9 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // any regular expression edge on the node makes it visible
-        for (Object jEdge : jVertex.getPort().getEdges()) {
-            AspectEdge edge = ((AspectJEdge) jEdge).getEdge();
+        Iterator<?> edgeIter = jVertex.getPort().edges();
+        while (edgeIter.hasNext()) {
+            AspectEdge edge = ((AspectJEdge) edgeIter.next()).getEdge();
             if (edge.getRuleLabel() != null && !edge.getRuleLabel().isAtom()) {
                 return true;
             }
@@ -163,9 +166,6 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jVertex.getJGraph().isShowRecipeSteps() && state.isInternalState() && state.isDone()) {
             return false;
         }
-        if (jVertex.getNumber() > jVertex.getJModel().getStateBound()) {
-            return false;
-        }
         if (jVertex.isStart() || jVertex.isFinal() || !jVertex.isClosed()) {
             return true;
         }
@@ -181,7 +181,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         if (!jEdge.getJGraph().isShowRecipeSteps() && trans.isInternalStep()
-            && trans.source().isDone()) {
+                && trans.source().isDone()) {
             return false;
         }
         if (!getBasicEdgeValue(jEdge)) {
@@ -198,10 +198,15 @@ public class VisibleValue implements VisualValue<Boolean> {
     private <G extends Graph> boolean hasVisibleIncidentEdge(JVertex<G> jVertex) {
         boolean result = false;
         LabelTree<G> labelTree = jVertex.getJGraph().getLabelTree();
-        for (JEdge<G> jEdge : jVertex.getContext()) {
-            if (labelTree == null || !labelTree.isFiltered(jEdge)) {
-                result = true;
-                break;
+        if (labelTree == null) {
+            result = true;
+        } else {
+            Iterator<? extends JEdge<G>> iter = jVertex.getContext();
+            while (iter.hasNext()) {
+                if (!labelTree.isFiltered(iter.next())) {
+                    result = true;
+                    break;
+                }
             }
         }
         return result;

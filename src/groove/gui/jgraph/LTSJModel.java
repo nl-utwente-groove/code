@@ -24,12 +24,12 @@ import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.GraphTransition.Claz;
 import groove.lts.Status.Flag;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -67,7 +67,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     public synchronized void addUpdate(GTS gts, GraphState state) {
         if (isExploring()) {
             this.addedNodes.add(state);
-        } else {
+        } else if (isAcceptState(state)) {
             prepareInsert();
             // add a corresponding GraphCell to the GraphModel
             addNode(state);
@@ -79,7 +79,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     public synchronized void addUpdate(GTS gts, GraphTransition transition) {
         if (isExploring()) {
             this.addedEdges.add(transition);
-        } else {
+        } else if (isAcceptTransition(transition)) {
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
@@ -88,7 +88,10 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
             JCell<GTS> stateJCell = getJCellForNode(transition.target());
             stateJCell.setStale(VisualKey.VISIBLE);
             edgeJCell.setStale(VisualKey.VISIBLE);
+            // layout should occur after the transition has been added
+            // otherwise the forest will not be computed correctly
             getJGraph().doLayout(false);
+            getJGraph().scrollToActive();
         }
     }
 
@@ -121,8 +124,9 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 break;
             case DONE:
                 if (explored.isAbsent()) {
-                    for (JEdge<GTS> jEdge : jCell.getContext()) {
-                        jEdge.setLook(Look.ABSENT, true);
+                    Iterator<? extends JEdge<GTS>> iter = jCell.getContext();
+                    while (iter.hasNext()) {
+                        iter.next().setLook(Look.ABSENT, true);
                     }
                     jCell.setLook(Look.ABSENT, true);
                 }
@@ -164,7 +168,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
             int bound = getStateBound();
             if (bound > nodeCount && nodeCount < getGraph().nodeCount()) {
                 result = addElements(getGraph().nodeSet(), getGraph().edgeSet(), false);
-            } else if (bound < nodeCount && bound < getGraph().nodeCount()) {
+            } else if (bound < nodeCount) {
                 loadGraph(getGraph());
                 result = true;
             }
@@ -179,10 +183,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         int nodeCount = nodeCount();
         for (Node node : nodeSet) {
             GraphState state = (GraphState) node;
-            if (state.isInternalState() && !getJGraph().isShowRecipeSteps()) {
-                continue;
-            }
-            if (state.isAbsent() && !getJGraph().isShowAbsentStates()) {
+            if (!isAcceptState(state)) {
                 continue;
             }
             LTSJVertex jVertex = (LTSJVertex) getJCellForNode(node);
@@ -200,6 +201,17 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         return result;
     }
 
+    /** Tests if a given graph state is acceptable for addition to the LTS panel. */
+    private boolean isAcceptState(GraphState state) {
+        if (state.isInternalState() && !getJGraph().isShowRecipeSteps()) {
+            return false;
+        }
+        if (state.isAbsent() && !getJGraph().isShowAbsentStates()) {
+            return false;
+        }
+        return true;
+    }
+
     /* Overridden to ensure that the node rendering limit is observed. */
     @Override
     protected boolean addEdges(Collection<? extends Edge> edgeSet) {
@@ -207,7 +219,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         if (edgeSet == null) {
             for (Node node : this.nodeJCellMap.keySet()) {
                 GraphState state = (GraphState) node;
-                for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
+                for (GraphTransition trans : state.getTransitions(getJGraph().getTransitionClass())) {
                     result |= addTransition(trans);
                 }
             }
@@ -219,6 +231,11 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         return result;
     }
 
+    /** Tests if a given graph transition is acceptable for addition to the LTS panel. */
+    private boolean isAcceptTransition(GraphTransition trans) {
+        return getJGraph().getTransitionClass().admits(trans);
+    }
+
     /**
      * Adds a given transition to the jModel, if its properties allow this,
      * its source and target are in the model, and
@@ -226,14 +243,8 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      * @return {@code true} if the transition was indeed added
      */
     private boolean addTransition(GraphTransition trans) {
-        if (trans.isInternalStep() && !getJGraph().isShowRecipeSteps()) {
-            return false;
-        }
         GraphState source = trans.source();
         GraphState target = trans.target();
-        if ((source.isAbsent() || target.isAbsent()) && !getJGraph().isShowAbsentStates()) {
-            return false;
-        }
         if (!isVisible(source)) {
             return false;
         }
@@ -302,7 +313,6 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 if (!this.changedCells.isEmpty()) {
                     getJGraph().refreshCells(this.changedCells);
                 }
-                getJGraph().doLayout(false);
             }
         }
     }

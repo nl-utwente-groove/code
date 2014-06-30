@@ -36,6 +36,7 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.GraphTransition.Claz;
 import groove.lts.GraphTransitionKey;
 import groove.lts.MatchResult;
 import groove.lts.RecipeEvent;
@@ -360,24 +361,19 @@ public class StateTree extends JTree implements SimulatorListener {
         boolean isExpanded = this.expanded.contains(state);
         StateTreeNode result = new StateTreeNode(state, isExpanded);
         Collection<GraphTransitionKey> matches = new ArrayList<GraphTransitionKey>();
-        for (GraphTransition trans : state.getTransitions(GraphTransition.Claz.ANY)) {
-            if (trans.target().isAbsent() && !isShowAbsent()) {
-                continue;
-            }
-            if (trans.isInternalStep() && !isShowInternal()) {
-                continue;
-            }
+        Claz claz = Claz.getClass(isShowInternal(), isShowAbsent());
+        for (GraphTransition trans : state.getTransitions(claz)) {
             matches.add(trans.getKey());
         }
         matches.addAll(state.getMatches());
         Map<Action,Set<GraphTransitionKey>> matchMap =
-            new TreeMap<Action,Set<GraphTransitionKey>>(Action.PARTIAL_COMPARATOR);
+                new TreeMap<Action,Set<GraphTransitionKey>>(Action.PARTIAL_COMPARATOR);
         for (GraphTransitionKey match : matches) {
             Action action = match.getAction();
             Set<GraphTransitionKey> ruleMatches = matchMap.get(action);
             if (ruleMatches == null) {
                 matchMap.put(action, ruleMatches =
-                    new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR));
+                        new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR));
             }
             ruleMatches.add(match);
         }
@@ -397,12 +393,12 @@ public class StateTree extends JTree implements SimulatorListener {
                 DisplayTreeNode transNode;
                 if (trans instanceof MatchResult) {
                     transNode =
-                        new MatchTreeNode(getSimulatorModel(), state, (MatchResult) trans, count,
-                            anchored);
+                            new MatchTreeNode(getSimulatorModel(), state, (MatchResult) trans, count,
+                                anchored);
                 } else {
                     transNode =
-                        new RecipeTransitionTreeNode(getSimulatorModel(), state,
-                            (RecipeEvent) trans, count);
+                            new RecipeTransitionTreeNode(getSimulatorModel(), state,
+                                (RecipeEvent) trans, count);
                 }
                 ruleNode.add(transNode);
             }
@@ -442,7 +438,7 @@ public class StateTree extends JTree implements SimulatorListener {
                         if (recipeNode.getRecipe().equals(trans.getAction())) {
                             for (int m = 0; m < recipeNode.getChildCount(); m++) {
                                 RecipeTransitionTreeNode matchNode =
-                                    (RecipeTransitionTreeNode) recipeNode.getChildAt(m);
+                                        (RecipeTransitionTreeNode) recipeNode.getChildAt(m);
                                 if (matchNode.getTransition().equals(trans)) {
                                     selectPath = createPath(matchNode);
                                     break;
@@ -726,7 +722,7 @@ public class StateTree extends JTree implements SimulatorListener {
             if (evt.isPopupTrigger()) {
                 TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
                 TreeNode selectedNode =
-                    selectedPath == null ? null : (TreeNode) selectedPath.getLastPathComponent();
+                        selectedPath == null ? null : (TreeNode) selectedPath.getLastPathComponent();
                 StateTree.this.requestFocus();
                 createPopupMenu(selectedNode).show(evt.getComponent(), evt.getX(), evt.getY());
             }

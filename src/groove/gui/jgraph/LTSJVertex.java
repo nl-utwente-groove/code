@@ -7,7 +7,6 @@ import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition.Claz;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -32,6 +31,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     protected void initialise() {
         super.initialise();
         this.visibleFlag = true;
+        this.outCount = -1;
         GraphState state = getNode();
         if (state != null) {
             setLook(Look.OPEN, !state.isClosed());
@@ -63,16 +63,35 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
 
     /** Indicates that all outgoing transitions of this node are also visible. */
     public boolean isAllOutVisible() {
-        return getNode().isDone()
-                && getNode().getTransitions(Claz.ANY).size() == this.outVisibles + getEdges().size();
+        return getNode().isDone() && getOutCount() == getOutVisibleCount();
     }
 
-    void changeOutVisible(boolean visible) {
-        if (visible) {
-            this.outVisibles++;
-        } else {
-            this.outVisibles--;
+    /** Returns the number of outgoing transitions that are in principle shown on the LTS panel. */
+    private int getOutCount() {
+        if (this.outCount < 0) {
+            this.outCount = getNode().getTransitions(getJGraph().getTransitionClass()).size();
         }
+        return this.outCount;
+    }
+
+    private int outCount;
+
+    /** Returns the number of outgoing transitions that is currently visible on the LTS panel. */
+    private int getOutVisibleCount() {
+        return this.outVisibles;
+    }
+
+    /** Adjusts the number of visibly outgoing transitions by a given number.
+     * @param visible if {@code true}, the number is increased, otherwise decreased
+     * @param count the number of additional/fewer visible outgoing transitions
+     */
+    void changeOutVisible(boolean visible, int count) {
+        if (visible) {
+            this.outVisibles += count;
+        } else {
+            this.outVisibles -= count;
+        }
+        setStale(VisualKey.LABEL);
     }
 
     private int outVisibles;

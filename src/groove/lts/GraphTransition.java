@@ -64,7 +64,7 @@ public interface GraphTransition extends GEdge<GraphState> {
 
     /**'
      * Indicates if this transition is a real part of the GTS.
-     * This is the case if it is not a recipe step, and its source and
+     * This is the case if it is not an internal recipe step, and its source and
      * target states are real.
      * @see #isInternalStep()
      * @see GraphState#isRealState()
@@ -125,7 +125,7 @@ public interface GraphTransition extends GEdge<GraphState> {
                 return true;
             }
         },
-        /** Only rule transitions, be they in-recipe or complete. */
+        /** Only rule transitions, be they internal or complete. */
         RULE {
             @Override
             public boolean admits(GraphTransition trans) {
@@ -133,7 +133,8 @@ public interface GraphTransition extends GEdge<GraphState> {
             }
         },
         /**
-         * Only complete transitions, be they rule- or recipe-triggered.
+         * Only complete (i.e., non-internal) transitions, be they rule- or recipe-triggered.
+         * This includes transitions between (non-internal) absent states.
          * @see GraphTransition#isInternalStep()
          */
         COMPLETE {
@@ -152,9 +153,32 @@ public interface GraphTransition extends GEdge<GraphState> {
                 return trans.isRealStep();
             }
         },
+        /**
+         * All transitions between non-absent states, including internal transitions.
+         * @see GraphState#isAbsent()
+         */
+        PRESENT {
+            @Override
+            public boolean admits(GraphTransition trans) {
+                return !trans.source().isAbsent() && !trans.target().isAbsent();
+            }
+        },
         ;
 
         /** Indicates if a given graph transition belongs to this class. */
         abstract public boolean admits(GraphTransition trans);
+
+        /** Returns one of four classes of transitions, depending
+         * on whether internal and absent transitions are to be included or not.
+         * @param includeInternal if {@code true}, include internal transitions
+         * @param includeAbsent if {@code true}, include absent transitions
+         */
+        public static Claz getClass(boolean includeInternal, boolean includeAbsent) {
+            if (includeInternal) {
+                return includeAbsent ? ANY : PRESENT;
+            } else {
+                return includeAbsent ? COMPLETE : REAL;
+            }
+        }
     }
 }

@@ -175,17 +175,40 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     private JComboBox getFilterChooser() {
         if (this.filterChooser == null) {
+            this.filterListening = true;
             final JComboBox result = this.filterChooser = new JComboBox(Filter.values());
             result.setMaximumSize(new Dimension(result.getPreferredSize().width, 1000));
             result.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
-                    doFilterLTS();
+                    if (LTSDisplay.this.filterListening) {
+                        doFilterLTS();
+                    }
                 }
             });
         }
         return this.filterChooser;
     }
+
+    /** Adds or removes an item for {@link Filter#RESULT} to the filter chooser. */
+    private void setFilterResultItem(boolean hasResults) {
+        JComboBox chooser = getFilterChooser();
+        if (hasResults != (chooser.getItemCount() == Filter.values().length)) {
+            this.filterListening = false;
+            boolean resultSelected = chooser.getSelectedIndex() == Filter.RESULT.ordinal();
+            if (hasResults) {
+                chooser.addItem(Filter.RESULT);
+            } else {
+                chooser.removeItemAt(Filter.RESULT.ordinal());
+            }
+            if (resultSelected) {
+                chooser.setSelectedIndex(Filter.NONE.ordinal());
+            }
+            this.filterListening = true;
+        }
+    }
+
+    private boolean filterListening;
 
     /** Returns the currently selected filter value. */
     public Filter getFilter() {
@@ -227,6 +250,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                                 getJGraph().refreshActive();
                                 getJGraph().refreshAllCells();
                                 getJGraph().doLayout(false);
+                                getJGraph().scrollToActive();
                             }
                             refreshBackground();
                         }
@@ -288,7 +312,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             jCells.add(getJModel().getJCellForNode(state));
             if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
-                for (GraphTransition trans : state.getTransitions(GraphTransition.Claz.ANY)) {
+                for (GraphTransition trans : state.getTransitions(getJGraph().getTransitionClass())) {
                     if (trans.target() == counterExamples.get(i + 1)) {
                         jCells.add(getJModel().getJCellForEdge(trans));
                         break;
@@ -435,6 +459,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 getJGraph().setActive(state, transition);
                 getJGraph().doLayout(isNew);
                 setEnabled(true);
+                getJGraph().scrollToActive();
+                setFilterResultItem(gts.hasResultStates());
             }
             if (gts != oldModel.getGts()) {
                 if (oldModel.getGts() != null) {
@@ -454,6 +480,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 if (getJGraph().setActive(state, transition)) {
                     getJGraph().doLayout(false);
                 }
+                getJGraph().scrollToActive();
             }
         }
     }
@@ -470,6 +497,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 getJGraph().doLayout(false);
             }
             setEnabled(true);
+            getJGraph().scrollToActive();
         }
     }
 
