@@ -357,7 +357,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
         }
         if (!jVertex.isAllOutVisible()) {
-            result.add(Line.atom("\u2193\u2193\u2193"));
+            result.add(OUT_TRANS);
         }
         return result;
     }
@@ -689,4 +689,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final Line EXISTS_OPT = EXISTS.append(Line.atom("?").style(Style.SUPER));
     static private final Line FORALL = Line.atom("" + Util.FORALL);
     static private final Line FORALL_POS = FORALL.append(Line.atom(">0").style(Style.SUPER));
+    /** Final line in a state vertex indicating invisible outgoing transitions. */
+    static private final Line OUT_TRANS = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
 }
