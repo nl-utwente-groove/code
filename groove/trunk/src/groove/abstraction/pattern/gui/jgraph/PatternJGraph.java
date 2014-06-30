@@ -82,7 +82,7 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
     }
 
     @Override
-    protected Layouter createLayouter() {
+    public Layouter getDefaultLayouter() {
         return new MyLayouter();
     }
 

@@ -796,13 +796,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     public Layouter getLayouter() {
         if (this.layouter == null) {
-            this.layouter = createLayouter().newInstance(this);
+            this.layouter = getDefaultLayouter().newInstance(this);
         }
         return this.layouter;
     }
 
     /** Prototype factory method to create a layouter for this JGraph. */
-    protected Layouter createLayouter() {
+    public Layouter getDefaultLayouter() {
         return SpringLayouter.PROTOTYPE;
     }
 
