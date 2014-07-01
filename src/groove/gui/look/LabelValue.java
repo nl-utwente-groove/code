@@ -36,6 +36,7 @@ import groove.grammar.model.GraphBasedModel;
 import groove.grammar.rule.VariableNode;
 import groove.grammar.type.LabelPattern;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.gui.jgraph.AspectJEdge;
@@ -473,28 +474,19 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();
         if (state.isStart()) {
-            qualifiers = qualifiers.append(Line.atom("start"));
+            qualifiers = qualifiers.append(START);
         }
-        if (state.isDead()) {
+        if (!state.isTrial()) {
             if (!qualifiers.isEmpty()) {
-                qualifiers = qualifiers.append(Line.atom(", "));
+                qualifiers = qualifiers.append("/");
             }
-            qualifiers = qualifiers.append(Line.atom("dead"));
-        }
-        if (state.isFinal()) {
-            if (!qualifiers.isEmpty()) {
-                qualifiers = qualifiers.append(Line.atom(", "));
-            }
-            qualifiers = qualifiers.append(Line.atom("final"));
-        }
-        if (state.getTransience() > 0) {
-            if (!qualifiers.isEmpty()) {
-                qualifiers = qualifiers.append(Line.atom(", "));
-            }
-            qualifiers = qualifiers.append(Line.atom("transience = " + state.getTransience()));
+            qualifiers = qualifiers.append(state.isDead() ? DEAD : FINAL);
         }
         if (!qualifiers.isEmpty()) {
-            result.add(qualifiers.style(Style.ITALIC));
+            result.add(qualifiers.style(Style.BOLD));
+        }
+        if (state.getTransience() > 0) {
+            result.add(Line.atom("transience = " + state.getTransience()));
         }
         // add location variables
         for (CtrlVar var : state.getVars()) {
@@ -508,7 +500,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    /** Returns a list of lines together making up the label text of a vertex. */
+    /** Returns a list of lines together making up the label text of a jEdge. */
     protected MultiLabel getJEdgeLabel(JEdge<?> jEdge) {
         MultiLabel result;
         switch (this.role) {
@@ -534,15 +526,20 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     /**
      * Adds the labels of all edges of a given cell to a multi-label.
-     * @param jEdge the cell from which the edges are added
+     * @param jCell the cell from which the edges are added
      * @param result the resulting multi-label; modified by this call
      */
-    private void addEdgeLabels(JCell<?> jEdge, MultiLabel result) {
-        for (Edge edge : jEdge.getEdges()) {
+    private void addEdgeLabels(JCell<?> jCell, MultiLabel result) {
+        boolean onVertex = jCell instanceof JVertex;
+        for (Edge edge : jCell.getEdges()) {
             // only add edges that have an unfiltered label
-            Direct dir = jEdge instanceof JEdge ? ((JEdge<?>) jEdge).getDirect(edge) : Direct.NONE;
-            if (!isFiltered(jEdge, edge)) {
-                result.add(Line.atom(edge.label().text()), dir);
+            if (!isFiltered(jCell, edge)) {
+                Direct dir = onVertex ? Direct.NONE : ((JEdge<?>) jCell).getDirect(edge);
+                Line line = edge.label().toLine();
+                if (onVertex && edge.getRole() == EdgeRole.BINARY) {
+                    line = line.append(" " + Util.CA);
+                }
+                result.add(line, dir);
             }
         }
     }
@@ -691,4 +688,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final Line FORALL_POS = FORALL.append(Line.atom(">0").style(Style.SUPER));
     /** Final line in a state vertex indicating invisible outgoing transitions. */
     static private final Line OUT_TRANS = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
+    /** Final line in a state vertex indicating invisible outgoing transitions. */
+    static private final Line START = Line.atom("start");
+    static private final Line DEAD = Line.atom("dead");
+    static private final Line FINAL = Line.atom("final");
 }

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -64,8 +64,8 @@ public class Util {
      * @throws IOException if an IO error occurs during copying
      * @since Commons IO 1.1
      */
-    public static void copyDirectory(File srcDir, File destDir,
-            boolean preserveFileDate) throws IOException {
+    public static void copyDirectory(File srcDir, File destDir, boolean preserveFileDate)
+        throws IOException {
         if (srcDir == null) {
             throw new NullPointerException("Source must not be null");
         }
@@ -73,16 +73,14 @@ public class Util {
             throw new NullPointerException("Destination must not be null");
         }
         if (srcDir.exists() == false) {
-            throw new FileNotFoundException("Source '" + srcDir
-                + "' does not exist");
+            throw new FileNotFoundException("Source '" + srcDir + "' does not exist");
         }
         if (srcDir.isDirectory() == false) {
-            throw new IOException("Source '" + srcDir
-                + "' exists but is not a directory");
+            throw new IOException("Source '" + srcDir + "' exists but is not a directory");
         }
         if (srcDir.getCanonicalPath().equals(destDir.getCanonicalPath())) {
-            throw new IOException("Source '" + srcDir + "' and destination '"
-                + destDir + "' are the same");
+            throw new IOException("Source '" + srcDir + "' and destination '" + destDir
+                + "' are the same");
         }
 
         // Cater for destination being directory within the source directory (see IO-141)
@@ -102,7 +100,7 @@ public class Util {
 
     /**
      * Internal copy directory method.
-     * 
+     *
      * @param srcDir  the validated source directory, must not be <code>null</code>
      * @param destDir  the validated destination directory, must not be <code>null</code>
      * @param preserveFileDate  whether to preserve the file date
@@ -110,9 +108,8 @@ public class Util {
      * @throws IOException if an error occurs
      * @since Commons IO 1.1
      */
-    private static void doCopyDirectory(File srcDir, File destDir,
-            boolean preserveFileDate, List<String> exclusionList)
-        throws IOException {
+    private static void doCopyDirectory(File srcDir, File destDir, boolean preserveFileDate,
+            List<String> exclusionList) throws IOException {
         // recurse
         File[] files = srcDir.listFiles();
         if (files == null) { // null if security restricted
@@ -120,26 +117,21 @@ public class Util {
         }
         if (destDir.exists()) {
             if (destDir.isDirectory() == false) {
-                throw new IOException("Destination '" + destDir
-                    + "' exists but is not a directory");
+                throw new IOException("Destination '" + destDir + "' exists but is not a directory");
             }
         } else {
             if (destDir.mkdirs() == false) {
-                throw new IOException("Destination '" + destDir
-                    + "' directory cannot be created");
+                throw new IOException("Destination '" + destDir + "' directory cannot be created");
             }
         }
         if (destDir.canWrite() == false) {
-            throw new IOException("Destination '" + destDir
-                + "' cannot be written to");
+            throw new IOException("Destination '" + destDir + "' cannot be written to");
         }
         for (File file : files) {
             File copiedFile = new File(destDir, file.getName());
-            if (exclusionList == null
-                || !exclusionList.contains(file.getCanonicalPath())) {
+            if (exclusionList == null || !exclusionList.contains(file.getCanonicalPath())) {
                 if (file.isDirectory()) {
-                    doCopyDirectory(file, copiedFile, preserveFileDate,
-                        exclusionList);
+                    doCopyDirectory(file, copiedFile, preserveFileDate, exclusionList);
                 } else {
                     doCopyFile(file, copiedFile, preserveFileDate);
                 }
@@ -154,17 +146,16 @@ public class Util {
 
     /**
      * Internal copy file method.
-     * 
+     *
      * @param srcFile  the validated source file, must not be <code>null</code>
      * @param destFile  the validated destination file, must not be <code>null</code>
      * @param preserveFileDate  whether to preserve the file date
      * @throws IOException if an error occurs
      */
-    private static void doCopyFile(File srcFile, File destFile,
-            boolean preserveFileDate) throws IOException {
+    private static void doCopyFile(File srcFile, File destFile, boolean preserveFileDate)
+        throws IOException {
         if (destFile.exists() && destFile.isDirectory()) {
-            throw new IOException("Destination '" + destFile
-                + "' exists but is a directory");
+            throw new IOException("Destination '" + destFile + "' exists but is a directory");
         }
 
         FileInputStream fis = null;
@@ -191,8 +182,8 @@ public class Util {
         }
 
         if (srcFile.length() != destFile.length()) {
-            throw new IOException("Failed to copy full contents from '"
-                + srcFile + "' to '" + destFile + "'");
+            throw new IOException("Failed to copy full contents from '" + srcFile + "' to '"
+                + destFile + "'");
         }
         if (preserveFileDate) {
             destFile.setLastModified(srcFile.lastModified());
@@ -223,8 +214,7 @@ public class Util {
      * @param in  the stream to read, must not be <code>null</code>
      * @throws IOException in case of an I/O error
      */
-    public static String readInputStreamToString(InputStream in)
-        throws IOException {
+    public static String readInputStreamToString(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         StringBuilder result = new StringBuilder();
         String nextLine = reader.readLine();
@@ -252,10 +242,8 @@ public class Util {
             return null;
         }
 
-        String[] dirParts =
-            currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
-        String[] targetParts =
-            target.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] dirParts = currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] targetParts = target.toString().split("\\Q" + File.pathSeparator + "\\E");
 
         int i = 0;
         int max = Math.max(dirParts.length, targetParts.length);
@@ -289,8 +277,8 @@ public class Util {
         List<String[]> result = null;
         try {
             CSVReader reader =
-                new CSVReader(new InputStreamReader(Groove.getResource(
-                    name + ".csv").openStream()), sep);
+                    new CSVReader(
+                    new InputStreamReader(Groove.getResource(name + ".csv").openStream()), sep);
             result = reader.readAll();
             reader.close();
         } catch (IOException e) {
@@ -355,6 +343,8 @@ public class Util {
     static public final char DRA = '\u2198';
     /** Unicode down-left-arrow symbol. */
     static public final char DLA = '\u2199';
+    /** Unicode  circular arrow symbol. */
+    static public final char CA = '\u21ba';
     /** Unicode thin space symbol. */
     static public final char THIN_SPACE = '\u2009';
     /** Unicode plusminus symbol. */
