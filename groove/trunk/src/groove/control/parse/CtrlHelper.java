@@ -455,7 +455,7 @@ public class CtrlHelper {
         if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
-        checkGroupCall(anyTree, this.namespace.getTopActions(false));
+        checkGroupCall(anyTree, this.namespace.getTopActions());
     }
 
     void checkOther(CtrlTree otherTree) {
@@ -464,7 +464,7 @@ public class CtrlHelper {
         }
         Set<Action> otherActions = new HashSet<Action>();
         Set<String> usedNames = this.namespace.getUsedNames();
-        for (Action action : this.namespace.getTopActions(false)) {
+        for (Action action : this.namespace.getTopActions()) {
             if (!usedNames.contains(action.getFullName())) {
                 otherActions.add(action);
             }

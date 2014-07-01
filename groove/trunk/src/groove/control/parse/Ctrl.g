@@ -295,10 +295,10 @@ expr2
 
 expr_atom
 	: //@S expr: ANY
-	  //@B Execution of an arbitrary rule.
+	  //@B Execution of an arbitrary non-property action.
 	  ANY
 	| //@S expr: OTHER
-	  //@B Execution of an arbitrary rule not explicitly occurring anywhere
+	  //@B Execution of an arbitrary non-property action not explicitly occurring 
 	  //@B in this control program.
 	  OTHER
 	| //@S expr: LPAR expr RPAR

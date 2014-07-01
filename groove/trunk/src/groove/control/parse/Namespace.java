@@ -165,10 +165,9 @@ public class Namespace implements ParseInfo {
      * Returns the set of all top-level actions (rules and recipes).
      * Rules and recipes directly or indirectly invoked from (other) procedures are
      * excluded from this set.
-     * @param property if {@code true}, returns the properties, otherwise the non-properties
      */
-    public Set<Action> getTopActions(boolean property) {
-        Set<Action> result = property ? this.properties : this.topActions;
+    public Set<Action> getTopActions() {
+        Set<Action> result = this.topActions;
         if (result == null) {
             Set<String> calledNames = new HashSet<String>();
             for (Callable callable : this.callableMap.values()) {
@@ -181,23 +180,43 @@ public class Namespace implements ParseInfo {
                     }
                 }
             }
-            this.properties = new TreeSet<Action>();
-            this.topActions = new TreeSet<Action>();
+            result = this.topActions = new TreeSet<Action>();
             for (Callable unit : this.callableMap.values()) {
                 if (unit instanceof Action && !calledNames.contains(unit.getFullName())) {
-                    (((Action) unit).isProperty() ? this.properties : this.topActions).add((Action) unit);
+                    this.topActions.add((Action) unit);
                 }
             }
-            result = property ? this.properties : this.topActions;
         }
         return result;
     }
 
-    /** Set of properties. */
-    private Set<Action> properties;
-
     /** Set of top-level rule and recipe names. */
     private Set<Action> topActions;
+
+    /**
+     * Returns the set of all top-level actions (rules and recipes).
+     * Rules and recipes directly or indirectly invoked from (other) procedures are
+     * excluded from this set.
+     * @param property if {@code true}, returns the properties, otherwise the non-properties
+     */
+    public Set<Action> getTopActions(boolean property) {
+        Set<Action> result = property ? this.properties : this.transformers;
+        if (result == null) {
+            this.properties = new TreeSet<Action>();
+            this.transformers = new TreeSet<Action>();
+            for (Action action : getTopActions()) {
+                (action.isProperty() ? this.properties : this.transformers).add(action);
+            }
+            result = property ? this.properties : this.transformers;
+        }
+        return result;
+    }
+
+    /** Set of property actions. */
+    private Set<Action> properties;
+
+    /** Set of transformer actions. */
+    private Set<Action> transformers;
 
     /** Returns the set of all used names,
      * i.e., all rules for which {@link #addCall(String, String)}
