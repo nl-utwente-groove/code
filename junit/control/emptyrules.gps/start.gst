@@ -4,8 +4,10 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <attr name="$version">
-            <string>curly</string>
-        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>79 48 19 19</string>
+            </attr>
+        </node>
     </graph>
 </gxl>
