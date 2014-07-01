@@ -350,7 +350,7 @@ public class Grammar {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof Grammar) && getStartGraph().equals(((Grammar) obj).getStartGraph())
-                && super.equals(obj);
+            && super.equals(obj);
     }
 
     /** Combines the hash codes of the rule system and the start graph. */
@@ -372,7 +372,7 @@ public class Grammar {
      * returns a {@link TreeSet}.
      */
     private Set<Action> createActionSet() {
-        return new TreeSet<Action>();
+        return new TreeSet<Action>(Action.ACTION_COMPARATOR);
     }
 
     /**
@@ -388,7 +388,7 @@ public class Grammar {
      * ordering is from high to low priority.
      */
     private final SortedMap<Integer,Set<Action>> priorityActionMap =
-            new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
+        new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
     /**
      * Set of all actions, collected separately for purposes of speedup.
      * @see #getActions()

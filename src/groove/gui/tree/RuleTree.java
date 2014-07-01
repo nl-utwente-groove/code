@@ -290,6 +290,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param grammar the source of the rule map
      */
     private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
+        boolean hasPositivePriority = false;
         Map<Integer,Set<ActionEntry>> result =
             new TreeMap<Integer,Set<ActionEntry>>(Action.PRIORITY_COMPARATOR);
         Set<String> subRuleNames = new HashSet<String>();
@@ -312,12 +313,23 @@ public class RuleTree extends AbstractResourceTree {
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel ruleModel = (RuleModel) model;
             if (!subRuleNames.contains(ruleModel.getFullName())) {
-                int priority = ruleModel.getPriority();
+                int priority = ruleModel.isProperty() ? -1 : ruleModel.getPriority();
+                hasPositivePriority |= priority > 0;
                 Set<ActionEntry> rules = result.get(priority);
                 if (rules == null) {
                     result.put(priority, rules = new HashSet<ActionEntry>());
                 }
                 rules.add(new RuleEntry(ruleModel));
+            }
+        }
+        if (!hasPositivePriority) {
+            Set<ActionEntry> properties = result.remove(-1);
+            if (properties != null) {
+                if (result.containsKey(0)) {
+                    result.get(0).addAll(properties);
+                } else {
+                    result.put(0, properties);
+                }
             }
         }
         return result;
@@ -769,7 +781,7 @@ public class RuleTree extends AbstractResourceTree {
          * (and will) have children.
          */
         public PriorityTreeNode(int priority) {
-            super("Priority " + priority);
+            super(priority < 0 ? "Properties" : "Priority " + priority);
         }
 
         @Override

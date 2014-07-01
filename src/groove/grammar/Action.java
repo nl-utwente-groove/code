@@ -18,8 +18,7 @@ package groove.grammar;
 
 import groove.control.Callable;
 import groove.control.template.Switch.Kind;
-
-import java.util.Comparator;
+import groove.util.collect.Comparator;
 
 /**
  * Supertype of the actions in a rule system.
@@ -86,10 +85,15 @@ public interface Action extends Callable, Comparable<Action> {
             if (o1 == o2) {
                 return 0;
             }
-            int result = o2.getPriority() - o1.getPriority();
-            if (result == 0) {
-                result = o1.getFullName().compareTo(o2.getFullName());
+            int result = compare(o2.isProperty(), o1.isProperty());
+            if (result != 0) {
+                return result;
             }
+            result = o2.getPriority() - o1.getPriority();
+            if (result != 0) {
+                return result;
+            }
+            result = o1.getFullName().compareTo(o2.getFullName());
             return result;
         }
 
@@ -98,8 +102,7 @@ public interface Action extends Callable, Comparable<Action> {
     /** A comparator for actions that orders all non-partial rules before
      * partial rules, and otherwise behaves like @{link #ACTION_COMPARATOR}.
      */
-    public static final Comparator<Action> PARTIAL_COMPARATOR =
-            new groove.util.collect.Comparator<Action>() {
+    public static final Comparator<Action> PARTIAL_COMPARATOR = new Comparator<Action>() {
         @Override
         public int compare(Action o1, Action o2) {
             int result = compare(!o1.isPartial(), !o2.isPartial());

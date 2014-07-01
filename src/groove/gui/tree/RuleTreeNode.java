@@ -69,6 +69,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         return getRule().hasRecipes();
     }
 
+    @Override
+    public boolean isProperty() {
+        return getRule().isProperty();
+    }
+
     /** Returns HTML-formatted tool tip text for this rule node. */
     @Override
     public String getTip() {
@@ -127,11 +132,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                    !isPartial() || (getParent() instanceof RecipeTreeNode)
+                !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         String suffix =
-                isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX : RULE_SUFFIX;
+            isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX : RULE_SUFFIX;
         return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 
