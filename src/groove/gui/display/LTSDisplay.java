@@ -204,6 +204,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             if (resultSelected) {
                 chooser.setSelectedIndex(Filter.NONE.ordinal());
             }
+            getJGraph().setFilter(Filter.NONE);
             this.filterListening = true;
         }
     }
@@ -327,7 +328,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
             this.mainPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
+                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -512,7 +513,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     public void refreshBackground() {
         Color background =
-            getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
+                getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
         ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(
             isEnabled() ? background : null);

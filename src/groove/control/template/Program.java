@@ -24,6 +24,7 @@ import groove.control.term.CallTerm;
 import groove.control.term.Derivation;
 import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
+import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatErrorSet;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -49,9 +51,12 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class Program implements Fixable {
-    /** Constructs an unnamed, initially empty program. */
+    /**
+     * Constructs an unnamed, initially empty program.
+     */
     public Program() {
         this.names = new TreeSet<String>();
+        this.properties = new ArrayList<Action>();
     }
 
     /**
@@ -102,6 +107,20 @@ public class Program implements Fixable {
             this.mainName = getName();
         }
     }
+
+    /** Sets the property actions to be checked at each non-transient state. */
+    public void setProperties(Collection<Action> properties) {
+        assert !isFixed();
+        assert this.properties.isEmpty();
+        this.properties.addAll(properties);
+    }
+
+    /** Returns the list of property actions to be checked at each non-transient state. */
+    public List<Action> getProperties() {
+        return this.properties;
+    }
+
+    private final List<Action> properties;
 
     /**
      * Indicates if the program has a non-trivial main body.
@@ -628,7 +647,7 @@ public class Program implements Fixable {
                 }
             }
             errors.throwException();
-            this.template = TemplateBuilder.instance().build(this);
+            this.template = TemplateBuilder.instance(getProperties()).build(this);
         }
         return result;
     }

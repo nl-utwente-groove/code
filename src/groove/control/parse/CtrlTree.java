@@ -235,7 +235,8 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.ANY:
             result = prot.delta();
             SortedMap<Integer,List<Action>> prioMap = new TreeMap<Integer,List<Action>>();
-            for (Action action : getInfo().getTopActions()) {
+            for (Action action : getInfo().getTopActions(false)) {
+                // the action list to which this action should be added
                 List<Action> actions = prioMap.get(action.getPriority());
                 if (actions == null) {
                     prioMap.put(action.getPriority(), actions = new ArrayList<Action>());
@@ -250,7 +251,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.OTHER:
             result = prot.delta();
             List<Action> actions = new ArrayList<Action>();
-            for (Action action : getInfo().getTopActions()) {
+            for (Action action : getInfo().getTopActions(false)) {
                 if (!getInfo().getUsedNames().contains(action.getFullName())) {
                     actions.add(action);
                 }

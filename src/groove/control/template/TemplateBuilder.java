@@ -25,6 +25,8 @@ import groove.control.Procedure;
 import groove.control.term.Derivation;
 import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
+import groove.grammar.Action;
+import groove.grammar.Rule;
 import groove.util.Duo;
 import groove.util.Pair;
 import groove.util.Quad;
@@ -36,6 +38,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -48,10 +51,12 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class TemplateBuilder {
-    /** Private constructor for the singleton instance. */
-    private TemplateBuilder() {
-        // empty
+    /** Private constructor. */
+    private TemplateBuilder(List<Action> properties) {
+        this.properties = properties;
     }
+
+    private final List<Action> properties;
 
     /**
      * Construct an automata template for a given program.
@@ -94,26 +99,52 @@ public class TemplateBuilder {
         Deque<TermKey> fresh = getFresh(result);
         // set the initial location
         TermKey initKey = new TermKey(init, new HashSet<Term>(), new CtrlVarSet());
-        locMap.put(initKey, result.getStart());
-        this.termKeyMap.put(result.getStart(), initKey);
-        result.getStart().setType(init.getType());
+        Location start = result.getStart();
+        locMap.put(initKey, start);
+        this.termKeyMap.put(start, initKey);
         fresh.add(initKey);
         // do the following as long as there are fresh locations
         while (!fresh.isEmpty()) {
             TermKey next = fresh.poll();
-            if (!next.one().isTrial()) {
-                continue;
+            Location loc = locMap.get(next);
+            Term term = next.one();
+            // the intended type after the optional property test
+            Type locType = next.two().contains(term) ? Type.DEAD : term.getType();
+            // property switches
+            Set<SwitchStack> switches = new LinkedHashSet<SwitchStack>();
+            // see if we need a property test
+            if (loc.getTransience() == 0 && next.two().isEmpty() && !this.properties.isEmpty()) {
+                for (Action prop : this.properties) {
+                    assert prop.isProperty() && prop instanceof Rule;
+                    SwitchStack sw = new SwitchStack();
+                    sw.add(new Switch(loc, new Call(prop), 0, loc));
+                    switches.add(sw);
+                }
+                if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
+                    // we need an intermediate location
+                    Location aux = result.addLocation(0);
+                    //aux.setVars(loc.getVars());
+                    SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux);
+                    locAttempt.addAll(switches);
+                    loc.setType(Type.TRIAL);
+                    loc.setAttempt(locAttempt);
+                    loc = aux;
+                    switches.clear();
+                }
             }
-            Location source = locMap.get(next);
-            DerivationAttempt nextAttempt = next.one().getAttempt();
-            Location succTarget = addLocation(result, nextAttempt.onSuccess(), source, null);
-            Location failTarget = addLocation(result, nextAttempt.onFailure(), source, null);
-            SwitchAttempt locAttempt = new SwitchAttempt(source, succTarget, failTarget);
-            for (Derivation deriv : nextAttempt) {
-                // build the (possibly nested) switch
-                locAttempt.add(addSwitch(source, result, deriv));
+            loc.setType(locType);
+            if (locType == Type.TRIAL) {
+                DerivationAttempt termAttempt = term.getAttempt();
+                Location succTarget = addLocation(result, termAttempt.onSuccess(), next, null);
+                Location failTarget = addLocation(result, termAttempt.onFailure(), next, null);
+                SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget);
+                for (Derivation deriv : termAttempt) {
+                    // build the (possibly nested) switch
+                    switches.add(addSwitch(loc, result, deriv));
+                }
+                locAttempt.addAll(switches);
+                loc.setAttempt(locAttempt);
             }
-            source.setAttempt(locAttempt);
         }
     }
 
@@ -122,22 +153,21 @@ public class TemplateBuilder {
      * template and auxiliary data structures, if it does not yet exist.
      * @param template the template to which the location should be added
      * @param term the term to be added
-     * @param pred the predecessor location if this is due to a verdict; is {@code null}
+     * @param predKey the predecessor location if this is due to a verdict; is {@code null}
      * iff {@code incoming} is non-{@code null}
      * @param incoming incoming control call leading to the location to be created;
      * may be {@code null} if there is no incoming control call but an incoming verdict
      * @return the fresh or pre-existing control location
      */
-    private Location addLocation(Template template, Term term, Location pred, Call incoming) {
+    private Location addLocation(Template template, Term term, TermKey predKey, Call incoming) {
         Map<TermKey,Location> locMap = getLocMap(template);
         CtrlVarSet vars = new CtrlVarSet();
         Set<Term> predTerms = new HashSet<Term>();
         if (incoming == null) {
-            TermKey predKey = this.termKeyMap.get(pred);
             predTerms.addAll(predKey.two());
             predTerms.add(predKey.one());
         } else {
-            assert pred == null;
+            assert predKey == null;
             vars.addAll(incoming.getOutVars().keySet());
         }
         TermKey key = new TermKey(term, predTerms, vars);
@@ -145,12 +175,8 @@ public class TemplateBuilder {
         if (result == null) {
             getFresh(template).add(key);
             result = template.addLocation(term.getTransience());
-            result.setVars(vars);
-            // if the term is among the verdict predecessors,
-            // we have a loop, meaning that everything has been tried already
-            // so we can safely halt here
-            result.setType(predTerms.contains(term) ? Type.DEAD : term.getType());
             locMap.put(key, result);
+            result.setVars(vars);
             this.termKeyMap.put(result, key);
         }
         return result;
@@ -172,7 +198,7 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from terms to locations. */
     private final Map<Template,Map<TermKey,Location>> locMapMap =
-        new HashMap<Template,Map<TermKey,Location>>();
+            new HashMap<Template,Map<TermKey,Location>>();
 
     /**
      * Adds a switch corresponding to a given derivation to the
@@ -217,7 +243,7 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from derivations to switches. */
     private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
-        new HashMap<Template,Map<Derivation,SwitchStack>>();
+            new HashMap<Template,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -237,11 +263,7 @@ public class TemplateBuilder {
     private Template getTemplate(Procedure proc) {
         Template result = this.templateMap.get(proc);
         if (result == null) {
-            result = proc.getTemplate();
-            if (result == null) {
-                result = new Template(proc);
-            }
-            this.templateMap.put(proc, result);
+            this.templateMap.put(proc, result = new Template(proc));
         }
         return result;
     }
@@ -447,7 +469,7 @@ public class TemplateBuilder {
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
-        new LinkedHashMap<Location,Record<Location>>();
+            new LinkedHashMap<Location,Record<Location>>();
 
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);
@@ -467,12 +489,12 @@ public class TemplateBuilder {
         }
     }
 
-    /** Returns the singleton instance of this class. */
-    public static TemplateBuilder instance() {
-        return INSTANCE;
+    /** Returns the an instance of this class.
+     * @param properties the property actions to be tested at each non-transient step
+     */
+    public static TemplateBuilder instance(List<Action> properties) {
+        return new TemplateBuilder(properties);
     }
-
-    private static final TemplateBuilder INSTANCE = new TemplateBuilder();
 
     /**
      * Type serving to distinguish freshly generated locations.

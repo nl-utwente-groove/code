@@ -5,6 +5,8 @@ import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
+import groove.lts.GraphNextState;
+import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 import groove.util.Groove;
@@ -34,6 +36,17 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
         super.setSource(port);
         if (port != null && hasVisibleFlag()) {
             getSourceVertex().changeOutVisible(true, getEdges().size());
+        }
+    }
+
+    @Override
+    public void setTarget(Object port) {
+        super.setTarget(port);
+        if (port != null) {
+            GraphState target = getTargetVertex().getNode();
+            if (target instanceof GraphNextState && getEdges().contains(target)) {
+                getTargetVertex().setParentEdge(this);
+            }
         }
     }
 
