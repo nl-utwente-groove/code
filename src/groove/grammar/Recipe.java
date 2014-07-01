@@ -59,6 +59,11 @@ public class Recipe extends Procedure implements Action {
     private Set<Rule> rules;
 
     @Override
+    public boolean isProperty() {
+        return false;
+    }
+
+    @Override
     public boolean isPartial() {
         return false;
     }

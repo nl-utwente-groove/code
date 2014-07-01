@@ -117,6 +117,8 @@ DefaultGraphCell implements JCell<G> {
         // To achieve this, we first remove the edge
         edges.remove(edge);
         edges.add(edge);
+        setStale(VisualKey.LABEL);
+        setStale(VisualKey.TEXT_SIZE);
     }
 
     @Override

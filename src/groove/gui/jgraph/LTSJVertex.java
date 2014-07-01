@@ -1,6 +1,7 @@
 package groove.gui.jgraph;
 
 import groove.control.instance.Frame;
+import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
@@ -45,6 +46,17 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     @Override
+    public void addEdge(Edge edge) {
+        boolean oldAllOutVisible = isAllOutVisible();
+        super.addEdge(edge);
+        if (isAllOutVisible() != oldAllOutVisible) {
+            setStale(VisualKey.LABEL);
+            setStale(VisualKey.TEXT_SIZE);
+            setStale(VisualKey.NODE_SIZE);
+        }
+    }
+
+    @Override
     public boolean setVisibleFlag(boolean visible) {
         boolean result = this.visibleFlag != visible;
         if (result) {
@@ -78,7 +90,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
 
     /** Returns the number of outgoing transitions that is currently visible on the LTS panel. */
     private int getOutVisibleCount() {
-        return this.outVisibles;
+        return this.outVisibles + getEdges().size();
     }
 
     /** Adjusts the number of visibly outgoing transitions by a given number.

@@ -715,10 +715,10 @@ public class Rule implements Action, Fixable {
     /** Indicates if this rule serves to test a property of a graph.
      * This is only the case if the rule is unmodifying, has no parameters
      * and has zero priority.
-     *
      */
+    @Override
     public boolean isProperty() {
-        return isModifying() && getSignature().isEmpty() && getPriority() == 0;
+        return !isModifying() && getSignature().isEmpty() && getPriority() == 0;
     }
 
     /**

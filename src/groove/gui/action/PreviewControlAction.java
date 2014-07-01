@@ -16,6 +16,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -36,8 +37,12 @@ public class PreviewControlAction extends SimulatorAction {
         try {
             Collection<Template> templates = getTemplates();
             if (templates != null) {
-                Point pos = MouseInfo.getPointerInfo().getLocation();
-                createMenu(templates).show(getSimulator().getFrame(), pos.x, pos.y);
+                if (templates.size() == 1) {
+                    getDialog(templates.iterator().next()).setVisible(true);
+                } else {
+                    Point pos = MouseInfo.getPointerInfo().getLocation();
+                    createMenu(templates).show(getSimulator().getFrame(), pos.x, pos.y);
+                }
             }
         } catch (FormatException exc) {
             showError(exc);
@@ -91,8 +96,11 @@ public class PreviewControlAction extends SimulatorAction {
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
             ControlModel controlModel =
-                    (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
-            if (controlModel != null) {
+                (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
+            if (controlModel == null) {
+                result =
+                    Collections.singleton(grammarModel.getControlModel().getProgram().getTemplate());
+            } else {
                 result = controlModel.toResource();
             }
         }
