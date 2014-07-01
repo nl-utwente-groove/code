@@ -47,13 +47,10 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
 
     @Override
     public void addEdge(Edge edge) {
-        boolean oldAllOutVisible = isAllOutVisible();
         super.addEdge(edge);
-        if (isAllOutVisible() != oldAllOutVisible) {
-            setStale(VisualKey.LABEL);
-            setStale(VisualKey.TEXT_SIZE);
-            setStale(VisualKey.NODE_SIZE);
-        }
+        setStale(VisualKey.LABEL);
+        setStale(VisualKey.TEXT_SIZE);
+        setStale(VisualKey.NODE_SIZE);
     }
 
     @Override
