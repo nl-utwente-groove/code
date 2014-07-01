@@ -17,8 +17,7 @@
 package groove.gui.tree;
 
 import groove.util.Strings;
-
-import java.util.Comparator;
+import groove.util.collect.Comparator;
 
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -91,19 +90,28 @@ public class DisplayTreeNode extends DefaultMutableTreeNode {
 
     private final Comparator<TreeNode> comparator = new ChildComparator();
 
-    private static class ChildComparator implements Comparator<TreeNode> {
+    private static class ChildComparator extends Comparator<TreeNode> {
         @Override
         public int compare(TreeNode o1, TreeNode o2) {
-            if (o1 instanceof RecipeTreeNode) {
-                if (!(o2 instanceof RecipeTreeNode)) {
-                    return -1;
+            int result = compare(o1 instanceof RecipeTreeNode, o2 instanceof RecipeTreeNode);
+            if (result != 0) {
+                return result;
+            }
+            result = compare(o1 instanceof ActionTreeNode, o2 instanceof ActionTreeNode);
+            if (result != 0) {
+                return result;
+            }
+            if (o1 instanceof ActionTreeNode) {
+                result =
+                    compare(((ActionTreeNode) o2).isProperty(), ((ActionTreeNode) o1).isProperty());
+                if (result != 0) {
+                    return result;
                 }
-            } else if (o2 instanceof RecipeTreeNode) {
-                return 1;
             }
             return stringComparator.compare(o1.toString(), o2.toString());
         }
 
-        private final static Comparator<String> stringComparator = Strings.getNaturalComparator();
+        private final static java.util.Comparator<String> stringComparator =
+            Strings.getNaturalComparator();
     }
 }

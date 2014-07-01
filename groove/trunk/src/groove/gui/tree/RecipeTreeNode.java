@@ -42,6 +42,11 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     }
 
     @Override
+    public boolean isProperty() {
+        return getRecipe().isProperty();
+    }
+
+    @Override
     public Icon getIcon() {
         return Icons.RECIPE_TREE_ICON;
     }

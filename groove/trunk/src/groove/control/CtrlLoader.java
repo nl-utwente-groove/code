@@ -188,7 +188,7 @@ public class CtrlLoader {
                 // no explicit priority
                 if (newPriority != 0) {
                     rewriter.insertAfter(recipeTree.getChild(1).getToken(), "priority "
-                            + newPriority);
+                        + newPriority);
                     changed = true;
                 }
             } else {
@@ -203,7 +203,6 @@ public class CtrlLoader {
                 result.put(controlName, rewriter.toString());
             }
         }
-        System.out.println(result);
         return result;
     }
 
@@ -242,7 +241,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, String program)
-        throws FormatException {
+            throws FormatException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         instance.parse(programName, program);
         Program result = instance.buildProgram(Collections.singleton(programName));
@@ -252,7 +251,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, File base)
-        throws FormatException, IOException {
+            throws FormatException, IOException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         QualName qualName = new QualName(programName);
         File control = base;
