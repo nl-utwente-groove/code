@@ -48,7 +48,7 @@ import java.util.MissingFormatArgumentException;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel> implements
-        RuleTransitionStub, RuleTransition {
+RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
@@ -115,7 +115,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying() || getStep().isModifying()) {
+        if (!getEvent().getRule().isProperty() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
@@ -242,10 +242,10 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
                 HostGraph derivedTarget = appl.getTarget().clone();
                 HostGraph realTarget = target().getGraph().clone();
                 final Morphism<HostNode,HostEdge> iso =
-                    IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
+                        IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
                 assert iso != null : "Can't reconstruct derivation from graph transition " + this
-                    + ": \n" + AGraph.toString(derivedTarget) + " and \n"
-                    + AGraph.toString(realTarget) + " \nnot isomorphic";
+                        + ": \n" + AGraph.toString(derivedTarget) + " and \n"
+                        + AGraph.toString(realTarget) + " \nnot isomorphic";
                 result = result.then(iso);
             }
         } else {
@@ -295,7 +295,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public boolean equals(Object obj) {
         return obj instanceof RuleTransition && equalsSource((RuleTransition) obj)
-            && equalsEvent((RuleTransition) obj);
+                && equalsEvent((RuleTransition) obj);
     }
 
     /*

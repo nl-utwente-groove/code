@@ -165,9 +165,11 @@ public class Namespace implements ParseInfo {
      * Returns the set of all top-level actions (rules and recipes).
      * Rules and recipes directly or indirectly invoked from (other) procedures are
      * excluded from this set.
+     * @param property if {@code true}, returns the properties, otherwise the non-properties
      */
-    public Set<Action> getTopActions() {
-        if (this.topActions == null) {
+    public Set<Action> getTopActions(boolean property) {
+        Set<Action> result = property ? this.properties : this.topActions;
+        if (result == null) {
             Set<String> calledNames = new HashSet<String>();
             for (Callable callable : this.callableMap.values()) {
                 if (callable instanceof Action) {
@@ -179,15 +181,20 @@ public class Namespace implements ParseInfo {
                     }
                 }
             }
+            this.properties = new TreeSet<Action>();
             this.topActions = new TreeSet<Action>();
             for (Callable unit : this.callableMap.values()) {
                 if (unit instanceof Action && !calledNames.contains(unit.getFullName())) {
-                    this.topActions.add((Action) unit);
+                    (((Action) unit).isProperty() ? this.properties : this.topActions).add((Action) unit);
                 }
             }
+            result = property ? this.properties : this.topActions;
         }
-        return this.topActions;
+        return result;
     }
+
+    /** Set of properties. */
+    private Set<Action> properties;
 
     /** Set of top-level rule and recipe names. */
     private Set<Action> topActions;

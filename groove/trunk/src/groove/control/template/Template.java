@@ -25,13 +25,12 @@ import groove.control.graph.ControlGraph;
 import groove.grammar.Action;
 import groove.grammar.host.HostFactory;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -57,7 +56,7 @@ public class Template {
         this.name = name;
         this.maxNodeNr = -1;
         this.owner = proc;
-        this.locations = new ArrayList<Location>();
+        this.locations = new LinkedHashSet<Location>();
         this.start = addLocation(0);
     }
 
@@ -117,12 +116,17 @@ public class Template {
 
     private int maxNodeNr;
 
+    /** Removes a location from this template. */
+    public void removeLocation(Location loc) {
+        this.locations.remove(loc);
+    }
+
     /** Returns the set of locations of this template. */
-    public List<Location> getLocations() {
+    public Collection<Location> getLocations() {
         return this.locations;
     }
 
-    private final List<Location> locations;
+    private final Set<Location> locations;
 
     /**
      * Returns the set of actions occurring on control edges,

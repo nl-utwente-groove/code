@@ -300,16 +300,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         switch (node.getKind()) {
         case FORALL:
-            line = line.append(FORALL);
+            line = line.append(FORALL_LINE);
             break;
         case FORALL_POS:
-            line = line.append(FORALL_POS);
+            line = line.append(FORALL_POS_LINE);
             break;
         case EXISTS:
-            line = line.append(EXISTS);
+            line = line.append(EXISTS_LINE);
             break;
         case EXISTS_OPT:
-            line = line.append(EXISTS_OPT);
+            line = line.append(EXISTS_OPT_LINE);
         }
         return MultiLabel.singleton(line, Direct.NONE);
     }
@@ -353,12 +353,20 @@ public class LabelValue implements VisualValue<MultiLabel> {
         boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
         for (Edge edge : jVertex.getEdges()) {
             if (!isFiltered(jVertex, edge)) {
-                String text = ((GraphTransition) edge).text(isShowAnchors);
-                result.add(Line.atom(text));
+                Line line;
+                if (isShowAnchors) {
+                    line = Line.atom(((GraphTransition) edge).text(isShowAnchors));
+                } else {
+                    line = edge.label().toLine();
+                }
+                if (edge.getRole() == EdgeRole.BINARY) {
+                    line = line.append(LOOP_SUFFIX);
+                }
+                result.add(line);
             }
         }
         if (!jVertex.isAllOutVisible()) {
-            result.add(OUT_TRANS);
+            result.add(RESIDUAL_LINE);
         }
         return result;
     }
@@ -474,13 +482,13 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();
         if (state.isStart()) {
-            qualifiers = qualifiers.append(START);
+            qualifiers = qualifiers.append(START_LINE);
         }
         if (!state.isTrial()) {
             if (!qualifiers.isEmpty()) {
                 qualifiers = qualifiers.append("/");
             }
-            qualifiers = qualifiers.append(state.isDead() ? DEAD : FINAL);
+            qualifiers = qualifiers.append(state.isDead() ? DEAD_LINE : FINAL_LINE);
         }
         if (!qualifiers.isEmpty()) {
             result.add(qualifiers.style(Style.BOLD));
@@ -537,7 +545,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 Direct dir = onVertex ? Direct.NONE : ((JEdge<?>) jCell).getDirect(edge);
                 Line line = edge.label().toLine();
                 if (onVertex && edge.getRole() == EdgeRole.BINARY) {
-                    line = line.append(" " + Util.CA);
+                    line = line.append(LOOP_SUFFIX);
                 }
                 result.add(line, dir);
             }
@@ -682,14 +690,20 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final String IMPORT_TEXT = String.format("%simport%s", Util.FRENCH_QUOTES_OPEN,
         Util.FRENCH_QUOTES_CLOSED);
     static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(Style.ITALIC);
-    static private final Line EXISTS = Line.atom("" + Util.EXISTS);
-    static private final Line EXISTS_OPT = EXISTS.append(Line.atom("?").style(Style.SUPER));
-    static private final Line FORALL = Line.atom("" + Util.FORALL);
-    static private final Line FORALL_POS = FORALL.append(Line.atom(">0").style(Style.SUPER));
-    /** Final line in a state vertex indicating invisible outgoing transitions. */
-    static private final Line OUT_TRANS = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
-    /** Final line in a state vertex indicating invisible outgoing transitions. */
-    static private final Line START = Line.atom("start");
-    static private final Line DEAD = Line.atom("dead");
-    static private final Line FINAL = Line.atom("final");
+    static private final Line EXISTS_LINE = Line.atom("" + Util.EXISTS);
+    static private final Line EXISTS_OPT_LINE =
+        EXISTS_LINE.append(Line.atom("?").style(Style.SUPER));
+    static private final Line FORALL_LINE = Line.atom("" + Util.FORALL);
+    static private final Line FORALL_POS_LINE = FORALL_LINE.append(Line.atom(">0").style(
+        Style.SUPER));
+    /** Final line in a state vertex indicating residual invisible outgoing transitions. */
+    static private final Line RESIDUAL_LINE = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
+    /** Line in a control vertex indicating a start state. */
+    static private final Line START_LINE = Line.atom("start");
+    /** Line in a control vertex indicating a deadlocked state. */
+    static private final Line DEAD_LINE = Line.atom("dead");
+    /** Line in a control vertex indicating a final state. */
+    static private final Line FINAL_LINE = Line.atom("final");
+    /** Suffix indicating a self-loop on a node label. */
+    static private final String LOOP_SUFFIX = " " + Util.CA;
 }

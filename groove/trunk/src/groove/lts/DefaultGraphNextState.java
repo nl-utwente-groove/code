@@ -36,7 +36,7 @@ import java.util.List;
  * @version $Revision$
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState,
-RuleTransitionStub {
+        RuleTransitionStub {
     /**
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
@@ -136,7 +136,7 @@ RuleTransitionStub {
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying() || getStep().isModifying()) {
+        if (!getEvent().getRule().isProperty() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
@@ -316,7 +316,7 @@ RuleTransitionStub {
      */
     protected boolean equalsTransition(RuleTransition other) {
         return source() == other.source() && getEvent().equals(other.getEvent())
-                && getStep().equals(other.getStep());
+            && getStep().equals(other.getStep());
     }
 
     /**

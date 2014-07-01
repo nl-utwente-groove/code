@@ -473,8 +473,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                 visible = true;
             } else if (getFilter() == Filter.SPANNING) {
                 LTSJEdge jEdge = (LTSJEdge) root;
-                GraphState target = jEdge.getTargetVertex().getNode();
-                visible = target instanceof GraphNextState && jEdge.getEdges().contains(target);
+                visible = (jEdge.getTargetVertex().getParentEdge() == jEdge);
             } else {
                 visible = true;
             }

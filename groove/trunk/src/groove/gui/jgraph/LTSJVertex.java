@@ -8,6 +8,9 @@ import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.StartGraphState;
+
+import java.util.Iterator;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -109,6 +112,29 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     private int outVisibles;
+
+    /** Sets the parent edge. */
+    void setParentEdge(LTSJEdge parent) {
+        this.parentEdge = parent;
+    }
+
+    /** Returns the parent edge in a spanning tree. */
+    public LTSJEdge getParentEdge() {
+        LTSJEdge result = this.parentEdge;
+        if (result == null && !(getNode() instanceof StartGraphState)) {
+            Iterator<? extends LTSJEdge> iter = getContext();
+            while (iter.hasNext()) {
+                LTSJEdge edge = iter.next();
+                if (edge.getTargetVertex() == this && edge.getSourceVertex() != this) {
+                    result = edge;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private LTSJEdge parentEdge;
 
     @Override
     StringBuilder getNodeDescription() {

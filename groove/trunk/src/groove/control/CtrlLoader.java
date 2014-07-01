@@ -109,8 +109,13 @@ public class CtrlLoader {
             }
         }
         if (!result.hasMain()) {
-            result.add(parse(" main", "#any;").check().toProgram());
+            // try to parse "any" for static semantic checks
+            Program main = parse(" main", "#any;").check().toProgram();
+            //            Program main = new Program(" main");
+            //            main.setMain(CtrlTree.toDefaultTerm(this.namespace));
+            result.add(main);
         }
+        result.setProperties(this.namespace.getTopActions(true));
         try {
             result.setFixed();
         } catch (FormatException e) {

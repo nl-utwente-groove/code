@@ -25,8 +25,10 @@ import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
 import groove.graph.ALabel;
+import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.gui.look.Line;
+import groove.gui.look.Line.Style;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
 import groove.util.ThreeValued;
@@ -107,7 +109,11 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     @Override
     protected Line computeLine() {
-        return Line.atom(text(false));
+        Line result = Line.atom(text(false));
+        if (getRole() == EdgeRole.FLAG) {
+            result = result.style(Style.ITALIC);
+        }
+        return result;
     }
 
     /** Returns the label text, with optionally the rule parameters
@@ -128,6 +134,14 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(computeParameters(this));
         }
         return result.toString();
+    }
+
+    @Override
+    public EdgeRole getRole() {
+        if (getAction().isProperty() && !getStep().isModifying()) {
+            return EdgeRole.FLAG;
+        }
+        return super.getRole();
     }
 
     @Override
