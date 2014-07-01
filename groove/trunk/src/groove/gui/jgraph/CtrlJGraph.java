@@ -66,7 +66,7 @@ public class CtrlJGraph extends JGraph<ControlGraph> {
 
     @Override
     public boolean isShowLoopsAsNodeLabels() {
-        return false;
+        return true;
     }
 
     @Override

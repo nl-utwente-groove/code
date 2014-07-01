@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -21,6 +21,7 @@ import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.gui.look.Line;
+import groove.gui.look.Line.Style;
 
 /**
  * @author rensink
@@ -55,7 +56,7 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
         return getCallStack() == null;
     }
 
-    /** 
+    /**
      * If this is a verdict edge, indicates if it is a success edge.
      * Should only be invoked if {@code isVerdict} holds
      * @return {@code true} if this a success verdict edge; {@code false} if
@@ -83,12 +84,13 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
         } else {
             result = getCallStack().toString();
         }
-        return Line.atom(result);
+        Line line = Line.atom(result);
+        return isVerdict() || getRole() == EdgeRole.FLAG ? line.style(Style.ITALIC) : line;
     }
 
     @Override
     public EdgeRole getRole() {
-        return EdgeRole.BINARY;
+        return isLoop() && getCallStack().getRule().isProperty() ? EdgeRole.FLAG : EdgeRole.BINARY;
     }
 
     @Override
