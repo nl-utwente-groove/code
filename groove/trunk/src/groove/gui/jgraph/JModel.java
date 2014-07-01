@@ -27,6 +27,7 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.VisualKey;
+import groove.util.collect.NestedIterator;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -349,7 +350,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         this.addedJCells.add(0, jVertex);
         JVertex<G> oldNode = this.nodeJCellMap.put(node, jVertex);
         assert oldNode == null;
-        this.addedJEdges.put(jVertex, new HashSet<JEdge<G>>());
         return jVertex;
     }
 
@@ -412,7 +412,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         if (edgeSet == null) {
             result = jVertex.getContext();
         } else {
-            result = edgeSet.iterator();
+            result = new NestedIterator<JEdge<G>>(edgeSet.iterator(), jVertex.getContext());
         }
         return result;
     }
@@ -423,9 +423,10 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     private void addJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
         Set<JEdge<G>> jEdges = this.addedJEdges.get(jVertex);
-        if (jEdges != null) {
-            jEdges.add(jEdge);
+        if (jEdges == null) {
+            this.addedJEdges.put(jVertex, jEdges = new HashSet<JEdge<G>>());
         }
+        jEdges.add(jEdge);
     }
 
     /**
@@ -581,11 +582,11 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     protected Map<Edge,JCell<G>> edgeJCellMap = new HashMap<Edge,JCell<G>>();
 
     /**
-     * Mapping from graph nodes to JEdges for outgoing edges.
+     * Mapping from jVertices to incident jEdges.
      * Used in the process of constructing a GraphJModel.
      */
     protected final Map<JVertex<G>,Set<JEdge<G>>> addedJEdges =
-        new HashMap<JVertex<G>,Set<JEdge<G>>>();
+            new HashMap<JVertex<G>,Set<JEdge<G>>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
      * GraphJModel.
