@@ -87,6 +87,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result = EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[callArgs.size()];
+            HostNode[] added = getAddedNodes();
             for (int i = 0; i < callArgs.size(); i++) {
                 HostNode arg;
                 Binding binding = getAction().getParBinding(i);
@@ -95,7 +96,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
                     arg = (HostNode) getEvent().getAnchorImage(binding.getIndex());
                     break;
                 case CREATOR:
-                    arg = getAddedNodes()[binding.getIndex()];
+                    arg = added == null ? null : added[binding.getIndex()];
                     break;
                 default:
                     assert false;
