@@ -17,7 +17,9 @@
 package groove.graph;
 
 import groove.grammar.Action;
+import groove.grammar.Action.Role;
 import groove.gui.dialog.PropertyKey;
+import groove.io.HTMLConverter;
 import groove.util.DefaultFixable;
 import groove.util.ExprParser;
 import groove.util.Fixable;
@@ -204,12 +206,49 @@ public class GraphProperties extends Properties implements Fixable {
 
             @Override
             public String getDescription() {
-                return "Boolean value";
+                return "A boolean value (<strong>true</strong> by default)";
             }
 
             @Override
             public String getComment() {
                 return "Disabled rules are never evaluated";
+            }
+        }),
+        /** Alternative transition label. */
+        INJECTIVE("injective", "" + false, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.equals("" + true) || value.equals("" + false);
+            }
+
+            @Override
+            public String getDescription() {
+                return "A boolean value (<strong>false</strong> by default)";
+            }
+
+            @Override
+            public String getComment() {
+                return "Boolean property determining if the rule is to be matched injectively."
+                    + "Disregarded if injective matching is set on the grammar level.";
+            }
+        }),
+        /** Action role. */
+        ROLE("actionRole", "", new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.length() == 0 || Role.toRole(value) != null;
+            }
+
+            @Override
+            public String getDescription() {
+                return "One of " + Groove.toString(Role.values(), "", "", ", ")
+                    + HTMLConverter.HTML_LINEBREAK
+                    + "or the empty string if the role should be automatically inferred";
+            }
+
+            @Override
+            public String getComment() {
+                return "Role of the action: either a transformer, or some kind of property";
             }
         }),
         /** User-defined comment. */
@@ -221,7 +260,7 @@ public class GraphProperties extends Properties implements Fixable {
 
             @Override
             public String getDescription() {
-                return "One-line description of the purpose of the graph or rule";
+                return "A one-line description of the purpose of the graph or rule";
             }
 
             @Override
@@ -247,24 +286,6 @@ public class GraphProperties extends Properties implements Fixable {
             }
         }, false),
         /** Alternative transition label. */
-        INJECTIVE("injective", "" + false, new Property<String>() {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.equals("" + true) || value.equals("" + false);
-            }
-
-            @Override
-            public String getDescription() {
-                return "Flag controlling injective matching; false by default";
-            }
-
-            @Override
-            public String getComment() {
-                return "Boolean property determining if the rule is to be matched injectively."
-                    + "Disregarded if injective matching is set on the grammar level.";
-            }
-        }),
-        /** Alternative transition label. */
         TRANSITION_LABEL("transitionLabel", new Property<String>() {
             @Override
             public boolean isSatisfied(String value) {
@@ -279,7 +300,7 @@ public class GraphProperties extends Properties implements Fixable {
             @Override
             public String getComment() {
                 return "A string to be used as the transition label in the "
-                        + "LTS. If empty, defaults to the rule name.";
+                    + "LTS. If empty, defaults to the rule name.";
             }
         }),
         /** Graph version. */

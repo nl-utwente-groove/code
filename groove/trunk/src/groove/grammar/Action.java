@@ -18,6 +18,9 @@ package groove.grammar;
 
 import groove.util.collect.Comparator;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Supertype of the actions in a rule system.
  * @author Arend Rensink
@@ -163,5 +166,20 @@ public interface Action extends Callable, Comparable<Action> {
         }
 
         private final String text;
+
+        /** Returns the role corresponding to a given string,
+         * or {@code null} if the string does not denote a role.
+         */
+        static public Role toRole(String text) {
+            if (roleMap == null) {
+                roleMap = new HashMap<String,Action.Role>();
+                for (Role role : Role.values()) {
+                    roleMap.put(role.toString(), role);
+                }
+            }
+            return roleMap.get(text);
+        }
+
+        static private Map<String,Role> roleMap;
     }
 }

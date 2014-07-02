@@ -17,6 +17,7 @@
 package groove.gui.dialog;
 
 import groove.graph.GraphProperties;
+import groove.io.HTMLConverter;
 import groove.util.Property;
 import groove.util.collect.ListComparator;
 
@@ -319,7 +320,7 @@ public class PropertiesTable extends JTable {
             } else {
                 // editing a value
                 Property<String> test = getDefaultKeys().get(this.editingValueForKey).getFormat();
-                String description = test == null ? null : test.getDescription();
+                StringBuffer description = test == null ? null : test.getDescription(false);
                 if (description == null) {
                     result.append(String.format("Incorrect value '%s' for key '%s'.",
                         this.editingValueForKey));
@@ -328,8 +329,9 @@ public class PropertiesTable extends JTable {
                         description));
                 }
             }
+            result.append(HTMLConverter.HTML_LINEBREAK);
             result.append(" Continue?");
-            return result.toString();
+            return HTMLConverter.HTML_TAG.on(result).toString();
         }
 
         /** Sets the editor to editing a property key. */
@@ -386,7 +388,7 @@ public class PropertiesTable extends JTable {
                     }
                 }
             }
-            setToolTipText(tip);
+            setToolTipText(HTMLConverter.HTML_TAG.on(tip));
             return super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row,
                 column);
         }
