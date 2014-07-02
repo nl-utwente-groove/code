@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: Property.java,v 1.1 2008-01-30 09:32:03 iovka Exp $
  */
 package groove.util;
@@ -58,10 +58,10 @@ abstract public class Property<S> {
      */
     abstract public boolean isSatisfied(S value);
 
-    /** 
+    /**
      * Removes from a given set all values that do not satisfy this property.
      * @param collection the set to be filtered; will be modified as a result of this call
-     * @return the parameter {@code collection} 
+     * @return the parameter {@code collection}
      */
     public <C extends Collection<? extends S>> C filter(C collection) {
         Iterator<? extends S> iter = collection.iterator();
@@ -81,17 +81,29 @@ abstract public class Property<S> {
     }
 
     /**
-     * Provides a description of the value(s) that satisfy this property. This
-     * implementation returns <code>null</code>.
+     * HTML-formatted description of the value(s) that satisfy this property.
      */
     public String getDescription() {
         return this.description;
     }
 
     /**
+     * Provides a description of the value(s) that satisfy this property,
+     * with the first character optionally capitalised.
+     */
+    public StringBuffer getDescription(boolean uppercase) {
+        StringBuffer result = new StringBuffer(getDescription());
+        if (uppercase) {
+            result.setCharAt(0, Character.toUpperCase(result.charAt(0)));
+        } else {
+            result.setCharAt(0, Character.toLowerCase(result.charAt(0)));
+        }
+        return result;
+    }
+
+    /**
      * Provides a comment on this property. This can be a description of the
-     * thing the property is testing. This implementation returns
-     * <code>null</code>.
+     * thing the property is testing.
      */
     public String getComment() {
         return this.comment;
@@ -186,8 +198,8 @@ abstract public class Property<S> {
          */
         @Override
         public boolean isSatisfied(String value) {
-            return (this.emptyOk && value.equals(""))
-                || value.equals(trueString) || value.equals(falseString);
+            return (this.emptyOk && value.equals("")) || value.equals(trueString)
+                || value.equals(falseString);
         }
 
         /** Flag indicating if the empty string is approved. */
@@ -198,8 +210,8 @@ abstract public class Property<S> {
         /** Representation of <code>false</code>. */
         static private final String falseString = Boolean.toString(false);
         /** The property description. */
-        static private final String description = String.format("%s or %s",
-            trueString, falseString);
+        static private final String description =
+            String.format("%s or %s", trueString, falseString);
     }
 
     /**
@@ -214,8 +226,7 @@ abstract public class Property<S> {
          * @param emptyOk if <code>true</code>, the empty string is approved.
          */
         public IsEnumValue(Class<T> enumType, boolean emptyOk) {
-            super(getDescription(enumType), "Sould be "
-                + getDescription(enumType));
+            super(getDescription(enumType), "Sould be " + getDescription(enumType));
             this.emptyOk = emptyOk;
             this.enumType = enumType;
         }
