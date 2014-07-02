@@ -22,7 +22,6 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.control.template.Switch;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -358,8 +357,26 @@ public class Rule implements Action, Fixable {
     }
 
     @Override
-    public Switch.Kind getKind() {
-        return Switch.Kind.RULE;
+    public Kind getKind() {
+        return Kind.RULE;
+    }
+
+    @Override
+    public Role getRole() {
+        return isPropertyLike() ? Role.CONDITION : Role.TRANSFORMER;
+    }
+
+    /** Indicates if this rule serves to test a property of a graph.
+     * This is only the case if the rule is unmodifying, has no parameters
+     * and has zero priority.
+     */
+    private boolean isPropertyLike() {
+        return !isModifying() && getAnchor().isEmpty() && getPriority() == 0;
+    }
+
+    @Override
+    public boolean isProperty() {
+        return getRole().isProperty();
     }
 
     /**
@@ -710,15 +727,6 @@ public class Rule implements Action, Fixable {
             }
         }
         return result;
-    }
-
-    /** Indicates if this rule serves to test a property of a graph.
-     * This is only the case if the rule is unmodifying, has no parameters
-     * and has zero priority.
-     */
-    @Override
-    public boolean isProperty() {
-        return !isModifying() && getAnchor().isEmpty() && getPriority() == 0;
     }
 
     /**

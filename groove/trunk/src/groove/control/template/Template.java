@@ -16,13 +16,13 @@
  */
 package groove.control.template;
 
-import groove.control.Callable;
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
 import groove.control.Function;
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
 import groove.grammar.Action;
+import groove.grammar.Callable;
 import groove.grammar.host.HostFactory;
 
 import java.util.Collection;

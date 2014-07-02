@@ -27,6 +27,7 @@ import groove.control.Valuator;
 import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.SwitchStack;
+import groove.grammar.Callable;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 
@@ -164,7 +165,7 @@ public class Assignment {
      * combined with the output parameters of the call.
      */
     static Assignment modify(Switch swit) {
-        assert swit.getKind() == Switch.Kind.RULE;
+        assert swit.getKind() == Callable.Kind.RULE;
         List<Binding> result = new ArrayList<Binding>();
         List<CtrlVar> sourceVars = swit.getSource().getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();

@@ -205,13 +205,15 @@ public class RuleTree extends AbstractResourceTree {
         Map<Integer,Set<ActionEntry>> priorityMap = getPriorityMap(grammar);
         List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
+        boolean hasMultipleLevels = priorityMap.size() > 1;
+        boolean hasMultiplePriorities = priorityMap.size() > (priorityMap.containsKey(-1) ? 2 : 1);
         for (Map.Entry<Integer,Set<ActionEntry>> priorityEntry : priorityMap.entrySet()) {
             int priority = priorityEntry.getKey();
             Map<String,FolderTreeNode> dirNodeMap = new HashMap<String,FolderTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
-            if (priorityMap.size() > 1) {
-                topNode = new PriorityTreeNode(priority);
+            if (hasMultipleLevels) {
+                topNode = new PriorityTreeNode(priority, hasMultiplePriorities);
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
@@ -290,7 +292,6 @@ public class RuleTree extends AbstractResourceTree {
      * @param grammar the source of the rule map
      */
     private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
-        boolean hasPositivePriority = false;
         Map<Integer,Set<ActionEntry>> result =
             new TreeMap<Integer,Set<ActionEntry>>(Action.PRIORITY_COMPARATOR);
         Set<String> subRuleNames = new HashSet<String>();
@@ -314,22 +315,11 @@ public class RuleTree extends AbstractResourceTree {
             RuleModel ruleModel = (RuleModel) model;
             if (!subRuleNames.contains(ruleModel.getFullName())) {
                 int priority = ruleModel.isProperty() ? -1 : ruleModel.getPriority();
-                hasPositivePriority |= priority > 0;
                 Set<ActionEntry> rules = result.get(priority);
                 if (rules == null) {
                     result.put(priority, rules = new HashSet<ActionEntry>());
                 }
                 rules.add(new RuleEntry(ruleModel));
-            }
-        }
-        if (!hasPositivePriority) {
-            Set<ActionEntry> properties = result.remove(-1);
-            if (properties != null) {
-                if (result.containsKey(0)) {
-                    result.get(0).addAll(properties);
-                } else {
-                    result.put(0, properties);
-                }
             }
         }
         return result;
@@ -780,13 +770,26 @@ public class RuleTree extends AbstractResourceTree {
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
          */
-        public PriorityTreeNode(int priority) {
-            super(priority < 0 ? "Properties" : "Priority " + priority);
+        public PriorityTreeNode(int priority, boolean hasMultiplePriorities) {
+            super(getText(priority, hasMultiplePriorities));
         }
 
         @Override
         public Icon getIcon() {
             return Icons.EMPTY_ICON;
+        }
+
+        private static String getText(int priority, boolean hasMultiplePriorities) {
+            StringBuilder result = new StringBuilder();
+            if (priority < 0) {
+                result.append("Properties");
+            } else if (hasMultiplePriorities) {
+                result.append("Priority ");
+                result.append(priority);
+            } else {
+                result.append("Transformers");
+            }
+            return result.toString();
         }
     }
 }

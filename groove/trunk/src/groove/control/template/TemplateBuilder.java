@@ -56,6 +56,7 @@ public class TemplateBuilder {
         this.properties = properties;
     }
 
+    /** The property actions to be tested at each non-internal location. */
     private final List<Action> properties;
 
     /**
@@ -121,7 +122,7 @@ public class TemplateBuilder {
                     switches.add(sw);
                 }
                 if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
-                    // we need an intermediate location
+                    // we need an intermediate location to go to after the property test
                     Location aux = result.addLocation(0);
                     //aux.setVars(loc.getVars());
                     SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux);
@@ -135,13 +136,14 @@ public class TemplateBuilder {
             loc.setType(locType);
             if (locType == Type.TRIAL) {
                 DerivationAttempt termAttempt = term.getAttempt();
-                Location succTarget = addLocation(result, termAttempt.onSuccess(), next, null);
-                Location failTarget = addLocation(result, termAttempt.onFailure(), next, null);
-                SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget);
+                // add switches for the term derivations
                 for (Derivation deriv : termAttempt) {
                     // build the (possibly nested) switch
                     switches.add(addSwitch(loc, result, deriv));
                 }
+                Location succTarget = addLocation(result, termAttempt.onSuccess(), next, null);
+                Location failTarget = addLocation(result, termAttempt.onFailure(), next, null);
+                SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget);
                 locAttempt.addAll(switches);
                 loc.setAttempt(locAttempt);
             }
@@ -198,7 +200,7 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from terms to locations. */
     private final Map<Template,Map<TermKey,Location>> locMapMap =
-            new HashMap<Template,Map<TermKey,Location>>();
+        new HashMap<Template,Map<TermKey,Location>>();
 
     /**
      * Adds a switch corresponding to a given derivation to the
@@ -211,7 +213,7 @@ public class TemplateBuilder {
      * but the procedure does not have an initialised template
      */
     private SwitchStack addSwitch(Location source, Template template, Derivation deriv)
-        throws IllegalStateException {
+            throws IllegalStateException {
         Map<Derivation,SwitchStack> switchMap = getSwitchMap(template);
         SwitchStack result = switchMap.get(deriv);
         if (result == null) {
@@ -222,7 +224,7 @@ public class TemplateBuilder {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
                 Template callerTemplate = getTemplate(caller);
                 SwitchStack nested =
-                    addSwitch(callerTemplate.getStart(), callerTemplate, deriv.getNested());
+                        addSwitch(callerTemplate.getStart(), callerTemplate, deriv.getNested());
                 result.addAll(nested);
             }
             switchMap.put(deriv, result);
@@ -243,7 +245,7 @@ public class TemplateBuilder {
 
     /** For each template, a mapping from derivations to switches. */
     private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
-            new HashMap<Template,Map<Derivation,SwitchStack>>();
+        new HashMap<Template,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -441,7 +443,7 @@ public class TemplateBuilder {
                 target.setVars(swit.getCall().getOutVars().keySet());
                 Location source = locMap.get(swit.getSource());
                 Switch imageSwitch =
-                    new Switch(source, swit.getCall(), swit.getTransience(), target);
+                        new Switch(source, swit.getCall(), swit.getTransience(), target);
                 switchMap.put(swit, imageSwitch);
             }
         }
@@ -469,7 +471,7 @@ public class TemplateBuilder {
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
-            new LinkedHashMap<Location,Record<Location>>();
+        new LinkedHashMap<Location,Record<Location>>();
 
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);

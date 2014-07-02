@@ -16,8 +16,6 @@
  */
 package groove.grammar;
 
-import groove.control.Callable;
-import groove.control.template.Switch.Kind;
 import groove.util.collect.Comparator;
 
 /**
@@ -26,7 +24,10 @@ import groove.util.collect.Comparator;
  * @version $Revision $
  */
 public interface Action extends Callable, Comparable<Action> {
-    /** Indicates if this action serves to test a property of a graph. */
+    /** Indicates if this action serves to test a property of a graph.
+     * Convenience method for {@code getRole().isProperty()}.
+     * @see Role#isProperty()
+     */
     public boolean isProperty();
 
     /** Indicates if this is a partial action.
@@ -57,10 +58,16 @@ public interface Action extends Callable, Comparable<Action> {
 
     /**
      * Returns the action kind of this action.
-     * @return the action kind; can only be {@link Kind#RECIPE} or {@link Kind#RULE}.
+     * @return the action kind; cannot be {@link Callable.Kind#FUNCTION}.
      */
     @Override
     public Kind getKind();
+
+    /**
+     * Returns the role of this action.
+     * @return the action role.
+     */
+    public Role getRole();
 
     /**
      * A comparator for priorities, encoded as {@link Integer} objects. This
@@ -118,4 +125,43 @@ public interface Action extends Callable, Comparable<Action> {
      * priority is given.
      */
     public static final int DEFAULT_PRIORITY = 0;
+
+    /** Role of the action within the grammar. */
+    public static enum Role {
+        /** Action that modifies a graph. */
+        TRANSFORMER("transformer"),
+        /** Action that captures a general graph condition. */
+        CONDITION("condition"),
+        /** Action that captures a forbidden graph property. */
+        FORBIDDEN("forbidden"),
+        /** Action that captures an invariant graph property. */
+        INVARIANT("invariant"), ;
+
+        private Role(String text) {
+            this.text = text;
+        }
+
+        /** Indicates if this role is anything but {@link #TRANSFORMER}. */
+        public boolean isProperty() {
+            return this != TRANSFORMER;
+        }
+
+        @Override
+        public String toString() {
+            return this.text;
+        }
+
+        /** Returns the name of this role, with the first letter optionally capitalised. */
+        public String text(boolean capitalised) {
+            if (capitalised) {
+                StringBuffer result = new StringBuffer(toString());
+                result.setCharAt(0, Character.toUpperCase(result.charAt(0)));
+                return result.toString();
+            } else {
+                return toString();
+            }
+        }
+
+        private final String text;
+    }
 }

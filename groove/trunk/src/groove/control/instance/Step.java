@@ -21,8 +21,8 @@ import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.CtrlVar;
 import groove.control.template.Switch;
-import groove.control.template.Switch.Kind;
 import groove.control.template.SwitchStack;
+import groove.grammar.Callable;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 
@@ -43,7 +43,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @param onFinish target frame for the step
      */
     public Step(Frame source, SwitchStack newSwitches, Frame onFinish) {
-        assert newSwitches.peek().getUnit().getKind() == Kind.RULE;
+        assert newSwitches.peek().getUnit().getKind() == Callable.Kind.RULE;
         this.stack = new SwitchStack();
         this.stack.addAll(source.getSwitchStack());
         this.stack.addAll(newSwitches);

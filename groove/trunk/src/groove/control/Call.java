@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.grammar.Callable;
 import groove.grammar.Rule;
 import groove.grammar.host.HostFactory;
 import groove.util.Groove;

@@ -17,7 +17,6 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
-import groove.control.template.Switch.Kind;
 import groove.grammar.GrammarProperties;
 import groove.util.Fixable;
 

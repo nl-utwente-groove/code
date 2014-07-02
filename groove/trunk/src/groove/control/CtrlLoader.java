@@ -21,12 +21,13 @@ import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
 import groove.control.template.Program;
-import groove.control.template.Switch.Kind;
+import groove.grammar.Callable;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.Callable.Kind;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
@@ -115,7 +116,7 @@ public class CtrlLoader {
             //            main.setMain(CtrlTree.toDefaultTerm(this.namespace));
             result.add(main);
         }
-        result.setProperties(this.namespace.getTopActions(true));
+        result.setProperties(this.namespace.getProperties());
         try {
             result.setFixed();
         } catch (FormatException e) {
@@ -188,7 +189,7 @@ public class CtrlLoader {
                 // no explicit priority
                 if (newPriority != 0) {
                     rewriter.insertAfter(recipeTree.getChild(1).getToken(), "priority "
-                        + newPriority);
+                            + newPriority);
                     changed = true;
                 }
             } else {
@@ -241,7 +242,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, String program)
-            throws FormatException {
+        throws FormatException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         instance.parse(programName, program);
         Program result = instance.buildProgram(Collections.singleton(programName));
@@ -251,7 +252,7 @@ public class CtrlLoader {
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, File base)
-            throws FormatException, IOException {
+        throws FormatException, IOException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
         QualName qualName = new QualName(programName);
         File control = base;

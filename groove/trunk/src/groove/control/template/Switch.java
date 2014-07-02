@@ -18,11 +18,10 @@ package groove.control.template;
 
 import groove.control.Binding;
 import groove.control.Call;
-import groove.control.Callable;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
-import groove.grammar.Action;
+import groove.grammar.Callable;
 import groove.util.Pair;
 
 import java.util.LinkedList;
@@ -36,7 +35,7 @@ import java.util.List;
 public class Switch implements Comparable<Switch> {
     /**
      * Constructs a new switch.
-     * @param source TODO
+     * @param source source location of the switch; non-{@code null}
      * @param call call to be used as label
      * @param transience the additional transient depth entered by this switch
      * @param onFinish target location of the switch
@@ -67,11 +66,11 @@ public class Switch implements Comparable<Switch> {
     /**
      * Returns the kind of switch.
      */
-    public Kind getKind() {
+    public Callable.Kind getKind() {
         return this.kind;
     }
 
-    private final Kind kind;
+    private final Callable.Kind kind;
 
     /**
      * Convenience method to return the name of the unit called in
@@ -104,7 +103,6 @@ public class Switch implements Comparable<Switch> {
      * Returns the rule or procedure call wrapped in this switch.
      */
     public final Call getCall() {
-        assert getKind().isCallable() : "" + this + " is not a call switch";
         return this.call;
     }
 
@@ -127,7 +125,7 @@ public class Switch implements Comparable<Switch> {
      * This is only valid for rule calls.
      */
     public List<Pair<Var,Binding>> getCallBinding() {
-        assert getKind() == Kind.RULE;
+        assert getKind() == Callable.Kind.RULE;
         if (this.callBinding == null) {
             this.callBinding = computeCallBinding();
         }
@@ -244,52 +242,5 @@ public class Switch implements Comparable<Switch> {
     @Override
     public String toString() {
         return "--" + getCall() + "->" + onFinish();
-    }
-
-    /** Control switch kind. */
-    public static enum Kind {
-        /** Rule invocation transition. */
-        RULE("rule"),
-        /** Function call transition. */
-        FUNCTION("function"),
-        /** Recipe call transition. */
-        RECIPE("recipe"),
-        /** Verdict transition. */
-        VERDICT("choice"), ;
-
-        private Kind(String name) {
-            this.name = name;
-        }
-
-        /**
-         * Indicates if this kind of name denotes a procedure.
-         */
-        public boolean isProcedure() {
-            return this == FUNCTION || this == RECIPE;
-        }
-
-        /** Indicates if this kind represents a {@link Callable} unit. */
-        public boolean isCallable() {
-            return this == FUNCTION || this == RECIPE || this == RULE;
-        }
-
-        /** Indicates if this kind represents an {@link Action}. */
-        public boolean isAction() {
-            return this == RECIPE || this == RULE;
-        }
-
-        /**
-         * Returns the description of this kind,
-         * with the initial letter optionally capitalised.
-         */
-        public String getName(boolean upper) {
-            StringBuilder result = new StringBuilder(this.name);
-            if (upper) {
-                result.replace(0, 1, "" + Character.toUpperCase(this.name.charAt(0)));
-            }
-            return result.toString();
-        }
-
-        private final String name;
     }
 }

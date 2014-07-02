@@ -16,10 +16,10 @@
  */
 package groove.control.parse;
 
-import groove.control.Callable;
 import groove.control.Procedure;
 import groove.control.term.Term;
 import groove.grammar.Action;
+import groove.grammar.Callable;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
@@ -166,8 +166,8 @@ public class Namespace implements ParseInfo {
      * Rules and recipes directly or indirectly invoked from (other) procedures are
      * excluded from this set.
      */
-    public Set<Action> getTopActions() {
-        Set<Action> result = this.topActions;
+    public Set<Action> getActions() {
+        Set<Action> result = this.actions;
         if (result == null) {
             Set<String> calledNames = new HashSet<String>();
             for (Callable callable : this.callableMap.values()) {
@@ -180,10 +180,14 @@ public class Namespace implements ParseInfo {
                     }
                 }
             }
-            result = this.topActions = new TreeSet<Action>();
+            result = this.actions = new TreeSet<Action>();
             for (Callable unit : this.callableMap.values()) {
-                if (unit instanceof Action && !calledNames.contains(unit.getFullName())) {
-                    this.topActions.add((Action) unit);
+                if (!(unit instanceof Action)) {
+                    continue;
+                }
+                Action action = (Action) unit;
+                if (action.isProperty() || !calledNames.contains(action.getFullName())) {
+                    result.add(action);
                 }
             }
         }
@@ -191,29 +195,40 @@ public class Namespace implements ParseInfo {
     }
 
     /** Set of top-level rule and recipe names. */
-    private Set<Action> topActions;
+    private Set<Action> actions;
 
     /**
-     * Returns the set of all top-level actions (rules and recipes).
-     * Rules and recipes directly or indirectly invoked from (other) procedures are
-     * excluded from this set.
-     * @param property if {@code true}, returns the properties, otherwise the non-properties
+     * Returns the set of all property actions in the grammar.
      */
-    public Set<Action> getTopActions(boolean property) {
-        Set<Action> result = property ? this.properties : this.transformers;
+    public Set<Action> getProperties() {
+        Set<Action> result = this.properties;
         if (result == null) {
-            this.properties = new TreeSet<Action>();
-            this.transformers = new TreeSet<Action>();
-            for (Action action : getTopActions()) {
-                (action.isProperty() ? this.properties : this.transformers).add(action);
+            result = this.properties = new TreeSet<Action>();
+            for (Action action : getActions()) {
+                if (action.isProperty()) {
+                    result.add(action);
+                }
             }
-            result = property ? this.properties : this.transformers;
         }
         return result;
     }
 
     /** Set of property actions. */
     private Set<Action> properties;
+
+    /**
+     * Returns the set of all top-level transformer actions (rules and recipes).
+     * Rules and recipes directly or indirectly invoked from (other) procedures are
+     * excluded from this set.
+     */
+    public Set<Action> getTransformers() {
+        Set<Action> result = this.transformers;
+        if (result == null) {
+            result = this.transformers = new TreeSet<Action>(getActions());
+            result.removeAll(getProperties());
+        }
+        return result;
+    }
 
     /** Set of transformer actions. */
     private Set<Action> transformers;

@@ -17,14 +17,13 @@
 package groove.control.template;
 
 import groove.control.Call;
-import groove.control.Callable;
 import groove.control.Procedure;
-import groove.control.template.Switch.Kind;
 import groove.control.term.CallTerm;
 import groove.control.term.Derivation;
 import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
 import groove.grammar.Action;
+import groove.grammar.Callable;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatErrorSet;
@@ -588,7 +587,7 @@ public class Program implements Fixable {
             return r[0];
         case CALL:
             Callable unit = ((CallTerm) term).getCall().getUnit();
-            return unit.getKind() == Kind.RULE || terminationSet.contains(unit);
+            return unit.getKind() == Callable.Kind.RULE || terminationSet.contains(unit);
         case DELTA:
             return false;
         case EPSILON:

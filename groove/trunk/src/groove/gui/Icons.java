@@ -206,6 +206,10 @@ public final class Icons {
     public static final ImageIcon EMPTY_ICON = new ImageIcon();
     /** Collapse all icon. */
     public static final ImageIcon COLLAPSE_ALL_ICON = createIcon("collapse-all.gif");
+    /** Small icon for condition rules, as shown in the rule tree. */
+    public static final ImageIcon CONDITION_TREE_ICON = createIcon("rule-condition.gif");
+    /** Small icon for injective condition rules, as shown in the rule tree. */
+    public static final ImageIcon CONDITION_I_TREE_ICON = createIcon("rule-condition-I.gif");
     /** Edge action icon. */
     public static final ImageIcon EDGE_ICON = createIcon("edge.gif");
     /** Edit action icon. */
@@ -230,6 +234,10 @@ public final class Icons {
     public static final ImageIcon ERROR_ICON = createIcon("error.png");
     /** Export action icon. */
     public static final ImageIcon EXPORT_ICON = createIcon("export.gif");
+    /** Small icon for forbidden condition rules, as shown in the rule tree. */
+    public static final ImageIcon FORBIDDEN_TREE_ICON = createIcon("rule-forbidden.gif");
+    /** Small icon for injective forbidden condition rules, as shown in the rule tree. */
+    public static final ImageIcon FORBIDDEN_I_TREE_ICON = createIcon("rule-forbidden-I.gif");
     /** Icon for restart movement. */
     public static final ImageIcon GO_PREVIOUS_ICON = createIcon("go-previous.gif");
     /** Icon for fast-forward movement. */
@@ -272,6 +280,10 @@ public final class Icons {
     public static final ImageIcon FILTER_LTS_ICON = createIcon("filter-lts.png");
     /** Import action icon. */
     public static final ImageIcon IMPORT_ICON = createIcon("import.gif");
+    /** Small icon for invariant condition rules, as shown in the rule tree. */
+    public static final ImageIcon INVARIANT_TREE_ICON = createIcon("rule-invariant.gif");
+    /** Small icon for injective invariant condition rules, as shown in the rule tree. */
+    public static final ImageIcon INVARIANT_I_TREE_ICON = createIcon("rule-invariant-I.gif");
     /** Icon for the layout action. */
     public static final ImageIcon LAYOUT_ICON = createIcon("layout.gif");
     /** Icon for the LTS panel of the simulator. */
@@ -304,10 +316,6 @@ public final class Icons {
     public static final ImageIcon PROLOG_FILE_ICON = createIcon("prolog-file.gif");
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON = createIcon("prolog-file.gif");
-    /** Small icon for property rules, as shown in the rule tree. */
-    public static final ImageIcon PROPERTY_TREE_ICON = createIcon("rule-property.gif");
-    /** Small icon for injective property rules, as shown in the rule tree. */
-    public static final ImageIcon PROPERTY_I_TREE_ICON = createIcon("rule-property-I.gif");
     /** Icon for Groovy Panel. */
     public static final ImageIcon GROOVY_FRAME_ICON = createIcon("groovy-frame.gif");
     /** Icon for Groovy Files. */
