@@ -145,6 +145,26 @@ public final class Icons {
     }
 
     /**
+     * Returns the edit icon used for the label list
+     * of a given resource kind.
+     */
+    public static ImageIcon getListEditIcon(ResourceKind resource) {
+        switch (resource) {
+        case CONTROL:
+        case HOST:
+        case PROLOG:
+        case GROOVY:
+        case TYPE:
+            return EDIT_ICON;
+        case RULE:
+            return EDIT_WIDE_ICON;
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /**
      * Returns the icon used for the label list
      * of a given resource kind.
      */
@@ -226,6 +246,8 @@ public final class Icons {
     public static final ImageIcon EDIT_PROLOG_ICON = createIcon("edit-P.gif");
     /** State edit action icon. */
     public static final ImageIcon EDIT_STATE_ICON = createIcon("edit-S.gif");
+    /** Wide edit action icon. */
+    public static final ImageIcon EDIT_WIDE_ICON = createIcon("edit-wide.gif");
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON = createIcon("enable.gif");
     /** Enable uniquely action icon. */

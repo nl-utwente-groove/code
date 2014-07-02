@@ -48,7 +48,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public Icon getIcon() {
         Icon result = super.getIcon();
-        if (result != Icons.EDIT_ICON) {
+        if (result != Icons.EDIT_WIDE_ICON) {
             boolean injective = getRule().isInjective();
             if (getRule().isProperty()) {
                 result = getIconMap(injective).get(getRule().getRole());
@@ -135,13 +135,13 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                    !isPartial() || (getParent() instanceof RecipeTreeNode)
+                !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         String suffix =
-                isPartial() ? SUBRULE_SUFFIX : getRule().isProperty()
-                        ? roleSuffixMap.get(getRule().getRole()) : RULE_SUFFIX;
-        return getDisplay().getLabelText(getName(), suffix, showEnabled);
+            isPartial() ? SUBRULE_SUFFIX : getRule().isProperty()
+                    ? roleSuffixMap.get(getRule().getRole()) : RULE_SUFFIX;
+                        return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */

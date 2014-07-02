@@ -19,6 +19,7 @@ package groove.graph;
 import static groove.graph.GraphProperties.Key.ENABLED;
 import static groove.graph.GraphProperties.Key.INJECTIVE;
 import static groove.graph.GraphProperties.Key.PRIORITY;
+import groove.grammar.Action.Role;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
@@ -293,6 +294,25 @@ public class GraphInfo extends DefaultFixable {
      */
     static public int getPriority(Graph graph) {
         return Integer.parseInt(getProperty(graph, PRIORITY));
+    }
+
+    /**
+     * Sets the role of a given rule graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param role the new role
+     */
+    static public void setRole(Graph graph, Role role) {
+        setProperty(graph, Key.ROLE, role == null ? "" : role.toString());
+    }
+
+    /**
+     * Returns the role of a given rule graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return the role; may be {@code null}
+     * @see Key#ROLE
+     */
+    static public Role getRole(Graph graph) {
+        return Role.toRole(getProperty(graph, Key.ROLE));
     }
 
     /**
