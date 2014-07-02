@@ -76,7 +76,7 @@ public class Rule implements Action, Fixable {
      */
     public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
         assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
-            && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
+                && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
@@ -361,10 +361,20 @@ public class Rule implements Action, Fixable {
         return Kind.RULE;
     }
 
+    /** Sets the action role of this rule. */
+    public void setRole(Role role) {
+        assert !isFixed();
+        assert this.role == null && role != null;
+        this.role = role;
+    }
+
     @Override
     public Role getRole() {
-        return isPropertyLike() ? Role.CONDITION : Role.TRANSFORMER;
+        assert !this.role.isProperty() || isPropertyLike();
+        return this.role;
     }
+
+    private Role role;
 
     /** Indicates if this rule serves to test a property of a graph.
      * This is only the case if the rule is unmodifying, has no parameters
@@ -430,18 +440,18 @@ public class Rule implements Action, Fixable {
             final Visitor<Proof,R> visitor) {
         assert isFixed();
         RuleToHostMap seedMap =
-            contextMap == null ? host.getFactory().createRuleToHostMap() : contextMap;
-        getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
-            @Override
-            protected boolean process(TreeMatch match) {
-                assert visitor.isContinue();
-                if (isValidPatternMap(host, match.getPatternMap())) {
-                    match.traverseProofs(visitor);
-                }
-                return visitor.isContinue();
-            }
-        });
-        return visitor.getResult();
+                contextMap == null ? host.getFactory().createRuleToHostMap() : contextMap;
+                getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
+                    @Override
+                    protected boolean process(TreeMatch match) {
+                        assert visitor.isContinue();
+                        if (isValidPatternMap(host, match.getPatternMap())) {
+                            match.traverseProofs(visitor);
+                        }
+                        return visitor.isContinue();
+                    }
+                });
+                return visitor.getResult();
     }
 
     /**
@@ -604,7 +614,7 @@ public class Rule implements Action, Fixable {
     @Override
     public String toString() {
         StringBuilder res =
-            new StringBuilder(String.format("Rule %s; anchor %s%n", getFullName(), getAnchor()));
+                new StringBuilder(String.format("Rule %s; anchor %s%n", getFullName(), getAnchor()));
         res.append(getCondition().toString("    "));
         return res.toString();
     }
@@ -747,17 +757,17 @@ public class Rule implements Action, Fixable {
      */
     private boolean computeIsModifying() {
         boolean result =
-            getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
+                getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
                 || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.isModifying();
-                if (result) {
-                    break;
+                if (!result) {
+                    for (Rule subRule : getSubRules()) {
+                        result = subRule.isModifying();
+                        if (result) {
+                            break;
+                        }
+                    }
                 }
-            }
-        }
-        return result;
+                return result;
     }
 
     /**
@@ -892,7 +902,7 @@ public class Rule implements Action, Fixable {
      */
     private RuleEdge[] computeEraserNonAnchorEdges() {
         Set<RuleEdge> eraserNonAnchorEdgeSet =
-            new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
+                new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(getAnchor().edgeSet());
         return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }

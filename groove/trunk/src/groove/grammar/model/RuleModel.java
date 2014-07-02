@@ -151,10 +151,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Returns the action role of this rule. */
     public Role getRole() {
         if (this.role == null) {
-            if (isPropertyLike()) {
-                this.role = Role.CONDITION;
-            } else {
-                this.role = Role.TRANSFORMER;
+            this.role = GraphInfo.getRole(getSource());
+            if (this.role == null) {
+                this.role = testAsProperty() == null ? Role.CONDITION : Role.TRANSFORMER;
             }
         }
         return this.role;
@@ -163,34 +162,38 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private Role role;
 
     /**
-     * Indicates if this rule may be used as a property.
+     * Tests if this rule may be used as a property.
+     * @return a non-{@code null} string if the rule is unsuitable
      * @see Rule#isProperty()
      */
-    private boolean isPropertyLike() {
+    private FormatError testAsProperty() {
         if (getPriority() > 0) {
-            return false;
+            return new FormatError("positive priority not allowed");
         }
         for (AspectNode node : getSource().nodeSet()) {
             if (node.getParam() != null) {
-                return false;
+                return new FormatError("parameter not allowed", node);
             }
             switch (node.getAspect().getKind()) {
             case ERASER:
+                return new FormatError("erased not allowed", node);
             case CREATOR:
             case ADDER:
-                return false;
+                return new FormatError("creator not allowed", node);
             }
         }
-        for (AspectEdge node : getSource().edgeSet()) {
-            switch (node.getAspect().getKind()) {
+        for (AspectEdge edge : getSource().edgeSet()) {
+            switch (edge.getAspect().getKind()) {
             case ERASER:
+                return new FormatError("erased not allowed", edge);
             case CREATOR:
             case ADDER:
+                return new FormatError("creator not allowed", edge);
             case LET:
-                return false;
+                return new FormatError("assignment not allowed", edge.source());
             }
         }
-        return true;
+        return null;
     }
 
     /**
@@ -385,6 +388,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
+        // infer and set the role
+        Role role = getRole();
+        if (role.isProperty()) {
+            FormatError error = testAsProperty();
+            if (error != null) {
+                errors.add("Rule is unsuitable as %s: %s", getFullName(), role, error);
+            }
+        }
         // due to errors in the above, it might be that the
         // rule tree is empty, in which case we shouldn't proceed
         if (conditionTree.isEmpty()) {
@@ -396,6 +407,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 result.setCheckDangling(getGrammarProperties().isCheckDangling());
                 Parameters parameters = new Parameters();
                 result.setSignature(parameters.getSignature(), parameters.getHiddenPars());
+                result.setRole(role);
             }
         }
         transferErrors(errors, levelTree.getModelMap()).throwException();
