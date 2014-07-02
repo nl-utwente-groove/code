@@ -18,7 +18,6 @@ package groove.grammar;
 
 import groove.control.CtrlPar;
 import groove.control.Procedure;
-import groove.control.template.Switch.Kind;
 
 import java.util.HashSet;
 import java.util.List;
@@ -59,8 +58,13 @@ public class Recipe extends Procedure implements Action {
     private Set<Rule> rules;
 
     @Override
+    public Role getRole() {
+        return Role.TRANSFORMER;
+    }
+
+    @Override
     public boolean isProperty() {
-        return false;
+        return getRole().isProperty();
     }
 
     @Override

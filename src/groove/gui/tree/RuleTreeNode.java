@@ -16,6 +16,7 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.Action.Role;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
@@ -25,6 +26,7 @@ import groove.gui.Icons;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
 
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -49,7 +51,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         if (result != Icons.EDIT_ICON) {
             boolean injective = getRule().isInjective();
             if (getRule().isProperty()) {
-                result = injective ? Icons.PROPERTY_I_TREE_ICON : Icons.PROPERTY_TREE_ICON;
+                result = getIconMap(injective).get(getRule().getRole());
             } else {
                 result = injective ? Icons.RULE_I_TREE_ICON : Icons.RULE_TREE_ICON;
             }
@@ -78,7 +80,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        result.append(getRule().isProperty() ? "Property " : "Rule ");
+        result.append(getRule().isProperty() ? getRule().getRole().text(true) : "Rule ");
+        result.append(" ");
         result.append(HTMLConverter.STRONG_TAG.on(getName()));
         AspectGraph source = getRule().getSource();
         String remark = GraphInfo.getRemark(source);
@@ -132,11 +135,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         boolean showEnabled = getRule().isEnabled();
         if (showEnabled) {
             showEnabled =
-                !isPartial() || (getParent() instanceof RecipeTreeNode)
+                    !isPartial() || (getParent() instanceof RecipeTreeNode)
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         String suffix =
-            isPartial() ? SUBRULE_SUFFIX : getRule().isProperty() ? PROPERTY_SUFFIX : RULE_SUFFIX;
+                isPartial() ? SUBRULE_SUFFIX : getRule().isProperty()
+                        ? roleSuffixMap.get(getRule().getRole()) : RULE_SUFFIX;
         return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 
@@ -154,6 +158,43 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     private boolean tried;
 
     private final static String SUBRULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("subrule");
-    private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("rule");
-    private final static String PROPERTY_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("property");
+    private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("singular");
+    private final static Map<Role,String> roleSuffixMap;
+
+    /** Returns the icon map for normal or injective properties. */
+    static private Map<Role,Icon> getIconMap(boolean injective) {
+        return injective ? roleInjectiveIconMap : roleNormalIconMap;
+    }
+
+    private final static Map<Role,Icon> roleNormalIconMap;
+    private final static Map<Role,Icon> roleInjectiveIconMap;
+    static {
+        Map<Role,String> suffixMap = roleSuffixMap = new EnumMap<Role,String>(Role.class);
+        Map<Role,Icon> normalIconMap = roleNormalIconMap = new EnumMap<Role,Icon>(Role.class);
+        Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<Role,Icon>(Role.class);
+        for (Role role : Role.values()) {
+            suffixMap.put(role, " : " + HTMLConverter.STRONG_TAG.on(role.toString()));
+            Icon normalIcon = null;
+            Icon injectiveIcon = null;
+            switch (role) {
+            case CONDITION:
+                normalIcon = Icons.CONDITION_TREE_ICON;
+                injectiveIcon = Icons.CONDITION_I_TREE_ICON;
+                break;
+            case FORBIDDEN:
+                normalIcon = Icons.FORBIDDEN_TREE_ICON;
+                injectiveIcon = Icons.FORBIDDEN_I_TREE_ICON;
+                break;
+            case INVARIANT:
+                normalIcon = Icons.INVARIANT_TREE_ICON;
+                injectiveIcon = Icons.INVARIANT_I_TREE_ICON;
+                break;
+            }
+            if (normalIcon != null) {
+                normalIconMap.put(role, normalIcon);
+                injectiveIconMap.put(role, injectiveIcon);
+            }
+        }
+    }
+
 }

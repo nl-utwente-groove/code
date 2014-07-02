@@ -6,10 +6,11 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.template.Program;
-import groove.control.template.Switch.Kind;
 import groove.control.term.Term;
 import groove.grammar.Action;
+import groove.grammar.Callable;
 import groove.grammar.QualName;
+import groove.grammar.Callable.Kind;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
@@ -235,7 +236,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.ANY:
             result = prot.delta();
             SortedMap<Integer,List<Action>> prioMap = new TreeMap<Integer,List<Action>>();
-            for (Action action : getInfo().getTopActions(false)) {
+            for (Action action : getInfo().getTransformers()) {
                 // the action list to which this action should be added
                 List<Action> actions = prioMap.get(action.getPriority());
                 if (actions == null) {
@@ -251,7 +252,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.OTHER:
             result = prot.delta();
             List<Action> actions = new ArrayList<Action>();
-            for (Action action : getInfo().getTopActions(false)) {
+            for (Action action : getInfo().getTransformers()) {
                 if (!getInfo().getUsedNames().contains(action.getFullName())) {
                     actions.add(action);
                 }
@@ -296,10 +297,10 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         } else {
             result.setMain(body.toTerm());
         }
-        for (CtrlTree funcTree : getProcs(Kind.FUNCTION).values()) {
+        for (CtrlTree funcTree : getProcs(Callable.Kind.FUNCTION).values()) {
             result.addProc(funcTree.toProcedure());
         }
-        for (CtrlTree recipeTree : getProcs(Kind.RECIPE).values()) {
+        for (CtrlTree recipeTree : getProcs(Callable.Kind.RECIPE).values()) {
             result.addProc(recipeTree.toProcedure());
         }
         return result;
@@ -311,12 +312,12 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * @param procKind either {@link Kind#FUNCTION}
      * or {@link Kind#RECIPE}.
      */
-    public Map<String,CtrlTree> getProcs(Kind procKind) {
+    public Map<String,CtrlTree> getProcs(Callable.Kind procKind) {
         assert getType() == CtrlParser.PROGRAM && isChecked();
         Map<String,CtrlTree> result = new TreeMap<String,CtrlTree>();
         String packName = toPackageName();
         CtrlTree parent;
-        if (procKind == Kind.FUNCTION) {
+        if (procKind == Callable.Kind.FUNCTION) {
             parent = getChild(2);
             assert parent.getToken().getType() == CtrlParser.FUNCTIONS;
         } else {

@@ -17,9 +17,9 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
-import groove.control.template.Switch.Kind;
 import groove.control.template.Template;
 import groove.control.term.Term;
+import groove.grammar.Callable;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
@@ -90,7 +90,7 @@ public abstract class Procedure implements Callable, Fixable {
 
     private final int startLine;
 
-    /** Returns the kind of this procedure (either {@link Kind#FUNCTION} or {@link Kind#RECIPE}). */
+    /** Returns the kind of this procedure. */
     @Override
     public final Kind getKind() {
         return this.kind;
@@ -204,7 +204,7 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getFullName()
-                + Groove.toString(getSignature().toArray(), "(", ")", ", ");
+            + Groove.toString(getSignature().toArray(), "(", ")", ", ");
     }
 
     @Override
@@ -227,7 +227,7 @@ public abstract class Procedure implements Callable, Fixable {
     /**
      * Returns a function or recipe with the given signature.
      * @param fullName name of the unit
-     * @param kind procedure kind; wither {@link Kind#RECIPE} or {@link Kind#FUNCTION}
+     * @param kind procedure kind; should satisfy {@link groove.grammar.Callable.Kind#isProcedure()}
      * @param priority priority of the unit
      * @param signature signature of the unit
      * @param controlName control program in which the unit has
@@ -244,12 +244,12 @@ public abstract class Procedure implements Callable, Fixable {
         switch (kind) {
         case FUNCTION:
             result =
-            new Function(fullName, priority, signature, controlName, startLine,
-                grammarProperties);
+                new Function(fullName, priority, signature, controlName, startLine,
+                    grammarProperties);
             break;
         case RECIPE:
             result =
-            new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
+                new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
             break;
         default:
             assert false;

@@ -17,8 +17,8 @@
 package groove.control.term;
 
 import groove.control.Call;
-import groove.control.Callable;
 import groove.control.Procedure;
+import groove.grammar.Callable;
 import groove.util.collect.Pool;
 
 /**
