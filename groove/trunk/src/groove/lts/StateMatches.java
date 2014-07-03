@@ -19,6 +19,9 @@ package groove.lts;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.control.instance.StepAttempt;
+import groove.grammar.Action.Role;
+import groove.grammar.CheckPolicy;
+import groove.grammar.Rule;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -62,17 +65,19 @@ public class StateMatches extends MatchResultSet {
      */
     MatchResultSet getAll() {
         // try all schedules as long as this is possible
-        while (trySchedule()) {
+        while (advanceFrame()) {
             // do nothing
         }
         return this;
     }
 
-    /** Returns the first unexplored match of the state. */
+    /** Returns the first unexplored match of the state.
+     * @return the first unexplored match, or {@code null} if there is no unexplored match
+     */
     MatchResult getOne() {
         MatchResult result = null;
         // compute matches insofar necessary and feasible
-        while (isEmpty() && trySchedule()) {
+        while (isEmpty() && advanceFrame()) {
             // do nothing
         }
         // return the first match if there is one
@@ -82,7 +87,13 @@ public class StateMatches extends MatchResultSet {
         return result;
     }
 
-    private boolean trySchedule() {
+    /**
+     * Adds as many matches as possible to this match set,
+     * based on the attempt of the current actual control frame.
+     * Advances the frame if this is justified by the explored transitions.
+     * @return {@code true} if the frame was advanced and new rules were tried as a result of this call
+     */
+    private boolean advanceFrame() {
         boolean result = false;
         Frame frame = getState().getActualFrame();
         // depth of the frame at the start of the method
@@ -99,6 +110,7 @@ public class StateMatches extends MatchResultSet {
                 MatchResult m = matchIter.next();
                 GraphTransition t = getTransition(m);
                 if (t == null) {
+                    // the transition was not yet added
                     allAbsent = false;
                 } else {
                     GraphState target = t.target();
@@ -127,27 +139,40 @@ public class StateMatches extends MatchResultSet {
                 getState().setClosed(true);
             }
         } else if (!hasOutstanding()) {
-            StepAttempt step = frame.getAttempt();
+            StepAttempt attempt = frame.getAttempt();
             // Collect the new matches
             // Keep track of increases in transient depth
             boolean depthIncreases = false;
+            // keep track of property violations
+            CheckPolicy violated = null;
             List<MatchResult> outstanding = new LinkedList<MatchResult>();
-            for (Step ct : step) {
-                outstanding.addAll(getMatchCollector().computeMatches(ct));
-                depthIncreases |= ct.onFinish().getTransience() > frame.getTransience();
+            for (Step step : attempt) {
+                // don't explore new states if we found a property violation
+                if (violated != null && !step.getRule().isProperty()) {
+                    continue;
+                }
+                MatchResultSet matches = getMatchCollector().computeMatches(step);
+                Rule action = step.getRule();
+                if (action.getRole() == (matches.isEmpty() ? Role.INVARIANT : Role.FORBIDDEN)) {
+                    violated = action.getPolicy().max(violated);
+                }
+                outstanding.addAll(matches);
+                depthIncreases |= step.onFinish().getTransience() > frame.getTransience();
             }
             Frame nextFrame;
-            if (outstanding.isEmpty()) {
+            if (violated != null && violated != CheckPolicy.NONE) {
+                nextFrame = violated == CheckPolicy.ERROR ? attempt.onError() : attempt.onAbsence();
+            } else if (outstanding.isEmpty()) {
                 // no transitions will be generated
-                nextFrame = step.onFailure();
-            } else if (step.sameVerdict()) {
+                nextFrame = attempt.onFailure();
+            } else if (attempt.sameVerdict()) {
                 // it does not matter whether a transition is generated or not
-                nextFrame = step.onSuccess();
+                nextFrame = attempt.onSuccess();
             } else if (!depthIncreases) {
                 // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
                 // to a state that is present on the level of the frame
-                nextFrame = step.onSuccess();
+                nextFrame = attempt.onSuccess();
             } else {
                 nextFrame = frame;
                 this.outstanding = outstanding;
@@ -182,15 +207,15 @@ public class StateMatches extends MatchResultSet {
     private MatchCollector matcher;
 
     /** Tests if there are outstanding matches from the previous call to
-     * {@link #trySchedule()}.
+     * {@link #advanceFrame()}.
      */
     private boolean hasOutstanding() {
         return this.outstanding != null && !this.outstanding.isEmpty();
     }
 
-    /** The matches found during the latest successful call to {@link #trySchedule()}.
+    /** The matches found during the latest successful call to {@link #advanceFrame()}.
      * If at least one of these matches gives rise to a transition to a present state,
-     * the schedule has succeeded and we can move to the next. */
+     * the control frame has succeeded and we can move to the next. */
     private List<MatchResult> outstanding;
 
     /** Unique empty match set. */

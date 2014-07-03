@@ -54,8 +54,7 @@ public class Groove {
     /** The last accessed working directory. */
     public static String CURRENT_WORKING_DIR = WORKING_DIR;
     /** The system's file separator. */
-    public static final String FILE_SEPARATOR =
-        System.getProperty("file.separator");
+    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     /** Default name for the start graph. */
     public static final String DEFAULT_START_GRAPH_NAME = "start";
@@ -116,8 +115,7 @@ public class Groove {
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
      */
-    static public File saveGraph(Graph graph, String filename)
-        throws IOException {
+    static public File saveGraph(Graph graph, String filename) throws IOException {
         if (!STATE.hasExtension(filename)) {
             filename = GXL.addExtension(filename);
         }
@@ -141,8 +139,8 @@ public class Groove {
      */
     static public Rectangle toRectangle(Rectangle2D r) {
         if (r != null) {
-            return new Rectangle((int) r.getX(), (int) r.getY(),
-                (int) r.getWidth(), (int) r.getHeight());
+            return new Rectangle((int) r.getX(), (int) r.getY(), (int) r.getWidth(),
+                (int) r.getHeight());
         }
         return null;
     }
@@ -238,7 +236,7 @@ public class Groove {
      * space-separated sub-strings, or does not convert to <tt>int</tt> values.
      * @param text the text to be decomposed
      * @param delims string consisting of characters that will be considered delimiters.
-     * If {@code null}, all whitespace characters are considered delimiters 
+     * If {@code null}, all whitespace characters are considered delimiters
      */
     static public int[] toIntArray(String text, String delims) {
         if (text == null) {
@@ -246,8 +244,7 @@ public class Groove {
         }
         try {
             StringTokenizer tokenizer =
-                delims == null ? new StringTokenizer(text)
-                        : new StringTokenizer(text, delims);
+                delims == null ? new StringTokenizer(text) : new StringTokenizer(text, delims);
             int[] result = new int[tokenizer.countTokens()];
             int count = 0;
             while (tokenizer.hasMoreTokens()) {
@@ -321,14 +318,39 @@ public class Groove {
                 boolean toUpper = atStart || caps;
                 if (!toUpper) {
                     toUpper =
-                        ix < result.length() - 1
-                            && Character.isUpperCase(result.charAt(ix + 1));
+                        ix < result.length() - 1 && Character.isUpperCase(result.charAt(ix + 1));
                 }
-                result.setCharAt(ix, toUpper ? Character.toUpperCase(c)
-                        : Character.toLowerCase(c));
+                result.setCharAt(ix, toUpper ? Character.toUpperCase(c) : Character.toLowerCase(c));
             }
             wasLower = isLower;
             ix++;
+        }
+        return result.toString();
+    }
+
+    /**
+     * Converts a space- or underscore-separated string into camel case
+     * @param input the (non-{@code null}) input string; should
+     * consist of alphanumeric characters separated by (but not beginning with)
+     * spaces or underscores
+     * @return a converted string
+     */
+    public static String camel(String input) {
+        StringBuilder result = new StringBuilder(input);
+        int ix = 0;
+        boolean wasSep = false;
+        while (ix < result.length()) {
+            char c = result.charAt(ix);
+            boolean isSep = c == ' ' || c == '_';
+            if (isSep) {
+                result.delete(ix, ix + 1);
+            } else {
+                assert Character.isLetterOrDigit(c);
+                c = wasSep ? Character.toUpperCase(c) : Character.toLowerCase(c);
+                result.setCharAt(ix, c);
+                ix++;
+            }
+            wasSep = isSep;
         }
         return result.toString();
     }
@@ -379,8 +401,7 @@ public class Groove {
      * @param separator the symbol separating the elements in the resulting text
      *        representation
      */
-    static public <T> String toString(T[] array, String start, String end,
-            String separator) {
+    static public <T> String toString(T[] array, String start, String end, String separator) {
         return toString(array, start, end, separator, separator);
     }
 
@@ -396,8 +417,8 @@ public class Groove {
      * @param finalSeparator the symbol separating the last two elements in the
      *        resulting text representation
      */
-    static public String toString(Object[] array, String start, String end,
-            String separator, String finalSeparator) {
+    static public String toString(Object[] array, String start, String end, String separator,
+        String finalSeparator) {
         StringBuffer result = new StringBuffer(start);
         for (int i = 0; i < array.length; i++) {
             result.append(array[i]);
@@ -448,8 +469,7 @@ public class Groove {
             }
         } else if (url.getProtocol().equals("jar")) {
             try {
-                URL innerURL =
-                    ((JarURLConnection) url.openConnection()).getJarFileURL();
+                URL innerURL = ((JarURLConnection) url.openConnection()).getJarFileURL();
                 return toFile(innerURL);
             } catch (IOException exc) {
                 return null;
@@ -459,7 +479,7 @@ public class Groove {
         }
     }
 
-    /** Prints the own-code part of the stack trace to the given output. 
+    /** Prints the own-code part of the stack trace to the given output.
      * @param allLines if {@code true}, print all lines, otherwise just
      * those that are in own code
      */
@@ -516,16 +536,16 @@ public class Groove {
     // Platform dependent information.
 
     /** Detect if we are on Windows.  */
-    public static final boolean IS_PLATFORM_WINDOWS = System.getProperty(
-        "os.name").toLowerCase().indexOf("windows") > -1;
+    public static final boolean IS_PLATFORM_WINDOWS =
+        System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
 
     /** Detect if we are on Mac.  */
     public static final boolean IS_PLATFORM_MAC =
         System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
 
     /** Detect if we are on Linux.  */
-    public static final boolean IS_PLATFORM_LINUX = System.getProperty(
-        "os.name").toLowerCase().indexOf("linux") > -1;
+    public static final boolean IS_PLATFORM_LINUX =
+        System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
 
     static {
         /** Make sure default action names are all in English. */

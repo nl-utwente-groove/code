@@ -26,8 +26,10 @@ import groove.explore.strategy.Strategy.Halter;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
+import groove.gui.look.Line;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.util.Parser;
 import groove.util.Reporter;
 
 import java.util.ArrayList;
@@ -278,8 +280,8 @@ public class Exploration {
      */
     public String toParsableString() {
         String result =
-                StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-                        + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.nrResults;
+            StrategyEnumerator.toParsableStrategy(this.strategy) + " "
+                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.nrResults;
         return result;
     }
 
@@ -300,6 +302,60 @@ public class Exploration {
     /** Removes an exploration listener. */
     public void removeListener(ExplorationListener listener) {
         this.listeners.remove(listener);
+    }
+
+    /** Parser for serialised explorations. */
+    static public Parser<Exploration> parser() {
+        return new Parser<Exploration>() {
+            @Override
+            public Line getDescription() {
+                return Line.atom(SYNTAX_MESSAGE);
+            }
+
+            @Override
+            public boolean accepts(String text) {
+                if (text == null || text.length() == 0) {
+                    return true;
+                }
+                try {
+                    Exploration.parse(text);
+                    return true;
+                } catch (FormatException exc) {
+                    return false;
+                }
+            }
+
+            @Override
+            public Exploration parse(String text) {
+                if (text == null || text.length() == 0) {
+                    return null;
+                }
+                try {
+                    return Exploration.parse(text);
+                } catch (FormatException exc) {
+                    return null;
+                }
+            }
+
+            @Override
+            public String toParsableString(Object value) {
+                if (value == null) {
+                    return "";
+                } else {
+                    return ((Exploration) value).toParsableString();
+                }
+            }
+
+            @Override
+            public boolean isValue(Object value) {
+                return value == null || value instanceof Exploration;
+            }
+
+            @Override
+            public Exploration getDefault() {
+                return null;
+            }
+        };
     }
 
     /**
@@ -323,7 +379,7 @@ public class Exploration {
         int resultCount = 0;
         if (parts.length == 3) {
             String countMessage =
-                    String.format("Result count '%s' must be a non-negative number", parts[2]);
+                String.format("Result count '%s' must be a non-negative number", parts[2]);
             try {
                 resultCount = Integer.parseInt(parts[2]);
             } catch (NumberFormatException e) {
@@ -347,7 +403,7 @@ public class Exploration {
 
     /** Message describing the syntax of a parsable exploration strategy. */
     static public final String SYNTAX_MESSAGE =
-            "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
+        "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Static instance of the strategy enumerator. */
     static private final StrategyEnumerator strategies = StrategyEnumerator.instance();
     /** Static instance of the acceptor enumerator. */

@@ -366,7 +366,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public final boolean isInternalStep() {
-        return getStep().inRecipe();
+        return getStep().isInternal();
     }
 
     @Override

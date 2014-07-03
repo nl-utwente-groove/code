@@ -22,6 +22,7 @@ import groove.control.Position;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +35,31 @@ import java.util.Map;
 public class Location implements Position<Location,SwitchStack>, Comparable<Location> {
     /**
      * Constructs a numbered location for a given template.
+     * @param nr the location number;
      */
     public Location(Template template, int nr, int depth) {
         this.nr = nr;
         this.template = template;
         this.depth = depth;
+        if (template == null) {
+            this.type = Type.DEAD;
+        }
+    }
+
+    /**
+     * Indicates whether this is a special location.
+     * Special locations do not have an underlying template,
+     * but are used to indicate errors or absence of a state.
+     * @return {@code true} if and only if {@link #getTemplate()} returns {@code null}
+     */
+    public boolean isSpecial() {
+        return getTemplate() == null;
     }
 
     /**
      * Returns the control template of which this is a location.
+     * This is non-{@code null} except for special locations.
+     * @see #isSpecial()
      */
     public Template getTemplate() {
         return this.template;
@@ -52,7 +69,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     @Override
     public boolean isStart() {
-        return getTemplate().getStart() == this;
+        return !isSpecial() && getTemplate().getStart() == this;
     }
 
     @Override
@@ -62,9 +79,25 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     private final int depth;
 
-    /** Returns the number of this location within the template. */
+    /** Returns the number of this location within the template.
+     * The number is non-negative except if this is a special location.
+     */
     public int getNumber() {
         return this.nr;
+    }
+
+    /** Indicates whether this is an error location.
+     * @see #isSpecial()
+     */
+    public boolean isError() {
+        return this.nr == ERROR_NR;
+    }
+
+    /** Indicates whether this is an absence location.
+     * @see #isSpecial()
+     */
+    public boolean isAbsence() {
+        return this.nr == ABSENCE_NR;
     }
 
     /** The number of the location within the template. */
@@ -129,7 +162,11 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     @Override
     public List<CtrlVar> getVars() {
         if (this.vars == null) {
-            getTemplate().initVars();
+            if (isSpecial()) {
+                this.vars = Collections.emptyList();
+            } else {
+                getTemplate().initVars();
+            }
         }
         return this.vars;
     }
@@ -176,14 +213,43 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(getTemplate().hasOwner() ? getTemplate().getName() : "main");
-        result.append(".");
-        result.append(getNumber());
+        if (isError()) {
+            result.append("error");
+        } else if (isAbsence()) {
+            result.append("absence");
+        } else {
+            result.append(getTemplate().hasOwner() ? getTemplate().getName() : "main");
+            result.append(".");
+            result.append(getNumber());
+        }
         return result.toString();
     }
 
     @Override
     public int compareTo(Location o) {
-        return getNumber() - o.getNumber();
+        int result = getNumber() - o.getNumber();
+        if (result != 0) {
+            return result;
+        }
+        return getTransience() - o.getTransience();
     }
+
+    /** Location number of an error location. */
+    private static final int ERROR_NR = -1;
+    /** Location number of an absence location. */
+    private static final int ABSENCE_NR = -2;
+
+    /** Returns an absence location of given transient depth. */
+    public static Location getSpecial(boolean error, int transience) {
+        List<Location> locations = error ? errorLocations : absenceLocations;
+        for (int i = locations.size(); i <= transience; i++) {
+            locations.add(new Location(null, error ? ERROR_NR : ABSENCE_NR, i));
+        }
+        return locations.get(transience);
+    }
+
+    /** Global list of error locations of given transience. */
+    private static final List<Location> errorLocations = new ArrayList<Location>();
+    /** Global list of absence locations of given transience. */
+    private static final List<Location> absenceLocations = new ArrayList<Location>();
 }

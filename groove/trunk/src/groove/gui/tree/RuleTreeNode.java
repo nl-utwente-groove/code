@@ -95,7 +95,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         for (Key key : Key.values()) {
             String value = properties.getProperty(key);
             if (key != Key.REMARK && !key.isSystem() && value != null && !value.isEmpty()) {
-                filteredProps.put(key.getDescription(), value);
+                filteredProps.put(key.getKeyPhrase(), value);
             }
         }
         // collect the user properties

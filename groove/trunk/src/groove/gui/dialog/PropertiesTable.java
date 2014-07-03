@@ -58,7 +58,7 @@ public class PropertiesTable extends JTable {
         this.editable = editable;
         this.defaultKeys = defaultKeys;
         this.properties =
-                new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
+            new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
         final TableModel model = getTableModel();
         setModel(model);
         setIntercellSpacing(new Dimension(2, -2));
@@ -287,7 +287,7 @@ public class PropertiesTable extends JTable {
         private boolean isEditedValueCorrect(String value) {
             if (this.editingValueForKey == null) {
                 return GraphProperties.isValidUserKey(value)
-                        && !PropertiesTable.this.defaultKeys.containsKey(value);
+                    && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
                 PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
                 Property<String> test = key == null ? null : key.getFormat();
@@ -301,8 +301,8 @@ public class PropertiesTable extends JTable {
          */
         private boolean showContinueDialog(String value) {
             int response =
-                    JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
-                        null, JOptionPane.YES_NO_OPTION);
+                JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
+                    null, JOptionPane.YES_NO_OPTION);
             return response == JOptionPane.YES_OPTION;
         }
 
@@ -364,7 +364,7 @@ public class PropertiesTable extends JTable {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
+            boolean isSelected, boolean hasFocus, int row, int column) {
             // determine tool tip
             String tip = null;
             String text = (String) value;
@@ -374,15 +374,17 @@ public class PropertiesTable extends JTable {
                     PropertyKey key = getDefaultKeys().get(keyword);
                     Property<String> format = key.getFormat();
                     if (column == PROPERTY_COLUMN) {
-                        text = key.getDescription();
+                        text = key.getKeyPhrase();
                         if (format != null) {
-                            tip = format.getComment();
+                            tip = format.getExplanation();
                         }
                     } else {
                         if (text == null || text.isEmpty()) {
                             text = key.getDefaultValue();
                         }
-                        if (format != null) {
+                        if (key.parser() != null) {
+                            tip = key.parser().getDescription().toHTMLString();
+                        } else if (format != null) {
                             tip = format.getDescription();
                         }
                     }
@@ -447,7 +449,7 @@ public class PropertiesTable extends JTable {
                 } else {
                     PropertyKey key = getDefaultKeys().get(getPropertyKey(rowIndex));
                     Property<String> property = key == null ? null : key.getFormat();
-                    return property == null || property.isEditable();
+                    return property == null || !key.isSystem();
                 }
             }
         }

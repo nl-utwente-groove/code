@@ -448,26 +448,29 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private final Line openLine = Line.atom("open").style(Style.BOLD);
 
     private Line getStackLine(Location loc, Object[] values) {
-        Line result = Line.atom(loc.toString()).style(Style.ITALIC);
-        List<CtrlVar> vars = loc.getVars();
-        if (!vars.isEmpty()) {
-            StringBuilder content = new StringBuilder();
-            content.append(" [");
-            for (int i = 0; i < vars.size(); i++) {
-                if (i > 0) {
-                    content.append(',');
+        Line result = Line.empty();
+        if (loc != null) {
+            Line.atom(loc.toString()).style(Style.ITALIC);
+            if (loc.hasVars()) {
+                List<CtrlVar> vars = loc.getVars();
+                StringBuilder content = new StringBuilder();
+                content.append(" [");
+                for (int i = 0; i < vars.size(); i++) {
+                    if (i > 0) {
+                        content.append(',');
+                    }
+                    content.append(vars.get(i).getName());
+                    content.append('=');
+                    HostNode val = (HostNode) values[i];
+                    if (val instanceof ValueNode) {
+                        content.append(((ValueNode) val).getSymbol());
+                    } else {
+                        content.append(val);
+                    }
                 }
-                content.append(vars.get(i).getName());
-                content.append('=');
-                HostNode val = (HostNode) values[i];
-                if (val instanceof ValueNode) {
-                    content.append(((ValueNode) val).getSymbol());
-                } else {
-                    content.append(val);
-                }
+                content.append(']');
+                result = result.append(content.toString());
             }
-            content.append(']');
-            result = result.append(content.toString());
         }
         return result;
     }

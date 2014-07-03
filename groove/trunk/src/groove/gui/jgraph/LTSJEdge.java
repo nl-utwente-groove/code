@@ -34,7 +34,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     @Override
     public void setSource(Object port) {
         super.setSource(port);
-        if (port != null && hasVisibleFlag()) {
+        if (port != null) {
             getSourceVertex().changeOutVisible(true, getEdges().size());
         }
     }
@@ -56,7 +56,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
             return false;
         }
         GraphTransition trans = (GraphTransition) edge;
-        if (inRecipe() != trans.isInternalStep()) {
+        if (isInternal() != trans.isInternalStep()) {
             return false;
         }
         if (isAbsent() != (trans.source().isAbsent() || trans.target().isAbsent())) {
@@ -69,9 +69,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     public void addEdge(Edge edge) {
         super.addEdge(edge);
         // updates the look on the basis of the edge
-        setLook(Look.RECIPE, inRecipe());
+        setLook(Look.RECIPE, isInternal());
         setLook(Look.ABSENT, isAbsent());
-        if (getSource() != null && hasVisibleFlag()) {
+        if (getSource() != null && getVisuals().isVisible()) {
             getSourceVertex().changeOutVisible(true, 1);
         }
     }
@@ -121,7 +121,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     }
 
     /** Indicates that this edge is part of a recipe. */
-    final boolean inRecipe() {
+    final boolean isInternal() {
         return getEdge().isInternalStep();
     }
 
@@ -129,9 +129,14 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     public boolean setVisibleFlag(boolean visible) {
         boolean result = this.visibleFlag != visible;
         if (result) {
+            boolean oldVisible = getVisuals().isVisible();
             this.visibleFlag = visible;
-            setStale(VisualKey.VISIBLE);
-            getSourceVertex().changeOutVisible(visible, getEdges().size());
+            if (visible != oldVisible) {
+                setStale(VisualKey.VISIBLE);
+                if (visible == getVisuals().isVisible()) {
+                    getSourceVertex().changeOutVisible(visible, getEdges().size());
+                }
+            }
         }
         return result;
     }

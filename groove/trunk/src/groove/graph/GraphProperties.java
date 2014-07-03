@@ -18,12 +18,15 @@ package groove.graph;
 
 import groove.grammar.Action;
 import groove.grammar.Action.Role;
+import groove.grammar.CheckPolicy;
 import groove.gui.dialog.PropertyKey;
+import groove.gui.look.Line;
 import groove.io.HTMLConverter;
 import groove.util.DefaultFixable;
 import groove.util.ExprParser;
 import groove.util.Fixable;
 import groove.util.Groove;
+import groove.util.Parser;
 import groove.util.Property;
 
 import java.util.Collections;
@@ -82,7 +85,24 @@ public class GraphProperties extends Properties implements Fixable {
         return new GraphProperties(this);
     }
 
-    /** Convenience method to retrieves a property by key value rather than string. */
+    /** Retrieves and parses the value for a given key. */
+    public Object parseProperty(Key key) {
+        String result = getProperty(key.getName());
+        return key.parser().parse(result);
+    }
+
+    /** Stores a property value, converted to a parsable string. */
+    public void storeProperty(Key key, Object value) {
+        assert key.parser().isValue(value);
+        String repr = key.parser().toParsableString(value);
+        if (repr.length() == 0) {
+            remove(key.getName());
+        } else {
+            super.setProperty(key.getName(), repr);
+        }
+    }
+
+    /** Convenience method to retrieve a property by key value rather than string. */
     public String getProperty(Key key) {
         String result = getProperty(key.getName());
         if (result == null) {
@@ -189,14 +209,19 @@ public class GraphProperties extends Properties implements Fixable {
 
             @Override
             public String getDescription() {
-                return "Non-negative number; higher priorities have precedence";
+                return "A non-negative number; higher priorities have precedence";
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "Higher-priority rules are evaluated first";
             }
-        }),
+        }) {
+            @Override
+            public Parser<Integer> parser() {
+                return Parser.natural;
+            }
+        },
         /** Rule enabledness. */
         ENABLED("enabled", "" + true, new Property<String>() {
             @Override
@@ -210,11 +235,16 @@ public class GraphProperties extends Properties implements Fixable {
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "Disabled rules are never evaluated";
             }
-        }),
-        /** Alternative transition label. */
+        }) {
+            @Override
+            public Parser<Boolean> parser() {
+                return Parser.boolTrue;
+            }
+        },
+        /** Rule injectivity. */
         INJECTIVE("injective", "" + false, new Property<String>() {
             @Override
             public boolean isSatisfied(String value) {
@@ -227,11 +257,16 @@ public class GraphProperties extends Properties implements Fixable {
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "Boolean property determining if the rule is to be matched injectively."
                     + "Disregarded if injective matching is set on the grammar level.";
             }
-        }),
+        }) {
+            @Override
+            public Parser<Boolean> parser() {
+                return Parser.boolFalse;
+            }
+        },
         /** Action role. */
         ROLE("actionRole", "", new Property<String>() {
             @Override
@@ -247,10 +282,42 @@ public class GraphProperties extends Properties implements Fixable {
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "Role of the action: either a transformer, or some kind of property";
             }
-        }),
+        }) {
+            @Override
+            public Parser<?> parser() {
+                return this.parser;
+            }
+
+            private final Parser<Role> parser = new Parser.EnumParser<Role>(Role.class, null);
+        },
+        /** Policy for dealing with property violations. */
+        VIOLATE_POLICY("violationPolicy", "", new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.equals("absence") || value.equals("error") || value.equals("none");
+            }
+
+            @Override
+            public String getDescription() {
+                return "One of 'absence' or 'error' (default)";
+            }
+
+            @Override
+            public String getExplanation() {
+                return "Flag controlling how type violations are dealt with.";
+            }
+        }) {
+            @Override
+            public Parser<?> parser() {
+                return this.parser;
+            }
+
+            private final Parser<CheckPolicy> parser = new Parser.EnumParser<CheckPolicy>(
+                CheckPolicy.class, CheckPolicy.ERROR);
+        },
         /** User-defined comment. */
         REMARK("remark", "", new Property<String>() {
             @Override
@@ -264,7 +331,7 @@ public class GraphProperties extends Properties implements Fixable {
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "A one-line description of the rule, shown e.g. as tool tip";
             }
         }),
@@ -277,16 +344,21 @@ public class GraphProperties extends Properties implements Fixable {
 
             @Override
             public String getDescription() {
-                return "Format string as in String.format, instantiated by rule parameters";
+                return "A format string as in String.format, instantiated by rule parameters";
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "If nonempty, rule application prints this (instantiated) string on System.out";
             }
-        }, false),
+        }) {
+            @Override
+            public Parser<String> parser() {
+                return Parser.trim;
+            }
+        },
         /** Alternative transition label. */
-        TRANSITION_LABEL("transitionLabel", new Property<String>() {
+        TRANSITION_LABEL("transitionLabel", null, new Property<String>() {
             @Override
             public boolean isSatisfied(String value) {
                 return true;
@@ -294,39 +366,39 @@ public class GraphProperties extends Properties implements Fixable {
 
             @Override
             public String getDescription() {
-                return "Format string as in String.format, instantiated by rule parameters";
+                return "A format string as in String.format, instantiated by rule parameters";
             }
 
             @Override
-            public String getComment() {
+            public String getExplanation() {
                 return "A string to be used as the transition label in the "
                     + "LTS. If empty, defaults to the rule name.";
             }
         }),
         /** Graph version. */
-        VERSION("version", "", null, true);
+        VERSION("version");
 
-        /** Defines a non-system property with a given name and format property. */
-        private Key(String name, Property<String> format) {
-            this(name, null, format, false);
+        /** Defines a system property with a given name. */
+        private Key(String name) {
+            this(name, null, null, null, true);
         }
 
         /** Defines a non-system property with a given name, default value and format property. */
         private Key(String name, String defaultValue, Property<String> format) {
-            this(name, defaultValue, format, false);
+            this(name, null, defaultValue, format, false);
         }
 
-        /** Defines a (system or non-system) property with a given name, default value and format property. */
-        private Key(String name, String defaultValue, Property<String> format, boolean system) {
-            this(name, Groove.unCamel(name, false), defaultValue, format, system);
+        /** Defines a non-system property with a given name, description, default value and format property. */
+        private Key(String name, String keyPhrase, String defaultValue, Property<String> format) {
+            this(name, keyPhrase, defaultValue, format, false);
         }
 
         /** Defines a (system or non-system) property with a given name, description, default value and format property. */
-        private Key(String name, String description, String defaultValue, Property<String> format,
-                boolean system) {
+        private Key(String name, String keyPhrase, String defaultValue, Property<String> format,
+            boolean system) {
             this.name = (system ? SYSTEM_KEY_START : "") + name;
             this.defaultValue = defaultValue == null ? "" : defaultValue;
-            this.description = description;
+            this.keyPhrase = keyPhrase == null ? Groove.unCamel(name, false) : keyPhrase;
             this.system = system;
             this.format = format;
         }
@@ -337,8 +409,8 @@ public class GraphProperties extends Properties implements Fixable {
         }
 
         @Override
-        public String getDescription() {
-            return this.description;
+        public String getKeyPhrase() {
+            return this.keyPhrase;
         }
 
         @Override
@@ -356,8 +428,18 @@ public class GraphProperties extends Properties implements Fixable {
             return this.format;
         }
 
+        @Override
+        public Line getExplanation() {
+            return null;
+        }
+
+        @Override
+        public Parser<?> parser() {
+            return Parser.identity;
+        }
+
         private final String name;
-        private final String description;
+        private final String keyPhrase;
         private final String defaultValue;
         private final boolean system;
         private final Property<String> format;

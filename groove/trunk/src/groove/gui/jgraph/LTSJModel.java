@@ -97,7 +97,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
 
     @Override
     public void statusUpdate(GTS lts, GraphState explored, Flag flag, int oldStatus) {
-        JCell<GTS> jCell = registerChange(explored, flag);
+        JCell<GTS> jCell = registerChange(explored, flag, oldStatus);
         if (jCell != null) {
             if (isExploring()) {
                 this.changedCells.add(jCell);
@@ -112,30 +112,27 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      * @return the cell that was changed as a consequence to the state change;
      * {@code null} if there was no change.
      */
-    private JCell<GTS> registerChange(GraphState explored, Flag flag) {
+    private JCell<GTS> registerChange(GraphState explored, Flag flag, int oldStatus) {
         JVertex<GTS> jCell = getJCellForNode(explored);
         if (jCell != null) {
             switch (flag) {
             case CLOSED:
                 jCell.setLook(Look.OPEN, false);
                 break;
-            case ERROR:
-                jCell.setStale(VisualKey.ERROR);
-                break;
             case DONE:
-                if (explored.isAbsent()) {
-                    Iterator<? extends JEdge<GTS>> iter = jCell.getContext();
-                    while (iter.hasNext()) {
-                        iter.next().setLook(Look.ABSENT, true);
-                    }
-                    jCell.setLook(Look.ABSENT, true);
-                }
                 jCell.setLook(Look.RECIPE, explored.isInternalState());
                 jCell.setLook(Look.TRANSIENT, explored.isTransient());
                 jCell.setLook(Look.FINAL, explored.isFinal());
                 break;
             case RESULT:
                 jCell.setLook(Look.RESULT, explored.isResult());
+            }
+            if (explored.isAbsent() && !Flag.ABSENT.test(oldStatus)) {
+                Iterator<? extends JEdge<GTS>> iter = jCell.getContext();
+                while (iter.hasNext()) {
+                    iter.next().setLook(Look.ABSENT, true);
+                }
+                jCell.setLook(Look.ABSENT, true);
             }
             jCell.setStale(VisualKey.refreshables());
         }

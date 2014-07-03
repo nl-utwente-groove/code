@@ -173,7 +173,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Returns the class of transitions that is currently being shown in the LTS. */
     public Claz getTransitionClass() {
-        return Claz.getClass(isShowAbsentStates(), isShowRecipeSteps());
+        return Claz.getClass(isShowRecipeSteps(), isShowAbsentStates());
     }
 
     /** Scrolls the view to the active transition or state. */

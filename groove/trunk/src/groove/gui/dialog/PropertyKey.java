@@ -16,6 +16,8 @@
  */
 package groove.gui.dialog;
 
+import groove.gui.look.Line;
+import groove.util.Parser;
 import groove.util.Property;
 
 /** Interface for property keys. */
@@ -24,7 +26,7 @@ public interface PropertyKey {
     public String getName();
 
     /** Short description for user consumption. */
-    public String getDescription();
+    public String getKeyPhrase();
 
     /** Default value for the property; non-{@code null} but possibly the empty string. */
     public String getDefaultValue();
@@ -34,4 +36,10 @@ public interface PropertyKey {
 
     /** Format property for legal values of this key. */
     public Property<String> getFormat();
+
+    /** Returns an explanation of this key. */
+    public Line getExplanation();
+
+    /** Returns a parser for values of this key. */
+    public Parser<?> parser();
 }

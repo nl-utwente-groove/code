@@ -73,6 +73,12 @@ public interface Action extends Callable, Comparable<Action> {
     public Role getRole();
 
     /**
+     * If this action is an invariant or forbidden property,
+     * returns the consequence of its violation.
+     */
+    public CheckPolicy getPolicy();
+
+    /**
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
      */
