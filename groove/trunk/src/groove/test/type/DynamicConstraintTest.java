@@ -44,8 +44,8 @@ public class DynamicConstraintTest {
     public void testMultiplicities() {
         testError("mult", "start-violates-in");
         testError("mult", "start-violates-out");
-        test("mult", "start-correct-in", 3, 9, 2);
-        test("mult", "start-correct-out", 3, 9, 2);
+        test("mult", "start-correct-in", 3, 3, 2);
+        test("mult", "start-correct-out", 3, 3, 2);
     }
 
     private void testError(String grammarName, String startGraphName) {
@@ -67,7 +67,7 @@ public class DynamicConstraintTest {
      * @param errorCount expected number of error states
      */
     private void test(String grammarName, String startGraphName, int nodeCount, int edgeCount,
-            int errorCount) {
+        int errorCount) {
         try {
             GTS lts = loadGTS(grammarName, startGraphName);
 
