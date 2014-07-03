@@ -55,34 +55,51 @@ public class GraphProperties extends Properties {
     /** Predefined graph property keys. */
     public static enum Key implements PropertyKey {
         /** Rule priority. */
-        PRIORITY("priority", "Higher-priority rules are evaluated first", Parser.natural),
+        PRIORITY("priority", "Higher-priority rules are evaluated first.", Parser.natural),
 
         /** Rule enabledness. */
-        ENABLED("enabled", "Disabled rules are never evaluated", Parser.boolTrue),
+        ENABLED("enabled", "Disabled rules are never evaluated.", Parser.boolTrue),
 
         /** Rule injectivity. */
-        INJECTIVE("injective", "Flag determining if the rule is to be matched injectively."
-            + "Disregarded if injective matching is set on the grammar level.", Parser.boolFalse),
+        INJECTIVE("injective", "<body>Flag determining if the rule is to be matched injectively. "
+            + "<br>Disregarded if injective matching is set on the grammar level.",
+            Parser.boolFalse),
 
         /** Action role. */
-        ROLE("actionRole", "Role of the action: either a transformer, or some kind of property",
+        ROLE(
+            "actionRole",
+            "<body>Role of the action. Values are:"
+                + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control"
+                + "<li>- <i>property</i>: unmodifying, parameterless action, checked at every state"
+                + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
+                + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy",
             new Parser.EnumParser<Role>(Role.class, null)),
 
         /** Policy for dealing with property violations. */
-        VIOLATE_POLICY("violationPolicy", "Flag controlling how type violations are dealt with.",
+        VIOLATE_POLICY(
+            "violationPolicy",
+            "<body>Flag controlling the reaction to invariant and forbidden graph violations."
+                + "<li>- <i>none</i>: the property is not checked"
+                + "<li>- <i>error</i>: the state is flagged as erroneous"
+                + "<li>- <i>absence</i>: the state is removed from the 'real' transition system</html>",
             new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR)),
 
         /** User-defined comment. */
         REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip"),
 
         /** Output line format. */
-        FORMAT("printFormat",
-            "If nonempty, rule application prints this (instantiated) string on System.out",
+        FORMAT(
+            "printFormat",
+            "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. "
+                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
             Parser.trim),
 
         /** Alternative transition label. */
-        TRANSITION_LABEL("transitionLabel", "String to be used as the transition label in the "
-            + "LTS. If empty, defaults to the rule name."),
+        TRANSITION_LABEL(
+            "transitionLabel",
+            "<body>String to be used as the transition label in the LTS. "
+                + "<p>If empty, defaults to the rule name."
+                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters."),
 
         /** Graph version. */
         VERSION("$version", "Graph version");

@@ -23,6 +23,7 @@ import groove.algebra.AlgebraFamily;
 import groove.control.Valuator;
 import groove.control.instance.Frame;
 import groove.explore.util.LTSLabels;
+import groove.grammar.CheckPolicy;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
@@ -183,15 +184,33 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     private void checkTypeErrors(GraphState state) {
-        if (isCheckTypeErrors() && state.checkTypeErrors()) {
-            GraphInfo.addError(this, new FormatError(
-                "State %s has multiplicity or containment errors", state));
+        if (getTypePolicy() != CheckPolicy.NONE) {
+            HostGraph graph = state.getGraph();
+            FormatErrorSet errors = graph.checkTypeConstraints();
+            if (!errors.isEmpty()) {
+                GraphInfo.addErrors(graph, errors);
+                switch (getTypePolicy()) {
+                case ERROR:
+                    state.setFrame(state.getActualFrame().onError());
+                    GraphInfo.addError(this, new FormatError(
+                        "State %s has multiplicity or containment errors", state));
+                    break;
+                case ABSENCE:
+                    state.setFrame(state.getActualFrame().onAbsence());
+                }
+                state.setClosed(true);
+            }
         }
     }
 
+    /** Returns the policy for type checking. */
+    public CheckPolicy getTypePolicy() {
+        return getGrammar().getProperties().getTypePolicy();
+    }
+
     /** Indicates if the non-statically-guaranteed type errors should be checked on all graphs. */
-    public boolean isCheckTypeErrors() {
-        return true;
+    public boolean isCheckDeadlock() {
+        return getGrammar().getProperties().getDeadPolicy() == CheckPolicy.ERROR;
     }
 
     @Override
@@ -357,7 +376,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     private final Map<Flag,List<GraphState>> statesMap = new EnumMap<Status.Flag,List<GraphState>>(
-            Flag.class);
+        Flag.class);
 
     /**
      * Indicates if there are states with a given flag.

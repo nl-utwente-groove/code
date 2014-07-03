@@ -271,13 +271,30 @@ public class Frame implements Position<Frame,Step>, Fixable {
         }
         Frame onSuccess = newFrame(locAttempt.onSuccess());
         Frame onFailure = newFrame(locAttempt.onFailure());
-        Frame onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
-        Frame onAbsence =
-            newFrame(Location.getSpecial(false, getLocation().getTransience()));
-        StepAttempt result = new StepAttempt(onSuccess, onFailure, onError, onAbsence);
+        StepAttempt result = new StepAttempt(onSuccess, onFailure);
         result.addAll(steps);
         return result;
     }
+
+    /** Returns the error frame from this frame. */
+    public Frame onError() {
+        if (this.onError == null) {
+            this.onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
+        }
+        return this.onError;
+    }
+
+    private Frame onError;
+
+    /** Returns the absence frame from this frame. */
+    public Frame onAbsence() {
+        if (this.onAbsence == null) {
+            this.onAbsence = newFrame(Location.getSpecial(false, getLocation().getTransience()));
+        }
+        return this.onAbsence;
+    }
+
+    private Frame onAbsence;
 
     /**
      * Indicates if this frame is inside a recipe.

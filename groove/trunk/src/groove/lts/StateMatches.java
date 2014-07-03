@@ -161,7 +161,7 @@ public class StateMatches extends MatchResultSet {
             }
             Frame nextFrame;
             if (violated != null && violated != CheckPolicy.NONE) {
-                nextFrame = violated == CheckPolicy.ERROR ? attempt.onError() : attempt.onAbsence();
+                nextFrame = violated == CheckPolicy.ERROR ? frame.onError() : frame.onAbsence();
             } else if (outstanding.isEmpty()) {
                 // no transitions will be generated
                 nextFrame = attempt.onFailure();

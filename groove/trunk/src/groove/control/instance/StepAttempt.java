@@ -27,23 +27,8 @@ public class StepAttempt extends Attempt<Frame,Step> {
     /**
      * Creates a multi-step, initialised with success and failure alternates.
      */
-    StepAttempt(Frame onSuccess, Frame onFailure, Frame onError, Frame onAbsence) {
+    StepAttempt(Frame onSuccess, Frame onFailure) {
         setSuccess(onSuccess);
         setFailure(onFailure);
-        this.onError = onError;
-        this.onAbsence = onAbsence;
     }
-
-    /** Returns the successor frame in case an error is found. */
-    public Frame onError() {
-        return this.onError;
-    }
-
-    /** Returns the successor frame in case a post application condition is violated. */
-    public Frame onAbsence() {
-        return this.onAbsence;
-    }
-
-    private final Frame onError;
-    private final Frame onAbsence;
 }

@@ -146,6 +146,23 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Sets the deadlock check policy.
+     * @param policy the policy to be used for deadlock checking.
+     * @see Key#DEAD_POLICY
+     */
+    public void setDeadPolicy(CheckPolicy policy) {
+        storeProperty(Key.DEAD_POLICY, policy);
+    }
+
+    /**
+     * Returns the deadlock check policy of the rule system.
+     * @see Key#DEAD_POLICY
+     */
+    public CheckPolicy getDeadPolicy() {
+        return (CheckPolicy) parseProperty(Key.DEAD_POLICY);
+    }
+
+    /**
      * Sets the typecheck policy.
      * @param policy the policy to be used for type checking.
      * @see Key#TYPE_POLICY
@@ -156,8 +173,6 @@ public class GrammarProperties extends Properties {
 
     /**
      * Returns the type check policy of the rule system.
-     * @return {@code true} if type violations are errors, {@code false} if they
-     * are used as postconditions
      * @see Key#TYPE_POLICY
      */
     public CheckPolicy getTypePolicy() {
@@ -447,22 +462,29 @@ public class GrammarProperties extends Properties {
     /** Grammar property keys. */
     public static enum Key implements PropertyKey {
         /** Property name for the GROOVE version. */
-        GROOVE_VERSION("grooveVersion", "The Groove version that created this grammar"),
+        GROOVE_VERSION("grooveVersion", true, "The Groove version that created this grammar"),
         /** Property name for the Grammar version. */
-        GRAMMAR_VERSION("grammarVersion", "The version of this grammar"),
+        GRAMMAR_VERSION("grammarVersion", true, "The version of this grammar"),
         /** One-line documentation comment on the graph production system. */
         REMARK("remark", "A one-line description of the graph production system"),
 
         /** Property name for the algebra to be used during simulation. */
-        ALGEBRA("algebraFamily", "Algebra used for attributes",
+        ALGEBRA(
+            "algebraFamily",
+            "<body>Algebra used for attributes"
+                + "<li>- <i>default</i>: java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>"
+                + "<li>- <i>big</i>: arbitrary-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)"
+                + "<li>- <i>point</i>: a single value for every type (so all values are equal)"
+                + "<li>- <i>term</i>: symbolic term representations",
             new Parser.EnumParser<AlgebraFamily>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
         /**
          * Flag determining the injectivity of the rule system. If <code>true</code>,
          * all rules should be matched injectively. Default is <code>false</code>.
          */
-        INJECTIVE("matchInjective", "Flag controlling if all rules should be matched injectively. "
-            + "If true, overrules the local rule injectivity property", Parser.boolFalse),
+        INJECTIVE("matchInjective",
+            "<body>Flag controlling if all rules should be matched injectively. "
+                + "<p>If true, overrules the local rule injectivity property", Parser.boolFalse),
 
         /**
          * Dangling edge check. If <code>true</code>, all
@@ -512,14 +534,33 @@ public class GrammarProperties extends Properties {
          */
         TYPE_NAMES("typeGraph", "List of active type graph names", Parser.splitter),
 
-        /** Policy for dealing with type violations. */
-        TYPE_POLICY("typePolicy", "Flag controlling how type violations are dealt with",
-            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR)),
-
         /**
          * Space-separated list of active prolog program names.
          */
         PROLOG_NAMES("prolog", "List of active prolog program names", Parser.splitter),
+
+        /** Policy for dealing with type violations. */
+        TYPE_POLICY(
+            "typePolicy",
+            "<body>Flag controlling how dynamic type violations (multiplicities, composites) are dealt with."
+                + "<li>- <i>none</i>: dynamic type constraints are not checked"
+                + "<li>- <i>error</i>: dynamic type violations are flagged as errors"
+                + "<li>- <i>absence</i>: dynamic type violations cause the state to be removed from the 'real' state space",
+            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR)),
+
+        /** Policy for dealing with deadlocks. */
+        DEAD_POLICY("deadlockPolicy", "Flag controlling how deadlocked states are dealt with."
+            + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
+            + "<li>- <i>none</i>: deadlocks are not checked"
+            + "<li>- <i>error</i>: deadlocks are flagged as errors",
+            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.NONE, "none",
+                "error", null)),
+
+        /**
+         * Exploration strategy description.
+         */
+        EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
+            Exploration.parser()),
 
         /**
          * Space-separated list of control labels of a graph grammar. The
@@ -545,12 +586,6 @@ public class GrammarProperties extends Properties {
          */
         ABSTRACTION_LABELS("abstractionLabels",
             "List of node labels, used by neighbourhood abstraction", Parser.splitter),
-
-        /**
-         * Exploration strategy description.
-         */
-        EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
-            Exploration.parser()),
 
         /**
          * Flag that determines if transition parameters are included in the LTS
