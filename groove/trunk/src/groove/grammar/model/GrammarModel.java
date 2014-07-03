@@ -91,7 +91,7 @@ public class GrammarModel implements Observer {
      */
     public String getId() {
         return Grammar.buildId(getName(), getStartGraphModel() == null ? null
-                : getStartGraphModel().getFullName());
+            : getStartGraphModel().getFullName());
     }
 
     /** Returns the backing system store. */
@@ -650,15 +650,7 @@ public class GrammarModel implements Observer {
      * value in the system properties.
      */
     public Exploration getDefaultExploration() {
-        if (getProperties().getExploration() == null) {
-            return null;
-        } else {
-            try {
-                return Exploration.parse(getProperties().getExploration());
-            } catch (FormatException e) {
-                return null;
-            }
-        }
+        return getProperties().getExploration();
     }
 
     /** Mapping from resource kinds and names to resource models. */

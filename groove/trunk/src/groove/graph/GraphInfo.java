@@ -293,7 +293,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#PRIORITY
      */
     static public int getPriority(Graph graph) {
-        return Integer.parseInt(getProperty(graph, PRIORITY));
+        return (Integer) getProperty(graph, PRIORITY);
     }
 
     /**
@@ -302,7 +302,7 @@ public class GraphInfo extends DefaultFixable {
      * @param role the new role
      */
     static public void setRole(Graph graph, Role role) {
-        setProperty(graph, Key.ROLE, role == null ? "" : role.toString());
+        setProperty(graph, Key.ROLE, role);
     }
 
     /**
@@ -312,7 +312,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#ROLE
      */
     static public Role getRole(Graph graph) {
-        return Role.toRole(getProperty(graph, Key.ROLE));
+        return (Role) getProperty(graph, Key.ROLE);
     }
 
     /**
@@ -321,7 +321,7 @@ public class GraphInfo extends DefaultFixable {
      * @param priority the new priority value; should be non-negative
      */
     static public void setPriority(Graph graph, int priority) {
-        setProperty(graph, PRIORITY, "" + priority);
+        setProperty(graph, PRIORITY, priority);
     }
 
     /**
@@ -331,7 +331,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#ENABLED
      */
     static public boolean isEnabled(Graph graph) {
-        return Boolean.parseBoolean(getProperty(graph, ENABLED));
+        return (Boolean) getProperty(graph, ENABLED);
     }
 
     /**
@@ -340,7 +340,7 @@ public class GraphInfo extends DefaultFixable {
      * @param enabled the new enabledness value
      */
     static public void setEnabled(Graph graph, boolean enabled) {
-        setProperty(graph, ENABLED, Boolean.toString(enabled));
+        setProperty(graph, ENABLED, enabled);
     }
 
     /**
@@ -350,7 +350,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#INJECTIVE
      */
     static public boolean isInjective(Graph graph) {
-        return Boolean.parseBoolean(getProperty(graph, INJECTIVE));
+        return (Boolean) getProperty(graph, INJECTIVE);
     }
 
     /**
@@ -359,7 +359,7 @@ public class GraphInfo extends DefaultFixable {
      * @param injective the new injectivity value
      */
     static public void setInjective(Graph graph, boolean injective) {
-        setProperty(graph, INJECTIVE, Boolean.toString(injective));
+        setProperty(graph, INJECTIVE, injective);
     }
 
     /**
@@ -369,7 +369,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#REMARK
      */
     static public String getRemark(Graph graph) {
-        return getProperty(graph, Key.REMARK);
+        return (String) getProperty(graph, Key.REMARK);
     }
 
     /**
@@ -389,7 +389,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#FORMAT
      */
     static public String getFormatString(Graph graph) {
-        return getProperty(graph, Key.FORMAT);
+        return (String) getProperty(graph, Key.FORMAT);
     }
 
     /**
@@ -408,7 +408,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#TRANSITION_LABEL
      */
     static public String getTransitionLabel(Graph graph) {
-        return getProperty(graph, Key.TRANSITION_LABEL);
+        return (String) getProperty(graph, Key.TRANSITION_LABEL);
     }
 
     /**
@@ -428,22 +428,22 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#VERSION
      */
     static public String getVersion(Graph graph) {
-        return getProperty(graph, Key.VERSION);
+        return (String) getProperty(graph, Key.VERSION);
     }
 
     /**
      * Convenience method to retrieve a graph property from a given graph.
-     * Delegates to {@link GraphProperties#getProperty(Key)}
+     * Delegates to {@link GraphProperties#getProperty}
      * @param graph the queried graph; non-{@code null}
      * @return the stored or default property value for the given key;
      * non-{@code null}
      */
-    private static String getProperty(Graph graph, Key key) {
-        String result;
+    private static Object getProperty(Graph graph, Key key) {
+        Object result;
         if (graph.hasInfo()) {
-            result = graph.getInfo().getProperties().getProperty(key);
+            result = graph.getInfo().getProperties().parseProperty(key);
         } else {
-            result = key.getDefaultValue();
+            result = key.parser().getDefaultValue();
         }
         return result;
     }
@@ -453,10 +453,10 @@ public class GraphInfo extends DefaultFixable {
      * Delegates to {@link GraphProperties#setProperty}
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      */
-    private static void setProperty(Graph graph, Key key, String value) {
+    private static void setProperty(Graph graph, Key key, Object value) {
         GraphProperties properties;
         properties = graph.getInfo().getProperties();
-        properties.setProperty(key, value);
+        properties.storeProperty(key, value);
     }
 
     /**

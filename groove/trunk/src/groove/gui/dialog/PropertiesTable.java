@@ -16,15 +16,18 @@
  */
 package groove.gui.dialog;
 
-import groove.graph.GraphProperties;
+import groove.gui.look.Line;
 import groove.io.HTMLConverter;
-import groove.util.Property;
+import groove.util.ExprParser;
+import groove.util.Parser;
+import groove.util.PropertyKey;
 import groove.util.collect.ListComparator;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -54,9 +57,12 @@ public class PropertiesTable extends JTable {
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
      */
-    public PropertiesTable(Map<String,? extends PropertyKey> defaultKeys, boolean editable) {
+    public PropertiesTable(Class<? extends PropertyKey> defaultKeys, boolean editable) {
         this.editable = editable;
-        this.defaultKeys = defaultKeys;
+        this.defaultKeys = new LinkedHashMap<String,PropertyKey>();
+        for (PropertyKey key : defaultKeys.getEnumConstants()) {
+            this.defaultKeys.put(key.getName(), key);
+        }
         this.properties =
             new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
         final TableModel model = getTableModel();
@@ -71,7 +77,7 @@ public class PropertiesTable extends JTable {
         this.properties.clear();
         for (PropertyKey key : this.defaultKeys.values()) {
             if (!key.isSystem()) {
-                this.properties.put(key.getName(), key.getDefaultValue());
+                this.properties.put(key.getName(), "");
             }
         }
         this.nonSystemKeyCount = this.properties.size();
@@ -124,7 +130,7 @@ public class PropertiesTable extends JTable {
             String stringKey = entry.getKey();
             String value = entry.getValue();
             PropertyKey key = this.defaultKeys.get(stringKey);
-            if (key == null || !key.getDefaultValue().equals(value)) {
+            if (key == null || !key.parser().isDefault(value)) {
                 result.put(stringKey, value);
             }
         }
@@ -207,7 +213,7 @@ public class PropertiesTable extends JTable {
     /** Flag indicating that the properties are editable. */
     private final boolean editable;
     /** A list of default property keys; possibly <code>null</code>. */
-    private final Map<String,? extends PropertyKey> defaultKeys;
+    private final Map<String,PropertyKey> defaultKeys;
     /** The number of non-system keys. */
     private int nonSystemKeyCount;
     /** The actual user properties map. */
@@ -249,8 +255,9 @@ public class PropertiesTable extends JTable {
             if (this.editingValueForKey != null) {
                 PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
                 if (key != null) {
-                    Property<String> test = key.getFormat();
-                    result.setToolTipText(test == null ? null : test.toString());
+                    Parser<?> parser = key.parser();
+                    String tip = parser.getDescription().toHTMLString();
+                    result.setToolTipText(HTMLConverter.HTML_TAG.on(tip));
                 }
             }
             return result;
@@ -286,12 +293,11 @@ public class PropertiesTable extends JTable {
          */
         private boolean isEditedValueCorrect(String value) {
             if (this.editingValueForKey == null) {
-                return GraphProperties.isValidUserKey(value)
+                return ExprParser.isIdentifier(value)
                     && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
                 PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
-                Property<String> test = key == null ? null : key.getFormat();
-                return test == null || test.isSatisfied(value);
+                return key == null ? true : key.parser().accepts(value);
             }
         }
 
@@ -308,30 +314,27 @@ public class PropertiesTable extends JTable {
 
         /** Returns the string to display in the abandon dialog. */
         private String getContinueQuestion(String value) {
-            StringBuilder result = new StringBuilder();
+            Line result = Line.empty();
             if (this.editingValueForKey == null) {
                 // editing a key
                 if (PropertiesTable.this.properties.containsKey(value)) {
-                    result.append(String.format("Property key '%s' already exists", value));
+                    result =
+                        result.append(String.format("Property key '%s' already exists", value));
                 } else {
-                    result.append(String.format("Property key '%s' is not a valid identifier.",
-                        value));
+                    result =
+                        result.append(String.format("Property key '%s' is not a valid identifier.",
+                            value));
                 }
             } else {
                 // editing a value
-                Property<String> test = getDefaultKeys().get(this.editingValueForKey).getFormat();
-                StringBuffer description = test == null ? null : test.getDescription(false);
-                if (description == null) {
-                    result.append(String.format("Incorrect value '%s' for key '%s'.",
-                        this.editingValueForKey));
-                } else {
-                    result.append(String.format("Key '%s' expects %s.", this.editingValueForKey,
-                        description));
-                }
+                PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
+                Line description = key.parser().getDescription();
+                result =
+                    result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
+                        description.capitalise(false));
             }
-            result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append(" Continue?");
-            return HTMLConverter.HTML_TAG.on(result).toString();
+            result = result.append("\nContinue?");
+            return HTMLConverter.HTML_TAG.on(result.toHTMLString());
         }
 
         /** Sets the editor to editing a property key. */
@@ -372,21 +375,12 @@ public class PropertiesTable extends JTable {
                 String keyword = (String) table.getValueAt(row, PROPERTY_COLUMN);
                 if (keyword != null && getDefaultKeys().containsKey(keyword)) {
                     PropertyKey key = getDefaultKeys().get(keyword);
-                    Property<String> format = key.getFormat();
                     if (column == PROPERTY_COLUMN) {
                         text = key.getKeyPhrase();
-                        if (format != null) {
-                            tip = format.getExplanation();
-                        }
+                        tip = key.getExplanation();
                     } else {
-                        if (text == null || text.isEmpty()) {
-                            text = key.getDefaultValue();
-                        }
-                        if (key.parser() != null) {
-                            tip = key.parser().getDescription().toHTMLString();
-                        } else if (format != null) {
-                            tip = format.getDescription();
-                        }
+                        Parser<?> parser = key.parser();
+                        tip = parser.getDescription().toHTMLString();
                     }
                 }
             }
@@ -448,8 +442,7 @@ public class PropertiesTable extends JTable {
                     return false;
                 } else {
                     PropertyKey key = getDefaultKeys().get(getPropertyKey(rowIndex));
-                    Property<String> property = key == null ? null : key.getFormat();
-                    return property == null || !key.isSystem();
+                    return key == null || !key.isSystem();
                 }
             }
         }

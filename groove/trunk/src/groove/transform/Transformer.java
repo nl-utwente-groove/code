@@ -84,13 +84,13 @@ public class Transformer {
     /**
      * Changes a property in the grammar model.
      * @param key the property to be changed; should be modifiable
-     * @param value the new value for the property; should satisfy {@link Key#getFormat()}
+     * @param value the new value for the property; should satisfy {@link Key#parser()}
      * @throws FormatException if the given key/value pair is unsuitable for the given
      * grammar
      */
     public void setProperty(GrammarProperties.Key key, String value) throws FormatException {
         assert !key.isSystem();
-        assert value != null && key.getFormat().isSatisfied(value);
+        assert value != null && key.parser().accepts(value);
         if (this.properties == null) {
             this.properties = getGrammarModel().getProperties().clone();
         }
@@ -155,7 +155,7 @@ public class Transformer {
      * @throws IOException if the named start graph cannot be loaded
      */
     public Collection<GraphState> explore(String startGraphName) throws FormatException,
-    IOException {
+        IOException {
         return explore(computeStartGraph(startGraphName));
     }
 
@@ -171,7 +171,7 @@ public class Transformer {
      * @throws IOException if any of the named start graphs cannot be loaded
      */
     public Collection<GraphState> explore(List<String> startGraphNames) throws IOException,
-    FormatException {
+        FormatException {
         return explore(computeStartGraph(startGraphNames));
     }
 

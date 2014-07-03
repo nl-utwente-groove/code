@@ -14,11 +14,7 @@
  *
  * $Id$
  */
-package groove.gui.dialog;
-
-import groove.gui.look.Line;
-import groove.util.Parser;
-import groove.util.Property;
+package groove.util;
 
 /** Interface for property keys. */
 public interface PropertyKey {
@@ -28,18 +24,18 @@ public interface PropertyKey {
     /** Short description for user consumption. */
     public String getKeyPhrase();
 
-    /** Default value for the property; non-{@code null} but possibly the empty string. */
-    public String getDefaultValue();
-
     /** Indicates if this is a system key. */
     public boolean isSystem();
 
-    /** Format property for legal values of this key. */
-    public Property<String> getFormat();
-
     /** Returns an explanation of this key. */
-    public Line getExplanation();
+    public String getExplanation();
 
     /** Returns a parser for values of this key. */
     public Parser<?> parser();
+
+    /**
+     * Start character that distinguishes system properties from user-definable
+     * properties. Any string starting with this character is a system key.
+     */
+    static public final String SYSTEM_KEY_PREFIX = "$";
 }

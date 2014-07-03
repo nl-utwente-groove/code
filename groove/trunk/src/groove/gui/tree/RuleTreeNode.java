@@ -94,7 +94,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         // collect the non-system, non-remark properties
         for (Key key : Key.values()) {
             String value = properties.getProperty(key);
-            if (key != Key.REMARK && !key.isSystem() && value != null && !value.isEmpty()) {
+            if (key != Key.REMARK && !key.isSystem() && !value.isEmpty()) {
                 filteredProps.put(key.getKeyPhrase(), value);
             }
         }
@@ -102,7 +102,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         for (Map.Entry<Object,Object> entry : properties.entrySet()) {
             String keyword = (String) entry.getKey();
             String value = (String) entry.getValue();
-            if (!GraphProperties.isKey(keyword) && !value.isEmpty()) {
+            if (!GraphProperties.Key.isKey(keyword) && !value.isEmpty()) {
                 filteredProps.put(keyword, value);
             }
         }
@@ -140,8 +140,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         }
         String suffix =
             isPartial() ? SUBRULE_SUFFIX : getRule().isProperty()
-                    ? roleSuffixMap.get(getRule().getRole()) : RULE_SUFFIX;
-                        return getDisplay().getLabelText(getName(), suffix, showEnabled);
+                ? roleSuffixMap.get(getRule().getRole()) : RULE_SUFFIX;
+        return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */

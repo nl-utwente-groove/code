@@ -7,27 +7,20 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
-import groove.gui.dialog.PropertyKey;
-import groove.gui.look.Line;
-import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Parser;
-import groove.util.Property;
+import groove.util.Properties;
+import groove.util.PropertyKey;
 import groove.util.ThreeValued;
 import groove.util.Version;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -36,8 +29,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GrammarProperties extends java.util.Properties implements Fixable {
-
+public class GrammarProperties extends Properties {
     /**
      * Default constructor.
      */
@@ -49,7 +41,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * Constructor that sets the grammar properties.
      */
     public GrammarProperties(boolean useCurrentGrooveVersion) {
-        super();
+        super(Key.class);
         if (useCurrentGrooveVersion) {
             this.setCurrentVersionProperties();
             setShowLoopsAsLabels(false);
@@ -57,6 +49,12 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
             this.setGrooveVersion(Version.getInitialGrooveVersion());
             this.setGrammarVersion(Version.getInitialGrammarVersion());
         }
+    }
+
+    /** Constructs a non-fixed clone of a given properties object. */
+    private GrammarProperties(GrammarProperties original) {
+        super(Key.class);
+        putAll(original);
     }
 
     /**
@@ -81,8 +79,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * Default value: <code>true</code>.
      */
     public boolean isShowLoopsAsLabels() {
-        String property = getProperty(Key.LOOPS_AS_LABELS);
-        return property == null || property.isEmpty() || Boolean.valueOf(property);
+        return (Boolean) parseProperty(Key.LOOPS_AS_LABELS);
     }
 
     /**
@@ -90,7 +87,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * Default value: <code>true</code>.
      */
     public void setShowLoopsAsLabels(boolean show) {
-        setProperty(Key.LOOPS_AS_LABELS, "" + show);
+        storeProperty(Key.LOOPS_AS_LABELS, show);
     }
 
     /**
@@ -98,39 +95,36 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * value: <code>false</code>.
      */
     public ThreeValued isUseParameters() {
-        String params = getProperty(Key.TRANSITION_PARAMETERS);
-        return this.paramSelector.toValue(params);
+        return (ThreeValued) parseProperty(Key.TRANSITION_PARAMETERS);
     }
 
     /** Sets the {@link Key#TRANSITION_PARAMETERS} property to the given value * */
     public void setUseParameters(ThreeValued useParameters) {
-        setProperty(Key.TRANSITION_PARAMETERS, "" + this.paramSelector.getText(useParameters));
+        storeProperty(Key.TRANSITION_PARAMETERS, useParameters);
     }
-
-    private final ThreeValued.Selector paramSelector = ThreeValued.selector();
 
     /** Sets the {@link Key#GROOVE_VERSION} property to the given value */
     public void setGrooveVersion(String version) {
-        setProperty(Key.GROOVE_VERSION, version);
+        storeProperty(Key.GROOVE_VERSION, version);
     }
 
     /**
      * @return the version of Groove that created the grammar.
      */
     public String getGrooveVersion() {
-        return getProperty(Key.GROOVE_VERSION);
+        return (String) parseProperty(Key.GROOVE_VERSION);
     }
 
     /** Sets the {@link Key#GRAMMAR_VERSION} property to the given value */
     public void setGrammarVersion(String version) {
-        setProperty(Key.GRAMMAR_VERSION, version);
+        storeProperty(Key.GRAMMAR_VERSION, version);
     }
 
     /**
      * @return the version of the grammar.
      */
     public String getGrammarVersion() {
-        return getProperty(Key.GRAMMAR_VERSION);
+        return (String) parseProperty(Key.GRAMMAR_VERSION);
     }
 
     /**
@@ -138,13 +132,9 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * {@link Key#CONTROL_LABELS} property of the rule system.
      * @see Key#CONTROL_LABELS
      */
+    @SuppressWarnings("unchecked")
     public List<String> getControlLabels() {
-        String controlLabels = getProperty(Key.CONTROL_LABELS);
-        if (controlLabels == null) {
-            return Collections.emptyList();
-        } else {
-            return Arrays.asList(controlLabels.split("\\s"));
-        }
+        return (List<String>) parseProperty(Key.CONTROL_LABELS);
     }
 
     /**
@@ -152,7 +142,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @see Key#CONTROL_LABELS
      */
     public void setControlLabels(List<String> controlLabels) {
-        setProperty(Key.CONTROL_LABELS, Groove.toString(controlLabels.toArray(), "", "", " "));
+        storeProperty(Key.CONTROL_LABELS, controlLabels);
     }
 
     /**
@@ -179,13 +169,9 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * {@link Key#COMMON_LABELS} property of the rule system.
      * @see Key#COMMON_LABELS
      */
+    @SuppressWarnings("unchecked")
     public List<String> getCommonLabels() {
-        String commonLabels = getProperty(Key.COMMON_LABELS);
-        if (commonLabels == null) {
-            return Collections.emptyList();
-        } else {
-            return Arrays.asList(commonLabels.split("\\s"));
-        }
+        return (List<String>) parseProperty(Key.COMMON_LABELS);
     }
 
     /**
@@ -193,7 +179,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @see Key#COMMON_LABELS
      */
     public void setCommonLabels(List<String> commonLabels) {
-        setProperty(Key.COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
+        storeProperty(Key.COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
     }
 
     /**
@@ -202,7 +188,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *        disallowed
      */
     public void setInjective(boolean injective) {
-        setProperty(Key.INJECTIVE, "" + injective);
+        storeProperty(Key.INJECTIVE, injective);
     }
 
     /**
@@ -210,8 +196,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @return if <code>true</code>, non-injective matches are disallowed
      */
     public boolean isInjective() {
-        String result = getProperty(Key.INJECTIVE);
-        return result != null && Boolean.valueOf(result);
+        return (Boolean) parseProperty(Key.INJECTIVE);
     }
 
     /**
@@ -220,7 +205,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *        disallowed
      */
     public void setCheckDangling(boolean dangling) {
-        setProperty(Key.DANGLING, "" + dangling);
+        storeProperty(Key.DANGLING, dangling);
     }
 
     /**
@@ -228,25 +213,23 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
-        String result = getProperty(Key.DANGLING);
-        return result != null && Boolean.valueOf(result);
+        return (Boolean) parseProperty(Key.DANGLING);
     }
 
     /**
      * Sets the exploration strategy to a certain value.
      * @param strategy the new exploration strategy
      */
-    public void setExploration(String strategy) {
-        setProperty(Key.EXPLORATION, strategy);
+    public void setExploration(Exploration strategy) {
+        storeProperty(Key.EXPLORATION, strategy);
     }
 
     /**
      * Returns the exploration strategy, or <code>null</code> if there
      * is no strategy set.
      */
-    public String getExploration() {
-        String result = getProperty(Key.EXPLORATION);
-        return stringOrNull(result);
+    public Exploration getExploration() {
+        return (Exploration) parseProperty(Key.EXPLORATION);
     }
 
     /**
@@ -256,7 +239,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public void setActiveNames(ResourceKind kind, Collection<String> names) {
         assert kind != ResourceKind.RULE;
-        setProperty(resourceKeyMap.get(kind), Groove.toString(names.toArray(), "", "", " "));
+        storeProperty(resourceKeyMap.get(kind), names);
     }
 
     /**
@@ -269,19 +252,16 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY) {
             return Collections.emptySet();
         }
-        String names = getProperty(resourceKeyMap.get(kind));
-        if (names == null || "".equals(names)) {
-            return Collections.emptySet();
-        } else {
-            return new TreeSet<String>(Arrays.asList(names.split("\\s")));
-        }
+        @SuppressWarnings("unchecked")
+        List<String> names = (List<String>) parseProperty(resourceKeyMap.get(kind));
+        return new TreeSet<String>(names);
     }
 
     /**
      * Sets the algebra family to a given value.
      */
     public void setAlgebraFamily(AlgebraFamily family) {
-        setProperty(Key.ALGEBRA, family.getName());
+        storeProperty(Key.ALGEBRA, family);
     }
 
     /**
@@ -290,8 +270,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * if none is selected.
      */
     public AlgebraFamily getAlgebraFamily() {
-        String property = getProperty(Key.ALGEBRA);
-        return (AlgebraFamily) Key.ALGEBRA.parser().parse(property);
+        return (AlgebraFamily) parseProperty(Key.ALGEBRA);
     }
 
     /**
@@ -300,7 +279,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *        application conditions
      */
     public void setCheckCreatorEdges(boolean check) {
-        setProperty(Key.CREATOR_EDGE, "" + check);
+        storeProperty(Key.CREATOR_EDGE, check);
     }
 
     /**
@@ -309,8 +288,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *         application conditions
      */
     public boolean isCheckCreatorEdges() {
-        String result = getProperty(Key.CREATOR_EDGE);
-        return result != null && Boolean.valueOf(result);
+        return (Boolean) parseProperty(Key.CREATOR_EDGE);
     }
 
     /**
@@ -319,7 +297,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *        isomorphism
      */
     public void setCheckIsomorphism(boolean check) {
-        setProperty(Key.ISOMORPHISM, "" + check);
+        storeProperty(Key.ISOMORPHISM, check);
     }
 
     /**
@@ -327,8 +305,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @return if <code>true</code>, state graphs are compared up to isomorphism
      */
     public boolean isCheckIsomorphism() {
-        String result = getProperty(Key.ISOMORPHISM);
-        return result == null || result.isEmpty() || Boolean.valueOf(result);
+        return (Boolean) parseProperty(Key.ISOMORPHISM);
     }
 
     /**
@@ -338,8 +315,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *         being applied twice in a row
      */
     public boolean isRhsAsNac() {
-        String result = getProperty(Key.RHS_AS_NAC);
-        return result != null && Boolean.valueOf(result);
+        return (Boolean) parseProperty(Key.RHS_AS_NAC);
     }
 
     /**
@@ -349,20 +325,16 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      *        being applied twice in a row
      */
     public void setRhsAsNac(boolean value) {
-        setProperty(Key.RHS_AS_NAC, "" + value);
+        storeProperty(Key.RHS_AS_NAC, value);
     }
 
     /**
      * Returns a list of node labels that are to be used in the abstraction.
      * @see Key#ABSTRACTION_LABELS
      */
+    @SuppressWarnings("unchecked")
     public List<String> getAbstractionLabels() {
-        String abstractionLabels = getProperty(Key.ABSTRACTION_LABELS);
-        if (abstractionLabels == null) {
-            return Collections.emptyList();
-        } else {
-            return Arrays.asList(abstractionLabels.split("\\s"));
-        }
+        return (List<String>) parseProperty(Key.ABSTRACTION_LABELS);
     }
 
     /**
@@ -370,71 +342,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @see Key#ABSTRACTION_LABELS
      */
     public void setAbstractionLabels(List<String> abstractionLabels) {
-        setProperty(Key.ABSTRACTION_LABELS,
-            Groove.toString(abstractionLabels.toArray(), "", "", " "));
-    }
-
-    /**
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-     */
-    @Override
-    public synchronized Object setProperty(String key, String value) {
-        testFixed(false);
-        if (value == null || value.length() == 0) {
-            return super.remove(key);
-        } else {
-            return super.setProperty(key, value);
-        }
-    }
-
-    /**
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-     */
-    @Override
-    public synchronized void load(InputStream inStream) throws IOException {
-        testFixed(false);
-        clear();
-        super.load(inStream);
-    }
-
-    /**
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-     */
-    @Override
-    public synchronized void loadFromXML(InputStream in) throws IOException,
-        InvalidPropertiesFormatException {
-        testFixed(false);
-        clear();
-        super.loadFromXML(in);
-    }
-
-    /**
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-     */
-    @Override
-    public synchronized void clear() {
-        testFixed(false);
-        super.clear();
-    }
-
-    /** Returns a non-fixed clone of the properties. */
-    @Override
-    public GrammarProperties clone() {
-        GrammarProperties result = (GrammarProperties) super.clone();
-        result.fixed = false;
-        return result;
+        storeProperty(Key.ABSTRACTION_LABELS, abstractionLabels);
     }
 
     /**
@@ -471,74 +379,6 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-     */
-    @Override
-    public synchronized Object put(Object key, Object value) {
-        testFixed(false);
-        if (value == null || (value instanceof String && ((String) value).length() == 0)) {
-            return super.remove(key);
-        } else {
-            return super.put(key, value);
-        }
-    }
-
-    /**
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-     */
-    @Override
-    public synchronized Object remove(Object key) {
-        testFixed(false);
-        return super.remove(key);
-    }
-
-    /** Returns an unmodifiable set. */
-    @Override
-    public Set<Object> keySet() {
-        return Collections.unmodifiableSet(super.keySet());
-    }
-
-    /** Returns an unmodifiable set. */
-    @Override
-    public Set<Entry<Object,Object>> entrySet() {
-        return Collections.unmodifiableSet(super.entrySet());
-    }
-
-    /**
-     * Freezes the properties object, after which changing any properties
-     * becomes illegal.
-     */
-    @Override
-    public boolean setFixed() {
-        boolean result = !isFixed();
-        this.fixed = true;
-        return result;
-    }
-
-    /**
-     * Indicates if the properties are fixed. If so, any attempt to modify any
-     * of the properties will result in an {@link IllegalStateException}.
-     * @return <code>true</code> if the properties are fixed.
-     */
-    @Override
-    public boolean isFixed() {
-        return this.fixed;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) throws IllegalStateException {
-        if (this.fixed != fixed) {
-            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
-        }
-    }
-
-    /**
      * Checks if the stored properties are valid in a given grammar.
      */
     public void check(GrammarModel grammar) throws FormatException {
@@ -558,40 +398,11 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         errors.throwException();
     }
 
-    /** Returns the parsed property value for a given key. */
-    private Object parseProperty(Key key) {
-        return key.parser().parse(getProperty(key));
+    /** Returns a non-fixed clone of the properties. */
+    @Override
+    public GrammarProperties clone() {
+        return new GrammarProperties(this);
     }
-
-    /** Stores a property value, converted to a parsable string. */
-    private void storeProperty(Key key, Object value) {
-        assert key.parser().isValue(value);
-        String repr = key.parser().toParsableString(value);
-        if (repr.length() == 0) {
-            remove(key.getName());
-        } else {
-            setProperty(key.getName(), repr);
-        }
-    }
-
-    /** Retrieves a property by key. */
-    private String getProperty(Key key) {
-        return getProperty(key.getName());
-    }
-
-    /** Changes a property by key. */
-    private void setProperty(Key key, String value) {
-        if (value == null || value.length() == 0 || value.equals(key.getDefaultValue())) {
-            remove(key.getName());
-        } else {
-            setProperty(key.getName(), value);
-        }
-    }
-
-    /**
-     * Flag to indicate that the properties have been frozen.
-     */
-    private boolean fixed;
 
     /**
      * Returns a default, fixed properties object, with a given value for
@@ -611,30 +422,6 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     static public boolean isCheckDangling(GrammarProperties properties) {
         return properties != null && properties.isCheckDangling();
-    }
-
-    static String stringOrNull(String input) {
-        return input == null || input.length() == 0 ? null : input;
-    }
-
-    /** Alternate key value for true. */
-    static public final String NUMERIC_YES = "1";
-
-    /** Alternate key value for false. */
-    static public final String NUMERIC_NO = "0";
-
-    /**
-     * List of system-defined keys, in the order in which they are to appear in
-     * a properties editor.
-     */
-    static public final Map<String,Key> KEYS;
-
-    static {
-        Map<String,Key> defaultKeys = new LinkedHashMap<String,Key>();
-        for (Key key : Key.values()) {
-            defaultKeys.put(key.getName(), key);
-        }
-        KEYS = Collections.unmodifiableMap(defaultKeys);
     }
 
     /** Map storing default property instances. */
@@ -657,180 +444,82 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
 
     }
 
-    /**
-     * Property testing if the value of {@link Key#EXPLORATION} is correctly
-     * formatted.
-     */
-    static private class IsExplorationString extends Property<String> {
-        /**
-         * Returns an instance of this property, with appropriate description
-         * and comment.
-         */
-        public IsExplorationString(String comment) {
-            super(Exploration.SYNTAX_MESSAGE, comment);
-        }
-
-        @Override
-        public boolean isSatisfied(String value) {
-            boolean result = true;
-            try {
-                Exploration.parse(value);
-            } catch (FormatException exc) {
-                result = false;
-            }
-            return result;
-        }
-    }
-
     /** Grammar property keys. */
     public static enum Key implements PropertyKey {
         /** Property name for the GROOVE version. */
-        GROOVE_VERSION("grooveVersion", "The Groove version that created this grammar", true),
+        GROOVE_VERSION("grooveVersion", "The Groove version that created this grammar"),
         /** Property name for the Grammar version. */
-        GRAMMAR_VERSION("grammarVersion", "The version of this grammar", true),
+        GRAMMAR_VERSION("grammarVersion", "The version of this grammar"),
         /** One-line documentation comment on the graph production system. */
         REMARK("remark", "A one-line description of the graph production system"),
 
         /** Property name for the algebra to be used during simulation. */
-        ALGEBRA("algebraFamily", new Property.Choice<String>("Algebra used for attributes",
-            AlgebraFamily.DEFAULT.getName(), AlgebraFamily.POINT.getName(),
-            AlgebraFamily.BIG.getName(), AlgebraFamily.TERM.getName())) {
-            @Override
-            public Parser<AlgebraFamily> parser() {
-                return this.parser;
-            }
-
-            private final Parser<AlgebraFamily> parser = new Parser.EnumParser<AlgebraFamily>(
-                AlgebraFamily.class, AlgebraFamily.DEFAULT);
-        },
+        ALGEBRA("algebraFamily", "Algebra used for attributes",
+            new Parser.EnumParser<AlgebraFamily>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
         /**
          * Flag determining the injectivity of the rule system. If <code>true</code>,
          * all rules should be matched injectively. Default is <code>false</code>.
          */
-        INJECTIVE("matchInjective", new Property.IsBoolean(
-            "Flag controlling if all rules should be matched injectively. "
-                + "If true, overrules the local rule injectivity property", true)) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.boolFalse;
-            }
-        },
+        INJECTIVE("matchInjective", "Flag controlling if all rules should be matched injectively. "
+            + "If true, overrules the local rule injectivity property", Parser.boolFalse),
 
         /**
          * Dangling edge check. If <code>true</code>, all
          * matches that leave dangling edges are invalid. Default is
          * <code>false</code>.
          */
-        DANGLING("checkDangling", new Property.IsBoolean(
-            "Flag controlling if dangling edges should be forbidden rather than deleted", true)) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.boolFalse;
-            }
-        },
+        DANGLING("checkDangling",
+            "Flag controlling if dangling edges should be forbidden rather than deleted",
+            Parser.boolFalse),
 
         /**
          * Creator edge check. If <code>true</code>, creator
          * edges are implicitly treated as (individual) NACs. Default is
          * <code>false</code>.
          */
-        CREATOR_EDGE("checkCreatorEdges", new Property.IsBoolean(
-            "Flag controlling if creator edges should be treated as implicit NACs", true)) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.boolFalse;
-            }
-        },
+        CREATOR_EDGE("checkCreatorEdges",
+            "Flag controlling if creator edges should be treated as implicit NACs",
+            Parser.boolFalse),
 
         /**
          * RHS-as-NAC property. If <code>true</code>, each RHS
          * is implicitly treated as a NAC. Default is <code>false</code>.
          */
-        RHS_AS_NAC("rhsIsNAC", new Property.IsBoolean(
-            "Flag controlling if RHSs should be treated as implicit NACs", true)) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.boolFalse;
-            }
-        },
+        RHS_AS_NAC("rhsIsNAC", "Flag controlling if RHSs should be treated as implicit NACs",
+            Parser.boolFalse),
 
         /**
          * Isomorphism check. If <code>true</code>, state
          * graphs are compared up to isomorphism; otherwise, they are compared up to
          * equality. Default is <code>true</code>.
          */
-        ISOMORPHISM("checkIsomorphism", new Property.IsBoolean(
-            "Flag controlling whether state graphs are checked up to isomorphism", true)) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.boolTrue;
-            }
-        },
+        ISOMORPHISM("checkIsomorphism",
+            "Flag controlling whether states are checked up to isomorphism", Parser.boolTrue),
 
         /**
          * Space-separated list of active start graph names.
          */
-        START_GRAPH_NAMES("startGraph", "List of active start graph names") {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+        START_GRAPH_NAMES("startGraph", "List of active start graph names", Parser.splitter),
 
         /**
          * Name of the active control program.
          */
-        CONTROL_NAMES("controlProgram", new Property.True<String>(
-            "Space-separated list of enabled control programs")) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+        CONTROL_NAMES("controlProgram", "List of enabled control programs", Parser.splitter),
 
         /**
          * Space-separated list of active type graph names.
          */
-        TYPE_NAMES("typeGraph", "List of active type graph names") {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+        TYPE_NAMES("typeGraph", "List of active type graph names", Parser.splitter),
 
         /** Policy for dealing with type violations. */
-        TYPE_POLICY("typePolicy", new Property<String>() {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.equals("absent") || value.equals("error");
-            }
-
-            @Override
-            public String getDescription() {
-                return "One of 'absent' or 'error' (default)";
-            }
-
-            @Override
-            public String getExplanation() {
-                return "Flag controlling how type violations are dealt with.";
-            }
-        }) {
-            @Override
-            public Parser<?> parser() {
-                return new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR);
-            }
-        },
+        TYPE_POLICY("typePolicy", "Flag controlling how type violations are dealt with",
+            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR)),
 
         /**
          * Space-separated list of active prolog program names.
          */
-        PROLOG_NAMES("prolog", "List of active prolog program names") {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+        PROLOG_NAMES("prolog", "List of active prolog program names", Parser.splitter),
 
         /**
          * Space-separated list of control labels of a graph grammar. The
@@ -838,24 +527,16 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
          * performance, presumably because they occur infrequently or indicate a
          * place where rules are likely to be applicable.
          */
-        CONTROL_LABELS("controlLabels", "List of rare labels, used to optimise rule matching") {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+        CONTROL_LABELS("controlLabels", "List of rare labels, used to optimise rule matching",
+            Parser.splitter),
 
         /**
          * Space-separated list of common labels of a graph grammar. The
          * control labels are those labels which should be matched last for optimal
          * performance, presumably because they occur frequently.
          */
-        COMMON_LABELS("commonLabels", "List of frequent labels, used to optimise rule matching") {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+        COMMON_LABELS("commonLabels", "List of frequent labels, used to optimise rule matching",
+            Parser.splitter),
 
         /**
          * Space-separated list of abstraction node labels of a graph grammar.
@@ -863,76 +544,72 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
          * between nodes.
          */
         ABSTRACTION_LABELS("abstractionLabels",
-            "List of node labels, used by neighbourhood abstraction") {
-            @Override
-            public Parser<?> parser() {
-                return Parser.splitter;
-            }
-        },
+            "List of node labels, used by neighbourhood abstraction", Parser.splitter),
 
         /**
          * Exploration strategy description.
          */
-        EXPLORATION("explorationStrategy", new IsExplorationString(
-            "Default exploration strategy for this grammar")) {
-            @Override
-            public Parser<Exploration> parser() {
-                return Exploration.parser();
-            }
-        },
+        EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
+            Exploration.parser()),
 
         /**
          * Flag that determines if transition parameters are included in the LTS
          * transition labels
          */
-        TRANSITION_PARAMETERS("transitionParameters", "Show parameters", "",
-            new ThreeValued.Selector() {
-                @Override
-                public String getExplanation() {
-                    return "Flag controlling if transition labels should include rule parameters";
-                }
-            }, false) {
-            @Override
-            public Parser<?> parser() {
-                return new Parser.EnumParser<ThreeValued>(ThreeValued.class, ThreeValued.SOME);
-            }
-        },
+        TRANSITION_PARAMETERS("transitionParameters", false, "Show parameters",
+            "Flag controlling if transition labels should include rule parameters",
+            new Parser.EnumParser<ThreeValued>(ThreeValued.class, ThreeValued.SOME)),
 
         /**
          * Flag that determines if (binary) loops can be shown as vertex labels.
          */
-        LOOPS_AS_LABELS("loopsAsLabels", new Property.IsBoolean(
-            "Flag controlling if binary self-edges may be shown as vertex labels", true)) {
-            @Override
-            public Parser<?> parser() {
-                return Parser.boolTrue;
-            }
-        },
-        ;
+        LOOPS_AS_LABELS("loopsAsLabels",
+            "Flag controlling if binary self-edges may be shown as vertex labels", Parser.boolTrue), ;
 
-        /** Constructor for non-system properties allowing arbitrary strings as values. */
-        private Key(String text, String comment) {
-            this(text, comment, false);
-        }
-
-        /** Constructor for properties allowing arbitrary strings as values.
-         * @param system if {@code true}, this is a system property.
+        /**
+         * Constructor for a key with a plain string value
+         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
+         * @param explanation short explanation of the meaning of the key
          */
-        private Key(String text, String comment, boolean system) {
-            this(text, null, null, new Property.True<String>(comment), system);
+        private Key(String name, String explanation) {
+            this(name, false, null, explanation, null);
         }
 
-        private Key(String name, Property<String> format) {
-            this(name, null, null, format, false);
+        /**
+         * Constructor for a key with a plain string value
+         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
+         * @param explanation short explanation of the meaning of the key
+         */
+        private Key(String name, boolean system, String explanation) {
+            this(name, system, null, explanation, null);
         }
 
-        private Key(String name, String keyPhrase, String defaultValue, Property<String> format,
-            boolean system) {
+        /**
+         * Constructor for a key with values parsed by a given parser
+         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
+         * @param explanation short explanation of the meaning of the key
+         * @param parser parser for values for this key; if {@code null},
+         * {@link Parser#identity} is used
+         */
+        private Key(String name, String explanation, Parser<?> parser) {
+            this(name, false, null, explanation, parser);
+        }
+
+        /**
+         * Constructor for a key with a plain string value
+         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
+         * @param system flag indicating this is a system key
+         * @param keyPhrase user-readable version of the name; if {@code null},
+         * the key phrase is constructed from {@code name}
+         * @param explanation short explanation of the meaning of the key
+         */
+        private Key(String name, boolean system, String keyPhrase, String explanation,
+            Parser<?> parser) {
             this.name = name;
-            this.keyPhrase = keyPhrase == null ? Groove.unCamel(name, false) : keyPhrase;
-            this.defaultValue = defaultValue == null ? "" : defaultValue;
-            this.format = format;
             this.system = system;
+            this.keyPhrase = keyPhrase == null ? Groove.unCamel(name, false) : keyPhrase;
+            this.explanation = explanation;
+            this.parser = parser == null ? Parser.identity : parser;
         }
 
         @Override
@@ -940,40 +617,53 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
             return this.name;
         }
 
-        @Override
-        public Line getExplanation() {
-            return Line.atom(getFormat().getExplanation());
-        }
+        private final String name;
 
         @Override
-        public Property<String> getFormat() {
-            return this.format;
+        public String getExplanation() {
+            return this.explanation;
         }
 
-        @Override
-        public String getDefaultValue() {
-            return this.defaultValue;
-        }
+        private final String explanation;
 
         @Override
         public boolean isSystem() {
             return this.system;
         }
 
+        private final boolean system;
+
         @Override
         public String getKeyPhrase() {
             return this.keyPhrase;
         }
 
-        private final String name;
         private final String keyPhrase;
-        private final String defaultValue;
-        private final Property<String> format;
-        private final boolean system;
 
         @Override
         public Parser<?> parser() {
-            return Parser.identity;
+            return this.parser;
+        }
+
+        private final Parser<?> parser;
+
+        /** Returns the key with a given name, if any. */
+        public static Key getKey(String name) {
+            return keyMap.get(name);
+        }
+
+        /**
+         * List of system-defined keys, in the order in which they are to appear in
+         * a properties editor.
+         */
+        static private final Map<String,Key> keyMap;
+
+        static {
+            Map<String,Key> defaultKeys = new LinkedHashMap<String,Key>();
+            for (Key key : Key.values()) {
+                defaultKeys.put(key.getName(), key);
+            }
+            keyMap = Collections.unmodifiableMap(defaultKeys);
         }
     }
 }

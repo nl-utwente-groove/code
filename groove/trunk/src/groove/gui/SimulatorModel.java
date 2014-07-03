@@ -298,7 +298,7 @@ public class SimulatorModel implements Cloneable {
     public boolean doSetDefaultExploration(Exploration exploration) throws IOException {
         GrammarProperties properties = getGrammar().getProperties();
         GrammarProperties newProperties = properties.clone();
-        newProperties.setExploration(exploration.toParsableString());
+        newProperties.setExploration(exploration);
         return doSetProperties(newProperties);
     }
 
@@ -433,7 +433,7 @@ public class SimulatorModel implements Cloneable {
         MatchResult match = getMatch(state);
         changeMatch(match);
         changeTransition(match != null && match.hasTransitionFrom(state) ? match.getTransition()
-                : null);
+            : null);
         if (getDisplay() != DisplayKind.LTS) {
             changeDisplay(DisplayKind.STATE);
         }
@@ -654,12 +654,12 @@ public class SimulatorModel implements Cloneable {
         }
         if (matchChanged) {
             changeSelected(ResourceKind.RULE, match == null ? null
-                    : match.getAction().getFullName());
+                : match.getAction().getFullName());
         }
         return finish();
     }
 
-    /** 
+    /**
      * Changes the currently selected trace.
      * @param trace the new trace to be selected
      * @return if {@code true}, the trace was really changed

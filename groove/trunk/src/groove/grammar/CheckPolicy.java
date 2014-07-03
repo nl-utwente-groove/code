@@ -38,9 +38,9 @@ public enum CheckPolicy {
      */
     public CheckPolicy max(CheckPolicy other) {
         if (other == null || compareTo(other) > 0) {
-            return other;
-        } else {
             return this;
+        } else {
+            return other;
         }
     }
 
