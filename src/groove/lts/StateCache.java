@@ -175,11 +175,11 @@ public class StateCache {
         DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
-                    this.graphFactory.newGraph(getState().toString(), frozenGraph,
-                        this.record.getFactory());
+                this.graphFactory.newGraph(getState().toString(), frozenGraph,
+                    this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
-                    "Underlying state does not have information to reconstruct the graph");
+                "Underlying state does not have information to reconstruct the graph");
         } else {
             int depth = 0; // depth of reconstruction
             DefaultGraphNextState state = (DefaultGraphNextState) this.state;
@@ -188,7 +188,7 @@ public class StateCache {
             AbstractGraphState backward = state.source();
             List<DefaultGraphNextState> stateChain = new LinkedList<DefaultGraphNextState>();
             while (backward instanceof GraphNextState && !backward.hasCache()
-                    && backward.getFrozenGraph() == null) {
+                && backward.getFrozenGraph() == null) {
                 stateChain.add(0, (DefaultGraphNextState) backward);
                 backward = ((DefaultGraphNextState) backward).source();
                 depth++;
@@ -207,10 +207,13 @@ public class StateCache {
                 state.setFrozenGraph(computeFrozenGraph(result));
             }
         }
-        if (getState().isDone() && getState().isError() && getState().getGTS().isCheckTypeErrors()) {
-            // apparently we're reconstructing the graph after the state was already
-            // done and found to be erroneous; so reconstruct the type errors
-            FormatErrorSet errors = result.checkTypeConstraints();
+        if (getState().isDone() && getState().isError()) {
+            FormatErrorSet errors = null;
+            if (getState().getGTS().isCheckTypeErrors()) {
+                // apparently we're reconstructing the graph after the state was already
+                // done and found to be erroneous; so reconstruct the type errors
+                errors = result.checkTypeConstraints();
+            }
             if (!errors.isEmpty()) {
                 GraphInfo.addErrors(result, errors);
             }
@@ -269,12 +272,12 @@ public class StateCache {
      */
     private KeySet<GraphTransitionKey,GraphTransition> computeTransitionMap() {
         KeySet<GraphTransitionKey,GraphTransition> result =
-                new KeySet<GraphTransitionKey,GraphTransition>() {
-            @Override
-            protected GraphTransitionKey getKey(Object value) {
-                return ((GraphTransition) value).getKey();
-            }
-        };
+            new KeySet<GraphTransitionKey,GraphTransition>() {
+                @Override
+                protected GraphTransitionKey getKey(Object value) {
+                    return ((GraphTransition) value).getKey();
+                }
+            };
         for (GraphTransitionStub stub : getStubSet()) {
             GraphTransition trans = stub.toTransition(this.state);
             result.add(trans);

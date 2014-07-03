@@ -17,6 +17,7 @@
 package groove.grammar;
 
 import groove.control.instance.Automaton;
+import groove.grammar.Action.Role;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
@@ -24,8 +25,12 @@ import groove.grammar.type.TypeGraph;
 import groove.prolog.GrooveEnvironment;
 import groove.util.Fixable;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -125,6 +130,27 @@ public class Grammar {
      */
     public Set<Action> getActions() {
         return this.actions;
+    }
+
+    /** Returns the actions with a given role in this grammar. */
+    public Collection<Action> getActions(Role role) {
+        if (this.roleActionMap == null) {
+            this.roleActionMap = new EnumMap<Role,List<Action>>(Role.class);
+            for (Role r : Role.values()) {
+                this.roleActionMap.put(r, new ArrayList<Action>());
+            }
+            for (Action action : getActions()) {
+                this.roleActionMap.get(action.getRole()).add(action);
+            }
+        }
+        return this.roleActionMap.get(role);
+    }
+
+    private Map<Role,List<Action>> roleActionMap;
+
+    /** Indicates if the grammar has actions with a given role. */
+    public boolean hasActions(Role role) {
+        return !getActions(role).isEmpty();
     }
 
     /**
@@ -350,7 +376,7 @@ public class Grammar {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof Grammar) && getStartGraph().equals(((Grammar) obj).getStartGraph())
-            && super.equals(obj);
+                && super.equals(obj);
     }
 
     /** Combines the hash codes of the rule system and the start graph. */
@@ -388,7 +414,7 @@ public class Grammar {
      * ordering is from high to low priority.
      */
     private final SortedMap<Integer,Set<Action>> priorityActionMap =
-        new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
+            new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
     /**
      * Set of all actions, collected separately for purposes of speedup.
      * @see #getActions()

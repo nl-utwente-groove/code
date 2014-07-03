@@ -204,7 +204,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
 
     @Override
     public boolean isInternalStep() {
-        return getStep().inRecipe();
+        return getStep().isInternal();
     }
 
     @Override

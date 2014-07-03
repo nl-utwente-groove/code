@@ -43,14 +43,9 @@ class MatchTreeNode extends DisplayTreeNode {
         this.anchored = anchored;
     }
 
-    /** Indicates if this match corresponds to a transition from the source state. */
-    private boolean isTransition() {
-        return getMatch().hasTransitionFrom(this.source);
-    }
-
     @Override
-    public boolean inRecipe() {
-        return getMatch().getStep().inRecipe();
+    public boolean isInternal() {
+        return getMatch().getStep().isInternal();
     }
 
     /**
@@ -79,11 +74,23 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public String getTip() {
-        if (isEnabled()) {
-            return super.getTip();
+        StringBuilder result = new StringBuilder();
+        String actionName = getMatch().getAction().getFullName();
+        if (isProperty()) {
+            result.append(String.format("Property '%s' is satisfied", actionName));
+        } else if (isEnabled()) {
+            result.append(String.format("Explored transition of '%s'", actionName));
+            GraphState target = getMatch().getTransition().target();
+            if (target.isAbsent()) {
+                result.append(HTMLConverter.HTML_LINEBREAK);
+                result.append(String.format("Target state %s is not real", target));
+            }
         } else {
-            return "Doubleclick to apply match";
+            result.append(String.format("Currently unexplored match of '%s'", actionName));
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Doubleclick to apply");
         }
+        return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
     @Override
@@ -98,11 +105,14 @@ class MatchTreeNode extends DisplayTreeNode {
         StringBuilder result = new StringBuilder();
         result.append(this.nr);
         result.append(": ");
-        if (isTransition()) {
+        boolean isProperty = getMatch().getAction().isProperty();
+        if (isEnabled()) {
             RuleTransition trans = getMatch().getTransition();
             result.append(trans.text(this.anchored));
-            result.append(RIGHTARROW);
-            result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
+            if (!isProperty) {
+                result.append(RIGHTARROW);
+                result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
+            }
             if (this.model.getTrace().contains(trans)) {
                 result.append(TRACE_SUFFIX);
             }
@@ -111,10 +121,22 @@ class MatchTreeNode extends DisplayTreeNode {
             }
         } else {
             result.append(RuleTransitionLabel.text(this.source, getMatch(), this.anchored));
-            result.append(RIGHTARROW);
-            result.append("?");
+            if (!isProperty) {
+                result.append(RIGHTARROW);
+                result.append("?");
+            }
         }
         return result.toString();
+    }
+
+    /** Indicates if this match corresponds to a transition from the source state. */
+    private boolean isTransition() {
+        return getMatch().hasTransitionFrom(this.source);
+    }
+
+    /** Indicates if this is a match of a property. */
+    private boolean isProperty() {
+        return getMatch().getAction().isProperty();
     }
 
     private final SimulatorModel model;

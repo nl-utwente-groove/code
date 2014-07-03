@@ -29,6 +29,7 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.graph.AGraph;
 import groove.graph.ElementFactory;
@@ -174,19 +175,18 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
         // if not ...
         if (result == null) {
-            if (newState.isRealState()) {
-                this.realStateCount++;
-            }
             // and then add it to the GTS
             fireAddNode(newState);
-
-            if (isCheckTypeErrors() && newState.checkTypeErrors()) {
-                GraphInfo.addError(this, new FormatError(
-                    "State %s has multiplicity or containment errors", newState));
-            }
+            checkTypeErrors(newState);
         }
-
         return result;
+    }
+
+    private void checkTypeErrors(GraphState state) {
+        if (isCheckTypeErrors() && state.checkTypeErrors()) {
+            GraphInfo.addError(this, new FormatError(
+                "State %s has multiplicity or containment errors", state));
+        }
     }
 
     /** Indicates if the non-statically-guaranteed type errors should be checked on all graphs. */
@@ -357,7 +357,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     private final Map<Flag,List<GraphState>> statesMap = new EnumMap<Status.Flag,List<GraphState>>(
-        Flag.class);
+            Flag.class);
 
     /**
      * Indicates if there are states with a given flag.
@@ -472,10 +472,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * More efficient than calling {@code getTransitions().size()}
      */
     public int getTransitionCount() {
-        return this.realTransitionCount;
+        return getTransitions().size();
     }
-
-    private int realTransitionCount;
 
     /**
      * Returns the (fixed) derivation record for this GTS.
@@ -525,6 +523,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireAddNode(GraphState state) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
+        if (state.isRealState()) {
+            this.realStateCount++;
+        }
         super.fireAddNode(state);
         for (GTSListener listener : getGraphListeners()) {
             listener.addUpdate(this, state);
@@ -538,9 +539,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     @Override
     protected void fireAddEdge(GraphTransition edge) {
         this.allTransitionCount++;
-        if (edge.isRealStep()) {
-            this.realTransitionCount++;
-        }
         super.fireAddEdge(edge);
         for (GTSListener listener : getGraphListeners()) {
             listener.addUpdate(this, edge);
@@ -555,27 +553,36 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     protected void fireUpdateState(GraphState state, Flag flag, int oldStatus) {
         assert flag.isChange();
-        if (state.isRealState()) {
-            for (Flag recorded : FLAG_ARRAY) {
-                boolean had = recorded.test(oldStatus);
-                int index = recorded.ordinal();
-                if (state.hasFlag(recorded)) {
-                    if (!had) {
-                        this.stateCounts[index]++;
-                        if (this.statesMap.containsKey(recorded)) {
-                            this.statesMap.get(recorded).add(state);
-                        }
+        this.transients |= state.isTransient();
+        this.absents |= state.isAbsent();
+        boolean wasReal = Status.isReal(oldStatus);
+        boolean isReal = state.isRealState();
+        if (wasReal != isReal) {
+            this.realStateCount += wasReal ? -1 : +1;
+        }
+        for (Flag recorded : FLAG_ARRAY) {
+            boolean had = wasReal && recorded.test(oldStatus);
+            int index = recorded.ordinal();
+            if (isReal && state.hasFlag(recorded)) {
+                if (!had) {
+                    this.stateCounts[index]++;
+                    if (this.statesMap.containsKey(recorded)) {
+                        this.statesMap.get(recorded).add(state);
                     }
-                } else if (had) {
-                    this.stateCounts[index]--;
                 }
+            } else if (had) {
+                this.stateCounts[index]--;
             }
-        } else {
-            // real states can't become unreal
-            assert !Status.isReal(oldStatus);
         }
         for (GTSListener listener : getGraphListeners()) {
             listener.statusUpdate(this, state, flag, oldStatus);
+        }
+        if (state.isError()) {
+            FormatErrorSet errors = new FormatErrorSet();
+            for (FormatError error : GraphInfo.getErrors(state.getGraph())) {
+                errors.add("Error in state %s: %s", state, error);
+            }
+            GraphInfo.addErrors(this, errors);
         }
     }
 
@@ -623,14 +630,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             if (flags.showTransience() && state.isTransient()) {
                 String label =
-                        flags.getTransienceLabel().replaceAll("#",
-                            "" + state.getActualFrame().getTransience());
+                    flags.getTransienceLabel().replaceAll("#",
+                        "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
                 String label =
-                        flags.getRecipeLabel().replaceAll("#",
-                            "" + state.getActualFrame().getRecipe().getFullName());
+                    flags.getRecipeLabel().replaceAll("#",
+                        "" + state.getActualFrame().getRecipe().getFullName());
                 result.addEdge(image, label, image);
             }
         }
@@ -794,7 +801,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 Set<?> myNodeSet = new HostNodeSet(myGraph.nodeSet());
                 Set<?> myEdgeSet = new HostEdgeSet(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
-                        && myEdgeSet.equals(otherGraph.edgeSet());
+                    && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
                 return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
                     otherBoundNodes);
@@ -820,14 +827,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 }
             } else {
                 CertificateStrategy certifier =
-                        this.checker.getCertifier(stateKey.getGraph(), true);
+                    this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     result +=
-                            Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
+                        Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {
@@ -919,13 +926,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         @Override
         public Iterator<GraphTransition> iterator() {
             Iterator<Iterator<? extends GraphTransition>> stateOutTransitionIter =
-                    new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
-                            nodeSet().iterator()) {
-                @Override
-                public Iterator<? extends GraphTransition> toOuter(GraphState state) {
-                    return outEdgeSet(state).iterator();
-                }
-            };
+                new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
+                    nodeSet().iterator()) {
+                    @Override
+                    public Iterator<? extends GraphTransition> toOuter(GraphState state) {
+                        return outEdgeSet(state).iterator();
+                    }
+                };
             return new NestedIterator<GraphTransition>(stateOutTransitionIter);
         }
 

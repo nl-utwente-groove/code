@@ -8,8 +8,10 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.gui.dialog.PropertyKey;
+import groove.gui.look.Line;
 import groove.util.Fixable;
 import groove.util.Groove;
+import groove.util.Parser;
 import groove.util.Property;
 import groove.util.ThreeValued;
 import groove.util.Version;
@@ -154,6 +156,25 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
     }
 
     /**
+     * Sets the typecheck policy.
+     * @param policy the policy to be used for type checking.
+     * @see Key#TYPE_POLICY
+     */
+    public void setTypePolicy(CheckPolicy policy) {
+        storeProperty(Key.TYPE_POLICY, policy);
+    }
+
+    /**
+     * Returns the type check policy of the rule system.
+     * @return {@code true} if type violations are errors, {@code false} if they
+     * are used as postconditions
+     * @see Key#TYPE_POLICY
+     */
+    public CheckPolicy getTypePolicy() {
+        return (CheckPolicy) parseProperty(Key.TYPE_POLICY);
+    }
+
+    /**
      * Returns a list of common labels, according to the
      * {@link Key#COMMON_LABELS} property of the rule system.
      * @see Key#COMMON_LABELS
@@ -270,11 +291,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public AlgebraFamily getAlgebraFamily() {
         String property = getProperty(Key.ALGEBRA);
-        AlgebraFamily result =
-            property == null || property.isEmpty() ? AlgebraFamily.DEFAULT
-                    : AlgebraFamily.getInstance(property);
-        assert result != null;
-        return result;
+        return (AlgebraFamily) Key.ALGEBRA.parser().parse(property);
     }
 
     /**
@@ -541,6 +558,22 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         errors.throwException();
     }
 
+    /** Returns the parsed property value for a given key. */
+    private Object parseProperty(Key key) {
+        return key.parser().parse(getProperty(key));
+    }
+
+    /** Stores a property value, converted to a parsable string. */
+    private void storeProperty(Key key, Object value) {
+        assert key.parser().isValue(value);
+        String repr = key.parser().toParsableString(value);
+        if (repr.length() == 0) {
+            remove(key.getName());
+        } else {
+            setProperty(key.getName(), repr);
+        }
+    }
+
     /** Retrieves a property by key. */
     private String getProperty(Key key) {
         return getProperty(key.getName());
@@ -625,31 +658,6 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Extends the {@link groove.util.Property.IsBoolean} class by also
-     * allowing positive numerical values to stand for <code>true</code>, and
-     * <code>0</code> for <code>false</code>. Used for compatibility purposes
-     * (these properties at some point only accepted numerical values).
-     */
-    static private class IsExtendedBoolean extends Property.IsBoolean {
-        /**
-         * Constructs an extended boolean property, with a comment used to
-         * describe the expected value.
-         */
-        public IsExtendedBoolean(String comment) {
-            super(comment, true);
-        }
-
-        @Override
-        public boolean isSatisfied(String value) {
-            try {
-                return super.isSatisfied(value) || Integer.parseInt(value) >= 0;
-            } catch (NumberFormatException exc) {
-                return false;
-            }
-        }
-    }
-
-    /**
      * Property testing if the value of {@link Key#EXPLORATION} is correctly
      * formatted.
      */
@@ -674,138 +682,269 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         }
     }
 
-    /** Type of property keys. */
+    /** Grammar property keys. */
     public static enum Key implements PropertyKey {
-        /**
-         * Property name for the GROOVE version.
-         */
-        GROOVE_VERSION("grooveVersion", PropertyKind.UNMODIFIABLE,
-                "The Groove version that created this grammar"),
-        /**
-         * Property name for the Grammar version.
-         */
-        GRAMMAR_VERSION("grammarVersion", PropertyKind.UNMODIFIABLE, "The version of this grammar"),
-        /**
-         * One-line documentation comment on the graph production system.
-         */
+        /** Property name for the GROOVE version. */
+        GROOVE_VERSION("grooveVersion", "The Groove version that created this grammar", true),
+        /** Property name for the Grammar version. */
+        GRAMMAR_VERSION("grammarVersion", "The version of this grammar", true),
+        /** One-line documentation comment on the graph production system. */
         REMARK("remark", "A one-line description of the graph production system"),
-        /**
-         * Property name for the algebra to be used during simulation.
-         */
-        ALGEBRA("algebraFamily", PropertyKind.ALGEBRA,
-                        "Flag controlling if matches should be injective"),
+
+        /** Property name for the algebra to be used during simulation. */
+        ALGEBRA("algebraFamily", new Property.Choice<String>("Algebra used for attributes",
+            AlgebraFamily.DEFAULT.getName(), AlgebraFamily.POINT.getName(),
+            AlgebraFamily.BIG.getName(), AlgebraFamily.TERM.getName())) {
+            @Override
+            public Parser<AlgebraFamily> parser() {
+                return this.parser;
+            }
+
+            private final Parser<AlgebraFamily> parser = new Parser.EnumParser<AlgebraFamily>(
+                AlgebraFamily.class, AlgebraFamily.DEFAULT);
+        },
+
         /**
          * Flag determining the injectivity of the rule system. If <code>true</code>,
          * all rules should be matched injectively. Default is <code>false</code>.
          */
-        INJECTIVE("matchInjective", PropertyKind.BOOLEAN,
-                                "Flag controlling if matches should be injective"),
+        INJECTIVE("matchInjective", new Property.IsBoolean(
+            "Flag controlling if all rules should be matched injectively. "
+                + "If true, overrules the local rule injectivity property", true)) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.boolFalse;
+            }
+        },
+
         /**
          * Dangling edge check. If <code>true</code>, all
          * matches that leave dangling edges are invalid. Default is
          * <code>false</code>.
          */
-        DANGLING("checkDangling", PropertyKind.BOOLEAN,
-                                        "Flag controlling if dangling edges should be forbidden rather than deleted"),
+        DANGLING("checkDangling", new Property.IsBoolean(
+            "Flag controlling if dangling edges should be forbidden rather than deleted", true)) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.boolFalse;
+            }
+        },
+
         /**
          * Creator edge check. If <code>true</code>, creator
          * edges are implicitly treated as (individual) NACs. Default is
          * <code>false</code>.
          */
-        CREATOR_EDGE("checkCreatorEdges", PropertyKind.BOOLEAN,
-                                                "Flag controlling if creator edges should be treated as implicit NACs"),
+        CREATOR_EDGE("checkCreatorEdges", new Property.IsBoolean(
+            "Flag controlling if creator edges should be treated as implicit NACs", true)) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.boolFalse;
+            }
+        },
+
         /**
          * RHS-as-NAC property. If <code>true</code>, each RHS
          * is implicitly treated as a NAC. Default is <code>false</code>.
          */
-                                                RHS_AS_NAC("rhsIsNAC", PropertyKind.BOOLEAN,
-                                                        "Flag controlling if RHSs should be treated as implicit NACs"),
+        RHS_AS_NAC("rhsIsNAC", new Property.IsBoolean(
+            "Flag controlling if RHSs should be treated as implicit NACs", true)) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.boolFalse;
+            }
+        },
+
         /**
          * Isomorphism check. If <code>true</code>, state
          * graphs are compared up to isomorphism; otherwise, they are compared up to
          * equality. Default is <code>true</code>.
          */
-        ISOMORPHISM("checkIsomorphism", PropertyKind.BOOLEAN,
-                                                                "Flag controlling whether state graphs are checked up to isomorphism"),
+        ISOMORPHISM("checkIsomorphism", new Property.IsBoolean(
+            "Flag controlling whether state graphs are checked up to isomorphism", true)) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.boolTrue;
+            }
+        },
+
         /**
          * Space-separated list of active start graph names.
          */
-        START_GRAPH_NAMES("startGraph", "Space-separated list of active start graph names"),
+        START_GRAPH_NAMES("startGraph", "List of active start graph names") {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
         /**
          * Name of the active control program.
          */
-        CONTROL_NAMES("controlProgram", "Space-separated list of enabled control programs"),
+        CONTROL_NAMES("controlProgram", new Property.True<String>(
+            "Space-separated list of enabled control programs")) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
         /**
          * Space-separated list of active type graph names.
          */
-        TYPE_NAMES("typeGraph", "Space-separated list of active type graph names"),
+        TYPE_NAMES("typeGraph", "List of active type graph names") {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
+        /** Policy for dealing with type violations. */
+        TYPE_POLICY("typePolicy", new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.equals("absent") || value.equals("error");
+            }
+
+            @Override
+            public String getDescription() {
+                return "One of 'absent' or 'error' (default)";
+            }
+
+            @Override
+            public String getExplanation() {
+                return "Flag controlling how type violations are dealt with.";
+            }
+        }) {
+            @Override
+            public Parser<?> parser() {
+                return new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR);
+            }
+        },
+
         /**
          * Space-separated list of active prolog program names.
          */
-        PROLOG_NAMES("prolog", "Space-separated list of active prolog program names"),
+        PROLOG_NAMES("prolog", "List of active prolog program names") {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
         /**
          * Space-separated list of control labels of a graph grammar. The
          * control labels are those labels which should be matched first for optimal
          * performance, presumably because they occur infrequently or indicate a
          * place where rules are likely to be applicable.
          */
-        CONTROL_LABELS("controlLabels", "A list of rare labels, used to optimise rule matching"),
+        CONTROL_LABELS("controlLabels", "List of rare labels, used to optimise rule matching") {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
         /**
          * Space-separated list of common labels of a graph grammar. The
          * control labels are those labels which should be matched last for optimal
          * performance, presumably because they occur frequently.
          */
-        COMMON_LABELS("commonLabels", "A list of frequent labels, used to optimise rule matching"),
+        COMMON_LABELS("commonLabels", "List of frequent labels, used to optimise rule matching") {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
         /**
          * Space-separated list of abstraction node labels of a graph grammar.
          * These labels are used to define the level zero neighbourhood relation
          * between nodes.
          */
         ABSTRACTION_LABELS("abstractionLabels",
-                                                                        "A list of node labels, used by neighbourhood abstraction"),
+            "List of node labels, used by neighbourhood abstraction") {
+            @Override
+            public Parser<?> parser() {
+                return Parser.splitter;
+            }
+        },
+
         /**
          * Exploration strategy description.
          */
-        EXPLORATION("explorationStrategy", PropertyKind.EXPLORATION,
-                                                                                "Default exploration strtategy for this grammar"),
+        EXPLORATION("explorationStrategy", new IsExplorationString(
+            "Default exploration strategy for this grammar")) {
+            @Override
+            public Parser<Exploration> parser() {
+                return Exploration.parser();
+            }
+        },
+
         /**
          * Flag that determines if transition parameters are included in the LTS
          * transition labels
          */
         TRANSITION_PARAMETERS("transitionParameters", "Show parameters", "",
-                                                                                    PropertyKind.THREE_VALUED,
-                                                                                    "Flag controlling if transition labels should include rule parameters.\n"
-                                                                                            + "Values: false, some (default), true (= all)"),
+            new ThreeValued.Selector() {
+                @Override
+                public String getExplanation() {
+                    return "Flag controlling if transition labels should include rule parameters";
+                }
+            }, false) {
+            @Override
+            public Parser<?> parser() {
+                return new Parser.EnumParser<ThreeValued>(ThreeValued.class, ThreeValued.SOME);
+            }
+        },
+
         /**
          * Flag that determines if (binary) loops can be shown as vertex labels.
          */
-        LOOPS_AS_LABELS("loopsAsLabels", PropertyKind.BOOLEAN,
-                                                                                                    "Flag controlling if binary self-edges may be shown as vertex labels");
+        LOOPS_AS_LABELS("loopsAsLabels", new Property.IsBoolean(
+            "Flag controlling if binary self-edges may be shown as vertex labels", true)) {
+            @Override
+            public Parser<?> parser() {
+                return Parser.boolTrue;
+            }
+        },
+        ;
 
+        /** Constructor for non-system properties allowing arbitrary strings as values. */
         private Key(String text, String comment) {
-            this(text, PropertyKind.TRUE, comment);
+            this(text, comment, false);
         }
 
-        private Key(String text, PropertyKind property, String comment) {
-            this(text, Groove.unCamel(text, false), "", property, comment);
+        /** Constructor for properties allowing arbitrary strings as values.
+         * @param system if {@code true}, this is a system property.
+         */
+        private Key(String text, String comment, boolean system) {
+            this(text, null, null, new Property.True<String>(comment), system);
         }
 
-        private Key(String text, String description, String defaultValue, PropertyKind property,
-                String comment) {
-            this.name = text;
-            this.description = description;
-            this.defaultValue = defaultValue;
-            this.format = property.newInstance(comment);
-            this.system = property == PropertyKind.UNMODIFIABLE;
+        private Key(String name, Property<String> format) {
+            this(name, null, null, format, false);
         }
 
-        /** Returns the text of this key. */
+        private Key(String name, String keyPhrase, String defaultValue, Property<String> format,
+            boolean system) {
+            this.name = name;
+            this.keyPhrase = keyPhrase == null ? Groove.unCamel(name, false) : keyPhrase;
+            this.defaultValue = defaultValue == null ? "" : defaultValue;
+            this.format = format;
+            this.system = system;
+        }
+
         @Override
         public String getName() {
             return this.name;
         }
 
-        /** Returns the syntax check property. */
+        @Override
+        public Line getExplanation() {
+            return Line.atom(getFormat().getExplanation());
+        }
+
         @Override
         public Property<String> getFormat() {
             return this.format;
@@ -822,69 +961,19 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         }
 
         @Override
-        public String getDescription() {
-            return this.description;
+        public String getKeyPhrase() {
+            return this.keyPhrase;
         }
 
         private final String name;
-        private final String description;
+        private final String keyPhrase;
         private final String defaultValue;
         private final Property<String> format;
         private final boolean system;
 
-        /** Syntactic property checked on the values entered for a property key. */
-        private enum PropertyKind {
-            TRUE {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new Property.True<String>(comment);
-                }
-            },
-            BOOLEAN {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new Property.IsBoolean(comment, true);
-                }
-            },
-            EXTENDED_BOOLEAN {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new IsExtendedBoolean(comment);
-                }
-            },
-            THREE_VALUED {
-                @Override
-                public Property<String> newInstance(final String comment) {
-                    return new ThreeValued.Selector() {
-                        @Override
-                        public String getComment() {
-                            return comment;
-                        }
-                    };
-                }
-            },
-            ALGEBRA {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new Property.Choice<String>(comment, AlgebraFamily.DEFAULT.getName(),
-                        AlgebraFamily.POINT.getName(), AlgebraFamily.BIG.getName(),
-                        AlgebraFamily.TERM.getName());
-                }
-            },
-            EXPLORATION {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new IsExplorationString(comment);
-                }
-            },
-            UNMODIFIABLE {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new Property.Unmodifiable<String>(comment);
-                }
-            };
-
-            abstract public Property<String> newInstance(String comment);
+        @Override
+        public Parser<?> parser() {
+            return Parser.identity;
         }
     }
 }

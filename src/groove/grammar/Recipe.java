@@ -32,7 +32,7 @@ import java.util.Set;
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe. */
     public Recipe(String fullName, int priority, List<CtrlPar.Var> signature, String controlName,
-            int startLine, GrammarProperties grammarProperties) {
+        int startLine, GrammarProperties grammarProperties) {
         super(fullName, Kind.RECIPE, signature, controlName, startLine, grammarProperties);
         this.priority = priority;
     }
@@ -65,6 +65,11 @@ public class Recipe extends Procedure implements Action {
     @Override
     public boolean isProperty() {
         return getRole().isProperty();
+    }
+
+    @Override
+    public CheckPolicy getPolicy() {
+        return null;
     }
 
     @Override

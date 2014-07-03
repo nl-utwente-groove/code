@@ -324,7 +324,7 @@ RuleTransitionStub, RuleTransition {
 
     @Override
     public final boolean isInternalStep() {
-        return getStep().inRecipe();
+        return getStep().isInternal();
     }
 
     @Override

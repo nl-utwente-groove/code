@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -61,7 +61,7 @@ public abstract class Line {
     private String htmlString;
 
     /** Returns a coloured version of this line,
-     * where the colour is specified as a logical colour type. 
+     * where the colour is specified as a logical colour type.
      */
     public Line color(ColorType type) {
         if (isEmpty()) {
@@ -72,7 +72,7 @@ public abstract class Line {
     }
 
     /** Returns a coloured version of this line,
-     * where the colour is specified as a user-provided RGB value. 
+     * where the colour is specified as a user-provided RGB value.
      */
     public Line color(Color color) {
         if (isEmpty()) {
@@ -94,7 +94,7 @@ public abstract class Line {
     /** Returns a composed line consisting of this line and a sequence of others. */
     public Line append(Line... args) {
         Line result;
-        if (this == empty) {
+        if (isEmpty()) {
             if (args.length == 0) {
                 result = this;
             } else if (args.length == 1) {
@@ -134,6 +134,38 @@ public abstract class Line {
             result = new Composed(this, Line.atom(atom));
         }
         return result;
+    }
+
+    /** Returns a line that equals this one, except
+     * that the first character has been turned into upper- or
+     * lowercase.
+     * @param upper if {@code true}, convert the first character to
+     * uppercase, otherwise to lowercase.
+     */
+    public Line capitalise(boolean upper) {
+        if (isEmpty()) {
+            return this;
+        } else if (this instanceof Atomic) {
+            StringBuffer content = new StringBuffer(((Atomic) this).text);
+            Character c = content.charAt(0);
+            content.setCharAt(0, upper ? Character.toUpperCase(c) : Character.toLowerCase(c));
+            return Line.atom(content.toString());
+        } else if (this instanceof Composed) {
+            Line[] oldFragments = ((Composed) this).fragments;
+            Line[] newFragments = new Line[oldFragments.length];
+            newFragments[0] = oldFragments[0].capitalise(upper);
+            System.arraycopy(oldFragments, 1, newFragments, 1, oldFragments.length - 1);
+            return composed(Arrays.asList(newFragments));
+        } else if (this instanceof Styled) {
+            Style style = ((Styled) this).style;
+            return ((Styled) this).subline.capitalise(upper).style(style);
+        } else {
+            assert this instanceof Colored;
+            ColorType type = ((Colored) this).type;
+            Color color = ((Colored) this).color;
+            Line clone = ((Colored) this).subline.capitalise(upper);
+            return type == ColorType.RGB ? clone.color(color) : clone.color(type);
+        }
     }
 
     /** Tests if this is the empty line. */

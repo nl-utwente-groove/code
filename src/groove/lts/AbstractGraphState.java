@@ -18,6 +18,9 @@ package groove.lts;
 
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
+import groove.grammar.Action;
+import groove.grammar.Action.Role;
+import groove.grammar.Grammar;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatErrorSet;
@@ -32,6 +35,7 @@ import groove.util.cache.CacheReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +48,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-GraphState {
+        GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -89,7 +93,7 @@ GraphState {
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                    && ((RuleTransitionStub) stub).getKey(this) == match) {
+                && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -164,6 +168,7 @@ GraphState {
 
     @Override
     public List<MatchResult> getMatches() {
+        // copy the match set to prevent sharing errors
         return new ArrayList<MatchResult>(getCache().getMatches().getAll());
     }
 
@@ -206,6 +211,11 @@ GraphState {
             } else {
                 setStatus(Flag.TRANSIENT, getActualFrame().isTransient());
                 setStatus(Flag.INTERNAL, getActualFrame().isInternal());
+            }
+            if (getActualFrame().isError()) {
+                setStatus(Flag.ERROR, true);
+            } else if (getActualFrame().isAbsence()) {
+                setStatus(Flag.ABSENT, true);
             }
             fireStatus(Flag.CLOSED, oldStatus);
             getCache().notifyClosed();
@@ -291,7 +301,7 @@ GraphState {
 
     @Override
     public boolean isPresent() {
-        return getAbsence() == 0;
+        return getAbsence() == 0 && !isAbsent();
     }
 
     @Override
@@ -300,9 +310,10 @@ GraphState {
         boolean result = setStatus(Flag.DONE, true);
         if (result) {
             setAbsence(absence);
-            setStatus(Flag.ABSENT, absence > 0);
+            setStatus(Flag.ABSENT, isAbsent() || absence > 0);
+            checkPropertyViolations();
             if (!isAbsent() && !isError()) {
-                setStatus(Flag.FINAL, hasFinalProperties());
+                setStatus(Flag.FINAL, getActualFrame().isFinal());
             }
             getCache().notifyDone();
             setCacheCollectable();
@@ -311,21 +322,38 @@ GraphState {
         return result;
     }
 
-    /**
-     * Tests if this is present and has no non-property transitions to
-     * a distinct present state.
+    /** Tests if the state (which has to be DONE) satisfies all invariant properties,
+     * and fails to satisfy all forbidden properties.
      */
-    private boolean hasFinalProperties() {
-        boolean result = true;
-        for (RuleTransition trans : getRuleTransitions()) {
-            if (!trans.target().isAbsent()) {
-                if (!trans.getStep().getRule().isProperty() || !trans.target().equals(this)) {
-                    result = false;
-                    break;
+    public void checkPropertyViolations() {
+        Grammar grammar = getGTS().getGrammar();
+        if (getActualFrame().isError()) {
+            // collect all property matches
+            List<Action> forbidden = new ArrayList<Action>();
+            Set<Action> failed = new HashSet<Action>(grammar.getActions(Role.INVARIANT));
+            for (GraphTransition trans : getTransitions()) {
+                if (trans.isLoop()) {
+                    Action action = trans.getAction();
+                    switch (action.getRole()) {
+                    case FORBIDDEN:
+                        forbidden.add(action);
+                        break;
+                    case INVARIANT:
+                        failed.remove(action);
+                    }
                 }
             }
+            FormatErrorSet result = new FormatErrorSet();
+            for (Action action : forbidden) {
+                result.add("Graph satisfies forbidden property '%s'", action.getFullName());
+            }
+            for (Action action : failed) {
+                result.add("Graph fails to satisfy invariant property '%s'", action.getFullName());
+            }
+            if (!result.isEmpty()) {
+                GraphInfo.addErrors(getGraph(), result);
+            }
         }
-        return result;
     }
 
     @Override

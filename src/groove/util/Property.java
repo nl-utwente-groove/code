@@ -35,21 +35,20 @@ abstract public class Property<S> {
     }
 
     /**
-     * Creates an instance with a given description and <code>null</code>
-     * comment.
+     * Creates an instance with a given description and no explanation.
      */
     public Property(String description) {
         this(description, null);
     }
 
     /**
-     * Creates an instance with a given description and comment.
+     * Creates an instance with a given description and explanation.
      * @param description the description of the property
-     * @param comment the properyt comment
+     * @param explanation the property explanation
      */
-    public Property(String description, String comment) {
+    public Property(String description, String explanation) {
         this.description = description;
-        this.comment = comment;
+        this.explanation = explanation;
     }
 
     /**
@@ -74,13 +73,6 @@ abstract public class Property<S> {
     }
 
     /**
-     * Indicates if this property can be edited.
-     */
-    public boolean isEditable() {
-        return true;
-    }
-
-    /**
      * HTML-formatted description of the value(s) that satisfy this property.
      */
     public String getDescription() {
@@ -92,26 +84,30 @@ abstract public class Property<S> {
      * with the first character optionally capitalised.
      */
     public StringBuffer getDescription(boolean uppercase) {
-        StringBuffer result = new StringBuffer(getDescription());
-        if (uppercase) {
-            result.setCharAt(0, Character.toUpperCase(result.charAt(0)));
+        if (getDescription() == null) {
+            return null;
         } else {
-            result.setCharAt(0, Character.toLowerCase(result.charAt(0)));
+            StringBuffer result = new StringBuffer(getDescription());
+            if (uppercase) {
+                result.setCharAt(0, Character.toUpperCase(result.charAt(0)));
+            } else {
+                result.setCharAt(0, Character.toLowerCase(result.charAt(0)));
+            }
+            return result;
         }
-        return result;
     }
 
     /**
      * Provides a comment on this property. This can be a description of the
      * thing the property is testing.
      */
-    public String getComment() {
-        return this.comment;
+    public String getExplanation() {
+        return this.explanation;
     }
 
-    /** Comment for this property. */
-    private final String comment;
-    /** Description of this property. */
+    /** Explanation of this property. */
+    private final String explanation;
+    /** Description of the values of this property. */
     private final String description;
 
     /**
@@ -143,24 +139,6 @@ abstract public class Property<S> {
         @Override
         public boolean isSatisfied(S state) {
             return true;
-        }
-    }
-
-    /**
-     * Class for properties that cannot be edited.
-     */
-    static public class Unmodifiable<S> extends True<S> {
-
-        /**
-         * Constructs an instance with the given comment.
-         */
-        public Unmodifiable(String comment) {
-            super(comment);
-        }
-
-        @Override
-        public boolean isEditable() {
-            return false;
         }
     }
 
@@ -226,7 +204,7 @@ abstract public class Property<S> {
          * @param emptyOk if <code>true</code>, the empty string is approved.
          */
         public IsEnumValue(Class<T> enumType, boolean emptyOk) {
-            super(getDescription(enumType), "Sould be " + getDescription(enumType));
+            super(getDescription(enumType), "Should be " + getDescription(enumType));
             this.emptyOk = emptyOk;
             this.enumType = enumType;
         }
@@ -277,17 +255,17 @@ abstract public class Property<S> {
         /** Constructs a choice based on a given set of values, and a given description. */
         public Choice(String comment, S... values) {
             this.values = new HashSet<S>(Arrays.asList(values));
-            this.comment = comment;
+            this.explanation = comment;
         }
 
         @Override
-        public String getComment() {
-            return this.comment;
+        public String getExplanation() {
+            return this.explanation;
         }
 
         @Override
         public String getDescription() {
-            return String.format("one of %s", this.values);
+            return Groove.toString(this.values.toArray(), "One of ", "", ", ", " or ");
         }
 
         @Override
@@ -295,7 +273,7 @@ abstract public class Property<S> {
             return this.values.contains(value);
         }
 
-        private final String comment;
+        private final String explanation;
         private final Set<S> values;
     }
 }

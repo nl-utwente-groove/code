@@ -39,7 +39,32 @@ import java.util.Set;
  * @version $Revision $
  */
 public class Frame implements Position<Frame,Step>, Fixable {
-    /** Constructs a new frame.
+    /** Constructs an error or absence frame.
+     * @param ctrl the control automaton being built
+     * @param stack underlying call stack
+     * @param pred predecessor in a verdict transition; if {@code null}, this is
+     * a prime frame
+     * @param error if {@code true}, this is an error frame, otherwise it is an absence frame
+     */
+    Frame(Automaton ctrl, SwitchStack stack, Frame pred, int transience, boolean error) {
+        this.aut = ctrl;
+        this.nr = ctrl.getFrames().size();
+        List<Assignment> pops = new ArrayList<Assignment>();
+        // avoid sharing
+        stack = new SwitchStack(stack);
+        this.pred = pred;
+        if (pred == null) {
+            this.prime = this;
+        } else {
+            this.prime = pred.getPrime();
+            pops.addAll(pred.getPops());
+        }
+        this.pops = pops;
+        this.switchStack = stack;
+        this.location = Location.getSpecial(error, transience);
+    }
+
+    /** Constructs a new live frame.
      * @param ctrl the control automaton being built
      * @param loc top template location of the frame
      * @param stack underlying call stack
@@ -103,12 +128,24 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     private final SwitchStack switchStack;
 
-    /** Returns the top control location instantiated by this frame. */
+    /**
+     * Returns the top control location instantiated by this frame.
+     */
     public Location getLocation() {
         return this.location;
     }
 
     private final Location location;
+
+    /** Indicates whether this is an absence frame. */
+    public boolean isAbsence() {
+        return getLocation().isAbsence();
+    }
+
+    /** Indicates whether this is an error frame. */
+    public boolean isError() {
+        return getLocation().isError();
+    }
 
     /**
      * Returns the predecessor frame in the chain between the
@@ -186,7 +223,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
     @Override
     public Type getType() {
         if (this.type == null) {
-            this.type = getLocation().getType();
+            this.type = getLocation() == null ? Type.DEAD : getLocation().getType();
         }
         return this.type;
     }
@@ -234,7 +271,10 @@ public class Frame implements Position<Frame,Step>, Fixable {
         }
         Frame onSuccess = newFrame(locAttempt.onSuccess());
         Frame onFailure = newFrame(locAttempt.onFailure());
-        StepAttempt result = new StepAttempt(onSuccess, onFailure);
+        Frame onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
+        Frame onAbsence =
+            newFrame(Location.getSpecial(false, getLocation().getTransience()));
+        StepAttempt result = new StepAttempt(onSuccess, onFailure, onError, onAbsence);
         result.addAll(steps);
         return result;
     }

@@ -47,7 +47,7 @@ public class DisplayTreeNode extends DefaultMutableTreeNode {
     }
 
     /** Indicates if this tree node represents part of a recipe. */
-    public boolean inRecipe() {
+    public boolean isInternal() {
         return false;
     }
 
