@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.grammar.CheckPolicy;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostElement;
@@ -209,7 +210,7 @@ public class StateCache {
         }
         if (getState().isDone() && getState().isError()) {
             FormatErrorSet errors = null;
-            if (getState().getGTS().isCheckTypeErrors()) {
+            if (getState().getGTS().getTypePolicy() != CheckPolicy.NONE) {
                 // apparently we're reconstructing the graph after the state was already
                 // done and found to be erroneous; so reconstruct the type errors
                 errors = result.checkTypeConstraints();

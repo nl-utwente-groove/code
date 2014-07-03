@@ -231,9 +231,9 @@ abstract public interface Parser<T> {
 
         @Override
         public boolean isValue(Object value) {
-            boolean result = value instanceof List;
+            boolean result = value instanceof Collection;
             if (result) {
-                for (Object part : (List<?>) value) {
+                for (Object part : (Collection<?>) value) {
                     if (!(part instanceof String) || ((String) part).indexOf(' ') >= 0) {
                         result = false;
                         break;
@@ -359,15 +359,17 @@ abstract public interface Parser<T> {
          * by the empty string
          */
         public EnumParser(Class<T> enumType, T defaultValue, String... texts) {
-            this.enumType = enumType;
             this.defaultValue = defaultValue;
             this.toStringMap = new EnumMap<T,String>(enumType);
             this.toValueMap = new HashMap<String,T>();
             T[] values = enumType.getEnumConstants();
             assert values.length == texts.length;
             for (int i = 0; i < values.length; i++) {
-                this.toStringMap.put(values[i], texts[i]);
-                this.toValueMap.put(texts[i], values[i]);
+                if (texts[i] != null) {
+                    this.toStringMap.put(values[i], texts[i]);
+                    T oldValue = this.toValueMap.put(texts[i], values[i]);
+                    assert oldValue == null : "Duplicate key " + texts[i];
+                }
             }
             this.toValueMap.put("", defaultValue);
             this.toValueMap.put(null, defaultValue);
@@ -402,24 +404,22 @@ abstract public interface Parser<T> {
 
         /** Flag indicating if the empty string is approved. */
         private final T defaultValue;
-        /** The type of enum. */
-        private final Class<T> enumType;
 
         @Override
         public Line getDescription() {
             Line result = Line.atom("One of ");
-            T[] values = this.enumType.getEnumConstants();
-            for (int i = 0; i < values.length; i++) {
-                T val = values[i];
-                result = result.append(Line.atom(this.toStringMap.get(val)).style(Style.ITALIC));
-                if (isDefault(val)) {
+            int i = 0;
+            for (Map.Entry<T,String> e : this.toStringMap.entrySet()) {
+                result = result.append(Line.atom(e.getValue()).style(Style.ITALIC));
+                if (isDefault(e.getKey())) {
                     result = result.append(" (default)");
                 }
-                if (i < values.length - 2) {
+                if (i < this.toStringMap.size() - 2) {
                     result = result.append(", ");
-                } else if (i < values.length - 1) {
+                } else if (i < this.toStringMap.size() - 1) {
                     result = result.append(" or ");
                 }
+                i++;
             }
             return result;
         }

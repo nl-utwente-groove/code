@@ -76,7 +76,8 @@ public abstract class Properties extends java.util.Properties implements Fixable
 
     /** Stores a property value, converted to a parsable string. */
     public void storeProperty(PropertyKey key, Object value) {
-        assert key.parser().isValue(value);
+        assert key.parser().isValue(value) : String.format("%s is not appropriate for %s", value,
+            key);
         Parser<?> parser = key.parser();
         if (parser.isDefault(value)) {
             remove(key.getName());

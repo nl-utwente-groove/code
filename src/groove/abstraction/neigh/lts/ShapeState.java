@@ -21,6 +21,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
+import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -89,7 +90,7 @@ public class ShapeState extends AbstractGraphState {
             // this.shape.setName(toString());
             // Fix the shape to avoid modifications.
             shape.setFixed();
-            if (getGTS().isCheckTypeErrors()) {
+            if (getGTS().getTypePolicy() != CheckPolicy.NONE) {
                 FormatErrorSet errors = shape.checkTypeConstraints();
                 if (!errors.isEmpty()) {
                     GraphInfo.addErrors(shape, errors);
@@ -255,13 +256,13 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     protected RuleTransitionStub createTransitionStub(MatchResult match, HostNode[] addedNodes,
-            GraphState target) {
+        GraphState target) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
-            HostNode[] addedNodes) {
+        HostNode[] addedNodes) {
         throw new UnsupportedOperationException();
     }
 

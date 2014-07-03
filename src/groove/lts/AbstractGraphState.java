@@ -16,10 +16,12 @@
  */
 package groove.lts;
 
+import groove.control.Call;
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.grammar.Action;
 import groove.grammar.Action.Role;
+import groove.grammar.CheckPolicy;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
@@ -29,6 +31,7 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.lts.Status.Flag;
 import groove.transform.Record;
+import groove.util.Groove;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
 
@@ -37,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,7 +52,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-        GraphState {
+    GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -109,7 +113,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * {@link IdentityTransitionStub}.
      */
     protected RuleTransitionStub createTransitionStub(MatchResult match, HostNode[] addedNodes,
-            GraphState target) {
+        GraphState target) {
         if (target instanceof AbstractGraphState) {
             return ((AbstractGraphState) target).createInTransitionStub(this, match, addedNodes);
         } else {
@@ -122,7 +126,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * from a given graph and with a given rule event.
      */
     protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
-            HostNode[] addedNodes) {
+        HostNode[] addedNodes) {
         return new IdentityTransitionStub(match, addedNodes, this);
     }
 
@@ -242,18 +246,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean checkTypeErrors() {
-        boolean result = false;
-        FormatErrorSet errors = getGraph().checkTypeConstraints();
-        if (!errors.isEmpty()) {
-            GraphInfo.addErrors(getGraph(), errors);
-            setError();
-            result = true;
-        }
-        return result;
-    }
-
-    @Override
     public boolean setError() {
         int oldStatus = this.status;
         boolean result = setStatus(Flag.ERROR, true);
@@ -311,9 +303,40 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (result) {
             setAbsence(absence);
             setStatus(Flag.ABSENT, isAbsent() || absence > 0);
-            checkPropertyViolations();
-            if (!isAbsent() && !isError()) {
+            if (isError()) {
+                checkPropertyViolations();
+            } else if (!isAbsent()) {
                 setStatus(Flag.FINAL, getActualFrame().isFinal());
+            }
+            if (getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
+                boolean alive = false;
+                for (GraphTransition trans : getTransitions()) {
+                    if (trans.getAction().getRole() == Role.TRANSFORMER) {
+                        alive = true;
+                        break;
+                    }
+                }
+                if (!alive) {
+                    // TODO this test should be moved to elsewhere
+                    // and should also take recipes into account
+                    setFrame(getActualFrame().onError());
+                    setStatus(Flag.ERROR, true);
+                    FormatErrorSet error = new FormatErrorSet();
+                    Set<String> actions = new LinkedHashSet<String>();
+                    for (Call call : getActualFrame().getPastCalls()) {
+                        if (call.getRule().getRole() == Role.TRANSFORMER) {
+                            actions.add(call.getRule().getFullName());
+                        }
+                    }
+                    if (actions.isEmpty()) {
+                        error.add("No transformer scheduled");
+                    } else {
+                        error.add("Scheduled transformer%s %s failed to be applicable",
+                            actions.size() == 1 ? "" : "s",
+                            Groove.toString(actions.toArray(), "'", "'", "', '", "' and '"));
+                    }
+                    GraphInfo.addErrors(getGraph(), error);
+                }
             }
             getCache().notifyDone();
             setCacheCollectable();
@@ -327,32 +350,32 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      */
     public void checkPropertyViolations() {
         Grammar grammar = getGTS().getGrammar();
-        if (getActualFrame().isError()) {
-            // collect all property matches
-            List<Action> forbidden = new ArrayList<Action>();
-            Set<Action> failed = new HashSet<Action>(grammar.getActions(Role.INVARIANT));
-            for (GraphTransition trans : getTransitions()) {
-                if (trans.isLoop()) {
-                    Action action = trans.getAction();
-                    switch (action.getRole()) {
-                    case FORBIDDEN:
-                        forbidden.add(action);
-                        break;
-                    case INVARIANT:
-                        failed.remove(action);
-                    }
+        // collect all property matches
+        List<Action> forbidden = new ArrayList<Action>();
+        Set<Action> failed = new HashSet<Action>(grammar.getActions(Role.INVARIANT));
+        for (GraphTransition trans : getTransitions()) {
+            if (trans.isLoop()) {
+                Action action = trans.getAction();
+                switch (action.getRole()) {
+                case FORBIDDEN:
+                    forbidden.add(action);
+                    break;
+                case INVARIANT:
+                    failed.remove(action);
                 }
             }
-            FormatErrorSet result = new FormatErrorSet();
-            for (Action action : forbidden) {
-                result.add("Graph satisfies forbidden property '%s'", action.getFullName());
-            }
-            for (Action action : failed) {
+        }
+        FormatErrorSet result = new FormatErrorSet();
+        for (Action action : forbidden) {
+            result.add("Graph satisfies forbidden property '%s'", action.getFullName());
+        }
+        for (Action action : failed) {
+            if (action.getPolicy() == CheckPolicy.ERROR) {
                 result.add("Graph fails to satisfy invariant property '%s'", action.getFullName());
             }
-            if (!result.isEmpty()) {
-                GraphInfo.addErrors(getGraph(), result);
-            }
+        }
+        if (!result.isEmpty()) {
+            GraphInfo.addErrors(getGraph(), result);
         }
     }
 

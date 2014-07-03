@@ -194,16 +194,6 @@ public interface GraphState extends Node {
     public boolean isResult();
 
     /**
-     * Checks the underlying graph for type errors,
-     * and invokes {@link #setError()} if any are found.
-     * The return value indicates if the error status was changed as
-     * a result of this call.
-     * @see HostGraph#checkTypeConstraints()
-     * @return {@code true} if errors were found
-     */
-    public boolean checkTypeErrors();
-
-    /**
      * Declares this state to be an error state.
      * The return value indicates if the error status was changed as
      * a result of this call.
