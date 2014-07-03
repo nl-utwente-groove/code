@@ -20,6 +20,7 @@ import groove.gui.look.Line;
 import groove.gui.look.Line.Style;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ abstract public interface Parser<T> {
      * type of this parser.
      * @param text the text to be parsed
      * @return a value corresponding to {@code text}; returns
-     * {@link #getDefault()} for {@code null} or empty input
+     * {@link #getDefaultValue()} for {@code null} or empty input
      */
     public T parse(String text);
 
@@ -69,8 +70,20 @@ abstract public interface Parser<T> {
     /**
      * Returns the default value, i.e., the value that the empty or
      * {@code null} string parses to.
+     * May be {@code null}, so don't use {@link #equals(Object)} to test equality!
      */
-    public T getDefault();
+    public T getDefaultValue();
+
+    /**
+     * Returns a human-readable string representation of the default value.
+     * Note that the default string and the empty string both parse
+     * to the default value.
+     * @see #getDefaultValue()
+     */
+    public String getDefaultString();
+
+    /** Tests whether a given value is the default value. */
+    public boolean isDefault(Object value);
 
     /** Trimmed string parser. */
     public static StringParser trim = new StringParser(true);
@@ -102,7 +115,7 @@ abstract public interface Parser<T> {
 
         @Override
         public String parse(String text) {
-            return text == null ? getDefault() : this.trim ? text.trim() : text;
+            return text == null ? getDefaultValue() : this.trim ? text.trim() : text;
         }
 
         @Override
@@ -121,8 +134,18 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String getDefault() {
+        public String getDefaultValue() {
             return "";
+        }
+
+        @Override
+        public String getDefaultString() {
+            return "";
+        }
+
+        @Override
+        public boolean isDefault(Object value) {
+            return (value instanceof String) && ((String) value).length() == 0;
         }
     }
 
@@ -149,7 +172,7 @@ abstract public interface Parser<T> {
 
         @Override
         public Integer parse(String text) {
-            return text == null ? getDefault() : Integer.parseInt(text);
+            return text == null || text.length() == 0 ? getDefaultValue() : Integer.parseInt(text);
         }
 
         @Override
@@ -168,8 +191,18 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Integer getDefault() {
+        public Integer getDefaultValue() {
             return 0;
+        }
+
+        @Override
+        public String getDefaultString() {
+            return "0";
+        }
+
+        @Override
+        public boolean isDefault(Object value) {
+            return value instanceof Integer && ((Integer) value).intValue() == 0;
         }
     }
 
@@ -182,7 +215,7 @@ abstract public interface Parser<T> {
 
         @Override
         public List<String> parse(String text) {
-            return text == null || text.length() == 0 ? getDefault()
+            return text == null || text.length() == 0 ? getDefaultValue()
                 : Arrays.asList(text.trim().split("\\s"));
         }
 
@@ -193,7 +226,7 @@ abstract public interface Parser<T> {
 
         @Override
         public String toParsableString(Object value) {
-            return Groove.toString(((List<?>) value).toArray(), "", "", " ");
+            return Groove.toString(((Collection<?>) value).toArray(), "", "", " ");
         }
 
         @Override
@@ -211,8 +244,18 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public List<String> getDefault() {
+        public List<String> getDefaultValue() {
             return Collections.<String>emptyList();
+        }
+
+        @Override
+        public String getDefaultString() {
+            return "";
+        }
+
+        @Override
+        public boolean isDefault(Object value) {
+            return value instanceof List && ((List<?>) value).size() == 0;
         }
     }
 
@@ -252,19 +295,19 @@ abstract public interface Parser<T> {
         @Override
         public Boolean parse(String text) {
             Boolean result = null;
-            if (TRUE.equals(text)) {
+            if (text == null || text.length() == 0) {
+                result = getDefaultValue();
+            } else if (TRUE.equals(text)) {
                 result = true;
             } else if (FALSE.equals(text)) {
                 result = false;
-            } else if (text == null || text.length() == 0) {
-                result = getDefault();
             }
             return result;
         }
 
         @Override
         public String toParsableString(Object value) {
-            if (value.equals(getDefault())) {
+            if (value.equals(getDefaultValue())) {
                 return "";
             } else {
                 return value.toString();
@@ -277,8 +320,19 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Boolean getDefault() {
+        public Boolean getDefaultValue() {
             return this.defaultValue;
+        }
+
+        @Override
+        public String getDefaultString() {
+            return "" + this.defaultValue;
+        }
+
+        @Override
+        public boolean isDefault(Object value) {
+            return value instanceof Boolean
+                && ((Boolean) value).booleanValue() == this.defaultValue;
         }
 
         /** Value that the empty string converts to. */
@@ -331,8 +385,19 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public T getDefault() {
+        public T getDefaultValue() {
             return this.defaultValue;
+        }
+
+        @Override
+        public String getDefaultString() {
+            String result = this.toStringMap.get(this.defaultValue);
+            return result == null ? "" : result;
+        }
+
+        @Override
+        public boolean isDefault(Object value) {
+            return value == this.defaultValue;
         }
 
         /** Flag indicating if the empty string is approved. */
@@ -347,7 +412,7 @@ abstract public interface Parser<T> {
             for (int i = 0; i < values.length; i++) {
                 T val = values[i];
                 result = result.append(Line.atom(this.toStringMap.get(val)).style(Style.ITALIC));
-                if (val == getDefault()) {
+                if (isDefault(val)) {
                     result = result.append(" (default)");
                 }
                 if (i < values.length - 2) {
@@ -371,7 +436,7 @@ abstract public interface Parser<T> {
 
         @Override
         public String toParsableString(Object value) {
-            return value == getDefault() ? "" : this.toStringMap.get(value);
+            return isDefault(value) ? "" : this.toStringMap.get(value);
         }
 
         @Override

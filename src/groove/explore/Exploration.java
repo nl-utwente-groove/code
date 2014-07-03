@@ -352,8 +352,18 @@ public class Exploration {
             }
 
             @Override
-            public Exploration getDefault() {
+            public Exploration getDefaultValue() {
                 return null;
+            }
+
+            @Override
+            public String getDefaultString() {
+                return "";
+            }
+
+            @Override
+            public boolean isDefault(Object value) {
+                return value == null;
             }
         };
     }

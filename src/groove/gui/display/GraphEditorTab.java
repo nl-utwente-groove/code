@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: EditorDialog.java,v 1.15 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui.display;
@@ -98,7 +98,7 @@ import org.jgraph.graph.GraphUndoManager;
  * @version $Revision$
  */
 final public class GraphEditorTab extends ResourceTab implements GraphModelListener,
-        PropertyChangeListener {
+    PropertyChangeListener {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -280,7 +280,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         updateStatus();
     }
 
-    /** 
+    /**
      * Changes the properties of the graph in the JModel.
      * @param propertiesMap the new properties
      * @param updatePropertiesPanel if {@code true}, the change did not originate
@@ -296,7 +296,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         updateStatus();
     }
 
-    /** 
+    /**
      * Changes the graph to be displayed, as well as the graph properties
      * and the status.
      * @param newGraph the new graph to be displayed
@@ -370,7 +370,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     /**
-     * We listen to the 
+     * We listen to the
      * {@link JGraph#JGRAPH_MODE_PROPERTY}.
      */
     @Override
@@ -494,7 +494,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            this.propertiesPanel = result = new PropertiesTable(GraphProperties.getKeyMap(), true);
+            this.propertiesPanel = result = new PropertiesTable(GraphProperties.Key.class, true);
             result.setName("Properties");
             result.setBackground(JAttr.EDITOR_BACKGROUND);
             result.setProperties(GraphInfo.getProperties(getGraph()));
@@ -604,7 +604,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     /**
-     * Initialises the syntax descriptions of all aspect kinds of this 
+     * Initialises the syntax descriptions of all aspect kinds of this
      * editor's graph mode.
      */
     private void initSyntax() {
@@ -735,10 +735,10 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     /** Button for snap to grid. */
     transient JToggleButton snapToGridButton;
 
-    /** 
+    /**
      * The number of edit steps the editor state is removed
      * from a saved graph.
-     * This can be negative, if undos happened since the last save. 
+     * This can be negative, if undos happened since the last save.
      */
     private int dirtCount;
 
@@ -747,7 +747,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 
-    /** 
+    /**
      * Flag that is set to true while the preview mode switch
      * is being executed.
      */
@@ -1030,7 +1030,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private class SyntaxCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
+            boolean isSelected, boolean cellHasFocus) {
             Component result =
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {

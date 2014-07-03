@@ -150,7 +150,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            this.propertiesPanel = result = new PropertiesTable(GraphProperties.getKeyMap(), false);
+            this.propertiesPanel = result = new PropertiesTable(GraphProperties.Key.class, false);
             result.setName("Properties");
             result.addMouseListener(new EditMouseListener());
         }
@@ -244,7 +244,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         return result;
     }
 
-    /** 
+    /**
      * Notifies the tab that the grammar has changed.
      * This resets the internal data structures, and informs the
      * underlying {@link JGraph} of the type change.

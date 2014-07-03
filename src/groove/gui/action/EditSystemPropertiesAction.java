@@ -7,7 +7,7 @@ import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Map;
 
 /** Action to show the system properties. */
 public class EditSystemPropertiesAction extends SimulatorAction {
@@ -22,12 +22,15 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      */
     @Override
     public void execute() {
-        Properties systemProperties = getGrammarModel().getProperties();
+        GrammarProperties systemProperties = getGrammarModel().getProperties();
         PropertiesDialog dialog =
-            new PropertiesDialog(systemProperties, GrammarProperties.KEYS);
+            new PropertiesDialog(systemProperties);
         if (dialog.showDialog(getFrame())) {
             GrammarProperties newProperties = new GrammarProperties();
-            newProperties.putAll(dialog.getProperties());
+            // don't use putAll, as that bypasses the filtering of default entries
+            for (Map.Entry<String,String> e : dialog.getProperties().entrySet()) {
+                newProperties.setProperty(e.getKey(), e.getValue());
+            }
             try {
                 getSimulatorModel().doSetProperties(newProperties);
             } catch (IOException exc) {
@@ -42,7 +45,6 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getGrammarStore() != null
-            && getGrammarStore().isModifiable());
+        setEnabled(getGrammarStore() != null && getGrammarStore().isModifiable());
     }
 }

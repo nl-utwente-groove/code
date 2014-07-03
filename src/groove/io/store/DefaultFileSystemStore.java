@@ -144,7 +144,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
     @Override
     public Map<String,String> putTexts(ResourceKind kind, Map<String,String> texts)
-            throws IOException {
+        throws IOException {
         Map<String,String> result = null;
         TextBasedEdit edit = doPutTexts(kind, texts);
         if (edit != null) {
@@ -160,7 +160,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * Returns an undoable edit wrapping this functionality.
      */
     private TextBasedEdit doPutTexts(ResourceKind kind, Map<String,String> newTexts)
-            throws IOException {
+        throws IOException {
         testInit();
         Map<String,String> oldTexts = new HashMap<String,String>();
         Set<String> newNames = new HashSet<String>();
@@ -178,7 +178,7 @@ public class DefaultFileSystemStore extends SystemStore {
         GrammarProperties oldProps = getProperties();
         GrammarProperties newProps = doEnableDefaultName(kind, newNames);
         return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE : EditType.MODIFY,
-                oldTexts, newTexts, oldProps, newProps);
+            oldTexts, newTexts, oldProps, newProps);
     }
 
     /**
@@ -188,7 +188,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * @return the new stored) properties, or {@code null} if no change was made
      */
     private GrammarProperties doEnableDefaultName(ResourceKind kind, Set<String> newNames)
-            throws IOException {
+        throws IOException {
         GrammarProperties result = null;
         String defaultName = kind.getDefaultName();
         if (defaultName != null && getProperties().getActiveNames(kind).isEmpty()
@@ -202,7 +202,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
     @Override
     public Map<String,String> deleteTexts(ResourceKind kind, Collection<String> names)
-            throws IOException {
+        throws IOException {
         Map<String,String> result = null;
         TextBasedEdit deleteEdit = doDeleteTexts(kind, names);
         if (deleteEdit != null) {
@@ -218,7 +218,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * method. Returns a corresponding undoable edit.
      */
     private TextBasedEdit doDeleteTexts(ResourceKind kind, Collection<String> names)
-            throws IOException {
+        throws IOException {
         testInit();
         Map<String,String> oldTexts = new HashMap<String,String>();
         boolean activeChanged = false;
@@ -249,7 +249,7 @@ public class DefaultFileSystemStore extends SystemStore {
     public void rename(ResourceKind kind, String oldName, String newName) throws IOException {
         MyEdit edit =
             kind.isGraphBased() ? doRenameGraph(kind, oldName, newName) : doRenameText(kind,
-                    oldName, newName);
+                oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -262,7 +262,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * Returns an undoable edit wrapping this functionality.
      */
     private TextBasedEdit doRenameText(ResourceKind kind, String oldName, String newName)
-            throws IOException {
+        throws IOException {
         testInit();
         Map<String,String> oldTexts = new HashMap<String,String>();
         Map<String,String> newTexts = new HashMap<String,String>();
@@ -293,7 +293,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * Returns an undoable edit wrapping this functionality.
      */
     private GraphBasedEdit doRenameGraph(ResourceKind kind, String oldName, String newName)
-            throws IOException {
+        throws IOException {
         testInit();
         AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
         assert oldGraph != null;
@@ -362,7 +362,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * which should be propagated as {@link EditType#LAYOUT}.
      */
     private GraphBasedEdit doPutGraphs(ResourceKind kind, Collection<AspectGraph> newGraphs,
-            boolean layout) throws IOException {
+        boolean layout) throws IOException {
         testInit();
         Set<String> newNames = new HashSet<String>();
         // if we're relabelling, it may be that there are already graphs
@@ -393,7 +393,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
     @Override
     public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<String> name)
-            throws IOException {
+        throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
         GraphBasedEdit edit = doDeleteGraphs(kind, name);
         if (edit != null) {
@@ -409,7 +409,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * Returns a corresponding undoable edit.
      */
     private GraphBasedEdit doDeleteGraphs(ResourceKind kind, Collection<String> names)
-            throws IOException {
+        throws IOException {
         testInit();
         List<AspectGraph> deletedGraphs = new ArrayList<AspectGraph>(names.size());
         Set<String> activeNames =
@@ -669,7 +669,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * @throws FormatException if there is a subdirectory name with an error
      */
     private Map<QualName,File> collectResources(ResourceKind kind, File path, QualName pathName)
-            throws IOException, FormatException {
+        throws IOException, FormatException {
         Map<QualName,File> result = new HashMap<QualName,File>();
         // find all files in the current path
         File[] curfiles = path.listFiles(kind.getFileType().getFilter());
@@ -996,7 +996,7 @@ public class DefaultFileSystemStore extends SystemStore {
     /** Edit consisting of additions and deletions of text-based resources. */
     private class TextBasedEdit extends MyEdit {
         public TextBasedEdit(ResourceKind kind, EditType type, Map<String,String> oldTexts,
-                Map<String,String> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
+            Map<String,String> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
             super(type, kind);
             this.oldTexts = oldTexts;
             this.newTexts = newTexts;
@@ -1071,8 +1071,8 @@ public class DefaultFileSystemStore extends SystemStore {
     /** Edit consisting of additions and deletions of graph-based resources. */
     private class GraphBasedEdit extends MyEdit {
         public GraphBasedEdit(ResourceKind kind, EditType type, Collection<AspectGraph> oldGraphs,
-                Collection<AspectGraph> newGraphs, GrammarProperties oldProps,
-                GrammarProperties newProps) {
+            Collection<AspectGraph> newGraphs, GrammarProperties oldProps,
+            GrammarProperties newProps) {
             super(type, kind);
             this.oldGraphs = oldGraphs;
             this.newGraphs = newGraphs;

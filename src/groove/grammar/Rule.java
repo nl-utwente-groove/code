@@ -155,9 +155,9 @@ public class Rule implements Action, Fixable {
      */
     public void setProperties(GraphProperties properties) {
         testFixed(false);
-        this.priority = Integer.parseInt(properties.getProperty(Key.PRIORITY));
-        this.transitionLabel = properties.getProperty(Key.TRANSITION_LABEL);
-        this.formatString = properties.getProperty(Key.FORMAT);
+        this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
+        this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
+        this.formatString = (String) properties.parseProperty(Key.FORMAT);
         this.policy = (CheckPolicy) properties.parseProperty(Key.VIOLATE_POLICY);
     }
 

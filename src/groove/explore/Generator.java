@@ -133,8 +133,8 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = "-l", metaVar = "dir",
-            usage = "Log the generation process in the directory <dir>",
-            handler = DirectoryHandler.class)
+        usage = "Log the generation process in the directory <dir>",
+        handler = DirectoryHandler.class)
     private File logdir;
 
     /**
@@ -190,11 +190,11 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = "-D", metaVar = "key=val", usage = ""
-            + "Set grammar property <key> to <val>. Legal settings are:\n"
-            + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
-            + "  - controlProgram=names - set the control program(s) to be used\n"
-            + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
-            handler = PropertiesHandler.class)
+        + "Set grammar property <key> to <val>. Legal settings are:\n"
+        + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
+        + "  - controlProgram=names - set the control program(s) to be used\n"
+        + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
+        handler = PropertiesHandler.class)
     private Map<Key,String> grammarProperties;
 
     /**
@@ -205,15 +205,15 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = "-ef", metaVar = "flags", depends = "-o", usage = ""
-            + "Flags for the \"-o\" option. Legal values are:\n" //
-            + "  s - label start state (default: 'start')\n" //
-            + "  f - label final states (default: 'final')\n" //
-            + "  o - label open states (default: 'open')\n" //
-            + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
-            + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
-            + "  r - result state label (default: 'result')\n" //
-            + "Specify label to be used by appending flag with 'label' (single-quoted)",
-            handler = LTSLabelsHandler.class)
+        + "Flags for the \"-o\" option. Legal values are:\n" //
+        + "  s - label start state (default: 'start')\n" //
+        + "  f - label final states (default: 'final')\n" //
+        + "  o - label open states (default: 'open')\n" //
+        + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
+        + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
+        + "  r - result state label (default: 'result')\n" //
+        + "Specify label to be used by appending flag with 'label' (single-quoted)",
+        handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
     /**
@@ -233,10 +233,10 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = "-o", metaVar = "file",
-            usage = "Save the generated LTS to a file with name derived from <file>, "
-                    + "in which '#' is instantiated with the grammar ID. "
-                    + "The \"-ef\"-option controls some additional state labels. "
-                    + "The optional extension determines the output format (default is .gxl)")
+        usage = "Save the generated LTS to a file with name derived from <file>, "
+            + "in which '#' is instantiated with the grammar ID. "
+            + "The \"-ef\"-option controls some additional state labels. "
+            + "The optional extension determines the output format (default is .gxl)")
     private String ltsPattern;
 
     /**
@@ -259,9 +259,9 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = "-f", metaVar = "file",
-            usage = "Save result states in separate files, with names derived from <file>, "
-                    + "in which the mandatory '#' is instantiated with the state number. "
-                    + "The optional extension determines the output format (default is .gst)")
+        usage = "Save result states in separate files, with names derived from <file>, "
+            + "in which the mandatory '#' is instantiated with the state number. "
+            + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
     /**
@@ -274,7 +274,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
-            handler = GrammarHandler.class)
+        handler = GrammarHandler.class)
     private File grammar;
 
     /**
@@ -288,8 +288,8 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Argument(index = 1, metaVar = "start", multiValued = true,
-            usage = "Start graph names (defined in grammar, no extension) "
-                + "or start graph files (extension .gst)")
+        usage = "Start graph names (defined in grammar, no extension) "
+            + "or start graph files (extension .gst)")
     private List<String> startGraphs;
 
     /** Returns the exploration reporters enabled on the basis of the options. */
@@ -330,15 +330,15 @@ public class Generator extends GrooveCmdLineTool<GTS> {
 
     /** Usage message for the acceptor option. */
     public final static String ACCEPTOR_USAGE = "" + "Set the acceptor to <acc>. "
-            + "The acceptor determines when a state is counted as a result of the exploration. "
-            + "Legal values are:\n" //
-            + "    final      - When final (default)\n" //
-            + "    inv:[!]id  - If rule <id> is [not] applicable\n" //
-            + "    ruleapp:id - If there is an <id>-labelled transition\n" //
-            + "    formula:f  - If <f> holds (a boolean formula of rules separated by &, |, !)\n" //
-            + "    any        - Always (all states are results)\n" //
-            + "    cycle      - If the state starts a cycle\n" //
-            + "    none       - Never (no states are results)";
+        + "The acceptor determines when a state is counted as a result of the exploration. "
+        + "Legal values are:\n" //
+        + "    final      - When final (default)\n" //
+        + "    inv:[!]id  - If rule <id> is [not] applicable\n" //
+        + "    ruleapp:id - If there is an <id>-labelled transition\n" //
+        + "    formula:f  - If <f> holds (a boolean formula of rules separated by &, |, !)\n" //
+        + "    any        - Always (all states are results)\n" //
+        + "    cycle      - If the state starts a cycle\n" //
+        + "    none       - Never (no states are results)";
 
     /**
      * Name of the result option.
@@ -419,7 +419,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     public static class LTSLabelsHandler extends OneArgumentOptionHandler<LTSLabels> {
         /** The required constructor. */
         public LTSLabelsHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super LTSLabels> setter) {
+            Setter<? super LTSLabels> setter) {
             super(parser, option, setter);
         }
 
@@ -437,7 +437,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     public static class PropertiesHandler extends MapOptionHandler {
         /** The required constructor. */
         public PropertiesHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super Map<?,?>> setter) {
+            Setter<? super Map<?,?>> setter) {
             super(parser, option, setter);
         }
 
@@ -460,12 +460,12 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         @Override
         protected void addToMap(Map m, String key, String value) {
             this.error = null;
-            Key property = GrammarProperties.KEYS.get(key);
+            Key property = GrammarProperties.Key.getKey(key);
             if (property == null) {
                 this.error = String.format("Unknown property key '%s'", key);
             } else if (property.isSystem()) {
                 this.error = String.format("Cannot set system property '%s'", key);
-            } else if (!property.getFormat().isSatisfied(value)) {
+            } else if (!property.parser().accepts(value)) {
                 this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
                 m.put(property, value);
