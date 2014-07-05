@@ -149,18 +149,18 @@ public class GrammarProperties extends Properties {
     /**
      * Sets the rule application policy map.
      * @param policy the policy map to be used for rule application.
-     * @see Key#CONSTRAINT_POLICY
+     * @see Key#ACTION_POLICY
      */
     public void setRulePolicy(PolicyMap policy) {
-        storeProperty(Key.CONSTRAINT_POLICY, policy);
+        storeProperty(Key.ACTION_POLICY, policy);
     }
 
     /**
      * Returns the rule application policy map of the rule system.
-     * @see Key#CONSTRAINT_POLICY
+     * @see Key#ACTION_POLICY
      */
     public PolicyMap getRulePolicy() {
-        return (PolicyMap) parseProperty(Key.CONSTRAINT_POLICY);
+        return (PolicyMap) parseProperty(Key.ACTION_POLICY);
     }
 
     /**
@@ -558,14 +558,14 @@ public class GrammarProperties extends Properties {
         PROLOG_NAMES("prolog", "List of active prolog program names", Parser.splitter),
 
         /** Policy for rule application. */
-        CONSTRAINT_POLICY(
-            "constraintPolicy",
-            "<body>List of <i>constraint=value</i> pairs, where <i>constraint</i> is a constraint name and <i>value</i> is one of:"
-                + "<li> - <i>off</i>: the constraint is disabled (overrules the <b>enabled</b> property)"
+        ACTION_POLICY(
+            "actionPolicy",
+            "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:"
+                + "<li> - <i>off</i>: the action is disabled (overrules the <b>enabled</b> property)"
                 + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition"
                 + "<li> - <i>error</i>: applicability is an error"
                 + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
-                + "<p>The last two are only valid for forbidden and invariant properties",
+                + "<p>The last three are only valid for forbidden and invariant properties",
             CheckPolicy.multiParser),
         /** Policy for dealing with type violations. */
         TYPE_POLICY(
