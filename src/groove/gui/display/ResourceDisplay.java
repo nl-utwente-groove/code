@@ -16,6 +16,7 @@
  */
 package groove.gui.display;
 
+import groove.grammar.Action;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -148,8 +149,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (kind.isEnableable()) {
             result.add(getEnableButton());
             if (getResourceKind() == ResourceKind.HOST || getResourceKind() == ResourceKind.TYPE
-                    || getResourceKind() == ResourceKind.PROLOG
-                    || getResourceKind() == ResourceKind.CONTROL) {
+                || getResourceKind() == ResourceKind.PROLOG
+                || getResourceKind() == ResourceKind.CONTROL) {
                 result.add(getEnableUniqueAction());
             }
         }
@@ -360,7 +361,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
             AspectGraph graph =
-                    getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
+                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
@@ -649,6 +650,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         StringBuilder result = new StringBuilder(model.getLastName());
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);
+            Action.Role actionRole = ((RuleModel) model).getRole();
+            if (actionRole.hasColor()) {
+                HTMLConverter.createColorTag(actionRole.getColor()).on(result);
+            }
         }
         result.append(suffix);
         if (isEdited(name)) {
@@ -680,10 +685,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         String result = enabled ? this.enabledText : this.disabledText;
         if (result == null) {
             this.enabledText =
-                    String.format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
+                String.format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
             this.disabledText =
-                    String.format("Disabled %s; doubleclick to edit",
-                        getResourceKind().getDescription());
+                String.format("Disabled %s; doubleclick to edit",
+                    getResourceKind().getDescription());
             result = enabled ? this.enabledText : this.disabledText;
         }
         return result;

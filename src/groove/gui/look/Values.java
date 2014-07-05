@@ -153,6 +153,11 @@ public class Values {
         RECIPE_COLORS.putColors(NONE, RECIPE_COLOR, NORMAL_BACKGROUND);
     }
 
+    /** Colour of forbidden property labels. */
+    static public final Color FORBIDDEN_COLOR = ERROR_COLOR;
+    /** Colour of invariant property labels. */
+    static public final Color INVARIANT_COLOR = CREATOR_FOREGROUND;
+
     /** Line style that always makes right edges. */
     public static final int STYLE_MANHATTAN = 14;
 

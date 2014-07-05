@@ -113,6 +113,9 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         Line result = Line.atom(text(false));
         if (getRole() == EdgeRole.FLAG) {
             result = result.style(Style.ITALIC);
+            if (getAction().getRole().hasColor()) {
+                result = result.color(getAction().getRole().getColor());
+            }
         }
         return result;
     }
@@ -244,7 +247,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      * @see Record#normaliseLabel(RuleTransitionLabel)
      */
     public static final RuleTransitionLabel createLabel(GraphState source, MatchResult match,
-            HostNode[] addedNodes) {
+        HostNode[] addedNodes) {
         RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
             Record record = source.getGTS().getRecord();

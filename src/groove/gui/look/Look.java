@@ -231,11 +231,11 @@ public enum Look {
             add(VisualKey.BACKGROUND, Values.FINAL_BACKGROUND);
         }
     },
-    /** Change in look due to result state status. */
+    /** Change in look due to error state status. */
     ERROR() {
         @Override
         void init() {
-            add(VisualKey.BACKGROUND, Values.ERROR_BACKGROUND);
+            //add(VisualKey.BACKGROUND, Values.ERROR_BACKGROUND);
             add(VisualKey.ERROR, true);
         }
     },
@@ -415,7 +415,7 @@ public enum Look {
     private final static Map<Set<Look>,VisualMap> looksMap = new HashMap<Set<Look>,VisualMap>();
 
     private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<AspectKind,Look>(
-            AspectKind.class);
+        AspectKind.class);
 
     static {
         aspectLookMap.put(AspectKind.REMARK, REMARK);
