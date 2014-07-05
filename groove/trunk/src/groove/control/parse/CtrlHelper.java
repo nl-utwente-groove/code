@@ -25,8 +25,9 @@ import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.grammar.Action;
 import groove.grammar.Callable;
-import groove.grammar.QualName;
 import groove.grammar.Callable.Kind;
+import groove.grammar.CheckPolicy;
+import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
 
 import java.util.ArrayList;
@@ -216,7 +217,7 @@ public class CtrlHelper {
     boolean declareCtrlUnit(CtrlTree unitTree) {
         boolean result = false;
         assert (unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
-        && unitTree.getChildCount() <= 4;
+            && unitTree.getChildCount() <= 4;
         String fullName = qualify(unitTree.getChild(0).getText());
         Callable unit = this.namespace.getCallable(fullName);
         if (unit != null) {
@@ -224,8 +225,8 @@ public class CtrlHelper {
                 unit.getKind().getName(true), fullName);
         } else {
             int priority =
-                    unitTree.getChildCount() == 3 ? 0
-                            : Integer.parseInt(unitTree.getChild(2).getText());
+                unitTree.getChildCount() == 3 ? 0
+                    : Integer.parseInt(unitTree.getChild(2).getText());
             List<CtrlPar.Var> parList = getPars(fullName, unitTree.getChild(1));
             String controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
@@ -402,8 +403,8 @@ public class CtrlHelper {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
             CtrlPar result =
-                    new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
-                        family.toValue(constant));
+                new CtrlPar.Const(family.getAlgebra(constant.getSignature()),
+                    family.toValue(constant));
             argTree.setCtrlPar(result);
             return result;
         } catch (FormatException e) {
@@ -411,7 +412,7 @@ public class CtrlHelper {
             // by the control parser
             assert false : String.format("%s is not a parsable constant",
                 argTree.getChild(0).getText());
-        return null;
+            return null;
         }
     }
 
@@ -438,11 +439,18 @@ public class CtrlHelper {
                 }
             }
             Callable unit = this.namespace.getCallable(unitName);
+            Action action = unit instanceof Action ? (Action) unit : null;
             if (unit == null) {
                 emitErrorMessage(callTree, "Unknown action '%s'", unitName);
-            } else if (unit instanceof Action && ((Action) unit).getPriority() > 0) {
-                String message = "Explicit call of prioritised %s %s not allowed";
+            } else if (action != null && action.getPriority() > 0) {
+                String message = "Explicit call of prioritised %s '%s' not allowed";
                 emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
+            } else if (action != null && action.getRole().isConstraint()) {
+                String message = "Explicit call of %s property '%s' not allowed";
+                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
+            } else if (action != null && action.getPolicy() == CheckPolicy.OFF) {
+                String message = "Explicit call of disabled %s '%s' not allowed";
+                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
             } else if (checkCall(callTree, unit, args)) {
                 // create the call
                 result = args == null ? new Call(unit) : new Call(unit, args);
@@ -475,7 +483,9 @@ public class CtrlHelper {
 
     private void checkGroupCall(CtrlTree callTree, Set<Action> actions) {
         for (Action action : actions) {
-            checkCall(callTree, action, null);
+            if (action.getPolicy() != CheckPolicy.OFF) {
+                checkCall(callTree, action, null);
+            }
         }
     }
 

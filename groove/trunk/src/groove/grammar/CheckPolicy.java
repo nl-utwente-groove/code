@@ -102,21 +102,23 @@ public enum CheckPolicy {
         @Override
         public PolicyMap parse(String text) {
             PolicyMap result = new PolicyMap();
-            String[] split = text.trim().split("\\s");
-            for (String pair : split) {
-                int pos = pair.indexOf(ASSIGN_CHAR);
-                if (pos < 0) {
-                    result = null;
-                    break;
+            if (text != null) {
+                String[] split = text.trim().split("\\s");
+                for (String pair : split) {
+                    int pos = pair.indexOf(ASSIGN_CHAR);
+                    if (pos < 0) {
+                        result = null;
+                        break;
+                    }
+                    String name = pair.substring(0, pos);
+                    String value = pair.substring(pos + 1, pair.length());
+                    CheckPolicy policy = singleParser.parse(value);
+                    if (!ExprParser.isIdentifier(name) || policy == null) {
+                        result = null;
+                        break;
+                    }
+                    result.put(name, policy);
                 }
-                String name = pair.substring(0, pos);
-                String value = pair.substring(pos + 1, pair.length());
-                CheckPolicy policy = singleParser.parse(value);
-                if (!ExprParser.isIdentifier(name) || policy == null) {
-                    result = null;
-                    break;
-                }
-                result.put(name, policy);
             }
             return result;
         }
