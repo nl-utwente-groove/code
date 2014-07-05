@@ -48,14 +48,22 @@ public class StateMatches extends MatchResultSet {
 
     private final StateCache cache;
 
-    private GraphState getState() {
+    private AbstractGraphState getState() {
         return this.state;
     }
 
-    private final GraphState state;
+    private final AbstractGraphState state;
 
     private GraphTransition getTransition(MatchResult m) {
         return getCache().getTransitionMap().get(m);
+    }
+
+    /** If the actual frame is a constraint trial, find all matches. */
+    void checkConstraints() {
+        Frame frame = getState().getActualFrame();
+        if (frame.isTrial() && frame.getAttempt().isConstraint()) {
+            advanceFrame();
+        }
     }
 
     /**
@@ -117,7 +125,11 @@ public class StateMatches extends MatchResultSet {
                     if (target.getAbsence() <= frame.getTransience()) {
                         somePresent = true;
                         break;
-                    } else if (target.isAbsent()) {
+                    } else if (target.getActualFrame().isAbsence()) {
+                        // test for the frame property rather than state.isAbsent()
+                        // as the latter is set only upon state closure
+                        // whereas absence may also be due to constraint violations
+                        // detected before closure
                         matchIter.remove();
                     } else {
                         allAbsent = false;
@@ -144,23 +156,21 @@ public class StateMatches extends MatchResultSet {
             // Keep track of increases in transient depth
             boolean depthIncreases = false;
             // keep track of property violations
-            CheckPolicy violated = null;
+            CheckPolicy violated = CheckPolicy.NONE;
             List<MatchResult> outstanding = new LinkedList<MatchResult>();
             for (Step step : attempt) {
-                // don't explore new states if we found a property violation
-                if (violated != null && !step.getRule().isProperty()) {
-                    continue;
-                }
                 MatchResultSet matches = getMatchCollector().computeMatches(step);
                 Rule action = step.getRule();
                 if (action.getRole() == (matches.isEmpty() ? Role.INVARIANT : Role.FORBIDDEN)) {
+                    assert attempt.isConstraint();
+                    getCache().addConstraintError(getState().getGraph(), action);
                     violated = action.getPolicy().max(violated);
                 }
                 outstanding.addAll(matches);
                 depthIncreases |= step.onFinish().getTransience() > frame.getTransience();
             }
             Frame nextFrame;
-            if (violated != null && violated != CheckPolicy.NONE) {
+            if (violated != CheckPolicy.NONE) {
                 nextFrame = violated == CheckPolicy.ERROR ? frame.onError() : frame.onAbsence();
             } else if (outstanding.isEmpty()) {
                 // no transitions will be generated
@@ -172,6 +182,7 @@ public class StateMatches extends MatchResultSet {
                 // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
                 // to a state that is present on the level of the frame
+                // (not that we already know outstanding to be nonempty)
                 nextFrame = attempt.onSuccess();
             } else {
                 nextFrame = frame;

@@ -25,10 +25,28 @@ import groove.control.Attempt;
  */
 public class StepAttempt extends Attempt<Frame,Step> {
     /**
-     * Creates a multi-step, initialised with success and failure alternates.
+     * Creates a constraint attempt, initialised with a verdict alternate.
+     * The verdict alternate serves both for success and for failure.
+     */
+    StepAttempt(Frame onVerdict) {
+        setSuccess(onVerdict);
+        setFailure(onVerdict);
+        this.constraint = true;
+    }
+
+    /**
+     * Creates an attempt, initialised with success and failure alternates.
      */
     StepAttempt(Frame onSuccess, Frame onFailure) {
         setSuccess(onSuccess);
         setFailure(onFailure);
+        this.constraint = false;
     }
+
+    /** Indicates if this is a constraint attempt. */
+    public boolean isConstraint() {
+        return this.constraint;
+    }
+
+    private final boolean constraint;
 }

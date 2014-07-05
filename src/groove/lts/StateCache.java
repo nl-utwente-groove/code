@@ -16,21 +16,28 @@
  */
 package groove.lts;
 
+import groove.control.CallStack;
+import groove.grammar.Action;
+import groove.grammar.Action.Role;
 import groove.grammar.CheckPolicy;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.graph.GraphInfo;
 import groove.transform.DeltaApplier;
 import groove.transform.Record;
 import groove.transform.RuleApplication;
+import groove.util.Groove;
 import groove.util.collect.KeySet;
 import groove.util.collect.SetView;
 import groove.util.collect.TreeHashSet;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -218,8 +225,72 @@ public class StateCache {
             if (!errors.isEmpty()) {
                 GraphInfo.addErrors(result, errors);
             }
+            // check the property and deadlock constraints
+            GTS gts = getState().getGTS();
+            // check for liveness
+            boolean alive = false;
+            // collect all property matches
+            Set<Action> erroneous =
+                new HashSet<Action>(gts.getGrammar().getActions(Role.INVARIANT));
+            for (GraphTransition trans : getTransitions(GraphTransition.Claz.REAL)) {
+                Action action = trans.getAction();
+                switch (action.getRole()) {
+                case FORBIDDEN:
+                    erroneous.add(action);
+                    break;
+                case INVARIANT:
+                    erroneous.remove(action);
+                    break;
+                case TRANSFORMER:
+                    alive = true;
+                }
+            }
+            for (Action action : erroneous) {
+                addConstraintError(result, action);
+            }
+            if (!alive && gts.isCheckDeadlock()) {
+                addDeadlockError(result);
+            }
         }
         return result;
+    }
+
+    /**
+     * Adds a deadlock error message to a given graph.
+     */
+    void addDeadlockError(HostGraph graph) {
+        Set<String> actions = new LinkedHashSet<String>();
+        for (CallStack call : getState().getActualFrame().getPastAttempts()) {
+            if (call.getAction().getRole() == Role.TRANSFORMER) {
+                actions.add(call.getRule().getFullName());
+            }
+        }
+        FormatError error;
+        if (actions.isEmpty()) {
+            error = new FormatError("Deadlock (no transformer scheduled)");
+        } else {
+            error =
+                new FormatError("Deadlock: scheduled transformer%s %s failed to be applicable",
+                    actions.size() == 1 ? "" : "s", Groove.toString(actions.toArray(), "'", "'",
+                        "', '", "' and '"));
+        }
+        GraphInfo.addError(graph, error);
+    }
+
+    /** Adds an error message regarding the failure of t graph constraint to a given graph. */
+    void addConstraintError(HostGraph graph, Action action) {
+        String error = null;
+        switch (action.getRole()) {
+        case FORBIDDEN:
+            error = "Graph satisfies forbidden property '%s'";
+            break;
+        case INVARIANT:
+            error = "Graph fails to satisfy invariant property '%s'";
+            break;
+        default:
+            assert false;
+        }
+        GraphInfo.addError(graph, new FormatError(error, action.getFullName()));
     }
 
     /**

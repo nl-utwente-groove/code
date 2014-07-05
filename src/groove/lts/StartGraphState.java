@@ -28,9 +28,4 @@ public class StartGraphState extends AbstractGraphState {
 
     /** The stored graph. */
     private final DeltaHostGraph graph;
-
-    @Override
-    protected void updateClosed() {
-        // empty
-    }
 }

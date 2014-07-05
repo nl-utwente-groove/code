@@ -133,11 +133,6 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    protected void updateClosed() {
-        // Nothing to do.
-    }
-
-    @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition || transition instanceof ShapeNextState : "Invalid transition type.";
         this.transitions.add(transition);

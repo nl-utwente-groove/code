@@ -55,17 +55,16 @@ public class MatchCollector {
     public MatchCollector(GraphState state) {
         this.state = state;
         this.record = state.getGTS().getRecord();
-        boolean checkDiamonds = state.getGTS().checkDiamonds();
-        GraphState parent = null;
+        this.checkDiamonds = state.getGTS().checkDiamonds();
         if (state instanceof GraphNextState) {
-            parent = ((GraphNextState) state).source();
-        }
-        if (parent != null && parent.isClosed() && checkDiamonds) {
+            GraphState parent = ((GraphNextState) state).source();
+            this.parentClosed = parent.isClosed();
             this.parentTransMap = parent.getCache().getTransitionMap();
             Rule lastRule = ((GraphNextState) state).getEvent().getRule();
             this.enabledRules = this.record.getEnabledRules(lastRule);
             this.disabledRules = this.record.getDisabledRules(lastRule);
         } else {
+            this.parentClosed = false;
             this.parentTransMap = null;
             this.enabledRules = null;
             this.disabledRules = null;
@@ -73,8 +72,8 @@ public class MatchCollector {
     }
 
     /**
-     * Returns the set of matching events for a given control switch.
-     * @param step the transition for which matches are to be found; non-{@code null}
+     * Returns the set of matching events for a given control step.
+     * @param step the control step for which matches are to be found; non-{@code null}
      */
     public MatchResultSet computeMatches(final Step step) {
         final MatchResultSet result = new MatchResultSet();
@@ -160,7 +159,7 @@ public class MatchCollector {
                     break;
                 case NODE:
                     if (!(anchorImage instanceof ValueNode)
-                            && !host.containsNode((HostNode) anchorImage)) {
+                        && !host.containsNode((HostNode) anchorImage)) {
                         assert false : String.format("Node %s does not occur in graph %s",
                             anchorImage, host);
                     }
@@ -174,7 +173,8 @@ public class MatchCollector {
      * with respect to the parent state.
      */
     private boolean isEnabled(Call call) {
-        if (this.enabledRules == null || this.enabledRules.contains(call.getRule())) {
+        if (this.enabledRules == null || !this.parentClosed
+            || this.enabledRules.contains(call.getRule())) {
             return true;
         }
         // since enabledRules != null, it is now certain that this is a NextState
@@ -268,7 +268,7 @@ public class MatchCollector {
      */
     private MatchResult getParentTrans(MatchResult key) {
         MatchResult result;
-        if (this.parentTransMap != null) {
+        if (this.checkDiamonds && this.parentTransMap != null) {
             RuleTransition trans = (RuleTransition) this.parentTransMap.get(key);
             result = trans == null ? key : trans.getKey();
         } else {
@@ -279,6 +279,15 @@ public class MatchCollector {
 
     /** The host graph we are working on. */
     protected final GraphState state;
+    /**
+     * Flag indicating that the parent state is closed.
+     * This means that all outgoing transitions have been added.
+     */
+    protected final boolean parentClosed;
+    /**
+     * Flag indicating that confluent diamonds should be checked.
+     */
+    protected final boolean checkDiamonds;
     /** The system record is set at construction. */
     protected final Record record;
     /** Possibly {@code null} mapping from rules to sets of outgoing

@@ -36,7 +36,7 @@ public class DynamicConstraintTest {
     @Test
     public void testContainment() {
         testError("containment", "start-cycle");
-        test("containment", "start-no-cycle", 16, 32, 8);
+        test("containment", "start-no-cycle", 16, 20, 8);
     }
 
     /** Tests type multiplicities. */

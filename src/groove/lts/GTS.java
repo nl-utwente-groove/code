@@ -170,37 +170,16 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      *         then, <tt>state</tt> was added and the listeners notified).
      */
     public GraphState addState(GraphState newState) {
-
         // see if isomorphic graph is already in the LTS
         GraphState result = allStateSet().put(newState);
-
-        // if not ...
         if (result == null) {
-            // and then add it to the GTS
+            // otherwise, add it to the GTS
             fireAddNode(newState);
-            checkTypeErrors(newState);
-        }
-        return result;
-    }
-
-    private void checkTypeErrors(GraphState state) {
-        if (getTypePolicy() != CheckPolicy.NONE) {
-            HostGraph graph = state.getGraph();
-            FormatErrorSet errors = graph.checkTypeConstraints();
-            if (!errors.isEmpty()) {
-                GraphInfo.addErrors(graph, errors);
-                switch (getTypePolicy()) {
-                case ERROR:
-                    state.setFrame(state.getActualFrame().onError());
-                    GraphInfo.addError(this, new FormatError(
-                        "State %s has multiplicity or containment errors", state));
-                    break;
-                case ABSENCE:
-                    state.setFrame(state.getActualFrame().onAbsence());
-                }
-                state.setClosed(true);
+            if (newState instanceof AbstractGraphState) {
+                ((AbstractGraphState) newState).checkInitConstraints();
             }
         }
+        return result;
     }
 
     /** Returns the policy for type checking. */
@@ -208,7 +187,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return getGrammar().getProperties().getTypePolicy();
     }
 
-    /** Indicates if the non-statically-guaranteed type errors should be checked on all graphs. */
+    /** Indicates if deadlock errors should be checked on all graphs. */
     public boolean isCheckDeadlock() {
         return getGrammar().getProperties().getDeadPolicy() == CheckPolicy.ERROR;
     }
