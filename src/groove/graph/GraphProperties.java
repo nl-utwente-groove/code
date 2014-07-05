@@ -17,7 +17,6 @@
 package groove.graph;
 
 import groove.grammar.Action.Role;
-import groove.grammar.CheckPolicy;
 import groove.util.Groove;
 import groove.util.Parser;
 import groove.util.Properties;
@@ -74,15 +73,6 @@ public class GraphProperties extends Properties {
                 + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
                 + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy",
             new Parser.EnumParser<Role>(Role.class, null)),
-
-        /** Policy for dealing with property violations. */
-        VIOLATE_POLICY(
-            "violationPolicy",
-            "<body>Flag controlling the reaction to invariant and forbidden graph violations."
-                + "<li>- <i>none</i>: the property is not checked"
-                + "<li>- <i>error</i>: the state is flagged as erroneous"
-                + "<li>- <i>absence</i>: the state is removed from the 'real' transition system</html>",
-            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR)),
 
         /** User-defined comment. */
         REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip"),

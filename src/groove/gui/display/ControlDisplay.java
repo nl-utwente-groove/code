@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: CAPanel.java,v 1.18 2008-03-18 12:18:19 fladder Exp $
  */
 package groove.gui.display;
@@ -23,7 +23,6 @@ import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ import javax.swing.tree.TreePath;
 /**
  * The Simulator panel that shows the control program, with a button that shows
  * the corresponding control automaton.
- * 
+ *
  * @author Tom Staijen
  * @version $0.9$
  */
@@ -93,8 +92,7 @@ final public class ControlDisplay extends ResourceDisplay {
         };
         result.setRootVisible(false);
         result.setShowsRootHandles(true);
-        DefaultTreeCellRenderer renderer =
-            (DefaultTreeCellRenderer) result.getCellRenderer();
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) result.getCellRenderer();
         renderer.setBackgroundNonSelectionColor(null);
         renderer.setBackgroundSelectionColor(null);
         renderer.setTextSelectionColor(null);
@@ -103,31 +101,12 @@ final public class ControlDisplay extends ResourceDisplay {
         renderer.setOpenIcon(null);
         result.setCellRenderer(renderer);
         ToolTipManager.sharedInstance().registerComponent(result);
-        result.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (e.getSource() == result) {
-                    this.manager.setDismissDelay(Integer.MAX_VALUE);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (e.getSource() == result) {
-                    this.manager.setDismissDelay(this.standardDelay);
-                }
-            }
-
-            private final ToolTipManager manager =
-                ToolTipManager.sharedInstance();
-            private final int standardDelay = this.manager.getDismissDelay();
-        });
+        result.addMouseListener(new DismissDelayer(result));
         CtrlDoc doc = new CtrlDoc();
         this.toolTipMap = doc.getToolTipMap();
         // load the tree
         for (Map.Entry<?,? extends List<?>> docEntry : doc.getItemTree().entrySet()) {
-            DefaultMutableTreeNode node =
-                new DefaultMutableTreeNode(docEntry.getKey());
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(docEntry.getKey());
             for (Object rule : docEntry.getValue()) {
                 node.add(new DefaultMutableTreeNode(rule));
             }
@@ -135,8 +114,7 @@ final public class ControlDisplay extends ResourceDisplay {
         }
         ((DefaultTreeModel) result.getModel()).reload();
         for (int i = 0; i < root.getChildCount(); i++) {
-            result.expandPath(new TreePath(
-                ((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
+            result.expandPath(new TreePath(((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
         }
         result.setBackground(null);
         return result;
@@ -158,8 +136,7 @@ final public class ControlDisplay extends ResourceDisplay {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         super.update(source, oldModel, changes);
         if (suspendListening()) {
             String selection = source.getSelected(ResourceKind.CONTROL);

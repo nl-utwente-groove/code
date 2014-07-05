@@ -16,7 +16,7 @@
  */
 package groove.gui.dialog;
 
-import groove.gui.look.Line;
+import groove.gui.display.DismissDelayer;
 import groove.io.HTMLConverter;
 import groove.util.ExprParser;
 import groove.util.Parser;
@@ -70,6 +70,7 @@ public class PropertiesTable extends JTable {
         setIntercellSpacing(new Dimension(2, -2));
         setDefaultRenderer(getColumnClass(PROPERTY_COLUMN), new CellRenderer());
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        addMouseListener(new DismissDelayer(this));
     }
 
     /** Changes the underlying properties. */
@@ -256,7 +257,7 @@ public class PropertiesTable extends JTable {
                 PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
                 if (key != null) {
                     Parser<?> parser = key.parser();
-                    String tip = parser.getDescription().toHTMLString();
+                    String tip = parser.getDescription(true);
                     result.setToolTipText(HTMLConverter.HTML_TAG.on(tip));
                 }
             }
@@ -314,27 +315,24 @@ public class PropertiesTable extends JTable {
 
         /** Returns the string to display in the abandon dialog. */
         private String getContinueQuestion(String value) {
-            Line result = Line.empty();
+            StringBuilder result = new StringBuilder();
             if (this.editingValueForKey == null) {
                 // editing a key
                 if (PropertiesTable.this.properties.containsKey(value)) {
-                    result =
-                        result.append(String.format("Property key '%s' already exists", value));
+                    result.append(String.format("Property key '%s' already exists", value));
                 } else {
-                    result =
-                        result.append(String.format("Property key '%s' is not a valid identifier.",
-                            value));
+                    result.append(String.format("Property key '%s' is not a valid identifier.",
+                        value));
                 }
             } else {
                 // editing a value
                 PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
-                Line description = key.parser().getDescription();
-                result =
-                    result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
-                        description.capitalise(false));
+                String description = key.parser().getDescription(false);
+                result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
+                    description);
             }
-            result = result.append("\nContinue?");
-            return HTMLConverter.HTML_TAG.on(result.toHTMLString());
+            result = result.append("<br>Continue?");
+            return HTMLConverter.HTML_TAG.on(result).toString();
         }
 
         /** Sets the editor to editing a property key. */
@@ -380,7 +378,7 @@ public class PropertiesTable extends JTable {
                         tip = key.getExplanation();
                     } else {
                         Parser<?> parser = key.parser();
-                        tip = parser.getDescription().toHTMLString();
+                        tip = parser.getDescription(true);
                     }
                 }
             }

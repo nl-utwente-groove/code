@@ -158,10 +158,7 @@ public class Rule implements Action, Fixable {
         this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
         this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
         this.formatString = (String) properties.parseProperty(Key.FORMAT);
-        this.policy = (CheckPolicy) properties.parseProperty(Key.VIOLATE_POLICY);
     }
-
-    private CheckPolicy policy;
 
     @Override
     public String getTransitionLabel() {
@@ -381,8 +378,7 @@ public class Rule implements Action, Fixable {
 
     @Override
     public CheckPolicy getPolicy() {
-        assert getRole() == Role.INVARIANT || getRole() == Role.FORBIDDEN;
-        return this.policy;
+        return getGrammarProperties().getRulePolicy().get(getFullName());
     }
 
     /** Indicates if this rule serves to test a property of a graph.

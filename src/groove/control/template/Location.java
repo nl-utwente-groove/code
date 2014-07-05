@@ -96,8 +96,8 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     /** Indicates whether this is an absence location.
      * @see #isSpecial()
      */
-    public boolean isAbsence() {
-        return this.nr == ABSENCE_NR;
+    public boolean isRemoved() {
+        return this.nr == REMOVE_NR;
     }
 
     /** The number of the location within the template. */
@@ -215,7 +215,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         StringBuilder result = new StringBuilder();
         if (isError()) {
             result.append("error");
-        } else if (isAbsence()) {
+        } else if (isRemoved()) {
             result.append("absence");
         } else {
             result.append(getTemplate().hasOwner() ? getTemplate().getName() : "main");
@@ -237,13 +237,13 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     /** Location number of an error location. */
     private static final int ERROR_NR = -1;
     /** Location number of an absence location. */
-    private static final int ABSENCE_NR = -2;
+    private static final int REMOVE_NR = -2;
 
     /** Returns an absence location of given transient depth. */
     public static Location getSpecial(boolean error, int transience) {
-        List<Location> locations = error ? errorLocations : absenceLocations;
+        List<Location> locations = error ? errorLocations : removeLocations;
         for (int i = locations.size(); i <= transience; i++) {
-            locations.add(new Location(null, error ? ERROR_NR : ABSENCE_NR, i));
+            locations.add(new Location(null, error ? ERROR_NR : REMOVE_NR, i));
         }
         return locations.get(transience);
     }
@@ -251,5 +251,5 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     /** Global list of error locations of given transience. */
     private static final List<Location> errorLocations = new ArrayList<Location>();
     /** Global list of absence locations of given transience. */
-    private static final List<Location> absenceLocations = new ArrayList<Location>();
+    private static final List<Location> removeLocations = new ArrayList<Location>();
 }

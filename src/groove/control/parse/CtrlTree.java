@@ -9,8 +9,9 @@ import groove.control.template.Program;
 import groove.control.term.Term;
 import groove.grammar.Action;
 import groove.grammar.Callable;
-import groove.grammar.QualName;
 import groove.grammar.Callable.Kind;
+import groove.grammar.CheckPolicy;
+import groove.grammar.QualName;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
@@ -237,6 +238,9 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = prot.delta();
             SortedMap<Integer,List<Action>> prioMap = new TreeMap<Integer,List<Action>>();
             for (Action action : getInfo().getTransformers()) {
+                if (action.getPolicy() == CheckPolicy.OFF) {
+                    continue;
+                }
                 // the action list to which this action should be added
                 List<Action> actions = prioMap.get(action.getPriority());
                 if (actions == null) {
@@ -253,6 +257,9 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = prot.delta();
             List<Action> actions = new ArrayList<Action>();
             for (Action action : getInfo().getTransformers()) {
+                if (action.getPolicy() == CheckPolicy.OFF) {
+                    continue;
+                }
                 if (!getInfo().getUsedNames().contains(action.getFullName())) {
                     actions.add(action);
                 }

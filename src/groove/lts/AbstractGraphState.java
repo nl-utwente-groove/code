@@ -175,18 +175,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      */
     public void checkInitConstraints() {
         CheckPolicy typePolicy = getGTS().getTypePolicy();
-        if (typePolicy != CheckPolicy.NONE) {
+        if (typePolicy != CheckPolicy.OFF) {
             HostGraph graph = getGraph();
             FormatErrorSet errors = graph.checkTypeConstraints();
             if (!errors.isEmpty()) {
                 GraphInfo.addErrors(graph, errors);
-                switch (typePolicy) {
-                case ERROR:
-                    setFrame(getActualFrame().onError());
-                    break;
-                case ABSENCE:
-                    setFrame(getActualFrame().onAbsence());
-                }
+                setFrame(getActualFrame().onPolicy(typePolicy));
             }
         }
         getCache().getMatches().checkConstraints();
@@ -261,7 +255,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             setStatus(Flag.TRANSIENT, getActualFrame().isTransient());
             setStatus(Flag.INTERNAL, getActualFrame().isInternal());
             setStatus(Flag.ERROR, getActualFrame().isError());
-            setStatus(Flag.ABSENT, getActualFrame().isAbsence());
+            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
             fireStatus(Flag.CLOSED, oldStatus);
             getCache().notifyClosed();
         }
@@ -342,7 +336,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             setAbsence(absence);
             checkDoneConstraints();
             setStatus(Flag.ERROR, getActualFrame().isError());
-            setStatus(Flag.ABSENT, getActualFrame().isAbsence());
+            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
             setStatus(Flag.FINAL, getActualFrame().isFinal());
             getCache().notifyDone();
             setCacheCollectable();
@@ -379,7 +373,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     private void setAbsence(int absence) {
         this.status = Status.setAbsence(this.status, absence);
         if (absence > 0) {
-            setFrame(getActualFrame().onAbsence());
+            setFrame(getActualFrame().onRemove());
         }
     }
 

@@ -217,7 +217,7 @@ public class StateCache {
         }
         if (getState().isDone() && getState().isError()) {
             FormatErrorSet errors = null;
-            if (getState().getGTS().getTypePolicy() != CheckPolicy.NONE) {
+            if (getState().getGTS().getTypePolicy() != CheckPolicy.OFF) {
                 // apparently we're reconstructing the graph after the state was already
                 // done and found to be erroneous; so reconstruct the type errors
                 errors = result.checkTypeConstraints();
