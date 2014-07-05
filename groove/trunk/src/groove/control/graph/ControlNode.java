@@ -38,6 +38,11 @@ public class ControlNode extends ANode {
         this.graph = graph;
     }
 
+    /** Indicates if this is the start node of the control graph. */
+    public boolean isStart() {
+        return getNumber() == 0;
+    }
+
     /** Returns the control position underlying this node. */
     public Position<?,?> getPosition() {
         return this.pos;

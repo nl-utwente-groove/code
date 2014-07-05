@@ -155,10 +155,9 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
         return getNode().isResult();
     }
 
-    /* Always false: error states are reported through other means. */
     @Override
     public boolean hasErrors() {
-        return false;
+        return getNode().isError();
     }
 
     /**

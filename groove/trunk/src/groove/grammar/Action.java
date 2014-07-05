@@ -16,8 +16,12 @@
  */
 package groove.grammar;
 
+import groove.gui.look.Values;
+import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.util.collect.Comparator;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -138,16 +142,17 @@ public interface Action extends Callable, Comparable<Action> {
     /** Role of the action within the grammar. */
     public static enum Role {
         /** Action that modifies a graph. */
-        TRANSFORMER("transformer"),
-        /** Action that captures a general graph condition. */
-        CONDITION("condition"),
+        TRANSFORMER("transformer", null),
         /** Action that captures a forbidden graph property. */
-        FORBIDDEN("forbidden"),
+        FORBIDDEN("forbidden", Values.FORBIDDEN_COLOR),
         /** Action that captures an invariant graph property. */
-        INVARIANT("invariant"), ;
+        INVARIANT("invariant", Values.INVARIANT_COLOR),
+        /** Action that captures a general graph condition. */
+        CONDITION("condition", null), ;
 
-        private Role(String text) {
+        private Role(String text, Color color) {
             this.text = text;
+            this.color = color;
         }
 
         /** Indicates if this role is anything but {@link #TRANSFORMER}. */
@@ -172,6 +177,34 @@ public interface Action extends Callable, Comparable<Action> {
         }
 
         private final String text;
+
+        /** Indicates if this role has a special colour. */
+        public boolean hasColor() {
+            return getColor() != null;
+        }
+
+        /** Returns the special colour for actions with this role;
+         * if {@code null}, there is no special colour.
+         */
+        public Color getColor() {
+            return this.color;
+        }
+
+        private final Color color;
+
+        /**
+         * Returns an HTML tag for the colour of this role, if the role has a special colour;
+         * {@code null} otherwise.
+         * @see #getColor()
+         */
+        public HTMLTag getColorTag() {
+            if (this.colorTag == null && hasColor()) {
+                this.colorTag = HTMLConverter.createColorTag(getColor());
+            }
+            return this.colorTag;
+        }
+
+        private HTMLTag colorTag;
 
         /** Returns the role corresponding to a given string,
          * or {@code null} if the string does not denote a role.

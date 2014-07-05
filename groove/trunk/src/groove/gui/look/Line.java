@@ -143,29 +143,43 @@ public abstract class Line {
      * uppercase, otherwise to lowercase.
      */
     public Line capitalise(boolean upper) {
+        Line result = this;
         if (isEmpty()) {
             return this;
         } else if (this instanceof Atomic) {
-            StringBuffer content = new StringBuffer(((Atomic) this).text);
-            Character c = content.charAt(0);
-            content.setCharAt(0, upper ? Character.toUpperCase(c) : Character.toLowerCase(c));
-            return Line.atom(content.toString());
+            char c = ((Atomic) this).text.charAt(0);
+            char modC = upper ? Character.toUpperCase(c) : Character.toLowerCase(c);
+            if (c != modC) {
+                StringBuffer content = new StringBuffer(((Atomic) this).text);
+                content.setCharAt(0, modC);
+                result = Line.atom(content.toString());
+            }
         } else if (this instanceof Composed) {
             Line[] oldFragments = ((Composed) this).fragments;
-            Line[] newFragments = new Line[oldFragments.length];
-            newFragments[0] = oldFragments[0].capitalise(upper);
-            System.arraycopy(oldFragments, 1, newFragments, 1, oldFragments.length - 1);
-            return composed(Arrays.asList(newFragments));
+            Line newFragment0 = oldFragments[0].capitalise(upper);
+            if (newFragment0 != oldFragments[0]) {
+                Line[] newFragments = new Line[oldFragments.length];
+                newFragments[0] = newFragment0;
+                System.arraycopy(oldFragments, 1, newFragments, 1, oldFragments.length - 1);
+                result = composed(Arrays.asList(newFragments));
+            }
         } else if (this instanceof Styled) {
-            Style style = ((Styled) this).style;
-            return ((Styled) this).subline.capitalise(upper).style(style);
+            Line oldSubLine = ((Styled) this).subline;
+            Line newSubline = oldSubLine.capitalise(upper);
+            if (newSubline != oldSubLine) {
+                result = newSubline.style(((Styled) this).style);
+            }
         } else {
             assert this instanceof Colored;
-            ColorType type = ((Colored) this).type;
-            Color color = ((Colored) this).color;
-            Line clone = ((Colored) this).subline.capitalise(upper);
-            return type == ColorType.RGB ? clone.color(color) : clone.color(type);
+            Line oldSubLine = ((Colored) this).subline;
+            Line newSubline = oldSubLine.capitalise(upper);
+            if (newSubline != oldSubLine) {
+                ColorType type = ((Colored) this).type;
+                Color color = ((Colored) this).color;
+                return type == ColorType.RGB ? newSubline.color(color) : newSubline.color(type);
+            }
         }
+        return result;
     }
 
     /** Tests if this is the empty line. */

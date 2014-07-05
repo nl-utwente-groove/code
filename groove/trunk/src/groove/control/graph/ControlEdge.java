@@ -23,6 +23,8 @@ import groove.graph.EdgeRole;
 import groove.gui.look.Line;
 import groove.gui.look.Line.Style;
 
+import java.awt.Color;
+
 /**
  * @author rensink
  * @version $Revision $
@@ -78,14 +80,26 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
 
     @Override
     protected Line computeLine() {
-        String result;
+        String text;
         if (isVerdict()) {
-            result = isSuccess() ? "succ" : "fail";
+            text = isSuccess() ? "succ" : "fail";
         } else {
-            result = getCallStack().toString();
+            text = getCallStack().toString();
         }
-        Line line = Line.atom(result);
-        return isVerdict() || getRole() == EdgeRole.FLAG ? line.style(Style.ITALIC) : line;
+        Line result = Line.atom(text);
+        if (isVerdict() || getRole() == EdgeRole.FLAG) {
+            result = result.style(Style.ITALIC);
+        }
+        if (!isVerdict()) {
+            Color color = getCallStack().getRule().getRole().getColor();
+            if (color != null) {
+                if (source().isStart()) {
+                    color = color.brighter().brighter();
+                }
+                result = result.color(color);
+            }
+        }
+        return result;
     }
 
     @Override
