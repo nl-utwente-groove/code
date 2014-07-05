@@ -260,26 +260,82 @@ public class Frame implements Position<Frame,Step>, Fixable {
     /** Computes the attempt of this frame. */
     private StepAttempt computeAttempt() {
         SwitchAttempt locAttempt = getLocation().getAttempt();
-        List<Step> steps = new ArrayList<Step>();
-        for (SwitchStack locStack : locAttempt) {
-            SwitchStack targetStack = new SwitchStack();
-            targetStack.addAll(getSwitchStack());
-            targetStack.addAll(locStack);
-            Switch topCall = targetStack.pop();
-            Frame onFinish = new Frame(getAut(), topCall.onFinish(), targetStack, null);
-            steps.add(new Step(this, locStack, onFinish.normalise()));
+        // divide the switches of the control location
+        // into constraints and "proper" calls
+        List<SwitchStack> constraintCalls = new ArrayList<SwitchStack>();
+        List<SwitchStack> properCalls = new ArrayList<SwitchStack>();
+        for (SwitchStack sw : locAttempt) {
+            if (sw.peek().getCall().getRule().getRole().isConstraint()) {
+                constraintCalls.add(sw);
+            } else {
+                properCalls.add(sw);
+            }
         }
-        Frame onSuccess = newFrame(locAttempt.onSuccess());
-        Frame onFailure = newFrame(locAttempt.onFailure());
-        StepAttempt result = new StepAttempt(onSuccess, onFailure);
-        result.addAll(steps);
+        StepAttempt result;
+        if (properCalls.isEmpty()) {
+            // we only have a constraint attempt
+            Frame onVerdict = newFrame(locAttempt.onSuccess());
+            assert onVerdict.getLocation() == locAttempt.onFailure();
+            result = new StepAttempt(onVerdict);
+            for (SwitchStack sw : constraintCalls) {
+                result.add(createStep(sw));
+            }
+        } else if (constraintCalls.isEmpty()) {
+            // we only have a proper attempt
+            Frame onSuccess = newFrame(locAttempt.onSuccess());
+            Frame onFailure = newFrame(locAttempt.onFailure());
+            result = new StepAttempt(onSuccess, onFailure);
+            for (SwitchStack sw : properCalls) {
+                result.add(createStep(sw));
+            }
+        } else {
+            // the initial attempt tests for constraints only;
+            // the verdict leads to an intermediate frame
+            Frame inter = newFrame(getLocation());
+            result = new StepAttempt(inter);
+            for (SwitchStack sw : constraintCalls) {
+                result.add(createStep(sw));
+            }
+            // this is followed by an attempt for the proper steps
+            // which is set as the attempt of the intermediate frame
+            Frame onVerdict = inter.newFrame(locAttempt.onSuccess());
+            // we had a location with property switches; this guarantees
+            // that the success and failure locations coincide
+            assert onVerdict.getLocation() == locAttempt.onFailure();
+            StepAttempt interAttempt = new StepAttempt(onVerdict, onVerdict);
+            for (SwitchStack sw : properCalls) {
+                result.add(inter.createStep(sw));
+            }
+            inter.attempt = interAttempt;
+        }
         return result;
+    }
+
+    /** Constructs a step from this frame, based on a given control location switch. */
+    private Step createStep(SwitchStack sw) {
+        SwitchStack targetStack = new SwitchStack();
+        targetStack.addAll(getSwitchStack());
+        targetStack.addAll(sw);
+        Switch call = targetStack.pop();
+        Frame target;
+        if (call.getCall().getRule().getRole().isProperty()) {
+            // all properties should leave the control frame unchanged
+            assert sw.size() == 1;
+            target = this;
+        } else {
+            target = new Frame(getAut(), call.onFinish(), targetStack, null).normalise();
+        }
+        return new Step(this, sw, target);
     }
 
     /** Returns the error frame from this frame. */
     public Frame onError() {
         if (this.onError == null) {
-            this.onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
+            if (isError() || isAbsence()) {
+                this.onError = this;
+            } else {
+                this.onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
+            }
         }
         return this.onError;
     }
@@ -289,7 +345,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
     /** Returns the absence frame from this frame. */
     public Frame onAbsence() {
         if (this.onAbsence == null) {
-            this.onAbsence = newFrame(Location.getSpecial(false, getLocation().getTransience()));
+            if (isAbsence()) {
+                this.onAbsence = this;
+            } else {
+                this.onAbsence =
+                    newFrame(Location.getSpecial(false, getLocation().getTransience()));
+            }
         }
         return this.onAbsence;
     }

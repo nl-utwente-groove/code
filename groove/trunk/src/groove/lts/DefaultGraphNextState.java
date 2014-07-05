@@ -36,7 +36,7 @@ import java.util.List;
  * @version $Revision$
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState,
-        RuleTransitionStub {
+    RuleTransitionStub {
     /**
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
@@ -44,7 +44,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      * @param frameValues nodes that are bound to the variables in the control frame
      */
     public DefaultGraphNextState(int number, AbstractGraphState source, MatchResult match,
-            HostNode[] addedNodes, Object[] frameValues) {
+        HostNode[] addedNodes, Object[] frameValues) {
         super(source.getCacheReference(), number);
         this.source = source;
         this.event = match.getEvent();
@@ -266,11 +266,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
         return getCache().getDelta();
     }
 
-    @Override
-    protected void updateClosed() {
-        //        clearCache();
-    }
-
     /**
      * Returns the match from the source of this transition, if that is itself a
      * {@link groove.lts.RuleTransitionStub}.
@@ -334,7 +329,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      */
     @Override
     protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
-            HostNode[] addedNodes) {
+        HostNode[] addedNodes) {
         if (source == source() && match == getEvent()) {
             return this;
         } else if (source != source() && match == getSourceKey()) {

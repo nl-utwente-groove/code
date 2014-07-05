@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 
@@ -66,6 +67,18 @@ public class CallStack extends Stack<Call> {
             this.recipeInit = true;
         }
         return this.recipe;
+    }
+
+    /**
+     * Returns the top-level action in this call stack.
+     * This is either the recipe if there is one, or the top-level rule.
+     */
+    public Action getAction() {
+        Action result = getRecipe();
+        if (result == null) {
+            result = getRule();
+        }
+        return result;
     }
 
     /** The first recipe in the call stack, or {@code null} if there is none. */

@@ -210,7 +210,6 @@ public class GraphInfo extends DefaultFixable {
      * @param error error to be added; non-{@code null}
      */
     public static void addError(Graph graph, FormatError error) {
-        assert !graph.isFixed();
         graph.getInfo().getErrors().add(error);
     }
 

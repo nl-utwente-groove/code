@@ -160,6 +160,11 @@ public interface Action extends Callable, Comparable<Action> {
             return this != TRANSFORMER;
         }
 
+        /** Indicates if this role is {@link #FORBIDDEN} or {@link #INVARIANT}. */
+        public boolean isConstraint() {
+            return this == FORBIDDEN || this == INVARIANT;
+        }
+
         @Override
         public String toString() {
             return this.text;
