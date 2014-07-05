@@ -26,6 +26,7 @@ import groove.control.term.Derivation;
 import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
 import groove.grammar.Action;
+import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
 import groove.util.Duo;
 import groove.util.Pair;
@@ -117,9 +118,11 @@ public class TemplateBuilder {
             if (loc.getTransience() == 0 && next.two().isEmpty() && !this.properties.isEmpty()) {
                 for (Action prop : this.properties) {
                     assert prop.isProperty() && prop instanceof Rule;
-                    SwitchStack sw = new SwitchStack();
-                    sw.add(new Switch(loc, new Call(prop), 0, loc));
-                    switches.add(sw);
+                    if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
+                        SwitchStack sw = new SwitchStack();
+                        sw.add(new Switch(loc, new Call(prop), 0, loc));
+                        switches.add(sw);
+                    }
                 }
                 if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
                     // we need an intermediate location to go to after the property test
@@ -213,7 +216,7 @@ public class TemplateBuilder {
      * but the procedure does not have an initialised template
      */
     private SwitchStack addSwitch(Location source, Template template, Derivation deriv)
-            throws IllegalStateException {
+        throws IllegalStateException {
         Map<Derivation,SwitchStack> switchMap = getSwitchMap(template);
         SwitchStack result = switchMap.get(deriv);
         if (result == null) {
@@ -224,7 +227,7 @@ public class TemplateBuilder {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
                 Template callerTemplate = getTemplate(caller);
                 SwitchStack nested =
-                        addSwitch(callerTemplate.getStart(), callerTemplate, deriv.getNested());
+                    addSwitch(callerTemplate.getStart(), callerTemplate, deriv.getNested());
                 result.addAll(nested);
             }
             switchMap.put(deriv, result);
@@ -443,7 +446,7 @@ public class TemplateBuilder {
                 target.setVars(swit.getCall().getOutVars().keySet());
                 Location source = locMap.get(swit.getSource());
                 Switch imageSwitch =
-                        new Switch(source, swit.getCall(), swit.getTransience(), target);
+                    new Switch(source, swit.getCall(), swit.getTransience(), target);
                 switchMap.put(swit, imageSwitch);
             }
         }

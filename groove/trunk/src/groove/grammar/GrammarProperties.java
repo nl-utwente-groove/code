@@ -2,6 +2,7 @@ package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
 import groove.explore.Exploration;
+import groove.grammar.CheckPolicy.PolicyMap;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -143,6 +144,23 @@ public class GrammarProperties extends Properties {
      */
     public void setControlLabels(List<String> controlLabels) {
         storeProperty(Key.CONTROL_LABELS, controlLabels);
+    }
+
+    /**
+     * Sets the rule application policy map.
+     * @param policy the policy map to be used for rule application.
+     * @see Key#CONSTRAINT_POLICY
+     */
+    public void setRulePolicy(PolicyMap policy) {
+        storeProperty(Key.CONSTRAINT_POLICY, policy);
+    }
+
+    /**
+     * Returns the rule application policy map of the rule system.
+     * @see Key#CONSTRAINT_POLICY
+     */
+    public PolicyMap getRulePolicy() {
+        return (PolicyMap) parseProperty(Key.CONSTRAINT_POLICY);
     }
 
     /**
@@ -472,7 +490,7 @@ public class GrammarProperties extends Properties {
         ALGEBRA(
             "algebraFamily",
             "<body>Algebra used for attributes"
-                + "<li>- <i>default</i>: java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>"
+                + "<li>- <i>default</i>: java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)"
                 + "<li>- <i>big</i>: arbitrary-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)"
                 + "<li>- <i>point</i>: a single value for every type (so all values are equal)"
                 + "<li>- <i>term</i>: symbolic term representations",
@@ -539,21 +557,32 @@ public class GrammarProperties extends Properties {
          */
         PROLOG_NAMES("prolog", "List of active prolog program names", Parser.splitter),
 
+        /** Policy for rule application. */
+        CONSTRAINT_POLICY(
+            "constraintPolicy",
+            "<body>List of <i>constraint=value</i> pairs, where <i>constraint</i> is a constraint name and <i>value</i> is one of:"
+                + "<li> - <i>off</i>: the constraint is disabled (overrules the <b>enabled</b> property)"
+                + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition"
+                + "<li> - <i>error</i>: applicability is an error"
+                + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
+                + "<p>The last two are only valid for forbidden and invariant properties",
+            CheckPolicy.multiParser),
         /** Policy for dealing with type violations. */
         TYPE_POLICY(
             "typePolicy",
-            "<body>Flag controlling how dynamic type violations (multiplicities, composites) are dealt with."
-                + "<li>- <i>none</i>: dynamic type constraints are not checked"
+            "<body>Flag controlling how dynamic type constraints (multiplicities, composites) are dealt with."
+                + "<li>- <i>off</i>: dynamic type constraints are not checked"
                 + "<li>- <i>error</i>: dynamic type violations are flagged as errors"
-                + "<li>- <i>absence</i>: dynamic type violations cause the state to be removed from the 'real' state space",
-            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR)),
+                + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
+            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
+                "error", "remove")),
 
         /** Policy for dealing with deadlocks. */
         DEAD_POLICY("deadlockPolicy", "Flag controlling how deadlocked states are dealt with."
             + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
-            + "<li>- <i>none</i>: deadlocks are not checked"
+            + "<li>- <i>off</i>: deadlocks are not checked"
             + "<li>- <i>error</i>: deadlocks are flagged as errors",
-            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.NONE, "none",
+            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
                 "error", null)),
 
         /**

@@ -24,6 +24,7 @@ import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.SwitchAttempt;
 import groove.control.template.SwitchStack;
+import groove.grammar.CheckPolicy;
 import groove.grammar.Recipe;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
@@ -138,8 +139,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private final Location location;
 
     /** Indicates whether this is an absence frame. */
-    public boolean isAbsence() {
-        return getLocation().isAbsence();
+    public boolean isRemoved() {
+        return getLocation().isRemoved();
     }
 
     /** Indicates whether this is an error frame. */
@@ -328,10 +329,29 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return new Step(this, sw, target);
     }
 
+    /** Returns the successor frame, depending on a given policy value. */
+    public Frame onPolicy(CheckPolicy policy) {
+        Frame result = null;
+        switch (policy) {
+        case ERROR:
+            result = onError();
+            break;
+        case REMOVE:
+            result = onRemove();
+            break;
+        case SILENT:
+            result = this;
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
     /** Returns the error frame from this frame. */
     public Frame onError() {
         if (this.onError == null) {
-            if (isError() || isAbsence()) {
+            if (isError() || isRemoved()) {
                 this.onError = this;
             } else {
                 this.onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
@@ -343,19 +363,19 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private Frame onError;
 
     /** Returns the absence frame from this frame. */
-    public Frame onAbsence() {
-        if (this.onAbsence == null) {
-            if (isAbsence()) {
-                this.onAbsence = this;
+    public Frame onRemove() {
+        if (this.onRemove == null) {
+            if (isRemoved()) {
+                this.onRemove = this;
             } else {
-                this.onAbsence =
+                this.onRemove =
                     newFrame(Location.getSpecial(false, getLocation().getTransience()));
             }
         }
-        return this.onAbsence;
+        return this.onRemove;
     }
 
-    private Frame onAbsence;
+    private Frame onRemove;
 
     /**
      * Indicates if this frame is inside a recipe.

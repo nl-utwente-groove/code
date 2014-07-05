@@ -16,8 +16,7 @@
  */
 package groove.util;
 
-import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
+import groove.io.HTMLConverter;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,8 +35,10 @@ import java.util.Map;
 abstract public interface Parser<T> {
     /**
      * Returns a description of the parsable strings.
+     * @param uppercase if {@code true}, the result stars with an uppercase letter,
+     * otherwise with a lowercase letter.
      */
-    public Line getDescription();
+    public String getDescription(boolean uppercase);
 
     /**
      * Indicates if a given (possibly {@code null}) textual value can be parsed.
@@ -119,8 +120,8 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Line getDescription() {
-            return Line.atom("Any string value");
+        public String getDescription(boolean uppercase) {
+            return uppercase ? "Any string value" : "any string value";
         }
 
         @Override
@@ -176,8 +177,13 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Line getDescription() {
-            return Line.atom((this.neg ? "Integer value" : "Natural number") + " (default 0)");
+        public String getDescription(boolean uppercase) {
+            StringBuffer result = new StringBuffer(this.neg ? "Integer value" : "Natural number");
+            result.append(" (default 0)");
+            if (!uppercase) {
+                result.setCharAt(0, Character.toLowerCase(result.charAt(0)));
+            }
+            return result.toString();
         }
 
         @Override
@@ -220,8 +226,9 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Line getDescription() {
-            return Line.atom("A space-separated list of names");
+        public String getDescription(boolean uppercase) {
+            return uppercase ? "A space-separated list of names"
+                : "a space-separated list of names";
         }
 
         @Override
@@ -274,17 +281,17 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Line getDescription() {
-            Line result = Line.atom("Either ");
-            result = result.append(TRUE_LINE);
+        public String getDescription(boolean uppercase) {
+            StringBuffer result = new StringBuffer(uppercase ? "Either " : "either ");
+            result.append(TRUE_LINE);
             if (this.defaultValue) {
-                result = result.append(" (default)");
+                result.append(" (default)");
             }
-            result = result.append(" or ").append(FALSE_LINE);
+            result.append(" or ").append(FALSE_LINE);
             if (!this.defaultValue) {
-                result = result.append(" (default)");
+                result.append(" (default)");
             }
-            return result;
+            return result.toString();
         }
 
         @Override
@@ -340,10 +347,10 @@ abstract public interface Parser<T> {
 
         /** Representation of <code>true</code>. */
         static private final String TRUE = Boolean.toString(true);
-        static private final Line TRUE_LINE = Line.atom(TRUE).style(Style.ITALIC);
+        static private final String TRUE_LINE = HTMLConverter.ITALIC_TAG.on(TRUE);
         /** Representation of <code>false</code>. */
         static private final String FALSE = Boolean.toString(false);
-        static private final Line FALSE_LINE = Line.atom(FALSE).style(Style.ITALIC);
+        static private final String FALSE_LINE = HTMLConverter.ITALIC_TAG.on(FALSE);
     }
 
     /**
@@ -406,22 +413,22 @@ abstract public interface Parser<T> {
         private final T defaultValue;
 
         @Override
-        public Line getDescription() {
-            Line result = Line.atom("One of ");
+        public String getDescription(boolean uppercase) {
+            StringBuffer result = new StringBuffer(uppercase ? "One of " : "one of ");
             int i = 0;
             for (Map.Entry<T,String> e : this.toStringMap.entrySet()) {
-                result = result.append(Line.atom(e.getValue()).style(Style.ITALIC));
+                result = result.append(HTMLConverter.ITALIC_TAG.on(e.getValue()));
                 if (isDefault(e.getKey())) {
-                    result = result.append(" (default)");
+                    result.append(" (default)");
                 }
                 if (i < this.toStringMap.size() - 2) {
-                    result = result.append(", ");
+                    result.append(", ");
                 } else if (i < this.toStringMap.size() - 1) {
-                    result = result.append(" or ");
+                    result.append(" or ");
                 }
                 i++;
             }
-            return result;
+            return result.toString();
         }
 
         @Override

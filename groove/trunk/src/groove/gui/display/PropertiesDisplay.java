@@ -51,6 +51,7 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
     @Override
     protected void installListeners() {
         getSimulatorModel().addListener(this, Change.GRAMMAR);
+        addMouseListener(new DismissDelayer(this));
     }
 
     @Override

@@ -90,7 +90,7 @@ public class ShapeState extends AbstractGraphState {
             // this.shape.setName(toString());
             // Fix the shape to avoid modifications.
             shape.setFixed();
-            if (getGTS().getTypePolicy() != CheckPolicy.NONE) {
+            if (getGTS().getTypePolicy() != CheckPolicy.OFF) {
                 FormatErrorSet errors = shape.checkTypeConstraints();
                 if (!errors.isEmpty()) {
                     GraphInfo.addErrors(shape, errors);

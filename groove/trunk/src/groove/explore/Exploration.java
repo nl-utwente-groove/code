@@ -26,7 +26,6 @@ import groove.explore.strategy.Strategy.Halter;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
-import groove.gui.look.Line;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Parser;
@@ -308,8 +307,8 @@ public class Exploration {
     static public Parser<Exploration> parser() {
         return new Parser<Exploration>() {
             @Override
-            public Line getDescription() {
-                return Line.atom(SYNTAX_MESSAGE);
+            public String getDescription(boolean uppercase) {
+                return SYNTAX_MESSAGE;
             }
 
             @Override

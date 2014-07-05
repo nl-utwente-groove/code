@@ -125,7 +125,7 @@ public class StateMatches extends MatchResultSet {
                     if (target.getAbsence() <= frame.getTransience()) {
                         somePresent = true;
                         break;
-                    } else if (target.getActualFrame().isAbsence()) {
+                    } else if (target.getActualFrame().isRemoved()) {
                         // test for the frame property rather than state.isAbsent()
                         // as the latter is set only upon state closure
                         // whereas absence may also be due to constraint violations
@@ -156,7 +156,7 @@ public class StateMatches extends MatchResultSet {
             // Keep track of increases in transient depth
             boolean depthIncreases = false;
             // keep track of property violations
-            CheckPolicy violated = CheckPolicy.NONE;
+            CheckPolicy violated = CheckPolicy.SILENT;
             List<MatchResult> outstanding = new LinkedList<MatchResult>();
             for (Step step : attempt) {
                 MatchResultSet matches = getMatchCollector().computeMatches(step);
@@ -170,8 +170,8 @@ public class StateMatches extends MatchResultSet {
                 depthIncreases |= step.onFinish().getTransience() > frame.getTransience();
             }
             Frame nextFrame;
-            if (violated != CheckPolicy.NONE) {
-                nextFrame = violated == CheckPolicy.ERROR ? frame.onError() : frame.onAbsence();
+            if (violated != CheckPolicy.SILENT) {
+                nextFrame = frame.onPolicy(violated);
             } else if (outstanding.isEmpty()) {
                 // no transitions will be generated
                 nextFrame = attempt.onFailure();
