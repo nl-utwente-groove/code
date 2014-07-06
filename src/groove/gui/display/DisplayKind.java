@@ -12,31 +12,26 @@ import javax.swing.ImageIcon;
 /** Type of components in the panel. */
 public enum DisplayKind {
     /** Host graph display. */
-    HOST(ResourceKind.HOST, Icons.GRAPH_FRAME_ICON, "Graphs",
-            "Current graph state"),
+    HOST(ResourceKind.HOST, Icons.GRAPH_FRAME_ICON, "Graphs", "Current graph state"),
     /** Rule display. */
     RULE(ResourceKind.RULE, Icons.RULE_FRAME_ICON, "Rules", "Selected rule"),
     /** Type display. */
     TYPE(ResourceKind.TYPE, Icons.TYPE_FRAME_ICON, "Types", "Type graphs"),
     /** Control display. */
-    CONTROL(ResourceKind.CONTROL, Icons.CONTROL_FRAME_ICON, "Control",
-            "Control specifications"),
+    CONTROL(ResourceKind.CONTROL, Icons.CONTROL_FRAME_ICON, "Control", "Control specifications"),
     /** Prolog display. */
-    PROLOG(ResourceKind.PROLOG, Icons.PROLOG_FRAME_ICON, "Prolog",
-            "Prolog programs"),
+    PROLOG(ResourceKind.PROLOG, Icons.PROLOG_FRAME_ICON, "Prolog", "Prolog programs"),
     /** Groovy panel. */
-    GROOVY(ResourceKind.GROOVY, Icons.GROOVY_FRAME_ICON, "Groovy",
-            "Groovy scripts"),
+    GROOVY(ResourceKind.GROOVY, Icons.GROOVY_FRAME_ICON, "Groovy", "Groovy scripts"),
     /** State display. */
     STATE(null, Icons.STATE_FRAME_ICON, "State", "State panel"),
     /** LTS display. */
     LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel"),
     /** Properties display. */
-    PROPERTIES(null, Icons.PROPERTIES_FRAME_ICON, "Properties",
-            "System properties");
+    PROPERTIES(ResourceKind.PROPERTIES, Icons.PROPERTIES_FRAME_ICON, "Properties",
+        "System properties");
 
-    private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title,
-            String tip) {
+    private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title, String tip) {
         this.resource = resource;
         this.tabIcon = tabIcon;
         this.title = title;
@@ -104,8 +99,7 @@ public enum DisplayKind {
 
     /** Returns true if this display kind is used for showing graphs. */
     public final boolean isGraphBased() {
-        return this == HOST || this == RULE || this == LTS || this == STATE
-            || this == TYPE;
+        return this == HOST || this == RULE || this == LTS || this == STATE || this == TYPE;
     }
 
     private final ResourceKind resource;

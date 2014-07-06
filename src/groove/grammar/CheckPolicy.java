@@ -105,6 +105,9 @@ public enum CheckPolicy {
             if (text != null) {
                 String[] split = text.trim().split("\\s");
                 for (String pair : split) {
+                    if (pair.length() == 0) {
+                        continue;
+                    }
                     int pos = pair.indexOf(ASSIGN_CHAR);
                     if (pos < 0) {
                         result = null;

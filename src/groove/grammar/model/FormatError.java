@@ -17,6 +17,7 @@
 package groove.grammar.model;
 
 import groove.grammar.Action;
+import groove.grammar.GrammarKey;
 import groove.grammar.aspect.AspectGraph;
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
@@ -88,6 +89,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         } else if (par instanceof Action) {
             this.resourceName = ((Action) par).getFullName();
             this.resourceKind = ResourceKind.RULE;
+        } else if (par instanceof GrammarKey) {
+            this.resourceName = ((GrammarKey) par).getName();
+            this.resourceKind = ResourceKind.PROPERTIES;
         }
     }
 

@@ -16,6 +16,7 @@
  */
 package groove.util;
 
+
 /** Interface for property keys. */
 public interface PropertyKey {
     /** Property key name. */

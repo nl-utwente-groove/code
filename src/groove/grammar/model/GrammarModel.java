@@ -23,8 +23,8 @@ import static groove.grammar.model.ResourceKind.RULE;
 import static groove.grammar.model.ResourceKind.TYPE;
 import groove.explore.Exploration;
 import groove.grammar.Grammar;
+import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
-import groove.grammar.GrammarProperties.Key;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.aspect.AspectGraph;
@@ -461,7 +461,12 @@ public class GrammarModel implements Observer {
             errors.addAll(e.getErrors());
         }
         // set properties
-        result.setProperties(getProperties());
+        try {
+            getProperties().check(this);
+            result.setProperties(getProperties());
+        } catch (FormatException e) {
+            errors.addAll(e.getErrors());
+        }
         // set start graph
         if (getStartGraphModel() == null) {
             Set<String> startGraphNames = getActiveNames(HOST);
@@ -646,7 +651,7 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Returns the default exploration, based on the {@link Key#EXPLORATION}
+     * Returns the default exploration, based on the {@link GrammarKey#EXPLORATION}
      * value in the system properties.
      */
     public Exploration getDefaultExploration() {

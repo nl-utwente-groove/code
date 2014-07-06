@@ -3,15 +3,14 @@ package groove.grammar;
 import groove.algebra.AlgebraFamily;
 import groove.explore.Exploration;
 import groove.grammar.CheckPolicy.PolicyMap;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.util.Groove;
-import groove.util.Parser;
 import groove.util.Properties;
-import groove.util.PropertyKey;
 import groove.util.ThreeValued;
 import groove.util.Version;
 
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +40,7 @@ public class GrammarProperties extends Properties {
      * Constructor that sets the grammar properties.
      */
     public GrammarProperties(boolean useCurrentGrooveVersion) {
-        super(Key.class);
+        super(GrammarKey.class);
         if (useCurrentGrooveVersion) {
             this.setCurrentVersionProperties();
             setShowLoopsAsLabels(false);
@@ -54,7 +52,7 @@ public class GrammarProperties extends Properties {
 
     /** Constructs a non-fixed clone of a given properties object. */
     private GrammarProperties(GrammarProperties original) {
-        super(Key.class);
+        super(GrammarKey.class);
         putAll(original);
     }
 
@@ -80,7 +78,7 @@ public class GrammarProperties extends Properties {
      * Default value: <code>true</code>.
      */
     public boolean isShowLoopsAsLabels() {
-        return (Boolean) parseProperty(Key.LOOPS_AS_LABELS);
+        return (Boolean) parseProperty(GrammarKey.LOOPS_AS_LABELS);
     }
 
     /**
@@ -88,7 +86,7 @@ public class GrammarProperties extends Properties {
      * Default value: <code>true</code>.
      */
     public void setShowLoopsAsLabels(boolean show) {
-        storeProperty(Key.LOOPS_AS_LABELS, show);
+        storeProperty(GrammarKey.LOOPS_AS_LABELS, show);
     }
 
     /**
@@ -96,123 +94,124 @@ public class GrammarProperties extends Properties {
      * value: <code>false</code>.
      */
     public ThreeValued isUseParameters() {
-        return (ThreeValued) parseProperty(Key.TRANSITION_PARAMETERS);
+        return (ThreeValued) parseProperty(GrammarKey.TRANSITION_PARAMETERS);
     }
 
-    /** Sets the {@link Key#TRANSITION_PARAMETERS} property to the given value * */
+    /** Sets the {@link GrammarKey#TRANSITION_PARAMETERS} property to the given value * */
     public void setUseParameters(ThreeValued useParameters) {
-        storeProperty(Key.TRANSITION_PARAMETERS, useParameters);
+        storeProperty(GrammarKey.TRANSITION_PARAMETERS, useParameters);
     }
 
-    /** Sets the {@link Key#GROOVE_VERSION} property to the given value */
+    /** Sets the {@link GrammarKey#GROOVE_VERSION} property to the given value */
     public void setGrooveVersion(String version) {
-        storeProperty(Key.GROOVE_VERSION, version);
+        storeProperty(GrammarKey.GROOVE_VERSION, version);
     }
 
     /**
      * @return the version of Groove that created the grammar.
      */
     public String getGrooveVersion() {
-        return (String) parseProperty(Key.GROOVE_VERSION);
+        return (String) parseProperty(GrammarKey.GROOVE_VERSION);
     }
 
-    /** Sets the {@link Key#GRAMMAR_VERSION} property to the given value */
+    /** Sets the {@link GrammarKey#GRAMMAR_VERSION} property to the given value */
     public void setGrammarVersion(String version) {
-        storeProperty(Key.GRAMMAR_VERSION, version);
+        storeProperty(GrammarKey.GRAMMAR_VERSION, version);
     }
 
     /**
      * @return the version of the grammar.
      */
     public String getGrammarVersion() {
-        return (String) parseProperty(Key.GRAMMAR_VERSION);
+        return (String) parseProperty(GrammarKey.GRAMMAR_VERSION);
     }
 
     /**
      * Returns a list of control labels, according to the
-     * {@link Key#CONTROL_LABELS} property of the rule system.
-     * @see Key#CONTROL_LABELS
+     * {@link GrammarKey#CONTROL_LABELS} property of the rule system.
+     * @see GrammarKey#CONTROL_LABELS
      */
     @SuppressWarnings("unchecked")
     public List<String> getControlLabels() {
-        return (List<String>) parseProperty(Key.CONTROL_LABELS);
+        return (List<String>) parseProperty(GrammarKey.CONTROL_LABELS);
     }
 
     /**
      * Sets the control labels property.
-     * @see Key#CONTROL_LABELS
+     * @see GrammarKey#CONTROL_LABELS
      */
     public void setControlLabels(List<String> controlLabels) {
-        storeProperty(Key.CONTROL_LABELS, controlLabels);
+        storeProperty(GrammarKey.CONTROL_LABELS, controlLabels);
     }
 
     /**
      * Sets the rule application policy map.
      * @param policy the policy map to be used for rule application.
-     * @see Key#ACTION_POLICY
+     * @see GrammarKey#ACTION_POLICY
      */
     public void setRulePolicy(PolicyMap policy) {
-        storeProperty(Key.ACTION_POLICY, policy);
+        storeProperty(GrammarKey.ACTION_POLICY, policy);
     }
 
     /**
      * Returns the rule application policy map of the rule system.
-     * @see Key#ACTION_POLICY
+     * @see GrammarKey#ACTION_POLICY
      */
     public PolicyMap getRulePolicy() {
-        return (PolicyMap) parseProperty(Key.ACTION_POLICY);
+        return (PolicyMap) parseProperty(GrammarKey.ACTION_POLICY);
     }
 
     /**
      * Sets the deadlock check policy.
      * @param policy the policy to be used for deadlock checking.
-     * @see Key#DEAD_POLICY
+     * @see GrammarKey#DEAD_POLICY
      */
     public void setDeadPolicy(CheckPolicy policy) {
-        storeProperty(Key.DEAD_POLICY, policy);
+        storeProperty(GrammarKey.DEAD_POLICY, policy);
     }
 
     /**
      * Returns the deadlock check policy of the rule system.
-     * @see Key#DEAD_POLICY
+     * @see GrammarKey#DEAD_POLICY
      */
     public CheckPolicy getDeadPolicy() {
-        return (CheckPolicy) parseProperty(Key.DEAD_POLICY);
+        return (CheckPolicy) parseProperty(GrammarKey.DEAD_POLICY);
     }
 
     /**
      * Sets the typecheck policy.
      * @param policy the policy to be used for type checking.
-     * @see Key#TYPE_POLICY
+     * @see GrammarKey#TYPE_POLICY
      */
     public void setTypePolicy(CheckPolicy policy) {
-        storeProperty(Key.TYPE_POLICY, policy);
+        storeProperty(GrammarKey.TYPE_POLICY, policy);
     }
 
     /**
      * Returns the type check policy of the rule system.
-     * @see Key#TYPE_POLICY
+     * @see GrammarKey#TYPE_POLICY
      */
     public CheckPolicy getTypePolicy() {
-        return (CheckPolicy) parseProperty(Key.TYPE_POLICY);
+        return (CheckPolicy) parseProperty(GrammarKey.TYPE_POLICY);
     }
 
     /**
      * Returns a list of common labels, according to the
-     * {@link Key#COMMON_LABELS} property of the rule system.
-     * @see Key#COMMON_LABELS
+     * {@link GrammarKey#COMMON_LABELS} property of the rule system.
+     * @see GrammarKey#COMMON_LABELS
      */
     @SuppressWarnings("unchecked")
     public List<String> getCommonLabels() {
-        return (List<String>) parseProperty(Key.COMMON_LABELS);
+        return (List<String>) parseProperty(GrammarKey.COMMON_LABELS);
     }
 
     /**
      * Sets the common labels property.
-     * @see Key#COMMON_LABELS
+     * @see GrammarKey#COMMON_LABELS
      */
     public void setCommonLabels(List<String> commonLabels) {
-        storeProperty(Key.COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
+        storeProperty(GrammarKey.COMMON_LABELS,
+            Groove.toString(commonLabels.toArray(), "", "", " "));
     }
 
     /**
@@ -221,7 +220,7 @@ public class GrammarProperties extends Properties {
      *        disallowed
      */
     public void setInjective(boolean injective) {
-        storeProperty(Key.INJECTIVE, injective);
+        storeProperty(GrammarKey.INJECTIVE, injective);
     }
 
     /**
@@ -229,7 +228,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, non-injective matches are disallowed
      */
     public boolean isInjective() {
-        return (Boolean) parseProperty(Key.INJECTIVE);
+        return (Boolean) parseProperty(GrammarKey.INJECTIVE);
     }
 
     /**
@@ -238,7 +237,7 @@ public class GrammarProperties extends Properties {
      *        disallowed
      */
     public void setCheckDangling(boolean dangling) {
-        storeProperty(Key.DANGLING, dangling);
+        storeProperty(GrammarKey.DANGLING, dangling);
     }
 
     /**
@@ -246,7 +245,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
-        return (Boolean) parseProperty(Key.DANGLING);
+        return (Boolean) parseProperty(GrammarKey.DANGLING);
     }
 
     /**
@@ -254,7 +253,7 @@ public class GrammarProperties extends Properties {
      * @param strategy the new exploration strategy
      */
     public void setExploration(Exploration strategy) {
-        storeProperty(Key.EXPLORATION, strategy);
+        storeProperty(GrammarKey.EXPLORATION, strategy);
     }
 
     /**
@@ -262,7 +261,7 @@ public class GrammarProperties extends Properties {
      * is no strategy set.
      */
     public Exploration getExploration() {
-        return (Exploration) parseProperty(Key.EXPLORATION);
+        return (Exploration) parseProperty(GrammarKey.EXPLORATION);
     }
 
     /**
@@ -294,7 +293,7 @@ public class GrammarProperties extends Properties {
      * Sets the algebra family to a given value.
      */
     public void setAlgebraFamily(AlgebraFamily family) {
-        storeProperty(Key.ALGEBRA, family);
+        storeProperty(GrammarKey.ALGEBRA, family);
     }
 
     /**
@@ -303,7 +302,7 @@ public class GrammarProperties extends Properties {
      * if none is selected.
      */
     public AlgebraFamily getAlgebraFamily() {
-        return (AlgebraFamily) parseProperty(Key.ALGEBRA);
+        return (AlgebraFamily) parseProperty(GrammarKey.ALGEBRA);
     }
 
     /**
@@ -312,7 +311,7 @@ public class GrammarProperties extends Properties {
      *        application conditions
      */
     public void setCheckCreatorEdges(boolean check) {
-        storeProperty(Key.CREATOR_EDGE, check);
+        storeProperty(GrammarKey.CREATOR_EDGE, check);
     }
 
     /**
@@ -321,7 +320,7 @@ public class GrammarProperties extends Properties {
      *         application conditions
      */
     public boolean isCheckCreatorEdges() {
-        return (Boolean) parseProperty(Key.CREATOR_EDGE);
+        return (Boolean) parseProperty(GrammarKey.CREATOR_EDGE);
     }
 
     /**
@@ -330,7 +329,7 @@ public class GrammarProperties extends Properties {
      *        isomorphism
      */
     public void setCheckIsomorphism(boolean check) {
-        storeProperty(Key.ISOMORPHISM, check);
+        storeProperty(GrammarKey.ISOMORPHISM, check);
     }
 
     /**
@@ -338,7 +337,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, state graphs are compared up to isomorphism
      */
     public boolean isCheckIsomorphism() {
-        return (Boolean) parseProperty(Key.ISOMORPHISM);
+        return (Boolean) parseProperty(GrammarKey.ISOMORPHISM);
     }
 
     /**
@@ -348,7 +347,7 @@ public class GrammarProperties extends Properties {
      *         being applied twice in a row
      */
     public boolean isRhsAsNac() {
-        return (Boolean) parseProperty(Key.RHS_AS_NAC);
+        return (Boolean) parseProperty(GrammarKey.RHS_AS_NAC);
     }
 
     /**
@@ -358,24 +357,24 @@ public class GrammarProperties extends Properties {
      *        being applied twice in a row
      */
     public void setRhsAsNac(boolean value) {
-        storeProperty(Key.RHS_AS_NAC, value);
+        storeProperty(GrammarKey.RHS_AS_NAC, value);
     }
 
     /**
      * Returns a list of node labels that are to be used in the abstraction.
-     * @see Key#ABSTRACTION_LABELS
+     * @see GrammarKey#ABSTRACTION_LABELS
      */
     @SuppressWarnings("unchecked")
     public List<String> getAbstractionLabels() {
-        return (List<String>) parseProperty(Key.ABSTRACTION_LABELS);
+        return (List<String>) parseProperty(GrammarKey.ABSTRACTION_LABELS);
     }
 
     /**
      * Sets the abstraction labels property.
-     * @see Key#ABSTRACTION_LABELS
+     * @see GrammarKey#ABSTRACTION_LABELS
      */
     public void setAbstractionLabels(List<String> abstractionLabels) {
-        storeProperty(Key.ABSTRACTION_LABELS, abstractionLabels);
+        storeProperty(GrammarKey.ABSTRACTION_LABELS, abstractionLabels);
     }
 
     /**
@@ -416,16 +415,9 @@ public class GrammarProperties extends Properties {
      */
     public void check(GrammarModel grammar) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
-        for (ResourceKind kind : ResourceKind.values()) {
-            switch (kind) {
-            case CONTROL:
-            case HOST:
-            case PROLOG:
-                for (String name : getActiveNames(kind)) {
-                    if (!grammar.getNames(kind).contains(name)) {
-                        errors.add("'%s' is not an existing %s", name, kind.getDescription());
-                    }
-                }
+        for (GrammarKey key : GrammarKey.values()) {
+            for (FormatError error : key.check(grammar, parseProperty(key))) {
+                errors.add("Error in property key '%s': %s", key.getKeyPhrase(), error, key);
             }
         }
         errors.throwException();
@@ -467,267 +459,13 @@ public class GrammarProperties extends Properties {
     static public final GrammarProperties DEFAULT_PROPERTIES = getInstance();
 
     /** Mapping from resource kinds to corresponding property keys. */
-    static private final Map<ResourceKind,Key> resourceKeyMap =
-        new EnumMap<ResourceKind,GrammarProperties.Key>(ResourceKind.class);
+    static private final Map<ResourceKind,GrammarKey> resourceKeyMap =
+        new EnumMap<ResourceKind,GrammarKey>(ResourceKind.class);
     static {
-        resourceKeyMap.put(ResourceKind.TYPE, Key.TYPE_NAMES);
-        resourceKeyMap.put(ResourceKind.CONTROL, Key.CONTROL_NAMES);
-        resourceKeyMap.put(ResourceKind.PROLOG, Key.PROLOG_NAMES);
-        resourceKeyMap.put(ResourceKind.HOST, Key.START_GRAPH_NAMES);
+        resourceKeyMap.put(ResourceKind.TYPE, GrammarKey.TYPE_NAMES);
+        resourceKeyMap.put(ResourceKind.CONTROL, GrammarKey.CONTROL_NAMES);
+        resourceKeyMap.put(ResourceKind.PROLOG, GrammarKey.PROLOG_NAMES);
+        resourceKeyMap.put(ResourceKind.HOST, GrammarKey.START_GRAPH_NAMES);
 
-    }
-
-    /** Grammar property keys. */
-    public static enum Key implements PropertyKey {
-        /** Property name for the GROOVE version. */
-        GROOVE_VERSION("grooveVersion", true, "The Groove version that created this grammar"),
-        /** Property name for the Grammar version. */
-        GRAMMAR_VERSION("grammarVersion", true, "The version of this grammar"),
-        /** One-line documentation comment on the graph production system. */
-        REMARK("remark", "A one-line description of the graph production system"),
-
-        /** Property name for the algebra to be used during simulation. */
-        ALGEBRA(
-            "algebraFamily",
-            "<body>Algebra used for attributes"
-                + "<li>- <i>default</i>: java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)"
-                + "<li>- <i>big</i>: arbitrary-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)"
-                + "<li>- <i>point</i>: a single value for every type (so all values are equal)"
-                + "<li>- <i>term</i>: symbolic term representations",
-            new Parser.EnumParser<AlgebraFamily>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
-
-        /**
-         * Flag determining the injectivity of the rule system. If <code>true</code>,
-         * all rules should be matched injectively. Default is <code>false</code>.
-         */
-        INJECTIVE("matchInjective",
-            "<body>Flag controlling if all rules should be matched injectively. "
-                + "<p>If true, overrules the local rule injectivity property", Parser.boolFalse),
-
-        /**
-         * Dangling edge check. If <code>true</code>, all
-         * matches that leave dangling edges are invalid. Default is
-         * <code>false</code>.
-         */
-        DANGLING("checkDangling",
-            "Flag controlling if dangling edges should be forbidden rather than deleted",
-            Parser.boolFalse),
-
-        /**
-         * Creator edge check. If <code>true</code>, creator
-         * edges are implicitly treated as (individual) NACs. Default is
-         * <code>false</code>.
-         */
-        CREATOR_EDGE("checkCreatorEdges",
-            "Flag controlling if creator edges should be treated as implicit NACs",
-            Parser.boolFalse),
-
-        /**
-         * RHS-as-NAC property. If <code>true</code>, each RHS
-         * is implicitly treated as a NAC. Default is <code>false</code>.
-         */
-        RHS_AS_NAC("rhsIsNAC", "Flag controlling if RHSs should be treated as implicit NACs",
-            Parser.boolFalse),
-
-        /**
-         * Isomorphism check. If <code>true</code>, state
-         * graphs are compared up to isomorphism; otherwise, they are compared up to
-         * equality. Default is <code>true</code>.
-         */
-        ISOMORPHISM("checkIsomorphism",
-            "Flag controlling whether states are checked up to isomorphism", Parser.boolTrue),
-
-        /**
-         * Space-separated list of active start graph names.
-         */
-        START_GRAPH_NAMES("startGraph", "List of active start graph names", Parser.splitter),
-
-        /**
-         * Name of the active control program.
-         */
-        CONTROL_NAMES("controlProgram", "List of enabled control programs", Parser.splitter),
-
-        /**
-         * Space-separated list of active type graph names.
-         */
-        TYPE_NAMES("typeGraph", "List of active type graph names", Parser.splitter),
-
-        /**
-         * Space-separated list of active prolog program names.
-         */
-        PROLOG_NAMES("prolog", "List of active prolog program names", Parser.splitter),
-
-        /** Policy for rule application. */
-        ACTION_POLICY(
-            "actionPolicy",
-            "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:"
-                + "<li> - <i>off</i>: the action is disabled (overrules the <b>enabled</b> property)"
-                + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition"
-                + "<li> - <i>error</i>: applicability is an error"
-                + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
-                + "<p>The last three are only valid for forbidden and invariant properties",
-            CheckPolicy.multiParser),
-        /** Policy for dealing with type violations. */
-        TYPE_POLICY(
-            "typePolicy",
-            "<body>Flag controlling how dynamic type constraints (multiplicities, composites) are dealt with."
-                + "<li>- <i>off</i>: dynamic type constraints are not checked"
-                + "<li>- <i>error</i>: dynamic type violations are flagged as errors"
-                + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
-            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
-                "error", "remove")),
-
-        /** Policy for dealing with deadlocks. */
-        DEAD_POLICY("deadlockPolicy", "Flag controlling how deadlocked states are dealt with."
-            + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
-            + "<li>- <i>off</i>: deadlocks are not checked"
-            + "<li>- <i>error</i>: deadlocks are flagged as errors",
-            new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
-                "error", null)),
-
-        /**
-         * Exploration strategy description.
-         */
-        EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
-            Exploration.parser()),
-
-        /**
-         * Space-separated list of control labels of a graph grammar. The
-         * control labels are those labels which should be matched first for optimal
-         * performance, presumably because they occur infrequently or indicate a
-         * place where rules are likely to be applicable.
-         */
-        CONTROL_LABELS("controlLabels", "List of rare labels, used to optimise rule matching",
-            Parser.splitter),
-
-        /**
-         * Space-separated list of common labels of a graph grammar. The
-         * control labels are those labels which should be matched last for optimal
-         * performance, presumably because they occur frequently.
-         */
-        COMMON_LABELS("commonLabels", "List of frequent labels, used to optimise rule matching",
-            Parser.splitter),
-
-        /**
-         * Space-separated list of abstraction node labels of a graph grammar.
-         * These labels are used to define the level zero neighbourhood relation
-         * between nodes.
-         */
-        ABSTRACTION_LABELS("abstractionLabels",
-            "List of node labels, used by neighbourhood abstraction", Parser.splitter),
-
-        /**
-         * Flag that determines if transition parameters are included in the LTS
-         * transition labels
-         */
-        TRANSITION_PARAMETERS("transitionParameters", false, "Show parameters",
-            "Flag controlling if transition labels should include rule parameters",
-            new Parser.EnumParser<ThreeValued>(ThreeValued.class, ThreeValued.SOME)),
-
-        /**
-         * Flag that determines if (binary) loops can be shown as vertex labels.
-         */
-        LOOPS_AS_LABELS("loopsAsLabels",
-            "Flag controlling if binary self-edges may be shown as vertex labels", Parser.boolTrue), ;
-
-        /**
-         * Constructor for a key with a plain string value
-         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-         * @param explanation short explanation of the meaning of the key
-         */
-        private Key(String name, String explanation) {
-            this(name, false, null, explanation, null);
-        }
-
-        /**
-         * Constructor for a key with a plain string value
-         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-         * @param explanation short explanation of the meaning of the key
-         */
-        private Key(String name, boolean system, String explanation) {
-            this(name, system, null, explanation, null);
-        }
-
-        /**
-         * Constructor for a key with values parsed by a given parser
-         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-         * @param explanation short explanation of the meaning of the key
-         * @param parser parser for values for this key; if {@code null},
-         * {@link Parser#identity} is used
-         */
-        private Key(String name, String explanation, Parser<?> parser) {
-            this(name, false, null, explanation, parser);
-        }
-
-        /**
-         * Constructor for a key with a plain string value
-         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-         * @param system flag indicating this is a system key
-         * @param keyPhrase user-readable version of the name; if {@code null},
-         * the key phrase is constructed from {@code name}
-         * @param explanation short explanation of the meaning of the key
-         */
-        private Key(String name, boolean system, String keyPhrase, String explanation,
-            Parser<?> parser) {
-            this.name = name;
-            this.system = system;
-            this.keyPhrase = keyPhrase == null ? Groove.unCamel(name, false) : keyPhrase;
-            this.explanation = explanation;
-            this.parser = parser == null ? Parser.identity : parser;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        private final String name;
-
-        @Override
-        public String getExplanation() {
-            return this.explanation;
-        }
-
-        private final String explanation;
-
-        @Override
-        public boolean isSystem() {
-            return this.system;
-        }
-
-        private final boolean system;
-
-        @Override
-        public String getKeyPhrase() {
-            return this.keyPhrase;
-        }
-
-        private final String keyPhrase;
-
-        @Override
-        public Parser<?> parser() {
-            return this.parser;
-        }
-
-        private final Parser<?> parser;
-
-        /** Returns the key with a given name, if any. */
-        public static Key getKey(String name) {
-            return keyMap.get(name);
-        }
-
-        /**
-         * List of system-defined keys, in the order in which they are to appear in
-         * a properties editor.
-         */
-        static private final Map<String,Key> keyMap;
-
-        static {
-            Map<String,Key> defaultKeys = new LinkedHashMap<String,Key>();
-            for (Key key : Key.values()) {
-                defaultKeys.put(key.getName(), key);
-            }
-            keyMap = Collections.unmodifiableMap(defaultKeys);
-        }
     }
 }

@@ -32,6 +32,7 @@ import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR;
+import groove.grammar.GrammarKey;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.GrammarModel;
@@ -42,11 +43,15 @@ import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.PropertiesTable;
+import groove.gui.display.Display;
+import groove.gui.display.Display.ListPanel;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.DisplaysPanel;
 import groove.gui.display.GraphEditorTab;
 import groove.gui.display.GraphTab;
 import groove.gui.display.JGraphPanel;
+import groove.gui.display.ResourceDisplay;
 import groove.gui.display.ResourceTab;
 import groove.gui.display.TextTab;
 import groove.gui.jgraph.AspectJGraph;
@@ -342,38 +347,49 @@ public class Simulator implements SimulatorListener {
             @Override
             public void update(Observable observable, Object arg) {
                 if (arg != null) {
-                    SelectableListEntry entry = (SelectableListEntry) arg;
-                    ResourceKind resource = entry.getResourceKind();
-                    String name = entry.getResourceName();
-                    if (resource != null) {
-                        getModel().doSelect(resource, name);
-                        ResourceTab resourceTab =
-                            getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
-                        if (resource.isGraphBased()) {
-                            AspectJGraph jGraph;
-                            if (resourceTab.isEditor()) {
-                                jGraph = ((GraphEditorTab) resourceTab).getJGraph();
-                            } else {
-                                jGraph = ((GraphTab) resourceTab).getJGraph();
-                            }
-                            // select the error cell and switch to the panel
-                            for (Element cell : entry.getElements()) {
-                                if (jGraph.selectJCell(cell)) {
-                                    break;
-                                }
-                            }
-                        } else if (arg instanceof FormatError) {
-                            FormatError error = (FormatError) arg;
-                            if (error.getNumbers().size() > 1) {
-                                int line = error.getNumbers().get(0);
-                                int column = error.getNumbers().get(1);
-                                ((TextTab) resourceTab).select(line, column);
-                            }
-                        }
-                    }
+                    selectDisplayPart((SelectableListEntry) arg);
                 }
             }
         };
+    }
+
+    /**
+     * Selects part of the display, based on a given entry.
+     */
+    private void selectDisplayPart(SelectableListEntry entry) {
+        ResourceKind resource = entry.getResourceKind();
+        String name = entry.getResourceName();
+        if (resource == ResourceKind.PROPERTIES) {
+            Display display = getDisplaysPanel().getDisplayFor(resource);
+            ListPanel panel = display.getListPanel();
+            getDisplaysPanel().getUpperListsPanel().setSelectedComponent(panel);
+            ((PropertiesTable) panel.getList()).setSelected(GrammarKey.getKey(name));
+        } else if (resource != null) {
+            getModel().doSelect(resource, name);
+            ResourceDisplay display = (ResourceDisplay) getDisplaysPanel().getDisplayFor(resource);
+            ResourceTab resourceTab = display.getSelectedTab();
+            if (resource.isGraphBased()) {
+                AspectJGraph jGraph;
+                if (resourceTab.isEditor()) {
+                    jGraph = ((GraphEditorTab) resourceTab).getJGraph();
+                } else {
+                    jGraph = ((GraphTab) resourceTab).getJGraph();
+                }
+                // select the error cell and switch to the panel
+                for (Element cell : entry.getElements()) {
+                    if (jGraph.selectJCell(cell)) {
+                        break;
+                    }
+                }
+            } else if (entry instanceof FormatError) {
+                FormatError error = (FormatError) entry;
+                if (error.getNumbers().size() > 1) {
+                    int line = error.getNumbers().get(0);
+                    int column = error.getNumbers().get(1);
+                    ((TextTab) resourceTab).select(line, column);
+                }
+            }
+        }
     }
 
     /** List display. */

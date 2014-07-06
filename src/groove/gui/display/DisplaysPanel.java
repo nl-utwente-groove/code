@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -46,10 +46,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-/** 
+/**
  * The main panel of the simulator.
- * Offers functionality for detaching and reattaching components in 
- * separate windows. 
+ * Offers functionality for detaching and reattaching components in
+ * separate windows.
  */
 public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Constructs a fresh instance, for a given simulator. */
@@ -76,7 +76,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
     }
 
-    /** 
+    /**
      * Shows or hides one of the optional tabs.
      * @return {@code true} if the tab is now shown
      */
@@ -170,7 +170,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return result;
     }
 
-    /** Upper tabbed pane holding the list panels of the various components on the 
+    /** Upper tabbed pane holding the list panels of the various components on the
      * {@link DisplaysPanel}.
      * @see Display#getListPanel()
      */
@@ -181,7 +181,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return this.upperListsPanel;
     }
 
-    /** Lower tabbed pane holding the list panels of the various components on the 
+    /** Lower tabbed pane holding the list panels of the various components on the
      * {@link DisplaysPanel}.
      * @see Display#getListPanel()
      */
@@ -290,7 +290,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /**
-     * Returns the currently selected graph view component, if that is a 
+     * Returns the currently selected graph view component, if that is a
      * {@link JGraphPanel}. Returns {@code null} otherwise.
      */
     public JGraphPanel<?> getGraphPanel() {
@@ -315,8 +315,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the panel corresponding to a certain tab kind. */
-    public ResourceDisplay getDisplayFor(ResourceKind resource) {
-        return (ResourceDisplay) getDisplay(DisplayKind.toDisplay(resource));
+    public Display getDisplayFor(ResourceKind resource) {
+        return getDisplay(DisplayKind.toDisplay(resource));
     }
 
     /** Reattaches a component at its proper place. */
@@ -479,7 +479,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
         for (DisplayKind kind : DisplayKind.values()) {
-            if (kind.hasResource()) {
+            if (getDisplay(kind) instanceof ResourceDisplay) {
                 result = ((ResourceDisplay) getDisplay(kind)).saveAllEditors(dispose);
                 if (!result) {
                     break;
@@ -508,7 +508,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private JPanel infoPanel;
     /** Listener to tab changes. */
     private ChangeListener tabListener;
-    /** Flag indicating that the {@link #tabListener} has caused a 
+    /** Flag indicating that the {@link #tabListener} has caused a
      * tab change, so we don't have to update.
      */
     private boolean changingTabs;

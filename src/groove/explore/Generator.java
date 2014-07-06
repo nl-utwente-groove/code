@@ -24,8 +24,7 @@ import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSReporter;
 import groove.explore.util.LogReporter;
 import groove.explore.util.StateReporter;
-import groove.grammar.GrammarProperties;
-import groove.grammar.GrammarProperties.Key;
+import groove.grammar.GrammarKey;
 import groove.grammar.model.FormatException;
 import groove.lts.GTS;
 import groove.transform.Transformer;
@@ -106,9 +105,9 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         if (hasAcceptor()) {
             result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
         }
-        Map<Key,String> properties = getGrammarProperties();
+        Map<GrammarKey,String> properties = getGrammarProperties();
         if (properties != null) {
-            for (Map.Entry<Key,String> e : properties.entrySet()) {
+            for (Map.Entry<GrammarKey,String> e : properties.entrySet()) {
                 result.setProperty(e.getKey(), e.getValue());
             }
         }
@@ -185,7 +184,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     private int resultCount;
 
     /** Returns the locally set grammar properties, if any. */
-    public Map<Key,String> getGrammarProperties() {
+    public Map<GrammarKey,String> getGrammarProperties() {
         return this.grammarProperties;
     }
 
@@ -195,7 +194,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         + "  - controlProgram=names - set the control program(s) to be used\n"
         + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
         handler = PropertiesHandler.class)
-    private Map<Key,String> grammarProperties;
+    private Map<GrammarKey,String> grammarProperties;
 
     /**
      * Returns the settings to be used in storing the LTS.
@@ -452,15 +451,15 @@ public class Generator extends GrooveCmdLineTool<GTS> {
 
         @SuppressWarnings("rawtypes")
         @Override
-        protected Map<Key,String> createNewCollection(Class<? extends Map> type) {
-            return new EnumMap<Key,String>(Key.class);
+        protected Map<GrammarKey,String> createNewCollection(Class<? extends Map> type) {
+            return new EnumMap<GrammarKey,String>(GrammarKey.class);
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})
         @Override
         protected void addToMap(Map m, String key, String value) {
             this.error = null;
-            Key property = GrammarProperties.Key.getKey(key);
+            GrammarKey property = GrammarKey.getKey(key);
             if (property == null) {
                 this.error = String.format("Unknown property key '%s'", key);
             } else if (property.isSystem()) {

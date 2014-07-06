@@ -5,6 +5,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
+import groove.util.Properties.CheckerMap;
 
 import java.io.IOException;
 import java.util.Map;
@@ -22,9 +23,9 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      */
     @Override
     public void execute() {
-        GrammarProperties systemProperties = getGrammarModel().getProperties();
-        PropertiesDialog dialog =
-            new PropertiesDialog(systemProperties);
+        GrammarProperties grammarProperties = getGrammarModel().getProperties();
+        CheckerMap checkerMap = grammarProperties.getCheckers(getGrammarModel());
+        PropertiesDialog dialog = new PropertiesDialog(grammarProperties, checkerMap);
         if (dialog.showDialog(getFrame())) {
             GrammarProperties newProperties = new GrammarProperties();
             // don't use putAll, as that bypasses the filtering of default entries

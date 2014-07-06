@@ -16,9 +16,15 @@
  */
 package groove.util;
 
+import groove.grammar.GrammarChecker;
+import groove.grammar.model.FormatChecker;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.GrammarModel;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,6 +59,27 @@ public abstract class Properties extends java.util.Properties implements Fixable
     }
 
     private final Map<String,PropertyKey> keyMap;
+
+    /** Returns a map from property keys to checkers driven by a given grammar model. */
+    public CheckerMap getCheckers(final GrammarModel grammar) {
+        CheckerMap result = new CheckerMap();
+        for (final PropertyKey key : getKeyType().getEnumConstants()) {
+            FormatChecker<String> checker;
+            if (key instanceof GrammarChecker) {
+                final GrammarChecker checkerKey = (GrammarChecker) key;
+                checker = new FormatChecker<String>() {
+                    @Override
+                    public FormatErrorSet check(String value) {
+                        return checkerKey.check(grammar, key.parser().parse(value));
+                    }
+                };
+            } else {
+                checker = FormatChecker.EMPTY_STRING_CHECKER;
+            }
+            result.put(key, checker);
+        }
+        return result;
+    }
 
     @Override
     public synchronized String toString() {
@@ -209,5 +236,17 @@ public abstract class Properties extends java.util.Properties implements Fixable
     @Override
     public Set<Entry<Object,Object>> entrySet() {
         return Collections.unmodifiableSet(super.entrySet());
+    }
+
+    /** Map from property keys to format checkers for those keys. */
+    public static class CheckerMap extends HashMap<PropertyKey,FormatChecker<String>> {
+        @Override
+        public FormatChecker<String> get(Object key) {
+            FormatChecker<String> result = super.get(key);
+            if (result == null) {
+                result = FormatChecker.EMPTY_STRING_CHECKER;
+            }
+            return result;
+        }
     }
 }
