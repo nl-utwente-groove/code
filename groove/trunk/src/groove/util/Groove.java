@@ -356,6 +356,23 @@ public class Groove {
     }
 
     /**
+     * Converts the initial character of a given input string to upper-
+     * or lowercase.
+     * @param input the input string
+     * @param upper if {@code true}, converts to uppercase, otherwise
+     * to lowercase
+     */
+    public static String convertCase(String input, boolean upper) {
+        StringBuilder result = new StringBuilder(input);
+        if (result.length() > 0) {
+            char c = result.charAt(0);
+            c = upper ? Character.toUpperCase(c) : Character.toLowerCase(c);
+            result.setCharAt(0, c);
+        }
+        return result.toString();
+    }
+
+    /**
      * Start symbol for the string representation of an array.
      * @see #toString(Object[], String, String, String)
      */

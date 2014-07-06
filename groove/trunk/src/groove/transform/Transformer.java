@@ -24,7 +24,7 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Result;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
-import groove.grammar.GrammarProperties.Key;
+import groove.grammar.GrammarKey;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
@@ -84,11 +84,11 @@ public class Transformer {
     /**
      * Changes a property in the grammar model.
      * @param key the property to be changed; should be modifiable
-     * @param value the new value for the property; should satisfy {@link Key#parser()}
+     * @param value the new value for the property; should satisfy {@link GrammarKey#parser()}
      * @throws FormatException if the given key/value pair is unsuitable for the given
      * grammar
      */
-    public void setProperty(GrammarProperties.Key key, String value) throws FormatException {
+    public void setProperty(GrammarKey key, String value) throws FormatException {
         assert !key.isSystem();
         assert value != null && key.parser().accepts(value);
         if (this.properties == null) {

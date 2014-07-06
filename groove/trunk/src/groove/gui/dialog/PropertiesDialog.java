@@ -16,19 +16,31 @@
  */
 package groove.gui.dialog;
 
+import groove.grammar.model.FormatErrorSet;
+import groove.gui.look.Values;
 import groove.util.Properties;
+import groove.util.Properties.CheckerMap;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 
 /**
@@ -43,10 +55,23 @@ public class PropertiesDialog {
      * the properties should be editable. A further parameter gives a list of
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
+     * @param properties the initial properties table
      */
     public PropertiesDialog(Properties properties) {
         this.table = new PropertiesTable(properties.getKeyType(), true);
         this.table.setProperties(properties);
+    }
+
+    /**
+     * In addition to creating an instance of the dialog, also sets
+     * a non-empty checker map for the edited values.
+     * @param properties the initial properties table
+     * @param checkerMap checkers for the property values
+     * @see #PropertiesDialog(Properties)
+     */
+    public PropertiesDialog(Properties properties, CheckerMap checkerMap) {
+        this(properties);
+        this.table.setCheckerMap(checkerMap);
     }
 
     /**
@@ -117,6 +142,9 @@ public class PropertiesDialog {
         return this.pane;
     }
 
+    /** The option pane creating the dialog. */
+    private JOptionPane pane;
+
     /**
      * Lazily creates and returns a button labelled OK that signals the editors
      * to stop editing. This makes sure that any partially edited result is not
@@ -138,6 +166,9 @@ public class PropertiesDialog {
         return this.okButton;
     }
 
+    /** The OK button on the option pane. */
+    private JButton okButton;
+
     /** Creates and returns a button labelled Cancel. */
     private JButton createCancelButton() {
         JButton result = new JButton("Cancel");
@@ -147,9 +178,12 @@ public class PropertiesDialog {
 
     /** Creates the pane for the table model. */
     public Container createTablePane() {
+        JPanel result = new JPanel(new BorderLayout());
         JScrollPane scrollPane = new JScrollPane(this.table);
         scrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        return scrollPane;
+        result.add(scrollPane);
+        result.add(getErrorLabel(), BorderLayout.SOUTH);
+        return result;
     }
 
     /**
@@ -163,10 +197,45 @@ public class PropertiesDialog {
 
     /** The table component. */
     private final PropertiesTable table;
-    /** The option pane creating the dialog. */
-    private JOptionPane pane;
-    /** The OK button on the option pane. */
-    private JButton okButton;
+
+    private JLabel getErrorLabel() {
+        if (this.errorLabel == null) {
+            this.errorLabel = new JLabel();
+            this.errorLabel.setBorder(new EmptyBorder(new Insets(5, 0, 0, 0)));
+            this.errorLabel.setForeground(Values.ERROR_NORMAL_FOREGROUND);
+            this.errorLabel.setText("Something");
+            getInnerTable().getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+                        setErrorText();
+                    }
+                });
+            getInnerTable().getModel().addTableModelListener(new TableModelListener() {
+                @Override
+                public void tableChanged(TableModelEvent e) {
+                    setErrorText();
+                }
+            });
+        }
+        return this.errorLabel;
+    }
+
+    /**
+     * Refreshes the text of the error label, depending on the
+     * currently selected cell of the properties table.
+     */
+    private void setErrorText() {
+        FormatErrorSet errors = getInnerTable().getSelectedErrors();
+        if (errors.isEmpty()) {
+            this.errorLabel.setText("");
+        } else {
+            this.errorLabel.setText(errors.iterator().next().toString());
+        }
+    }
+
+    private JLabel errorLabel;
+
     /** Title of the dialog. */
     public static final String DIALOG_TITLE = "Properties editor";
     /** Column header of the property column. */

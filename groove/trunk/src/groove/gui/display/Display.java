@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -56,12 +56,12 @@ abstract public class Display extends JPanel {
         return (top instanceof Window) && ((Window) top).isActive();
     }
 
-    /** 
+    /**
      * Callback method to build the content of the display panel.
      */
     abstract protected void buildDisplay();
 
-    /** 
+    /**
      * Callback method to install all listeners to the display.
      * This is called after building the display.
      */
@@ -72,8 +72,7 @@ abstract public class Display extends JPanel {
         if (this.listPanel == null) {
             this.listPanel = createListPanel();
             if (this.listPanel != null) {
-                ToolTipManager.sharedInstance().registerComponent(
-                    this.listPanel);
+                ToolTipManager.sharedInstance().registerComponent(this.listPanel);
             }
         }
         return this.listPanel;
@@ -92,7 +91,7 @@ abstract public class Display extends JPanel {
         return this.listToolBar;
     }
 
-    /** 
+    /**
      * Callback method to creates a tool bar for the list panel.
      */
     abstract protected JToolBar createListToolBar();
@@ -239,8 +238,7 @@ abstract public class Display extends JPanel {
                 @Override
                 public Dimension getPreferredSize() {
                     Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        START_LIST_MINIMUM_HEIGHT);
+                    return new Dimension((int) superSize.getWidth(), START_LIST_MINIMUM_HEIGHT);
                 }
             };
             this.scrollPane.setBackground(list.getBackground());
@@ -258,8 +256,12 @@ abstract public class Display extends JPanel {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            this.scrollPane.getViewport().setBackground(
-                this.list.getBackground());
+            this.scrollPane.getViewport().setBackground(this.list.getBackground());
+        }
+
+        /** Returns the list component wrapped in this panel. */
+        public JComponent getList() {
+            return this.list;
         }
 
         private final JComponent list;

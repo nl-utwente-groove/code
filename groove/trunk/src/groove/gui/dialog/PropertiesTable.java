@@ -16,13 +16,18 @@
  */
 package groove.gui.dialog;
 
+import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatErrorSet;
 import groove.gui.display.DismissDelayer;
+import groove.gui.look.Values;
 import groove.io.HTMLConverter;
 import groove.util.ExprParser;
 import groove.util.Parser;
+import groove.util.Properties.CheckerMap;
 import groove.util.PropertyKey;
 import groove.util.collect.ListComparator;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -65,6 +70,8 @@ public class PropertiesTable extends JTable {
         }
         this.properties =
             new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
+        this.keyIndexMap = new HashMap<PropertyKey,Integer>();
+        this.errorMap = new HashMap<PropertyKey,FormatErrorSet>();
         final TableModel model = getTableModel();
         setModel(model);
         setIntercellSpacing(new Dimension(2, -2));
@@ -76,17 +83,21 @@ public class PropertiesTable extends JTable {
     /** Changes the underlying properties. */
     public void setProperties(Properties properties) {
         this.properties.clear();
+        this.keyIndexMap.clear();
+        this.checkerMap = new CheckerMap();
+        this.errorMap.clear();
         for (PropertyKey key : this.defaultKeys.values()) {
             if (!key.isSystem()) {
+                this.keyIndexMap.put(key, this.properties.size());
                 this.properties.put(key.getName(), "");
             }
         }
-        this.nonSystemKeyCount = this.properties.size();
         for (Map.Entry<?,?> property : properties.entrySet()) {
             String keyword = (String) property.getKey();
-            PropertyKey key = this.defaultKeys.get(keyword);
+            PropertyKey key = getKey(keyword);
             if (key == null || !key.isSystem()) {
-                this.properties.put(keyword, (String) property.getValue());
+                String value = (String) property.getValue();
+                this.properties.put(keyword, value);
             }
         }
         setPreferredScrollableViewportSize(new Dimension(300, Math.max(
@@ -96,21 +107,24 @@ public class PropertiesTable extends JTable {
         setChanged(false);
     }
 
+    /**
+     * Sets a checker map for the properties that were set before.
+     * If no checker map is set, the empty map is used.
+     */
+    public void setCheckerMap(CheckerMap checkerMap) {
+        this.checkerMap = checkerMap;
+        this.errorMap.clear();
+        for (PropertyKey key : this.defaultKeys.values()) {
+            check(key);
+        }
+    }
+
     /** Resets the underlying properties. */
     public void resetProperties() {
         this.properties.clear();
         setChanged(false);
         setEnabled(false);
         repaint();
-    }
-
-    @Override
-    public TableCellEditor getCellEditor(int row, int column) {
-        if (column == PROPERTY_COLUMN) {
-            return getKeyEditor();
-        } else {
-            return getValueEditor(((TableModel) getModel()).getPropertyKey(row));
-        }
     }
 
     /**
@@ -138,12 +152,24 @@ public class PropertiesTable extends JTable {
         return result;
     }
 
+    /** The actual user properties map. */
+    private final SortedMap<String,String> properties;
+
+    /** The number of non-system keys. */
+    private final Map<PropertyKey,Integer> keyIndexMap;
+
+    private CheckerMap checkerMap;
+
     /**
-     * Indicates if the editing session has made a change to the properties.
+     * Checks the value currently entered for a given key,
+     * and puts the resulting errors into the error map.
      */
-    public boolean isChanged() {
-        return this.changed;
+    void check(PropertyKey key) {
+        String value = this.properties.get(key.getName());
+        this.errorMap.put(key, this.checkerMap.get(key).check(value));
     }
+
+    private final Map<PropertyKey,FormatErrorSet> errorMap;
 
     /**
      * Indicates if the properties are editable.
@@ -152,6 +178,9 @@ public class PropertiesTable extends JTable {
     public boolean isEditable() {
         return this.editable;
     }
+
+    /** Flag indicating that the properties are editable. */
+    private final boolean editable;
 
     /** Creates an instance of {@link TableModel}. */
     private TableModel getTableModel() {
@@ -167,9 +196,31 @@ public class PropertiesTable extends JTable {
         return this.tableModel;
     }
 
+    /** Underlying data model for any table created in this dialog. */
+    private TableModel tableModel;
+
+    /**
+     * Indicates if the editing session has made a change to the properties.
+     */
+    public boolean isChanged() {
+        return this.changed;
+    }
+
     /** Sets the value of the changed field. */
     void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    /** Flag indicating that the properties have changed. */
+    private boolean changed;
+
+    @Override
+    public TableCellEditor getCellEditor(int row, int column) {
+        if (column == PROPERTY_COLUMN) {
+            return getKeyEditor();
+        } else {
+            return getValueEditor(((TableModel) getModel()).getPropertyKey(row));
+        }
     }
 
     /**
@@ -185,11 +236,11 @@ public class PropertiesTable extends JTable {
     }
 
     /**
-     * Returns a map from default property keys to the properties they should
-     * satisfy.
+     * Creates an editor that tests if the value entered is a well-formed
+     * property key.
      */
-    final Map<String,? extends PropertyKey> getDefaultKeys() {
-        return this.defaultKeys;
+    CellEditor createCellEditor() {
+        return new CellEditor();
     }
 
     /**
@@ -203,28 +254,36 @@ public class PropertiesTable extends JTable {
         return this.cellEditor;
     }
 
-    /**
-     * Creates an editor that tests if the value entered is a well-formed
-     * property key.
-     */
-    CellEditor createCellEditor() {
-        return new CellEditor();
-    }
-
-    /** Flag indicating that the properties are editable. */
-    private final boolean editable;
-    /** A list of default property keys; possibly <code>null</code>. */
-    private final Map<String,PropertyKey> defaultKeys;
-    /** The number of non-system keys. */
-    private int nonSystemKeyCount;
-    /** The actual user properties map. */
-    private final SortedMap<String,String> properties;
-    /** Underlying data model for any table created in this dialog. */
-    private TableModel tableModel;
     /** Returns the cell editor used for cell values. */
     private CellEditor cellEditor;
-    /** Flag indicating that the properties have changed. */
-    private boolean changed;
+
+    /** Returns the key with a given name, if any. */
+    PropertyKey getKey(String name) {
+        return this.defaultKeys.get(name);
+    }
+
+    /** A list of default property keys; possibly <code>null</code>. */
+    private final Map<String,PropertyKey> defaultKeys;
+
+    /** Sets the selection to a given property key. */
+    public void setSelected(PropertyKey key) {
+        if (this.keyIndexMap.containsKey(key)) {
+            int index = this.keyIndexMap.get(key);
+            getSelectionModel().setSelectionInterval(index, index);
+        }
+    }
+
+    /** Returns the errors in the value at the currently selected row. */
+    public FormatErrorSet getSelectedErrors() {
+        FormatErrorSet result = null;
+        int row = getSelectedRow();
+        PropertyKey key = getKey((String) getValueAt(row, PROPERTY_COLUMN));
+        if (key != null) {
+            result = this.errorMap.get(key);
+        }
+        return result == null ? new FormatErrorSet() : result;
+    }
+
     /** Title of the dialog. */
     public static final String DIALOG_TITLE = "Properties editor";
     /** Column header of the property column. */
@@ -254,7 +313,7 @@ public class PropertiesTable extends JTable {
         public JTextField getComponent() {
             JTextField result = getTextField();
             if (this.editingValueForKey != null) {
-                PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
+                PropertyKey key = getKey(this.editingValueForKey);
                 if (key != null) {
                     Parser<?> parser = key.parser();
                     String tip = parser.getDescription(true);
@@ -297,7 +356,7 @@ public class PropertiesTable extends JTable {
                 return ExprParser.isIdentifier(value)
                     && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
-                PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
+                PropertyKey key = getKey(this.editingValueForKey);
                 return key == null ? true : key.parser().accepts(value);
             }
         }
@@ -326,7 +385,7 @@ public class PropertiesTable extends JTable {
                 }
             } else {
                 // editing a value
-                PropertyKey key = getDefaultKeys().get(this.editingValueForKey);
+                PropertyKey key = getKey(this.editingValueForKey);
                 String description = key.parser().getDescription(false);
                 result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
                     description);
@@ -369,22 +428,43 @@ public class PropertiesTable extends JTable {
             // determine tool tip
             String tip = null;
             String text = (String) value;
-            if (getDefaultKeys() != null && row < table.getRowCount()) {
+            boolean error = false;
+            if (row < table.getRowCount()) {
                 String keyword = (String) table.getValueAt(row, PROPERTY_COLUMN);
-                if (keyword != null && getDefaultKeys().containsKey(keyword)) {
-                    PropertyKey key = getDefaultKeys().get(keyword);
+                PropertyKey key = getKey(keyword);
+                if (key != null) {
+                    FormatErrorSet errors = PropertiesTable.this.errorMap.get(key);
+                    error = errors != null && !errors.isEmpty();
                     if (column == PROPERTY_COLUMN) {
                         text = key.getKeyPhrase();
                         tip = key.getExplanation();
                     } else {
                         Parser<?> parser = key.parser();
                         tip = parser.getDescription(true);
+                        if (error) {
+                            for (FormatError err : errors) {
+                                tip += HTMLConverter.HTML_LINEBREAK;
+                                tip +=
+                                    HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND).on(
+                                        err.toString());
+                            }
+                            //tip = HTMLConverter.BODY_TAG.on(tip);
+                        }
                     }
                 }
             }
             setToolTipText(tip == null ? null : HTMLConverter.HTML_TAG.on(tip));
-            return super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row,
-                column);
+            super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row, column);
+
+            Values.ColorSet colors = error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
+            Color foreground = colors.getForeground(isSelected, hasFocus);
+            setForeground(foreground);
+            Color background = colors.getBackground(isSelected, hasFocus);
+            if (background == Color.WHITE) {
+                background = null;
+            }
+            setBackground(background);
+            return this;
         }
 
     }
@@ -434,12 +514,12 @@ public class PropertiesTable extends JTable {
             if (!isEditable()) {
                 return false;
             } else if (columnIndex == PROPERTY_COLUMN) {
-                return rowIndex >= PropertiesTable.this.nonSystemKeyCount;
+                return rowIndex >= PropertiesTable.this.keyIndexMap.size();
             } else { // VALUE_COLUMN
                 if (rowIndex >= aliasProperties().size()) {
                     return false;
                 } else {
-                    PropertyKey key = getDefaultKeys().get(getPropertyKey(rowIndex));
+                    PropertyKey key = getKey(getPropertyKey(rowIndex));
                     return key == null || !key.isSystem();
                 }
             }
@@ -447,24 +527,31 @@ public class PropertiesTable extends JTable {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            String value = (String) aValue;
             if (rowIndex == aliasProperties().size()) {
                 // key added
-                if (aValue instanceof String && ((String) aValue).length() > 0) {
-                    aliasProperties().put((String) aValue, "");
+                if (value.length() > 0) {
+                    aliasProperties().put(value, "");
                     refreshPropertyKeys();
                 }
             } else if (columnIndex == VALUE_COLUMN) {
                 // value changed
                 String keyword = getPropertyKey(rowIndex);
-                if (!aValue.equals(aliasProperties().get(keyword))) {
-                    aliasProperties().put(keyword, (String) aValue);
-                    fireTableCellUpdated(rowIndex, columnIndex);
+                if (!value.equals(aliasProperties().get(keyword))) {
+                    aliasProperties().put(keyword, value);
+                    PropertyKey key = getKey(keyword);
+                    if (key != null) {
+                        check(key);
+                    }
+                    // also update the property column because the error status may have changed
+                    fireTableCellUpdated(rowIndex, PROPERTY_COLUMN);
+                    fireTableCellUpdated(rowIndex, VALUE_COLUMN);
                 }
             } else {
                 // key changed
-                String value = aliasProperties().remove(getPropertyKey(rowIndex));
-                if (aValue instanceof String && ((String) aValue).length() > 0) {
-                    aliasProperties().put((String) aValue, value);
+                String oldValue = aliasProperties().remove(getPropertyKey(rowIndex));
+                if (value.length() > 0) {
+                    aliasProperties().put(value, oldValue);
                 }
                 fireTableCellUpdated(rowIndex, columnIndex);
                 refreshPropertyKeys();

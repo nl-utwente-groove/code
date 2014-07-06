@@ -16,6 +16,7 @@
  */
 package groove.gui.display;
 
+import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
 import groove.grammar.model.GrammarModel;
 import groove.gui.Options;
@@ -68,7 +69,7 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
 
     @Override
     protected PropertiesTable createList() {
-        PropertiesTable result = new PropertiesTable(GrammarProperties.Key.class, false);
+        PropertiesTable result = new PropertiesTable(GrammarKey.class, false);
         result.addMouseListener(new EditMouseListener());
         return result;
     }
@@ -83,7 +84,9 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
         GrammarModel grammar = source.getGrammar();
         boolean enabled = grammar != null;
         if (enabled) {
-            getList().setProperties(grammar.getProperties());
+            GrammarProperties properties = grammar.getProperties();
+            getList().setProperties(properties);
+            getList().setCheckerMap(properties.getCheckers(grammar));
         } else {
             getList().resetProperties();
         }
