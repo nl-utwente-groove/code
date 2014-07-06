@@ -21,6 +21,7 @@ import groove.grammar.model.FormatErrorSet;
 import groove.gui.display.DismissDelayer;
 import groove.gui.look.Values;
 import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.util.ExprParser;
 import groove.util.Parser;
 import groove.util.Properties.CheckerMap;
@@ -433,22 +434,19 @@ public class PropertiesTable extends JTable {
                 String keyword = (String) table.getValueAt(row, PROPERTY_COLUMN);
                 PropertyKey key = getKey(keyword);
                 if (key != null) {
-                    FormatErrorSet errors = PropertiesTable.this.errorMap.get(key);
-                    error = errors != null && !errors.isEmpty();
                     if (column == PROPERTY_COLUMN) {
                         text = key.getKeyPhrase();
                         tip = key.getExplanation();
                     } else {
                         Parser<?> parser = key.parser();
                         tip = parser.getDescription(true);
-                        if (error) {
-                            for (FormatError err : errors) {
-                                tip += HTMLConverter.HTML_LINEBREAK;
-                                tip +=
-                                    HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND).on(
-                                        err.toString());
-                            }
-                            //tip = HTMLConverter.BODY_TAG.on(tip);
+                    }
+                    FormatErrorSet errors = PropertiesTable.this.errorMap.get(key);
+                    error = errors != null && !errors.isEmpty();
+                    if (error) {
+                        for (FormatError err : errors) {
+                            tip += HTMLConverter.HTML_LINEBREAK;
+                            tip += this.errorTag.on(err.toString());
                         }
                     }
                 }
@@ -467,6 +465,8 @@ public class PropertiesTable extends JTable {
             return this;
         }
 
+        private final HTMLTag errorTag =
+            HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
     }
 
     /** Table model with key and value columns. */
