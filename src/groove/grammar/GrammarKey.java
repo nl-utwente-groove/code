@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Grammar property keys. */
-public enum GrammarKey implements PropertyKey, GrammarChecker {
+public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     /** Property name for the GROOVE version. */
     GROOVE_VERSION("grooveVersion", true, "The Groove version that created this grammar"),
     /** Property name for the Grammar version. */
@@ -135,7 +135,7 @@ public enum GrammarKey implements PropertyKey, GrammarChecker {
             + "<li>- <i>off</i>: dynamic type constraints are not checked"
             + "<li>- <i>error</i>: dynamic type violations are flagged as errors"
             + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
-        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
+        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR, "off", null,
             "error", "remove")),
 
     /** Policy for dealing with deadlocks. */
@@ -289,6 +289,16 @@ public enum GrammarKey implements PropertyKey, GrammarChecker {
     }
 
     private final Parser<?> parser;
+
+    @Override
+    public Object getDefaultValue() {
+        return parser().getDefaultValue();
+    }
+
+    @Override
+    public boolean isValue(Object value) {
+        return parser().isValue(value);
+    }
 
     @Override
     public FormatErrorSet check(GrammarModel grammar, Object value) {

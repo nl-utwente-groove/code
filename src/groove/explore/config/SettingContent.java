@@ -14,19 +14,13 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.explore.config;
 
-/** Interface for property keys. */
-public interface PropertyKey<V> extends ParsableKey<V> {
-    /** Short description for user consumption. */
-    public String getKeyPhrase();
-
-    /** Indicates if this is a system key. */
-    public boolean isSystem();
-
-    /**
-     * Start character that distinguishes system properties from user-definable
-     * properties. Any string starting with this character is a system key.
-     */
-    static public final String SYSTEM_KEY_PREFIX = "$";
+/**
+ * Content payload of an exploration setting.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public interface SettingContent {
+    // empty
 }

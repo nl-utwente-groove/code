@@ -38,32 +38,32 @@ import java.util.Set;
  */
 public abstract class Properties extends java.util.Properties implements Fixable {
     /** Constructs a properties object with keys of a given type. */
-    protected Properties(Class<? extends PropertyKey> keyType) {
+    protected Properties(Class<? extends PropertyKey<?>> keyType) {
         this.keyType = keyType;
-        this.keyMap = new LinkedHashMap<String,PropertyKey>();
-        for (PropertyKey key : keyType.getEnumConstants()) {
+        this.keyMap = new LinkedHashMap<String,PropertyKey<?>>();
+        for (PropertyKey<?> key : keyType.getEnumConstants()) {
             this.keyMap.put(key.getName(), key);
         }
     }
 
     /** Returns the key type of this properties class. */
-    public Class<? extends PropertyKey> getKeyType() {
+    public Class<? extends PropertyKey<?>> getKeyType() {
         return this.keyType;
     }
 
-    private final Class<? extends PropertyKey> keyType;
+    private final Class<? extends PropertyKey<?>> keyType;
 
     /** Returns the key with a given name, if any. */
-    public PropertyKey getKey(String name) {
+    public PropertyKey<?> getKey(String name) {
         return this.keyMap.get(name);
     }
 
-    private final Map<String,PropertyKey> keyMap;
+    private final Map<String,PropertyKey<?>> keyMap;
 
     /** Returns a map from property keys to checkers driven by a given grammar model. */
     public CheckerMap getCheckers(final GrammarModel grammar) {
         CheckerMap result = new CheckerMap();
-        for (final PropertyKey key : getKeyType().getEnumConstants()) {
+        for (final PropertyKey<?> key : getKeyType().getEnumConstants()) {
             FormatChecker<String> checker;
             if (key instanceof GrammarChecker) {
                 final GrammarChecker checkerKey = (GrammarChecker) key;
@@ -96,13 +96,13 @@ public abstract class Properties extends java.util.Properties implements Fixable
     }
 
     /** Retrieves and parses the value for a given key. */
-    public Object parseProperty(PropertyKey key) {
+    public Object parseProperty(PropertyKey<?> key) {
         String result = getProperty(key.getName());
         return key.parser().parse(result);
     }
 
     /** Stores a property value, converted to a parsable string. */
-    public void storeProperty(PropertyKey key, Object value) {
+    public void storeProperty(PropertyKey<?> key, Object value) {
         assert key.parser().isValue(value) : String.format("%s is not appropriate for %s", value,
             key);
         Parser<?> parser = key.parser();
@@ -114,7 +114,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
     }
 
     /** Convenience method to retrieve a property by key value rather than string. */
-    public String getProperty(PropertyKey key) {
+    public String getProperty(PropertyKey<?> key) {
         String result = getProperty(key.getName());
         if (result == null) {
             result = key.parser().getDefaultString();
@@ -126,7 +126,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
     public String setProperty(String keyword, String value) {
         testFixed(false);
         String oldValue;
-        PropertyKey key = getKey(keyword);
+        PropertyKey<?> key = getKey(keyword);
         if (value == null || value.length() == 0) {
             oldValue = (String) remove(keyword);
         } else if (key == null) {
@@ -239,7 +239,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
     }
 
     /** Map from property keys to format checkers for those keys. */
-    public static class CheckerMap extends HashMap<PropertyKey,FormatChecker<String>> {
+    public static class CheckerMap extends HashMap<PropertyKey<?>,FormatChecker<String>> {
         @Override
         public FormatChecker<String> get(Object key) {
             FormatChecker<String> result = super.get(key);
