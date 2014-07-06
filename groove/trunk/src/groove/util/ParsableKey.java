@@ -16,17 +16,23 @@
  */
 package groove.util;
 
-/** Interface for property keys. */
-public interface PropertyKey<V> extends ParsableKey<V> {
-    /** Short description for user consumption. */
-    public String getKeyPhrase();
+/**
+ * Interface for keys with values that can be parsed from strings.
+ * @author Arend Rensink
+ */
+public interface ParsableKey<V> {
+    /** Key name, in camel case (starting with lowercase). */
+    public String getName();
 
-    /** Indicates if this is a system key. */
-    public boolean isSystem();
+    /** Returns an explanation of this key. */
+    public String getExplanation();
 
-    /**
-     * Start character that distinguishes system properties from user-definable
-     * properties. Any string starting with this character is a system key.
-     */
-    static public final String SYSTEM_KEY_PREFIX = "$";
+    /** Returns a parser for values of this key. */
+    public Parser<? extends V> parser();
+
+    /** Convenience method for {@code parser().getDefaultValue()}. */
+    public V getDefaultValue();
+
+    /** Convenience method for {@code perser().isValue(value)}. */
+    public boolean isValue(Object value);
 }

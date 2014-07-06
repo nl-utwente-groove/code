@@ -14,19 +14,22 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.explore.config;
 
-/** Interface for property keys. */
-public interface PropertyKey<V> extends ParsableKey<V> {
-    /** Short description for user consumption. */
-    public String getKeyPhrase();
-
-    /** Indicates if this is a system key. */
-    public boolean isSystem();
+/**
+ * Supertype for all values that can be assigned to {@link ExploreKey}s.
+ * @param <K> type of the keys for this setting
+ * @param <C> type of the content for this setting
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public interface Setting<K extends Enum<K> & SettingKey,C extends SettingContent> {
+    /** Returns the key of this setting. */
+    public abstract K getKey();
 
     /**
-     * Start character that distinguishes system properties from user-definable
-     * properties. Any string starting with this character is a system key.
+     * Returns the content of the setting.
+     * May be {@code null}, if this is allowed by the setting key.
      */
-    static public final String SYSTEM_KEY_PREFIX = "$";
+    public abstract C getContent();
 }

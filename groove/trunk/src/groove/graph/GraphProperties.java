@@ -52,7 +52,7 @@ public class GraphProperties extends Properties {
     }
 
     /** Predefined graph property keys. */
-    public static enum Key implements PropertyKey {
+    public static enum Key implements PropertyKey<Object> {
         /** Rule priority. */
         PRIORITY("priority", "Higher-priority rules are evaluated first.", Parser.natural),
 
@@ -168,6 +168,16 @@ public class GraphProperties extends Properties {
         }
 
         private final Parser<?> parser;
+
+        @Override
+        public Object getDefaultValue() {
+            return parser().getDefaultValue();
+        }
+
+        @Override
+        public boolean isValue(Object value) {
+            return parser().isValue(value);
+        }
 
         /** Indicates if a given string corresponds to a property key. */
         static public boolean isKey(String key) {

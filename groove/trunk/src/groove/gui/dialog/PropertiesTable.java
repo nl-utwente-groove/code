@@ -63,16 +63,16 @@ public class PropertiesTable extends JTable {
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
      */
-    public PropertiesTable(Class<? extends PropertyKey> defaultKeys, boolean editable) {
+    public PropertiesTable(Class<? extends PropertyKey<?>> defaultKeys, boolean editable) {
         this.editable = editable;
-        this.defaultKeys = new LinkedHashMap<String,PropertyKey>();
-        for (PropertyKey key : defaultKeys.getEnumConstants()) {
+        this.defaultKeys = new LinkedHashMap<String,PropertyKey<?>>();
+        for (PropertyKey<?> key : defaultKeys.getEnumConstants()) {
             this.defaultKeys.put(key.getName(), key);
         }
         this.properties =
             new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
-        this.keyIndexMap = new HashMap<PropertyKey,Integer>();
-        this.errorMap = new HashMap<PropertyKey,FormatErrorSet>();
+        this.keyIndexMap = new HashMap<PropertyKey<?>,Integer>();
+        this.errorMap = new HashMap<PropertyKey<?>,FormatErrorSet>();
         final TableModel model = getTableModel();
         setModel(model);
         setIntercellSpacing(new Dimension(2, -2));
@@ -87,7 +87,7 @@ public class PropertiesTable extends JTable {
         this.keyIndexMap.clear();
         this.checkerMap = new CheckerMap();
         this.errorMap.clear();
-        for (PropertyKey key : this.defaultKeys.values()) {
+        for (PropertyKey<?> key : this.defaultKeys.values()) {
             if (!key.isSystem()) {
                 this.keyIndexMap.put(key, this.properties.size());
                 this.properties.put(key.getName(), "");
@@ -95,7 +95,7 @@ public class PropertiesTable extends JTable {
         }
         for (Map.Entry<?,?> property : properties.entrySet()) {
             String keyword = (String) property.getKey();
-            PropertyKey key = getKey(keyword);
+            PropertyKey<?> key = getKey(keyword);
             if (key == null || !key.isSystem()) {
                 String value = (String) property.getValue();
                 this.properties.put(keyword, value);
@@ -115,7 +115,7 @@ public class PropertiesTable extends JTable {
     public void setCheckerMap(CheckerMap checkerMap) {
         this.checkerMap = checkerMap;
         this.errorMap.clear();
-        for (PropertyKey key : this.defaultKeys.values()) {
+        for (PropertyKey<?> key : this.defaultKeys.values()) {
             check(key);
         }
     }
@@ -145,7 +145,7 @@ public class PropertiesTable extends JTable {
         for (Map.Entry<String,String> entry : this.properties.entrySet()) {
             String stringKey = entry.getKey();
             String value = entry.getValue();
-            PropertyKey key = this.defaultKeys.get(stringKey);
+            PropertyKey<?> key = this.defaultKeys.get(stringKey);
             if (key == null || !key.parser().isDefault(value)) {
                 result.put(stringKey, value);
             }
@@ -157,7 +157,7 @@ public class PropertiesTable extends JTable {
     private final SortedMap<String,String> properties;
 
     /** The number of non-system keys. */
-    private final Map<PropertyKey,Integer> keyIndexMap;
+    private final Map<PropertyKey<?>,Integer> keyIndexMap;
 
     private CheckerMap checkerMap;
 
@@ -165,12 +165,12 @@ public class PropertiesTable extends JTable {
      * Checks the value currently entered for a given key,
      * and puts the resulting errors into the error map.
      */
-    void check(PropertyKey key) {
+    void check(PropertyKey<?> key) {
         String value = this.properties.get(key.getName());
         this.errorMap.put(key, this.checkerMap.get(key).check(value));
     }
 
-    private final Map<PropertyKey,FormatErrorSet> errorMap;
+    private final Map<PropertyKey<?>,FormatErrorSet> errorMap;
 
     /**
      * Indicates if the properties are editable.
@@ -259,15 +259,15 @@ public class PropertiesTable extends JTable {
     private CellEditor cellEditor;
 
     /** Returns the key with a given name, if any. */
-    PropertyKey getKey(String name) {
+    PropertyKey<?> getKey(String name) {
         return this.defaultKeys.get(name);
     }
 
     /** A list of default property keys; possibly <code>null</code>. */
-    private final Map<String,PropertyKey> defaultKeys;
+    private final Map<String,PropertyKey<?>> defaultKeys;
 
     /** Sets the selection to a given property key. */
-    public void setSelected(PropertyKey key) {
+    public void setSelected(PropertyKey<?> key) {
         if (this.keyIndexMap.containsKey(key)) {
             int index = this.keyIndexMap.get(key);
             getSelectionModel().setSelectionInterval(index, index);
@@ -278,7 +278,7 @@ public class PropertiesTable extends JTable {
     public FormatErrorSet getSelectedErrors() {
         FormatErrorSet result = null;
         int row = getSelectedRow();
-        PropertyKey key = getKey((String) getValueAt(row, PROPERTY_COLUMN));
+        PropertyKey<?> key = getKey((String) getValueAt(row, PROPERTY_COLUMN));
         if (key != null) {
             result = this.errorMap.get(key);
         }
@@ -314,7 +314,7 @@ public class PropertiesTable extends JTable {
         public JTextField getComponent() {
             JTextField result = getTextField();
             if (this.editingValueForKey != null) {
-                PropertyKey key = getKey(this.editingValueForKey);
+                PropertyKey<?> key = getKey(this.editingValueForKey);
                 if (key != null) {
                     Parser<?> parser = key.parser();
                     String tip = parser.getDescription(true);
@@ -357,7 +357,7 @@ public class PropertiesTable extends JTable {
                 return ExprParser.isIdentifier(value)
                     && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
-                PropertyKey key = getKey(this.editingValueForKey);
+                PropertyKey<?> key = getKey(this.editingValueForKey);
                 return key == null ? true : key.parser().accepts(value);
             }
         }
@@ -386,7 +386,7 @@ public class PropertiesTable extends JTable {
                 }
             } else {
                 // editing a value
-                PropertyKey key = getKey(this.editingValueForKey);
+                PropertyKey<?> key = getKey(this.editingValueForKey);
                 String description = key.parser().getDescription(false);
                 result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
                     description);
@@ -432,7 +432,7 @@ public class PropertiesTable extends JTable {
             boolean error = false;
             if (row < table.getRowCount()) {
                 String keyword = (String) table.getValueAt(row, PROPERTY_COLUMN);
-                PropertyKey key = getKey(keyword);
+                PropertyKey<?> key = getKey(keyword);
                 if (key != null) {
                     if (column == PROPERTY_COLUMN) {
                         text = key.getKeyPhrase();
@@ -519,7 +519,7 @@ public class PropertiesTable extends JTable {
                 if (rowIndex >= aliasProperties().size()) {
                     return false;
                 } else {
-                    PropertyKey key = getKey(getPropertyKey(rowIndex));
+                    PropertyKey<?> key = getKey(getPropertyKey(rowIndex));
                     return key == null || !key.isSystem();
                 }
             }
@@ -539,7 +539,7 @@ public class PropertiesTable extends JTable {
                 String keyword = getPropertyKey(rowIndex);
                 if (!value.equals(aliasProperties().get(keyword))) {
                     aliasProperties().put(keyword, value);
-                    PropertyKey key = getKey(keyword);
+                    PropertyKey<?> key = getKey(keyword);
                     if (key != null) {
                         check(key);
                     }
