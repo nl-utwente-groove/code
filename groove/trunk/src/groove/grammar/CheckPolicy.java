@@ -16,6 +16,7 @@
  */
 package groove.grammar;
 
+import groove.grammar.Action.Role;
 import groove.util.ExprParser;
 import groove.util.Parser;
 
@@ -55,6 +56,11 @@ public enum CheckPolicy {
     /** Returns the name of this policy. */
     public String getName() {
         return this.name;
+    }
+
+    /** Tests if this policy is suitable for a given action role. */
+    public boolean isFor(Role role) {
+        return this == OFF || role.isConstraint();
     }
 
     private final String name;
