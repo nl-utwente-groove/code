@@ -21,6 +21,7 @@ import groove.explore.Exploration;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.RuleModel;
 import groove.util.Groove;
 import groove.util.Parser;
 import groove.util.PropertyKey;
@@ -373,8 +374,28 @@ public enum GrammarKey implements PropertyKey, GrammarChecker {
 
         @Override
         public FormatErrorSet check(GrammarModel grammar, Object value) {
+            FormatErrorSet result = new FormatErrorSet();
+            List<String> unknowns = new ArrayList<String>();
             CheckPolicy.PolicyMap map = (CheckPolicy.PolicyMap) value;
-            return super.check(grammar, map.keySet());
+            for (Map.Entry<String,CheckPolicy> entry : map.entrySet()) {
+                String name = entry.getKey();
+                RuleModel rule = grammar.getRuleModel(name);
+                if (rule == null) {
+                    unknowns.add(name);
+                } else {
+                    CheckPolicy policy = entry.getValue();
+                    if (!policy.isFor(rule.getRole())) {
+                        result.add("Policy '%s' is unsuitable for %s '%s'", policy.getName(),
+                            rule.getRole(), rule.getFullName());
+                    }
+                }
+            }
+            if (!unknowns.isEmpty()) {
+                result.add("Unknown %s name%s %s", Groove.convertCase(getKind().getName(), false),
+                    unknowns.size() == 1 ? "" : "s",
+                    Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+            }
+            return result;
         }
 
         public static ActionPolicyChecker instance = new ActionPolicyChecker();
