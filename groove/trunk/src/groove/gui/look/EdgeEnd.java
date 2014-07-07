@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -29,18 +29,14 @@ import org.jgraph.graph.GraphConstants;
 public enum EdgeEnd {
     /** Filled arrow decoration. */
     ARROW(GraphConstants.ARROW_CLASSIC),
-    /** Two perpendicular vertical lines. */
-    DOUBLE_LINE(GraphConstants.ARROW_DOUBLELINE),
     /** No end decoration. */
     NONE(GraphConstants.ARROW_NONE),
     /** Open (inheritance-style) arrow decoration. */
-    SUBTYPE(GraphConstants.ARROW_TECHNICAL,
-            GraphConstants.DEFAULTDECORATIONSIZE + 5, false),
+    SUBTYPE(GraphConstants.ARROW_TECHNICAL, GraphConstants.DEFAULTDECORATIONSIZE + 5, false),
     /** Composite type edge arrow decoration. */
     COMPOSITE(GraphConstants.ARROW_DIAMOND, 15),
     /** Quantifier nesting arrow. */
-    NESTING(GraphConstants.ARROW_SIMPLE,
-            GraphConstants.DEFAULTDECORATIONSIZE - 5),
+    NESTING(GraphConstants.ARROW_SIMPLE, GraphConstants.DEFAULTDECORATIONSIZE - 5),
     /** Simple arrow decoration. */
     SIMPLE(GraphConstants.ARROW_SIMPLE),
     /** Unfilled arrow decoration. */
@@ -91,14 +87,12 @@ public enum EdgeEnd {
     public static EdgeEnd getEdgeEnd(int code) {
         EdgeEnd result = codeMap.get(code);
         if (result == null) {
-            throw new IllegalArgumentException(String.format(
-                "Unknown edge style code %s", code));
+            throw new IllegalArgumentException(String.format("Unknown edge style code %s", code));
         }
         return result;
     }
 
-    private static Map<Integer,EdgeEnd> codeMap =
-        new HashMap<Integer,EdgeEnd>();
+    private static Map<Integer,EdgeEnd> codeMap = new HashMap<Integer,EdgeEnd>();
 
     static {
         for (EdgeEnd style : EdgeEnd.values()) {
