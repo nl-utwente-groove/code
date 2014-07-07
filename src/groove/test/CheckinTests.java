@@ -32,6 +32,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
+ * Test suite to be run upon checkin.
+ * Also run by the Jenkins build server.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -41,6 +43,6 @@ import org.junit.runners.Suite;
     AllTypeTests.class, AllRelTests.class, AllVerifyTests.class, BinaryEdgeTest.class,
     ExplorationTest.class, HashBagTest.class, IOTest.class, TreeHashSetTest.class,
     AllSTSTests.class})
-public class AllTests {
+public class CheckinTests {
     // Empty by design.
 }

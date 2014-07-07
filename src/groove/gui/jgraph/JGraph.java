@@ -287,7 +287,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     private GrammarProperties getProperties() {
         return getSimulatorModel() == null ? null
-                : getSimulatorModel().getGrammar().getProperties();
+            : getSimulatorModel().getGrammar().getProperties();
     }
 
     /*
@@ -365,7 +365,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         if (view != null && !isEditing()) {
             Rectangle2D bounds =
                 (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
-                        : null;
+                    : null;
             AttributeMap attrs = getModel().getAttributes(view.getCell());
             if (bounds == null) {
                 bounds = GraphConstants.getBounds(attrs);
@@ -606,9 +606,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             if (newJModel != null) {
                 setName(newJModel.getName());
             }
-            if (newJModel != null) {
-                doLayout(false);
-            }
+            //            if (newJModel != null) {
+            //                doLayout(false);
+            //            }
             if (newJModel != null) {
                 newJModel.addGraphModelListener(getCancelEditListener());
             }
