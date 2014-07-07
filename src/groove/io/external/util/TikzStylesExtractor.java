@@ -27,6 +27,7 @@ import static groove.gui.look.Look.COMPOSITE;
 import static groove.gui.look.Look.CONNECT;
 import static groove.gui.look.Look.CREATOR;
 import static groove.gui.look.Look.CTRL_TRANSIENT_STATE;
+import static groove.gui.look.Look.CTRL_VERDICT;
 import static groove.gui.look.Look.DATA;
 import static groove.gui.look.Look.EMBARGO;
 import static groove.gui.look.Look.EQUIV_CLASS;
@@ -47,6 +48,7 @@ import static groove.gui.look.Look.START;
 import static groove.gui.look.Look.STATE;
 import static groove.gui.look.Look.SUBTYPE;
 import static groove.gui.look.Look.TRANS;
+import static groove.gui.look.Look.TRANSIENT;
 import static groove.gui.look.Look.TYPE;
 import static groove.gui.look.VisualKey.ADORNMENT;
 import static groove.gui.look.VisualKey.BACKGROUND;
@@ -73,6 +75,7 @@ import static groove.gui.look.VisualKey.NODE_SHAPE;
 import static groove.gui.look.VisualKey.NODE_SIZE;
 import static groove.gui.look.VisualKey.OPAQUE;
 import static groove.gui.look.VisualKey.POINTS;
+import static groove.gui.look.VisualKey.TEXT_SIZE;
 import static groove.gui.look.VisualKey.VISIBLE;
 import groove.gui.jgraph.JAttr;
 import groove.gui.look.EdgeEnd;
@@ -100,12 +103,13 @@ public final class TikzStylesExtractor {
 
     /** Enumeration of main looks that are defined. */
     public static final Set<Look> mainLooks = EnumSet.of(BASIC, CREATOR, CONNECT, DATA, EMBARGO,
-        ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, SUBTYPE, STATE, TRANS, START,
+        ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, SUBTYPE, STATE, TRANS, START, TRANSIENT,
         CTRL_TRANSIENT_STATE);
 
     /** Subset of the main looks that are suitable for nodes. */
     private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC, CREATOR, DATA, EMBARGO,
-        ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE, START, CTRL_TRANSIENT_STATE);
+        ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE, START, Look.TRANSIENT,
+        CTRL_TRANSIENT_STATE);
 
     /** Subset of the main looks that are suitable for edges. */
     private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC, CREATOR, CONNECT, EMBARGO,
@@ -115,14 +119,15 @@ public final class TikzStylesExtractor {
      * Extra enumeration for the additional looks that can modify a main look.
      */
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED, BIDIRECTIONAL, NO_ARROW,
-        COMPOSITE, OPEN, FINAL, Look.ERROR, RESULT, RECIPE, ABSENT, ACTIVE, GRAYED_OUT);
+        COMPOSITE, OPEN, FINAL, Look.ERROR, RESULT, RECIPE, ABSENT, ACTIVE, GRAYED_OUT,
+        CTRL_VERDICT);
 
     /**
      * Set of unused looks. It is required that mainLooks + modifyingLooks +
      * unusedLooks to be equal to the entire Look enum, otherwise an error
      * is raised. This is needed to ensure the consistency of the extractor.
      */
-    private static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER, PATTERN, EQUIV_CLASS);
+    public static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER, PATTERN, EQUIV_CLASS);
 
     /**
      * Set of visual keys that are used in the extractor.
@@ -136,8 +141,8 @@ public final class TikzStylesExtractor {
      */
     private static final Set<VisualKey> unusedKeys = EnumSet.of(ADORNMENT, COLOR,
         EDGE_SOURCE_LABEL, EDGE_SOURCE_POS, EDGE_TARGET_LABEL, EDGE_TARGET_POS, EMPHASIS, ERROR,
-        FONT, INNER_LINE, INSET, LABEL, LABEL_POS, LINE_STYLE, NODE_POS, NODE_SIZE, OPAQUE, POINTS,
-        VISIBLE);
+        FONT, INNER_LINE, INSET, LABEL, LABEL_POS, LINE_STYLE, NODE_POS, NODE_SIZE, TEXT_SIZE,
+        OPAQUE, POINTS, VISIBLE);
 
     /** Main method. */
     public static final void main(String[] args) {
@@ -197,7 +202,7 @@ public final class TikzStylesExtractor {
             Color color = cType.getColor();
             if (color != null) {
                 append("\\definecolor{" + cType.name().toLowerCase() + "_c}{RGB}"
-                        + Style.getColorStringDefinition(color) + NEW_LINE);
+                    + Style.getColorStringDefinition(color) + NEW_LINE);
             }
         }
     }
@@ -265,6 +270,7 @@ public final class TikzStylesExtractor {
             Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
         case ABSENT:
+        case CTRL_VERDICT:
             Style.writeDash(visuals.getDash(), styles);
             break;
         case ACTIVE:
@@ -275,7 +281,7 @@ public final class TikzStylesExtractor {
             Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
         default:
-            throw new IllegalArgumentException("Invalid modifying look!");
+            throw new IllegalArgumentException("Invalid modifying look " + look);
         }
     }
 
@@ -339,16 +345,16 @@ public final class TikzStylesExtractor {
             + NEW_LINE + NEW_LINE + "% Default colors for TeX strings." + NEW_LINE;
 
     private static final String MAIN_STYLE_COMMENT = NEW_LINE
-            + "% Main styles. (Should be used first in a node and edge definition.)" + NEW_LINE;
+        + "% Main styles. (Should be used first in a node and edge definition.)" + NEW_LINE;
 
     private static final String MOD_STYLE_COMMENT = NEW_LINE
-            + "% Modifying styles. (To be used in conjunction - AFTER - a main style.)" + NEW_LINE
-            + NEW_LINE;
+        + "% Modifying styles. (To be used in conjunction - AFTER - a main style.)" + NEW_LINE
+        + NEW_LINE;
 
     private static final String FOOTER = NEW_LINE
         + "% Ugly hack to allow nodes with multiple lines." + NEW_LINE + "\\newcommand{\\ml}[1]{"
-            + NEW_LINE + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE + "}"
-            + NEW_LINE;
+        + NEW_LINE + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE + "}"
+        + NEW_LINE;
 
     /**
      * Auxiliary class for storing the useful Look information and outputing
@@ -511,9 +517,6 @@ public final class TikzStylesExtractor {
                 return "stealth'";
             case COMPOSITE:
                 return "diamond";
-            case DOUBLE_LINE:
-                // TODO: Control Automaton. See recipes.gps
-                return "";
             case NONE:
                 return "";
             case SIMPLE:
@@ -522,7 +525,7 @@ public final class TikzStylesExtractor {
                 return "open triangle 60";
             default:
                 throw new IllegalArgumentException(
-                    "Default fall-thought in edge end shape! Did you add a new edge end shape?");
+                    "Default fall-through in edge end shape! Did you add a new edge end shape?");
             }
         }
 
@@ -531,7 +534,7 @@ public final class TikzStylesExtractor {
             final String DIAMOND_VAL = "diamond";
             final String ELLIPSE_VAL = "ellipse";
             final String RECTANGLE_VAL = "rectangle";
-
+            final String HEXAGON_VAL = "regular polygon,regular polygon sides=6";
             switch (nodeShape) {
             case DIAMOND:
                 styles.add(new StyleDuo(SHAPE_KEY, DIAMOND_VAL));
@@ -539,6 +542,9 @@ public final class TikzStylesExtractor {
                 break;
             case ELLIPSE:
                 styles.add(new StyleDuo(SHAPE_KEY, ELLIPSE_VAL));
+                break;
+            case HEXAGON:
+                styles.add(new StyleDuo(SHAPE_KEY, HEXAGON_VAL));
                 break;
             case OVAL:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
