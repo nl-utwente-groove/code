@@ -106,7 +106,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * Constructs a new imager, which may be GUI-based or command-line.
      * @param gui <tt>true</tt> if the imager should be GUI-based
      * @param args command-line arguments. If {@code gui} is {@code true},
-     * the command-line arguments must be absent. 
+     * the command-line arguments must be absent.
      */
     public Imager(boolean gui, String... args) {
         super("Imager", args);
@@ -265,8 +265,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
             DisplayKind displayKind =
                 DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
+            jGraph.setGrammar(resourceModel.getGrammar());
             AspectJModel model = jGraph.newModel();
-            model.setGrammar(resourceModel.getGrammar());
             model.loadGraph(aspectGraph);
             jGraph.setModel(model);
             // Ugly hack to prevent clipping of the image. We set the
@@ -320,26 +320,26 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     /** The location of the file to be imaged. */
     @Argument(metaVar = "input", usage = "Input file or directory", required = true,
-            handler = ExistingFileHandler.class)
+        handler = ExistingFileHandler.class)
     private File inFile;
 
     /** The  optional location of the output file to be imaged. */
     @Argument(metaVar = "output", index = 1,
-            usage = "Output file name; if omitted, the input file name is used. "
-                + "In the absence of the '-f' option, the "
-                + "extension of <output> is taken to specify the output format",
-            handler = FileOptionHandler.class)
+        usage = "Output file name; if omitted, the input file name is used. "
+            + "In the absence of the '-f' option, the "
+            + "extension of <output> is taken to specify the output format",
+        handler = FileOptionHandler.class)
     private File outFile;
 
     /** Name of the image format to which the imager converts. */
     @Option(name = "-f", metaVar = "ext", usage = FormatHandler.USAGE,
-            handler = FormatHandler.class)
+        handler = FormatHandler.class)
     private String outFormatExt;
 
     @Option(name = "-e", usage = "Enforces editor view export")
     private boolean editorView;
 
-    /** 
+    /**
      * Starts the imager with a list of options and file names.
      * Always exits with {@link System#exit(int)}.
      * Call {@link #execute(String[])} for programmatic use instead
