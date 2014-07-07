@@ -54,6 +54,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -77,6 +78,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -228,22 +230,41 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 }
             }
             // Determine output file format
-            FileType fileType = getFormatMap().get(getOutFormatExt());
-            if (fileType == null) {
-                // Pick first format as default
-                fileType = getFormatMap().values().iterator().next();
-            }
-            Exporter exporter = Exporters.getExporter(fileType);
-            outFile = new File(outParent, fileType.addExtension(outFileName));
+            FileType outFileType = getFormatMap().get(getOutFormatExt());
+            final FileType fileType =
+                outFileType == null ? getFormatMap().values().iterator().next() : outFileType;
+            final Exporter exporter = Exporters.getExporter(fileType);
+            final File exportFile = new File(outParent, fileType.addExtension(outFileName));
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
                 (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two().toString());
-            Exportable exportable = toExportable(resourceModel, exporter.getFormatKinds());
-            try {
-                exporter.doExport(exportable, outFile, fileType);
-            } catch (PortException e1) {
-                throw new IOException(e1);
+            final Exportable exportable = toExportable(resourceModel, exporter.getFormatKinds());
+            // make sure the export happens on the event thread
+            Runnable export = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        exporter.doExport(exportable, exportFile, fileType);
+                    } catch (PortException e1) {
+                        throw new RuntimeException(e1);
+                    }
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                try {
+                    export.run();
+                } catch (RuntimeException exc) {
+                    throw new IOException(exc.getCause());
+                }
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(export);
+                } catch (InterruptedException exc) {
+                    // do nothing
+                } catch (InvocationTargetException exc) {
+                    throw new IOException(exc.getCause().getCause());
+                }
             }
         }
     }

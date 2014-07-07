@@ -26,6 +26,7 @@ import groove.gui.look.VisualMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -90,7 +91,7 @@ abstract public class AbstractLayouter implements Layouter {
         //        this.jGraph.clearAllEdgePoints();
         // copy the old layout map
         Map<JVertex<?>,LayoutNode> oldLayoutMap =
-                new LinkedHashMap<JVertex<?>,LayoutNode>(this.layoutMap);
+            new LinkedHashMap<JVertex<?>,LayoutNode>(this.layoutMap);
         // clear the transient information
         this.layoutMap.clear();
         this.immovableMap.clear();
@@ -149,7 +150,7 @@ abstract public class AbstractLayouter implements Layouter {
                 // don't make the change directly in the cell,
                 // as this messes up the undo history
                 List<Point2D> newPoints =
-                        Arrays.asList(points.get(0), points.get(points.size() - 1));
+                    Arrays.asList(points.get(0), points.get(points.size() - 1));
                 AttributeMap newAttributes = new AttributeMap();
                 GraphConstants.setPoints(newAttributes, newPoints);
                 change.put(jCell, newAttributes);
@@ -173,7 +174,13 @@ abstract public class AbstractLayouter implements Layouter {
         if (SwingUtilities.isEventDispatchThread()) {
             edit.run();
         } else {
-            SwingUtilities.invokeLater(edit);
+            try {
+                SwingUtilities.invokeAndWait(edit);
+            } catch (InterruptedException exc) {
+                // do nothing
+            } catch (InvocationTargetException exc) {
+                // do nothing
+            }
         }
     }
 
