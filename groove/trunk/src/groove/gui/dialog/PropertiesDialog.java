@@ -203,7 +203,7 @@ public class PropertiesDialog {
             this.errorLabel = new JLabel();
             this.errorLabel.setBorder(new EmptyBorder(new Insets(5, 0, 0, 0)));
             this.errorLabel.setForeground(Values.ERROR_NORMAL_FOREGROUND);
-            this.errorLabel.setText("Something");
+            this.errorLabel.setText(null);
             getInnerTable().getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
                     @Override

@@ -39,10 +39,13 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
 
     /** 
      * Constructs an anchor initialised to a given collection of keys.
-     * @param c the collection of keys; these are assumed to be of type {@link AnchorKey}
+     * @param keys the collection of keys
      */
-    public Anchor(Collection<? extends AnchorKey> c) {
-        super(c);
+    public Anchor(Collection<? extends AnchorKey> keys) {
+        super(keys.size());
+        for (AnchorKey k : keys) {
+            add(k);
+        }
     }
 
     /** Constructs an anchor initialised to the elements of a rule graph. */
@@ -102,6 +105,7 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
             switch (key.getAnchorKind()) {
             case NODE:
                 this.nodeSet.add(AnchorKind.node(key));
+                assert containsAll(AnchorKind.node(key).getVars());
                 break;
             case EDGE:
                 this.edgeSet.add(AnchorKind.edge(key));
@@ -134,17 +138,13 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
         }
         switch (one.getAnchorKind()) {
         case EDGE:
-            result =
-                EdgeComparator.instance().compare(AnchorKind.edge(one),
-                    AnchorKind.edge(two));
+            result = EdgeComparator.instance().compare(AnchorKind.edge(one), AnchorKind.edge(two));
             break;
         case LABEL:
             result = AnchorKind.label(one).compareTo(AnchorKind.label(two));
             break;
         case NODE:
-            result =
-                NodeComparator.instance().compare(AnchorKind.node(one),
-                    AnchorKind.node(two));
+            result = NodeComparator.instance().compare(AnchorKind.node(one), AnchorKind.node(two));
         }
         return result;
     }

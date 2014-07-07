@@ -31,6 +31,7 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
+import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
@@ -437,20 +438,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         FormatErrorSet errors = new FormatErrorSet();
         // extract the variable types from the parent typing
         result.copyVarTyping(parentTyping);
-        // extract additional node variable typing from the source edges
-        for (RuleEdge edge : source.edgeSet()) {
-            if (isNodeType(edge) && edge.label().isWildcard()) {
-                TypeGuard guard = edge.label().getWildcardGuard();
-                LabelVar var = guard.getVar();
-                Set<? extends TypeElement> types = result.getVarTypes(var);
-                if (types == null) {
-                    types = new HashSet<TypeElement>(nodeSet());
-                }
-                guard.filter(types);
-                result.addVarTypes(var, types);
-            }
+        // extract node variable typing and push it into the result
+        Map<RuleNode,RuleNode> nodeImageMap = null;
+        if (!isImplicit()) {
+            nodeImageMap = computeNodeImages(source, parentTyping, result);
         }
-        // determine the node types
+        // create images for the non-operator nodes, and collect the operator nodes
         List<OperatorNode> opNodes = new ArrayList<OperatorNode>();
         for (RuleNode node : source.nodeSet()) {
             try {
@@ -471,7 +464,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 } else {
                     // get the type from the parent typing or from the node type edges
                     RuleNode parentImage = parentTyping.getNode(node);
-                    image = createRuleNode(parentTyping, source, node, result.getVarTyping());
+                    image = nodeImageMap.get(node);
                     if (parentImage != null) {
                         TypeNode parentType = parentImage.getType();
                         if (!isSubtype(image.getType(), parentType)) {
@@ -611,93 +604,143 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
 
     }
 
-    /**
-     * Creates a rule node with a type to be determined by a list
-     * of typing edges.
-     * @param varTyping predetermined typing of the variable edges
-     * @param graph the source graph
-     * @param node the node for which we want an image
-     * @return a non-{@code null} node with number {@code nr} and type
-     * determined by {@code typingEdges}
-     * @throws FormatException if no unambiguous node type can be derived
+    /** Computes typed images for the nodes of an untyped rule graph.
+     * The images are constrained to the node types satisfying the explicit type labels,
+     * as well as the node type constraints imposed by label wildcards
+     * @param source rule graph with which the node images are computed
+     * @param parentTyping morphism from the untyped rule graph to the typed version
+     * of a parent rule graph; used to get a hint for the node types
+     * @param typing resulting morphism from the untyped to the typed rule graph;
+     * this is modified the node variables constraints
+     * @return mapping from source rule nodes to typed versions
+     * @throws FormatException if any errors were detected while constructing node images
      */
-    private RuleNode createRuleNode(RuleGraphMorphism parentTyping, RuleGraph graph, RuleNode node,
-            Map<LabelVar,Set<? extends TypeElement>> varTyping) throws FormatException {
-        List<TypeGuard> typeGuards = new ArrayList<TypeGuard>();
-        Set<LabelVar> labelVars = new HashSet<LabelVar>();
-        RuleNode parentImage = parentTyping.getNode(node);
-        TypeNode type = null;
-        boolean sharp = false;
-        for (RuleEdge edge : graph.outEdgeSet(node)) {
-            if (edge.label().getRole() != NODE_TYPE) {
+    private Map<RuleNode,RuleNode> computeNodeImages(RuleGraph source,
+            RuleGraphMorphism parentTyping, RuleGraphMorphism typing) throws FormatException {
+        Map<RuleNode,RuleNode> result = new HashMap<RuleNode,RuleNode>();
+        // mapping from type variables to sets of potential node types
+        Map<LabelVar,Set<TypeNode>> varTypesMap = new HashMap<LabelVar,Set<TypeNode>>();
+        FormatErrorSet errors = new FormatErrorSet();
+        // auxiliary map to sets of allowed node types
+        Map<RuleNode,Set<TypeNode>> nodeTypesMap = new HashMap<RuleNode,Set<TypeNode>>();
+        // mapping from rule nodes to sets of label variables that occur on them
+        Map<RuleNode,Set<LabelVar>> nodeVarsMap = new HashMap<RuleNode,Set<LabelVar>>();
+        Map<RuleNode,List<TypeGuard>> nodeGuardsMap = new HashMap<RuleNode,List<TypeGuard>>();
+        // mapping from nodes to declared node type
+        Map<RuleNode,TypeNode> declaredTypeMap = new HashMap<RuleNode,TypeNode>();
+        // collection of nodes declared to be sharp in the source graph
+        Set<RuleNode> sharpNodes = new HashSet<RuleNode>();
+        for (RuleNode node : source.nodeSet()) {
+            if (!(node instanceof DefaultRuleNode)) {
                 continue;
             }
-            TypeGuard guard = edge.label().getWildcardGuard();
-            if (guard != null) {
-                typeGuards.add(guard);
-                labelVars.add(guard.getVar());
-            } else {
-                TypeLabel typeLabel = edge.label().getTypeLabel();
-                assert typeLabel != null;
-                if (type == null) {
-                    type = getNode(typeLabel);
-                    sharp = edge.label().isSharp();
-                    if (type == null) {
-                        throw new FormatException("Unknown node type %s", typeLabel, edge);
+            // variable to detect duplicate type edges
+            TypeNode type = null;
+            // collection of possible types for this node
+            Set<TypeNode> types = null;
+            RuleNode parentNode = parentTyping.getNode(node);
+            if (parentNode != null) {
+                types = new HashSet<TypeNode>(parentNode.getMatchingTypes());
+            }
+            Set<LabelVar> vars = new HashSet<LabelVar>();
+            List<TypeGuard> guards = new ArrayList<TypeGuard>();
+            for (RuleEdge edge : source.edgeSet(node)) {
+                if (edge.getRole() != NODE_TYPE) {
+                    continue;
+                }
+                if (types == null) {
+                    types = new HashSet<TypeNode>(nodeSet());
+                    types.removeAll(getFactory().getDataTypes());
+                }
+                if (edge.label().isWildcard()) {
+                    TypeGuard guard = edge.label().getWildcardGuard();
+                    guards.add(guard);
+                    // for node type wildcards, the guard is never null
+                    LabelVar var = guard.getVar();
+                    vars.add(var);
+                    Set<TypeNode> varTypes = varTypesMap.get(var);
+                    if (varTypes == null) {
+                        varTypesMap.put(var, varTypes = new HashSet<TypeNode>(types));
                     }
+                    guard.filter(varTypes);
                 } else {
-                    throw new FormatException("Duplicate node types %s and %s", type.label(),
-                        typeLabel, node);
+                    TypeLabel typeLabel = edge.label().getTypeLabel();
+                    assert typeLabel != null;
+                    TypeNode newType = getNode(typeLabel);
+                    boolean sharp = edge.label().isSharp();
+                    if (newType == null) {
+                        errors.add("Unknown node type %s", typeLabel, node);
+                    } else if (type != null) {
+                        errors.add("Duplicate node types %s and %s", type.label(), typeLabel, node);
+                    } else {
+                        type = newType;
+                        types.retainAll(sharp ? Collections.singleton(type) : type.getSubtypes());
+                        if (sharp) {
+                            sharpNodes.add(node);
+                        }
+                    }
+                }
+            }
+            if (types == null) {
+                errors.add("Untyped node", node);
+            } else {
+                nodeTypesMap.put(node, types);
+            }
+            if (type != null) {
+                declaredTypeMap.put(node, type);
+            }
+            if (!vars.isEmpty()) {
+                nodeVarsMap.put(node, vars);
+            }
+            nodeGuardsMap.put(node, guards);
+        }
+        // iterate until all variable and rule node types are consistent
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Map.Entry<RuleNode,Set<LabelVar>> e : nodeVarsMap.entrySet()) {
+                RuleNode node = e.getKey();
+                Set<TypeNode> nodeTypes = nodeTypesMap.get(node);
+                for (LabelVar var : e.getValue()) {
+                    Set<TypeNode> varTypes = varTypesMap.get(var);
+                    changed |= varTypes.retainAll(nodeTypes);
+                    changed |= nodeTypes.retainAll(varTypes);
                 }
             }
         }
-        // collect the matching non-data type nodes
-        Set<TypeNode> validTypes = new HashSet<TypeNode>();
-        for (TypeNode tn : parentImage == null ? nodeSet() : parentImage.getMatchingTypes()) {
-            if (!tn.isDataType()) {
-                validTypes.add(tn);
+        // now construct the result map by taking the maximum from the type nodes
+        for (Map.Entry<RuleNode,Set<TypeNode>> e : nodeTypesMap.entrySet()) {
+            RuleNode node = e.getKey();
+            TypeNode declaredType = declaredTypeMap.get(node);
+            Set<TypeNode> types = e.getValue();
+            if (types.isEmpty()) {
+                Set<LabelVar> vars = nodeVarsMap.get(node);
+                String varString = Groove.toString(vars.toArray(), "", "", ", ", " and ");
+                if (declaredType == null) {
+                    errors.add("Conflicting type variables %s", varString, node);
+                } else {
+                    errors.add("Declared node type '%s' conflicts with type variable%s %s",
+                        declaredType, e.getValue().size() == 1 ? "" : "s", varString, node);
+                }
+            } else {
+                TypeNode type = declaredType == null ? getMaximum(types) : declaredType;
+                if (type == null) {
+                    errors.add("Ambiguous typing: %s does not contain a common supertype", types,
+                        node);
+                } else {
+                    RuleNode image =
+                        parentTyping.getFactory().nodes(type, sharpNodes.contains(node),
+                            nodeGuardsMap.get(node)).createNode(node.getNumber());
+                    image.getMatchingTypes().retainAll(types);
+                    result.put(node, image);
+                }
             }
         }
-        // apply the known type guards for the label variables on this node
-        boolean validTypesChanged = false;
-        for (LabelVar var : labelVars) {
-            validTypesChanged |= validTypes.retainAll(varTyping.get(var));
+        errors.throwException();
+        // push the variable typings into the typing morphism
+        for (Map.Entry<LabelVar,Set<TypeNode>> e : varTypesMap.entrySet()) {
+            typing.addVarTypes(e.getKey(), e.getValue());
         }
-        if (validTypesChanged) {
-            // push the constraints back to the variables
-            for (LabelVar var : labelVars) {
-                varTyping.get(var).retainAll(validTypes);
-            }
-        }
-        if (validTypes.isEmpty()) {
-            String constraints = Groove.toString(typeGuards.toArray(), "", "", ", ", " and ");
-            throw new FormatException("Inconsistent type constraint%s %s", typeGuards.size() == 1
-                    ? "" : "s", constraints, node);
-        }
-        if (type == null) {
-            if (parentImage == null && typeGuards.isEmpty()) {
-                throw new FormatException("Untyped node", node);
-            }
-            // find a maximal element w.r.t. subtyping
-            type = getMaximum(validTypes);
-            if (type == null) {
-                throw new FormatException(
-                    "Ambiguous typing: %s does not contain a common supertype", validTypes, node);
-            }
-        } else if (validTypes.retainAll(type.getSubtypes())) {
-            // again push the constraints back to the variables
-            for (LabelVar var : labelVars) {
-                varTyping.get(var).retainAll(validTypes);
-            }
-            if (validTypes.isEmpty()) {
-                String constraints = Groove.toString(typeGuards.toArray(), "", "", ", ", " and ");
-                throw new FormatException("Node type %s conflicts with type constraint%s %s", type,
-                    typeGuards.size() == 1 ? "" : "s", constraints, node);
-            }
-        }
-        RuleNode result =
-            parentTyping.getFactory().nodes(type, sharp, typeGuards).createNode(node.getNumber());
-        result.getMatchingTypes().retainAll(validTypes);
         return result;
     }
 
