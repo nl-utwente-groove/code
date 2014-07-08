@@ -63,7 +63,7 @@ public class SpringLayouter extends AbstractLayouter {
     @Override
     public void start() {
         SpringLayouter.this.damper = 1.0;
-        prepare();
+        prepare(false);
         long currentTime = System.currentTimeMillis();
         while (SpringLayouter.this.damper > 0 && System.currentTimeMillis() - currentTime < TIMEOUT) {
             relax();
@@ -72,8 +72,8 @@ public class SpringLayouter extends AbstractLayouter {
     }
 
     @Override
-    protected void prepare() {
-        super.prepare();
+    protected void prepare(boolean recordImmovables) {
+        super.prepare(recordImmovables);
         if (DEBUG) {
             System.out.println("Starting automatic layout");
         }
@@ -141,10 +141,10 @@ public class SpringLayouter extends AbstractLayouter {
             // still>1, damp away
             // We never want the damper to be negative though
             if ((this.maxMotion < FAST_DAMPING_MOTION_TRESHHOLD || this.damper < FAST_DAMPING_DAMPER_TRESHHOLD)
-                    && this.damper > FAST_DAMPING) {
+                && this.damper > FAST_DAMPING) {
                 this.damper -= FAST_DAMPING;
             } else if (this.maxMotion < MEDIUM_DAMPING_MOTION_TRESHHOLD
-                    && this.damper > MEDIUM_DAMPING) {
+                && this.damper > MEDIUM_DAMPING) {
                 this.damper -= MEDIUM_DAMPING;
             } else if (this.damper > SLOW_DAMPING) {
                 this.damper -= SLOW_DAMPING;

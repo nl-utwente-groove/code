@@ -371,11 +371,15 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             GraphTransition in = ((GraphNextState) parent).getInTransition();
             newTransitions.add(in);
             parent = in.source();
-            newStates.add(parent);
+            if (getModel().getJCellForNode(parent) == null) {
+                newStates.add(parent);
+            }
         }
         for (GraphTransition trans : state.getTransitions(getTransitionClass())) {
-            newTransitions.add(trans);
-            newStates.add(trans.target());
+            if (getModel().getJCellForEdge(trans) == null) {
+                newTransitions.add(trans);
+                newStates.add(trans.target());
+            }
         }
         int oldBound = getModel().getStateBound();
         getModel().setStateBound(Integer.MAX_VALUE);

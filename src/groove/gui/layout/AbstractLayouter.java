@@ -83,8 +83,10 @@ abstract public class AbstractLayouter implements Layouter {
      * the current <tt>jmodel</tt>. This implementation calculates the
      * <tt>toLayoutableMap</tt>, and sets the line style to that preferred by
      * the layouter.
+     * @param recordImmovables if {@code true}, the shift in position of the immovables
+     * is recorded
      */
-    protected void prepare() {
+    protected void prepare(boolean recordImmovables) {
         this.jGraph.setLayouting(true);
         this.jGraph.setToolTipEnabled(false);
         // edge points are cleared when layout is stored back into view
@@ -108,12 +110,17 @@ abstract public class AbstractLayouter implements Layouter {
             }
             LayoutNode layout = new LayoutNode(vertexView);
             if (!jVertex.isLayoutable()) {
-                Point2D shift = new Point2D.Double();
-                LayoutNode oldLayout = oldLayoutMap.get(jVertex);
-                if (oldLayout != null) {
-                    double x = layout.getX() - oldLayout.getX();
-                    double y = layout.getY() - oldLayout.getY();
-                    shift = new Point2D.Double(x, y);
+                Point2D shift;
+                if (recordImmovables) {
+                    shift = new Point2D.Double();
+                    LayoutNode oldLayout = oldLayoutMap.get(jVertex);
+                    if (oldLayout != null) {
+                        double x = layout.getX() - oldLayout.getX();
+                        double y = layout.getY() - oldLayout.getY();
+                        shift = new Point2D.Double(x, y);
+                    }
+                } else {
+                    shift = null;
                 }
                 this.immovableMap.put(jVertex, shift);
             }
