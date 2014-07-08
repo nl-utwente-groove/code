@@ -79,7 +79,7 @@ public class ForestLayouter extends AbstractLayouter {
     @Override
     public void start() {
         synchronized (getJGraph()) {
-            prepare();
+            prepare(true);
             this.forest = computeForest(this.forest);
             this.forest.prune();
             layout(this.forest.one(), 0);

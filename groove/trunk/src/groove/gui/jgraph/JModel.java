@@ -163,11 +163,15 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * @return {@code true} if the jModel was changed
      */
     protected boolean addElements(Collection<? extends Node> nodeSet,
-            Collection<? extends Edge> edgeSet, boolean replace) {
+        Collection<? extends Edge> edgeSet, boolean replace) {
+        setLoading(true);
         prepareInsert();
         boolean added = addNodes(nodeSet);
         added |= addEdges(edgeSet);
-        doInsert(replace);
+        if (added || replace) {
+            doInsert(replace);
+        }
+        setLoading(false);
         return replace || added;
     }
 
@@ -499,7 +503,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         this.addedJCells.clear();
         this.addedJEdges.clear();
         this.connections = new ConnectionSet();
-        setLoading(true);
     }
 
     /**
@@ -519,7 +522,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             }
         }
         toBackSilent(edges);
-        setLoading(false);
     }
 
     /**
@@ -586,7 +588,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Used in the process of constructing a GraphJModel.
      */
     protected final Map<JVertex<G>,Set<JEdge<G>>> addedJEdges =
-            new HashMap<JVertex<G>,Set<JEdge<G>>>();
+        new HashMap<JVertex<G>,Set<JEdge<G>>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
      * GraphJModel.
