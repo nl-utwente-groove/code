@@ -200,8 +200,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(graph);
         if (this.layoutMap == null) {
-            this.layoutMap = new LayoutMap();
-            GraphInfo.setLayoutMap(graph, this.layoutMap);
+            this.layoutMap = graph.getInfo().getLayoutMap();
         }
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
@@ -255,6 +254,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /** Stores the layout from the JModel back into the graph. */
     public void synchroniseLayout(JCell<G> jCell) {
         LayoutMap layoutMap = getLayoutMap();
+        assert layoutMap == GraphInfo.getLayoutMap(getGraph());
         if (jCell instanceof JEdge) {
             for (Edge edge : ((JEdge<G>) jCell).getEdges()) {
                 layoutMap.putEdge(edge, jCell.getVisuals());
