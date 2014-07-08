@@ -72,7 +72,7 @@ public class GraphInfo extends DefaultFixable {
      * object. Note that the layout map is always non-{@code null} and modifiable
      * @return the (non-{@code null}, modifiable) layout map
      */
-    private LayoutMap getLayoutMap() {
+    public LayoutMap getLayoutMap() {
         return (LayoutMap) this.data.get(LAYOUT_KEY);
     }
 
