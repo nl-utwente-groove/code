@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ public class Version {
 
     /**
      * Get about information of this project (plain text).
-     * 
+     *
      * @return 'About' information.
      */
     static public String getAbout() {
@@ -61,10 +61,10 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20140617";
+    public static final String BUILD = "20140709";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "17.06.2014";
+    public static final String DATE = "09.07.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -75,7 +75,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.0.1+";
+    public static final String NUMBER = "5.1.0+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
@@ -98,7 +98,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_2;
+        return GRAMMAR_VERSION_3_4;
     }
 
     /**
@@ -118,7 +118,7 @@ public class Version {
 
     /**
      * @return the grammar version that is to be used when the grammar
-     * properties has no entry for the version. 
+     * properties has no entry for the version.
      */
     public static String getInitialGrammarVersion() {
         return GRAMMAR_VERSION_1_0;
@@ -126,7 +126,7 @@ public class Version {
 
     /**
      * @return the Groove version that is to be used when the grammar
-     * properties has no entry for the version. 
+     * properties has no entry for the version.
      */
     public static String getInitialGrooveVersion() {
         return "0.0.0";
@@ -218,13 +218,13 @@ public class Version {
     public static final String GRAMMAR_VERSION_3_0 = "3.0";
     /**
      * This is the grammar version introduced with Groove version 4.5.0.
-     * This version added restrictions to the names of resources. 
+     * This version added restrictions to the names of resources.
      */
     public static final String GRAMMAR_VERSION_3_1 = "3.1";
     /**
      * This is the grammar version introduced with Groove version 4.5.3.
      * From this version onward, the start graph name must be set explicitly
-     * in the grammar properties. 
+     * in the grammar properties.
      */
     public static final String GRAMMAR_VERSION_3_2 = "3.2";
     /**
@@ -232,5 +232,12 @@ public class Version {
      * Attribute expressions are now stored in a more user-friendly format.
      */
     public static final String GRAMMAR_VERSION_3_3 = "3.3";
+    /**
+     * This is the grammar version introduced with Groove version 5.1.0.
+     * Control much improved (atomicity, recursion);
+     * Rule properties (conditions, constraints);
+     * Several grammar properties added
+     */
+    public static final String GRAMMAR_VERSION_3_4 = "3.4";
 
 }
