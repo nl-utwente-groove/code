@@ -616,7 +616,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * @throws FormatException if any errors were detected while constructing node images
      */
     private Map<RuleNode,RuleNode> computeNodeImages(RuleGraph source,
-            RuleGraphMorphism parentTyping, RuleGraphMorphism typing) throws FormatException {
+        RuleGraphMorphism parentTyping, RuleGraphMorphism typing) throws FormatException {
         Map<RuleNode,RuleNode> result = new HashMap<RuleNode,RuleNode>();
         // mapping from type variables to sets of potential node types
         Map<LabelVar,Set<TypeNode>> varTypesMap = new HashMap<LabelVar,Set<TypeNode>>();
@@ -694,6 +694,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             }
             nodeGuardsMap.put(node, guards);
         }
+        errors.throwException();
         // iterate until all variable and rule node types are consistent
         boolean changed = true;
         while (changed) {
@@ -876,7 +877,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * precisely; otherwise, supertypes are allowed
      */
     public TypeEdge getTypeEdge(TypeNode sourceType, TypeLabel label, TypeNode targetType,
-            boolean precise) {
+        boolean precise) {
         TypeEdge result = null;
         if (isFixed()) {
             TypeEdgeMap edgeMap;
@@ -931,7 +932,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * precisely; otherwise, supertypes are allowed
      */
     private TypeEdge findTypeEdge(TypeNode sourceType, TypeLabel label, TypeNode targetType,
-            boolean precise) {
+        boolean precise) {
         TypeEdge result = null;
         for (TypeEdge edge : edgeSet(label)) {
             if (!isSubtype(sourceType, edge.source(), precise)) {

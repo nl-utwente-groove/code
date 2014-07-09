@@ -1,22 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: LayoutMap.java,v 1.3 2008-01-30 09:33:00 iovka Exp $
  */
 package groove.gui.layout;
 
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.ElementMap;
 import groove.graph.Node;
 import groove.gui.look.VisualMap;
@@ -119,15 +120,14 @@ public class LayoutMap implements Cloneable {
      * Inserts layout information for a given node key, using the layout of
      * another node (from which it was mapped). Also adds an offset.
      */
-    public void copyNodeWithOffset(Node newKey, Node oldKey,
-            LayoutMap oldLayoutMap, double offsetX, double offsetY) {
+    public void copyNodeWithOffset(Node newKey, Node oldKey, LayoutMap oldLayoutMap,
+        double offsetX, double offsetY) {
         JVertexLayout oldLayout = oldLayoutMap.nodeMap.get(oldKey);
         if (oldLayout != null) {
             Rectangle2D oldBounds = oldLayout.getBounds();
             Rectangle2D.Double newBounds =
-                new Rectangle2D.Double(oldBounds.getX() + offsetX,
-                    oldBounds.getY() + offsetY, oldBounds.getWidth(),
-                    oldBounds.getHeight());
+                new Rectangle2D.Double(oldBounds.getX() + offsetX, oldBounds.getY() + offsetY,
+                    oldBounds.getWidth(), oldBounds.getHeight());
             JVertexLayout newLayout = new JVertexLayout(newBounds);
             putNode(newKey, newLayout);
         }
@@ -137,29 +137,26 @@ public class LayoutMap implements Cloneable {
      * Inserts layout information for a given edge key, using the layout of
      * another edge (from which it was mapped). Also adds an offset.
      */
-    public void copyEdgeWithOffset(Edge newKey, Edge oldKey,
-            LayoutMap oldLayoutMap, double offsetX, double offsetY) {
+    public void copyEdgeWithOffset(Edge newKey, Edge oldKey, LayoutMap oldLayoutMap,
+        double offsetX, double offsetY) {
         JEdgeLayout oldLayout = oldLayoutMap.edgeMap.get(oldKey);
         if (oldLayout != null) {
             List<Point2D> oldPoints = oldLayout.getPoints();
             List<Point2D> newPoints = new ArrayList<Point2D>();
             for (Point2D oldPoint : oldPoints) {
-                newPoints.add(new Point2D.Double(oldPoint.getX() + offsetX,
-                    oldPoint.getY() + offsetY));
+                newPoints.add(new Point2D.Double(oldPoint.getX() + offsetX, oldPoint.getY()
+                    + offsetY));
             }
             Point2D labelPosition = oldLayout.getLabelPosition();
             JEdgeLayout newLayout =
-                new JEdgeLayout(newPoints, labelPosition,
-                    oldLayout.getLineStyle());
+                new JEdgeLayout(newPoints, labelPosition, oldLayout.getLineStyle());
             putEdge(newKey, newLayout);
         }
     }
 
     /**
      * Inserts layout information for a given key, on the basis of a
-     * visual map. Only really stores the information if it is not default
-     * (according to the layout information itself, i.e.,
-     * <code>{@link JCellLayout#isDefault}</code>.
+     * visual map.
      */
     public void putNode(Node key, VisualMap visuals) {
         putNode(key, JVertexLayout.newInstance(visuals));
@@ -167,12 +164,13 @@ public class LayoutMap implements Cloneable {
 
     /**
      * Inserts layout information for a given key, on the basis of a
-     * visual map. Only really stores the information if it is not default
-     * (according to the layout information itself, i.e.,
-     * <code>{@link JCellLayout#isDefault}</code>.
+     * visual map. Only really stores the information if
+     * the edge is not binary.
      */
     public void putEdge(Edge key, VisualMap visuals) {
-        putEdge(key, JEdgeLayout.newInstance(visuals));
+        if (key.getRole() != EdgeRole.BINARY) {
+            putEdge(key, JEdgeLayout.newInstance(visuals));
+        }
     }
 
     /**
@@ -226,8 +224,7 @@ public class LayoutMap implements Cloneable {
 
     @Override
     public String toString() {
-        return "LayoutMap [nodeMap=" + nodeMap() + ", edgeMap=" + edgeMap()
-            + "]";
+        return "LayoutMap [nodeMap=" + nodeMap() + ", edgeMap=" + edgeMap() + "]";
     }
 
     @Override
@@ -246,11 +243,9 @@ public class LayoutMap implements Cloneable {
     }
 
     /** Mapping from node keys to <tt>NT</tt>s. */
-    private final Map<Node,JVertexLayout> nodeMap =
-        new HashMap<Node,JVertexLayout>();
+    private final Map<Node,JVertexLayout> nodeMap = new HashMap<Node,JVertexLayout>();
     /** Mapping from edge keys to <tt>ET</tt>s. */
-    private final Map<Edge,JEdgeLayout> edgeMap =
-        new HashMap<Edge,JEdgeLayout>();
+    private final Map<Edge,JEdgeLayout> edgeMap = new HashMap<Edge,JEdgeLayout>();
 
     /**
      * Tests if a given object is a jgraph vertex, a jgraph vertex view or a
@@ -264,8 +259,7 @@ public class LayoutMap implements Cloneable {
     /**
      * Turns a relative label position into an absolute label position.
      */
-    static public Point2D toAbsPosition(List<Point2D> points,
-            Point2D relPosition) {
+    static public Point2D toAbsPosition(List<Point2D> points, Point2D relPosition) {
         Rectangle bounds = toBounds(points);
         Point2D source = points.get(0);
         Point2D target = points.get(points.size() - 1);
@@ -304,8 +298,7 @@ public class LayoutMap implements Cloneable {
     /**
      * Turns an absolute label position into a relative label position.
      */
-    static public Point2D toRelPosition(List<Point2D> points,
-            Point2D absPosition) {
+    static public Point2D toRelPosition(List<Point2D> points, Point2D absPosition) {
         Rectangle bounds = toBounds(points);
         Point2D source = points.get(0);
         Point2D target = points.get(points.size() - 1);
@@ -348,8 +341,7 @@ public class LayoutMap implements Cloneable {
         testLabelPosition(points, relPosition2);
     }
 
-    static private void testLabelPosition(List<Point2D> points,
-            Point2D relPosition) {
+    static private void testLabelPosition(List<Point2D> points, Point2D relPosition) {
         System.out.print("Abs, rel, abs: ");
         Point2D absPosition = toAbsPosition(points, relPosition);
         System.out.print("" + absPosition + " ");

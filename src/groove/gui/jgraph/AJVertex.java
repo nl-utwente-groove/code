@@ -38,7 +38,7 @@ import org.jgraph.graph.DefaultPort;
  * @version $Revision $
  */
 public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
-extends AJCell<G,JG,JM> implements JVertex<G> {
+    extends AJCell<G,JG,JM> implements JVertex<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
@@ -117,14 +117,14 @@ extends AJCell<G,JG,JM> implements JVertex<G> {
 
     @Override
     public boolean isCompatible(Edge edge) {
-        if (getLayout(edge) != null) {
-            return false;
-        }
         if (edge.getRole() != BINARY) {
             return true;
         }
+        if (getLayout(edge) != null) {
+            return false;
+        }
         return getJGraph().isShowLoopsAsNodeLabels() && edge.source() == edge.target()
-                && edge.source() == getNode();
+            && edge.source() == getNode();
     }
 
     @Override
