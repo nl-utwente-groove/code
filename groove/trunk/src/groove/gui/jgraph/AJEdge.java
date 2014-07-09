@@ -48,7 +48,7 @@ import org.jgraph.graph.DefaultPort;
  * @version $Revision $
  */
 abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
-extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
+    extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
     /**
      * Constructs an uninitialised model edge.
      */
@@ -95,7 +95,7 @@ extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
      */
     @Override
     public void setSource(Object port) {
-        assert this.sourcePort == null;
+        assert this.sourcePort == null || port == null;
         this.sourcePort = (DefaultPort) port;
     }
 
@@ -104,7 +104,7 @@ extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
      */
     @Override
     public void setTarget(Object port) {
-        assert this.targetPort == null;
+        assert this.targetPort == null || port == null;
         this.targetPort = (DefaultPort) port;
     }
 
@@ -174,12 +174,12 @@ extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
         //            return false;
         //        }
         if (edge.source() == getSourceNode() && edge.target() == getTargetNode()
-                && (getJModel().isMergeAllEdges() || !getLooks().contains(Look.BIDIRECTIONAL))) {
+            && (getJModel().isMergeAllEdges() || !getLooks().contains(Look.BIDIRECTIONAL))) {
             return true;
         }
         if (edge.source() == getTargetNode() && edge.target() == getSourceNode()) {
             return getJModel().isMergeBidirectionalEdges() && getEdges().size() == 1
-                    && edge.label().equals(getEdge().label()) || getJModel().isMergeAllEdges();
+                && edge.label().equals(getEdge().label()) || getJModel().isMergeAllEdges();
         }
         return false;
     }
@@ -197,7 +197,7 @@ extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
             return true;
         }
         if (myLayout.getPoints().size() == 2
-                && (edgeLayout == null || edgeLayout.getPoints().size() == 2)) {
+            && (edgeLayout == null || edgeLayout.getPoints().size() == 2)) {
             return true;
         }
         return false;
@@ -294,7 +294,7 @@ extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
         }
         if (hasErrors()) {
             HTMLConverter.HTMLTag errorTag =
-                    HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
+                HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
             for (FormatError error : getErrors()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(errorTag.on(error));

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AspectGraph.java,v 1.16 2008-02-29 11:02:22 fladder Exp $
  */
 package groove.grammar.aspect;
@@ -93,7 +93,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     /**
-     * Collects search results matching the given label into the given list. 
+     * Collects search results matching the given label into the given list.
      */
     public void getSearchResults(TypeLabel label, List<SearchResult> results) {
         String msg = getRole().getDescription() + " '%s' - Element '%s'";
@@ -207,7 +207,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Returns the normalised aspect graph.
      * An aspect graph is normalised if all {@link AspectKind#LET} and
      * {@link AspectKind#TEST} edges have been substituted by explicit
@@ -227,7 +227,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Normalises this (non-fixed) aspect graph.
      * @param map mapping from the replaced elements of this graph to their
      * counterparts in the normalised graph; may be {@code null}
@@ -289,7 +289,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
         AspectEdge result = addEdge(source, assignLabel, target);
         if (getRole() == RULE && !source.getKind().isCreator()) {
-            // add an eraser edge for the old value 
+            // add an eraser edge for the old value
             AspectNode oldTarget = findTarget(source, assign.getLhs(), target.getAttrKind());
             if (oldTarget == null) {
                 oldTarget = addNestedNode(source);
@@ -475,7 +475,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return parser.parse(kind.getPrefix(), getRole());
     }
 
-    /** 
+    /**
      * Returns a new aspect graph obtained from this one
      * by renumbering the nodes in a consecutive sequence starting from {@code 0}
      */
@@ -666,12 +666,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     }
                 }
             }
-            // check for non-binary edges with explicit layout
-            for (Edge edge : GraphInfo.getLayoutMap(this).edgeMap().keySet()) {
-                if (edge.getRole() != EdgeRole.BINARY) {
-                    errors.add("Node label '%s' not allowed on edges", edge.label(), edge);
-                }
-            }
             addErrors(errors);
             super.setFixed();
         }
@@ -718,7 +712,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
-    /** 
+    /**
      * Clones this aspect graph while giving it a different name.
      * This graph is required to be fixed, and the resulting graph
      * will be fixed as well.
@@ -813,7 +807,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return emptyGraph("", role);
     }
 
-    /** 
+    /**
      * Merges a given set of graphs into a single graph.
      * Nodes with the same {@link AspectKind#ID} value are merged,
      * all other nodes are kept distinct.
@@ -1007,7 +1001,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     private static class AspectToPlainMap extends
-            AElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
+        AElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
         /** Constructs a new, empty map. */
         public AspectToPlainMap() {
             super(PlainFactory.instance());
