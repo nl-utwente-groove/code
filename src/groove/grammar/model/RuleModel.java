@@ -171,10 +171,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             return new FormatError("positive priority not allowed");
         }
         for (AspectNode node : getSource().nodeSet()) {
+            if (!node.hasAspect()) {
+                continue;
+            }
             if (node.getParam() != null) {
                 return new FormatError("parameter not allowed", node);
             }
-            switch (node.getAspect().getKind()) {
+            switch (node.getKind()) {
             case ERASER:
                 return new FormatError("erased not allowed", node);
             case CREATOR:
@@ -183,14 +186,18 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
         }
         for (AspectEdge edge : getSource().edgeSet()) {
-            switch (edge.getAspect().getKind()) {
+            if (!edge.hasAspect()) {
+                continue;
+            }
+            if (edge.isAssign()) {
+                return new FormatError("assignment not allowed", edge.source());
+            }
+            switch (edge.getKind()) {
             case ERASER:
                 return new FormatError("erased not allowed", edge);
             case CREATOR:
             case ADDER:
                 return new FormatError("creator not allowed", edge);
-            case LET:
-                return new FormatError("assignment not allowed", edge.source());
             }
         }
         return null;

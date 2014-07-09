@@ -157,7 +157,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                             }
                             id = null;
                         }
-                        if (!implicitType && edge.getRole() == EdgeRole.BINARY) {
+                        if (!implicitType && edge.getRole() == EdgeRole.BINARY && !edge.hasErrors()) {
                             line = line.append(LOOP_SUFFIX);
                         }
                         result.add(line);
@@ -202,7 +202,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY) {
+                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !edge.hasErrors()) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -274,7 +274,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                         }
                         idLine = null;
                     }
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY) {
+                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !edge.hasErrors()) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -463,7 +463,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getStackLine(Location loc, Object[] values) {
         Line result = Line.empty();
         if (loc != null) {
-            Line.atom(loc.toString()).style(Style.ITALIC);
+            result = Line.atom(loc.toString()).style(Style.ITALIC);
             if (loc.hasVars()) {
                 List<CtrlVar> vars = loc.getVars();
                 StringBuilder content = new StringBuilder();

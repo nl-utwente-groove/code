@@ -378,7 +378,11 @@ public class Rule implements Action, Fixable {
 
     @Override
     public CheckPolicy getPolicy() {
-        return getGrammarProperties().getRulePolicy().get(getFullName());
+        CheckPolicy result = getGrammarProperties().getRulePolicy().get(getFullName());
+        if (result == null) {
+            result = CheckPolicy.ERROR;
+        }
+        return result;
     }
 
     /** Indicates if this rule serves to test a property of a graph.

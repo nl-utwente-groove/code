@@ -123,7 +123,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
 
     @Override
     public EdgeRole getRole() {
-        if (this.isPredicate() || this.hasAttrAspect()) {
+        if (this.isPredicate() || isAssign()) {
             // We just want the edge role to be non-binary...
             return EdgeRole.FLAG;
         } else {
@@ -662,7 +662,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.aspect;
     }
 
-    private boolean hasAspect() {
+    @Override
+    public boolean hasAspect() {
         return this.aspect != null;
     }
 
