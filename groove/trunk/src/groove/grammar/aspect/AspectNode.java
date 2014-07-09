@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: AspectNode.java,v 1.4 2008-01-30 09:31:33 iovka Exp $
  */
 package groove.grammar.aspect;
@@ -73,7 +73,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return getNumber() ^ getClass().hashCode();
     }
 
-    /** 
+    /**
      * Use the same prefix as for default nodes, so the error messages
      * remain understandable.
      */
@@ -224,7 +224,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
     }
 
-    /** 
+    /**
      * Concludes the processing of the node labels.
      * Afterwards {@link #setAspects(AspectLabel)} should not be called
      * any more.
@@ -299,7 +299,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
     }
 
-    /** 
+    /**
      * Tests if two attribute aspects are consistent.
      * This is only the case if they are equal,
      * or one specifies a data value whereas the other specifies its type.
@@ -318,7 +318,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return one.getContent() == null || two.getContent() == null;
     }
 
-    /** 
+    /**
      * Infers aspect information from an incoming edge for this node.
      * Inferences from this node to the edge have already been drawn.
      */
@@ -366,7 +366,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         setAttrAspect(newType);
     }
 
-    /** 
+    /**
      * Infers aspect information from an outgoing edge for this node.
      * Inferences from this node to the edge have already been drawn.
      */
@@ -524,10 +524,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return hasAttrAspect() ? getAttrAspect().getKind() : DEFAULT;
     }
 
-    /** 
+    /**
      * If this is a product node, returns the list of
      * argument nodes reached by outgoing argument edges.
-     * @return an ordered list of argument nodes, or {@code null} if 
+     * @return an ordered list of argument nodes, or {@code null} if
      * this is not a product node.
      */
     public List<AspectNode> getArgNodes() {
@@ -662,22 +662,17 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
     }
 
-    /** 
-     * Returns the aspect that determines the kind of this node.
-     */
     @Override
     public Aspect getAspect() {
         return this.aspect;
     }
 
-    /** 
-     * Tests if the main aspect of this node has been initialised.
-     */
-    boolean hasAspect() {
+    @Override
+    public boolean hasAspect() {
         return getAspect() != null;
     }
 
-    /** 
+    /**
      * Returns the determining aspect kind of this node.
      * This is one of {@link AspectKind#REMARK}, a role, a quantifier,
      * or {@link AspectKind#ABSTRACT}.
@@ -687,18 +682,18 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return hasAspect() ? getAspect().getKind() : DEFAULT;
     }
 
-    /** 
+    /**
      * Retrieves the nesting level of this aspect node.
-     * Only non-{@code null} if this node is a rule node. 
+     * Only non-{@code null} if this node is a rule node.
      */
     public AspectNode getNestingLevel() {
         AspectEdge edge = getNestingLevelEdge();
         return edge == null ? null : edge.target();
     }
 
-    /** 
+    /**
      * Retrieves the edge to the nesting level of this aspect node.
-     * Only non-{@code null} if this node is a rule node. 
+     * Only non-{@code null} if this node is a rule node.
      */
     public AspectEdge getNestingLevelEdge() {
         return this.nestingLevelEdge;
@@ -706,7 +701,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /**
      * Retrieves the parent of this node in the nesting hierarchy.
-     * Only non-{@code null} if this node is a quantifier node. 
+     * Only non-{@code null} if this node is a quantifier node.
      */
     public AspectNode getNestingParent() {
         AspectEdge edge = getNestingParentEdge();
@@ -715,7 +710,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /**
      * Retrieves edge to the parent of this node in the nesting hierarchy.
-     * Only non-{@code null} if this node is a quantifier node. 
+     * Only non-{@code null} if this node is a quantifier node.
      */
     public AspectEdge getNestingParentEdge() {
         return this.nestingParentEdge;
@@ -723,7 +718,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /**
      * Retrieves the node encapsulating the match count for this node.
-     * Only non-{@code null} if this node is a universal quantifier node. 
+     * Only non-{@code null} if this node is a universal quantifier node.
      */
     public AspectNode getMatchCount() {
         return this.matchCount;

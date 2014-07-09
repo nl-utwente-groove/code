@@ -115,7 +115,10 @@ public class TemplateBuilder {
             // property switches
             Set<SwitchStack> switches = new LinkedHashSet<SwitchStack>();
             // see if we need a property test
-            if (loc.getTransience() == 0 && next.two().isEmpty() && !this.properties.isEmpty()) {
+            // start states of procedures are exempt
+            boolean isProcStart = loc.isStart() && result.hasOwner();
+            if (!isProcStart && loc.getTransience() == 0 && next.two().isEmpty()
+                && !this.properties.isEmpty()) {
                 for (Action prop : this.properties) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
