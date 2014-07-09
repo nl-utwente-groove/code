@@ -141,24 +141,28 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getDataLines(node));
                 // show the visible self-edges
                 Line id =
-                        node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
-                                : null;
-                        for (AspectEdge edge : jVertex.getEdges()) {
-                            if (!isFiltered(jVertex, edge)) {
-                                Line line = edge.toLine(true, jVertex.getAspect());
-                                if (id != null) {
-                                    if (edge.getRole() == NODE_TYPE) {
-                                        line = id.append(" : ").append(line);
-                                    } else {
-                                        // we're not going to have any node types:
-                                        // add the node id on a separate line
-                                        result.add(id);
-                                    }
-                                    id = null;
-                                }
-                                result.add(line);
+                    node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
+                        : null;
+                boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
+                for (AspectEdge edge : jVertex.getEdges()) {
+                    if (!isFiltered(jVertex, edge)) {
+                        Line line = edge.toLine(true, jVertex.getAspect());
+                        if (id != null) {
+                            if (edge.getRole() == NODE_TYPE) {
+                                line = id.append(" : ").append(line);
+                            } else {
+                                // we're not going to have any node types:
+                                // add the node id on a separate line
+                                result.add(id);
                             }
+                            id = null;
                         }
+                        if (!implicitType && edge.getRole() == EdgeRole.BINARY) {
+                            line = line.append(LOOP_SUFFIX);
+                        }
+                        result.add(line);
+                    }
+                }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jVertex, edge)) {
@@ -194,9 +198,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show data constants and variables correctly
             result.add(getDataLines(node));
             // show the visible self-edges
+            boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(edge.toLine(true, jVertex.getAspect()));
+                    Line line = edge.toLine(true, jVertex.getAspect());
+                    if (!implicitType && edge.getRole() == EdgeRole.BINARY) {
+                        line = line.append(LOOP_SUFFIX);
+                    }
+                    result.add(line);
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
@@ -233,7 +242,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     // check for assignment edges
                     if (!edge.isLoop()) {
                         line =
-                                line.append(" = " + edge.target().getAttrAspect().getContentString());
+                            line.append(" = " + edge.target().getAttrAspect().getContentString());
                     }
                     result.add(line);
                 }
@@ -243,48 +252,52 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
         } else {
             Line idLine =
-                    node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
-                            : null;
-                    // show the quantifier aspect correctly
-                    if (node.getKind().isQuantifier()) {
-                        result.add(getQuantifierLines(node, idLine));
+                node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
+                    : null;
+            // show the quantifier aspect correctly
+            if (node.getKind().isQuantifier()) {
+                result.add(getQuantifierLines(node, idLine));
+                idLine = null;
+            }
+            // show data constants and variables correctly
+            result.add(getDataLines(node));
+            // show the visible self-edges
+            boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
+            for (AspectEdge edge : jVertex.getEdges()) {
+                if (!isFiltered(jVertex, edge)) {
+                    Line line = edge.toLine(true, jVertex.getAspect());
+                    if (idLine != null) {
+                        if (edge.getRole() == NODE_TYPE) {
+                            line = idLine.append(" : ").append(line);
+                        } else {
+                            result.add(idLine);
+                        }
                         idLine = null;
                     }
-                    // show data constants and variables correctly
-                    result.add(getDataLines(node));
-                    // show the visible self-edges
-                    for (AspectEdge edge : jVertex.getEdges()) {
-                        if (!isFiltered(jVertex, edge)) {
-                            Line line = edge.toLine(true, jVertex.getAspect());
-                            if (idLine != null) {
-                                if (edge.getRole() == NODE_TYPE) {
-                                    line = idLine.append(" : ").append(line);
-                                } else {
-                                    result.add(idLine);
-                                }
-                                idLine = null;
-                            }
-                            result.add(line);
-                        }
+                    if (!implicitType && edge.getRole() == EdgeRole.BINARY) {
+                        line = line.append(LOOP_SUFFIX);
                     }
-                    if (idLine != null) {
-                        // we're not going to have any node types:
-                        // add the node id on a separate line
-                        result.add(idLine);
-                    }
-                    for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                        if (!isFiltered(jVertex, edge)) {
-                            result.add(edge.toLine(true, jVertex.getAspect()));
-                        }
-                    }
-                    if (node.hasColor()) {
-                        StringBuilder text = new StringBuilder("& ");
-                        text.append(AspectKind.COLOR.getName());
-                        Line colorLine =
-                                Line.atom(text.toString()).color(
-                                    Colors.findColor(node.getColor().getContentString()));
-                        result.add(colorLine);
-                    }
+                    result.add(line);
+                }
+            }
+            if (idLine != null) {
+                // we're not going to have any node types:
+                // add the node id on a separate line
+                result.add(idLine);
+            }
+            for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
+                if (!isFiltered(jVertex, edge)) {
+                    result.add(edge.toLine(true, jVertex.getAspect()));
+                }
+            }
+            if (node.hasColor()) {
+                StringBuilder text = new StringBuilder("& ");
+                text.append(AspectKind.COLOR.getName());
+                Line colorLine =
+                    Line.atom(text.toString()).color(
+                        Colors.findColor(node.getColor().getContentString()));
+                result.add(colorLine);
+            }
         }
         return result;
     }
@@ -375,7 +388,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getStatus(GraphState state) {
         Line result;
         if (state instanceof StartGraphState && !state.isError() && !state.isFinal()
-                && !state.isResult()) {
+            && !state.isResult()) {
             result = this.startLine;
         } else {
             // determine main flag
@@ -502,8 +515,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // add location variables
         for (CtrlVar var : state.getVars()) {
             Line line =
-                    Line.atom(var.getName()).append(" : ").append(
-                        Line.atom(var.getType().toString()).style(Style.BOLD));
+                Line.atom(var.getName()).append(" : ").append(
+                    Line.atom(var.getType().toString()).style(Style.BOLD));
             result.add(line);
         }
         // add self-edges
@@ -566,7 +579,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             LabelPattern pattern = jEdge.getTargetVertex().getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
-            (GraphBasedModel) jEdge.getJModel().getResourceModel();
+                (GraphBasedModel) jEdge.getJModel().getResourceModel();
             try {
                 HostNode target = (HostNode) resourceModel.getMap().getNode(jEdge.getTargetNode());
                 String label = pattern.getLabel(resourceModel.toResource(), target);
