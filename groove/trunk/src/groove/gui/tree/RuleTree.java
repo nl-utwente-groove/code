@@ -23,6 +23,7 @@ import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.control.CallStack;
 import groove.grammar.Action;
+import groove.grammar.CheckPolicy;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -38,6 +39,7 @@ import groove.gui.display.ControlDisplay;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.RuleDisplay;
 import groove.gui.display.TextTab;
+import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransition.Claz;
@@ -54,6 +56,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -203,17 +206,17 @@ public class RuleTree extends AbstractResourceTree {
         this.topDirectoryNode.removeAllChildren();
         DisplayTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<ActionEntry>> priorityMap = getPriorityMap(grammar);
+        Map<CheckPolicy,Set<ActionEntry>> policyMap = getPolicyMap(grammar);
         List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
-        boolean hasMultipleLevels = priorityMap.size() > 1;
-        boolean hasMultiplePriorities = priorityMap.size() > (priorityMap.containsKey(-1) ? 2 : 1);
+        boolean hasMultipleLevels = priorityMap.size() + policyMap.size() > 1;
         for (Map.Entry<Integer,Set<ActionEntry>> priorityEntry : priorityMap.entrySet()) {
             int priority = priorityEntry.getKey();
             Map<String,FolderTreeNode> dirNodeMap = new HashMap<String,FolderTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (hasMultipleLevels) {
-                topNode = new PriorityTreeNode(priority, hasMultiplePriorities);
+                topNode = new PriorityTreeNode(null, priority, priorityMap.size() > 1);
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
@@ -259,6 +262,26 @@ public class RuleTree extends AbstractResourceTree {
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
                 DisplayTreeNode ruleNode =
                     createActionNode(ruleEntry, expandedPaths, selectedPaths);
+                parentNode.insertSorted(ruleNode);
+            }
+        }
+        for (Map.Entry<CheckPolicy,Set<ActionEntry>> priorityEntry : policyMap.entrySet()) {
+            CheckPolicy policy = priorityEntry.getKey();
+            Map<String,FolderTreeNode> dirNodeMap = new HashMap<String,FolderTreeNode>();
+            // if the rule system has multiple priorities, we want an extra
+            // level of nodes
+            if (hasMultipleLevels) {
+                topNode = new PriorityTreeNode(policy, 0, policyMap.size() > 1);
+                this.topDirectoryNode.add(topNode);
+                dirNodeMap.clear();
+            }
+            // add the property rules to the tree
+            for (ActionEntry action : priorityEntry.getValue()) {
+                String name = action.getName();
+                // recursively add parent directory nodes as required
+                DisplayTreeNode parentNode =
+                    addParentNode(topNode, dirNodeMap, QualName.getParent(name));
+                DisplayTreeNode ruleNode = createActionNode(action, expandedPaths, selectedPaths);
                 parentNode.insertSorted(ruleNode);
             }
         }
@@ -312,12 +335,34 @@ public class RuleTree extends AbstractResourceTree {
             }
         }
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
-            RuleModel ruleModel = (RuleModel) model;
-            if (ruleModel.isProperty() || !subRuleNames.contains(ruleModel.getFullName())) {
-                int priority = ruleModel.isProperty() ? -1 : ruleModel.getPriority();
+            RuleModel rule = (RuleModel) model;
+            if (!rule.isProperty() && !subRuleNames.contains(rule.getFullName())) {
+                int priority = rule.getPriority();
                 Set<ActionEntry> rules = result.get(priority);
                 if (rules == null) {
                     result.put(priority, rules = new HashSet<ActionEntry>());
+                }
+                rules.add(new RuleEntry(rule));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a map from check policies to nonempty sets of property rules with that
+     * policy.
+     * @param grammar the source of the rule map
+     */
+    private Map<CheckPolicy,Set<ActionEntry>> getPolicyMap(GrammarModel grammar) {
+        Map<CheckPolicy,Set<ActionEntry>> result =
+            new EnumMap<CheckPolicy,Set<ActionEntry>>(CheckPolicy.class);
+        for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
+            RuleModel ruleModel = (RuleModel) model;
+            if (ruleModel.isProperty()) {
+                CheckPolicy policy = ruleModel.getPolicy();
+                Set<ActionEntry> rules = result.get(policy);
+                if (rules == null) {
+                    result.put(policy, rules = new HashSet<ActionEntry>());
                 }
                 rules.add(new RuleEntry(ruleModel));
             }
@@ -771,8 +816,8 @@ public class RuleTree extends AbstractResourceTree {
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
          */
-        public PriorityTreeNode(int priority, boolean hasMultiplePriorities) {
-            super(getText(priority, hasMultiplePriorities));
+        public PriorityTreeNode(CheckPolicy policy, int priority, boolean hasMultiple) {
+            super(getText(policy, priority, hasMultiple));
         }
 
         @Override
@@ -780,17 +825,30 @@ public class RuleTree extends AbstractResourceTree {
             return Icons.EMPTY_ICON;
         }
 
-        private static String getText(int priority, boolean hasMultiplePriorities) {
+        private static String getText(CheckPolicy policy, int priority, boolean hasMultiple) {
             StringBuilder result = new StringBuilder();
-            if (priority < 0) {
-                result.append("Properties");
-            } else if (hasMultiplePriorities) {
-                result.append("Priority ");
-                result.append(priority);
+            if (policy == null) {
+                if (hasMultiple) {
+                    result.append("Priority ");
+                    result.append(priority);
+                    result.append(" transformers");
+                } else {
+                    result.append("Transformers");
+                }
             } else {
-                result.append("Transformers");
+                switch (policy) {
+                case SILENT:
+                    result.append(hasMultiple ? "Normal properties" : "Properties");
+                    break;
+                case ERROR:
+                    result.append("Error properties");
+                    break;
+                case REMOVE:
+                    result.append("Postconditions");
+                    break;
+                }
             }
-            return result.toString();
+            return HTMLConverter.UNDERLINE_TAG.on(result).toString();
         }
     }
 }

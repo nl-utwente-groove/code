@@ -98,7 +98,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState, 
 
     @Override
     public EdgeRole getRole() {
-        if (getEvent().getRule().isModifying() || getStep().isModifying()) {
+        if (getAction().isModifying() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;

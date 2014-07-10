@@ -17,6 +17,8 @@
 package groove.gui.look;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
+import static groove.gui.look.Line.Style.ITALIC;
+import static groove.gui.look.Line.Style.UNDERLINE;
 import groove.algebra.SignatureKind;
 import groove.control.CtrlVar;
 import groove.control.Position;
@@ -116,7 +118,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
         if (jVertex.getJGraph().isShowNodeIdentities()) {
-            result.add(Line.atom(jVertex.getNode().toString()).style(Style.ITALIC));
+            result.add(getIdLine(jVertex.getNode().toString()));
         }
         // only add edges that have an unfiltered label
         addEdgeLabels(jVertex, result);
@@ -140,9 +142,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 // show data constants and variables correctly
                 result.add(getDataLines(node));
                 // show the visible self-edges
-                Line id =
-                    node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
-                        : null;
+                Line id = getIdLine(node);
                 boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jVertex, edge)) {
@@ -172,6 +172,20 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
         }
         return result;
+    }
+
+    /**
+     * Constructs a node ID line for an aspect node.
+     */
+    private Line getIdLine(AspectNode node) {
+        return node.hasId() ? getIdLine(node.getId().getContentString()) : null;
+    }
+
+    /**
+     * Constructs a node ID line from agiven string.
+     */
+    private Line getIdLine(String id) {
+        return Line.atom(id).style(ITALIC).style(UNDERLINE);
     }
 
     /** Recomputes the set of node lines for this aspect node. */
@@ -253,9 +267,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(Line.atom(node.getColor().toString()));
             }
         } else {
-            Line idLine =
-                node.hasId() ? Line.atom(node.getId().getContentString()).style(Style.ITALIC)
-                    : null;
+            Line idLine = getIdLine(node);
             // show the quantifier aspect correctly
             if (node.getKind().isQuantifier()) {
                 result.add(getQuantifierLines(node, idLine));
@@ -338,7 +350,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.getJGraph().isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
-            idLine = Line.atom(id.toString()).style(Style.ITALIC);
+            idLine = getIdLine(id.toString());
         }
         if (jVertex.getJGraph().isShowStateStatus()) {
             Line statusLine = getStatus(jVertex.getNode());
@@ -476,7 +488,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getStackLine(Location loc, Object[] values) {
         Line result = Line.empty();
         if (loc != null) {
-            result = Line.atom(loc.toString()).style(Style.ITALIC);
+            result = getIdLine(loc.toString());
             if (loc.hasVars()) {
                 List<CtrlVar> vars = loc.getVars();
                 StringBuilder content = new StringBuilder();
@@ -506,7 +518,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
         MultiLabel result = new MultiLabel();
-        result.add(Line.atom(jVertex.getNode().toString()).style(Style.ITALIC));
+        result.add(getIdLine(jVertex.getNode().toString()));
         Position<?,?> state = jVertex.getNode().getPosition();
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();

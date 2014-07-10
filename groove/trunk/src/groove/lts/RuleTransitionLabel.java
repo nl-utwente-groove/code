@@ -142,7 +142,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     @Override
     public EdgeRole getRole() {
-        if (getAction().isProperty() && !getStep().isModifying()) {
+        if (!getAction().isModifying() && !getStep().isModifying()) {
             return EdgeRole.FLAG;
         }
         return super.getRole();

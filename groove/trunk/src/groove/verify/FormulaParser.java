@@ -42,7 +42,6 @@ import groove.annotation.Help;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
-import groove.io.HTMLConverter;
 import groove.util.Pair;
 
 import java.lang.reflect.Field;
@@ -81,9 +80,9 @@ public class FormulaParser {
         return result;
     }
 
-    /** 
+    /**
      * Returns a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.
-     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators. 
+     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators.
      */
     public static Map<String,String> getDocMap(boolean ctl) {
         Map<String,String> result = docMapMap.get(ctl);
@@ -93,9 +92,9 @@ public class FormulaParser {
         return result;
     }
 
-    /** 
+    /**
      * Computes a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.
-     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators. 
+     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators.
      */
     private static Map<String,String> computeDocMap(boolean ctl) {
         Map<String,String> result = new LinkedHashMap<String,String>();
@@ -184,14 +183,11 @@ public class FormulaParser {
     }
 
     /** Mapping from token names to token values. */
-    private static Map<String,Token> nameToTokenMap =
-        new HashMap<String,Token>();
+    private static Map<String,Token> nameToTokenMap = new HashMap<String,Token>();
     /** Mapping from token symbols to token values. */
-    private static Map<String,Token> symbolToTokenMap =
-        new HashMap<String,Token>();
+    private static Map<String,Token> symbolToTokenMap = new HashMap<String,Token>();
     /** Mapping from token names to HTML-formatted token strings. */
-    private static Map<String,String> nameToSymbolMap =
-        new HashMap<String,String>();
+    private static Map<String,String> nameToSymbolMap = new HashMap<String,String>();
     private static Map<Boolean,Map<String,String>> docMapMap =
         new HashMap<Boolean,Map<String,String>>();
 
@@ -199,21 +195,19 @@ public class FormulaParser {
         for (Token token : Token.values()) {
             symbolToTokenMap.put(token.getSymbol(), token);
             nameToTokenMap.put(token.name(), token);
-            nameToSymbolMap.put(token.name(),
-                Help.bf(HTMLConverter.toHtml(token.getSymbol())));
+            nameToSymbolMap.put(token.name(), token.getSymbol());
         }
     }
 
     private final static boolean DEBUG = false;
 
     /** Set of tokens that can occur in CTL formulas. */
-    private final static Set<Token> CTLTokens = EnumSet.of(ATOM, TRUE, FALSE,
-        NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY,
-        FORALL, EXISTS, LPAR);
+    private final static Set<Token> CTLTokens = EnumSet.of(ATOM, TRUE, FALSE, NOT, OR, AND,
+        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY, FORALL, EXISTS, LPAR);
     /** Set of tokens that can occur in LTL formulas. */
-    private final static Set<Token> LTLTokens = EnumSet.of(ATOM, TRUE, FALSE,
-        NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE,
-        S_RELEASE, ALWAYS, EVENTUALLY, LPAR);
+    private final static Set<Token> LTLTokens =
+        EnumSet.of(ATOM, TRUE, FALSE, NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL,
+            RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, LPAR);
 
     /**
      * Input stream for the parser.
@@ -223,14 +217,14 @@ public class FormulaParser {
             this.sb = new StringBuilder(str);
         }
 
-        /** 
+        /**
          * Returns the next token from the input stream.
          * Repeated calls (without intervening {@link #skip()}) will
          * return the same token.
          * If the token is a {@link Token#ATOM}, the
          * corresponding text can be retrieved by a subsequent call to
          * #text().
-         * @throws ParseException if there is no more token 
+         * @throws ParseException if there is no more token
          */
         public Token get() throws ParseException {
             if (readNext()) {
@@ -244,7 +238,7 @@ public class FormulaParser {
         /**
          * Returns the text of the front token in the input stream
          * if that is a {@link Token#ATOM}, or {@code null} if it is not.
-         * @throws ParseException if there is no more token 
+         * @throws ParseException if there is no more token
          */
         public String text() throws ParseException {
             if (readNext()) {
@@ -255,7 +249,7 @@ public class FormulaParser {
             }
         }
 
-        /** 
+        /**
          * Skips to the next token in the input stream.
          * @throws ParseException if there is no token to skip.
          */
@@ -292,15 +286,14 @@ public class FormulaParser {
         /**
          * Scans the next tokens from the input stream and appends them
          * to the token queue.
-         * @throws ParseException if there is no more token, or 
+         * @throws ParseException if there is no more token, or
          * the input string cannot be parsed into tokens
          */
         private boolean readNext() throws ParseException {
             if (!this.q.isEmpty()) {
                 return true;
             }
-            while (this.sb.length() > 0
-                && Character.isWhitespace(this.sb.charAt(0))) {
+            while (this.sb.length() > 0 && Character.isWhitespace(this.sb.charAt(0))) {
                 this.sb.deleteCharAt(0);
             }
             if (this.sb.length() == 0) {
@@ -327,8 +320,7 @@ public class FormulaParser {
             text.append(c);
             // concatenate other chars, if and when appropriate
             if (concChars.contains(c)) {
-                for (int i = 1; i < this.sb.length()
-                    && concChars.contains(c = this.sb.charAt(i)); i++) {
+                for (int i = 1; i < this.sb.length() && concChars.contains(c = this.sb.charAt(i)); i++) {
                     text.append(c);
                 }
             }
@@ -355,8 +347,7 @@ public class FormulaParser {
             }
             if (caps) {
                 if (!allCaps) {
-                    throw new ParseException("Uppercase atom '%s' not allowed",
-                        text);
+                    throw new ParseException("Uppercase atom '%s' not allowed", text);
                 }
                 // each letter is parsed as an operator
                 for (int i = 0; i < text.length(); i++) {
@@ -378,8 +369,7 @@ public class FormulaParser {
             StringBuffer text = new StringBuffer();
             char quote = c;
             int i;
-            for (i = 1; i < this.sb.length()
-                && (c = this.sb.charAt(i)) != quote; i++) {
+            for (i = 1; i < this.sb.length() && (c = this.sb.charAt(i)) != quote; i++) {
                 if (c == '\\') {
                     // test if this is an escaped single quote or escape
                     i++;
@@ -388,16 +378,14 @@ public class FormulaParser {
                     }
                     c = this.sb.charAt(i);
                     if (c != '\\' && c != quote) {
-                        throw new ParseException("Invalid escaped character: "
-                            + c);
+                        throw new ParseException("Invalid escaped character: " + c);
                     }
                 }
                 text.append(c);
             }
             if (i == this.sb.length()) {
-                throw new ParseException(
-                    "Unexpected end of text while scanning for closing "
-                        + quote);
+                throw new ParseException("Unexpected end of text while scanning for closing "
+                    + quote);
             }
             this.q.add(createAtom(text.toString()));
             this.sb.delete(0, text.length() + 2);
@@ -409,8 +397,7 @@ public class FormulaParser {
          * @param symbol the symbol of the requested token
          * @throws ParseException if no token with {@code symbol} exists
          */
-        private Pair<Token,String> createToken(String symbol)
-            throws ParseException {
+        private Pair<Token,String> createToken(String symbol) throws ParseException {
             Token token = symbolToTokenMap.get(symbol);
             if (token == null) {
                 throw new ParseException("Can't parse token '%s'", symbol);
@@ -418,7 +405,7 @@ public class FormulaParser {
             return new Pair<Token,String>(token, null);
         }
 
-        /** 
+        /**
          * Creates a token/string pair consisting of an {@link Token#ATOM}
          * and a given atom text.
          */
@@ -435,16 +422,13 @@ public class FormulaParser {
         /** Input string. */
         private final StringBuilder sb;
         /** Queue of tokens with possible associated text. */
-        private final Queue<Pair<Token,String>> q =
-            new LinkedList<Pair<Token,String>>();
+        private final Queue<Pair<Token,String>> q = new LinkedList<Pair<Token,String>>();
         /** Set of concatenable characters. */
-        private final static Set<Character> concChars =
-            new HashSet<Character>();
+        private final static Set<Character> concChars = new HashSet<Character>();
         // add all non-letter, non-parenthesis characters from the tokens to concChars
         static {
             for (Token token : Token.values()) {
-                if (token != ATOM && token != LPAR && token != RPAR
-                    && token != NOT
+                if (token != ATOM && token != LPAR && token != RPAR && token != NOT
                     && !Character.isLetter(token.symbol.charAt(0))) {
                     for (char c : token.getSymbol().toCharArray()) {
                         concChars.add(c);
@@ -496,8 +480,7 @@ public class FormulaParser {
         /** Implication. */
         @Syntax("pre IMPLIES post")
         @ToolTipHeader("Implication")
-        @ToolTipBody({"Either%s fails to hold, or %s holds;",
-            "in other words, %1$s implies %2$s."})
+        @ToolTipBody({"Either%s fails to hold, or %s holds;", "in other words, %1$s implies %2$s."})
         IMPLIES("->", 2, 1),
 
         /** Inverse implication. */
@@ -529,8 +512,7 @@ public class FormulaParser {
         /** Weak temporal until (second operand may never hold). */
         @Syntax("first W_UNTIL second")
         @ToolTipHeader("Weak until")
-        @ToolTipBody({
-            "Either %1$s holds up until one state before %2$s holds,",
+        @ToolTipBody({"Either %1$s holds up until one state before %2$s holds,",
             "or %1$s holds forever."})
         W_UNTIL("W", 2, 4),
 

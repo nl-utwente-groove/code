@@ -29,16 +29,17 @@ import java.util.TreeMap;
  */
 public enum CheckPolicy {
     /** No checking occurs. */
-    OFF("off"),
+    OFF("off", "The constraint is disabled"),
     /** Violation is checked but not propagated. */
-    SILENT("silent"),
+    SILENT("silent", "The constraint is tested silently"),
     /** Violation is a state error. */
-    ERROR("error"),
+    ERROR("error", "Constraint violation is a state error"),
     /** Violation removes the state. */
-    REMOVE("remove"), ;
+    REMOVE("remove", "Constraint violation causes a state to be removed"), ;
 
-    private CheckPolicy(String name) {
+    private CheckPolicy(String name, String explanation) {
         this.name = name;
+        this.explanation = explanation;
     }
 
     /**
@@ -64,6 +65,13 @@ public enum CheckPolicy {
     }
 
     private final String name;
+
+    /** Returns a short (capitalised) explanation of the policy. */
+    public String getExplanation() {
+        return this.explanation;
+    }
+
+    private final String explanation;
 
     /** Parser that returns a policy. */
     public static final Parser<CheckPolicy> singleParser = new Parser.EnumParser<CheckPolicy>(

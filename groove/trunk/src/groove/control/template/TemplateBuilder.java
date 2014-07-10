@@ -446,7 +446,7 @@ public class TemplateBuilder {
             for (SwitchStack stack : repr.getAttempt()) {
                 Switch swit = stack.getBottom();
                 Location target = locMap.get(swit.onFinish());
-                target.setVars(swit.getCall().getOutVars().keySet());
+                target.addVars(swit.getCall().getOutVars().keySet());
                 Location source = locMap.get(swit.getSource());
                 Switch imageSwitch =
                     new Switch(source, swit.getCall(), swit.getTransience(), target);
