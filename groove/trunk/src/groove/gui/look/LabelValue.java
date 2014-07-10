@@ -26,6 +26,7 @@ import groove.control.Valuator;
 import groove.control.instance.Frame;
 import groove.control.template.Location;
 import groove.control.template.Switch;
+import groove.grammar.Action.Role;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectKind;
@@ -383,7 +384,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
         MultiLabel transLabels = new MultiLabel();
         // only add edges that have an unfiltered label
         boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
+        boolean isShowInvariants = jVertex.getJGraph().isShowInvariants();
         for (Edge edge : jVertex.getEdges()) {
+            GraphTransition trans = (GraphTransition) edge;
+            if (trans.getAction().getRole() == Role.INVARIANT && !isShowInvariants) {
+                continue;
+            }
             if (!isFiltered(jVertex, edge)) {
                 Line line;
                 if (isShowAnchors) {
