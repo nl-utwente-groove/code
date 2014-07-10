@@ -40,6 +40,8 @@ public class StateMatches extends MatchResultSet {
     public StateMatches(StateCache cache) {
         this.cache = cache;
         this.state = cache.getState();
+        this.removePolicies =
+            cache.getState().getGTS().getGrammar().getProperties().hasRemovePolicies();
     }
 
     private StateCache getCache() {
@@ -122,15 +124,15 @@ public class StateMatches extends MatchResultSet {
                     allAbsent = false;
                 } else {
                     GraphState target = t.target();
-                    if (target.getAbsence() <= frame.getTransience()) {
-                        somePresent = true;
-                        break;
-                    } else if (target.getActualFrame().isRemoved()) {
+                    if (target.getActualFrame().isRemoved()) {
                         // test for the frame property rather than state.isAbsent()
                         // as the latter is set only upon state closure
                         // whereas absence may also be due to constraint violations
                         // detected before closure
                         matchIter.remove();
+                    } else if (target.getAbsence() <= frame.getTransience()) {
+                        somePresent = true;
+                        break;
                     } else {
                         allAbsent = false;
                     }
@@ -153,8 +155,8 @@ public class StateMatches extends MatchResultSet {
         } else if (!hasOutstanding()) {
             StepAttempt attempt = frame.getAttempt();
             // Collect the new matches
-            // Keep track of increases in transient depth
-            boolean depthIncreases = false;
+            // test whether a match is guaranteed to yield a real successor state
+            boolean matchImpliesSuccessor = !this.removePolicies;
             // keep track of property violations
             CheckPolicy violated = CheckPolicy.SILENT;
             List<MatchResult> outstanding = new LinkedList<MatchResult>();
@@ -167,7 +169,7 @@ public class StateMatches extends MatchResultSet {
                     violated = action.getPolicy().max(violated);
                 }
                 outstanding.addAll(matches);
-                depthIncreases |= step.onFinish().getTransience() > frame.getTransience();
+                matchImpliesSuccessor &= step.onFinish().getTransience() <= frame.getTransience();
             }
             Frame nextFrame;
             if (violated != CheckPolicy.SILENT) {
@@ -178,11 +180,13 @@ public class StateMatches extends MatchResultSet {
             } else if (attempt.sameVerdict()) {
                 // it does not matter whether a transition is generated or not
                 nextFrame = attempt.onSuccess();
-            } else if (!depthIncreases) {
+            } else if (matchImpliesSuccessor) {
                 // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
                 // to a state that is present on the level of the frame
                 // (not that we already know outstanding to be nonempty)
+                // MODIFICATION: this is only true if the target state cannot be
+                // declared absent due to some policy
                 nextFrame = attempt.onSuccess();
             } else {
                 nextFrame = frame;
@@ -198,6 +202,11 @@ public class StateMatches extends MatchResultSet {
         }
         return result;
     }
+
+    /** Flag indicating if the grammar properties specify any policies
+     * that may cause discovered states to be removed.
+     */
+    private final boolean removePolicies;
 
     private MatchCollector getMatchCollector() {
         if (this.matcher == null) {

@@ -387,23 +387,27 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
             FormatErrorSet result = new FormatErrorSet();
             List<String> unknowns = new ArrayList<String>();
             CheckPolicy.PolicyMap map = (CheckPolicy.PolicyMap) value;
-            for (Map.Entry<String,CheckPolicy> entry : map.entrySet()) {
-                String name = entry.getKey();
-                RuleModel rule = grammar.getRuleModel(name);
-                if (rule == null) {
-                    unknowns.add(name);
-                } else {
-                    CheckPolicy policy = entry.getValue();
-                    if (!policy.isFor(rule.getRole())) {
-                        result.add("Policy '%s' is unsuitable for %s '%s'", policy.getName(),
-                            rule.getRole(), rule.getFullName());
+            if (map == null) {
+                result.add("Invalid entry");
+            } else {
+                for (Map.Entry<String,CheckPolicy> entry : map.entrySet()) {
+                    String name = entry.getKey();
+                    RuleModel rule = grammar.getRuleModel(name);
+                    if (rule == null) {
+                        unknowns.add(name);
+                    } else {
+                        CheckPolicy policy = entry.getValue();
+                        if (!policy.isFor(rule.getRole())) {
+                            result.add("Policy '%s' is unsuitable for %s '%s'", policy.getName(),
+                                rule.getRole(), rule.getFullName());
+                        }
                     }
                 }
-            }
-            if (!unknowns.isEmpty()) {
-                result.add("Unknown %s name%s %s", Groove.convertCase(getKind().getName(), false),
-                    unknowns.size() == 1 ? "" : "s",
-                    Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+                if (!unknowns.isEmpty()) {
+                    result.add("Unknown %s name%s %s", Groove.convertCase(getKind().getName(),
+                        false), unknowns.size() == 1 ? "" : "s", Groove.toString(
+                        unknowns.toArray(), "'", "'", "', '", "' and '"));
+                }
             }
             return result;
         }

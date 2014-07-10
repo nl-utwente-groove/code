@@ -158,7 +158,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     private boolean tried;
 
     private final static String SUBRULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("subrule");
-    private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("singular");
+    private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("rule");
     private final static Map<Role,String> roleSuffixMap;
 
     /** Returns the icon map for normal or injective properties. */

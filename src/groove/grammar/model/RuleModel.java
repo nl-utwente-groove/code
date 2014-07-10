@@ -400,7 +400,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         if (role.isProperty()) {
             FormatError error = testAsProperty();
             if (error != null) {
-                errors.add("Rule is unsuitable as %s: %s", getFullName(), role, error);
+                errors.add("Rule is unsuitable as %s: %s", role, error);
             }
         }
         // due to errors in the above, it might be that the

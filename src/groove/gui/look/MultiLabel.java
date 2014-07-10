@@ -118,7 +118,7 @@ public class MultiLabel {
                         result.appendLineBreak();
                     }
                     if (count > 1) {
-                        String mult = SP + "(" + count + ")";
+                        String mult = SP + "[" + count + Util.TIMES + "]";
                         line = line.append(mult);
                     }
                     if (start != null) {

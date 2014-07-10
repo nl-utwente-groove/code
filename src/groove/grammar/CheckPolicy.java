@@ -71,7 +71,7 @@ public enum CheckPolicy {
     /** Parser that returns a policy map. */
     public static final Parser<PolicyMap> multiParser = new PolicyMapParser();
 
-    private final static char ASSIGN_CHAR = '=';
+    private final static char ASSIGN_CHAR = ':';
 
     /** Mapping from action names to policies. */
     public static class PolicyMap extends TreeMap<String,CheckPolicy> {
@@ -94,7 +94,7 @@ public enum CheckPolicy {
         @Override
         public String getDescription(boolean uppercase) {
             StringBuilder result = new StringBuilder(uppercase ? "A " : "a ");
-            result.append("space-separated list of <i>name=value</i> pairs<br>"
+            result.append("space-separated list of <i>name:value</i> pairs<br>"
                 + "with <i>value</i> ");
             result.append(singleParser.getDescription(false));
             return result.toString();

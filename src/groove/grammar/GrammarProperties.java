@@ -423,6 +423,17 @@ public class GrammarProperties extends Properties {
         errors.throwException();
     }
 
+    /** Tests if the grammar properties specify any remove policies. */
+    public boolean hasRemovePolicies() {
+        if (getTypePolicy() == CheckPolicy.REMOVE) {
+            return true;
+        }
+        if (getRulePolicy().containsValue(CheckPolicy.REMOVE)) {
+            return true;
+        }
+        return false;
+    }
+
     /** Returns a non-fixed clone of the properties. */
     @Override
     public GrammarProperties clone() {

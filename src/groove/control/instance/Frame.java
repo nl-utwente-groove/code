@@ -45,9 +45,9 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @param stack underlying call stack
      * @param pred predecessor in a verdict transition; if {@code null}, this is
      * a prime frame
-     * @param error if {@code true}, this is an error frame, otherwise it is an absence frame
+     * @param policy if {@link CheckPolicy#ERROR}, this is an error frame, otherwise it is an absence frame
      */
-    Frame(Automaton ctrl, SwitchStack stack, Frame pred, int transience, boolean error) {
+    Frame(Automaton ctrl, SwitchStack stack, Frame pred, int transience, CheckPolicy policy) {
         this.aut = ctrl;
         this.nr = ctrl.getFrames().size();
         List<Assignment> pops = new ArrayList<Assignment>();
@@ -62,7 +62,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         }
         this.pops = pops;
         this.switchStack = stack;
-        this.location = Location.getSpecial(error, transience);
+        this.location = Location.getSpecial(policy, transience);
     }
 
     /** Constructs a new live frame.
@@ -356,7 +356,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             if (isError() || isRemoved()) {
                 this.onError = this;
             } else {
-                this.onError = newFrame(Location.getSpecial(true, getLocation().getTransience()));
+                this.onError =
+                    newFrame(Location.getSpecial(CheckPolicy.ERROR, getLocation().getTransience()));
             }
         }
         return this.onError;
@@ -370,7 +371,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             if (isRemoved()) {
                 this.onRemove = this;
             } else {
-                this.onRemove = newFrame(Location.getSpecial(false, getLocation().getTransience()));
+                this.onRemove =
+                    newFrame(Location.getSpecial(CheckPolicy.REMOVE, getLocation().getTransience()));
             }
         }
         return this.onRemove;

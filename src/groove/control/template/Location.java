@@ -19,6 +19,7 @@ package groove.control.template;
 import groove.control.CtrlVar;
 import groove.control.CtrlVarSet;
 import groove.control.Position;
+import groove.grammar.CheckPolicy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -240,10 +241,10 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     private static final int REMOVE_NR = -2;
 
     /** Returns an absence location of given transient depth. */
-    public static Location getSpecial(boolean error, int transience) {
-        List<Location> locations = error ? errorLocations : removeLocations;
+    public static Location getSpecial(CheckPolicy policy, int transience) {
+        List<Location> locations = policy == CheckPolicy.ERROR ? errorLocations : removeLocations;
         for (int i = locations.size(); i <= transience; i++) {
-            locations.add(new Location(null, error ? ERROR_NR : REMOVE_NR, i));
+            locations.add(new Location(null, policy == CheckPolicy.ERROR ? ERROR_NR : REMOVE_NR, i));
         }
         return locations.get(transience);
     }

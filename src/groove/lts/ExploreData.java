@@ -66,6 +66,9 @@ class ExploreData {
         assert partial.isPartial();
         assert partial.source() == this.state;
         GraphState child = partial.target();
+        if (child.getActualFrame().isRemoved()) {
+            return;
+        }
         ExploreData childCache = child.getCache().getExploreData();
         if (childCache == this) {
             return;
