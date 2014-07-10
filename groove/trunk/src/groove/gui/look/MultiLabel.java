@@ -81,6 +81,11 @@ public class MultiLabel {
         }
     }
 
+    /** Adds all lines from another multilabel to this one. */
+    public void addAll(MultiLabel other) {
+        this.parts.putAll(other.parts);
+    }
+
     /** Returns the union of all directions in this label. */
     public Direct getDirect() {
         return this.direct;
@@ -101,7 +106,7 @@ public class MultiLabel {
      * and with or without orientation decorations.
      */
     public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer, Point2D start,
-            Point2D end) {
+        Point2D end) {
         R result = renderer.createResult();
         for (Map.Entry<Line,DirectBag> entry : this.parts.entrySet()) {
             Line line = entry.getKey();
@@ -366,10 +371,10 @@ public class MultiLabel {
             Direct.class);
         /** Successor multisets after increasing one of the directions. */
         private final Map<Direct,DirectBag> incMap =
-                new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
         /** Successor multisets after decreasing one of the directions. */
         private final Map<Direct,DirectBag> decMap =
-                new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
 
         /** Returns a normalised representation of a given multiset. */
         public static DirectBag norm(DirectBag bag) {
@@ -382,7 +387,7 @@ public class MultiLabel {
 
         /** Pool of representatives. */
         private final static Map<DirectBag,DirectBag> pool =
-                new HashMap<MultiLabel.DirectBag,MultiLabel.DirectBag>();
+            new HashMap<MultiLabel.DirectBag,MultiLabel.DirectBag>();
         /** The zero element. */
         public final static DirectBag ZERO = norm(new DirectBag());
     }

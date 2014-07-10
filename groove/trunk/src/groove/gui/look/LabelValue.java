@@ -351,20 +351,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (idLine != null) {
             result.add(idLine);
         }
+        boolean hasControl = false;
         if (jVertex.getJGraph().isShowControlStates()) {
             GraphState state = jVertex.getNode();
             Frame frame = state.getActualFrame();
             Object[] values = state.getPrimeValues();
             if (!frame.isStart() || values.length > 0) {
-                result.add(getStackLine(frame.getLocation(), values));
+                result.add(getStackLine(frame.getPrime().getLocation(), values));
+                hasControl = true;
             }
             Stack<Switch> stack = frame.getSwitchStack();
             for (int i = stack.size() - 1; i >= 0; i--) {
                 values = Valuator.pop(values);
                 Switch sw = stack.get(i);
                 result.add(getStackLine(sw.getSource(), values));
+                hasControl = true;
             }
         }
+        MultiLabel transLabels = new MultiLabel();
         // only add edges that have an unfiltered label
         boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
         for (Edge edge : jVertex.getEdges()) {
@@ -378,12 +382,18 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 if (edge.getRole() == EdgeRole.BINARY) {
                     line = line.append(LOOP_SUFFIX);
                 }
-                result.add(line);
+                transLabels.add(line);
             }
         }
         if (!jVertex.isAllOutVisible()) {
-            result.add(RESIDUAL_LINE);
+            transLabels.add(RESIDUAL_LINE);
         }
+        // insert horizontal line if the state has both control and transition labels
+        if (hasControl && !transLabels.isEmpty()) {
+            // this solution is very ugly (in html), work on it!
+            // result.add(Line.hrule());
+        }
+        result.addAll(transLabels);
         return result;
     }
 

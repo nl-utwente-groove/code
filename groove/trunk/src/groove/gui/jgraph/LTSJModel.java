@@ -222,7 +222,10 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
             }
         } else {
             for (Edge edge : edgeSet) {
-                result |= addTransition((GraphTransition) edge);
+                GraphTransition trans = (GraphTransition) edge;
+                if (getJGraph().getTransitionClass().admits(trans)) {
+                    result |= addTransition((GraphTransition) edge);
+                }
             }
         }
         return result;

@@ -471,7 +471,8 @@ public class RuleTree extends AbstractResourceTree {
                 // find the correct rule tree node
                 parentNode = null;
                 for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {
-                    if (recipe == null || recipe.equals(getRecipe(ruleNode))) {
+                    Recipe ruleRecipe = getRecipe(ruleNode);
+                    if (recipe == null ? ruleRecipe == null : recipe.equals(ruleRecipe)) {
                         parentNode = ruleNode;
                         break;
                     }

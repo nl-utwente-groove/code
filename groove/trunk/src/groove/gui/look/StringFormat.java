@@ -45,6 +45,12 @@ public class StringFormat extends LineFormat<StringFormat.Builder> {
         return result;
     }
 
+    /* Does not support horizontal rules. */
+    @Override
+    public Builder createHRule() {
+        return createResult();
+    }
+
     @Override
     protected Builder createResult() {
         return new Builder();

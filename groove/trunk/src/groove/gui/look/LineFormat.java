@@ -74,6 +74,9 @@ abstract public class LineFormat<R extends LineFormat.Builder<R>> {
     /** Constructs a styled rendering. */
     abstract public R applyStyled(Style style, R subline);
 
+    /** Constructs a rendering of a horizontal rule. */
+    abstract public R createHRule();
+
     /** Constructs a rendering of an unstructured string. */
     abstract public R applyAtomic(String text);
 
