@@ -273,7 +273,7 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     private DisplayTreeNode createActionNode(ActionEntry action, List<TreePath> expandedPaths,
-            List<TreePath> selectedPaths) {
+        List<TreePath> selectedPaths) {
         Collection<String> selection = getSimulatorModel().getSelectSet(ResourceKind.RULE);
         String name = action.getName();
         // create the rule node and register it
@@ -313,7 +313,7 @@ public class RuleTree extends AbstractResourceTree {
         }
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel ruleModel = (RuleModel) model;
-            if (!subRuleNames.contains(ruleModel.getFullName())) {
+            if (ruleModel.isProperty() || !subRuleNames.contains(ruleModel.getFullName())) {
                 int priority = ruleModel.isProperty() ? -1 : ruleModel.getPriority();
                 Set<ActionEntry> rules = result.get(priority);
                 if (rules == null) {
@@ -350,7 +350,7 @@ public class RuleTree extends AbstractResourceTree {
 
     /** Adds tree nodes for all levels of a structured rule name. */
     private DisplayTreeNode addParentNode(DisplayTreeNode topNode,
-            Map<String,FolderTreeNode> dirNodeMap, String parentName) {
+        Map<String,FolderTreeNode> dirNodeMap, String parentName) {
         //        QualName parent = ruleName.parent();
         if (parentName.isEmpty()) {
             // there is no parent rule name; the parent node is the top node
@@ -427,7 +427,7 @@ public class RuleTree extends AbstractResourceTree {
         // set the tried status of the rules
         Set<? extends CallStack> pastAttempts =
             state == null ? Collections.<CallStack>emptySet()
-                    : state.getActualFrame().getPastAttempts();
+                : state.getActualFrame().getPastAttempts();
         // convert the transitions to pairs of rule name + recipe name
         Set<Duo<String>> triedPairs = new HashSet<Duo<String>>();
         for (CallStack t : pastAttempts) {
@@ -507,7 +507,7 @@ public class RuleTree extends AbstractResourceTree {
 
     @Override
     public String convertValueToText(Object value, boolean selected, boolean expanded,
-            boolean leaf, int row, boolean hasFocus) {
+        boolean leaf, int row, boolean hasFocus) {
         String result;
         if (value instanceof DisplayTreeNode) {
             result = ((DisplayTreeNode) value).getText();

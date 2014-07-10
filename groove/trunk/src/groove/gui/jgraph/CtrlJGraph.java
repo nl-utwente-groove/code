@@ -24,6 +24,8 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
+import groove.gui.layout.ForestLayouter;
+import groove.gui.layout.Layouter;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
@@ -67,6 +69,11 @@ public class CtrlJGraph extends JGraph<ControlGraph> {
     @Override
     public boolean isShowLoopsAsNodeLabels() {
         return true;
+    }
+
+    @Override
+    public Layouter getDefaultLayouter() {
+        return ForestLayouter.PROTOTYPE;
     }
 
     @Override

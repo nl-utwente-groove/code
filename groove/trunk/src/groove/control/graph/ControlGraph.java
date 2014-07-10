@@ -86,6 +86,20 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
 
     private Template template;
 
+    /** Returns the start node. */
+    public ControlNode getStart() {
+        return this.start;
+    }
+
+    /** Initialises the start node. */
+    private void setStart(ControlNode start) {
+        assert this.start == null;
+        assert start != null;
+        this.start = start;
+    }
+
+    private ControlNode start;
+
     /** Constructs a control graph for a given template. */
     public static ControlGraph newGraph(Template template, boolean full) {
         ControlGraph result = newGraph(template.getName(), template.getStart(), full);
@@ -99,7 +113,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * otherwise, only the call edges are shown
      */
     public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(String name,
-            P init, boolean full) {
+        P init, boolean full) {
         ControlGraph result = new ControlGraph(name);
         Map<P,ControlNode> nodeMap = new HashMap<P,ControlNode>();
         Queue<P> fresh = new LinkedList<P>();
@@ -141,11 +155,14 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * Adds a node to the control graph under construction.
      */
     private static <P extends Position<P,A>,A extends Stage<P,A>> ControlNode addNode(
-            ControlGraph graph, Map<P,ControlNode> nodeMap, P pos, Queue<P> fresh) {
+        ControlGraph graph, Map<P,ControlNode> nodeMap, P pos, Queue<P> fresh) {
         ControlNode result = nodeMap.get(pos);
         if (result == null) {
             nodeMap.put(pos, result = new ControlNode(graph, pos));
             fresh.add(pos);
+            if (pos.isStart()) {
+                graph.setStart(result);
+            }
         }
         return result;
     }
@@ -154,7 +171,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * Adds a call edge to the control graph under construction.
      */
     private static <P extends Position<P,A>,A extends Stage<P,A>> void addEdge(ControlGraph result,
-            Map<P,ControlNode> nodeMap, ControlNode node, Stage<P,A> out, Queue<P> fresh) {
+        Map<P,ControlNode> nodeMap, ControlNode node, Stage<P,A> out, Queue<P> fresh) {
         ControlNode target;
         target = addNode(result, nodeMap, out.onFinish(), fresh);
         node.addCallEdge(target, out.getCallStack());

@@ -78,7 +78,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                 @Override
                 public void hierarchyChanged(HierarchyEvent e) {
                     Window window =
-                            SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
+                        SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
                     if (window instanceof Dialog) {
                         Dialog dialog = (Dialog) window;
                         if (!dialog.isResizable()) {
@@ -118,7 +118,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
             if (this.simulator != null || this.grammar != null) {
                 shownGraph = GraphConverter.toAspect(this.graph);
                 DisplayKind kind =
-                        DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+                    DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
                 AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
                 if (this.simulator == null) {
                     aspectJGraph.setGrammar(this.grammar);
@@ -136,9 +136,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         JModel<G> model = jGraph.newModel();
         model.loadGraph((G) shownGraph);
         jGraph.setModel(model);
-        // EZ says: commented out since the 'setModel' above already calls
-        // the layouter.
-        // jGraph.doLayout(false);
+        jGraph.doLayout(false);
         return jGraph;
     }
 
@@ -198,7 +196,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
 
     private static Simulator globalSimulator;
     private static Map<GraphRole,Set<String>> recentPreviews = new EnumMap<GraphRole,Set<String>>(
-            GraphRole.class);
+        GraphRole.class);
     static {
         for (GraphRole role : GraphRole.values()) {
             recentPreviews.put(role, new HashSet<String>());

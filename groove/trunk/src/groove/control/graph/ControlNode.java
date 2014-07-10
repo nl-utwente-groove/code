@@ -40,7 +40,7 @@ public class ControlNode extends ANode {
 
     /** Indicates if this is the start node of the control graph. */
     public boolean isStart() {
-        return getNumber() == 0;
+        return this.graph.getStart() == this;
     }
 
     /** Returns the control position underlying this node. */

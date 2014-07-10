@@ -319,13 +319,15 @@ public class Frame implements Position<Frame,Step>, Fixable {
         targetStack.addAll(sw);
         Switch call = targetStack.pop();
         Frame target;
-        if (call.getCall().getRule().getRole().isProperty()) {
-            // all properties should leave the control frame unchanged
-            assert sw.size() == 1;
-            target = this;
-        } else {
-            target = new Frame(getAut(), call.onFinish(), targetStack, null).normalise();
-        }
+        // the following exception is wrong, if an explicit condition call occurs
+        // whereas for other property calls, why bother?
+        //        if (call.getCall().getRule().getRole().isProperty()) {
+        //            // all properties should leave the control frame unchanged
+        //            assert sw.size() == 1;
+        //            target = this;
+        //        } else {
+        target = new Frame(getAut(), call.onFinish(), targetStack, null).normalise();
+        //        }
         return new Step(this, sw, target);
     }
 
@@ -368,8 +370,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             if (isRemoved()) {
                 this.onRemove = this;
             } else {
-                this.onRemove =
-                    newFrame(Location.getSpecial(false, getLocation().getTransience()));
+                this.onRemove = newFrame(Location.getSpecial(false, getLocation().getTransience()));
             }
         }
         return this.onRemove;

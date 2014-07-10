@@ -201,13 +201,7 @@ public class ForestLayouter extends AbstractLayouter {
             result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
         } else if (jGraph instanceof CtrlJGraph) {
             JModel<ControlGraph> jModel = ((CtrlJGraph) jGraph).getModel();
-            ControlNode start = null;
-            for (ControlNode node : jModel.getGraph().nodeSet()) {
-                if (node.getNumber() == 0) {
-                    start = node;
-                    break;
-                }
-            }
+            ControlNode start = jModel.getGraph().getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {
             result = Arrays.asList(jGraph.getSelectionCells());
@@ -231,12 +225,12 @@ public class ForestLayouter extends AbstractLayouter {
             Layout right = layout(branch, height);
             result = new Layout(Math.max(left.count, right.count));
             int fit =
-                    (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
-                            - MIN_CHILD_DISTANCE;
+                (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
+                    - MIN_CHILD_DISTANCE;
             for (int level = 0; level < Math.min(left.count, right.count); level++) {
                 fit =
-                        Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
-                                - MIN_NODE_DISTANCE);
+                    Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
+                        - MIN_NODE_DISTANCE);
             }
             for (int level = 0; level < result.count; level++) {
                 if (level < left.count) {
