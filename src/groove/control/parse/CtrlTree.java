@@ -276,7 +276,12 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         Term prot = getInfo().getPrototype();
         Term result = prot.delta();
         for (Action action : actions) {
-            Call part = new Call(action);
+            List<CtrlPar> args = new ArrayList<CtrlPar>();
+            for (CtrlPar.Var par : action.getSignature()) {
+                assert !par.isInOnly();
+                args.add(new CtrlPar.Var(par.getVar(), false));
+            }
+            Call part = new Call(action, args);
             result = result.or(prot.call(part));
         }
         return result;
