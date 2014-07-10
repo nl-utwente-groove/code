@@ -51,7 +51,7 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
-        ActionLabel {
+    ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
@@ -146,37 +146,6 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
 
     private Set<RuleTransition> steps;
 
-    /** Returns a shortest rule transition sequence from source to target. */
-    public List<RuleTransition> getPath() {
-        List<RuleTransition> result = null;
-        // all paths of the current length
-        List<List<RuleTransition>> paths = new ArrayList<List<RuleTransition>>();
-        paths.add(Arrays.asList(getInitial()));
-        // do the following for paths of increasing length
-        while (result == null) {
-            List<List<RuleTransition>> newPaths = new ArrayList<List<RuleTransition>>();
-            for (List<RuleTransition> path : paths) {
-                GraphState target = path.get(path.size() - 1).target();
-                // check if any of the paths reaches the target
-                if (target == target()) {
-                    result = path;
-                    break;
-                } else {
-                    // otherwise, extend the path in all possible ways
-                    for (RuleTransition next : target.getRuleTransitions()) {
-                        if (getSteps().contains(next)) {
-                            List<RuleTransition> newPath = new ArrayList<RuleTransition>(path);
-                            newPath.add(next);
-                            newPaths.add(newPath);
-                        }
-                    }
-                }
-            }
-            paths = newPaths;
-        }
-        return result;
-    }
-
     private Set<RuleTransition> computeSteps() {
         // mapping from states to sets of incoming transitions
         Map<GraphState,Set<RuleTransition>> inMap = new HashMap<GraphState,Set<RuleTransition>>();
@@ -214,6 +183,37 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                     pool.add(in.source());
                 }
             }
+        }
+        return result;
+    }
+
+    /** Returns a shortest rule transition sequence from source to target. */
+    public List<RuleTransition> getPath() {
+        List<RuleTransition> result = null;
+        // all paths of the current length
+        List<List<RuleTransition>> paths = new ArrayList<List<RuleTransition>>();
+        paths.add(Arrays.asList(getInitial()));
+        // do the following for paths of increasing length
+        while (result == null) {
+            List<List<RuleTransition>> newPaths = new ArrayList<List<RuleTransition>>();
+            for (List<RuleTransition> path : paths) {
+                GraphState target = path.get(path.size() - 1).target();
+                // check if any of the paths reaches the target
+                if (target == target()) {
+                    result = path;
+                    break;
+                } else {
+                    // otherwise, extend the path in all possible ways
+                    for (RuleTransition next : target.getRuleTransitions()) {
+                        if (getSteps().contains(next)) {
+                            List<RuleTransition> newPath = new ArrayList<RuleTransition>(path);
+                            newPath.add(next);
+                            newPaths.add(newPath);
+                        }
+                    }
+                }
+            }
+            paths = newPaths;
         }
         return result;
     }
@@ -274,6 +274,21 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
      */
     private HostGraphMorphism morphism;
 
+    /**
+     * Constructs an underlying morphism for the transition from the stored
+     * footprint.
+     */
+    protected HostGraphMorphism computeMorphism() {
+        HostGraphMorphism result = null;
+        HostGraph host = source().getGraph();
+        for (RuleTransition step : getPath()) {
+            RuleApplication appl = step.getEvent().newApplication(host);
+            result = result == null ? appl.getMorphism() : result.then(appl.getMorphism());
+            host = appl.getTarget();
+        }
+        return result;
+    }
+
     @Override
     public RecipeEvent getKey() {
         return getEvent();
@@ -282,21 +297,6 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     @Override
     public RecipeEvent toStub() {
         return getEvent();
-    }
-
-    /**
-     * Constructs an underlying morphism for the transition from the stored
-     * footprint.
-     */
-    protected HostGraphMorphism computeMorphism() {
-        HostGraphMorphism result = null;
-        HostGraph host = source().getGraph();
-        for (RuleTransition step : getSteps()) {
-            RuleApplication appl = step.getEvent().newApplication(host);
-            result = result == null ? appl.getMorphism() : result.then(appl.getMorphism());
-            host = appl.getTarget();
-        }
-        return result;
     }
 
     /**
