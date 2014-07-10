@@ -109,7 +109,7 @@ public class Util {
      * @since Commons IO 1.1
      */
     private static void doCopyDirectory(File srcDir, File destDir, boolean preserveFileDate,
-            List<String> exclusionList) throws IOException {
+        List<String> exclusionList) throws IOException {
         // recurse
         File[] files = srcDir.listFiles();
         if (files == null) { // null if security restricted
@@ -277,7 +277,7 @@ public class Util {
         List<String[]> result = null;
         try {
             CSVReader reader =
-                    new CSVReader(
+                new CSVReader(
                     new InputStreamReader(Groove.getResource(name + ".csv").openStream()), sep);
             result = reader.readAll();
             reader.close();
@@ -318,7 +318,7 @@ public class Util {
     /** HTML right angular bracket symbol. */
     static public final char RANGLE = '>'; // &#9002;
     /** HTML times symbol. */
-    static public final char TIMES = '\u2A09';
+    static public final char TIMES = '\u00D7';
     /** Unicode right-triangle symbol; large/small = ..B6/B8. */
     static public final char RT = '\u25B8';
     /** Unicode left-triangle symbol; large/small = ..C0/C2. */

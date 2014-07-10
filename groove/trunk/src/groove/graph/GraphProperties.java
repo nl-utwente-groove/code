@@ -53,6 +53,9 @@ public class GraphProperties extends Properties {
 
     /** Predefined graph property keys. */
     public static enum Key implements PropertyKey<Object> {
+        /** User-defined comment. */
+        REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip"),
+
         /** Rule priority. */
         PRIORITY("priority", "Higher-priority rules are evaluated first.", Parser.natural),
 
@@ -73,9 +76,6 @@ public class GraphProperties extends Properties {
                 + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
                 + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy",
             new Parser.EnumParser<Role>(Role.class, null)),
-
-        /** User-defined comment. */
-        REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip"),
 
         /** Output line format. */
         FORMAT(

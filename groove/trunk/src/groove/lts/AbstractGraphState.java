@@ -194,7 +194,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * moreover, depending on the policy, the control frame is set to absent or error.
      */
     public void checkDoneConstraints() {
-        if (getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
+        if (isRealState() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
             boolean alive = false;
             for (GraphTransition trans : getTransitions()) {
                 if (trans.getAction().getRole() == Role.TRANSFORMER) {
@@ -314,9 +314,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public int getAbsence() {
-        if (isError()) {
-            return Status.MAX_ABSENCE;
-        } else if (isDone()) {
+        if (isDone()) {
             return Status.getAbsence(this.status);
         } else {
             return getCache().getAbsence();

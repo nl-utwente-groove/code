@@ -220,4 +220,9 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     public boolean equals(Object other) {
         return this == other;
     }
+
+    @Override
+    public String toString() {
+        return "Step " + this.source + "--" + this.stack + "-> " + this.onFinish;
+    }
 }
