@@ -2,6 +2,8 @@ package groove.gui.action;
 
 import static groove.grammar.model.ResourceKind.RULE;
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -24,12 +26,12 @@ import java.util.TreeMap;
 public class ShiftPriorityAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator.
      * @param up if {@code true}, priorities are shifte uyp, otherwise they are
-     * shifted down 
+     * shifted down
      */
     public ShiftPriorityAction(Simulator simulator, boolean up) {
         super(simulator, up ? Options.RAISE_PRIORITY_ACTION_NAME
-                : Options.LOWER_PRIORITY_ACTION_NAME, up
-                ? Icons.ARROW_SIMPLE_UP_ICON : Icons.ARROW_SIMPLE_DOWN_ICON);
+            : Options.LOWER_PRIORITY_ACTION_NAME, up ? Icons.ARROW_SIMPLE_UP_ICON
+            : Icons.ARROW_SIMPLE_DOWN_ICON);
         this.up = up;
     }
 
@@ -41,22 +43,30 @@ public class ShiftPriorityAction extends SimulatorAction {
 
     @Override
     public void execute() {
+        // Collect all properties and subrules (they should remain at priority 0)
+        Set<String> frozen = new HashSet<String>();
         // collect all rules according to current priority
-        NavigableMap<Integer,Set<String>> rulesMap =
-            new TreeMap<Integer,Set<String>>();
-        for (AspectGraph ruleGraph : getGrammarStore().getGraphs(RULE).values()) {
-            int priority = GraphInfo.getPriority(ruleGraph);
-            Set<String> cell = rulesMap.get(priority);
-            if (cell == null) {
-                rulesMap.put(priority, cell = new HashSet<String>());
+        NavigableMap<Integer,Set<String>> rulesMap = new TreeMap<Integer,Set<String>>();
+        for (ResourceModel<?> model : getGrammarModel().getResourceSet(RULE)) {
+            RuleModel rule = (RuleModel) model;
+            if (rule.isProperty() || rule.hasRecipes()) {
+                frozen.add(rule.getFullName());
+            } else {
+                int priority = rule.getPriority();
+
+                Set<String> cell = rulesMap.get(priority);
+                if (cell == null) {
+                    rulesMap.put(priority, cell = new HashSet<String>());
+                }
+                cell.add(rule.getFullName());
             }
-            cell.add(ruleGraph.getName());
         }
         if (!this.up) {
             rulesMap = rulesMap.descendingMap();
         }
         // collect the selected rules
-        Set<String> selectedRules = getSimulatorModel().getSelectSet(RULE);
+        Set<String> selectedRules = new HashSet<String>(getSimulatorModel().getSelectSet(RULE));
+        selectedRules.removeAll(frozen);
         // now shift rules to higher or lower priority classes
         List<Integer> priorities = new ArrayList<Integer>();
         List<Set<String>> remainingRules = new ArrayList<Set<String>>();
@@ -121,8 +131,7 @@ public class ShiftPriorityAction extends SimulatorAction {
         for (int i = 0; i < newPriorities.size(); i++) {
             int priority = newPriorities.get(i);
             for (String ruleName : newCells.get(i)) {
-                AspectGraph ruleGraph =
-                    getGrammarStore().getGraphs(RULE).get(ruleName);
+                AspectGraph ruleGraph = getGrammarStore().getGraphs(RULE).get(ruleName);
                 if (GraphInfo.getPriority(ruleGraph) != priority) {
                     priorityMap.put(ruleName, priority);
                 }

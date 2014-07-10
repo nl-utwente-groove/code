@@ -93,8 +93,17 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         Map<String,String> filteredProps = new LinkedHashMap<String,String>();
         // collect the non-system, non-remark properties
         for (Key key : Key.values()) {
+            if (key == Key.REMARK) {
+                continue;
+            }
+            if (key.isSystem()) {
+                continue;
+            }
+            if (key == Key.PRIORITY && getRule().getRole().isConstraint()) {
+                continue;
+            }
             String value = properties.getProperty(key);
-            if (key != Key.REMARK && !key.isSystem() && !value.isEmpty()) {
+            if (!value.isEmpty()) {
                 filteredProps.put(key.getKeyPhrase(), value);
             }
         }
@@ -110,6 +119,10 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         for (Map.Entry<String,String> entry : filteredProps.entrySet()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append(propertyToString(entry));
+        }
+        if (getRule().getRole().isConstraint()) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(getRule().getPolicy().getExplanation());
         }
         if (!isTried() && GraphInfo.isEnabled(source)) {
             result.append(HTMLConverter.HTML_LINEBREAK);

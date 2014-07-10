@@ -32,6 +32,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.Action.Role;
+import groove.grammar.CheckPolicy;
 import groove.grammar.Condition;
 import groove.grammar.Condition.Op;
 import groove.grammar.EdgeEmbargo;
@@ -160,6 +161,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     private Role role;
+
+    /** Returns the policy for dealing with rule matches, set in the grammar properties. */
+    public CheckPolicy getPolicy() {
+        CheckPolicy result = getGrammarProperties().getRulePolicy().get(getFullName());
+        if (result == null) {
+            result = getRole().isConstraint() ? CheckPolicy.ERROR : CheckPolicy.SILENT;
+        }
+        return result;
+    }
 
     /**
      * Tests if this rule may be used as a property.

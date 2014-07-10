@@ -464,6 +464,8 @@ public abstract class Line {
         /** Italic font. */
         ITALIC,
         /** Strikethrough font. */
+        UNDERLINE,
+        /** Underline font. */
         STRIKE,
         /** Superscript. */
         SUPER;

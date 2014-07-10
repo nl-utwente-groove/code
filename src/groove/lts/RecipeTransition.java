@@ -20,6 +20,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlPar.Wild;
+import groove.control.CtrlVar;
 import groove.control.Valuator;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
@@ -241,7 +242,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                     node = Valuator.get(source().getPrimeValues(), varIndex);
                 } else {
                     assert arg.isOutOnly();
-                    int varIndex = getSwitch().onFinish().getVarIxMap().get(((Var) arg).getVar());
+                    Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish().getVarIxMap();
+                    int varIndex = varIxMap.get(((Var) arg).getVar());
                     Object[] values = target().getActualValues();
                     node = Valuator.get(values, varIndex);
                 }

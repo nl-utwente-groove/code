@@ -116,6 +116,11 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
                 end = "}";
                 mode = Mode.TEXT;
                 break;
+            case UNDERLINE:
+                start = "\\uline{";
+                end = "}";
+                mode = Mode.TEXT;
+                break;
             case SUPER:
                 start = "^{";
                 end = "}";

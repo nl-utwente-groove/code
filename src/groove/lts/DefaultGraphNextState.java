@@ -136,7 +136,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
     @Override
     public EdgeRole getRole() {
-        if (!getEvent().getRule().isProperty() || getStep().isModifying()) {
+        if (getAction().isModifying() || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
