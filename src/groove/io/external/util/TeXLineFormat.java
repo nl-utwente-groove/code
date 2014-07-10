@@ -66,6 +66,13 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         return result;
     }
 
+    /** Just returns the empty line for now. */
+    @Override
+    public TeXBuilder createHRule() {
+        TeXBuilder result = new TeXBuilder();
+        return result;
+    }
+
     @Override
     protected TeXBuilder createResult() {
         return new TeXBuilder();
@@ -89,7 +96,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
 
     static {
         Map<Style,Pair<Duo<String>,Mode>> result =
-                new EnumMap<Style,Pair<Duo<String>,Mode>>(Style.class);
+            new EnumMap<Style,Pair<Duo<String>,Mode>>(Style.class);
         for (Style style : Style.values()) {
             String start, end;
             Mode mode;
@@ -129,7 +136,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         String colorString;
         if (type == ColorType.RGB) {
             colorString =
-                    "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + "," + color.getBlue()
+                "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + "," + color.getBlue()
                     + "}";
         } else {
             colorString = colorMap.get(type);
@@ -174,7 +181,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     }
 
     private static Map<Character,Pair<String,Mode>> charMap =
-            new HashMap<Character,Pair<String,Mode>>();
+        new HashMap<Character,Pair<String,Mode>>();
 
     static {
         addChar(Util.EXISTS, "\\exists", Mode.MATH);

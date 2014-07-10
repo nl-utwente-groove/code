@@ -192,6 +192,15 @@ public abstract class Line {
         return empty;
     }
 
+    private final static Empty empty = new Empty();
+
+    /** Returns the (fixed) horizontal rule. */
+    public static HRule hrule() {
+        return hrule;
+    }
+
+    private final static HRule hrule = new HRule();
+
     /** Returns an atomic line consisting of a given string. */
     public static Line atom(String text) {
         if (text == null || text.length() == 0) {
@@ -205,8 +214,6 @@ public abstract class Line {
     public static Composed composed(List<Line> fragments) {
         return new Composed(fragments);
     }
-
-    private final static Empty empty = new Empty();
 
     /** Composed line consisting of a sequence of subline fragments. */
     static public class Composed extends Line {
@@ -409,6 +416,34 @@ public abstract class Line {
         @Override
         public String toString() {
             return "Empty";
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+    }
+
+    /** Line consisting of a horizontal rule. */
+    static public class HRule extends Line {
+        /** Constructs the singleton instance. */
+        private HRule() {
+            // empty
+        }
+
+        @Override
+        public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
+            return renderer.createHRule();
+        }
+
+        @Override
+        public String toString() {
+            return "HRule";
         }
 
         @Override

@@ -79,6 +79,13 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
     }
 
     @Override
+    public HTMLBuilder createHRule() {
+        HTMLBuilder result = new HTMLBuilder();
+        result.appendHRule();
+        return result;
+    }
+
+    @Override
     protected HTMLBuilder createResult() {
         return new HTMLBuilder();
     }
@@ -141,6 +148,11 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
         @Override
         public void appendLineBreak() {
             this.content.append(HTMLConverter.HTML_LINEBREAK);
+        }
+
+        /** Appends a horizontal rule to the content. */
+        public void appendHRule() {
+            this.content.append("<hr noshade>");
         }
 
         @Override

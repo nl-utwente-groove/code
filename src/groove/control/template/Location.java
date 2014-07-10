@@ -216,7 +216,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         if (isError()) {
             result.append("error");
         } else if (isRemoved()) {
-            result.append("absence");
+            result.append("removed");
         } else {
             result.append(getTemplate().hasOwner() ? getTemplate().getName() : "main");
             result.append(".");

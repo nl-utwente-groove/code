@@ -35,7 +35,7 @@ class MatchTreeNode extends DisplayTreeNode {
      * children.
      */
     public MatchTreeNode(SimulatorModel model, GraphState source, MatchResult match, int nr,
-            boolean anchored) {
+        boolean anchored) {
         super(match, false);
         this.source = source;
         this.nr = nr;
@@ -105,11 +105,12 @@ class MatchTreeNode extends DisplayTreeNode {
         StringBuilder result = new StringBuilder();
         result.append(this.nr);
         result.append(": ");
-        boolean isProperty = getMatch().getAction().isProperty();
+        boolean showArrow =
+            !getMatch().getAction().isProperty() || getMatch().getStep().isModifying();
         if (isEnabled()) {
             RuleTransition trans = getMatch().getTransition();
             result.append(trans.text(this.anchored));
-            if (!isProperty) {
+            if (showArrow) {
                 result.append(RIGHTARROW);
                 result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
             }
@@ -121,7 +122,7 @@ class MatchTreeNode extends DisplayTreeNode {
             }
         } else {
             result.append(RuleTransitionLabel.text(this.source, getMatch(), this.anchored));
-            if (!isProperty) {
+            if (showArrow) {
                 result.append(RIGHTARROW);
                 result.append("?");
             }
