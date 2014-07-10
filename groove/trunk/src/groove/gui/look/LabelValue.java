@@ -157,7 +157,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                             }
                             id = null;
                         }
-                        if (!implicitType && edge.getRole() == EdgeRole.BINARY && !edge.hasErrors()) {
+                        if (!implicitType && edge.getRole() == EdgeRole.BINARY
+                            && !jVertex.hasErrors() && !edge.hasErrors()) {
                             line = line.append(LOOP_SUFFIX);
                         }
                         result.add(line);
@@ -202,7 +203,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !edge.hasErrors()) {
+                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !jVertex.hasErrors()
+                        && !edge.hasErrors()) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -274,7 +276,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                         }
                         idLine = null;
                     }
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !edge.hasErrors()) {
+                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !jVertex.hasErrors()
+                        && !edge.hasErrors()) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
