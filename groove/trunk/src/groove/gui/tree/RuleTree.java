@@ -216,7 +216,7 @@ public class RuleTree extends AbstractResourceTree {
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (hasMultipleLevels) {
-                topNode = new PriorityTreeNode(null, priority, priorityMap.size() > 1);
+                topNode = new DirectoryTreeNode(null, priority, priorityMap.size() > 1);
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
@@ -271,7 +271,7 @@ public class RuleTree extends AbstractResourceTree {
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (hasMultipleLevels) {
-                topNode = new PriorityTreeNode(policy, 0, policyMap.size() > 1);
+                topNode = new DirectoryTreeNode(policy, 0, policyMap.size() > 1);
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
@@ -809,14 +809,14 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     /**
-     * Priority nodes (used only if the rule system has multiple priorities)
+     * Directory nodes (priorities of check policies).
      */
-    private static class PriorityTreeNode extends FolderTreeNode {
+    public static class DirectoryTreeNode extends FolderTreeNode {
         /**
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
          */
-        public PriorityTreeNode(CheckPolicy policy, int priority, boolean hasMultiple) {
+        public DirectoryTreeNode(CheckPolicy policy, int priority, boolean hasMultiple) {
             super(getText(policy, priority, hasMultiple));
         }
 
