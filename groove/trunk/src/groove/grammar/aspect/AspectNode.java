@@ -562,8 +562,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     private void setId(Aspect id) throws FormatException {
         assert id.getKind() == ID : String.format("Aspect %s is not an identifier", id);
         if (this.id != null) {
-            throw new FormatException("Duplicate node identifiers %s and %s", this.id.getClass(),
-                id.getContent());
+            throw new FormatException("Duplicate node identifiers %s and %s", this.id.getContent(),
+                id.getContent(), this);
         }
         this.id = id;
     }

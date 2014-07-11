@@ -332,10 +332,10 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         boolean result = setStatus(Flag.DONE, true);
         if (result) {
             setAbsence(absence);
-            checkDoneConstraints();
             setStatus(Flag.ERROR, getActualFrame().isError());
             setStatus(Flag.ABSENT, getActualFrame().isRemoved());
             setStatus(Flag.FINAL, getActualFrame().isFinal());
+            checkDoneConstraints();
             getCache().notifyDone();
             setCacheCollectable();
             fireStatus(Flag.DONE, oldStatus);
