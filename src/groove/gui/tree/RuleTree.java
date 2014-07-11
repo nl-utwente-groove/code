@@ -818,12 +818,45 @@ public class RuleTree extends AbstractResourceTree {
          */
         public DirectoryTreeNode(CheckPolicy policy, int priority, boolean hasMultiple) {
             super(getText(policy, priority, hasMultiple));
+            this.policy = policy;
+            this.priority = priority;
+            this.hasMultiple = hasMultiple;
         }
 
         @Override
         public Icon getIcon() {
             return Icons.EMPTY_ICON;
         }
+
+        @Override
+        public String getTip() {
+            StringBuilder result = new StringBuilder();
+            if (this.policy == null) {
+                result.append("List of modifying rules and recipes");
+                if (this.hasMultiple) {
+                    result.append(" of priority ");
+                    result.append(this.priority);
+                    result.append(HTMLConverter.HTML_LINEBREAK);
+                    result.append("Will be scheduled only when all higher-level priority transformers failed");
+                }
+            } else {
+                result.append("List of graph properties");
+                if (this.hasMultiple) {
+                    switch (this.policy) {
+                    case ERROR:
+                        result.append(" which, when violated, will flag an error");
+                        break;
+                    case REMOVE:
+                        result.append(" which, when violated, will cause the state to be removed");
+                    }
+                }
+            }
+            return HTMLConverter.HTML_TAG.on(result).toString();
+        }
+
+        private final CheckPolicy policy;
+        private final int priority;
+        private final boolean hasMultiple;
 
         private static String getText(CheckPolicy policy, int priority, boolean hasMultiple) {
             StringBuilder result = new StringBuilder();
