@@ -125,8 +125,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         jModel.setLayoutable(false);
         jModel.loadGraph(jModel.getGraph());
         refreshAllCells();
-        doLayout(true);
         refreshActive();
+        doLayout(true);
         scrollToActive();
     }
 
