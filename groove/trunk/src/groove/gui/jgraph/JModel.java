@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -346,12 +345,12 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
 
     /**
      * Creates a j-cell corresponding to a given node in the graph. Adds the
-     * j-cell to {@link #addedJCells}, and updates {@link #nodeJCellMap}.
+     * j-cell to {@link #addedJEdges}, and updates {@link #nodeJCellMap}.
      */
     protected JVertex<G> addNode(Node node) {
         JVertex<G> jVertex = computeJVertex(node);
         // we add nodes in front of the list to get them in front of the display
-        this.addedJCells.add(0, jVertex);
+        this.addedJVertices.add(jVertex);
         JVertex<G> oldNode = this.nodeJCellMap.put(node, jVertex);
         assert oldNode == null;
         return jVertex;
@@ -394,12 +393,11 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             JEdge<G> jEdge;
             result = jEdge = computeJEdge(edge);
             // put the edge at the end to make sure it goes to the back
-            this.addedJCells.add(result);
+            this.addedJEdges.add(jEdge);
             JVertex<G> targetJVertex = getJCellForNode(edge.target());
             assert targetJVertex != null : "No vertex for target node of " + edge;
             this.connections.connect(result, sourceJVertex.getPort(), targetJVertex.getPort());
-            addJEdge(sourceJVertex, jEdge);
-            addJEdge(targetJVertex, jEdge);
+            addFreshOutJEdge(sourceJVertex, jEdge);
         }
         this.edgeJCellMap.put(edge, result);
         return result;
@@ -412,23 +410,22 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     private Iterator<? extends JEdge<G>> getJEdges(JVertex<G> jVertex) {
         Iterator<? extends JEdge<G>> result;
-        Set<JEdge<G>> edgeSet = this.addedJEdges.get(jVertex);
-        if (edgeSet == null) {
+        Set<JEdge<G>> outJEdges = this.freshOutJEdges.get(jVertex);
+        if (outJEdges == null) {
             result = jVertex.getContext();
         } else {
-            result = new NestedIterator<JEdge<G>>(edgeSet.iterator(), jVertex.getContext());
+            result = new NestedIterator<JEdge<G>>(outJEdges.iterator(), jVertex.getContext());
         }
         return result;
     }
 
     /**
-     * Adds a given JEdge to the fresh incident edges of a fresh JVertex.
-     * Does nothing if the JVertex is not fresh.
+     * Adds a given JEdge to the fresh outgoing edges of a JVertex.
      */
-    private void addJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
-        Set<JEdge<G>> jEdges = this.addedJEdges.get(jVertex);
+    private void addFreshOutJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
+        Set<JEdge<G>> jEdges = this.freshOutJEdges.get(jVertex);
         if (jEdges == null) {
-            this.addedJEdges.put(jVertex, jEdges = new HashSet<JEdge<G>>());
+            this.freshOutJEdges.put(jVertex, jEdges = new HashSet<JEdge<G>>());
         }
         jEdges.add(jEdge);
     }
@@ -500,8 +497,9 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * (empty) initial values.
      */
     protected void prepareInsert() {
-        this.addedJCells.clear();
         this.addedJEdges.clear();
+        this.addedJVertices.clear();
+        this.freshOutJEdges.clear();
         this.connections = new ConnectionSet();
     }
 
@@ -512,7 +510,15 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     @SuppressWarnings("unchecked")
     protected void doInsert(boolean replace) {
-        Object[] addedCells = this.addedJCells.toArray();
+        int vertexCount = this.addedJVertices.size();
+        int edgeCount = this.addedJEdges.size();
+        Object[] addedCells = new JCell<?>[vertexCount + edgeCount];
+        for (int i = 0; i < edgeCount; i++) {
+            addedCells[i] = this.addedJEdges.get(i);
+        }
+        for (int i = 0; i < vertexCount; i++) {
+            addedCells[edgeCount + i] = this.addedJVertices.get(i);
+        }
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null).execute();
         List<JEdge<G>> edges = new ArrayList<JEdge<G>>();
@@ -521,7 +527,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
                 edges.add((JEdge<G>) jCell);
             }
         }
-        toBackSilent(edges);
     }
 
     /**
@@ -587,14 +592,18 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Mapping from jVertices to incident jEdges.
      * Used in the process of constructing a GraphJModel.
      */
-    protected final Map<JVertex<G>,Set<JEdge<G>>> addedJEdges =
+    protected final Map<JVertex<G>,Set<JEdge<G>>> freshOutJEdges =
         new HashMap<JVertex<G>,Set<JEdge<G>>>();
     /**
-     * Set of GraphModel cells. Used in the process of constructing a
+     * Set of added jEdges. Used in the process of constructing a
      * GraphJModel.
-     * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
-    protected final List<JCell<G>> addedJCells = new LinkedList<JCell<G>>();
+    protected final List<JEdge<G>> addedJEdges = new ArrayList<JEdge<G>>();
+    /**
+     * Set of added jVertices. Used in the process of constructing a
+     * GraphJModel.
+     */
+    protected final List<JVertex<G>> addedJVertices = new ArrayList<JVertex<G>>();
     /**
      * Set of GraphModel connections. Used in the process of constructing a
      * GraphJModel.
