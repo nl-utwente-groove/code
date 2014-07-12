@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -36,7 +36,7 @@ import org.jgraph.graph.ParentMap;
 
 /**
  * A JGraph model for Shapes.
- * 
+ *
  * @author Eduardo Zambon
  */
 public class ShapeJModel extends JModel<Shape> {
@@ -92,10 +92,8 @@ public class ShapeJModel extends JModel<Shape> {
             ShapeEdge shapeEdge = (ShapeEdge) edge;
             ShapeJEdge jEdge = (ShapeJEdge) jCell;
             Shape shape = getGraph();
-            EdgeSignature outEs =
-                shape.getEdgeSignature(shapeEdge, EdgeMultDir.OUTGOING);
-            EdgeSignature inEs =
-                shape.getEdgeSignature(shapeEdge, EdgeMultDir.INCOMING);
+            EdgeSignature outEs = shape.getEdgeSignature(shapeEdge, EdgeMultDir.OUTGOING);
+            EdgeSignature inEs = shape.getEdgeSignature(shapeEdge, EdgeMultDir.INCOMING);
             ShapeJPort srcPort = getPort(outEs);
             ShapeJPort tgtPort = getPort(inEs);
             assert srcPort != null && tgtPort != null;
@@ -159,7 +157,7 @@ public class ShapeJModel extends JModel<Shape> {
             for (ShapeNode node : ec) {
                 this.parentMap.addEntry(getJCellForNode(node), ecJCell);
             }
-            this.addedJCells.add(ecJCell);
+            this.addedJVertices.add(ecJCell);
         }
     }
 
