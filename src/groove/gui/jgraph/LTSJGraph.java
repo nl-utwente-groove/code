@@ -124,6 +124,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         LTSJModel jModel = getModel();
         jModel.setLayoutable(false);
         jModel.loadGraph(jModel.getGraph());
+        refreshFiltering();
         refreshAllCells();
         refreshActive();
         doLayout(true);
@@ -360,11 +361,6 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
         if (!changedCells.isEmpty()) {
             setSelectionCells(activeCells.toArray());
-        }
-        if (result) {
-            refreshAllCells();
-        } else if (!changedCells.isEmpty()) {
-            refreshCells(changedCells);
         }
         return result;
     }
