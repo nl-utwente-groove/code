@@ -18,13 +18,12 @@ import groove.gui.list.SearchResult;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSChangeListener;
 import groove.lts.GTSCounter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-import groove.lts.Status.Flag;
 
 import java.io.File;
 import java.io.IOException;
@@ -1233,7 +1232,7 @@ public class SimulatorModel implements Cloneable {
             this.listeners.put(change, new ArrayList<SimulatorListener>());
         }
     }
-    private final MyLTSListener ltsListener = new MyLTSListener();
+    private final GTSChangeListener ltsListener = new GTSChangeListener();
     private final GTSCounter gtsCounter = new GTSCounter();
 
     /** Change type. */
@@ -1327,47 +1326,6 @@ public class SimulatorModel implements Cloneable {
                 }
             }
         }
-    }
-
-    /**
-     * LTS listener to observe changes to the GTS.
-     */
-    private class MyLTSListener extends GTSAdapter {
-        /** Empty constructor with the correct visibility. */
-        MyLTSListener() {
-            // empty
-        }
-
-        /** Clears the changed flag. */
-        public void clear() {
-            this.changed = false;
-        }
-
-        /**
-         * May only be called with the current lts as first parameter. Updates
-         * the frame title by showing the number of nodes and edges.
-         */
-        @Override
-        public void addUpdate(GTS gts, GraphState state) {
-            this.changed = true;
-        }
-
-        @Override
-        public void addUpdate(GTS gts, GraphTransition transition) {
-            this.changed = true;
-        }
-
-        @Override
-        public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
-            this.changed = true;
-        }
-
-        /** Indicates that a change has been registered. */
-        public boolean isChanged() {
-            return this.changed;
-        }
-
-        private boolean changed;
     }
 
 }

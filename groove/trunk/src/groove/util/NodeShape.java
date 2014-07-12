@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -191,7 +191,7 @@ public enum NodeShape {
         }
 
         /** Returns the intersection of a given vector {@code v1 = (x1,y1) + (dx1,dy1)}
-         * with the stored vector {@code (x2,y2) + (dx2,dy2)}, provided the point 
+         * with the stored vector {@code (x2,y2) + (dx2,dy2)}, provided the point
          * actually lies on the {@code v1} segment; or {@code null} otherwise.
          */
         private Point2D intersect(double x1, double y1, double dx1, double dy1) {
@@ -219,6 +219,7 @@ public enum NodeShape {
 
         private Rectangle2D bounds;
         private double x2, y2, dx2, dy2;
+        /** Flag indicating that a null return value of {@link #intersect} is allowed. */
         private boolean nonnull;
         private static final double EPS = 0.001;
     },
@@ -410,8 +411,8 @@ public enum NodeShape {
     OVAL;
 
     /**
-     * Computes the perimeter point on this shape, lying on the line from 
-     * a given source point in the direction of a target point. 
+     * Computes the perimeter point on this shape, lying on the line from
+     * a given source point in the direction of a target point.
      * If the source and target point coincide, the point to the east of
      * the source point is returned.
      * @param bounds bounds of the shape
@@ -432,8 +433,8 @@ public enum NodeShape {
     }
 
     /**
-     * Computes the perimeter point on this shape, lying on the line from 
-     * a given source point in the direction of a target point. 
+     * Computes the perimeter point on this shape, lying on the line from
+     * a given source point in the direction of a target point.
      * If the source and target point coincide, the point to the east of
      * the source point is returned.
      * @param bounds bounds of the shape
@@ -475,8 +476,8 @@ public enum NodeShape {
     }
 
     /**
-     * Computes the perimeter point on this shape, lying on the line from 
-     * the centre of the shape into the direction of a target point. 
+     * Computes the perimeter point on this shape, lying on the line from
+     * the centre of the shape into the direction of a target point.
      * If the source and target point coincide, the point to the east of
      * the source point is returned.
      * @param bounds bounds of the shape
@@ -496,7 +497,7 @@ public enum NodeShape {
     }
 
     /**
-     * Computes the perimeter point on this shape, lying on the line from 
+     * Computes the perimeter point on this shape, lying on the line from
      * the origin {@code (0,0)} into a given direction.
      * If the direction is {@code (0,0)}, the point to the east of
      * the origin is returned.
@@ -575,11 +576,11 @@ public enum NodeShape {
      * @param y2 Start point of the second line (y-coordinate)
      * @param dx2 vector of the second line (x-direction)
      * @param dy2 vector of the second line (y-direction)
-     * @return Intersection point of the two lines, of <code>null</code> if 
+     * @return Intersection point of the two lines, of <code>null</code> if
      * the lines do not intersect in the given interval.
      */
     public static Point2D lineIntersection(double x1, double y1, double dx1, double dy1, double x2,
-            double y2, double dx2, double dy2) {
+        double y2, double dx2, double dy2) {
         Point2D result = null;
         double below = dx2 * dy1 - dx1 * dy2;
         if (below != 0) {
