@@ -877,7 +877,7 @@ public class RuleTree extends AbstractResourceTree {
                     result.append("Error properties");
                     break;
                 case REMOVE:
-                    result.append("Postconditions");
+                    result.append("Enforced properties");
                     break;
                 }
             }

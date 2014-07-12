@@ -14,7 +14,7 @@ import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSChangeListener;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -90,7 +90,7 @@ public class ExploreAction extends SimulatorAction {
         ltsJModel.setExploring(true);
         this.bound = INITIAL_STATE_BOUND;
         // create a thread to do the work in the background
-        Thread generateThread = new ExploreThread(exploration);
+        ExploreThread generateThread = new ExploreThread(exploration);
         // go!
         exploration.addListener(getSimulatorModel().getExplorationStats());
         generateThread.start();
@@ -98,17 +98,15 @@ public class ExploreAction extends SimulatorAction {
         getSimulatorModel().getExplorationStats().report();
         // emphasise the result states, if required
         ltsJModel.setExploring(false);
-        getSimulatorModel().setGts(gts, true);
-        GraphState lastState = exploration.getLastState();
-        if (lastState != null) {
-            getSimulatorModel().setState(lastState);
-        }
-        if (emphasise) {
-            Collection<GraphState> result = exploration.getResult().getValue();
-            getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result), true);
-        }
-        if (isAnimated() && exploration.getLastState() != null) {
-            getSimulatorModel().setState(exploration.getLastState());
+        if (generateThread.isChanged()) {
+            getSimulatorModel().setGts(gts, true);
+            if (emphasise) {
+                Collection<GraphState> result = exploration.getResult().getValue();
+                getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result), true);
+            }
+            if (exploration.getLastState() != null) {
+                getSimulatorModel().setState(exploration.getLastState());
+            }
         }
     }
 
@@ -131,7 +129,7 @@ public class ExploreAction extends SimulatorAction {
         setEnabled(enabled);
         String toolTipText =
             String.format("%s (%s)", this.animated ? Options.ANIMATE_ACTION_NAME
-                    : Options.EXPLORE_ACTION_NAME,
+                : Options.EXPLORE_ACTION_NAME,
                 HTMLConverter.STRONG_TAG.on(exploration.getIdentifier()));
         if (compatibilityError != null) {
             toolTipText +=
@@ -144,6 +142,9 @@ public class ExploreAction extends SimulatorAction {
     final boolean isAnimated() {
         return this.animated;
     }
+
+    /** Flag indicating that the exploration is animated. */
+    private final boolean animated;
 
     /**
      * Returns the pause between animation steps, in milliseconds.
@@ -163,6 +164,9 @@ public class ExploreAction extends SimulatorAction {
         this.speed = Math.min(10, Math.max(speed, 1));
     }
 
+    /** Animation speed (between 1 and 10). */
+    private int speed = 2;
+
     /**
      * Returns the {@link JLabel} used to display the state count in the
      * cencel dialog; first creates the label if that is not yet done.
@@ -175,6 +179,9 @@ public class ExploreAction extends SimulatorAction {
         return this.stateCountLabel;
     }
 
+    /** Label displaying the number of transitions generated so far. */
+    private JLabel stateCountLabel;
+
     /**
      * Returns the {@link JLabel} used to display the state count in the
      * cencel dialog; first creates the label if that is not yet done.
@@ -186,6 +193,9 @@ public class ExploreAction extends SimulatorAction {
         }
         return this.transitionCountLabel;
     }
+
+    /** Label displaying the number of states generated so far. */
+    private JLabel transitionCountLabel;
 
     /**
      * Returns the frames-per-second slider for the animation dialog.
@@ -222,6 +232,9 @@ public class ExploreAction extends SimulatorAction {
         }
         return this.animationPanel;
     }
+
+    /** Slider for the animation speed. */
+    private JPanel animationPanel;
 
     /**
      * Displays the number of lts states and transitions in the message
@@ -279,16 +292,15 @@ public class ExploreAction extends SimulatorAction {
 
     private Exploration stateExploration;
 
-    /** Slider for the animation speed. */
-    private JPanel animationPanel;
-    /** Label displaying the number of states generated so far. */
-    private JLabel transitionCountLabel;
-    /** Label displaying the number of transitions generated so far. */
-    private JLabel stateCountLabel;
-    /** Flag indicating that the exploration is animated. */
-    private final boolean animated;
-    /** Animation speed (between 1 and 10). */
-    private int speed = 2;
+    private GTSListener getChangedListener() {
+        if (this.changedListener == null) {
+            this.changedListener = new GTSChangeListener();
+        }
+        return this.changedListener;
+    }
+
+    private GTSListener changedListener;
+
     /** Number of states after which exploration should halt. */
     private int bound;
 
@@ -306,9 +318,10 @@ public class ExploreAction extends SimulatorAction {
     /** Initial number of states after which exploration should halt. */
     private static final int INITIAL_STATE_BOUND = 1000;
 
-    private final class AnimateListener extends GTSAdapter {
+    private final class AnimateListener extends GTSChangeListener {
         @Override
         public void addUpdate(final GTS gts, final GraphState state) {
+            super.addUpdate(gts, state);
             displayProgress(gts);
             try {
                 try {
@@ -329,19 +342,22 @@ public class ExploreAction extends SimulatorAction {
 
         @Override
         public void addUpdate(final GTS gts, final GraphTransition transition) {
+            super.addUpdate(gts, transition);
             displayProgress(gts);
         }
     }
 
-    private final class ExploreListener extends GTSAdapter {
+    private final class ExploreListener extends GTSChangeListener {
         @Override
         public void addUpdate(GTS gts, final GraphState state) {
+            super.addUpdate(gts, state);
             displayProgress(gts);
             checkContinue(gts);
         }
 
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
+            super.addUpdate(gts, transition);
             displayProgress(gts);
         }
     }
@@ -385,6 +401,7 @@ public class ExploreAction extends SimulatorAction {
             GTS gts = simulatorModel.getGts();
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
+            gts.addLTSListener(getChangedListener());
             setInterrupted(false);
             GraphState state = simulatorModel.getState();
             try {
@@ -395,8 +412,14 @@ public class ExploreAction extends SimulatorAction {
                 showErrorDialog(exc, "Exploration strategy %s incompatible with grammar",
                     this.exploration.getIdentifier());
             }
+            gts.removeLTSListener(getChangedListener());
             gts.removeLTSListener(this.progressListener);
             disposeCancelDialog();
+        }
+
+        /** Indicates if the latest invocation affected a change in the GTS. */
+        final public boolean isChanged() {
+            return this.progressListener.isChanged();
         }
 
         /**
@@ -469,7 +492,7 @@ public class ExploreAction extends SimulatorAction {
          * Creates a graph listener that displays the progress of the generate
          * thread on the cancel dialog.
          */
-        private GTSListener createProgressListener() {
+        private GTSChangeListener createProgressListener() {
             return isAnimated() ? new AnimateListener() : new ExploreListener();
         }
 
@@ -480,7 +503,7 @@ public class ExploreAction extends SimulatorAction {
         /** Button that cancels the thread. */
         private JButton cancelButton;
         /** Progress listener for the generate thread. */
-        private final GTSListener progressListener;
+        private final GTSChangeListener progressListener;
     }
 
 }
