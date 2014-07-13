@@ -16,7 +16,9 @@
  */
 package groove.explore.config;
 
+import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
+import groove.util.ExprParser;
 import groove.util.Parser;
 
 import java.util.HashMap;
@@ -26,12 +28,13 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SettingParser implements Parser<Setting<?,?>> {
+public class SettingParser implements Parser<SettingList> {
     /**
      * Constructs a parser for explore values, using a given content parser.
      */
-    public SettingParser(SettingKey defaultKey) {
+    public SettingParser(SettingKey defaultKey, boolean multiple) {
         this.defaultKey = defaultKey;
+        this.multiple = multiple;
         this.keyType = defaultKey.getClass();
         this.keyMap = new HashMap<String,SettingKey>();
         this.parserMap = new HashMap<SettingKey,Parser<SettingContent>>();
@@ -40,10 +43,12 @@ public class SettingParser implements Parser<Setting<?,?>> {
             this.parserMap.put(key, new BracketParser<SettingContent>(key.parser()));
         }
         assert this.keyMap.size() > 0;
-        this.single = this.keyMap.size() == 1;
+        this.uniqueKey = this.keyMap.size() == 1;
 
-        this.defaultValue = defaultKey.createSetting(this.defaultKey.getDefaultValue());
-        if (this.single) {
+        this.defaultValue =
+            multiple ? SettingList.multiple()
+                : SettingList.single(defaultKey.createSetting(defaultKey.getDefaultValue()));
+        if (this.uniqueKey) {
             this.defaultString = defaultKey.parser().getDefaultString();
         } else {
             this.defaultString = defaultKey.getName() + getParser(defaultKey).getDefaultString();
@@ -53,7 +58,7 @@ public class SettingParser implements Parser<Setting<?,?>> {
     private final SettingKey defaultKey;
     private final Class<? extends SettingKey> keyType;
     /** Flag indicating that the key type has only a single value. */
-    private final boolean single;
+    private final boolean uniqueKey;
 
     private SettingKey getKey(String name) {
         return this.keyMap.get(name);
@@ -61,15 +66,23 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     private final Map<String,SettingKey> keyMap;
 
+    /** Returns the pre-initialised parser for a given setting key. */
     private Parser<SettingContent> getParser(SettingKey key) {
         return this.parserMap.get(key);
     }
 
     private final Map<SettingKey,Parser<SettingContent>> parserMap;
 
+    /** Indicates if this parser accepts multiple (whitespace-separated) setting values. */
+    private boolean isMultiple() {
+        return this.multiple;
+    }
+
+    private final boolean multiple;
+
     @Override
     public String getDescription(boolean uppercase) {
-        if (this.single) {
+        if (this.uniqueKey) {
             return this.defaultKey.parser().getDescription(uppercase);
         } else {
             StringBuilder result = new StringBuilder("<body>");
@@ -89,9 +102,34 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     @Override
     public boolean accepts(String text) {
+        boolean result = false;
         if (text == null || text.length() == 0) {
             return true;
-        } else if (this.single) {
+        } else if (isMultiple()) {
+            result = true;
+            try {
+                String[] parts = exprParser.split(text, " ");
+                for (int i = 0; i < parts.length; i++) {
+                    if (!acceptsSingle(parts[i])) {
+                        result = false;
+                        break;
+                    }
+                }
+            } catch (FormatException exc) {
+                // the string contains unbalanced quotes or brackets
+                result = false;
+            }
+        } else {
+            result = acceptsSingle(text);
+        }
+        return result;
+    }
+
+    /** Tests if a given string represents a single setting value. */
+    public boolean acceptsSingle(String text) {
+        if (text == null || text.length() == 0) {
+            return true;
+        } else if (this.uniqueKey) {
             return this.defaultKey.parser().accepts(text);
         } else {
             String name = getNamePrefix(text);
@@ -115,10 +153,28 @@ public class SettingParser implements Parser<Setting<?,?>> {
     }
 
     @Override
-    public Setting<?,?> parse(String text) {
+    public SettingList parse(String text) {
         if (text == null || text.length() == 0) {
             return getDefaultValue();
-        } else if (this.single) {
+        } else if (isMultiple()) {
+            try {
+                SettingList result = SettingList.multiple();
+                for (String part : exprParser.split(text, " ")) {
+                    result.add(parseSingle(part));
+                }
+                return result;
+            } catch (FormatException exc) {
+                // the string contains unbalanced quotes or brackets
+                return null;
+            }
+        } else {
+            return SettingList.single(parseSingle(text));
+        }
+    }
+
+    /** Parses a string holding a single setting value. */
+    public Setting<?,?> parseSingle(String text) {
+        if (this.uniqueKey) {
             return this.defaultKey.createSetting(this.defaultKey.parser().parse(text));
         } else {
             String name = getNamePrefix(text);
@@ -132,7 +188,7 @@ public class SettingParser implements Parser<Setting<?,?>> {
     public String toParsableString(Object value) {
         if (isDefault(value)) {
             return "";
-        } else if (this.single) {
+        } else if (this.uniqueKey) {
             return this.defaultKey.parser().toParsableString(value);
         } else {
             Setting<?,?> val = (Setting<?,?>) value;
@@ -155,11 +211,11 @@ public class SettingParser implements Parser<Setting<?,?>> {
     }
 
     @Override
-    public Setting<?,?> getDefaultValue() {
+    public SettingList getDefaultValue() {
         return this.defaultValue;
     }
 
-    private final Setting<?,?> defaultValue;
+    private final SettingList defaultValue;
 
     @Override
     public String getDefaultString() {
@@ -172,4 +228,6 @@ public class SettingParser implements Parser<Setting<?,?>> {
     public boolean isDefault(Object value) {
         return getDefaultValue().equals(value);
     }
+
+    private static final ExprParser exprParser = new ExprParser("\"", "()");
 }

@@ -17,7 +17,7 @@
 package groove.explore;
 
 import groove.explore.config.ExploreKey;
-import groove.explore.config.Setting;
+import groove.explore.config.SettingList;
 import groove.explore.config.StrategyKey;
 
 import java.util.EnumMap;
@@ -31,7 +31,7 @@ import java.util.Map;
 public class ExploreConfig {
     /** Creates a configuration with all default values. */
     public ExploreConfig() {
-        this.pars = new EnumMap<ExploreKey,Setting<?,?>>(ExploreKey.class);
+        this.pars = new EnumMap<ExploreKey,SettingList>(ExploreKey.class);
         for (ExploreKey key : ExploreKey.values()) {
             this.pars.put(key, key.getDefaultValue());
         }
@@ -39,14 +39,14 @@ public class ExploreConfig {
 
     /** Returns the currently set search strategy. */
     public StrategyKey getStrategy() {
-        return (StrategyKey) this.pars.get(ExploreKey.STRATEGY);
+        return (StrategyKey) this.pars.get(ExploreKey.STRATEGY).single();
     }
 
     /** Sets the search strategy to a non-{@code null} value. */
     public void setStrategy(StrategyKey order) {
-        this.pars.put(ExploreKey.STRATEGY, order);
+        this.pars.put(ExploreKey.STRATEGY, SettingList.single(order));
     }
 
     /** Parameter map of this configuration. */
-    private final Map<ExploreKey,Setting<?,?>> pars;
+    private final Map<ExploreKey,SettingList> pars;
 }
