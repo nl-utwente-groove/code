@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -45,8 +45,7 @@ public class LabelPattern {
      * Constructs a new pattern, with a given format string
      * and list of attribute field names.
      */
-    public LabelPattern(String format, List<String> argNames)
-        throws FormatException {
+    public LabelPattern(String format, List<String> argNames) throws FormatException {
         this.format = format;
         this.argNames.addAll(argNames);
         List<Object> testValues1 = new ArrayList<Object>();
@@ -60,8 +59,7 @@ public class LabelPattern {
             getLabel(testValues1.toArray());
             getLabel(testValues2.toArray());
         } catch (IllegalFormatException exc) {
-            throw new FormatException(
-                "Format string \"%s\" not valid for %d arguments", format,
+            throw new FormatException("Format string \"%s\" not valid for %d arguments", format,
                 argNames.size());
         }
     }
@@ -76,7 +74,7 @@ public class LabelPattern {
         return this.argNames;
     }
 
-    /** 
+    /**
      * Returns the label text constructed by instantiating the format
      * string with a list of values.
      * @throws IllegalFormatException if the format cannot be instantiated
@@ -86,7 +84,7 @@ public class LabelPattern {
         return String.format(getFormat(), values);
     }
 
-    /** 
+    /**
      * Returns the label text constructed by looking up the argument values
      * among the outgoing edges of a given node.
      */
@@ -95,8 +93,7 @@ public class LabelPattern {
         for (HostEdge outEdge : host.outEdgeSet(source)) {
             Integer position = this.argPositions.get(outEdge.label().text());
             if (position != null && outEdge.target() instanceof ValueNode) {
-                values[position] =
-                    ((ValueNode) outEdge.target()).getTerm().toDisplayString();
+                values[position] = ((ValueNode) outEdge.target()).getTerm().toDisplayString();
             }
         }
         return getLabel(values);
@@ -178,11 +175,10 @@ public class LabelPattern {
 
     private final String format;
     private final List<String> argNames = new ArrayList<String>();
-    private final Map<String,Integer> argPositions =
-        new HashMap<String,Integer>();
+    private final Map<String,Integer> argPositions = new HashMap<String,Integer>();
 
     /**
-     * Parses a string of the form {@code "format",id1,id2,...'} into a 
+     * Parses a string of the form {@code "format",id1,id2,...'} into a
      * label pattern with format string {@code "format"} and argument
      * names {@code id1}, {@code id2} etc.
      */
@@ -190,12 +186,10 @@ public class LabelPattern {
         Pair<String,List<String>> result = parser.parse(text);
         String resultText = result.one();
         List<String> resultArgs = result.two();
-        if (resultText.charAt(0) != ExprParser.PLACEHOLDER
-            || resultArgs.size() != 1) {
+        if (resultText.charAt(0) != ExprParser.PLACEHOLDER || resultArgs.size() != 1) {
             throw new FormatException("Incorrect label pattern %s", text);
         }
-        String format =
-            result.two().get(0).substring(1, result.two().get(0).length() - 1);
+        String format = result.two().get(0).substring(1, result.two().get(0).length() - 1);
         String[] split = resultText.split(",", -1);
         if (split.length == 0 || split[0].length() != 1) {
             throw new FormatException("Incorrect label pattern %s", text);
@@ -205,8 +199,7 @@ public class LabelPattern {
             if (isIdentifier(split[i])) {
                 argNames.add(split[i]);
             } else {
-                throw new FormatException(
-                    "Incorrect attribute name '%s' in label pattern %s",
+                throw new FormatException("Incorrect attribute name '%s' in label pattern %s",
                     split[i], text);
             }
         }
@@ -224,6 +217,5 @@ public class LabelPattern {
         return result;
     }
 
-    private static ExprParser parser = new ExprParser(ExprParser.PLACEHOLDER,
-        new char[] {'"'});
+    private static ExprParser parser = new ExprParser("\"");
 }

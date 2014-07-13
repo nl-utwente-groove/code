@@ -24,30 +24,32 @@ import groove.util.PropertyKey;
  * Key type of the exploration configuration.
  * @author Arend Rensink
  */
-public enum ExploreKey implements PropertyKey<Setting<?,?>> {
+public enum ExploreKey implements PropertyKey<SettingList> {
     /** The basic search strategy. */
-    STRATEGY("strategy", "Basic exploration strategy", StrategyKey.DEPTH_FIRST),
+    STRATEGY("strategy", "Basic exploration strategy", StrategyKey.DEPTH_FIRST, false),
     /** The acceptor for results. */
-    RANDOM("random", "Pick random successor of explored state?", null),
+    RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, false),
     /** The acceptor for results. */
-    ACCEPTOR("accept", "Acceptor for result values", null),
+    ACCEPTOR("accept", "Acceptor for result values", null, false),
     /** The matching strategy. */
-    MATCHER("match", "Match strategy", null),
+    MATCHER("match", "Match strategy", MatchKind.PLAN, false),
     /** The algebra for data values. */
-    ALGEBRA("algebra", "Algebra for data values", null),
+    ALGEBRA("algebra", "Algebra for data values", null, false),
     /** Collapsing of isomorphic states. */
-    ISO("iso", "Collapse isomorphic states?", null),
+    ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, false),
     /** Conditions for where to stop exploring. */
-    BOUNDARY("bound", "Acceptor for result values", null),
+    BOUNDARY("bound", "Boundary conditions for exploration", null, true),
     /** Number of results after which to stop exploring. */
-    COUNT("count", "Number of results before halting; 0 means unbounded", ResultCountKey.COUNT), ;
+    COUNT("count", "Number of results before halting; 0 means unbounded", ResultCountKey.COUNT,
+        false), ;
 
-    private ExploreKey(String name, String explanation, SettingKey defaultKey) {
+    private ExploreKey(String name, String explanation, SettingKey defaultKey, boolean multiple) {
         this.name = name;
         this.keyPhrase = Groove.unCamel(name, false);
         this.explanation = explanation;
-        this.defaultValue = defaultKey.createSetting(defaultKey.getDefaultValue());
-        this.parser = new SettingParser(defaultKey);
+        this.parser = new SettingParser(defaultKey, multiple);
+        this.defaultValue = this.parser.getDefaultValue();
+        this.multiple = multiple;
     }
 
     @Override
@@ -77,21 +79,30 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     private final String explanation;
 
     @Override
-    public Parser<? extends Setting<?,?>> parser() {
+    public Parser<SettingList> parser() {
         return this.parser;
     }
 
-    private final Parser<? extends Setting<?,?>> parser;
+    private final Parser<SettingList> parser;
 
     @Override
-    public Setting<?,?> getDefaultValue() {
+    public SettingList getDefaultValue() {
         return this.defaultValue;
     }
+
+    private final SettingList defaultValue;
 
     @Override
     public boolean isValue(Object value) {
         return parser().isValue(value);
     }
 
-    private final Setting<?,?> defaultValue;
+    /**
+     * Indicates if this key may have multiple values.
+     */
+    public boolean isMultiple() {
+        return this.multiple;
+    }
+
+    private final boolean multiple;
 }

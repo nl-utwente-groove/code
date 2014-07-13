@@ -16,6 +16,7 @@
  */
 package groove.util;
 
+import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
 
 import java.util.Arrays;
@@ -102,9 +103,24 @@ abstract public interface Parser<T> {
     public static BooleanParser boolFalse = new BooleanParser(false);
 
     /** Identity string parser. */
-    static public class StringParser implements Parser<String> {
-        private StringParser(boolean trim) {
+    static abstract public class AbstractStringParser<S> implements Parser<S> {
+        /**
+         * Constructor for subclassing.
+         * @param trim if {@code true}, spaces are stripped of the values.
+         */
+        protected AbstractStringParser(boolean trim) {
+            this("", trim);
+        }
+
+        /**
+         * Constructor for subclassing.
+         * @param defaultString the default string value
+         * @param trim if {@code true}, spaces are stripped of the values.
+         */
+        protected AbstractStringParser(String defaultString, boolean trim) {
             this.trim = trim;
+            this.defaultValue = createContent(defaultString);
+            this.defaultString = defaultString;
         }
 
         private final boolean trim;
@@ -115,9 +131,16 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String parse(String text) {
-            return text == null ? getDefaultValue() : this.trim ? text.trim() : text;
+        public S parse(String text) {
+            if (text == null || text.length() == 0) {
+                return getDefaultValue();
+            } else {
+                return createContent(this.trim ? text.trim() : text);
+            }
         }
+
+        /** Callback factory method to create the right content object. */
+        protected abstract S createContent(String value);
 
         @Override
         public String getDescription(boolean uppercase) {
@@ -125,23 +148,53 @@ abstract public interface Parser<T> {
         }
 
         @Override
+        public S getDefaultValue() {
+            return this.defaultValue;
+        }
+
+        private final S defaultValue;
+
+        @Override
+        public String getDefaultString() {
+            return this.defaultString;
+        }
+
+        private final String defaultString;
+
+        @Override
+        public boolean isDefault(Object value) {
+            return getDefaultValue().equals(value);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
         public String toParsableString(Object value) {
-            return (String) value;
+            return "" + extractValue((S) value);
+        }
+
+        /** Callback method to extract an integer value from a content object. */
+        protected abstract String extractValue(S content);
+    }
+
+    /** Identity string parser. */
+    static public class StringParser extends AbstractStringParser<String> {
+        private StringParser(boolean trim) {
+            super(trim);
+        }
+
+        @Override
+        protected String createContent(String value) {
+            return value;
+        }
+
+        @Override
+        protected String extractValue(String content) {
+            return content;
         }
 
         @Override
         public boolean isValue(Object value) {
             return value == null || value instanceof String;
-        }
-
-        @Override
-        public String getDefaultValue() {
-            return "";
-        }
-
-        @Override
-        public String getDefaultString() {
-            return "";
         }
 
         @Override
@@ -151,9 +204,22 @@ abstract public interface Parser<T> {
     }
 
     /** Integer parser. */
-    static public class IntParser implements Parser<Integer> {
-        private IntParser(boolean neg) {
+    static abstract public class AbstractIntParser<I> implements Parser<I> {
+        /** Creates a parser, with a parameter to determine if
+         * negative values are allowed.
+         * @param neg if {@code true}, the parser allows negative values.
+         */
+        protected AbstractIntParser(int defaultValue, boolean neg) {
             this.neg = neg;
+            this.defaultValue = createContent(defaultValue);
+            this.defaultString = "" + defaultValue;
+        }
+
+        /**
+         * Indicates if negative numbers are allowed.
+         */
+        final protected boolean allowsNeg() {
+            return this.neg;
         }
 
         private final boolean neg;
@@ -172,14 +238,21 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Integer parse(String text) {
-            return text == null || text.length() == 0 ? getDefaultValue() : Integer.parseInt(text);
+        public I parse(String text) {
+            if (text == null || text.length() == 0) {
+                return getDefaultValue();
+            } else {
+                return createContent(Integer.parseInt(text));
+            }
         }
+
+        /** Callback factory method to create the right content object. */
+        protected abstract I createContent(int value);
 
         @Override
         public String getDescription(boolean uppercase) {
             StringBuffer result = new StringBuffer(this.neg ? "Integer value" : "Natural number");
-            result.append(" (default 0)");
+            result.append(" (default " + getDefaultString() + ")");
             if (!uppercase) {
                 result.setCharAt(0, Character.toLowerCase(result.charAt(0)));
             }
@@ -187,28 +260,58 @@ abstract public interface Parser<T> {
         }
 
         @Override
+        public I getDefaultValue() {
+            return this.defaultValue;
+        }
+
+        private final I defaultValue;
+
+        @Override
+        public String getDefaultString() {
+            return this.defaultString;
+        }
+
+        private final String defaultString;
+
+        @Override
+        public boolean isDefault(Object value) {
+            return value != null && value.equals(getDefaultValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
         public String toParsableString(Object value) {
-            return value == null ? null : value.toString();
+            return "" + extractValue((I) value);
+        }
+
+        /** Callback method to extract an integer value from a content object. */
+        protected abstract int extractValue(I content);
+    }
+
+    /** Integer parser. */
+    static public class IntParser extends AbstractIntParser<Integer> {
+        private IntParser(boolean neg) {
+            super(0, neg);
         }
 
         @Override
         public boolean isValue(Object value) {
-            return value == null || value instanceof Integer;
-        }
-
-        @Override
-        public Integer getDefaultValue() {
-            return 0;
-        }
-
-        @Override
-        public String getDefaultString() {
-            return "0";
+            return value instanceof Integer && (allowsNeg() || ((Integer) value).intValue() >= 0);
         }
 
         @Override
         public boolean isDefault(Object value) {
             return value instanceof Integer && ((Integer) value).intValue() == 0;
+        }
+
+        @Override
+        protected Integer createContent(int value) {
+            return new Integer(value);
+        }
+
+        @Override
+        protected int extractValue(Integer content) {
+            return content;
         }
     }
 
@@ -221,8 +324,13 @@ abstract public interface Parser<T> {
 
         @Override
         public List<String> parse(String text) {
-            return text == null || text.length() == 0 ? getDefaultValue()
-                : Arrays.asList(text.trim().split("\\s"));
+            try {
+                return text == null || text.length() == 0 ? getDefaultValue()
+                    : Arrays.asList(exprParser.split(text, " "));
+            } catch (FormatException exc) {
+                assert false; // we recognise no quotes or brackets, so exceptions can't occur
+                return null;
+            }
         }
 
         @Override
@@ -264,6 +372,9 @@ abstract public interface Parser<T> {
         public boolean isDefault(Object value) {
             return value instanceof List && ((List<?>) value).size() == 0;
         }
+
+        /** String parser recognising no quotes or brackets. */
+        private static ExprParser exprParser = new ExprParser("");
     }
 
     /**

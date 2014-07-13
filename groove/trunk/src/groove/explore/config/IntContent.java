@@ -32,7 +32,7 @@ public class IntContent implements SettingContent {
     }
 
     /** Returns the value wrapped into this content. */
-    public int getValue() {
+    public int value() {
         return this.value;
     }
 
@@ -70,60 +70,30 @@ public class IntContent implements SettingContent {
     }
 
     /** Parser for non-negative integer content. */
-    public static final Parser<IntContent> NAT_PARSER = new IntParser(Parser.natural);
+    public static final Parser<IntContent> NAT_PARSER = new IntParser(false);
     /** Parser for arbitrary integer content. */
-    public static final Parser<IntContent> INT_PARSER = new IntParser(Parser.integer);
+    public static final Parser<IntContent> INT_PARSER = new IntParser(true);
 
-    private static class IntParser implements Parser<IntContent> {
-        IntParser(groove.util.Parser.IntParser inner) {
-            this.inner = inner;
-            this.defaultValue = new IntContent(inner.getDefaultValue());
-        }
-
-        private final groove.util.Parser.IntParser inner;
-
-        @Override
-        public String getDescription(boolean uppercase) {
-            return this.inner.getDescription(uppercase);
+    private static class IntParser extends Parser.AbstractIntParser<IntContent> {
+        IntParser(boolean neg) {
+            super(0, neg);
         }
 
         @Override
-        public boolean accepts(String text) {
-            return this.inner.accepts(text);
+        protected IntContent createContent(int value) {
+            return new IntContent(value);
         }
 
         @Override
-        public IntContent parse(String text) {
-            return new IntContent(this.inner.parse(text));
-        }
-
-        @Override
-        public String toParsableString(Object value) {
-            return this.inner.toParsableString(((IntContent) value).getValue());
+        protected int extractValue(IntContent content) {
+            return content.value();
         }
 
         @Override
         public boolean isValue(Object value) {
             return value instanceof IntContent
-                && this.inner.isValue(((IntContent) value).getValue());
+                && (allowsNeg() || ((IntContent) value).value() >= 0);
         }
 
-        @Override
-        public IntContent getDefaultValue() {
-            return this.defaultValue;
-        }
-
-        private final IntContent defaultValue;
-
-        @Override
-        public String getDefaultString() {
-            return this.inner.getDefaultString();
-        }
-
-        @Override
-        public boolean isDefault(Object value) {
-            return value instanceof IntContent
-                && this.inner.isDefault(((IntContent) value).getValue());
-        }
     }
 }
