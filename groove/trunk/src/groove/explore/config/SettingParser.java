@@ -198,6 +198,11 @@ public class SettingParser implements Parser<SettingList> {
     }
 
     @Override
+    public Class<? extends SettingList> getValueType() {
+        return SettingList.class;
+    }
+
+    @Override
     public boolean isValue(Object value) {
         boolean result = value instanceof Setting;
         if (result) {

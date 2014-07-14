@@ -76,7 +76,7 @@ public class IntContent implements SettingContent {
 
     private static class IntParser extends Parser.AbstractIntParser<IntContent> {
         IntParser(boolean neg) {
-            super(0, neg);
+            super(IntContent.class, 0, neg);
         }
 
         @Override

@@ -19,11 +19,14 @@ package groove.gui.dialog;
 import groove.explore.ExploreConfig;
 import groove.explore.config.BooleanKey;
 import groove.explore.config.ExploreKey;
+import groove.explore.config.NullContent;
 import groove.explore.config.SettingKey;
 import groove.explore.config.SettingList;
 import groove.gui.action.Refreshable;
 import groove.util.Groove;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -37,8 +40,12 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 
 /**
  * Dialog to manage exploration configurations.
@@ -65,14 +72,26 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     }
 
     @Override
-    protected JPanel createMainPanel() {
-        JPanel result = new JPanel();
-        result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
-        result.add(createButtonPanel(ExploreKey.STRATEGY, "Search strategy"));
-        result.add(createCheckboxPanel(ExploreKey.RANDOM, "Randomisation"));
-        result.add(createButtonPanel(ExploreKey.ALGEBRA, "Algebra"));
-        result.add(createCheckboxPanel(ExploreKey.ISO, "Isomorphism checking"));
-        result.add(Box.createGlue());
+    protected JComponent createMainPanel() {
+        JTabbedPane result = new JTabbedPane();
+        // panel with basic settings
+        JPanel basicPanel = new JPanel();
+        basicPanel.setBorder(createEmptyBorder());
+        basicPanel.setLayout(new BoxLayout(basicPanel, BoxLayout.Y_AXIS));
+        basicPanel.add(createButtonPanel(ExploreKey.STRATEGY, "Search strategy"));
+        basicPanel.add(createCheckboxPanel(ExploreKey.RANDOM, "Randomisation"));
+        basicPanel.add(createButtonPanel(ExploreKey.ACCEPTOR, "Acceptor"));
+        basicPanel.add(createButtonPanel(ExploreKey.COUNT, "Result count"));
+        basicPanel.add(Box.createGlue());
+        // panel with advanced settings
+        JPanel advancedPanel = new JPanel();
+        advancedPanel.setBorder(createEmptyBorder());
+        advancedPanel.setLayout(new BoxLayout(advancedPanel, BoxLayout.Y_AXIS));
+        advancedPanel.add(createButtonPanel(ExploreKey.ALGEBRA, "Algebra"));
+        advancedPanel.add(createCheckboxPanel(ExploreKey.ISO, "Isomorphism checking"));
+        advancedPanel.add(Box.createGlue());
+        result.add(basicPanel, "Basic");
+        result.add(advancedPanel, "Advanced");
         return result;
     }
 
@@ -104,13 +123,24 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     }
 
     private JPanel createButtonPanel(ExploreKey exploreKey, String title) {
-        JPanel result = new JPanel();
-        result.setBorder(BorderFactory.createTitledBorder(title));
-        result.setLayout(new BoxLayout(result, BoxLayout.X_AXIS));
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+        boolean hasContent = false;
         for (SettingKey kind : exploreKey.getKindType().getEnumConstants()) {
-            result.add(getButton(exploreKey, kind));
+            buttons.add(getButton(exploreKey, kind));
+            hasContent |= kind.getContentType() != NullContent.class;
         }
-        result.add(Box.createGlue());
+        buttons.add(Box.createGlue());
+        JPanel result;
+        if (hasContent) {
+            result = new JPanel();
+            result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
+            result.add(buttons);
+            result.add(getTextPanel(exploreKey));
+        } else {
+            result = buttons;
+        }
+        result.setBorder(BorderFactory.createTitledBorder(title));
         result.setMaximumSize(new Dimension(result.getMaximumSize().width,
             result.getPreferredSize().height));
         return result;
@@ -162,7 +192,9 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         Map<ButtonModel,SettingList> settingMap = new HashMap<ButtonModel,SettingList>();
         ButtonGroup buttonGroup = new ButtonGroup();
         for (SettingKey kind : exploreKey.getKindType().getEnumConstants()) {
-            JRadioButton button = new SettingButton(kind, kind == exploreKey.getDefaultKind());
+            JRadioButton button =
+                new SettingButton(kind, kind == exploreKey.getDefaultKind(), getTextField(
+                    exploreKey, kind));
             buttonGroup.add(button);
             buttonMap.put(kind, button);
             settingMap.put(button.getModel(), kind.getDefaultSetting());
@@ -196,13 +228,59 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     }
 
     private final Map<ExploreKey,SettingCheckbox> checkBoxMap =
-        new EnumMap<ExploreKey,ExploreConfigDialog.SettingCheckbox>(ExploreKey.class);
+        new EnumMap<ExploreKey,SettingCheckbox>(ExploreKey.class);
+
+    private JPanel getTextPanel(ExploreKey key) {
+        if (!this.textPanelMap.containsKey(key)) {
+            initTextFields(key);
+        }
+        return this.textPanelMap.get(key);
+    }
+
+    private SettingTextField getTextField(ExploreKey key, SettingKey kind) {
+        if (!this.textFieldMap.containsKey(key)) {
+            initTextFields(key);
+        }
+        if (this.textFieldMap.get(key) == null) {
+            return null;
+        } else {
+            return this.textFieldMap.get(key).get(kind);
+        }
+    }
+
+    /**
+     * Initialises the text field-related components for a given exploration key.
+     */
+    private void initTextFields(ExploreKey key) {
+        JPanel result = new JPanel(new CardLayout());
+        Map<SettingKey,SettingTextField> map = new HashMap<SettingKey,SettingTextField>();
+        boolean hasContent = false;
+        for (SettingKey k : key.getKindType().getEnumConstants()) {
+            SettingTextField card = new SettingTextField(result, k);
+            map.put(k, card);
+            result.add(card, k.getName());
+            hasContent |= k.getContentType() != NullContent.class;
+        }
+        if (hasContent) {
+            this.textPanelMap.put(key, result);
+            this.textFieldMap.put(key, map);
+        } else {
+            this.textPanelMap.put(key, null);
+            this.textFieldMap.put(key, null);
+        }
+    }
+
+    private final Map<ExploreKey,JPanel> textPanelMap = new EnumMap<ExploreKey,JPanel>(
+        ExploreKey.class);
+
+    private final Map<ExploreKey,Map<SettingKey,SettingTextField>> textFieldMap =
+        new EnumMap<ExploreKey,Map<SettingKey,SettingTextField>>(ExploreKey.class);
 
     /** Selects a given setting for a given exploration key. */
     private void setSelected(ExploreKey key, SettingList value) {
         switch (key) {
-        //case ACCEPTOR:
-        case ALGEBRA:
+        case ACCEPTOR:
+            getTextField(key, value.single().getKey()).moveToTop();
             break;
         //case BOUNDARY:
         case COUNT:
@@ -212,6 +290,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         case RANDOM:
             getCheckbox(key).setSelected((BooleanKey) value.single() == BooleanKey.TRUE);
             break;
+        case ALGEBRA:
         case STRATEGY:
             getButton(key, (SettingKey) value.single()).setSelected(true);
             break;
@@ -253,7 +332,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     }
 
     private class SettingButton extends JRadioButton implements Refreshable {
-        SettingButton(SettingKey kind, boolean isDefault) {
+        SettingButton(SettingKey kind, boolean isDefault, final SettingTextField field) {
             super(Groove.convertCase(kind.getName(), true));
             if (isDefault) {
                 setSelected(true);
@@ -261,7 +340,42 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
             addItemListener(getDirtyListener());
             setToolTipText(Groove.convertCase(kind.getExplanation(), true));
             addRefreshable(this);
+            if (field != null) {
+                addItemListener(new ItemListener() {
+                    @Override
+                    public void itemStateChanged(ItemEvent e) {
+                        field.moveToTop();
+                    }
+                });
+            }
         }
+
+        @Override
+        public void refresh() {
+            setEnabled(hasSelectedName());
+        }
+    }
+
+    private class SettingTextField extends JPanel implements Refreshable {
+        SettingTextField(JPanel parent, SettingKey kind) {
+            super(new BorderLayout());
+            if (kind.getContentType() != NullContent.class) {
+                add(new JLabel(Groove.convertCase(kind.getName(), true) + ": "), BorderLayout.WEST);
+                add(new JTextField(), BorderLayout.CENTER);
+            }
+            this.parent = parent;
+            this.kind = kind;
+            addRefreshable(this);
+        }
+
+        /** Moves this text field to the top of the card layout. */
+        public void moveToTop() {
+            CardLayout layout = (CardLayout) this.parent.getLayout();
+            layout.show(this.parent, this.kind.getName());
+        }
+
+        private final JPanel parent;
+        private final SettingKey kind;
 
         @Override
         public void refresh() {

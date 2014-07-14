@@ -52,6 +52,11 @@ public class NullContent implements SettingContent {
         }
 
         @Override
+        public Class<NullContent> getValueType() {
+            return NullContent.class;
+        }
+
+        @Override
         public boolean isValue(Object value) {
             return value == null;
         }

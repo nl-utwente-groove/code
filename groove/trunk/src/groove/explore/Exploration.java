@@ -346,6 +346,11 @@ public class Exploration {
             }
 
             @Override
+            public Class<Exploration> getValueType() {
+                return Exploration.class;
+            }
+
+            @Override
             public boolean isValue(Object value) {
                 return value == null || value instanceof Exploration;
             }

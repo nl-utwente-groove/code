@@ -65,7 +65,7 @@ public class StringContent implements SettingContent {
 
     /** Returns a parser wrapping strings into {@link StringContent} objects. */
     public final static Parser<StringContent> PARSER =
-        new Parser.AbstractStringParser<StringContent>("", true) {
+        new Parser.AbstractStringParser<StringContent>(StringContent.class, "", true) {
             @Override
             public boolean isValue(Object value) {
                 return value instanceof StringContent;

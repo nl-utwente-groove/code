@@ -97,4 +97,9 @@ public enum StrategyKey implements SettingKey, Setting<StrategyKey,NullContent> 
     public boolean isValue(Object value) {
         return value == null;
     }
+
+    @Override
+    public Class<NullContent> getContentType() {
+        return NullContent.class;
+    }
 }

@@ -81,4 +81,9 @@ public enum ResultCountKey implements SettingKey {
         }
         return new DefaultSetting<ResultCountKey,IntContent>(this, (IntContent) content);
     }
+
+    @Override
+    public Class<? extends IntContent> getContentType() {
+        return parser().getValueType();
+    }
 }

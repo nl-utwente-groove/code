@@ -25,6 +25,9 @@ import groove.util.Parser;
  * @version $Revision $
  */
 public interface SettingKey extends ParsableKey<SettingContent> {
+    /** Returns the type of content that this key expects. */
+    public Class<? extends SettingContent> getContentType();
+
     /** Returns the default setting for this key, if any.
      * Convenience method for {@code createSetting(getDefaultValue())}.
      * @see #createSetting(SettingContent)
