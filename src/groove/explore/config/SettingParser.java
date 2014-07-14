@@ -30,12 +30,12 @@ import java.util.Map;
  */
 public class SettingParser implements Parser<SettingList> {
     /**
-     * Constructs a parser for explore values, using a given content parser.
+     * Constructs a parser for explore values.
      */
-    public SettingParser(SettingKey defaultKey, boolean multiple) {
-        this.defaultKey = defaultKey;
+    public SettingParser(SettingKey defaultKind, boolean multiple) {
+        this.defaultKind = defaultKind;
         this.multiple = multiple;
-        this.keyType = defaultKey.getClass();
+        this.keyType = defaultKind.getClass();
         this.keyMap = new HashMap<String,SettingKey>();
         this.parserMap = new HashMap<SettingKey,Parser<SettingContent>>();
         for (SettingKey key : this.keyType.getEnumConstants()) {
@@ -47,15 +47,15 @@ public class SettingParser implements Parser<SettingList> {
 
         this.defaultValue =
             multiple ? SettingList.multiple()
-                : SettingList.single(defaultKey.createSetting(defaultKey.getDefaultValue()));
+                : SettingList.single(defaultKind.createSetting(defaultKind.getDefaultValue()));
         if (this.uniqueKey) {
-            this.defaultString = defaultKey.parser().getDefaultString();
+            this.defaultString = defaultKind.parser().getDefaultString();
         } else {
-            this.defaultString = defaultKey.getName() + getParser(defaultKey).getDefaultString();
+            this.defaultString = defaultKind.getName() + getParser(defaultKind).getDefaultString();
         }
     }
 
-    private final SettingKey defaultKey;
+    private final SettingKey defaultKind;
     private final Class<? extends SettingKey> keyType;
     /** Flag indicating that the key type has only a single value. */
     private final boolean uniqueKey;
@@ -66,9 +66,9 @@ public class SettingParser implements Parser<SettingList> {
 
     private final Map<String,SettingKey> keyMap;
 
-    /** Returns the pre-initialised parser for a given setting key. */
-    private Parser<SettingContent> getParser(SettingKey key) {
-        return this.parserMap.get(key);
+    /** Returns the pre-initialised parser for a given setting kind. */
+    private Parser<SettingContent> getParser(SettingKey kind) {
+        return this.parserMap.get(kind);
     }
 
     private final Map<SettingKey,Parser<SettingContent>> parserMap;
@@ -83,7 +83,7 @@ public class SettingParser implements Parser<SettingList> {
     @Override
     public String getDescription(boolean uppercase) {
         if (this.uniqueKey) {
-            return this.defaultKey.parser().getDescription(uppercase);
+            return this.defaultKind.parser().getDescription(uppercase);
         } else {
             StringBuilder result = new StringBuilder("<body>");
             result.append(uppercase ? "A " : "a ");
@@ -130,7 +130,7 @@ public class SettingParser implements Parser<SettingList> {
         if (text == null || text.length() == 0) {
             return true;
         } else if (this.uniqueKey) {
-            return this.defaultKey.parser().accepts(text);
+            return this.defaultKind.parser().accepts(text);
         } else {
             String name = getNamePrefix(text);
             SettingKey key = getKey(name);
@@ -175,12 +175,12 @@ public class SettingParser implements Parser<SettingList> {
     /** Parses a string holding a single setting value. */
     public Setting<?,?> parseSingle(String text) {
         if (this.uniqueKey) {
-            return this.defaultKey.createSetting(this.defaultKey.parser().parse(text));
+            return this.defaultKind.createSetting(this.defaultKind.parser().parse(text));
         } else {
             String name = getNamePrefix(text);
-            SettingKey key = getKey(name);
-            SettingContent content = this.parserMap.get(key).parse(text.substring(name.length()));
-            return key.createSetting(content);
+            SettingKey kind = getKey(name);
+            SettingContent content = this.parserMap.get(kind).parse(text.substring(name.length()));
+            return kind.createSetting(content);
         }
     }
 
@@ -189,11 +189,12 @@ public class SettingParser implements Parser<SettingList> {
         if (isDefault(value)) {
             return "";
         } else if (this.uniqueKey) {
-            return this.defaultKey.parser().toParsableString(value);
+            Setting<?,?> val = (Setting<?,?>) value;
+            return this.defaultKind.parser().toParsableString(val.getContent());
         } else {
             Setting<?,?> val = (Setting<?,?>) value;
-            return val.getKey().getName()
-                + getParser(val.getKey()).toParsableString(val.getContent());
+            return val.getKind().getName()
+                + getParser(val.getKind()).toParsableString(val.getContent());
         }
     }
 
@@ -207,9 +208,9 @@ public class SettingParser implements Parser<SettingList> {
         boolean result = value instanceof Setting;
         if (result) {
             Setting<?,?> val = (Setting<?,?>) value;
-            result = val.getKey().getClass() == this.keyType;
+            result = val.getKind().getClass() == this.keyType;
             if (result) {
-                result = val.getKey().isValue(val.getContent());
+                result = val.getKind().isValue(val.getContent());
             }
         }
         return result;

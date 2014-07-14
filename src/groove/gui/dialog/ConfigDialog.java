@@ -25,6 +25,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -132,7 +134,6 @@ abstract public class ConfigDialog<C> extends JDialog {
                     setConfigListListening(wasListening);
                 }
             });
-            setConfigListListening(true);
         }
         return this.configList;
     }
@@ -173,7 +174,7 @@ abstract public class ConfigDialog<C> extends JDialog {
         this.configListListening = listening;
     }
 
-    private boolean configListListening;
+    private boolean configListListening = true;
 
     private DefaultListModel getConfigListModel() {
         if (this.configListModel == null) {
@@ -219,7 +220,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     private JPanel configPanel;
 
     /** Returns the current content of the name field. */
-    private String getEditedName() {
+    String getEditedName() {
         return getNameField().getText();
     }
 
@@ -346,8 +347,8 @@ abstract public class ConfigDialog<C> extends JDialog {
     /** Flag recording if the start action has been invoked. */
     private boolean start;
 
-    /** Indicates that there is a current selection. */
-    boolean hasSelectedName() {
+    /** Indicates that there is a currently selected configuration. */
+    public boolean hasSelectedName() {
         return getSelectedName() != null;
     }
 
@@ -421,6 +422,98 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     /** Flag indicated that the currently selected configuration has unsaved changes. */
     private boolean dirty;
+
+    /** Sets the listening mode for editor dirt to {@code false},
+     * and returns the previously set mode.
+     */
+    public boolean resetDirtListening() {
+        boolean result = this.dirtListening;
+        this.dirtListening = false;
+        return result;
+    }
+
+    /** Sets the dirt listening mode to a given value. */
+    public void setDirtListening(boolean listening) {
+        this.dirtListening = listening;
+    }
+
+    private boolean dirtListening = true;
+
+    /**
+     * Returns a listener that when triggered will test whether any editor is dirty,
+     * and refresh all refreshables.
+     */
+    public DirtyListener getDirtyListener() {
+        if (this.dirtyListener == null) {
+            this.dirtyListener = new DirtyListener(this);
+        }
+        return this.dirtyListener;
+    }
+
+    private DirtyListener dirtyListener;
+
+    /** Listener class testing for dirtiness upon triggering. */
+    public static class DirtyListener implements ItemListener, DocumentListener {
+        /** Constructs a listener for a given dialog. */
+        public DirtyListener(ConfigDialog<?> dialog) {
+            this.dialog = dialog;
+        }
+
+        final private ConfigDialog<?> dialog;
+
+        /**
+         * Notification method of the {@link ItemListener}
+         */
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            notifyChanged();
+        }
+
+        /**
+         * Notification method of the {@link DocumentListener}
+         */
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            notifyDocumentChanged();
+        }
+
+        /**
+         * Notification method of the {@link DocumentListener}
+         */
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            notifyDocumentChanged();
+        }
+
+        /**
+         * Notification method of the {@link DocumentListener}
+         */
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            notifyDocumentChanged();
+        }
+
+        /**
+         * Callback method invoked when the listener is used on a document,
+         * and the document has changed.
+         */
+        protected void notifyDocumentChanged() {
+            notifyChanged();
+        }
+
+        /**
+         * If the listener is currently listening, tests
+         * for dirt and updates all actions.
+         */
+        private void notifyChanged() {
+            boolean wasListening = this.dialog.resetDirtListening();
+            if (wasListening) {
+                this.dialog.testSetDirty();
+                this.dialog.refreshActions();
+            }
+            this.dialog.setDirtListening(wasListening);
+        }
+    }
 
     /** Deletes the currently selected configuration. */
     void deleteConfig() {
@@ -544,7 +637,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     }
 
     /** Adds a refreshable to the list. */
-    void addRefreshable(Refreshable refreshable) {
+    public void addRefreshable(Refreshable refreshable) {
         refreshable.refresh();
         this.refreshables.add(refreshable);
     }
@@ -753,7 +846,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     }
 
     /** Sets or resets an error of a particular category. */
-    protected void setError(Object category, String error) {
+    public void setError(Object category, String error) {
         getErrorLabel().setError(category, error);
     }
 

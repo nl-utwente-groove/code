@@ -22,11 +22,15 @@ import groove.util.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum ResultCountKey implements SettingKey {
+public enum CountKind implements SettingKey {
     /** The single key, wrapping a natural number that is the actual count. */
-    COUNT("count", "Number of results before halting; 0 means unbounded", IntContent.NAT_PARSER), ;
+    ALL("All", "Continues irregardless of the number of results", NullContent.PARSER),
+    /** The single key, wrapping a natural number that is the actual count. */
+    ONE("One", "Halts after the first result", NullContent.PARSER),
+    /** The single key, wrapping a natural number that is the actual count. */
+    COUNT("Count", "Number of results before halting; 0 means unbounded", IntContent.NAT_PARSER), ;
 
-    private ResultCountKey(String name, String explanation, Parser<IntContent> parser) {
+    private CountKind(String name, String explanation, Parser<? extends SettingContent> parser) {
         this.name = name;
         this.explanation = explanation;
         this.parser = parser;
@@ -47,11 +51,11 @@ public enum ResultCountKey implements SettingKey {
     private final String explanation;
 
     @Override
-    public Parser<IntContent> parser() {
+    public Parser<? extends SettingContent> parser() {
         return this.parser;
     }
 
-    private final Parser<IntContent> parser;
+    private final Parser<? extends SettingContent> parser;
 
     @Override
     public SettingContent getDefaultValue() {
@@ -69,21 +73,21 @@ public enum ResultCountKey implements SettingKey {
     }
 
     @Override
-    public Setting<ResultCountKey,IntContent> createSettting() throws IllegalArgumentException {
+    public Setting<CountKind,IntContent> createSettting() throws IllegalArgumentException {
         return createSetting(null);
     }
 
     @Override
-    public Setting<ResultCountKey,IntContent> createSetting(SettingContent content)
+    public Setting<CountKind,IntContent> createSetting(SettingContent content)
         throws IllegalArgumentException {
         if (!isValue(content)) {
             throw new IllegalArgumentException();
         }
-        return new DefaultSetting<ResultCountKey,IntContent>(this, (IntContent) content);
+        return new DefaultSetting<CountKind,IntContent>(this, (IntContent) content);
     }
 
     @Override
-    public Class<? extends IntContent> getContentType() {
+    public Class<? extends SettingContent> getContentType() {
         return parser().getValueType();
     }
 }

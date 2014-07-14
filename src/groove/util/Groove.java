@@ -105,7 +105,7 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public PlainGraph loadGraph(File file) throws IOException {
-        return gxlGraphLoader.loadGraph(file).toPlainGraph();
+        return GxlIO.instance().loadGraph(file).toPlainGraph();
     }
 
     /**
@@ -131,7 +131,7 @@ public class Groove {
      * @throws IOException if saving ran into problems
      */
     static public void saveGraph(Graph graph, File file) throws IOException {
-        gxlGraphLoader.saveGraph(graph, file);
+        GxlIO.instance().saveGraph(graph, file);
     }
 
     /**
@@ -544,11 +544,6 @@ public class Groove {
         }
         return result.toString();
     }
-
-    /**
-     * The fixed GXL graph loader.
-     */
-    static private final GxlIO gxlGraphLoader = GxlIO.instance();
 
     // Platform dependent information.
 

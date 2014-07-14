@@ -73,7 +73,12 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     }
 
     @Override
-    public BooleanKey getKey() {
+    public SettingList wrap() {
+        return SettingList.single(this);
+    }
+
+    @Override
+    public BooleanKey getKind() {
         return this;
     }
 
@@ -82,13 +87,13 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
         return null;
     }
 
-    /** Returns the key for a given boolean value. */
-    public static BooleanKey getKey(boolean value) {
-        return value ? TRUE : FALSE;
-    }
-
     @Override
     public Class<NullContent> getContentType() {
         return NullContent.class;
+    }
+
+    /** Returns the key for a given boolean value. */
+    public static BooleanKey getKey(boolean value) {
+        return value ? TRUE : FALSE;
     }
 }

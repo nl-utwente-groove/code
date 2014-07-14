@@ -17,7 +17,6 @@
 package groove.explore.config;
 
 import groove.util.Groove;
-import groove.util.Parser;
 import groove.util.PropertyKey;
 
 /**
@@ -26,7 +25,7 @@ import groove.util.PropertyKey;
  */
 public enum ExploreKey implements PropertyKey<SettingList> {
     /** The basic search strategy. */
-    STRATEGY("strategy", "Basic exploration strategy", StrategyKey.DEPTH_FIRST, false),
+    STRATEGY("strategy", "Basic exploration strategy", StrategyKind.DEPTH_FIRST, false),
     /** The acceptor for results. */
     RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, false),
     /** The acceptor for results. */
@@ -34,14 +33,13 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     /** The matching strategy. */
     MATCHER("match", "Match strategy", MatchKind.PLAN, false),
     /** The algebra for data values. */
-    ALGEBRA("algebra", "Algebra for data values", AlgebraKey.DEFAULT, false),
+    ALGEBRA("algebra", "Algebra for data values", AlgebraKind.DEFAULT, false),
     /** Collapsing of isomorphic states. */
     ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, false),
     /** Conditions for where to stop exploring. */
     //BOUNDARY("bound", "Boundary conditions for exploration", null, true),
     /** Number of results after which to stop exploring. */
-    COUNT("count", "Number of results before halting; 0 means unbounded", ResultCountKey.COUNT,
-        false), ;
+    COUNT("count", "Number of results before halting; 0 means unbounded", CountKind.ALL, false), ;
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean multiple) {
         this.name = name;
@@ -81,11 +79,11 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     private final String explanation;
 
     @Override
-    public Parser<SettingList> parser() {
+    public SettingParser parser() {
         return this.parser;
     }
 
-    private final Parser<SettingList> parser;
+    private final SettingParser parser;
 
     @Override
     public SettingList getDefaultValue() {

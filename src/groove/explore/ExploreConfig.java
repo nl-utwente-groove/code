@@ -18,10 +18,11 @@ package groove.explore;
 
 import groove.explore.config.ExploreKey;
 import groove.explore.config.SettingList;
-import groove.explore.config.StrategyKey;
+import groove.explore.config.StrategyKind;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Collection of all properties influencing the exploration of a GTS.
@@ -29,6 +30,12 @@ import java.util.Map;
  * @version $Revision $
  */
 public class ExploreConfig {
+    /** Creates a configuration with values taken from a given properties map. */
+    public ExploreConfig(Properties props) {
+        this();
+        putProperties(props);
+    }
+
     /** Creates a configuration with all default values. */
     public ExploreConfig() {
         this.pars = new EnumMap<ExploreKey,SettingList>(ExploreKey.class);
@@ -38,12 +45,12 @@ public class ExploreConfig {
     }
 
     /** Returns the currently set search strategy. */
-    public StrategyKey getStrategy() {
-        return (StrategyKey) this.pars.get(ExploreKey.STRATEGY).single();
+    public StrategyKind getStrategy() {
+        return (StrategyKind) this.pars.get(ExploreKey.STRATEGY).single();
     }
 
     /** Sets the search strategy to a non-{@code null} value. */
-    public void setStrategy(StrategyKey order) {
+    public void setStrategy(StrategyKind order) {
         this.pars.put(ExploreKey.STRATEGY, SettingList.single(order));
     }
 
@@ -59,6 +66,32 @@ public class ExploreConfig {
 
     /** Parameter map of this configuration. */
     private final Map<ExploreKey,SettingList> pars;
+
+    /** Converts this configuration into a properties map. */
+    public Properties getProperties() {
+        Properties result = new Properties();
+        for (Map.Entry<ExploreKey,SettingList> e : this.pars.entrySet()) {
+            ExploreKey key = e.getKey();
+            SettingList setting = e.getValue();
+            if (!key.parser().isDefault(setting)) {
+                result.setProperty(key.getName(), key.parser().toParsableString(setting.single()));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Fills this configuration from a properties map.
+     * Unknown keys in the properties map are ignored.
+     */
+    public void putProperties(Properties props) {
+        for (ExploreKey key : ExploreKey.values()) {
+            String value = props.getProperty(key.getName());
+            if (value != null && key.parser().accepts(value)) {
+                put(key, key.parser().parse(value));
+            }
+        }
+    }
 
     @Override
     public String toString() {
