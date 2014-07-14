@@ -47,6 +47,41 @@ public class ExploreConfig {
         this.pars.put(ExploreKey.STRATEGY, SettingList.single(order));
     }
 
+    /** Returns the current setting for a given key. */
+    public SettingList get(ExploreKey key) {
+        return this.pars.get(key);
+    }
+
+    /** Changes the setting for a given key. */
+    public SettingList put(ExploreKey key, SettingList value) {
+        return this.pars.put(key, value);
+    }
+
     /** Parameter map of this configuration. */
     private final Map<ExploreKey,SettingList> pars;
+
+    @Override
+    public String toString() {
+        return "ExploreConfig[" + this.pars + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        return this.pars.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ExploreConfig other = (ExploreConfig) obj;
+        return this.pars.equals(other.pars);
+    }
 }

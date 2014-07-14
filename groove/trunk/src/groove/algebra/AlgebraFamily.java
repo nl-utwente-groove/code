@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.algebra;
@@ -39,27 +39,33 @@ import java.util.Set;
  */
 public enum AlgebraFamily {
     /** Default algebra family:
-     * {@link Integer} for {@code int}, 
-     * {@link Boolean} for {@code bool}, 
-     * {@link String} for {@code string}, 
-     * {@link Double} for {@code real}, 
+     * {@link Integer} for {@code int},
+     * {@link Boolean} for {@code bool},
+     * {@link String} for {@code string},
+     * {@link Double} for {@code real},
      */
-    DEFAULT("default", JavaIntAlgebra.instance, JavaBoolAlgebra.instance,
-            JavaStringAlgebra.instance, JavaRealAlgebra.instance),
+    DEFAULT("default",
+        "Java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)",
+        JavaIntAlgebra.instance, JavaBoolAlgebra.instance, JavaStringAlgebra.instance,
+        JavaRealAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
-    POINT("point", PointIntAlgebra.instance, PointBoolAlgebra.instance,
-            PointStringAlgebra.instance, PointRealAlgebra.instance),
+    POINT("point", "A single value for every type (so all values are equal)",
+        PointIntAlgebra.instance, PointBoolAlgebra.instance, PointStringAlgebra.instance,
+        PointRealAlgebra.instance),
     /** High-precision algebra family:
-     * {@link BigInteger} for {@code int}, 
-     * {@link Boolean} for {@code bool}, 
-     * {@link String} for {@code string}, 
-     * {@link BigDecimal} for {@code real}, 
+     * {@link BigInteger} for {@code int},
+     * {@link Boolean} for {@code bool},
+     * {@link String} for {@code string},
+     * {@link BigDecimal} for {@code real},
      */
-    BIG("big", BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance,
-            BigRealAlgebra.instance),
+    BIG(
+        "big",
+        "High-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)",
+        BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance,
+        BigRealAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
-    TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance, TermStringAlgebra.instance,
-            TermRealAlgebra.instance);
+    TERM("term", "Symbolic term representations", TermIntAlgebra.instance,
+        TermBoolAlgebra.instance, TermStringAlgebra.instance, TermRealAlgebra.instance);
 
     /**
      * Constructs a new register, loaded with a given set of algebras.
@@ -68,9 +74,10 @@ public enum AlgebraFamily {
      *         signature
      * @throws IllegalStateException if there are signatures without algebras
      */
-    private AlgebraFamily(String name, Algebra<?>... algebras) throws IllegalArgumentException,
-        IllegalStateException {
+    private AlgebraFamily(String name, String explanation, Algebra<?>... algebras)
+        throws IllegalArgumentException, IllegalStateException {
         this.name = name;
+        this.explanation = explanation;
         for (Algebra<?> algebra : algebras) {
             setImplementation(algebra);
         }
@@ -110,6 +117,16 @@ public enum AlgebraFamily {
         return this.name;
     }
 
+    /** The algebra family name. */
+    private final String name;
+
+    /** Returns a one-line explanation of this algebra family. */
+    public String getExplanation() {
+        return this.explanation;
+    }
+
+    private final String explanation;
+
     /**
      * Returns the algebra class registered for a given named signature, if any.
      */
@@ -122,7 +139,7 @@ public enum AlgebraFamily {
         return this == POINT;
     }
 
-    /** 
+    /**
      * Returns the value for a given term.
      * @return the value {@code term} (in the appropriate algebra)
      */
@@ -209,8 +226,6 @@ public enum AlgebraFamily {
         return this.algebraMap.toString();
     }
 
-    /** The algebra family name. */
-    private final String name;
     /** A map from signature kinds to algebras registered for that name. */
     private final Map<SignatureKind,Algebra<?>> algebraMap = new EnumMap<SignatureKind,Algebra<?>>(
         SignatureKind.class);

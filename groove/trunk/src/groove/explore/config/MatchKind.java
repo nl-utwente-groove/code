@@ -63,6 +63,11 @@ public enum MatchKind implements SettingKey {
     }
 
     @Override
+    public SettingList getDefaultSetting() {
+        return SettingList.single(createSetting(getDefaultValue()));
+    }
+
+    @Override
     public Setting<?,?> createSettting() throws IllegalArgumentException {
         return createSetting(null);
     }

@@ -25,6 +25,13 @@ import groove.util.Parser;
  * @version $Revision $
  */
 public interface SettingKey extends ParsableKey<SettingContent> {
+    /** Returns the default setting for this key, if any.
+     * Convenience method for {@code createSetting(getDefaultValue())}.
+     * @see #createSetting(SettingContent)
+     * @see #getDefaultValue()
+     */
+    public SettingList getDefaultSetting();
+
     /** Convenience method for {@code createValue(null)}
      * @throws IllegalArgumentException if {@code null} does not satisfy {@link Parser#isValue}
      */

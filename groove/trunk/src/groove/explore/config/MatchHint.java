@@ -16,9 +16,14 @@
  */
 package groove.explore.config;
 
+import static groove.util.ExprParser.DOUBLE_QUOTE_CHAR;
+import groove.grammar.model.FormatException;
 import groove.util.Duo;
+import groove.util.ExprParser;
+import groove.util.Groove;
 import groove.util.Parser;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,51 +48,100 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
     public static final Parser<MatchHint> PARSER = new Parser<MatchHint>() {
         @Override
         public String getDescription(boolean uppercase) {
-            // TODO Auto-generated method stub
-            return null;
+            return "Either empty, or a comma-separated pair of strings <i>rare,common</i>"
+                + "where <i>rare</i> and <i>common</i> are space-separated lists of labels";
         }
 
         @Override
         public boolean accepts(String text) {
-            // TODO Auto-generated method stub
-            return false;
+            boolean result = true;
+            if (text != null && !text.isEmpty()) {
+                try {
+                    String[] split = exprParser.split(text, ",");
+                    if (split.length != 2) {
+                        result = false;
+                    }
+                    toUnquoted(split[0]);
+                    toUnquoted(split[1]);
+                } catch (FormatException exc) {
+                    result = false;
+                }
+            }
+            return result;
         }
 
         @Override
         public MatchHint parse(String text) {
-            // TODO Auto-generated method stub
-            return null;
+            MatchHint result;
+            if (text == null || text.isEmpty()) {
+                result = getDefaultValue();
+            } else {
+                try {
+                    String[] split = exprParser.split(text, ",");
+                    if (split.length == 2) {
+                        String rare = toUnquoted(split[0]);
+                        String common = toUnquoted(split[1]);
+                        List<String> rareList = Arrays.asList(exprParser.split(rare, " "));
+                        List<String> commonList = Arrays.asList(exprParser.split(common, " "));
+                        result = new MatchHint(rareList, commonList);
+                    } else {
+                        result = null;
+                    }
+                } catch (FormatException exc) {
+                    result = null;
+                }
+            }
+            return result;
+        }
+
+        private String toUnquoted(String text) throws FormatException {
+            text = text.trim();
+            if (text.length() < 2) {
+                throw new FormatException("Label list '%s'should be double-quoted string");
+            }
+            if (text.charAt(0) != DOUBLE_QUOTE_CHAR) {
+                throw new FormatException("Label list '%s'should be double-quoted string");
+            }
+            return ExprParser.toUnquoted(text, DOUBLE_QUOTE_CHAR);
         }
 
         @Override
         public String toParsableString(Object value) {
-            // TODO Auto-generated method stub
-            return null;
+            MatchHint hint = (MatchHint) value;
+            List<String> rare = hint.one();
+            List<String> common = hint.two();
+            if (rare.isEmpty() && common.isEmpty()) {
+                return "";
+            } else {
+                String rareString = Groove.toString(rare.toArray(), "\"", "\"", " ");
+                String commonString = Groove.toString(common.toArray(), "\"", "\"", " ");
+                return rareString + "," + commonString;
+            }
         }
 
         @Override
         public boolean isValue(Object value) {
-            // TODO Auto-generated method stub
-            return false;
+            return value instanceof MatchHint;
         }
 
         @Override
         public MatchHint getDefaultValue() {
-            // TODO Auto-generated method stub
-            return null;
+            return this.defaultValue;
         }
+
+        private final MatchHint defaultValue = new MatchHint();
 
         @Override
         public String getDefaultString() {
-            // TODO Auto-generated method stub
-            return null;
+            return "";
         }
 
         @Override
         public boolean isDefault(Object value) {
-            // TODO Auto-generated method stub
-            return false;
+            return getDefaultValue().equals(value);
         }
 
     };
+
+    private static final ExprParser exprParser = new ExprParser("\'");
 }

@@ -64,6 +64,11 @@ public enum ResultCountKey implements SettingKey {
     }
 
     @Override
+    public SettingList getDefaultSetting() {
+        return SettingList.single(createSetting(getDefaultValue()));
+    }
+
+    @Override
     public Setting<ResultCountKey,IntContent> createSettting() throws IllegalArgumentException {
         return createSetting(null);
     }
@@ -71,7 +76,7 @@ public enum ResultCountKey implements SettingKey {
     @Override
     public Setting<ResultCountKey,IntContent> createSetting(SettingContent content)
         throws IllegalArgumentException {
-        if (isValue(content)) {
+        if (!isValue(content)) {
             throw new IllegalArgumentException();
         }
         return new DefaultSetting<ResultCountKey,IntContent>(this, (IntContent) content);
