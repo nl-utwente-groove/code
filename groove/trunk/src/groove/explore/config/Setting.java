@@ -24,12 +24,15 @@ package groove.explore.config;
  * @version $Revision $
  */
 public interface Setting<K extends Enum<K> & SettingKey,C extends SettingContent> {
-    /** Returns the key of this setting. */
-    public abstract K getKey();
+    /** Returns the kind of this setting. */
+    public abstract K getKind();
 
     /**
      * Returns the content of the setting.
      * May be {@code null}, if this is allowed by the setting key.
      */
     public abstract C getContent();
+
+    /** Wraps this setting into a singular setting list. */
+    public SettingList wrap();
 }

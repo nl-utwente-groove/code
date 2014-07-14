@@ -16,6 +16,7 @@
  */
 package groove.explore.config;
 
+import groove.algebra.AlgebraFamily;
 import groove.util.Parser;
 
 /**
@@ -23,30 +24,32 @@ import groove.util.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum StrategyKey implements SettingKey, Setting<StrategyKey,NullContent> {
+public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> {
     /** Depth-first search. */
-    DEPTH_FIRST("DFS", "Depth-first search"),
+    DEFAULT(AlgebraFamily.DEFAULT),
     /** Breadth-first search. */
-    BREADTH_FIRST("BFS", "Breadth-first search"),
+    BIG(AlgebraFamily.BIG),
     /** Linear search. */
-    LINEAR("Linear", "Linear search: never backtracks"),
+    POINT(AlgebraFamily.POINT),
     /** Best-first search, driven by some heuristic. */
-    BEST_FIRST("Heuristic", "Heuristic search according to a given function"),
-    /** LTL model checking, driven by some property to be checked. */
-    LTL("LTL", "LTL model checking of a given formula"), ;
+    TERM(AlgebraFamily.TERM), ;
 
-    private StrategyKey(String name, String explanation) {
-        this.name = name;
-        this.explanation = explanation;
+    private AlgebraKind(AlgebraFamily family) {
+        this.family = family;
     }
 
-    /** Returns the name of this search order. */
+    /** Returns the algebra family. */
+    public AlgebraFamily getFamily() {
+        return this.family;
+    }
+
+    private final AlgebraFamily family;
+
+    /** Returns the name of this algebra. */
     @Override
     public String getName() {
-        return this.name;
+        return getFamily().getName();
     }
-
-    private final String name;
 
     @Override
     public SettingList getDefaultSetting() {
@@ -54,12 +57,12 @@ public enum StrategyKey implements SettingKey, Setting<StrategyKey,NullContent> 
     }
 
     @Override
-    public StrategyKey createSettting() {
+    public AlgebraKind createSettting() {
         return this;
     }
 
     @Override
-    public StrategyKey createSetting(SettingContent content) throws IllegalArgumentException {
+    public AlgebraKind createSetting(SettingContent content) throws IllegalArgumentException {
         if (content != null) {
             throw new IllegalArgumentException();
         }
@@ -67,7 +70,7 @@ public enum StrategyKey implements SettingKey, Setting<StrategyKey,NullContent> 
     }
 
     @Override
-    public StrategyKey getKey() {
+    public AlgebraKind getKind() {
         return this;
     }
 
@@ -77,11 +80,14 @@ public enum StrategyKey implements SettingKey, Setting<StrategyKey,NullContent> 
     }
 
     @Override
-    public String getExplanation() {
-        return this.explanation;
+    public SettingList wrap() {
+        return SettingList.single(this);
     }
 
-    private final String explanation;
+    @Override
+    public String getExplanation() {
+        return getFamily().getExplanation();
+    }
 
     @Override
     public Parser<? extends SettingContent> parser() {

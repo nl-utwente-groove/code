@@ -20,8 +20,8 @@ package groove.explore.config;
  * Default implementation of {@link Setting}
  * @author Arend Rensink
  */
-public class DefaultSetting<K extends Enum<K> & SettingKey,C extends SettingContent>
-    implements Setting<K,C> {
+public class DefaultSetting<K extends Enum<K> & SettingKey,C extends SettingContent> implements
+    Setting<K,C> {
     /** Constructs a value with a given value kind and {@code null} content. */
     protected DefaultSetting(K kind) {
         this(kind, null);
@@ -36,7 +36,7 @@ public class DefaultSetting<K extends Enum<K> & SettingKey,C extends SettingCont
 
     /** Returns the kind of value. */
     @Override
-    public K getKey() {
+    public K getKind() {
         return this.kind;
     }
 
@@ -52,4 +52,45 @@ public class DefaultSetting<K extends Enum<K> & SettingKey,C extends SettingCont
     }
 
     private final C content;
+
+    @Override
+    public SettingList wrap() {
+        return SettingList.single(this);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.kind.hashCode();
+        result = prime * result + ((this.content == null) ? 0 : this.content.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Setting)) {
+            return false;
+        }
+        Setting<?,?> other = (Setting<?,?>) obj;
+        if (this.content == null) {
+            if (other.getContent() != null) {
+                return false;
+            }
+        } else if (!this.content.equals(other.getContent())) {
+            return false;
+        }
+        return this.kind.equals(other.getKind());
+    }
+
+    @Override
+    public String toString() {
+        return "Setting[" + this.kind + "," + this.content + "]";
+    }
 }
