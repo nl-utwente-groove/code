@@ -45,14 +45,12 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     REMARK("remark", "A one-line description of the graph production system"),
 
     /** Property name for the algebra to be used during simulation. */
-    ALGEBRA(
-        "algebraFamily",
-        "<body>Algebra used for attributes"
-            + "<li>- <i>default</i>: java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)"
-            + "<li>- <i>big</i>: arbitrary-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)"
-            + "<li>- <i>point</i>: a single value for every type (so all values are equal)"
-            + "<li>- <i>term</i>: symbolic term representations",
-        new Parser.EnumParser<AlgebraFamily>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
+    ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + "<li>- <i>default</i>: "
+        + AlgebraFamily.DEFAULT.getExplanation() + "<li>- <i>big</i>: "
+        + AlgebraFamily.BIG.getExplanation() + "<li>- <i>point</i>: "
+        + AlgebraFamily.POINT.getExplanation() + "<li>- <i>term</i>: "
+        + AlgebraFamily.TERM.getExplanation(), new Parser.EnumParser<AlgebraFamily>(
+        AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,

@@ -30,24 +30,26 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     /** The acceptor for results. */
     RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, false),
     /** The acceptor for results. */
-    ACCEPTOR("accept", "Acceptor for result values", null, false),
+    //ACCEPTOR("accept", "Acceptor for result values", null, false),
     /** The matching strategy. */
     MATCHER("match", "Match strategy", MatchKind.PLAN, false),
     /** The algebra for data values. */
-    ALGEBRA("algebra", "Algebra for data values", null, false),
+    ALGEBRA("algebra", "Algebra for data values", AlgebraKey.DEFAULT, false),
     /** Collapsing of isomorphic states. */
     ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, false),
     /** Conditions for where to stop exploring. */
-    BOUNDARY("bound", "Boundary conditions for exploration", null, true),
+    //BOUNDARY("bound", "Boundary conditions for exploration", null, true),
     /** Number of results after which to stop exploring. */
     COUNT("count", "Number of results before halting; 0 means unbounded", ResultCountKey.COUNT,
         false), ;
 
-    private ExploreKey(String name, String explanation, SettingKey defaultKey, boolean multiple) {
+    private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean multiple) {
         this.name = name;
         this.keyPhrase = Groove.unCamel(name, false);
         this.explanation = explanation;
-        this.parser = new SettingParser(defaultKey, multiple);
+        this.parser = new SettingParser(defaultKind, multiple);
+        this.defaultKind = defaultKind;
+        this.kindType = defaultKind.getClass();
         this.defaultValue = this.parser.getDefaultValue();
         this.multiple = multiple;
     }
@@ -92,10 +94,24 @@ public enum ExploreKey implements PropertyKey<SettingList> {
 
     private final SettingList defaultValue;
 
+    /** Returns the default setting kind for this exploration key. */
+    public SettingKey getDefaultKind() {
+        return this.defaultKind;
+    }
+
+    private final SettingKey defaultKind;
+
     @Override
     public boolean isValue(Object value) {
         return parser().isValue(value);
     }
+
+    /** Returns the type of the setting key for this explore key. */
+    public Class<? extends SettingKey> getKindType() {
+        return this.kindType;
+    }
+
+    private final Class<? extends SettingKey> kindType;
 
     /**
      * Indicates if this key may have multiple values.

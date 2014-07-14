@@ -55,6 +55,11 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     }
 
     @Override
+    public SettingList getDefaultSetting() {
+        return SettingList.single(createSetting(getDefaultValue()));
+    }
+
+    @Override
     public Setting<?,?> createSettting() throws IllegalArgumentException {
         return this;
     }
@@ -75,5 +80,10 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     @Override
     public NullContent getContent() {
         return null;
+    }
+
+    /** Returns the key for a given boolean value. */
+    public static BooleanKey getKey(boolean value) {
+        return value ? TRUE : FALSE;
     }
 }

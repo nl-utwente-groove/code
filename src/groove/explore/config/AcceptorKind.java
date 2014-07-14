@@ -69,6 +69,11 @@ public enum AcceptorKind implements SettingKey {
     private final String name;
 
     @Override
+    public SettingList getDefaultSetting() {
+        return SettingList.single(createSetting(getDefaultValue()));
+    }
+
+    @Override
     public Setting<?,?> createSettting() throws IllegalArgumentException {
         return new DefaultSetting<AcceptorKind,NullContent>(this);
     }

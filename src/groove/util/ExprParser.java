@@ -569,8 +569,6 @@ public class ExprParser {
      * Transforms a string by removing quote characters around it, if there are
      * any, and unescaping all characters within the string. The original string
      * does not need to be quoted.
-     * - boolean test if <code>true</code>, the method throws an exception upon
-     *           finding a format error; otherwise, it returns <code>null</code
      * @param string the original string
      * @param quote the quote character to be used
      * @return the unquoted string (which may equal the original, if there are
