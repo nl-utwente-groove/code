@@ -19,6 +19,7 @@ package groove.util;
 import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,9 @@ abstract public interface Parser<T> {
      * should satisfy {@link #isValue(Object)}
      */
     public String toParsableString(Object value);
+
+    /** Returns the type of values that this parser parses to. */
+    public Class<? extends T> getValueType();
 
     /**
      * Tests if a given value of the type of this parser can be
@@ -108,8 +112,8 @@ abstract public interface Parser<T> {
          * Constructor for subclassing.
          * @param trim if {@code true}, spaces are stripped of the values.
          */
-        protected AbstractStringParser(boolean trim) {
-            this("", trim);
+        protected AbstractStringParser(Class<S> valueType, boolean trim) {
+            this(valueType, "", trim);
         }
 
         /**
@@ -117,8 +121,9 @@ abstract public interface Parser<T> {
          * @param defaultString the default string value
          * @param trim if {@code true}, spaces are stripped of the values.
          */
-        protected AbstractStringParser(String defaultString, boolean trim) {
+        protected AbstractStringParser(Class<S> valueType, String defaultString, boolean trim) {
             this.trim = trim;
+            this.valueType = valueType;
             this.defaultValue = createContent(defaultString);
             this.defaultString = defaultString;
         }
@@ -146,6 +151,13 @@ abstract public interface Parser<T> {
         public String getDescription(boolean uppercase) {
             return uppercase ? "Any string value" : "any string value";
         }
+
+        @Override
+        public Class<S> getValueType() {
+            return this.valueType;
+        }
+
+        private final Class<S> valueType;
 
         @Override
         public S getDefaultValue() {
@@ -179,7 +191,7 @@ abstract public interface Parser<T> {
     /** Identity string parser. */
     static public class StringParser extends AbstractStringParser<String> {
         private StringParser(boolean trim) {
-            super(trim);
+            super(String.class, trim);
         }
 
         @Override
@@ -209,7 +221,8 @@ abstract public interface Parser<T> {
          * negative values are allowed.
          * @param neg if {@code true}, the parser allows negative values.
          */
-        protected AbstractIntParser(int defaultValue, boolean neg) {
+        protected AbstractIntParser(Class<I> valueType, int defaultValue, boolean neg) {
+            this.valueType = valueType;
             this.neg = neg;
             this.defaultValue = createContent(defaultValue);
             this.defaultString = "" + defaultValue;
@@ -260,6 +273,13 @@ abstract public interface Parser<T> {
         }
 
         @Override
+        public Class<I> getValueType() {
+            return this.valueType;
+        }
+
+        private final Class<I> valueType;
+
+        @Override
         public I getDefaultValue() {
             return this.defaultValue;
         }
@@ -291,7 +311,7 @@ abstract public interface Parser<T> {
     /** Integer parser. */
     static public class IntParser extends AbstractIntParser<Integer> {
         private IntParser(boolean neg) {
-            super(0, neg);
+            super(Integer.class, 0, neg);
         }
 
         @Override
@@ -317,6 +337,12 @@ abstract public interface Parser<T> {
 
     /** Parser that concatenates and splits lines at whitespaces. */
     static public class SplitParser implements Parser<List<String>> {
+        /** Constructs a parser. */
+        @SuppressWarnings("unchecked")
+        public SplitParser() {
+            this.valueType = (Class<List<String>>) new ArrayList<String>().getClass();
+        }
+
         @Override
         public boolean accepts(String text) {
             return true;
@@ -343,6 +369,13 @@ abstract public interface Parser<T> {
         public String toParsableString(Object value) {
             return Groove.toString(((Collection<?>) value).toArray(), "", "", " ");
         }
+
+        @Override
+        public Class<List<String>> getValueType() {
+            return this.valueType;
+        }
+
+        private final Class<List<String>> valueType;
 
         @Override
         public boolean isValue(Object value) {
@@ -433,6 +466,11 @@ abstract public interface Parser<T> {
         }
 
         @Override
+        public Class<Boolean> getValueType() {
+            return Boolean.class;
+        }
+
+        @Override
         public boolean isValue(Object value) {
             return value instanceof Boolean;
         }
@@ -480,6 +518,7 @@ abstract public interface Parser<T> {
             this.defaultValue = defaultValue;
             this.toStringMap = new EnumMap<T,String>(enumType);
             this.toValueMap = new HashMap<String,T>();
+            this.valueType = enumType;
             T[] values = enumType.getEnumConstants();
             assert values.length == texts.length;
             for (int i = 0; i < values.length; i++) {
@@ -556,6 +595,13 @@ abstract public interface Parser<T> {
         public String toParsableString(Object value) {
             return isDefault(value) ? "" : this.toStringMap.get(value);
         }
+
+        @Override
+        public Class<T> getValueType() {
+            return this.valueType;
+        }
+
+        private final Class<T> valueType;
 
         @Override
         public boolean isValue(Object value) {

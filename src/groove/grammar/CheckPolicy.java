@@ -98,7 +98,7 @@ public enum CheckPolicy {
         }
     }
 
-    private static class PolicyMapParser implements Parser<CheckPolicy.PolicyMap> {
+    private static class PolicyMapParser implements Parser<PolicyMap> {
         @Override
         public String getDescription(boolean uppercase) {
             StringBuilder result = new StringBuilder(uppercase ? "A " : "a ");
@@ -154,6 +154,11 @@ public enum CheckPolicy {
                 }
             }
             return result.toString();
+        }
+
+        @Override
+        public Class<? extends PolicyMap> getValueType() {
+            return PolicyMap.class;
         }
 
         @Override

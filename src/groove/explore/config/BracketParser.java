@@ -80,6 +80,11 @@ public class BracketParser<V> implements Parser<V> {
     }
 
     @Override
+    public Class<? extends V> getValueType() {
+        return this.inner.getValueType();
+    }
+
+    @Override
     public boolean isValue(Object value) {
         return this.inner.isValue(value);
     }

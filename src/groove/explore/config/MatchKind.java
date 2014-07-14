@@ -63,6 +63,11 @@ public enum MatchKind implements SettingKey {
     }
 
     @Override
+    public Class<? extends SettingContent> getContentType() {
+        return parser().getValueType();
+    }
+
+    @Override
     public SettingList getDefaultSetting() {
         return SettingList.single(createSetting(getDefaultValue()));
     }

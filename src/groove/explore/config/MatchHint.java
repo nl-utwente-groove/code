@@ -120,6 +120,11 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
         }
 
         @Override
+        public Class<MatchHint> getValueType() {
+            return MatchHint.class;
+        }
+
+        @Override
         public boolean isValue(Object value) {
             return value instanceof MatchHint;
         }

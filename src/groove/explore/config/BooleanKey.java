@@ -86,4 +86,9 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     public static BooleanKey getKey(boolean value) {
         return value ? TRUE : FALSE;
     }
+
+    @Override
+    public Class<NullContent> getContentType() {
+        return NullContent.class;
+    }
 }

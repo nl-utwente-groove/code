@@ -104,4 +104,9 @@ public enum AcceptorKind implements SettingKey {
     public boolean isValue(Object value) {
         return this.parser.isValue(value);
     }
+
+    @Override
+    public Class<? extends SettingContent> getContentType() {
+        return this.parser.getValueType();
+    }
 }

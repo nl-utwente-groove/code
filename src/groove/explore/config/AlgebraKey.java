@@ -98,4 +98,9 @@ public enum AlgebraKey implements SettingKey, Setting<AlgebraKey,NullContent> {
     public boolean isValue(Object value) {
         return value == null;
     }
+
+    @Override
+    public Class<NullContent> getContentType() {
+        return NullContent.class;
+    }
 }

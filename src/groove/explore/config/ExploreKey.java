@@ -30,7 +30,7 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     /** The acceptor for results. */
     RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, false),
     /** The acceptor for results. */
-    //ACCEPTOR("accept", "Acceptor for result values", null, false),
+    ACCEPTOR("accept", "Acceptor for result values", AcceptorKind.FINAL, false),
     /** The matching strategy. */
     MATCHER("match", "Match strategy", MatchKind.PLAN, false),
     /** The algebra for data values. */

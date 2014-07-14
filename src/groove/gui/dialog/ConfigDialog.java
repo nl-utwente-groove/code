@@ -36,6 +36,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -199,8 +200,7 @@ abstract public class ConfigDialog<C> extends JDialog {
             buttonPanel.add(new JButton(getStartAction()));
             buttonPanel.add(new JButton(getCloseAction()));
 
-            JPanel mainPanel = createMainPanel();
-            mainPanel.setBorder(createBorder());
+            JComponent mainPanel = createMainPanel();
 
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
@@ -301,7 +301,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     }
 
     /** Factory method for the main panel. */
-    protected JPanel createMainPanel() {
+    protected JComponent createMainPanel() {
         return new JPanel();
     }
 
