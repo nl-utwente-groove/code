@@ -17,6 +17,7 @@
 package groove.grammar;
 
 import groove.grammar.Action.Role;
+import groove.grammar.model.FormatException;
 import groove.util.ExprParser;
 import groove.util.Parser;
 
@@ -110,11 +111,15 @@ public enum CheckPolicy {
 
         @Override
         public boolean accepts(String text) {
-            return parse(text) != null;
+            try {
+                return parse(text) != null;
+            } catch (FormatException exc) {
+                return false;
+            }
         }
 
         @Override
-        public PolicyMap parse(String text) {
+        public PolicyMap parse(String text) throws FormatException {
             PolicyMap result = new PolicyMap();
             if (text != null) {
                 String[] split = text.trim().split("\\s");

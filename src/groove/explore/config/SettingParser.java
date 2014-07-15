@@ -153,7 +153,7 @@ public class SettingParser implements Parser<SettingList> {
     }
 
     @Override
-    public SettingList parse(String text) {
+    public SettingList parse(String text) throws FormatException {
         if (text == null || text.length() == 0) {
             return getDefaultValue();
         } else if (isMultiple()) {
@@ -173,7 +173,7 @@ public class SettingParser implements Parser<SettingList> {
     }
 
     /** Parses a string holding a single setting value. */
-    public Setting<?,?> parseSingle(String text) {
+    public Setting<?,?> parseSingle(String text) throws FormatException {
         if (this.uniqueKey) {
             return this.defaultKind.createSetting(this.defaultKind.parser().parse(text));
         } else {

@@ -19,6 +19,7 @@ package groove.explore;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.SettingList;
 import groove.explore.config.StrategyKind;
+import groove.grammar.model.FormatException;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -87,8 +88,10 @@ public class ExploreConfig {
     public void putProperties(Properties props) {
         for (ExploreKey key : ExploreKey.values()) {
             String value = props.getProperty(key.getName());
-            if (value != null && key.parser().accepts(value)) {
+            try {
                 put(key, key.parser().parse(value));
+            } catch (FormatException exc) {
+                // skip this key
             }
         }
     }
