@@ -25,31 +25,28 @@ import groove.util.PropertyKey;
  */
 public enum ExploreKey implements PropertyKey<SettingList> {
     /** The basic search strategy. */
-    STRATEGY("strategy", "Basic exploration strategy", StrategyKind.DEPTH_FIRST, false),
+    STRATEGY("strategy", "Basic exploration strategy", StrategyKind.DEPTH_FIRST, true),
     /** The acceptor for results. */
-    RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, false),
+    RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, true),
     /** The acceptor for results. */
-    ACCEPTOR("accept", "Acceptor for result values", AcceptorKind.FINAL, false),
+    ACCEPTOR("accept", "Acceptor for result values", AcceptorKind.FINAL, true),
     /** The matching strategy. */
-    MATCHER("match", "Match strategy", MatchKind.PLAN, false),
+    MATCHER("match", "Match strategy", MatchKind.PLAN, true),
     /** The algebra for data values. */
-    ALGEBRA("algebra", "Algebra for data values", AlgebraKind.DEFAULT, false),
+    ALGEBRA("algebra", "Algebra for data values", AlgebraKind.DEFAULT, true),
     /** Collapsing of isomorphic states. */
-    ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, false),
+    ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, true),
     /** Conditions for where to stop exploring. */
-    //BOUNDARY("bound", "Boundary conditions for exploration", null, true),
+    //BOUNDARY("bound", "Boundary conditions for exploration", null, false),
     /** Number of results after which to stop exploring. */
-    COUNT("count", "Number of results before halting; 0 means unbounded", CountKind.ALL, false), ;
+    COUNT("count", "Number of results before halting; 0 means unbounded", CountKind.ALL, true), ;
 
-    private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean multiple) {
+    private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;
         this.keyPhrase = Groove.unCamel(name, false);
         this.explanation = explanation;
-        this.parser = new SettingParser(defaultKind, multiple);
         this.defaultKind = defaultKind;
-        this.kindType = defaultKind.getClass();
-        this.defaultValue = this.parser.getDefaultValue();
-        this.multiple = multiple;
+        this.singular = singular;
     }
 
     @Override
@@ -79,18 +76,24 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     private final String explanation;
 
     @Override
-    public SettingParser parser() {
+    public SettingListParser parser() {
+        if (this.parser == null) {
+            this.parser = new SettingListParser(this);
+        }
         return this.parser;
     }
 
-    private final SettingParser parser;
+    private SettingListParser parser;
 
     @Override
     public SettingList getDefaultValue() {
+        if (this.defaultValue == null) {
+            this.defaultValue = parser().getDefaultValue();
+        }
         return this.defaultValue;
     }
 
-    private final SettingList defaultValue;
+    private SettingList defaultValue;
 
     /** Returns the default setting kind for this exploration key. */
     public SettingKey getDefaultKind() {
@@ -99,24 +102,22 @@ public enum ExploreKey implements PropertyKey<SettingList> {
 
     private final SettingKey defaultKind;
 
+    /** Returns the type of the setting key for this explore key. */
+    public Class<? extends SettingKey> getKindType() {
+        return getDefaultKind().getClass();
+    }
+
     @Override
     public boolean isValue(Object value) {
         return parser().isValue(value);
     }
 
-    /** Returns the type of the setting key for this explore key. */
-    public Class<? extends SettingKey> getKindType() {
-        return this.kindType;
-    }
-
-    private final Class<? extends SettingKey> kindType;
-
     /**
-     * Indicates if this key may have multiple values.
+     * Indicates if this key has a singular value.
      */
-    public boolean isMultiple() {
-        return this.multiple;
+    public boolean isSingular() {
+        return this.singular;
     }
 
-    private final boolean multiple;
+    private final boolean singular;
 }

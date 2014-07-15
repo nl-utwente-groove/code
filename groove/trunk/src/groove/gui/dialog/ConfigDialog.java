@@ -27,6 +27,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -263,7 +265,20 @@ abstract public class ConfigDialog<C> extends JDialog {
                         if (editedName.isEmpty()) {
                             nameError = "Empty configuration name";
                         } else if (getConfigMap().containsKey(editedName)) {
-                            nameError = "Configuration name '" + editedName + "' already exists";
+                            nameError = "Existing configuration name '" + editedName + "'";
+                        } else {
+                            boolean validFile;
+                            try {
+                                File file = new File(editedName).getCanonicalFile();
+                                validFile = file.getName().equals(editedName);
+                            } catch (IOException exc) {
+                                validFile = false;
+                            } catch (SecurityException exc) {
+                                validFile = false;
+                            }
+                            if (!validFile) {
+                                nameError = "Invalid configuration name '" + editedName + "'";
+                            }
                         }
                     }
                     getErrorLabel().setError(ERROR_KIND, nameError);

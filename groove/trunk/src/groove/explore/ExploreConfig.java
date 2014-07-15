@@ -17,6 +17,7 @@
 package groove.explore;
 
 import groove.explore.config.ExploreKey;
+import groove.explore.config.Setting;
 import groove.explore.config.SettingList;
 import groove.explore.config.StrategyKind;
 import groove.grammar.model.FormatException;
@@ -68,6 +69,35 @@ public class ExploreConfig {
     /** Parameter map of this configuration. */
     private final Map<ExploreKey,SettingList> pars;
 
+    /** Converts this properties object to a command-line string. */
+    public String toCommandLine() {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<ExploreKey,SettingList> e : this.pars.entrySet()) {
+            ExploreKey key = e.getKey();
+            SettingList settingList = e.getValue();
+            if (settingList.isEmpty()) {
+                continue;
+            }
+            if (key.parser().isDefault(settingList)) {
+                continue;
+            }
+            result.append(OPTION);
+            result.append(key.getName());
+            result.append(SEPARATOR);
+            StringBuilder value = new StringBuilder();
+            boolean first = true;
+            for (Setting<?,?> setting : settingList) {
+                if (first) {
+                    first = false;
+                } else {
+                    result.append(" ");
+                }
+                value.append(key.parser().toParsableString(setting));
+            }
+        }
+        return result.toString().trim();
+    }
+
     /** Converts this configuration into a properties map. */
     public Properties getProperties() {
         Properties result = new Properties();
@@ -75,7 +105,7 @@ public class ExploreConfig {
             ExploreKey key = e.getKey();
             SettingList setting = e.getValue();
             if (!key.parser().isDefault(setting)) {
-                result.setProperty(key.getName(), key.parser().toParsableString(setting.single()));
+                result.setProperty(key.getName(), key.parser().toParsableString(setting));
             }
         }
         return result;
@@ -120,4 +150,7 @@ public class ExploreConfig {
         ExploreConfig other = (ExploreConfig) obj;
         return this.pars.equals(other.pars);
     }
+
+    private final static String OPTION = "-S ";
+    private final static String SEPARATOR = "=";
 }

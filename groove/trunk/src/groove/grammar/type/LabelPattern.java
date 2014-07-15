@@ -186,7 +186,8 @@ public class LabelPattern {
         Pair<String,List<String>> result = parser.parse(text);
         String resultText = result.one();
         List<String> resultArgs = result.two();
-        if (resultText.charAt(0) != ExprParser.PLACEHOLDER || resultArgs.size() != 1) {
+        if (resultText.isEmpty() || resultText.charAt(0) != ExprParser.PLACEHOLDER
+            || resultArgs.size() != 1) {
             throw new FormatException("Incorrect label pattern %s", text);
         }
         String format = result.two().get(0).substring(1, result.two().get(0).length() - 1);
