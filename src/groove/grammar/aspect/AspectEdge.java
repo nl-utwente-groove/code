@@ -126,6 +126,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         if (this.isPredicate() || isAssign()) {
             // We just want the edge role to be non-binary...
             return EdgeRole.FLAG;
+        } else if (getGraphRole() == GraphRole.TYPE && getAttrKind().hasSignature()) {
+            return EdgeRole.FLAG;
         } else {
             Label label = getGraphRole() == RULE ? getRuleLabel() : getTypeLabel();
             return label == null ? EdgeRole.BINARY : label.getRole();
@@ -541,7 +543,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return result;
     }
 
-    /** Returns the (possibly {@code null}) type label of this edge. */
+    /** Returns the (possibly {@code null}) rule label of this edge. */
     public RuleLabel getRuleLabel() {
         testFixed(true);
         return this.ruleLabel;
@@ -570,7 +572,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return result;
     }
 
-    /** Returns the (possibly {@code null}) rule label of this edge. */
+    /** Returns the (possibly {@code null}) type label of this edge. */
     public TypeLabel getTypeLabel() {
         testFixed(true);
         return this.typeLabel;
