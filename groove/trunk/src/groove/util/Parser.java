@@ -54,7 +54,7 @@ abstract public interface Parser<T> {
      * @return a value corresponding to {@code text}; returns
      * {@link #getDefaultValue()} for {@code null} or empty input
      */
-    public T parse(String text);
+    public T parse(String text) throws FormatException;
 
     /**
      * Turns a given value into a string that, when fed into {@link #parse(String)},

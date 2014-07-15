@@ -16,6 +16,7 @@
  */
 package groove.explore.config;
 
+import groove.grammar.model.FormatException;
 import groove.util.Parser;
 
 /**
@@ -65,7 +66,7 @@ public class BracketParser<V> implements Parser<V> {
     }
 
     @Override
-    public V parse(String text) {
+    public V parse(String text) throws FormatException {
         if (text == null || text.length() == 0) {
             return this.inner.parse(text);
         }

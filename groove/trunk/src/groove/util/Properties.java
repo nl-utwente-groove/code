@@ -19,6 +19,7 @@ package groove.util;
 import groove.grammar.GrammarChecker;
 import groove.grammar.model.FormatChecker;
 import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 
 import java.io.IOException;
@@ -70,7 +71,11 @@ public abstract class Properties extends java.util.Properties implements Fixable
                 checker = new FormatChecker<String>() {
                     @Override
                     public FormatErrorSet check(String value) {
-                        return checkerKey.check(grammar, key.parser().parse(value));
+                        try {
+                            return checkerKey.check(grammar, key.parser().parse(value));
+                        } catch (FormatException exc) {
+                            return exc.getErrors();
+                        }
                     }
                 };
             } else {
@@ -99,7 +104,11 @@ public abstract class Properties extends java.util.Properties implements Fixable
     public Object parseProperty(PropertyKey<?> key) {
         String result = getProperty(key.getName());
         Parser<?> parser = key.parser();
-        return parser.parse(result);
+        try {
+            return parser.parse(result);
+        } catch (FormatException exc) {
+            return null;
+        }
     }
 
     /** Stores a property value, converted to a parsable string. */
@@ -131,9 +140,9 @@ public abstract class Properties extends java.util.Properties implements Fixable
         if (value == null || value.length() == 0) {
             oldValue = (String) remove(keyword);
         } else if (key == null) {
+            // this is a non-system key
             oldValue = (String) super.setProperty(keyword, value);
-        } else if (!key.parser().accepts(value)
-            || key.parser().isDefault(key.parser().parse(value))) {
+        } else if (!key.parser().accepts(value) || key.parser().getDefaultString().equals(value)) {
             oldValue = (String) remove(keyword);
         } else {
             oldValue = (String) super.setProperty(keyword, value);
