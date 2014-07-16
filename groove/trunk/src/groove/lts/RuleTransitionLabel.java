@@ -204,6 +204,11 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     static StringBuilder computeParameters(ActionLabel label) {
         StringBuilder result = new StringBuilder();
         ThreeValued useParameters = label.getAction().getGrammarProperties().isUseParameters();
+        // also show parameters for properties, unless global property is FALSE
+        if (useParameters.isSome() && label.getAction().isProperty()
+            && !label.getAction().getSignature().isEmpty()) {
+            useParameters = ThreeValued.TRUE;
+        }
         if (!useParameters.isFalse()) {
             List<? extends CtrlPar> args = label.getSwitch().getCall().getArgs();
             // test if all arguments are wildcards
