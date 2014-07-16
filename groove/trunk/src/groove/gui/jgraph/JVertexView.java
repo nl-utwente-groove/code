@@ -301,7 +301,7 @@ public class JVertexView extends VertexView {
 
         @Override
         public MyRenderer getRendererComponent(org.jgraph.JGraph graph, CellView view, boolean sel,
-                boolean focus, boolean preview) {
+            boolean focus, boolean preview) {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
@@ -353,9 +353,10 @@ public class JVertexView extends VertexView {
             Font font = Options.getLabelFont().deriveFont(visuals.getFont());
             setFont((font != null) ? font : graph.getFont());
             setText(this.view.getText());
-            setBorder(createEmptyBorder());
             this.error = visuals.isError();
             this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
+            // do this last: it calls getTextSize, which depends on nodeEdge among others
+            setBorder(createEmptyBorder());
             return this;
         }
 
