@@ -17,7 +17,6 @@
 package groove.gui.layout;
 
 import groove.graph.Edge;
-import groove.graph.EdgeRole;
 import groove.graph.ElementMap;
 import groove.graph.Node;
 import groove.gui.look.VisualMap;
@@ -164,13 +163,14 @@ public class LayoutMap implements Cloneable {
 
     /**
      * Inserts layout information for a given key, on the basis of a
-     * visual map. Only really stores the information if
-     * the edge is not binary.
+     * visual map.
      */
     public void putEdge(Edge key, VisualMap visuals) {
-        if (key.getRole() != EdgeRole.BINARY) {
-            putEdge(key, JEdgeLayout.newInstance(visuals));
-        }
+        // at some point, only layout information about non-binary edges was stored
+        // I do not understand or remember why that was ever a good idea
+        // as it removes all record of manually layouted edge points
+        // (SF Bug #434)
+        putEdge(key, JEdgeLayout.newInstance(visuals));
     }
 
     /**
