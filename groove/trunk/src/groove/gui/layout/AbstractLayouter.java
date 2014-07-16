@@ -149,19 +149,26 @@ abstract public class AbstractLayouter implements Layouter {
             jVertex.setLayoutable(false);
             change.put(jVertex, visuals.getAttributes());
         }
+        // clear edge points
+        // not calling JGraph.clearAllEdgePoints to avoid generating a separate edit
         for (Object root : getJGraph().getRoots()) {
-            if (root instanceof JEdge) {
-                JCell<?> jCell = (JEdge<?>) root;
-                VisualMap visuals = jCell.getVisuals();
-                List<Point2D> points = visuals.getPoints();
-                // don't make the change directly in the cell,
-                // as this messes up the undo history
-                List<Point2D> newPoints =
-                    Arrays.asList(points.get(0), points.get(points.size() - 1));
-                AttributeMap newAttributes = new AttributeMap();
-                GraphConstants.setPoints(newAttributes, newPoints);
-                change.put(jCell, newAttributes);
+            if (!(root instanceof JEdge)) {
+                continue;
             }
+            JEdge<?> jEdge = (JEdge<?>) root;
+            // only clear edge points for edges with relayouted source or target
+            if (this.immovableMap.containsKey(jEdge.getSourceVertex())
+                && this.immovableMap.containsKey(jEdge.getTargetVertex())) {
+                continue;
+            }
+            VisualMap visuals = jEdge.getVisuals();
+            List<Point2D> points = visuals.getPoints();
+            // don't make the change directly in the cell,
+            // as this messes up the undo history
+            List<Point2D> newPoints = Arrays.asList(points.get(0), points.get(points.size() - 1));
+            AttributeMap newAttributes = new AttributeMap();
+            GraphConstants.setPoints(newAttributes, newPoints);
+            change.put(jEdge, newAttributes);
         }
         // do the following in the event dispatch thread\
         final JModel<?> jModel = getJModel();
