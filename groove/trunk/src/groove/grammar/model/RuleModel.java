@@ -185,7 +185,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 continue;
             }
             if (node.getParam() != null) {
-                return new FormatError("parameter not allowed", node);
+                if (node.getParamKind() == PARAM_IN) {
+                    return new FormatError("input parameter not allowed", node);
+                } else if (node.getParamNr() < 0) {
+                    return new FormatError("anonymous parameter not allowed", node);
+                }
             }
             switch (node.getKind()) {
             case ERASER:

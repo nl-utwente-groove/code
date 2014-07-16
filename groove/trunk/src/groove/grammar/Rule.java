@@ -390,7 +390,16 @@ public class Rule implements Action, Fixable {
      * and has zero priority.
      */
     private boolean isPropertyLike() {
-        return !isModifying() && getAnchor().isEmpty() && getPriority() == 0;
+        boolean result = !isModifying() && getPriority() == 0 && getHiddenPars().isEmpty();
+        if (result) {
+            for (CtrlPar.Var var : getSignature()) {
+                if (var.isInOnly()) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     @Override
