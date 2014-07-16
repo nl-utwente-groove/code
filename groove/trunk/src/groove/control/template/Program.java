@@ -630,19 +630,19 @@ public class Program implements Fixable {
             // check that procedure bodies satisfy their requirements
             for (Procedure proc : this.procs.values()) {
                 String name = proc.getFullName();
+                String error = String.format("%s %s", proc.getKind().getName(true), name);
                 if (getRecursion().contains(name)) {
-                    errors.add("%s %s has unguarded recursion", proc.getKind().getName(true), name);
+                    errors.add(error + " has unguarded recursion", proc);
                 }
                 Term body = proc.getTerm();
                 if (body.isFinal()) {
-                    errors.add("%s %s is empty", proc.getKind().getName(true), name);
+                    errors.add(error + " is empty", proc);
                 }
                 if (proc instanceof Recipe && mayFinalise(proc)) {
-                    errors.add("%s %s may immediately terminate", proc.getKind().getName(true),
-                        name);
+                    errors.add(error + " may immediately terminate", proc);
                 }
                 if (proc instanceof Recipe && !willTerminate(proc)) {
-                    errors.add("%s %s may fail to terminate", proc.getKind().getName(true), name);
+                    errors.add(error + " may fail to terminate", proc);
                 }
             }
             errors.throwException();

@@ -45,9 +45,11 @@ public class Recipe extends Procedure implements Action {
         Set<Rule> result = this.rules;
         if (result == null) {
             result = new HashSet<Rule>();
-            for (Action action : getTemplate().getActions()) {
-                if (action instanceof Rule) {
-                    result.add((Rule) action);
+            if (getTemplate() != null) {
+                for (Action action : getTemplate().getActions()) {
+                    if (action instanceof Rule) {
+                        result.add((Rule) action);
+                    }
                 }
             }
             this.rules = result;

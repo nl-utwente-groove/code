@@ -105,7 +105,7 @@ public class CtrlLoader {
                 result.add(tree.toProgram());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
-                    errors.add("Error in %s: %s", name, error);
+                    errors.add(error, FormatError.control(name));
                 }
             }
         }

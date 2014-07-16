@@ -16,8 +16,9 @@
  */
 package groove.grammar.model;
 
-import groove.grammar.Action;
 import groove.grammar.GrammarKey;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
 import groove.grammar.aspect.AspectGraph;
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
@@ -26,6 +27,7 @@ import groove.graph.Node;
 import groove.graph.NodeComparator;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.lts.GraphState;
+import groove.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,12 +88,18 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             for (Object subpar : (Object[]) par) {
                 addContext(subpar);
             }
-        } else if (par instanceof Action) {
-            this.resourceName = ((Action) par).getFullName();
+        } else if (par instanceof Rule) {
+            this.resourceName = ((Rule) par).getFullName();
             this.resourceKind = ResourceKind.RULE;
+        } else if (par instanceof Recipe) {
+            this.resourceName = ((Recipe) par).getControlName();
+            this.resourceKind = ResourceKind.CONTROL;
         } else if (par instanceof GrammarKey) {
             this.resourceName = ((GrammarKey) par).getName();
             this.resourceKind = ResourceKind.PROPERTIES;
+        } else if (par instanceof Resource) {
+            this.resourceKind = ((Resource) par).one();
+            this.resourceName = ((Resource) par).two();
         }
     }
 
@@ -100,12 +108,21 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         // don't call this(String,Object...) as the prior string may contain %'s
         // which give rise to exceptions in String.format()
         this(prior.toString());
+        for (Object par : prior.getArguments()) {
+            addContext(par);
+        }
         for (Object par : pars) {
             addContext(par);
         }
         this.elements.addAll(prior.getElements());
         if (this.graph == null) {
             this.graph = prior.getGraph();
+        }
+        if (this.resourceKind == null) {
+            this.resourceKind = prior.getResourceKind();
+        }
+        if (this.resourceName == null) {
+            this.resourceName = prior.getResourceName();
         }
     }
 
@@ -259,6 +276,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             }
             result.addContext(arg);
         }
+        result.resourceKind = getResourceKind();
+        result.resourceName = getResourceName();
     }
 
     /** Returns the relevant contextual arguments of this error. */
@@ -293,4 +312,22 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
 
     private static final NodeComparator nodeComparator = NodeComparator.instance();
     private static final Comparator<Edge> edgeComparator = EdgeComparator.instance();
+
+    /** Constructs a control parameter from a given name. */
+    public static Resource control(String name) {
+        return resource(ResourceKind.CONTROL, name);
+    }
+
+    /** Constructs a resource parameter from a given resource kind and name. */
+    public static Resource resource(ResourceKind kind, String name) {
+        return new Resource(kind, name);
+    }
+
+    /** Resource parameter class. */
+    public static class Resource extends Pair<ResourceKind,String> {
+        /** Constructs a resource parameter. */
+        public Resource(ResourceKind one, String two) {
+            super(one, two);
+        }
+    }
 }

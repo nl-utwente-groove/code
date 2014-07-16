@@ -46,7 +46,7 @@ public class ControlModel extends TextBasedModel<Collection<Template>> {
         if (isEnabled()) {
             CompositeControlModel model = getGrammar().getControlModel();
             if (model.hasErrors()) {
-                model.getPartErrors(this).throwException();
+                model.getPartErrors(getFullName()).throwException();
                 // there were errors in the composite model but not in this particular part
                 throw new FormatException("The composite control model cannot be built");
             } else {
