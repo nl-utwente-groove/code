@@ -673,8 +673,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     } else if (type != null) {
                         errors.add("Duplicate node types %s and %s", type.label(), typeLabel, node);
                     } else {
-                        type = newType;
-                        types.retainAll(sharp ? Collections.singleton(type) : type.getSubtypes());
+                        type = parentNode == null ? newType : parentNode.getType();
+                        types.retainAll(sharp ? Collections.singleton(newType)
+                            : newType.getSubtypes());
                         if (sharp) {
                             sharpNodes.add(node);
                         }

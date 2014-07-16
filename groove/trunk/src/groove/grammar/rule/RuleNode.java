@@ -42,6 +42,11 @@ public interface RuleNode extends Node, RuleElement {
     @Override
     public Set<TypeNode> getMatchingTypes();
 
+    /** Tests if the matching types and type guards of this node
+     * equal that of another. (This is not covered by #equals).
+     */
+    public boolean stronglyEquals(RuleNode other);
+
     /** Fixed global empty set of matching types. */
     final static Set<TypeNode> EMPTY_MATCH_SET = Collections.emptySet();
 }

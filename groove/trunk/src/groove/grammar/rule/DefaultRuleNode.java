@@ -90,6 +90,23 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
         return result;
     }
 
+    @Override
+    public boolean stronglyEquals(RuleNode other) {
+        if (this == other) {
+            return true;
+        }
+        if (!equals(other)) {
+            return false;
+        }
+        if (!getTypeGuards().equals(other.getTypeGuards())) {
+            return false;
+        }
+        if (!getMatchingTypes().equals(other.getMatchingTypes())) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Returns a string consisting of the letter <tt>'n'</tt>.
      */

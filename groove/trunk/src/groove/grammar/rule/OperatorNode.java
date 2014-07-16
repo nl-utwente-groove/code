@@ -35,8 +35,7 @@ public class OperatorNode extends ANode implements RuleNode {
      * Returns a fresh operator node with a given node number,
      * operator, arguments and target.
      */
-    public OperatorNode(int nr, Operator operator,
-            List<VariableNode> arguments, VariableNode target) {
+    public OperatorNode(int nr, Operator operator, List<VariableNode> arguments, VariableNode target) {
         super(nr);
         this.operator = operator;
         this.arguments = arguments;
@@ -75,6 +74,11 @@ public class OperatorNode extends ANode implements RuleNode {
         result = result * prime + getOperator().hashCode();
         result = result * prime + getTarget().hashCode();
         return result;
+    }
+
+    @Override
+    public boolean stronglyEquals(RuleNode other) {
+        return equals(other);
     }
 
     /** Retrieves the list of arguments of the operator node. */
@@ -145,6 +149,6 @@ public class OperatorNode extends ANode implements RuleNode {
     static final private char TIMES_CHAR = '\u2a09';
     /** Type label of product nodes. */
     @SuppressWarnings("unused")
-    static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(
-        EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
+    static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(EdgeRole.NODE_TYPE, ""
+        + TIMES_CHAR);
 }
