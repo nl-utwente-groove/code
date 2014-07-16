@@ -2,6 +2,7 @@ package groove.gui.action;
 
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
+import groove.control.template.Program;
 import groove.control.template.Template;
 import groove.grammar.model.ControlModel;
 import groove.grammar.model.FormatException;
@@ -98,8 +99,10 @@ public class PreviewControlAction extends SimulatorAction {
             ControlModel controlModel =
                 (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
             if (controlModel == null) {
-                result =
-                    Collections.singleton(grammarModel.getControlModel().getProgram().getTemplate());
+                Program program = grammarModel.getControlModel().getProgram();
+                if (program != null && program.getTemplate() != null) {
+                    result = Collections.singleton(program.getTemplate());
+                }
             } else {
                 result = controlModel.toResource();
             }

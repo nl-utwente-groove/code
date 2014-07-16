@@ -61,29 +61,27 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         for (String controlName : controlNames) {
             ControlModel controlModel = getGrammar().getControlModel(controlName);
             if (controlModel == null) {
-                addPartError(controlModel, new FormatError("Control program cannot be found"));
+                addPartError(controlName, new FormatError("Control program cannot be found"));
             } else {
                 try {
                     treeMap.put(controlModel,
                         getLoader().parse(controlName, controlModel.getProgram()));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
-                        addPartError(controlModel, error);
+                        addPartError(controlName, error);
                     }
                 }
             }
         }
-        for (Map.Entry<ControlModel,CtrlTree> entry : treeMap.entrySet()) {
-            try {
-                entry.getValue().check();
-            } catch (FormatException exc) {
-                for (FormatError error : exc.getErrors()) {
-                    addPartError(entry.getKey(), error);
-                }
+        getAllPartErrors().throwException();
+        try {
+            this.program = getLoader().buildProgram(controlNames);
+        } catch (FormatException exc) {
+            for (FormatError error : exc.getErrors()) {
+                addPartError(error);
             }
         }
         getAllPartErrors().throwException();
-        this.program = getLoader().buildProgram(controlNames);
         return new Automaton(this.program);
     }
 
@@ -155,37 +153,42 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         super.notifyWillRebuild();
     }
 
+    /** Adds a control program-related error. */
+    private void addPartError(FormatError error) {
+        assert error.getResourceKind() == CONTROL;
+        getPartErrors(error.getResourceName()).add(error);
+    }
+
     /** Adds an error for a particular control program. */
-    private void addPartError(ControlModel part, FormatError error) {
-        getPartErrorsMap().get(part).add(error);
+    private void addPartError(String controlName, FormatError error) {
+        getPartErrors(controlName).add(error);
     }
 
     /** Collects and returns all errors found in the partial control models. */
     private FormatErrorSet getAllPartErrors() {
         FormatErrorSet result = createErrors();
-        for (Map.Entry<ControlModel,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
+        for (Map.Entry<String,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
             for (FormatError error : entry.getValue()) {
-                result.add("Error in control program '%s': %s", entry.getKey().getFullName(),
-                    error, entry.getKey());
+                result.add("Error in control program '%s': %s", entry.getKey(), error);
             }
         }
         return result;
     }
 
     /** Returns the errors found in a given partial control model. */
-    FormatErrorSet getPartErrors(ControlModel part) {
-        return getPartErrorsMap().get(part);
+    FormatErrorSet getPartErrors(String controlName) {
+        return getPartErrorsMap().get(controlName);
     }
 
-    private Map<ControlModel,FormatErrorSet> getPartErrorsMap() {
+    private Map<String,FormatErrorSet> getPartErrorsMap() {
         if (this.partErrorsMap == null) {
-            this.partErrorsMap = new HashMap<ControlModel,FormatErrorSet>();
+            this.partErrorsMap = new HashMap<String,FormatErrorSet>();
             for (String name : getGrammar().getActiveNames(CONTROL)) {
-                this.partErrorsMap.put(getGrammar().getControlModel(name), createErrors());
+                this.partErrorsMap.put(name, createErrors());
             }
         }
         return this.partErrorsMap;
     }
 
-    private Map<ControlModel,FormatErrorSet> partErrorsMap;
+    private Map<String,FormatErrorSet> partErrorsMap;
 }

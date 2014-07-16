@@ -453,10 +453,10 @@ public class GrammarModel implements Observer {
         }
         // set control
         try {
+            result.setControl(getControlModel().toResource());
             for (Recipe recipe : getControlModel().getRecipes()) {
                 result.add(recipe);
             }
-            result.setControl(getControlModel().toResource());
         } catch (FormatException e) {
             errors.addAll(e.getErrors());
         }

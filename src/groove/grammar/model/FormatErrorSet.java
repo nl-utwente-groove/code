@@ -48,6 +48,11 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
         return add(new FormatError(message, args));
     }
 
+    /** Adds a format error based on an existing error and set of additional arguments. */
+    public boolean add(FormatError error, Object... args) {
+        return add(new FormatError(error, args));
+    }
+
     /**
      * Throws an exception based on this error set if the error set is nonempty.
      * Does nothing otherwise.
