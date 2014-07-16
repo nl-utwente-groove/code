@@ -19,6 +19,7 @@ package groove.grammar.model;
 import static groove.grammar.model.ResourceKind.CONTROL;
 import groove.control.CtrlLoader;
 import groove.control.instance.Automaton;
+import groove.control.parse.CtrlTree;
 import groove.control.template.Program;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,17 +56,29 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     @Override
     Automaton compute() throws FormatException {
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
+        // first build the trees, then check to avoid errors due to unresolved dependencies
+        Map<ControlModel,CtrlTree> treeMap = new LinkedHashMap<ControlModel,CtrlTree>();
         for (String controlName : controlNames) {
             ControlModel controlModel = getGrammar().getControlModel(controlName);
             if (controlModel == null) {
                 addPartError(controlModel, new FormatError("Control program cannot be found"));
             } else {
                 try {
-                    getLoader().parse(controlName, controlModel.getProgram()).check();
+                    treeMap.put(controlModel,
+                        getLoader().parse(controlName, controlModel.getProgram()));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         addPartError(controlModel, error);
                     }
+                }
+            }
+        }
+        for (Map.Entry<ControlModel,CtrlTree> entry : treeMap.entrySet()) {
+            try {
+                entry.getValue().check();
+            } catch (FormatException exc) {
+                for (FormatError error : exc.getErrors()) {
+                    addPartError(entry.getKey(), error);
                 }
             }
         }

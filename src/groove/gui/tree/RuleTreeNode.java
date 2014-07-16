@@ -50,7 +50,9 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         Icon result = super.getIcon();
         if (result != Icons.EDIT_WIDE_ICON) {
             boolean injective = getRule().isInjective();
-            if (getRule().isProperty()) {
+            if (isPartial()) {
+                result = Icons.EMPTY_ICON;
+            } else if (getRule().isProperty()) {
                 result = getIconMap(injective).get(getRule().getRole());
             } else {
                 result = injective ? Icons.RULE_I_TREE_ICON : Icons.RULE_TREE_ICON;
