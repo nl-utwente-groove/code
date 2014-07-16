@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: RegExprLabel.java,v 1.14 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.grammar.rule;
@@ -26,7 +26,6 @@ import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
 
 import java.util.List;
 import java.util.Set;
@@ -53,7 +52,7 @@ public class RuleLabel extends ALabel {
 
     /**
      * Constructs an atom rule label from a given (host) label.
-     * @param label the host label to be turned into 
+     * @param label the host label to be turned into
      * an atom; may not be <tt>null</tt>
      */
     public RuleLabel(TypeLabel label) {
@@ -102,27 +101,28 @@ public class RuleLabel extends ALabel {
      */
     @Override
     protected Line computeLine() {
-        Line result;
-        String text = getMatchExpr().toString();
-        if (isAtom() || isSharp() || isWildcard()) {
-            text = EdgeRole.parseLabel(text).two();
-        }
-        Line atomText = Line.atom(text);
-        switch (getRole()) {
-        case BINARY:
-            result = isAtom() ? atomText : atomText.style(Style.ITALIC);
-            break;
-        case FLAG:
-            result = atomText.style(Style.ITALIC);
-            break;
-        case NODE_TYPE:
-            result = atomText.style(Style.BOLD);
-            break;
-        default:
-            assert false;
-            result = null;
-        }
-        return result;
+        return getMatchExpr().toLine();
+        //        Line result;
+        //        String text = getMatchExpr().toString();
+        //        if (isAtom() || isSharp() || isWildcard()) {
+        //            text = EdgeRole.parseLabel(text).two();
+        //        }
+        //        Line atomText = Line.atom(text);
+        //        switch (getRole()) {
+        //        case BINARY:
+        //            result = isAtom() ? atomText : atomText.style(Style.ITALIC);
+        //            break;
+        //        case FLAG:
+        //            result = atomText.style(Style.ITALIC);
+        //            break;
+        //        case NODE_TYPE:
+        //            result = atomText.style(Style.BOLD);
+        //            break;
+        //        default:
+        //            assert false;
+        //            result = null;
+        //        }
+        //        return result;
     }
 
     /** Returns the underlying regular expression. */
@@ -170,7 +170,7 @@ public class RuleLabel extends ALabel {
 
     /**
      * If this label wraps a
-     * {@link groove.automaton.RegExpr.Atom} or a {@link groove.automaton.RegExpr.Sharp}, 
+     * {@link groove.automaton.RegExpr.Atom} or a {@link groove.automaton.RegExpr.Sharp},
      * returns the default label corresponding
      * to the atom or sharp text. Returns
      * <code>null</code> otherwise.

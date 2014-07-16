@@ -469,21 +469,26 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
                 if (label == null) {
                     label = label();
                 }
-                text = label.text();
-                // set bold or italic depending on edge role
-                switch (getRole()) {
-                case FLAG:
-                    styles.add(Style.ITALIC);
-                    break;
-                case NODE_TYPE:
-                    styles.add(Style.BOLD);
-                    if (source().getKind() == ABSTRACT) {
-                        styles.add(Style.ITALIC);
-                    }
-                    break;
+                result = label.toLine();
+                if (source().getKind() == ABSTRACT) {
+                    result = result.style(Style.ITALIC);
                 }
+                //                text = label.text();
+                //                // set bold or italic depending on edge role
+                //                switch (getRole()) {
+                //                case FLAG:
+                //                    styles.add(Style.ITALIC);
+                //                    break;
+                //                case NODE_TYPE:
+                //                    styles.add(Style.BOLD);
+                //                    if (source().getKind() == ABSTRACT) {
+                //                        styles.add(Style.ITALIC);
+                //                    }
+                //                    break;
+                //                }
+            } else {
+                result = Line.atom(text);
             }
-            result = Line.atom(text);
         }
         if (onNode) {
             SignatureKind type = null;
