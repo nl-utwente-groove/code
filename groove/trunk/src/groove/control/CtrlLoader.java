@@ -22,12 +22,12 @@ import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
 import groove.control.template.Program;
 import groove.grammar.Callable;
+import groove.grammar.Callable.Kind;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.grammar.Callable.Kind;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
@@ -58,7 +58,7 @@ public class CtrlLoader {
      * should check for circular dependencies and forward references.
      */
     public CtrlLoader(GrammarProperties grammarProperties, Collection<Rule> rules,
-            boolean checkDependencies) {
+        boolean checkDependencies) {
         this.namespace = new Namespace(grammarProperties);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
@@ -95,7 +95,7 @@ public class CtrlLoader {
         return result;
     }
 
-    /** Returns a control program constructed from a set of program names. */
+    /** Returns a control program constructed from a set of previously parsed program names. */
     public Program buildProgram(Collection<String> progNames) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         Program result = new Program();
@@ -189,7 +189,7 @@ public class CtrlLoader {
                 // no explicit priority
                 if (newPriority != 0) {
                     rewriter.insertAfter(recipeTree.getChild(1).getToken(), "priority "
-                            + newPriority);
+                        + newPriority);
                     changed = true;
                 }
             } else {
