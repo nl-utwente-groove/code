@@ -1940,10 +1940,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     RuleNode globalImage = this.globalTypeMap.getNode(key);
                     if (globalImage == null) {
                         this.globalTypeMap.putNode(key, image);
-                        result.addNode(image);
-                    } else {
-                        result.addNode(globalImage);
                     }
+                    result.addNode(image);
                 }
                 for (Map.Entry<RuleEdge,RuleEdge> edgeEntry : typing.edgeMap().entrySet()) {
                     RuleEdge key = edgeEntry.getKey();
