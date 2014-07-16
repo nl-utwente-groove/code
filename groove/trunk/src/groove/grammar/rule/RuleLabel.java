@@ -91,6 +91,8 @@ public class RuleLabel extends ALabel {
             result = ((RegExpr.Wildcard) getMatchExpr()).getKind();
         } else if (isSharp() || isAtom()) {
             result = getTypeLabel().getRole();
+        } else {
+            result = getMatchExpr().isBinary() ? EdgeRole.BINARY : EdgeRole.FLAG;
         }
         return result;
     }

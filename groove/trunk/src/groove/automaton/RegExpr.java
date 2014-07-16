@@ -337,9 +337,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         Iterator<RegExpr> operandIter = getOperands().iterator();
         while (!found && operandIter.hasNext()) {
             RegExpr operand = operandIter.next();
-            found =
-                operand.isMyOperator(operator)
-                    || operand.containsOperator(operator);
+            found = operand.isMyOperator(operator) || operand.containsOperator(operator);
         }
         return found;
     }
@@ -450,6 +448,12 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /**
+     * Indicates if this expression is matched by a single node
+     * This is the case if it consists only of node types and flags.
+     */
+    abstract public boolean isBinary();
+
+    /**
      * Returns a list of {@link RegExpr}s that are the operands of this regular
      * expression.
      */
@@ -478,8 +482,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @throws FormatException if <tt>expr</tt> appears to be an expression (of
      *         the kind implemented by the class) but is malformed
      */
-    abstract protected RegExpr parseOperator(String expr)
-        throws FormatException;
+    abstract protected RegExpr parseOperator(String expr) throws FormatException;
 
     /**
      * Tests whether a given text may be regarded as an atom, according to the
@@ -499,18 +502,13 @@ abstract public class RegExpr { // implements VarSetSupport {
             case DOUBLE_QUOTE_CHAR:
             case LANGLE_CHAR:
                 // quoted/bracketed atoms
-                Pair<String,List<String>> parseResult =
-                    ExprParser.parseExpr(text);
+                Pair<String,List<String>> parseResult = ExprParser.parseExpr(text);
                 if (parseResult.one().length() != 1) {
                     String error;
                     if (text.charAt(0) == DOUBLE_QUOTE_CHAR) {
-                        error =
-                            String.format("Atom '%s' has unbalanced quotes",
-                                text);
+                        error = String.format("Atom '%s' has unbalanced quotes", text);
                     } else {
-                        error =
-                            String.format("Atom '%s' has unbalanced brackets",
-                                text);
+                        error = String.format("Atom '%s' has unbalanced brackets", text);
                     }
                     throw new FormatException(error);
                 } else {
@@ -518,9 +516,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
             case INV_OPERATOR:
                 String error =
-                    String.format(
-                        "Atom '%s' contains invalid first character '%c'",
-                        text, INV_OPERATOR);
+                    String.format("Atom '%s' contains invalid first character '%c'", text,
+                        INV_OPERATOR);
                 throw new FormatException(error);
             default:
                 // default atoms
@@ -532,8 +529,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                     correct = isAtomChar(text.charAt(i));
                 }
                 if (!correct) {
-                    throw new FormatException(
-                        "Atom '%s' contains invalid character '%c'", text,
+                    throw new FormatException("Atom '%s' contains invalid character '%c'", text,
                         text.charAt(i - 1));
                 }
             }
@@ -627,8 +623,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return result;
             }
         }
-        throw new FormatException(
-            "Unable to parse expression %s as regular expression", expr);
+        throw new FormatException("Unable to parse expression %s as regular expression", expr);
     }
 
     /** Creates and returns an atomic regular expression with a given atom text. */
@@ -668,8 +663,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @param labels optional list of labels constraining the value of the wildcard;
      * if empty, there is no constraint
      */
-    public static Wildcard wildcard(EdgeRole kind, boolean negated,
-            String... labels) {
+    public static Wildcard wildcard(EdgeRole kind, boolean negated, String... labels) {
         return wildcard(kind, null, negated, labels);
     }
 
@@ -681,12 +675,10 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @param labels optional list of labels constraining the value of the wildcard;
      * if empty, there is no constraint
      */
-    public static Wildcard wildcard(EdgeRole kind, String name,
-            boolean negated, String... labels) {
+    public static Wildcard wildcard(EdgeRole kind, String name, boolean negated, String... labels) {
         Wildcard prototype = new Wildcard();
         TypeGuard guard =
-            new TypeGuard(name == null ? new LabelVar(kind) : new LabelVar(
-                name, kind));
+            new TypeGuard(name == null ? new LabelVar(kind) : new LabelVar(name, kind));
         if (labels.length > 0) {
             guard.setLabels(Arrays.asList(labels), negated);
         }
@@ -853,9 +845,8 @@ abstract public class RegExpr { // implements VarSetSupport {
      * priority. In particular, atoms that have special meaning should come
      * before the {@link Atom}.
      */
-    static private final RegExpr[] prototypes = new RegExpr[] {new Atom(),
-        new Neg(), new Choice(), new Seq(), new Inv(), new Star(), new Plus(),
-        new Wildcard(), new Sharp(), new Empty()};
+    static private final RegExpr[] prototypes = new RegExpr[] {new Atom(), new Neg(), new Choice(),
+        new Seq(), new Inv(), new Star(), new Plus(), new Wildcard(), new Sharp(), new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
@@ -873,8 +864,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         for (RegExpr prototype : prototypes) {
             if (!(prototype instanceof Atom)) {
                 operators.add(prototype.getOperator());
-                tokenMap.put(prototype.getClass().getSimpleName(),
-                    Help.bf(prototype.getOperator()));
+                tokenMap.put(prototype.getClass().getSimpleName(), Help.bf(prototype.getOperator()));
             }
         }
         tokenMap.put("LSQUARE", "[");
@@ -887,8 +877,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /** Constant hash code characterising the class. */
-    static private final int classHashCode =
-        System.identityHashCode(RegExpr.class);
+    static private final int classHashCode = System.identityHashCode(RegExpr.class);
 
     /**
      * Returns a syntax helper mapping from syntax items
@@ -927,6 +916,18 @@ abstract public class RegExpr { // implements VarSetSupport {
         protected Composite(String operator, String symbol) {
             super(operator, symbol);
         }
+
+        @Override
+        public boolean isBinary() {
+            boolean result = false;
+            for (RegExpr operand : getOperands()) {
+                if (operand.isBinary()) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
     }
 
     /**
@@ -941,8 +942,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         public Infix(String operator, String symbol, List<RegExpr> operands) {
             super(operator, symbol);
             this.operandList = operands;
-            this.acceptsEmptyWord =
-                operands != null && computeAcceptsEmptyWord(operands);
+            this.acceptsEmptyWord = operands != null && computeAcceptsEmptyWord(operands);
         }
 
         /**
@@ -957,8 +957,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
             String[] operands =
-                ExprParser.splitExpr(expr, getOperator(),
-                    ExprParser.INFIX_POSITION);
+                ExprParser.splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
             if (operands.length < 2) {
                 return null;
             }
@@ -1039,8 +1038,8 @@ abstract public class RegExpr { // implements VarSetSupport {
          * Calculation of the actual operation, given precalculated argumants.
          * @see #apply(RegExprCalculator)
          */
-        abstract protected <Result> Result applyInfix(
-                RegExprCalculator<Result> visitor, List<Result> argsList);
+        abstract protected <Result> Result applyInfix(RegExprCalculator<Result> visitor,
+            List<Result> argsList);
 
         @Override
         public boolean isAcceptsEmptyWord() {
@@ -1104,8 +1103,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public String toString() {
             if (bindsWeaker(this.operand, this)) {
-                return "" + LPAR_CHAR + getOperand() + RPAR_CHAR
-                    + getOperator();
+                return "" + LPAR_CHAR + getOperand() + RPAR_CHAR + getOperator();
             } else {
                 return "" + getOperand() + getOperator();
             }
@@ -1120,8 +1118,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
             String[] operands =
-                ExprParser.splitExpr(expr, getOperator(),
-                    ExprParser.POSTFIX_POSITION);
+                ExprParser.splitExpr(expr, getOperator(), ExprParser.POSTFIX_POSITION);
             if (operands == null) {
                 return null;
             }
@@ -1149,8 +1146,8 @@ abstract public class RegExpr { // implements VarSetSupport {
          * Calculation of the actual operation, given a precalculated argumant.
          * @see #apply(RegExprCalculator)
          */
-        abstract protected <Result> Result applyPostfix(
-                RegExprCalculator<Result> visitor, Result arg);
+        abstract protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor,
+            Result arg);
 
         /**
          * The (single) operand of the postfix operator.
@@ -1205,8 +1202,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public String toString() {
             if (bindsWeaker(this.operand, this)) {
-                return "" + getOperator() + LPAR_CHAR + getOperand()
-                    + RPAR_CHAR;
+                return "" + getOperator() + LPAR_CHAR + getOperand() + RPAR_CHAR;
             } else {
                 return "" + getOperator() + getOperand();
             }
@@ -1221,8 +1217,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
             String[] operands =
-                ExprParser.splitExpr(expr, getOperator(),
-                    ExprParser.PREFIX_POSITION);
+                ExprParser.splitExpr(expr, getOperator(), ExprParser.PREFIX_POSITION);
             if (operands == null) {
                 return null;
             }
@@ -1250,8 +1245,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * Calculation of the actual operation, given a precalculated argumant.
          * @see #apply(RegExprCalculator)
          */
-        abstract protected <Result> Result applyPrefix(
-                RegExprCalculator<Result> visitor, Result arg);
+        abstract protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg);
 
         /**
          * The (single) operand of the prefix operator.
@@ -1320,8 +1314,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @Syntax("expr1 %s expr2")
     @ToolTipHeader("Concatenation")
     @ToolTipBody({"Satisfied by a path <i>p</i> if it is the concatenation",
-        "of a path <i>p1</i> satisfying %1$s, followed by a path <i>p2</i>",
-        "satisfying %2$s"})
+        "of a path <i>p1</i> satisfying %1$s, followed by a path <i>p2</i>", "satisfying %2$s"})
     static public class Seq extends Infix {
         /** Creates a sequential composition of a list of expressions. */
         public Seq(List<RegExpr> innerRegExps) {
@@ -1344,7 +1337,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected <Result> Result applyInfix(RegExprCalculator<Result> visitor,
-                List<Result> argsList) {
+            List<Result> argsList) {
             return visitor.computeSeq(this, argsList);
         }
 
@@ -1360,6 +1353,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             return result;
         }
+
     }
 
     /**
@@ -1391,7 +1385,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected <Result> Result applyInfix(RegExprCalculator<Result> visitor,
-                List<Result> argsList) {
+            List<Result> argsList) {
             return visitor.computeChoice(this, argsList);
         }
 
@@ -1417,19 +1411,16 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     @Syntax("[role COLON] %s [name] [ LSQUARE [HAT]label_list RSQUARE ]")
     @ToolTipHeader("Label variable or wildcard")
-    @ToolTipBody({
-        "Satisfied by an edge if its label fulfils the following conditions:",
-        "<ul>", "<li> If the prefix %1$s is specified (either FLAG or TYPE)",
-        "then the label must have that role;",
-        "if it is absent, the edge must be binary.",
+    @ToolTipBody({"Satisfied by an edge if its label fulfils the following conditions:", "<ul>",
+        "<li> If the prefix %1$s is specified (either FLAG or TYPE)",
+        "then the label must have that role;", "if it is absent, the edge must be binary.",
         "<li> If a suffix of the form LSQUARE %3$s RSQUARE is specified",
         "then the label must be one of the elements of %3$s.",
         "<li> If a suffix of the form LSQUARE HAT %3$s RSQUARE is specified",
-        "then the label may <i>not</i> be one of the elements of %3$s.",
-        "</ul>", "The optional %2$s acts as a variable binding the label.",
+        "then the label may <i>not</i> be one of the elements of %3$s.", "</ul>",
+        "The optional %2$s acts as a variable binding the label.",
         "Multiple occurrences of %2$s in a rule must all be bound to the same label."})
-    @ToolTipPars({
-        "the optional role of the label: either FLAG or TYPE",
+    @ToolTipPars({"the optional role of the label: either FLAG or TYPE",
         "the optional wildcard variable name",
         "comma-separated list of labels, either containing or excluding the matched label"})
     static public class Wildcard extends Constant {
@@ -1504,8 +1495,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                     result.append(type.subSequence(0, type.length() - 1));
                 }
                 if (this.guard.getLabels() != null) {
-                    result.append(this.guard.isNegated() ? " not in "
-                            : " from ");
+                    result.append(this.guard.isNegated() ? " not in " : " from ");
                     result.append(Groove.toString(this.guard.getLabels().toArray()));
                 }
             }
@@ -1522,6 +1512,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         /** Returns the kind of labels accepted by this wildcard. */
         public EdgeRole getKind() {
             return getGuard().getKind();
+        }
+
+        @Override
+        public boolean isBinary() {
+            return getKind() == EdgeRole.BINARY;
         }
 
         /**
@@ -1548,8 +1543,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
             FormatException error =
-                new FormatException("Can't parse wildcard expression '%s'",
-                    expr);
+                new FormatException("Can't parse wildcard expression '%s'", expr);
             int index = expr.indexOf(getOperator());
             if (index < 0) {
                 return null;
@@ -1580,23 +1574,18 @@ abstract public class RegExpr { // implements VarSetSupport {
                     if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
                         throw error;
                     }
-                    identifier =
-                        identifier.substring(0, identifier.length() - 1);
+                    identifier = identifier.substring(0, identifier.length() - 1);
                 }
                 if (identifier.isEmpty()) {
                     identifier = null;
                 } else if (!ExprParser.isIdentifier(identifier)) {
-                    throw new FormatException(
-                        "Invalid wildcard identifier '%s'", text);
+                    throw new FormatException("Invalid wildcard identifier '%s'", text);
                 }
             }
-            LabelVar var =
-                identifier == null ? new LabelVar(kind) : new LabelVar(
-                    identifier, kind);
+            LabelVar var = identifier == null ? new LabelVar(kind) : new LabelVar(identifier, kind);
             TypeGuard guard = new TypeGuard(var);
             if (parameter != null) {
-                Pair<List<String>,Boolean> constraint =
-                    getConstraint(parameter);
+                Pair<List<String>,Boolean> constraint = getConstraint(parameter);
                 guard.setLabels(constraint.one(), constraint.two());
             }
             return newInstance(guard);
@@ -1608,13 +1597,11 @@ abstract public class RegExpr { // implements VarSetSupport {
          * @throws FormatException if <code>parameter</code> is not correctly
          *         formed as a constraint.
          */
-        private Pair<List<String>,Boolean> getConstraint(String parameter)
-            throws FormatException {
+        private Pair<List<String>,Boolean> getConstraint(String parameter) throws FormatException {
             String constraintList =
                 ExprParser.toTrimmed(parameter, TypeGuard.OPEN, TypeGuard.CLOSE);
             if (constraintList == null) {
-                throw new FormatException("Invalid constraint parameter '%s'",
-                    parameter);
+                throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
             boolean negated = constraintList.indexOf(TypeGuard.NEGATOR) == 0;
             if (negated) {
@@ -1624,8 +1611,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 ExprParser.splitExpr(constraintList, "" + TypeGuard.SEPARATOR,
                     ExprParser.INFIX_POSITION);
             if (constraintParts.length == 0) {
-                throw new FormatException("Invalid constraint parameter '%s'",
-                    parameter);
+                throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
             final List<String> constrainedLabels = new ArrayList<String>();
             for (String part : constraintParts) {
@@ -1633,21 +1619,18 @@ abstract public class RegExpr { // implements VarSetSupport {
                 try {
                     atom = parse(part);
                 } catch (FormatException exc) {
-                    throw new FormatException(
-                        "Label '%s' in constraint '%s' cannot be parsed", part,
-                        parameter);
+                    throw new FormatException("Label '%s' in constraint '%s' cannot be parsed",
+                        part, parameter);
                 }
                 if (atom instanceof Atom) {
                     Label label = atom.toLabel();
                     if (label.getRole() != EdgeRole.BINARY) {
                         throw new FormatException(
-                            "Label '%s' in constraint '%s' should not be prefixed",
-                            part, parameter);
+                            "Label '%s' in constraint '%s' should not be prefixed", part, parameter);
                     }
                     constrainedLabels.add(label.text());
                 } else {
-                    throw new FormatException(
-                        "Label '%s' in constraint '%s' should be an atom",
+                    throw new FormatException("Label '%s' in constraint '%s' should be an atom",
                         part, parameter);
                 }
             }
@@ -1735,8 +1718,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String toString() {
-            return NODE_TYPE.getPrefix() + super.toString()
-                + getTypeLabel().text();
+            return NODE_TYPE.getPrefix() + super.toString() + getTypeLabel().text();
         }
 
         /**
@@ -1752,12 +1734,10 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return null;
             }
             // separate the expression into operator and text
-            Pair<EdgeRole,String> parsedExpr =
-                EdgeRole.parseLabel(expr.substring(0, index));
+            Pair<EdgeRole,String> parsedExpr = EdgeRole.parseLabel(expr.substring(0, index));
             String text = expr.substring(index + 1);
             if (parsedExpr.one() != NODE_TYPE || parsedExpr.two().length() != 0) {
-                throw new FormatException(
-                    "Sharp operator '%s' must be preceded by '%s'",
+                throw new FormatException("Sharp operator '%s' must be preceded by '%s'",
                     getOperator(), NODE_TYPE.getPrefix());
             }
             return newInstance(TypeLabel.createLabel(NODE_TYPE, text, true));
@@ -1781,6 +1761,11 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public boolean isAcceptsEmptyWord() {
+            return false;
+        }
+
+        @Override
+        public boolean isBinary() {
             return false;
         }
 
@@ -1830,6 +1815,10 @@ abstract public class RegExpr { // implements VarSetSupport {
             return true;
         }
 
+        @Override
+        public boolean isBinary() {
+            return false;
+        }
     }
 
     /**
@@ -1838,8 +1827,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     @Syntax("[role COLON] label")
     @ToolTipHeader("Single edge or label")
-    @ToolTipBody({
-        "Matched by a single edge labelled %2$s (if no %1$s is specified),",
+    @ToolTipBody({"Matched by a single edge labelled %2$s (if no %1$s is specified),",
         "a %2$s-flag (if %1$s equals FLAG) or a %2$s-type (if %1$s equals TYPE).",
         "In the latter case, any subtype of %2$s is also correct."})
     @ToolTipPars({"optional role: either TYPE or FLAG",
@@ -1864,8 +1852,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-            return oldLabel.equals(toTypeLabel())
-                    ? newInstance(newLabel.toParsableString()) : this;
+            return oldLabel.equals(toTypeLabel()) ? newInstance(newLabel.toParsableString()) : this;
         }
 
         @Override
@@ -1917,23 +1904,19 @@ abstract public class RegExpr { // implements VarSetSupport {
         public RegExpr parseOperator(String expr) throws FormatException {
             expr = expr.trim();
             if (expr.length() == 0) {
-                throw new FormatException(
-                    "Empty string not allowed in expression");
+                throw new FormatException("Empty string not allowed in expression");
             } else if (isAtom(expr)) {
                 return newInstance(expr);
             } else {
                 // the only hope is that the expression is quoted or bracketed
-                Pair<String,List<String>> parseResult =
-                    ExprParser.parseExpr(expr);
-                if (parseResult.one().length() == 1
-                    && parseResult.one().charAt(0) == PLACEHOLDER) {
+                Pair<String,List<String>> parseResult = ExprParser.parseExpr(expr);
+                if (parseResult.one().length() == 1 && parseResult.one().charAt(0) == PLACEHOLDER) {
                     String parsedExpr = parseResult.two().get(0);
                     switch (parsedExpr.charAt(0)) {
                     case LPAR_CHAR:
                         return parse(parsedExpr.substring(1, expr.length() - 1));
                     case SINGLE_QUOTE_CHAR:
-                        return newInstance(ExprParser.toUnquoted(parsedExpr,
-                            SINGLE_QUOTE_CHAR));
+                        return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
                     default:
                         return null;
                     }
@@ -1950,8 +1933,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected Constant newInstance() {
-            throw new UnsupportedOperationException(
-                "Atom instances must have a parameter");
+            throw new UnsupportedOperationException("Atom instances must have a parameter");
         }
 
         /**
@@ -1976,6 +1958,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             return false;
         }
 
+        @Override
+        public boolean isBinary() {
+            return toTypeLabel().getRole() == EdgeRole.BINARY;
+        }
+
         /** The text of the atom. */
         private final String text;
     }
@@ -1987,8 +1974,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     @Syntax("expr %s")
     @ToolTipHeader("Zero or more")
-    @ToolTipBody({
-        "Matched by a path <i>p</i> if it is the concatenation of multiple",
+    @ToolTipBody({"Matched by a path <i>p</i> if it is the concatenation of multiple",
         "fragments satisfying %1$s"})
     static public class Star extends Postfix {
         /** Creates the repetition of a given regular expression. */
@@ -2011,8 +1997,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * the visitor.
          */
         @Override
-        protected <Result> Result applyPostfix(
-                RegExprCalculator<Result> visitor, Result arg) {
+        protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeStar(this, arg);
         }
 
@@ -2029,8 +2014,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     @Syntax("expr %s")
     @ToolTipHeader("One or more")
-    @ToolTipBody({
-        "Matched by a path <i>p</i> if it is the concatenation of at least one",
+    @ToolTipBody({"Matched by a path <i>p</i> if it is the concatenation of at least one",
         "fragment satisfying %1$s"})
     static public class Plus extends Postfix {
         /** Creates a non-empty repetition of a given regular expression. */
@@ -2053,8 +2037,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * the visitor.
          */
         @Override
-        protected <Result> Result applyPostfix(
-                RegExprCalculator<Result> visitor, Result arg) {
+        protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computePlus(this, arg);
         }
 
@@ -2093,8 +2076,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * the visitor.
          */
         @Override
-        protected <Result> Result applyPrefix(
-                RegExprCalculator<Result> visitor, Result arg) {
+        protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeInv(this, arg);
         }
 
@@ -2133,8 +2115,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * the visitor.
          */
         @Override
-        protected <Result> Result applyPrefix(
-                RegExprCalculator<Result> visitor, Result arg) {
+        protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeNeg(this, arg);
         }
 
