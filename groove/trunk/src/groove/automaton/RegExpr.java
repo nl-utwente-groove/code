@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: RegExpr.java,v 1.21 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.automaton;
@@ -35,6 +35,8 @@ import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
+import groove.gui.look.Line;
+import groove.gui.look.Line.Style;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -94,7 +96,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         return this instanceof Sharp;
     }
 
-    /** 
+    /**
      * Returns the type label this is a {@link RegExpr.Sharp},
      * or {@code null} otherwise.
      */
@@ -452,6 +454,19 @@ abstract public class RegExpr { // implements VarSetSupport {
      * This is the case if it consists only of node types and flags.
      */
     abstract public boolean isBinary();
+
+    /** Returns a line representing this expression typeset properly. */
+    public Line toLine() {
+        if (this.line == null) {
+            this.line = computeLine();
+        }
+        return this.line;
+    }
+
+    /** Callback method to create the line representation for this expression. */
+    abstract protected Line computeLine();
+
+    private Line line;
 
     /**
      * Returns a list of {@link RegExpr}s that are the operands of this regular
@@ -990,6 +1005,26 @@ abstract public class RegExpr { // implements VarSetSupport {
             return result.toString();
         }
 
+        @Override
+        protected Line computeLine() {
+            Line result = Line.empty();
+            Iterator<RegExpr> operandIter = getOperands().iterator();
+            while (operandIter.hasNext()) {
+                RegExpr operand = operandIter.next();
+                if (bindsWeaker(operand, this)) {
+                    result =
+                        result.append("" + LPAR_CHAR).append(operand.toLine()).append(
+                            "" + RPAR_CHAR);
+                } else {
+                    result = result.append(operand.toLine());
+                }
+                if (operandIter.hasNext()) {
+                    result = result.append(getOperator());
+                }
+            }
+            return result;
+        }
+
         /**
          * This implementation first calls the calculator on the operands and
          * then on the operator itself with the resulting arguments.
@@ -1046,7 +1081,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             return this.acceptsEmptyWord;
         }
 
-        /** 
+        /**
          * Callback method to compute whether the expression accepts the
          * empty word.
          */
@@ -1106,6 +1141,17 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return "" + LPAR_CHAR + getOperand() + RPAR_CHAR + getOperator();
             } else {
                 return "" + getOperand() + getOperator();
+            }
+        }
+
+        @Override
+        protected Line computeLine() {
+            Line result = Line.empty();
+            if (bindsWeaker(this.operand, this)) {
+                return result.append("" + LPAR_CHAR).append(getOperand().toLine()).append(
+                    "" + RPAR_CHAR + getOperator());
+            } else {
+                return result.append(getOperand().toLine()).append(getOperator());
             }
         }
 
@@ -1205,6 +1251,17 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return "" + getOperator() + LPAR_CHAR + getOperand() + RPAR_CHAR;
             } else {
                 return "" + getOperator() + getOperand();
+            }
+        }
+
+        @Override
+        protected Line computeLine() {
+            Line result = Line.empty();
+            if (bindsWeaker(this.operand, this)) {
+                return result.append(getOperator() + LPAR_CHAR).append(getOperand().toLine()).append(
+                    "" + RPAR_CHAR);
+            } else {
+                return result.append("" + getOperator()).append(getOperand().toLine());
             }
         }
 
@@ -1430,7 +1487,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /**
-         * Constructs a wildcard expression with a given (possibly {@code null}) 
+         * Constructs a wildcard expression with a given (possibly {@code null})
          * identifier and (possibly {@code null}) label constraint.
          */
         private Wildcard(TypeGuard guard) {
@@ -1463,11 +1520,6 @@ abstract public class RegExpr { // implements VarSetSupport {
             return calculator.computeWildcard(this);
         }
 
-        /**
-         * This implementation delegates to <code>super</code> if
-         * {@link #getDescription()} returns <code>null</code>, otherwise it
-         * returns the concatenation of the operator and the identifier.
-         */
         @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
@@ -1476,6 +1528,19 @@ abstract public class RegExpr { // implements VarSetSupport {
             result.append(getLabelVar().getName());
             result.append(getGuard());
             return result.toString();
+        }
+
+        @Override
+        protected Line computeLine() {
+            Line result = Line.atom(super.toString() + getLabelVar().getName() + getGuard());
+            switch (getGuard().getKind()) {
+            case FLAG:
+                result = result.style(Style.ITALIC);
+                break;
+            case NODE_TYPE:
+                result = result.style(Style.BOLD);
+            }
+            return result;
         }
 
         /**
@@ -1721,6 +1786,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             return NODE_TYPE.getPrefix() + super.toString() + getTypeLabel().text();
         }
 
+        @Override
+        protected Line computeLine() {
+            return Line.atom(super.toString() + getTypeLabel().text()).style(Style.BOLD);
+        }
+
         /**
          * First tries the super implementation, but if that does not work,
          * tries to parse <code>expr</code> as a prefix expression where the
@@ -1819,6 +1889,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         public boolean isBinary() {
             return false;
         }
+
+        @Override
+        protected Line computeLine() {
+            return Line.atom(getOperator());
+        }
     }
 
     /**
@@ -1875,6 +1950,11 @@ abstract public class RegExpr { // implements VarSetSupport {
                 // the atom text looks like something else if we parse it as is
                 return ExprParser.toQuoted(text(), SINGLE_QUOTE_CHAR);
             }
+        }
+
+        @Override
+        protected Line computeLine() {
+            return toTypeLabel().toLine();
         }
 
         @Override
