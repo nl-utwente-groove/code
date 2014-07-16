@@ -90,8 +90,14 @@ public class RuleLabel extends ALabel {
             result = ((RegExpr.Wildcard) getMatchExpr()).getKind();
         } else if (isSharp() || isAtom()) {
             result = getTypeLabel().getRole();
+        } else if (isEmpty()) {
+            result = EdgeRole.BINARY;
+        } else if (isNeg() && getNegOperand().isEmpty()) {
+            result = EdgeRole.BINARY;
+        } else if (getMatchExpr().isBinary()) {
+            result = EdgeRole.BINARY;
         } else {
-            result = getMatchExpr().isBinary() ? EdgeRole.BINARY : EdgeRole.FLAG;
+            result = EdgeRole.FLAG;
         }
         return result;
     }
@@ -102,27 +108,6 @@ public class RuleLabel extends ALabel {
     @Override
     protected Line computeLine() {
         return getMatchExpr().toLine();
-        //        Line result;
-        //        String text = getMatchExpr().toString();
-        //        if (isAtom() || isSharp() || isWildcard()) {
-        //            text = EdgeRole.parseLabel(text).two();
-        //        }
-        //        Line atomText = Line.atom(text);
-        //        switch (getRole()) {
-        //        case BINARY:
-        //            result = isAtom() ? atomText : atomText.style(Style.ITALIC);
-        //            break;
-        //        case FLAG:
-        //            result = atomText.style(Style.ITALIC);
-        //            break;
-        //        case NODE_TYPE:
-        //            result = atomText.style(Style.BOLD);
-        //            break;
-        //        default:
-        //            assert false;
-        //            result = null;
-        //        }
-        //        return result;
     }
 
     /** Returns the underlying regular expression. */
