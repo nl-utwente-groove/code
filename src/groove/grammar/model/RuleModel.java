@@ -185,7 +185,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 continue;
             }
             if (node.getParam() != null) {
-                if (getRole().isConstraint()) {
+                // don't use #getRole() here as it causes infinite recursion
+                Role role = GraphInfo.getRole(getSource());
+                if (role != null && role.isConstraint()) {
                     return new FormatError("parameter not allowed", node);
                 } else if (node.getParamKind() == PARAM_IN) {
                     return new FormatError("input parameter not allowed", node);
