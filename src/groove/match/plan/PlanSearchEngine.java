@@ -51,6 +51,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -304,24 +305,37 @@ public class PlanSearchEngine extends SearchEngine {
          */
         Collection<AbstractSearchItem> computePatternSearchItems(Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
-            Set<RuleNode> unmatchedNodes = new LinkedHashSet<RuleNode>(this.remainingNodes);
+            Map<RuleNode,RuleNode> unmatchedNodes = new LinkedHashMap<RuleNode,RuleNode>();
+            for (RuleNode node : this.remainingNodes) {
+                unmatchedNodes.put(node, node);
+            }
             Set<RuleEdge> unmatchedEdges = new LinkedHashSet<RuleEdge>(this.remainingEdges);
             // first a single search item for the pre-matched elements
             if (seed == null) {
                 seed = new Anchor();
             }
+            Set<RuleNode> constraint = new HashSet<RuleNode>();
             if (!seed.isEmpty()) {
                 AbstractSearchItem seedItem = new SeedSearchItem(seed);
                 result.add(seedItem);
-                unmatchedNodes.removeAll(seedItem.bindsNodes());
+                // nodes in the seed and the currently matched graph my be equal
+                // but differ in their type constraints
+                for (RuleNode seedNode : seedItem.bindsNodes()) {
+                    RuleNode myNode = unmatchedNodes.get(seedNode);
+                    if (seedNode.stronglyEquals(myNode)) {
+                        unmatchedNodes.remove(seedNode);
+                    } else {
+                        constraint.add(myNode);
+                    }
+                }
                 unmatchedEdges.removeAll(seedItem.bindsEdges());
             }
             // match all the value nodes and guard-carrying nodes explicitly
-            Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.iterator();
+            Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.keySet().iterator();
             while (unmatchedNodeIter.hasNext()) {
                 RuleNode node = unmatchedNodeIter.next();
                 if (node instanceof VariableNode && ((VariableNode) node).getConstant() != null
-                    || !node.getTypeGuards().isEmpty()) {
+                    || !node.getTypeGuards().isEmpty() || constraint.contains(node)) {
                     AbstractSearchItem nodeItem = createNodeSearchItem(node);
                     if (nodeItem != null) {
                         result.add(nodeItem);
@@ -349,7 +363,7 @@ public class PlanSearchEngine extends SearchEngine {
                 }
             }
             // finally a search item per remaining node
-            for (RuleNode node : unmatchedNodes) {
+            for (RuleNode node : unmatchedNodes.keySet()) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()

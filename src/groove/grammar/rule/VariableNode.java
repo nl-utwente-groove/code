@@ -75,6 +75,11 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
         return getNumber() == other.getNumber();
     }
 
+    @Override
+    public boolean stronglyEquals(RuleNode other) {
+        return equals(other);
+    }
+
     /**
      * Returns the (non-{@code null}) signature to which the variable node
      * belongs.
@@ -152,8 +157,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";
     /** Predefined empty list of type guards. */
-    static private final List<TypeGuard> EMPTY_GUARD_LIST =
-        Collections.emptyList();
+    static private final List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
     /** Predefined empty list of type guards. */
     static private final Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
 }
