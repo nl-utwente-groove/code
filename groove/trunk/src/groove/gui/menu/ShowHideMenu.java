@@ -25,7 +25,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.gui.Options;
-import groove.gui.dialog.StringDialog;
+import groove.gui.dialog.FormulaDialog;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
@@ -582,8 +582,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         private RelationCalculator calculator;
 
-        private static StringDialog exprDialog =
-            StringDialog.createStringDialog("Regular Expression: ");
+        private static FormulaDialog exprDialog =
+            FormulaDialog.createStringDialog("Regular Expression: ");
     }
 
     /**

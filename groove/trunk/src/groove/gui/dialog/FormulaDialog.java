@@ -18,26 +18,24 @@ package groove.gui.dialog;
 
 import groove.grammar.model.FormatException;
 import groove.gui.Options;
-import groove.gui.display.DismissDelayer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
+import javax.swing.ComboBoxEditor;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -47,22 +45,25 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 /**
- * Dialog for entering strings, with a large textfield rather than a text area.
- * The dialog remembers previously entered strings.
+ * Dialog for entering strings.
+ * The dialog remembers previously entered strings and attempts to autocomplete.
  * @author Arend Rensink
  * @version $Revision:  $
  */
-abstract public class StringDialog {
+abstract public class FormulaDialog {
     /**
      * Constructs an instance of the dialog for a given dialog title.
      * @param docMap mapping from syntax documentation lines to (possibly {@code null}) associated tool tips.
      */
-    public StringDialog(String title, Map<String,String> docMap) {
+    public FormulaDialog(String title, Map<String,String> docMap) {
         this.history = new ArrayList<String>();
         this.title = title;
         this.docMap = docMap;
@@ -72,31 +73,42 @@ abstract public class StringDialog {
     /**
      * Constructs an instance of the dialog for a given dialog title.
      */
-    public StringDialog(String title) {
+    public FormulaDialog(String title) {
         this(title, null);
     }
 
     /**
      * Makes the dialog visible and awaits the user's response. Since the dialog
      * is modal, this method returns only when the user closes the dialog. The
-     * return value is the entered string.
+     * return value indicates if the properties have changed.
      * @param frame the frame on which the dialog is to be displayed
      */
     public String showDialog(Component frame) {
         if (this.title != null) {
-            loadChoiceBox();
+            String[] storedValues = Options.getUserPrefs(this.title);
+            this.history.clear();
+            for (String value : storedValues) {
+                String parsedValue = parseText(value);
+                if (value != null && parsedValue != null) {
+                    this.history.add(value);
+                }
+            }
         }
         this.dialog = createDialog(frame);
-        getChoiceBox().setSelectedIndex(0);
-        getTextArea().setText("");
+        getChoiceBox().setSelectedItem("");
+        getEditor().setText("");
         processTextChange();
         getChoiceBox().revalidate();
-        getTextArea().selectAll();
+        getEditor().selectAll();
         this.dialog.pack();
         this.dialog.setResizable(true);
         this.dialog.setVisible(true);
         if (this.title != null) {
-            storeChoiceBox();
+            String[] storedValues = new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
+            for (int i = 0; i < storedValues.length; i++) {
+                storedValues[i] = this.history.get(i);
+            }
+            Options.storeUserPrefs(this.title, storedValues);
         }
         return getResult();
     }
@@ -106,20 +118,19 @@ abstract public class StringDialog {
      */
     private JDialog createDialog(Component frame) {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
-        // input panel with text area and choice box
         JPanel input = new JPanel();
         input.setLayout(new BorderLayout());
-        input.setPreferredSize(new Dimension(300, 150));
-        input.add(new JLabel("<html><b>Enter value:"), BorderLayout.NORTH);
-        input.add(new JScrollPane(getTextArea()), BorderLayout.CENTER);
-        input.add(getChoiceBox(), BorderLayout.SOUTH);
+        input.add(getChoiceBox(), BorderLayout.NORTH);
+        // add an error label if there is a parser
+        if (this.parsed) {
+            JPanel errorPanel = new JPanel(new BorderLayout());
+            errorPanel.add(getErrorLabel());
+            input.add(errorPanel, BorderLayout.SOUTH);
+        }
         JPanel main = new JPanel();
         main.setLayout(new BorderLayout());
         main.add(input, BorderLayout.CENTER);
         if (this.parsed) {
-            JPanel errorPanel = new JPanel(new BorderLayout());
-            errorPanel.add(getErrorLabel());
-            main.add(errorPanel, BorderLayout.SOUTH);
             main.add(createSyntaxPanel(), BorderLayout.EAST);
         }
         JOptionPane panel =
@@ -139,77 +150,66 @@ abstract public class StringDialog {
         }
         list.setModel(model);
         list.setCellRenderer(new MyCellRenderer(this.docMap));
-        list.addMouseListener(new DismissDelayer(list));
-        list.setSelectionModel(new DefaultListSelectionModel() {
+        list.addMouseListener(new MouseAdapter() {
             @Override
-            public void setSelectionInterval(int index0, int index1) {
-                super.setSelectionInterval(-1, -1);
+            public void mouseEntered(MouseEvent e) {
+                if (e.getSource() == list) {
+                    this.manager.setDismissDelay(Integer.MAX_VALUE);
+                }
             }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (e.getSource() == list) {
+                    this.manager.setDismissDelay(this.standardDelay);
+                }
+            }
+
+            private final ToolTipManager manager = ToolTipManager.sharedInstance();
+            private final int standardDelay = this.manager.getDismissDelay();
         });
-        JPanel result = new JPanel(new BorderLayout());
-        result.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
-        result.add(new JLabel("<html><b>Syntax:"), BorderLayout.NORTH);
-        result.add(new JScrollPane(list), BorderLayout.CENTER);
-        return result;
+        return new JScrollPane(list);
     }
-
-    private JTextArea getTextArea() {
-        if (this.textArea == null) {
-            this.textArea = new JTextArea();
-            this.textArea.getDocument().addDocumentListener(this.changeListener);
-        }
-        return this.textArea;
-    }
-
-    private JTextArea textArea;
 
     /** Lazily creates and returns the combobox containing the current choices. */
-    private JComboBox getChoiceBox() {
+    private MyComboBox getChoiceBox() {
         if (this.choiceBox == null) {
-            this.choiceBox = new JComboBox();
+            this.choiceBox = new MyComboBox();
             this.choiceBox.setPrototypeDisplayValue("The longest value we want to display completely");
-            this.choiceBox.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    if (StringDialog.this.choiceBox.getSelectedIndex() != 0) {
-                        getTextArea().setText(
-                            (String) StringDialog.this.choiceBox.getSelectedItem());
-                        getTextArea().selectAll();
-                        getTextArea().requestFocus();
-                    }
-                }
-            });
+            this.choiceBox.setModel(createModel());
+            this.choiceBox.setEditable(true);
+            JTextField editor = (JTextField) this.choiceBox.getEditor().getEditorComponent();
+            editor.addActionListener(this.closeListener);
+            editor.getDocument().addDocumentListener(this.changeListener);
         }
         return this.choiceBox;
     }
 
-    private void loadChoiceBox() {
-        String[] storedValues = Options.getUserPrefs(this.title);
-        this.history.clear();
-        getChoiceBox().removeAllItems();
-        this.choiceBox.addItem("<html><i>Select a previously entered value</i>");
-        for (String value : storedValues) {
-            String parsedValue = parseText(value);
-            if (value != null && parsedValue != null) {
-                getChoiceBox().addItem(value);
-                this.history.add(value);
-            }
-        }
+    /**
+     * Creates and initialises a fresh instance of {@link MyComboBoxModel}.
+     */
+    private MyComboBoxModel createModel() {
+        MyComboBoxModel result = new MyComboBoxModel();
+        result.setDirty("");
+        return result;
     }
 
-    private void storeChoiceBox() {
-        String[] storedValues = new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
-        for (int i = 0; i < storedValues.length; i++) {
-            storedValues[i] = this.history.get(i);
-        }
-        Options.storeUserPrefs(this.title, storedValues);
+    /** Returns the editor currently used in the {@link #choiceBox}. */
+    private JTextField getEditor() {
+        return (JTextField) getChoiceBox().getEditor().getEditorComponent();
+    }
+
+    /** Returns the model currently used in the {@link #choiceBox}. */
+    private MyComboBoxModel getModel() {
+        return (MyComboBoxModel) getChoiceBox().getModel();
     }
 
     /** Reacts to a change in the editor. */
     private void processTextChange() {
-        final String currentText = getTextArea().getText();
+        final String currentText = getEditor().getText();
         String result = parseText(currentText);
         getOkButton().setEnabled(result != null && !currentText.isEmpty());
+        getModel().setDirty(currentText);
     }
 
     /** Attempts to parse the given text.
@@ -243,7 +243,7 @@ abstract public class StringDialog {
     abstract protected String parse(String text) throws FormatException;
 
     /** The choice box */
-    private JComboBox choiceBox;
+    private MyComboBox choiceBox;
 
     /**
      * Lazily creates and returns a button labelled OK.
@@ -280,9 +280,7 @@ abstract public class StringDialog {
     private JLabel getErrorLabel() {
         if (this.errorLabel == null) {
             JLabel result = this.errorLabel = new JLabel();
-            result.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
             result.setForeground(Color.RED);
-            result.setPreferredSize(new Dimension(200, 25));
             result.setMinimumSize(getOkButton().getPreferredSize());
         }
         return this.errorLabel;
@@ -342,7 +340,7 @@ abstract public class StringDialog {
 
     /** Keeps on creating a dialog until the user enters "stop". */
     static public void main(String[] args) {
-        StringDialog dialog = createStringDialog("Input a string");
+        FormulaDialog dialog = createStringDialog("Input a string");
         boolean stop = false;
         do {
             dialog.showDialog(null);
@@ -353,8 +351,8 @@ abstract public class StringDialog {
     }
 
     /** Parser that leaves a given string unchanged. */
-    public static final StringDialog createStringDialog(String title) {
-        return new StringDialog(title, null) {
+    public static final FormulaDialog createStringDialog(String title) {
+        return new FormulaDialog(title, null) {
             @Override
             protected String parse(String text) throws FormatException {
                 return text;
@@ -364,6 +362,119 @@ abstract public class StringDialog {
 
     /** Maximum number of persistently stored entries. */
     private static final int MAX_PERSISTENT_SIZE = 10;
+
+    /** 
+     * Overrides the {@link JComboBox#configureEditor(ComboBoxEditor, Object)}
+     * method to avoid confusing the editor. 
+     */
+    private static class MyComboBox extends JComboBox {
+        @Override
+        public void configureEditor(ComboBoxEditor anEditor, Object anItem) {
+            if (anItem != null && this.configure) {
+                super.configureEditor(anEditor, anItem);
+            }
+        }
+
+        public void doConfigure(boolean configure) {
+            this.configure = configure;
+        }
+
+        private boolean configure;
+    }
+
+    private class MyComboBoxModel implements ComboBoxModel {
+        @Override
+        public Object getSelectedItem() {
+            return this.selectedItem;
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            this.selectedItem = anItem;
+            // also set this item in the editor, however without changing the 
+            // data model
+            if (anItem != null) {
+                this.ignoreChange = true;
+                getEditor().setText(anItem.toString());
+                getEditor().selectAll();
+                this.ignoreChange = false;
+            }
+        }
+
+        @Override
+        public void addListDataListener(ListDataListener l) {
+            this.listeners.add(l);
+        }
+
+        @Override
+        public String getElementAt(int index) {
+            synchroniseModel();
+            return this.contents.get(index);
+        }
+
+        @Override
+        public int getSize() {
+            synchroniseModel();
+            return this.contents.size();
+        }
+
+        @Override
+        public void removeListDataListener(ListDataListener l) {
+            this.listeners.remove(l);
+        }
+
+        public void setDirty(String filterText) {
+            if (!this.ignoreChange) {
+                getChoiceBox().doConfigure(false);
+                this.dirty = true;
+                this.filterText = filterText;
+                this.selectedItem = null;
+                for (ListDataListener l : this.listeners) {
+                    l.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0,
+                        getSize()));
+                }
+                getChoiceBox().hidePopup();
+                if (getSize() > 0 && filterText.length() > 0) {
+                    getChoiceBox().showPopup();
+                }
+                getChoiceBox().doConfigure(true);
+            }
+        }
+
+        private void synchroniseModel() {
+            if (this.dirty) {
+                this.dirty = false;
+                this.contents.clear();
+                for (String entry : FormulaDialog.this.history) {
+                    if (entry.contains(this.filterText)) {
+                        this.contents.add(entry);
+                    }
+                }
+            }
+        }
+
+        /** 
+         * Flag controlling whether the model should really be
+         * set to dirty. This enables the changes due to a #setSelectedItem(Object)
+         * to be ignored.
+         */
+        private boolean ignoreChange = false;
+        /** Flag indicating if the model should be refreshed from the history. */
+        private boolean dirty = true;
+        /** Text determining which part of the history should be included in the model. */
+        private String filterText;
+        /** The actual model. */
+        private final List<String> contents = new ArrayList<String>();
+        /** The listeners for this model. */
+        private final List<ListDataListener> listeners = new ArrayList<ListDataListener>();
+        /**
+         * The currently selected item. Note that there is no connection
+         * between this and the model.
+         * @see #setSelectedItem(Object)
+         * @see #getSelectedItem()
+         */
+        private Object selectedItem;
+    }
 
     /** The singleton document change listener. */
     private final ChangeListener changeListener = new ChangeListener();
@@ -393,20 +504,20 @@ abstract public class StringDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             boolean ok = false;
-            if (e.getSource() == getOkButton()) {
-                ok = setResult(getTextArea().getText());
+            if (e.getSource() == getOkButton() || e.getSource() instanceof JTextField) {
+                ok = setResult(getEditor().getText());
             } else if (e.getSource() == getCancelButton()) {
                 ok = setResult(null);
             }
             if (ok) {
-                StringDialog.this.dialog.setVisible(false);
+                FormulaDialog.this.dialog.setVisible(false);
             }
         }
 
         @Override
         public void windowClosing(WindowEvent e) {
             if (setResult(null)) {
-                StringDialog.this.dialog.setVisible(false);
+                FormulaDialog.this.dialog.setVisible(false);
             }
         }
     }
@@ -419,7 +530,7 @@ abstract public class StringDialog {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
-            boolean isSelected, boolean cellHasFocus) {
+                boolean isSelected, boolean cellHasFocus) {
             Component result =
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {

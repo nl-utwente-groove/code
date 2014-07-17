@@ -42,8 +42,7 @@ public class CheckLTLAction extends ExploreAction {
     /**
      * Constructs a checking action for a given simulator and strategy.
      */
-    public CheckLTLAction(Simulator simulator, StrategyValue strategyType,
-            String name) {
+    public CheckLTLAction(Simulator simulator, StrategyValue strategyType, String name) {
         super(simulator, false);
         assert StrategyValue.LTL_STRATEGIES.contains(strategyType);
         putValue(Action.NAME, name);
@@ -65,28 +64,24 @@ public class CheckLTLAction extends ExploreAction {
         if (this.strategyType == StrategyValue.LTL) {
             strategy = this.strategyType.getTemplate().toSerialized(property);
         } else {
-            BoundedModelCheckingDialog dialog =
-                new BoundedModelCheckingDialog();
+            BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
             dialog.setGrammar(getSimulatorModel().getGts().getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {
                 return;
             }
-            strategy =
-                this.strategyType.getTemplate().toSerialized(property, boundary);
+            strategy = this.strategyType.getTemplate().toSerialized(property, boundary);
         }
-        Exploration exploration =
-            new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        Exploration exploration = new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         getActions().getExploreAction().explore(exploration, true);
         Collection<GraphState> result = exploration.getResult().getValue();
         if (result.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                getFrame(),
+            JOptionPane.showMessageDialog(getFrame(),
                 String.format("The property %s holds for this system", property));
         } else {
-            JOptionPane.showMessageDialog(getFrame(), String.format(
-                "A counter-example to %s is highlighted", property));
+            JOptionPane.showMessageDialog(getFrame(),
+                String.format("A counter-example to %s is highlighted", property));
         }
         return;
     }
@@ -95,8 +90,7 @@ public class CheckLTLAction extends ExploreAction {
     private StringDialog getLtlFormulaDialog() {
         if (this.ltlFormulaDialog == null) {
             this.ltlFormulaDialog =
-                new StringDialog("Enter the LTL Formula",
-                    FormulaParser.getDocMap(false)) {
+                new StringDialog("Enter the LTL Formula", FormulaParser.getDocMap(false)) {
                     @Override
                     public String parse(String text) throws FormatException {
                         try {
