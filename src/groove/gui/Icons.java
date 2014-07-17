@@ -338,6 +338,12 @@ public final class Icons {
     public static final ImageIcon PROLOG_FILE_ICON = createIcon("prolog-file.gif");
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON = createIcon("prolog-file.gif");
+    /** Small icon for puzzle piece. */
+    public static final ImageIcon PUZZLE_ICON = createIcon("puzzle.gif");
+    /** Small icon for C-indexed puzzle piece. */
+    public static final ImageIcon PUZZLE_C_ICON = createIcon("puzzle-C.gif");
+    /** Small icon for R-indexed puzzle piece. */
+    public static final ImageIcon PUZZLE_R_ICON = createIcon("puzzle-R.gif");
     /** Icon for Groovy Panel. */
     public static final ImageIcon GROOVY_FRAME_ICON = createIcon("groovy-frame.gif");
     /** Icon for Groovy Files. */
@@ -382,7 +388,7 @@ public final class Icons {
     public static final ImageIcon STATE_INTERNAL_ICON = createIcon("state-internal.gif");
     /** Absent internal state icon. */
     public static final ImageIcon STATE_INTERNAL_ABSENT_ICON =
-            createIcon("state-internal-absent.gif");
+        createIcon("state-internal-absent.gif");
     /** State display mode icon. */
     public static final ImageIcon STATE_MODE_ICON = createIcon("state-mode.gif");
     /** Open state icon. */
