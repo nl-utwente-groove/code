@@ -26,7 +26,7 @@ public class CheckCTLAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public CheckCTLAction(Simulator simulator, boolean full) {
         super(simulator, full ? Options.CHECK_CTL_FULL_ACTION_NAME
-                : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
+            : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
         this.full = full;
     }
 
@@ -36,17 +36,14 @@ public class CheckCTLAction extends SimulatorAction {
         if (property != null) {
             boolean doCheck = true;
             GTS gts = getSimulatorModel().getGts();
-            if (gts.hasOpenStates() && this.full
-                && getSimulatorModel().setGts()) {
-                getActions().getExploreAction().explore(
-                    getSimulatorModel().getExploration(), false);
+            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGts()) {
+                getActions().getExploreAction().explore(getSimulatorModel().getExploration(), false);
                 gts = getSimulatorModel().getGts();
                 doCheck = !gts.hasOpenStates();
             }
             if (doCheck) {
                 try {
-                    doCheckProperty(gts,
-                        FormulaParser.parse(property).toCtlFormula());
+                    doCheckProperty(gts, FormulaParser.parse(property).toCtlFormula());
                 } catch (ParseException e) {
                     // the property has already been parsed by the dialog
                     assert false;
@@ -59,8 +56,7 @@ public class CheckCTLAction extends SimulatorAction {
     private StringDialog getCtlFormulaDialog() {
         if (this.ctlFormulaDialog == null) {
             this.ctlFormulaDialog =
-                new StringDialog("Enter the CTL Formula",
-                    FormulaParser.getDocMap(true)) {
+                new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(true)) {
                     @Override
                     public String parse(String text) throws FormatException {
                         try {
@@ -78,12 +74,10 @@ public class CheckCTLAction extends SimulatorAction {
     private void doCheckProperty(GTS gts, Formula formula) {
         CTLMarker modelChecker = new CTLMarker(formula, gts);
         int counterExampleCount = modelChecker.getCount(false);
-        List<GraphState> counterExamples =
-            new ArrayList<GraphState>(counterExampleCount);
+        List<GraphState> counterExamples = new ArrayList<GraphState>(counterExampleCount);
         String message;
         if (counterExampleCount == 0) {
-            message =
-                String.format("The property '%s' holds for all states", formula);
+            message = String.format("The property '%s' holds for all states", formula);
         } else {
             boolean allStates =
                 confirmBehaviour(VERIFY_ALL_STATES_OPTION,
@@ -93,19 +87,14 @@ public class CheckCTLAction extends SimulatorAction {
                     counterExamples.add((GraphState) state);
                 }
                 message =
-                    String.format(
-                        "The property '%s' fails to hold in the %d highlighted states",
+                    String.format("The property '%s' fails to hold in the %d highlighted states",
                         formula, counterExampleCount);
             } else if (modelChecker.hasValue(false)) {
                 counterExamples.add(gts.startState());
                 message =
-                    String.format(
-                        "The property '%s' fails to hold in the initial state",
-                        formula);
+                    String.format("The property '%s' fails to hold in the initial state", formula);
             } else {
-                message =
-                    String.format(
-                        "The property '%s' holds in the initial state", formula);
+                message = String.format("The property '%s' holds in the initial state", formula);
             }
         }
         getLtsDisplay().emphasiseStates(counterExamples, false);
