@@ -17,6 +17,7 @@
 package groove.gui.tree;
 
 import groove.grammar.Action.Role;
+import groove.grammar.CheckPolicy;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
@@ -25,10 +26,12 @@ import groove.graph.GraphProperties.Key;
 import groove.gui.Icons;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
+import groove.util.Groove;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Icon;
 
@@ -47,12 +50,14 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
 
     @Override
     public Icon getIcon() {
-        Icon result = super.getIcon();
-        if (result != Icons.EDIT_WIDE_ICON) {
+        Icon result;
+        if (isRecipeChild()) {
+            result = getRule().isProperty() ? Icons.PUZZLE_C_ICON : Icons.PUZZLE_ICON;
+        } else if (super.getIcon() == Icons.EDIT_WIDE_ICON) {
+            result = super.getIcon();
+        } else {
             boolean injective = getRule().isInjective();
-            if (isPartial()) {
-                result = Icons.EMPTY_ICON;
-            } else if (getRule().isProperty()) {
+            if (getRule().isProperty()) {
                 result = getIconMap(injective).get(getRule().getRole());
             } else {
                 result = injective ? Icons.RULE_I_TREE_ICON : Icons.RULE_TREE_ICON;
@@ -73,6 +78,10 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         return getRule().hasRecipes();
     }
 
+    private boolean isRecipeChild() {
+        return getParent() instanceof RecipeTreeNode;
+    }
+
     @Override
     public boolean isProperty() {
         return getRule().isProperty();
@@ -82,14 +91,39 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        result.append(getRule().isProperty() ? getRule().getRole().text(true) : "Rule ");
+        result.append(getRule().getRole() == Role.TRANSFORMER ? "Rule" : getRule().getRole().text(
+            true));
         result.append(" ");
-        result.append(HTMLConverter.STRONG_TAG.on(getName()));
+        result.append(HTMLConverter.ITALIC_TAG.on(getName()));
         AspectGraph source = getRule().getSource();
         String remark = GraphInfo.getRemark(source);
         if (!remark.isEmpty()) {
             result.append(": ");
             result.append(HTMLConverter.toHtml(remark));
+        }
+        if (getRule().getRole().isConstraint()) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(getRule().getPolicy().getExplanation());
+        }
+        if (!GraphInfo.isEnabled(source)) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Explicitly disabled in the rule properties");
+        } else if (getRule().getPolicy() == CheckPolicy.OFF) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Turned off by the rule policy in the grammar properties");
+        } else if (!isRecipeChild() && getRule().hasRecipes()) {
+            Set<String> recipes = getRule().getRecipes();
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Not enabled stand-alone because it is invoked from ");
+            result.append(recipes.size() == 1 ? "recipe " : "recipes ");
+            result.append(Groove.toString(getRule().getRecipes().toArray(), "<i>", "</i>",
+                "</i>, <i>", "</i> and <i>"));
+        } else if (!isTried()) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Not scheduled in this state, due to rule priorities or control");
+        } else if (getChildCount() == 0) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Scheduled in this state, but has no matches");
         }
         GraphProperties properties = GraphInfo.getProperties(source);
         Map<String,String> filteredProps = new LinkedHashMap<String,String>();
@@ -117,18 +151,10 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                 filteredProps.put(keyword, value);
             }
         }
-        // display everything
+        // display all properties
         for (Map.Entry<String,String> entry : filteredProps.entrySet()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append(propertyToString(entry));
-        }
-        if (getRule().getRole().isConstraint()) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append(getRule().getPolicy().getExplanation());
-        }
-        if (!isTried() && GraphInfo.isEnabled(source)) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append("Not scheduled in this state, due to rule priorities or control");
         }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
@@ -154,7 +180,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                     || (getParent() instanceof StateTree.StateTreeNode);
         }
         String suffix =
-            getRule().isProperty() ? roleSuffixMap.get(getRule().getRole()) : isPartial()
+            getRule().isProperty() ? roleSuffixMap.get(getRule().getRole()) : isRecipeChild()
                 ? SUBRULE_SUFFIX : RULE_SUFFIX;
         return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }

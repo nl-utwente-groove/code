@@ -22,6 +22,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.display.DismissDelayer;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.ResourceDisplay;
 import groove.lts.GraphState;
@@ -80,8 +81,7 @@ public class ResourceTree extends AbstractResourceTree {
         DisplayTreeCellRenderer renderer = new DisplayTreeCellRenderer(this);
         renderer.setLeafIcon(Icons.getListIcon(parent.getResourceKind()));
         setCellRenderer(renderer);
-        getSelectionModel().setSelectionMode(
-            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 
         // initialize tree
         this.root = new DisplayTreeNode();
@@ -99,6 +99,7 @@ public class ResourceTree extends AbstractResourceTree {
         // add tool tips
         installListeners();
         ToolTipManager.sharedInstance().registerComponent(this);
+        addMouseListener(new DismissDelayer(this));
     }
 
     @Override
@@ -129,14 +130,12 @@ public class ResourceTree extends AbstractResourceTree {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         suspendListeners();
         if (changes.contains(GRAMMAR)) {
             // remember the visible and selected resources (+paths)
             Set<String> visible = new HashSet<String>();
-            Set<String> selected =
-                getSimulatorModel().getSelectSet(getResourceKind());
+            Set<String> selected = getSimulatorModel().getSelectSet(getResourceKind());
             for (int i = 0; i < getRowCount(); i++) {
                 TreePath path = getPathForRow(i);
                 TreeNode node = (TreeNode) path.getLastPathComponent();
@@ -163,8 +162,7 @@ public class ResourceTree extends AbstractResourceTree {
                         if (visible.contains(name) || selected.contains(name)) {
                             TreePath path = new TreePath(node.getPath());
                             expandPath(path.getParentPath());
-                            if (getSimulatorModel().getSelectSet(
-                                getResourceKind()).contains(name)) {
+                            if (getSimulatorModel().getSelectSet(getResourceKind()).contains(name)) {
                                 addSelectionPath(path);
                             }
                             if (selected.contains(name)) {
@@ -388,8 +386,7 @@ public class ResourceTree extends AbstractResourceTree {
          * Adds all tree resources to a DefaultMutableTreeNode (with the given
          * path). Also collects the created {@link TreeNode}s.
          */
-        public void store(DisplayTreeNode root, String path,
-                Set<DisplayTreeNode> created) {
+        public void store(DisplayTreeNode root, String path, Set<DisplayTreeNode> created) {
             for (Map.Entry<String,FolderTree> entry : this.folders.entrySet()) {
                 String subpath = extendPath(path, entry.getKey());
                 PathNode node = new PathNode(subpath, entry.getKey());
@@ -400,8 +397,7 @@ public class ResourceTree extends AbstractResourceTree {
             }
             for (String resource : this.resources) {
                 String fullName = extendPath(path, resource);
-                ResourceTreeNode leaf =
-                    new ResourceTreeNode(getParentDisplay(), fullName);
+                ResourceTreeNode leaf = new ResourceTreeNode(getParentDisplay(), fullName);
                 created.add(leaf);
                 //root.add(leaf);
                 root.insertSorted(leaf);
