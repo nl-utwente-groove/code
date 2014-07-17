@@ -100,8 +100,8 @@ public class CtrlLoader {
         FormatErrorSet errors = new FormatErrorSet();
         Program result = new Program();
         for (String name : progNames) {
-            CtrlTree tree = this.treeMap.get(name).check();
             try {
+                CtrlTree tree = this.treeMap.get(name).check();
                 result.add(tree.toProgram());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
@@ -109,20 +109,14 @@ public class CtrlLoader {
                 }
             }
         }
+        errors.throwException();
         if (!result.hasMain()) {
             // try to parse "any" for static semantic checks
             Program main = parse(" main", "#any;").check().toProgram();
-            //            Program main = new Program(" main");
-            //            main.setMain(CtrlTree.toDefaultTerm(this.namespace));
             result.add(main);
         }
         result.setProperties(this.namespace.getProperties());
-        try {
-            result.setFixed();
-        } catch (FormatException e) {
-            errors.addAll(e.getErrors());
-        }
-        errors.throwException();
+        result.setFixed();
         return result;
     }
 

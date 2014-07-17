@@ -155,8 +155,8 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {
-        assert error.getResourceKind() == CONTROL;
-        getPartErrors(error.getResourceName()).add(error);
+        String key = error.getResourceKind() == CONTROL ? error.getResourceName() : null;
+        getPartErrors(key).add(error);
     }
 
     /** Adds an error for a particular control program. */
@@ -169,7 +169,11 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         FormatErrorSet result = createErrors();
         for (Map.Entry<String,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
             for (FormatError error : entry.getValue()) {
-                result.add("Error in control program '%s': %s", entry.getKey(), error);
+                if (entry.getKey() == null) {
+                    result.add("Error in implicit control: %s", error);
+                } else {
+                    result.add("Error in control program '%s': %s", entry.getKey(), error);
+                }
             }
         }
         return result;
@@ -186,6 +190,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             for (String name : getGrammar().getActiveNames(CONTROL)) {
                 this.partErrorsMap.put(name, createErrors());
             }
+            this.partErrorsMap.put(null, createErrors());
         }
         return this.partErrorsMap;
     }
