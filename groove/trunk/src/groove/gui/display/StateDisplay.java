@@ -371,10 +371,11 @@ public class StateDisplay extends Display implements SimulatorListener {
     private void updateStatus() {
         StringBuilder result = new StringBuilder();
         result.append("Current state");
-        if (getSimulatorModel().getState() != null) {
+        GraphState state = getSimulatorModel().getState();
+        if (state != null) {
             result.append(": ");
-            String stateID = getSimulatorModel().getState().toString();
-            result.append(HTMLConverter.STRONG_TAG.on(stateID));
+            String stateID = state.toString();
+            result.append(HTMLConverter.UNDERLINE_TAG.on(stateID));
             if (stateID.equals("s0")) {
                 HostModel startGraph = getSimulatorModel().getGrammar().getStartGraphModel();
                 if (startGraph != null) {
@@ -383,13 +384,34 @@ public class StateDisplay extends Display implements SimulatorListener {
                 }
             }
             MatchResult match = getSimulatorModel().getMatch();
+            boolean brackets = false;
+            if (state.isInternalState()) {
+                result.append(brackets ? ", " : " (");
+                brackets = true;
+                result.append("transient state");
+            }
+            if (state.isInternalState()) {
+                result.append(brackets ? ", " : " (");
+                brackets = true;
+                result.append("removed from state space");
+            }
+            if (state.isError()) {
+                result.append(brackets ? ", " : " (");
+                brackets = true;
+                result.append("has errors");
+            }
             if (match != null) {
+                result.append(brackets ? "; " : " (");
+                brackets = true;
                 if (getJGraph().isShowAnchors()) {
-                    result.append(String.format(" (with match %s)", match.getEvent()));
+                    result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
-                    result.append(String.format(" (with match of %s)",
+                    result.append(String.format("with match of <i>%s</i>",
                         match.getEvent().getRule().getFullName()));
                 }
+            }
+            if (brackets) {
+                result.append(')');
             }
         }
         getGraphPanel().getStatusLabel().setText(HTMLConverter.HTML_TAG.on(result).toString());
@@ -416,7 +438,9 @@ public class StateDisplay extends Display implements SimulatorListener {
         } else {
             getErrorPanel().clearEntries();
             getDisplayPanel().remove(getErrorPanel());
-            background = JAttr.STATE_BACKGROUND;
+            background =
+                state != null && state.isInternalState() ? JAttr.TRANSIENT_BACKGROUND
+                    : JAttr.STATE_BACKGROUND;
         }
         getGraphPanel().setEnabledBackground(background);
         getLabelTree().setBackground(background);
