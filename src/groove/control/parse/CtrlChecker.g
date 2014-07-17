@@ -145,15 +145,15 @@ stat
        { helper.endBranch(); }
      )
   | rule
-  | ANY
+  | ^(ANY ID)
     { helper.checkAny($ANY); }
-  | OTHER
+  | ^(OTHER ID)
     { helper.checkOther($OTHER); }
   | TRUE
   ;
 
 rule
-@after{ helper.checkCall($tree); }
+@after{ helper.checkGroupCall($tree); }
   : ^(CALL qual_id (^(ARGS arg* RPAR))?)
   ;
 
@@ -166,7 +166,7 @@ var_decl
 	;
 
 qual_id
-  : ^(ID ID)
+  : ^((ID|ANY|OTHER) ID)
   // the second ID is a traceability token to keep track of the original
   // last token of the qualified ID
   ;

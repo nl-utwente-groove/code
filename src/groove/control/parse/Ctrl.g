@@ -96,7 +96,7 @@ program
 package_decl
   : //@S PACKAGE qual_name
     //@B Causes all rules and functions to be qualified by %s
-    ( key=PACKAGE qual_name close=SEMI
+    ( key=PACKAGE qual_name[false] close=SEMI
       { helper.setPackage($qual_name.tree); }
       -> ^(PACKAGE[$key] qual_name SEMI[$close])
     | -> { helper.emptyPackage() }
@@ -107,15 +107,19 @@ package_decl
 import_decl
   : //@S IMPORT qual_name
     //@B Declares the last part of %s to stand for the entire name
-    IMPORT^ qual_name SEMI
+    IMPORT^ qual_name[false] SEMI
     { helper.addImport($qual_name.tree);
     }
   ;
 
 /** Dot-separated sequence of identifiers, translated to a flattened identifier. */
-qual_name
-  : ids+=ID (DOT ids+=ID)*
-    -> { helper.toQualName($ids) }
+qual_name[boolean any]
+  : id=ID ( DOT rest=qual_name[any] )?
+                     -> { helper.toQualName($ID, $rest.tree) }
+  | { any }? ( ASTERISK DOT )?
+             ( ANY   -> { helper.toQualName($ASTERISK, $ANY) }
+             | OTHER -> { helper.toQualName($ASTERISK, $OTHER) }
+             )
   ;
 
 /** @H Recipe declaration.
@@ -294,14 +298,14 @@ expr2
   ;
 
 expr_atom
-	: //@S expr: ANY
-	  //@B Execution of an arbitrary non-property action.
-	  ANY
-	| //@S expr: OTHER
-	  //@B Execution of an arbitrary non-property action not explicitly occurring 
-	  //@B in this control program.
-	  OTHER
-	| //@S expr: LPAR expr RPAR
+	:// //@S expr: ANY
+	 // //@B Execution of an arbitrary non-property action.
+	 // ANY
+	//| //@S expr: OTHER
+	//  //@B Execution of an arbitrary non-property action not explicitly occurring 
+	//  //@B in this control program.
+	//  OTHER
+	//| //@S expr: LPAR expr RPAR
 	  //@B Bracketed expression.
 	  open=LPAR expr close=RPAR
 	  -> ^(BLOCK[$open] expr TRUE[$close])
@@ -373,7 +377,7 @@ literal
  *  in the imports, and if not found, prefixed with the package name
  */
 rule_name
-  : qual_name
+  : qual_name[true]
     -> { helper.qualify($qual_name.tree) }
   ;
 

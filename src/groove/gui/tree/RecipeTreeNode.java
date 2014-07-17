@@ -89,7 +89,7 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     public String getTip() {
         StringBuilder result = new StringBuilder();
         result.append("Recipe ");
-        result.append(HTMLConverter.STRONG_TAG.on(getName()));
+        result.append(HTMLConverter.ITALIC_TAG.on(getName()));
         if (!isEnabled()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not active in this state");

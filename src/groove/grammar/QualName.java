@@ -13,7 +13,7 @@
 // language governing permissions and limitations under the License.
 /*
  * $Id: RuleNameLabel.java,v 1.2 2008-01-30 09:32:37 iovka Exp $
- * 
+ *
  * Angela Lozano's thesis. EMOOSE student 2002 - 2003 EMOOSE (European Master in
  * Object-Oriented & Software Engineering technologies) Vrije Universiteit
  * Brussel - Ecole des Mines de Nantes - Universiteit Twente
@@ -21,6 +21,7 @@
 package groove.grammar;
 
 import groove.grammar.model.FormatException;
+import groove.util.ExprParser;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -28,12 +29,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Representation of a qualified name. A qualified name is a 
+ * Representation of a qualified name. A qualified name is a
  * name consisting of a nonempty sequence of tokens, separated by
  * {@link #SEPARATOR} characters. Each individual token may be empty. The prefix
  * without the last token is called the parent (which is <tt>null</tt> if there
  * is only a single token); the last token is called the child.
- * 
+ *
  * @author Angela Lozano and Arend Rensink
  * @version $Revision: 4083 $ $Date: 2008-01-30 09:32:37 $
  */
@@ -47,28 +48,10 @@ public class QualName implements Comparable<QualName> {
             throw new FormatException("Name is empty");
         }
         this.tokens = new ArrayList<String>(tokens);
-        this.text =
-            Groove.toString(tokens.toArray(), "", "", SEPARATOR, SEPARATOR);
+        this.text = Groove.toString(tokens.toArray(), "", "", SEPARATOR, SEPARATOR);
         List<String> parentTokens = new ArrayList<String>(tokens);
         parentTokens.remove(tokens.size() - 1);
-        this.parent =
-            Groove.toString(parentTokens.toArray(), "", "", SEPARATOR,
-                SEPARATOR);
-    }
-
-    /** 
-     * Tests whether this name is valid, i.e., contains only allowed
-     * characters, and throws an appropriate exception otherwise.
-     */
-    public void testValid() throws FormatException {
-        for (String token : this.tokens) {
-            StringBuilder error = new StringBuilder();
-            if (!isValid(token, null, error)) {
-                throw new FormatException(
-                    "Fragment %s of qualified name %s is not well-formed: %s",
-                    token, this.text, error.toString());
-            }
-        }
+        this.parent = Groove.toString(parentTokens.toArray(), "", "", SEPARATOR, SEPARATOR);
     }
 
     /**
@@ -80,7 +63,22 @@ public class QualName implements Comparable<QualName> {
      * @require <tt>name != null</tt>
      */
     public QualName(String name) throws FormatException {
-        this(Arrays.asList(name.split("\\" + SEPARATOR)));
+        this(Arrays.asList(ExprParser.splitExpr(name, SEPARATOR)));
+    }
+
+    /**
+     * Tests whether this name is valid, i.e., contains only allowed
+     * characters, and throws an appropriate exception otherwise.
+     */
+    public void testValid() throws FormatException {
+        for (String token : this.tokens) {
+            StringBuilder error = new StringBuilder();
+            if (!isValid(token, null, error)) {
+                throw new FormatException(
+                    "Fragment %s of qualified name %s is not well-formed: %s", token, this.text,
+                    error.toString());
+            }
+        }
     }
 
     @Override
@@ -110,6 +108,9 @@ public class QualName implements Comparable<QualName> {
     public String toString() {
         return this.text;
     }
+
+    /** The text returned by {@link #toString()}. */
+    private final String text;
 
     @Override
     public int compareTo(QualName o) {
@@ -145,6 +146,19 @@ public class QualName implements Comparable<QualName> {
     }
 
     /**
+     * Returns the parent qualified name (all tokens except the last), or
+     * <tt>null</tt> if there is no parent name. There is no parent
+     * name iff the qualified name consists of a single token only.
+     * @return the parent qualified name
+     */
+    public String parent() {
+        return this.parent;
+    }
+
+    /** The parent qualified name (may be {@code null}). */
+    private final String parent;
+
+    /**
      * Returns the number of tokens in the qualified name.
      * @return number of tokens in this qualified name
      */
@@ -161,21 +175,14 @@ public class QualName implements Comparable<QualName> {
     }
 
     /**
-     * Returns the parent qualified name (all tokens except the last), or
-     * <tt>null</tt> if there is no parent name. There is no parent 
-     * name iff the qualified name consists of a single token only.
-     * @return the parent qualified name
-     */
-    public String parent() {
-        return this.parent;
-    }
-
-    /**
      * Returns the tokens in this qualified name as an array of strings.
      */
     public List<String> tokens() {
         return this.tokens;
     }
+
+    /** The tokens of which this qualified name consists. */
+    private final List<String> tokens;
 
     /** Extends a given qualified name with a child. */
     public QualName extend(String child) throws FormatException {
@@ -184,12 +191,40 @@ public class QualName implements Comparable<QualName> {
         return new QualName(newTokens);
     }
 
-    /** The parent qualified name (may be {@code null}). */
-    private final String parent;
-    /** The tokens of which this qualified name consists. */
-    private final List<String> tokens;
-    /** The text returned by {@link #toString()}. */
-    private final String text;
+    /** Indicates if the qualified name contains a wildcard text as last token. */
+    public boolean hasWildCard() {
+        return tokens().contains(WILDCARD);
+    }
+
+    /** Indicates if this qualified name matches another, taking
+     * wildcards into account.
+     */
+    public boolean matches(QualName other) {
+        boolean result = true;
+        int min = Math.min(size(), other.size());
+        for (int i = 0; result && i < min; i++) {
+            if (tokens().get(i).equals(WILDCARD)) {
+                break;
+            }
+            if (other.tokens().get(i).equals(WILDCARD)) {
+                break;
+            }
+            result = tokens().get(i).equals(other.tokens().get(i));
+        }
+        return result;
+    }
+
+    /**
+     * Turns a string into a qualified name.
+     * Returns {@code null} if the name is not well-formed.
+     */
+    public static QualName name(String text) {
+        try {
+            return new QualName(text);
+        } catch (FormatException exc) {
+            return null;
+        }
+    }
 
     /** Returns the last part of a well-formed qualified name. */
     public static String getLastName(String fullName) {
@@ -201,7 +236,7 @@ public class QualName implements Comparable<QualName> {
         }
     }
 
-    /** 
+    /**
      * Returns the namespace of a well-formed qualified name.
      * The namespace is the qualified name minus its last component.
      * If the name does not have components, the namespace is
@@ -238,8 +273,7 @@ public class QualName implements Comparable<QualName> {
      * @param child the child name, to be embedded in the parent
      * @return the concatenation of parent and child
      */
-    public static QualName extend(QualName parent, String child)
-        throws FormatException {
+    public static QualName extend(QualName parent, String child) throws FormatException {
         if (parent == null) {
             return new QualName(child);
         } else {
@@ -256,6 +290,11 @@ public class QualName implements Comparable<QualName> {
      */
     static public final char SEPARATOR_CHAR = '.';
 
+    /** Wildcard character. */
+    static public final char WILDCARD_CHAR = '*';
+    /** Wildcard string. */
+    static public final String WILDCARD = "" + WILDCARD_CHAR;
+
     /**
      * Helper method. Checks if the argument is allowed as the first character
      * of a valid token name, which is the case if it is a letter or an
@@ -264,10 +303,10 @@ public class QualName implements Comparable<QualName> {
      * 'legal' string builder, and produces a parse error message in the
      * 'error' string builder if necessary.
      */
-    private static boolean isValidStarter(char character, boolean hasLegal,
-            StringBuilder legal, boolean hasError, StringBuilder error) {
-        if ((character >= 'a' && character <= 'z')
-            || (character >= 'A' && character <= 'Z') || (character == '_')) {
+    private static boolean isValidStarter(char character, boolean hasLegal, StringBuilder legal,
+        boolean hasError, StringBuilder error) {
+        if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')
+            || (character == '_')) {
             if (hasLegal) {
                 legal.append(character);
             }
@@ -291,12 +330,10 @@ public class QualName implements Comparable<QualName> {
      * 'legal' string builder, and produces a parse error message in the
      * 'error' string builder if necessary.
      */
-    private static boolean isValidCharacter(char character, boolean hasLegal,
-            StringBuilder legal, boolean hasError, StringBuilder error) {
-        if ((character >= 'a' && character <= 'z')
-            || (character >= 'A' && character <= 'Z')
-            || (character >= '0' && character <= '9') || (character == '_')
-            || (character == '-')) {
+    private static boolean isValidCharacter(char character, boolean hasLegal, StringBuilder legal,
+        boolean hasError, StringBuilder error) {
+        if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')
+            || (character >= '0' && character <= '9') || (character == '_') || (character == '-')) {
             if (hasLegal) {
                 legal.append(character);
             }
@@ -395,8 +432,7 @@ public class QualName implements Comparable<QualName> {
      * 'legal' string builder, and produces a parse error message in the
      * 'error' string builder if necessary.
      */
-    public static boolean isValid(String id, StringBuilder legal,
-            StringBuilder error) {
+    public static boolean isValid(String id, StringBuilder legal, StringBuilder error) {
         boolean first = true;
         boolean valid = true;
         boolean hasLegal = legal != null;
@@ -417,13 +453,10 @@ public class QualName implements Comparable<QualName> {
                 }
             } else {
                 if (first) {
-                    valid =
-                        isValidStarter(id.charAt(i), hasLegal, legal, hasError,
-                            error) && valid;
+                    valid = isValidStarter(id.charAt(i), hasLegal, legal, hasError, error) && valid;
                 } else {
                     valid =
-                        isValidCharacter(id.charAt(i), hasLegal, legal,
-                            hasError, error) && valid;
+                        isValidCharacter(id.charAt(i), hasLegal, legal, hasError, error) && valid;
                 }
                 first = false;
             }
@@ -443,8 +476,7 @@ public class QualName implements Comparable<QualName> {
     }
 
     /** Constant for a parse error on the first character of an identifier. */
-    private static String PARSE_ERROR_START =
-        "identifiers must begin with a letter or '_'";
+    private static String PARSE_ERROR_START = "identifiers must begin with a letter or '_'";
 
     /** Method for a parse error on an illegal character. */
     private static String PARSE_ERROR_ILLEGAL(char illegal) {
@@ -452,20 +484,16 @@ public class QualName implements Comparable<QualName> {
     }
 
     /** Constant for the tail of a parse error on an illegal character. */
-    private static String PARSE_ERROR_ILLEGAL_TAIL =
-        "is not allowed in identifiers";
+    private static String PARSE_ERROR_ILLEGAL_TAIL = "is not allowed in identifiers";
 
     /** Constant for a parse error for empty strings. */
-    public static String PARSE_ERROR_EMPTY =
-        "empty identifiers are not allowed";
+    public static String PARSE_ERROR_EMPTY = "empty identifiers are not allowed";
 
     /** Constant for a parse error for strings that begin with a separator. */
-    public static String PARSE_ERROR_SEPARATOR_BEGIN =
-        "identifiers may not begin with a separator";
+    public static String PARSE_ERROR_SEPARATOR_BEGIN = "identifiers may not begin with a separator";
 
     /** Constant for a parse error for strings that end with a separator. */
-    public static String PARSE_ERROR_SEPARATOR_END =
-        "identifiers may not end with a separator";
+    public static String PARSE_ERROR_SEPARATOR_END = "identifiers may not end with a separator";
 
     /** Constant for a parse error for strings with consecutive separators. */
     public static String PARSE_ERROR_SEPARATOR_CONSECUTIVE =

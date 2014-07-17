@@ -32,6 +32,7 @@ public class CallTerm extends Term {
      */
     public CallTerm(Pool<Term> pool, Call call) {
         super(pool, Op.CALL);
+        assert call != null;
         this.call = call;
     }
 
