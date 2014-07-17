@@ -52,7 +52,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     public Icon getIcon() {
         Icon result;
         if (isRecipeChild()) {
-            result = getRule().isProperty() ? Icons.PUZZLE_C_ICON : Icons.PUZZLE_ICON;
+            result = Icons.PUZZLE_ICON;
         } else if (super.getIcon() == Icons.EDIT_WIDE_ICON) {
             result = super.getIcon();
         } else {
@@ -100,6 +100,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         if (!remark.isEmpty()) {
             result.append(": ");
             result.append(HTMLConverter.toHtml(remark));
+        }
+        if (isRecipeChild()) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Invoked as part of the recipe ");
+            result.append(HTMLConverter.ITALIC_TAG.on(((RecipeTreeNode) getParent()).getName()));
         }
         if (getRule().getRole().isConstraint()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
@@ -181,7 +186,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         }
         String suffix =
             getRule().isProperty() ? roleSuffixMap.get(getRule().getRole()) : isRecipeChild()
-                ? SUBRULE_SUFFIX : RULE_SUFFIX;
+                ? INGREDIENT_SUFFIX : RULE_SUFFIX;
         return getDisplay().getLabelText(getName(), suffix, showEnabled);
     }
 
@@ -198,7 +203,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     /** Flag indicating whether the rule has been tried on the displayed state. */
     private boolean tried;
 
-    private final static String SUBRULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("subrule");
+    private final static String INGREDIENT_SUFFIX = " : "
+        + HTMLConverter.STRONG_TAG.on("ingredient");
     private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("rule");
     private final static Map<Role,String> roleSuffixMap;
 

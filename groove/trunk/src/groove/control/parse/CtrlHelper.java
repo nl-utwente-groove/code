@@ -16,6 +16,9 @@
  */
 package groove.control.parse;
 
+import static groove.control.parse.CtrlParser.ANY;
+import static groove.control.parse.CtrlParser.ID;
+import static groove.control.parse.CtrlParser.OTHER;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.syntax.Expression;
 import groove.control.Call;
@@ -31,7 +34,6 @@ import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,12 +70,16 @@ public class CtrlHelper {
     }
 
     /**
-     * Creates a new tree with a CtrlParser#ID} token at the root, and
+     * Creates a new tree with a {@link CtrlParser#PACKAGE} token at the root, and
      * an empty text.
      */
     CtrlTree emptyPackage() {
+        CommonToken token = new CommonToken(CtrlParser.ID, "");
+        CtrlTree name = new CtrlTree(token);
+        name.addChild(new CtrlTree(token));
+        // construct the result tree
         CtrlTree result = new CtrlTree(CtrlParser.PACKAGE);
-        result.addChild(toQualName(Collections.<Token>emptyList()));
+        result.addChild(name);
         result.addChild(new CtrlTree(CtrlParser.SEMI));
         return result;
     }
@@ -132,24 +138,56 @@ public class CtrlHelper {
         }
     }
 
-    /** Creates a new tree with a {@link CtrlParser#ID} token at the root,
-     * of which the text is the concatenation of a given list of tokens.
-     * The last token in the list is added as child to the result, to retain traceability.
+    /** Constructs a qualified name tree from a single token
+     * (which is an {@link #ANY}, {@link #OTHER}) or {@link #ID}).
+     * The new control tree has an empty path or the {@link #ID} text
+     * as token text, and a single child recording the line/column data
+     * @param asterisk a (potentially {@code null}) asterisk token
+     * @param call the {@link #ANY}, {@link #OTHER} of {@link #ID} token
      */
-    CommonTree toQualName(List<? extends Token> children) {
-        CommonToken token = new CommonToken(CtrlParser.ID, flatten(children));
-        Token lastChild;
-        // set the line/column info to get useful error output
-        if (children.isEmpty()) {
-            lastChild = token;
+    CtrlTree toQualName(Token asterisk, Token call) {
+        assert asterisk == null || asterisk.getType() == CtrlParser.ASTERISK;
+        assert call.getType() == ANY || call.getType() == OTHER || call.getType() == ID;
+        String topText;
+        Token topToken;
+        if (asterisk == null) {
+            topText = call.getType() == ID ? call.getText() : "";
+            topToken = call;
         } else {
-            CommonToken child = (CommonToken) children.get(0);
-            token.setLine(child.getLine());
-            token.setTokenIndex(child.getTokenIndex());
-            lastChild = children.get(children.size() - 1);
+            topText = asterisk.getText();
+            topToken = asterisk;
         }
-        CtrlTree result = new CtrlTree(token);
-        result.addChild(new CtrlTree(lastChild));
+        CommonToken top = new CommonToken(call.getType(), topText);
+        top.setLine(topToken.getLine());
+        top.setTokenIndex(topToken.getTokenIndex());
+        CtrlTree result = new CtrlTree(top);
+        // artificial child
+        CommonToken child = new CommonToken(ID, "");
+        child.setLine(call.getLine());
+        child.setTokenIndex(call.getTokenIndex());
+        result.addChild(new CtrlTree(child));
+        return result;
+    }
+
+    /** Creates a qualified name tree by extending an existing one
+     * with an additional level in front
+     * @param init token holding the additional level text
+     * @param subTree the existing tree; may be {@code null}, in which case
+     * the result is calculated using {@link #toQualName(Token,Token)}
+     */
+    CommonTree toQualName(Token init, CtrlTree subTree) {
+        CtrlTree result;
+        if (subTree == null) {
+            result = toQualName(null, init);
+        } else {
+            Token subTop = subTree.getToken();
+            String qualText = QualName.extend(init.getText(), subTop.getText());
+            CommonToken top = new CommonToken(subTop.getType(), qualText);
+            top.setLine(init.getLine());
+            top.setTokenIndex(init.getTokenIndex());
+            result = new CtrlTree(top);
+            result.addChild(subTree.getChild(0));
+        }
         return result;
     }
 
@@ -167,7 +205,7 @@ public class CtrlHelper {
             } else {
                 name = QualName.extend(this.packageName, name);
             }
-            CommonToken token = new CommonToken(CtrlParser.ID, name);
+            CommonToken token = new CommonToken(ruleNameToken.getType(), name);
             token.setLine(ruleNameToken.getLine());
             token.setTokenIndex(ruleNameToken.getToken().getTokenIndex());
             result = new CtrlTree(token);
@@ -196,7 +234,7 @@ public class CtrlHelper {
 
     /** Returns a dot-separated string consisting of a number of token texts. */
     String flatten(List<?> children) {
-        String result = "";
+        String result = null;
         for (Object token : children) {
             result = QualName.extend(result, ((CommonToken) token).getText());
         }
@@ -304,9 +342,11 @@ public class CtrlHelper {
      * Registers a call dependency.
      */
     void registerCall(CtrlTree callTree) {
-        String from = this.procName;
         String to = callTree.getText();
-        this.namespace.addCall(from, to);
+        if (!QualName.name(to).hasWildCard()) {
+            String from = this.procName;
+            this.namespace.addCall(from, to);
+        }
     }
 
     /** Adds a formal parameter to the symbol table. */
@@ -416,6 +456,96 @@ public class CtrlHelper {
         }
     }
 
+    void checkGroupCall(CtrlTree callTree) {
+        List<CtrlPar> args = null;
+        if (callTree.getChildCount() == 2) {
+            args = createArgs(callTree.getChild(1));
+            if (args == null) {
+                //an error was detected
+                // and reported earlier; we silently fail
+                return;
+            }
+        }
+        for (Callable unit : collectActions(callTree)) {
+            if (checkCall(callTree, unit, args)) {
+                // create the call
+                Call call = args == null ? new Call(unit) : new Call(unit, args);
+                callTree.addCall(call);
+            }
+        }
+    }
+
+    private List<Callable> collectActions(CtrlTree callTree) {
+        assert callTree.getType() == CtrlParser.CALL;
+        CtrlTree nameTree = callTree.getChild(0);
+        String unitName = nameTree.getText();
+        List<Callable> result = new ArrayList<Callable>();
+        if (nameTree.getType() == ID) {
+            Callable unit = this.namespace.getCallable(unitName);
+            Action action = unit instanceof Action ? (Action) unit : null;
+            if (unit == null) {
+                emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
+            } else if (action != null && action.getPriority() > 0) {
+                String message = "Explicit call of prioritised %s '%s' not allowed";
+                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
+            } else if (action != null && action.getRole().isConstraint()) {
+                String message = "Explicit call of %s property '%s' not allowed";
+                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
+            } else if (action != null && action.getPolicy() == CheckPolicy.OFF) {
+                String message = "Explicit call of disabled %s '%s' not allowed";
+                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
+            } else {
+                result.add(unit);
+            }
+        } else {
+            // collect all actions with matching names
+            boolean other = nameTree.getType() == OTHER;
+            Set<String> usedNames = this.namespace.getUsedNames();
+            String groupName = nameTree.getText();
+            QualName qualGroupName = QualName.name(groupName);
+            boolean wildcard = qualGroupName.hasWildCard();
+            assert groupName != null;
+            for (Action action : this.namespace.getActions()) {
+                if (action.isProperty()) {
+                    continue;
+                }
+                String actionName = action.getFullName();
+                boolean matches;
+                if (wildcard) {
+                    matches = qualGroupName.matches(QualName.name(actionName));
+                } else {
+                    matches = QualName.name(actionName).parent().equals(groupName);
+                }
+                if (!matches) {
+                    continue;
+                }
+                if (other && usedNames.contains(action.getFullName())) {
+                    continue;
+                }
+                result.add(action);
+            }
+        }
+        return result;
+    }
+
+    private List<CtrlPar> createArgs(CtrlTree argsTree) {
+        List<CtrlPar> result = null;
+        if (argsTree != null) {
+            result = new ArrayList<CtrlPar>();
+            // stop at the closing RPAR
+            for (int i = 0; i < argsTree.getChildCount() - 1; i++) {
+                CtrlPar arg = argsTree.getChild(i).getCtrlPar();
+                // if any of the arguments is null, an error was detected
+                // and reported earlier; we silently fail
+                if (arg == null) {
+                    result = null;
+                }
+                result.add(arg);
+            }
+        }
+        return result;
+    }
+
     void checkCall(CtrlTree callTree) {
         int childCount = callTree.getChildCount();
         assert callTree.getType() == CtrlChecker.CALL && childCount >= 1;
@@ -454,7 +584,7 @@ public class CtrlHelper {
             } else if (checkCall(callTree, unit, args)) {
                 // create the call
                 result = args == null ? new Call(unit) : new Call(unit, args);
-                callTree.setCall(result);
+                callTree.addCall(result);
             }
         }
     }
@@ -477,7 +607,6 @@ public class CtrlHelper {
                 otherActions.add(action);
             }
         }
-        otherActions.removeAll(this.namespace.getUsedNames());
         checkGroupCall(otherTree, otherActions);
     }
 

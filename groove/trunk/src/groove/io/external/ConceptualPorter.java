@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -52,8 +52,7 @@ import java.util.Map;
 import java.util.Set;
 
 /** Im- and exporter for conceptual model-based formats. */
-public abstract class ConceptualPorter extends AbstractExporter implements
-        Importer {
+public abstract class ConceptualPorter extends AbstractExporter implements Importer {
     /** Constructs a porter for a given format, with given instance format and type extensions. */
     protected ConceptualPorter(FileType typeFileType, FileType instanceFileType) {
         super(Kind.RESOURCE);
@@ -62,8 +61,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType,
-            GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
+        throws PortException {
         Set<Resource> result = Collections.emptySet();
         Pair<TypeModel,InstanceModel> models = null;
         try {
@@ -85,30 +84,26 @@ public abstract class ConceptualPorter extends AbstractExporter implements
     }
 
     /** Reads in type and instance models for an instance model import. */
-    abstract protected Pair<TypeModel,InstanceModel> importInstanceModel(
-            File file, GrammarModel grammar) throws ImportException;
+    abstract protected Pair<TypeModel,InstanceModel> importInstanceModel(File file,
+        GrammarModel grammar) throws ImportException;
 
     /** Reads in type and instance models for a type import. */
-    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(File file,
-            GrammarModel grammar) throws ImportException;
+    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(File file, GrammarModel grammar)
+        throws ImportException;
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream,
-            FileType fileType, GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(String name, InputStream stream, FileType fileType,
+        GrammarModel grammar) throws PortException {
         //TODO: play nice with streams
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void doExport(Exportable exportable, File file, FileType fileType)
-        throws PortException {
+    public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
         String name = exportable.getName();
         String namespace = name;
         try {
-            QualName qName = new QualName(name);
-            if (qName.hasParent()) {
-                namespace = qName.parent();
-            }
+            namespace = new QualName(name).parent();
         } catch (FormatException e) {
             throw new PortException(e);
         }
@@ -158,9 +153,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements
     /** Callback method obtaining an exportable object in the required format.
      * @param isHost flag indicating that we want to export an instance model
      */
-    abstract protected ExportableResource getResource(File file,
-            boolean isHost, TypeModel tm, InstanceModel im)
-        throws PortException;
+    abstract protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
+        InstanceModel im) throws PortException;
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
     private Config loadConfig(GrammarModel grammar) {
@@ -180,9 +174,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements
      * @param typeModel name of the type model to be extracted; may be {@code null}
      * @param instanceModel name of the instance model to be extracted; may be {@code null}
      */
-    private Pair<TypeModel,InstanceModel> constructModels(Config cfg,
-            GrammarModel grammar, String namespace, String typeModel,
-            String instanceModel) throws PortException {
+    private Pair<TypeModel,InstanceModel> constructModels(Config cfg, GrammarModel grammar,
+        String namespace, String typeModel, String instanceModel) throws PortException {
         GrammarVisitor visitor = new GrammarVisitor(cfg, namespace);
         visitor.setFixedType(typeModel);
         visitor.setFixedInstance(instanceModel);
@@ -193,8 +186,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements
         } catch (ImportException e) {
             throw new PortException(e);
         }
-        return success ? Pair.newPair(visitor.getTypeModel(),
-            visitor.getInstanceModel()) : null;
+        return success ? Pair.newPair(visitor.getTypeModel(), visitor.getInstanceModel()) : null;
     }
 
     /**
@@ -208,10 +200,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements
     private Set<Resource> loadModel(Config cfg, TypeModel tm, InstanceModel im)
         throws PortException {
         Set<Resource> result = new HashSet<Resource>();
-        SimulatorModel simulatorModel =
-            getSimulator() == null ? null : getSimulator().getModel();
-        GrooveResource grooveResource =
-            new GrooveResource(cfg, simulatorModel, "");
+        SimulatorModel simulatorModel = getSimulator() == null ? null : getSimulator().getModel();
+        GrooveResource grooveResource = new GrooveResource(cfg, simulatorModel, "");
         if (tm != null) {
             TypeToGroove ttg = new TypeToGroove(grooveResource);
             ttg.addTypeModel(tm);

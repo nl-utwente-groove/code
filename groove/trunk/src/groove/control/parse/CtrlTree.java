@@ -38,11 +38,12 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * Keep visibility protected to allow constructions from {@link ParseTree}.
      */
     public CtrlTree() {
-        // empty
+        this.calls = new ArrayList<Call>();
     }
 
     /** Creates a tree wrapping a given token. */
     CtrlTree(Token token) {
+        this();
         this.token = token;
     }
 
@@ -103,17 +104,17 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     private CtrlPar par;
 
     /** Returns the derived rule call stored in this tree node, if any. */
-    public Call getCall() {
-        return this.call;
+    public List<Call> getCalls() {
+        return this.calls;
     }
 
     /** Stores a rule call in this tree node. */
-    public void setCall(Call call) {
+    public void addCall(Call call) {
         assert call != null;
-        this.call = call;
+        this.calls.add(call);
     }
 
-    private Call call;
+    private final List<Call> calls;
 
     /** Returns a list of all rule ID tokens in this tree with a given name. */
     public List<CtrlTree> getRuleIdTokens(String name) {
@@ -232,39 +233,31 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = args[0].star();
             break;
         case CtrlParser.CALL:
-            result = prot.call(getCall());
-            break;
-        case CtrlParser.ANY:
             result = prot.delta();
-            SortedMap<Integer,List<Action>> prioMap = new TreeMap<Integer,List<Action>>();
-            for (Action action : getInfo().getTransformers()) {
-                if (action.getPolicy() == CheckPolicy.OFF) {
-                    continue;
+            if (getChild(0).getType() == CtrlParser.ID) {
+                // it's a single call
+                assert getCalls().size() == 1;
+                result = prot.call(getCalls().get(0));
+            } else {
+                // it's a group call
+                SortedMap<Integer,List<Call>> prioMap = new TreeMap<Integer,List<Call>>();
+                for (Call call : getCalls()) {
+                    Action action = (Action) call.getUnit();
+                    if (action.getPolicy() == CheckPolicy.OFF) {
+                        continue;
+                    }
+                    // the action list to which this action should be added
+                    List<Call> actions = prioMap.get(action.getPriority());
+                    if (actions == null) {
+                        prioMap.put(action.getPriority(), actions = new ArrayList<Call>());
+                    }
+                    actions.add(call);
                 }
-                // the action list to which this action should be added
-                List<Action> actions = prioMap.get(action.getPriority());
-                if (actions == null) {
-                    prioMap.put(action.getPriority(), actions = new ArrayList<Action>());
-                }
-                actions.add(action);
-            }
-            result = prot.delta();
-            for (List<Action> actions : prioMap.values()) {
-                result = or(actions).tryElse(result);
-            }
-            break;
-        case CtrlParser.OTHER:
-            result = prot.delta();
-            List<Action> actions = new ArrayList<Action>();
-            for (Action action : getInfo().getTransformers()) {
-                if (action.getPolicy() == CheckPolicy.OFF) {
-                    continue;
-                }
-                if (!getInfo().getUsedNames().contains(action.getFullName())) {
-                    actions.add(action);
+                result = prot.delta();
+                for (List<Call> actions : prioMap.values()) {
+                    result = or(actions).tryElse(result);
                 }
             }
-            result = or(actions);
             break;
         default:
             assert false;
@@ -272,17 +265,11 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         return result;
     }
 
-    private Term or(Collection<Action> actions) {
+    private Term or(Collection<Call> actions) {
         Term prot = getInfo().getPrototype();
         Term result = prot.delta();
-        for (Action action : actions) {
-            List<CtrlPar> args = new ArrayList<CtrlPar>();
-            for (CtrlPar.Var par : action.getSignature()) {
-                assert !par.isInOnly();
-                args.add(new CtrlPar.Var(par.getVar(), false));
-            }
-            Call part = new Call(action, args);
-            result = result.or(prot.call(part));
+        for (Call call : actions) {
+            result = result.or(prot.call(call));
         }
         return result;
     }
@@ -453,7 +440,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         super.setNode(node);
         this.par = node.par;
         this.var = node.var;
-        this.call = node.call;
+        this.calls.addAll(node.calls);
         this.controlName = node.controlName;
     }
 
