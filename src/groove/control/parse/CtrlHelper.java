@@ -316,20 +316,16 @@ public class CtrlHelper {
         assert this.procName == null;
         String procName = qualify(unitTree.getChild(0).getText());
         this.procName = procName;
-        this.procKind = toProcKind(unitTree);
     }
 
     /** Resets the context being processed. */
     void resetContext() {
         assert this.procName != null;
         this.procName = null;
-        this.procKind = null;
     }
 
     /** The procedure name currently processed. */
     private String procName;
-    /** The kind of {@link #procName}. */
-    private Kind procKind;
 
     /**
      * Registers a call dependency.
@@ -461,8 +457,19 @@ public class CtrlHelper {
         }
         for (Callable unit : collectActions(callTree)) {
             if (checkCall(callTree, unit, args)) {
+                List<CtrlPar> unitArgs;
+                if (args == null && callTree.getType() != ID) {
+                    // this is a group call, for which we create artificial output parameters
+                    unitArgs = new ArrayList<CtrlPar>();
+                    for (CtrlPar.Var par : unit.getSignature()) {
+                        assert !par.isInOnly();
+                        unitArgs.add(new CtrlPar.Var(par.getVar(), false));
+                    }
+                } else {
+                    unitArgs = args;
+                }
                 // create the call
-                Call call = args == null ? new Call(unit) : new Call(unit, args);
+                Call call = unitArgs == null ? new Call(unit) : new Call(unit, unitArgs);
                 callTree.addCall(call);
             }
         }
@@ -545,78 +552,6 @@ public class CtrlHelper {
             }
         }
         return result;
-    }
-
-    void checkCall(CtrlTree callTree) {
-        int childCount = callTree.getChildCount();
-        assert callTree.getType() == CtrlChecker.CALL && childCount >= 1;
-        String unitName = callTree.getChild(0).getText();
-        Call result = null;
-        testArgs: {
-            // get the arguments
-            List<CtrlPar> args = null;
-            if (childCount == 2) {
-                args = new ArrayList<CtrlPar>();
-                CtrlTree argsTree = callTree.getChild(1);
-                // stop at the closing RPAR
-                for (int i = 0; i < argsTree.getChildCount() - 1; i++) {
-                    CtrlPar arg = argsTree.getChild(i).getCtrlPar();
-                    // if any of the arguments is null, an error was detected
-                    // and reported earlier; we silently fail
-                    if (arg == null) {
-                        break testArgs;
-                    }
-                    args.add(arg);
-                }
-            }
-            Callable unit = this.namespace.getCallable(unitName);
-            Action action = unit instanceof Action ? (Action) unit : null;
-            if (unit == null) {
-                emitErrorMessage(callTree, "Unknown action '%s'", unitName);
-            } else if (action != null && action.getPriority() > 0) {
-                String message = "Explicit call of prioritised %s '%s' not allowed";
-                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
-            } else if (action != null && action.getRole().isConstraint()) {
-                String message = "Explicit call of %s property '%s' not allowed";
-                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
-            } else if (action != null && action.getPolicy() == CheckPolicy.OFF) {
-                String message = "Explicit call of disabled %s '%s' not allowed";
-                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
-            } else if (checkCall(callTree, unit, args)) {
-                // create the call
-                result = args == null ? new Call(unit) : new Call(unit, args);
-                callTree.addCall(result);
-            }
-        }
-    }
-
-    void checkAny(CtrlTree anyTree) {
-        if (this.procKind == Kind.RECIPE) {
-            emitErrorMessage(anyTree, "'any' may not be used within a recipe");
-        }
-        checkGroupCall(anyTree, this.namespace.getActions());
-    }
-
-    void checkOther(CtrlTree otherTree) {
-        if (this.procKind == Kind.RECIPE) {
-            emitErrorMessage(otherTree, "'other' may not be used within a recipe");
-        }
-        Set<Action> otherActions = new HashSet<Action>();
-        Set<String> usedNames = this.namespace.getUsedNames();
-        for (Action action : this.namespace.getActions()) {
-            if (!usedNames.contains(action.getFullName())) {
-                otherActions.add(action);
-            }
-        }
-        checkGroupCall(otherTree, otherActions);
-    }
-
-    private void checkGroupCall(CtrlTree callTree, Set<Action> actions) {
-        for (Action action : actions) {
-            if (action.getPolicy() != CheckPolicy.OFF) {
-                checkCall(callTree, action, null);
-            }
-        }
     }
 
     /**
