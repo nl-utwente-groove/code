@@ -233,7 +233,6 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             result = args[0].star();
             break;
         case CtrlParser.CALL:
-            result = prot.delta();
             if (getChild(0).getType() == CtrlParser.ID) {
                 // it's a single call
                 assert getCalls().size() == 1;
@@ -254,8 +253,8 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
                     actions.add(call);
                 }
                 result = prot.delta();
-                for (List<Call> actions : prioMap.values()) {
-                    result = or(actions).tryElse(result);
+                for (List<Call> calls : prioMap.values()) {
+                    result = or(calls).tryElse(result);
                 }
             }
             break;
@@ -292,7 +291,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         Program result = new Program(getControlName());
         CtrlTree body = getChild(4);
         if (body.getChildCount() == 0) {
-            result.setMain(getInfo().getPrototype().delta());
+            result.setDead(getInfo().getPrototype());
         } else {
             result.setMain(body.toTerm());
         }

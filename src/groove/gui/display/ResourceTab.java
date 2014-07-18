@@ -151,7 +151,7 @@ abstract public class ResourceTab extends JPanel {
      * dirty status of the tab.
      */
     public String getTitle() {
-        StringBuilder result = new StringBuilder(QualName.getLastName(getName()));
+        StringBuilder result = new StringBuilder(QualName.lastName(getName()));
         return decorateText(result).toString();
     }
 

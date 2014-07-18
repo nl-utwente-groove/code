@@ -97,7 +97,7 @@ abstract public class ResourceModel<R> {
      * @see #getFullName()
      */
     public String getLastName() {
-        return QualName.getLastName(getFullName());
+        return QualName.lastName(getFullName());
     }
 
     /** 

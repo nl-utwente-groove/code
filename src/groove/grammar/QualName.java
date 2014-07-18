@@ -227,7 +227,7 @@ public class QualName implements Comparable<QualName> {
     }
 
     /** Returns the last part of a well-formed qualified name. */
-    public static String getLastName(String fullName) {
+    public static String lastName(String fullName) {
         try {
             return new QualName(fullName).child();
         } catch (FormatException e) {
@@ -242,7 +242,7 @@ public class QualName implements Comparable<QualName> {
      * If the name does not have components, the namespace is
      * the empty string.
      */
-    public static String getParent(String fullName) {
+    public static String parent(String fullName) {
         try {
             return new QualName(fullName).parent();
         } catch (FormatException e) {
@@ -416,6 +416,13 @@ public class QualName implements Comparable<QualName> {
                 result.append("_UNKN_");
             }
         }
+    }
+
+    /** Tests if a given string is a well-formed qualified name,
+     * i.e., has a non-trivial parent namespace. */
+    public static boolean isQualified(String fullName) {
+        QualName qualName = QualName.name(fullName);
+        return qualName != null && qualName.tokens().size() > 1;
     }
 
     /** Tests if a given string is a well-formed qualified name. */
