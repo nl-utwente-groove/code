@@ -95,7 +95,7 @@ program
 /** @H Package declaration. */
 package_decl
   : //@S PACKAGE qual_name
-    //@B Causes all rules and functions to be qualified by %s
+    //@B Causes all rules and procedures to be implicitly qualified by %s
     ( key=PACKAGE qual_name[false] close=SEMI
       { helper.setPackage($qual_name.tree); }
       -> ^(PACKAGE[$key] qual_name SEMI[$close])
@@ -127,8 +127,12 @@ qual_name[boolean any]
   */
 recipe
   : //@S RECIPE name par_list (PRIORITY int)? block
-    //@B Declares an atomic rule %s, with parameters %s and body %3$s.
-    //@B The optional priority %2$s assigns preference in a choice.
+    //@B Declares an atomic rule %s, with parameters %s and body %4$s.
+    //@B The optional priority %3$s assigns preference in a group call.
+    //@P name of the declared recipe
+    //@P parameter list for the recipe
+    //@P optional non-negative priority
+    //@P recipe body
     RECIPE^ ID par_list (PRIORITY! INT_LIT)?
     { helper.setContext($RECIPE.tree); }
     block
@@ -138,12 +142,14 @@ recipe
   ;
 
 /** @H Function declaration.
-  * @B The function will be inlined at every place it is called.
-  * @B Functions currently can have no parameters. 
+  * @B When called, the body of the function is scheduled.
   */
 function
   : //@S FUNCTION name par_list block
     //@B Declares the function %s, with parameters %s and body %3$s.
+    //@P name of the declared function
+    //@P parameter list for the function
+    //@P function body
     FUNCTION^ ID par_list 
     { helper.setContext($FUNCTION.tree); }
     block
@@ -168,11 +174,11 @@ par_list
 par
   : //@S OUT var_type id
     //@H Output parameter
-    //@B Variable %s will receive a value in the course of the function or recipe.
+    //@B Variable %2$s will receive a value in the course of the function or recipe.
     OUT var_type ID -> ^(PAR OUT var_type ID)
   | //@S var_type id
     //@H Input parameter
-    //@B Variable %s is initialised by the argument passed into the call.
+    //@B Variable %2$s is initialised by the argument passed into the call.
     var_type ID -> ^(PAR var_type ID)
   ;
   
@@ -191,10 +197,6 @@ stat
 	  //@B The body %s is repeated as long as it remains enabled.
 	  //@B Enabledness is determined by the first rule of the statement.
 	  ALAP^ stat
-	// | //@ S ATOM stat
-	//  //@ B The body %s is evaluated atomically, meaning that it is only
-	//  //@ B added to the transition system if it finishes successfully
-	// ATOM^ stat
 	| //@S LANGLE stat* RANGLE
 	  //@B Atomically evaluated sequence of statements, surrounded by angle brackets.
 	  //@B The transitions in the body are only added to the transition system if
@@ -207,7 +209,7 @@ stat
 	  //@B <p>This is equivalent to "ALAP LCURLY %1$s SEMI %2$s RCURLY".
 	  WHILE^ LPAR! cond RPAR! stat
 	| //@S UNTIL LPAR cond RPAR stat
-    //@B As long as the condition %2$s fails, the body %2$s is repeated. 
+    //@B As long as the condition %1$s fails, the body %2$s is repeated. 
     //@B Note that if this terminates, the last action is an application of %1$s.
     UNTIL^ LPAR! cond RPAR! stat
 	| DO stat 
