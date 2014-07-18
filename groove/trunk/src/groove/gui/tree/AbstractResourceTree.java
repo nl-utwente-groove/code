@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -25,6 +25,7 @@ import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
+import groove.gui.display.DismissDelayer;
 import groove.gui.display.ResourceDisplay;
 
 import java.awt.Color;
@@ -37,6 +38,7 @@ import java.util.List;
 
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
@@ -48,6 +50,8 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
     protected AbstractResourceTree(ResourceDisplay parentDisplay) {
         this.parentDisplay = parentDisplay;
         this.resourceKind = parentDisplay.getResourceKind();
+        ToolTipManager.sharedInstance().registerComponent(this);
+        addMouseListener(new DismissDelayer(this));
     }
 
     void installListeners() {
@@ -107,7 +111,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
     /** Callback factory method for the mouse listener of this resource tree. */
     abstract MouseListener createMouseListener();
 
-    /** 
+    /**
      * Creates a popup menu for the resource tree.
      * @param node tree node that the mouse is over
      */
@@ -195,7 +199,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
     /**
      * Custom selection listener, which notifies the {@link SimulatorModel}
-     * of every selection change. 
+     * of every selection change.
      */
     class MySelectionListener implements TreeSelectionListener {
         /** Empty constructor with the correct visibility. */

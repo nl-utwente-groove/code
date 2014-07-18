@@ -34,7 +34,6 @@ import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +85,7 @@ public class CtrlHelper {
 
     /** Adds an import to this compilation unit. */
     void addImport(CommonTree importTree) {
-        String fullName = importTree.getText();
-        String name = QualName.getLastName(fullName);
-        this.importMap.put(name, fullName);
+        this.namespace.addImport(importTree.getText());
     }
 
     /** Closes the current variable scope. */
@@ -151,10 +148,10 @@ public class CtrlHelper {
         String topText;
         Token topToken;
         if (asterisk == null) {
-            topText = call.getType() == ID ? call.getText() : "";
+            topText = call.getText();
             topToken = call;
         } else {
-            topText = asterisk.getText();
+            topText = QualName.extend(asterisk.getText(), call.getText());
             topToken = asterisk;
         }
         CommonToken top = new CommonToken(call.getType(), topText);
@@ -181,7 +178,9 @@ public class CtrlHelper {
             result = toQualName(null, init);
         } else {
             Token subTop = subTree.getToken();
-            String qualText = QualName.extend(init.getText(), subTop.getText());
+            String qualText =
+                subTop.getText().isEmpty() ? init.getText() : QualName.extend(init.getText(),
+                    subTop.getText());
             CommonToken top = new CommonToken(subTop.getType(), qualText);
             top.setLine(init.getLine());
             top.setTokenIndex(init.getTokenIndex());
@@ -199,10 +198,11 @@ public class CtrlHelper {
     CommonTree qualify(CommonTree ruleNameToken) {
         CommonTree result = ruleNameToken;
         String name = ruleNameToken.getText();
-        if (QualName.getParent(name).isEmpty()) {
-            if (this.importMap.containsKey(name)) {
-                name = this.importMap.get(name);
-            } else {
+        if (QualName.parent(name).isEmpty()) {
+            Map<String,String> importMap = getNamespace().getImportMap();
+            if (importMap.containsKey(name)) {
+                name = importMap.get(name);
+            } else if (!isAnyOther(name)) {
                 name = QualName.extend(this.packageName, name);
             }
             CommonToken token = new CommonToken(ruleNameToken.getType(), name);
@@ -214,22 +214,15 @@ public class CtrlHelper {
         return result;
     }
 
-    /** Qualifies a given name by prefixing it with the package name. */
-    String qualify(String name) {
-        return QualName.extend(this.namespace.getParentName(), name);
+    /** Tests if a certain string equals the #ANY or #OTHER token text. */
+    private boolean isAnyOther(String text) {
+        return text.equals(ANY_TEXT) || text.equals(OTHER_TEXT);
     }
 
-    /**
-     * Looks up a name in the import map,
-     * returning either the imported qualified name if there is any,
-     * or the package-prefixed qualification of the looked-up name otherwise.
-     */
-    String looukp(String name) {
-        String result = this.importMap.get(name);
-        if (result == null) {
-            result = qualify(name);
-        }
-        return name;
+    /** Qualifies a given name by prefixing it with the package name,
+     * if it is not already a qualified name. */
+    String qualify(String name) {
+        return QualName.extend(this.namespace.getParentName(), name);
     }
 
     /** Returns a dot-separated string consisting of a number of token texts. */
@@ -501,8 +494,9 @@ public class CtrlHelper {
             // collect all actions with matching names
             boolean other = nameTree.getType() == OTHER;
             Set<String> usedNames = this.namespace.getUsedNames();
-            String groupName = nameTree.getText();
+            String groupName = QualName.parent(nameTree.getText());
             QualName qualGroupName = QualName.name(groupName);
+            boolean qualified = !groupName.isEmpty();
             boolean wildcard = qualGroupName.hasWildCard();
             assert groupName != null;
             for (Action action : this.namespace.getActions()) {
@@ -513,8 +507,15 @@ public class CtrlHelper {
                 boolean matches;
                 if (wildcard) {
                     matches = qualGroupName.matches(QualName.name(actionName));
+                } else if (qualified) {
+                    matches = QualName.parent(actionName).equals(groupName);
                 } else {
-                    matches = QualName.name(actionName).parent().equals(groupName);
+                    // the any or other was unqualified;
+                    // only use the action if it is in scope
+                    // meaning declared in the current package or imported
+                    matches =
+                        QualName.parent(actionName).equals(this.namespace.getParentName())
+                            || this.namespace.hasImport(actionName);
                 }
                 if (!matches) {
                     continue;
@@ -718,6 +719,7 @@ public class CtrlHelper {
 
     /** Name of the module in which all declared names should be placed. */
     private String packageName = "";
-    /** Map from names to imported qualified names. */
-    private Map<String,String> importMap = new HashMap<String,String>();
+
+    private final static String ANY_TEXT = CtrlParser.tokenNames[ANY].toLowerCase();
+    private final static String OTHER_TEXT = CtrlParser.tokenNames[OTHER].toLowerCase();
 }

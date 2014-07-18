@@ -26,7 +26,6 @@ import groove.grammar.Action;
 import groove.grammar.CheckPolicy;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
-import groove.grammar.Rule;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
@@ -71,7 +70,6 @@ import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -114,7 +112,6 @@ public class RuleTree extends AbstractResourceTree {
         im.put(Options.FORWARD_KEY, Options.FORWARD_ACTION_NAME);
         // add tool tips
         installListeners();
-        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     @Override
@@ -230,12 +227,12 @@ public class RuleTree extends AbstractResourceTree {
                     ruleEntryMap.put(action.getName(), (RuleEntry) action);
                 }
             }
-            // add the recipes and their subrules to the tree
+            // add the recipes to the tree
             for (RecipeEntry recipe : recipes) {
                 String recipeName = recipe.getName();
                 // recursively add parent directory nodes as required
                 DisplayTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, QualName.getParent(recipeName));
+                    addParentNode(topNode, dirNodeMap, QualName.parent(recipeName));
                 DisplayTreeNode recipeNode = createActionNode(recipe, expandedPaths, selectedPaths);
                 parentNode.insertSorted(recipeNode);
             }
@@ -244,7 +241,7 @@ public class RuleTree extends AbstractResourceTree {
                 String name = ruleEntry.getName();
                 // recursively add parent directory nodes as required
                 DisplayTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, QualName.getParent(name));
+                    addParentNode(topNode, dirNodeMap, QualName.parent(name));
                 DisplayTreeNode ruleNode =
                     createActionNode(ruleEntry, expandedPaths, selectedPaths);
                 parentNode.insertSorted(ruleNode);
@@ -265,7 +262,7 @@ public class RuleTree extends AbstractResourceTree {
                 String name = action.getName();
                 // recursively add parent directory nodes as required
                 DisplayTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, QualName.getParent(name));
+                    addParentNode(topNode, dirNodeMap, QualName.parent(name));
                 DisplayTreeNode ruleNode = createActionNode(action, expandedPaths, selectedPaths);
                 parentNode.insertSorted(ruleNode);
             }
@@ -299,7 +296,6 @@ public class RuleTree extends AbstractResourceTree {
     private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
         Map<Integer,Set<ActionEntry>> result =
             new TreeMap<Integer,Set<ActionEntry>>(Action.PRIORITY_COMPARATOR);
-        Set<String> subRuleNames = new HashSet<String>();
         for (Recipe recipe : grammar.getControlModel().getRecipes()) {
             int priority = recipe.getPriority();
             Set<ActionEntry> recipes = result.get(priority);
@@ -307,14 +303,6 @@ public class RuleTree extends AbstractResourceTree {
                 result.put(priority, recipes = new HashSet<ActionEntry>());
             }
             recipes.add(new RecipeEntry(recipe));
-            Set<Rule> subrules = recipe.getRules();
-            if (subrules != null) {
-                for (Rule subrule : subrules) {
-                    String ruleName = subrule.getFullName();
-                    recipes.add(new RuleEntry(grammar.getRuleModel(ruleName)));
-                    subRuleNames.add(ruleName);
-                }
-            }
         }
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel rule = (RuleModel) model;
@@ -389,9 +377,9 @@ public class RuleTree extends AbstractResourceTree {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
                 DisplayTreeNode grandParentNode =
-                    addParentNode(topNode, dirNodeMap, QualName.getParent(parentName));
+                    addParentNode(topNode, dirNodeMap, QualName.parent(parentName));
                 // make the parent node and register it
-                result = new FolderTreeNode(QualName.getLastName(parentName));
+                result = new FolderTreeNode(QualName.lastName(parentName));
                 grandParentNode.insertSorted(result);
                 dirNodeMap.put(parentName, result);
             }
@@ -833,14 +821,15 @@ public class RuleTree extends AbstractResourceTree {
                     result.append("Will be scheduled only when all higher-level priority transformers failed");
                 }
             } else {
-                result.append("List of graph properties");
+                result.append("List of graph properties, defined by unmodifying rules<br>"
+                    + "and checked automatically at every non-transient state,");
                 if (this.hasMultiple) {
                     switch (this.policy) {
                     case ERROR:
-                        result.append(" which, when violated, will flag an error");
+                        result.append("<br>which, when violated, will flag an error");
                         break;
                     case REMOVE:
-                        result.append(" which, when violated, will cause the state to be removed");
+                        result.append("<br>which, when violated, will cause the state to be removed");
                     }
                 }
             }
@@ -864,13 +853,13 @@ public class RuleTree extends AbstractResourceTree {
             } else {
                 switch (policy) {
                 case SILENT:
-                    result.append(hasMultiple ? "Normal properties" : "Properties");
+                    result.append("Graph conditions");
                     break;
                 case ERROR:
-                    result.append("Error properties");
+                    result.append("Safety constraints");
                     break;
                 case REMOVE:
-                    result.append("Enforced properties");
+                    result.append("Enforced constraints");
                     break;
                 }
             }

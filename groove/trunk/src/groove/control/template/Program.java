@@ -91,20 +91,29 @@ public class Program implements Fixable {
     private final Set<String> names;
 
     /**
+     * Sets the main body of this program to deadlock.
+     * Should only be invoked on singular programs, i.e., if {@link #isSingular()} holds,
+     * and only if the program is not fixed.
+     * @param prototype prototype term to create the delta term from
+     */
+    public void setDead(Term prototype) {
+        assert !isFixed();
+        assert isSingular();
+        this.main = prototype.delta();
+    }
+
+    /**
      * Sets the main body of this program to a given term.
      * Should only be invoked on singular programs, i.e., if {@link #isSingular()} holds,
      * and only if the program is not fixed.
-     * @param main the main (non-{@code null}) body; if {@link Term#isDead()},
-     * it is not counted as a proper main.
+     * @param main the main (non-{@code null}) body.
      */
     public void setMain(Term main) {
         assert main != null && this.main == null;
         assert !isFixed();
         assert isSingular();
         this.main = main;
-        if (!main.isDead()) {
-            this.mainName = getName();
-        }
+        this.mainName = getName();
     }
 
     /** Sets the property actions to be checked at each non-transient state. */

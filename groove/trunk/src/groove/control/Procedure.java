@@ -59,7 +59,7 @@ public abstract class Procedure implements Callable, Fixable {
 
     @Override
     public String getLastName() {
-        return QualName.getLastName(getFullName());
+        return QualName.lastName(getFullName());
     }
 
     @Override

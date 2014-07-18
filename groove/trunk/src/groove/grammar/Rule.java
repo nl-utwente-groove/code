@@ -112,7 +112,7 @@ public class Rule implements Action, Fixable {
      */
     @Override
     public String getLastName() {
-        return QualName.getLastName(getFullName());
+        return QualName.lastName(getFullName());
     }
 
     /** Returns the system properties. */

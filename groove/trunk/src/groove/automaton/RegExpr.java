@@ -879,7 +879,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         for (RegExpr prototype : prototypes) {
             if (!(prototype instanceof Atom)) {
                 operators.add(prototype.getOperator());
-                tokenMap.put(prototype.getClass().getSimpleName(), Help.bf(prototype.getOperator()));
+                tokenMap.put(prototype.getClass().getSimpleName(), prototype.getOperator());
             }
         }
         tokenMap.put("LSQUARE", "[");

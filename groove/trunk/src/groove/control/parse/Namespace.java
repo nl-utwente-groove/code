@@ -143,7 +143,11 @@ public class Namespace implements ParseInfo {
     /** Sets the full name of the control program currently being explored. */
     public void setControlName(String controlName) {
         this.controlName = controlName;
-        this.parentName = QualName.getParent(controlName);
+        this.parentName = QualName.parent(controlName);
+        if (!this.importedMap.containsKey(controlName)) {
+            this.importedMap.put(controlName, new HashSet<String>());
+            this.importMap.put(controlName, new HashMap<String,String>());
+        }
     }
 
     /** Returns the full name of the control program being parsed. */
@@ -160,6 +164,26 @@ public class Namespace implements ParseInfo {
     private String controlName;
     /** Parent name of {@link #controlName}. */
     private String parentName;
+
+    /** Adds an import to the map of the current control program. */
+    public void addImport(String fullName) {
+        this.importedMap.get(this.controlName).add(fullName);
+        this.importMap.get(this.controlName).put(QualName.lastName(fullName), fullName);
+    }
+
+    /** Tests if a given qualified name is imported. */
+    public boolean hasImport(String fullName) {
+        return this.importedMap.get(this.controlName).contains(fullName);
+    }
+
+    /** Returns a mapping from last names to full names for all imported names. */
+    public Map<String,String> getImportMap() {
+        return this.importMap.get(this.controlName);
+    }
+
+    private final Map<String,Set<String>> importedMap = new HashMap<String,Set<String>>();
+    private final Map<String,Map<String,String>> importMap =
+        new HashMap<String,Map<String,String>>();
 
     /**
      * Returns the set of all top-level actions (rules and recipes).

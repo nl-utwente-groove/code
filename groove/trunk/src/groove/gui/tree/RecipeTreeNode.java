@@ -92,7 +92,7 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         result.append(HTMLConverter.ITALIC_TAG.on(getName()));
         if (!isEnabled()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append("Not active in this state");
+            result.append("Not scheduled in this state");
         }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
