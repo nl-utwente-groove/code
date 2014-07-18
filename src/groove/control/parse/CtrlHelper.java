@@ -458,7 +458,7 @@ public class CtrlHelper {
         for (Callable unit : collectActions(callTree)) {
             if (checkCall(callTree, unit, args)) {
                 List<CtrlPar> unitArgs;
-                if (args == null && callTree.getType() != ID) {
+                if (args == null && callTree.getChild(0).getType() != ID) {
                     // this is a group call, for which we create artificial output parameters
                     unitArgs = new ArrayList<CtrlPar>();
                     for (CtrlPar.Var par : unit.getSignature()) {
