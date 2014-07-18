@@ -1,7 +1,0 @@
-package sub1;
-
-import b;
-
-recipe r() { b; }
-
-*.any;
