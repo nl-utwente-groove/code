@@ -61,10 +61,10 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20140717";
+    public static final String BUILD = "20140718";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "17.07.2014";
+    public static final String DATE = "18.07.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -75,7 +75,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.1.3+";
+    public static final String NUMBER = "5.2.0+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
@@ -98,7 +98,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_4;
+        return GRAMMAR_VERSION_3_5;
     }
 
     /**
@@ -239,5 +239,10 @@ public class Version {
      * Several grammar properties added
      */
     public static final String GRAMMAR_VERSION_3_4 = "3.4";
+    /**
+     * This is the grammar version introduced with Groove version 5.2.0.
+     * Much more flexible use of any (package.any, package.*.any)
+     */
+    public static final String GRAMMAR_VERSION_3_5 = "3.5";
 
 }

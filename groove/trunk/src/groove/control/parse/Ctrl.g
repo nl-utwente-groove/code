@@ -298,14 +298,7 @@ expr2
   ;
 
 expr_atom
-	:// //@S expr: ANY
-	 // //@B Execution of an arbitrary non-property action.
-	 // ANY
-	//| //@S expr: OTHER
-	//  //@B Execution of an arbitrary non-property action not explicitly occurring 
-	//  //@B in this control program.
-	//  OTHER
-	//| //@S expr: LPAR expr RPAR
+	: //@S expr: LPAR expr RPAR
 	  //@B Bracketed expression.
 	  open=LPAR expr close=RPAR
 	  -> ^(BLOCK[$open] expr TRUE[$close])
@@ -314,11 +307,11 @@ expr_atom
 	  call
 	; 
 
-/** @H Rule or procedure call. */
+/** @H Rule, procedure or group call. */
 call
 	: //@S name [ LPAR arg_list RPAR ]
-	  //@B Invokes a rule or procedure %s, with optional arguments %s.
-	  //@P the rule or preocedure name
+	  //@B Invokes a rule, procedure or group %s, with optional arguments %s.
+	  //@P the rule, procedure or group name
 	  //@P optional comma-separated list of arguments
 	  rule_name arg_list?
     { helper.registerCall($rule_name.tree); }
@@ -336,7 +329,7 @@ arg_list
   ;
 
 /** @H Argument
-  * @B Argument for a rule or function call. 
+  * @B Argument for a rule, procedure or group call. 
   */
 arg
   : //@S OUT id
@@ -372,12 +365,19 @@ literal
     REAL_LIT
   ;
 
-/** Returns a "normalised" rule name.
- *  Normalisation means a non-qualified rule is looked up 
- *  in the imports, and if not found, prefixed with the package name
- */
+/** @H Qualified rule, procedure or group name. */
 rule_name
-  : qual_name[true]
+  : //@S (package DOT)? name
+    //@B Explicit rule or procedure call of %2$s, optionally qualified with %1$s
+    //@P optional (qualified) package name
+    //@P rule or procedure name
+    //@S (package DOT)? (ASTERISK DOT)? group
+    //@B Invokes all (if %2$s is ANY) or all not explicitly invoked (if %2$s is OTHER) actions
+    //@B in %1$s (including all subpackages if %2$s is preceded by ASTERISK)
+    //@B or in the current scope if %1$s and ASTERISK are absent
+    //@P optional (qualified) package name
+    //@P ANY or OTHER
+    qual_name[true]
     -> { helper.qualify($qual_name.tree) }
   ;
 

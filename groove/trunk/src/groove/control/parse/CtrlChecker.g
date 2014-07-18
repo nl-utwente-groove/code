@@ -145,10 +145,6 @@ stat
        { helper.endBranch(); }
      )
   | rule
-  | ^(ANY ID)
-    { helper.checkAny($ANY); }
-  | ^(OTHER ID)
-    { helper.checkOther($OTHER); }
   | TRUE
   ;
 
