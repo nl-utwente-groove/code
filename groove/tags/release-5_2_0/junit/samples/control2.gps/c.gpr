@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="c">
+        <attr name="actionRole">
+            <string>transformer</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n57036">
+            <attr name="layout">
+                <string>229 206 46 18</string>
+            </attr>
+        </node>
+        <node id="n57034">
+            <attr name="layout">
+                <string>225 164 46 18</string>
+            </attr>
+        </node>
+        <node id="n57035">
+            <attr name="layout">
+                <string>230 237 46 18</string>
+            </attr>
+        </node>
+        <edge to="n57036" from="n57036">
+            <attr name="label">
+                <string>par:1</string>
+            </attr>
+        </edge>
+        <edge to="n57034" from="n57034">
+            <attr name="label">
+                <string>par:0</string>
+            </attr>
+        </edge>
+        <edge to="n57035" from="n57035">
+            <attr name="label">
+                <string>par:2</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

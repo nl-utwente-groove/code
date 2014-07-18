@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="Ztop4">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n2">
+            <attr name="layout">
+                <string>213 236 26 21</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>109 196 26 21</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>207 94 19 21</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>336 208 26 21</string>
+            </attr>
+        </node>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>ld</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n0">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 218 105 253 198 350 219 12</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 218 105 142 130 123 207 12</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n3">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n2">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 218 105 183 178 227 247 12</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
