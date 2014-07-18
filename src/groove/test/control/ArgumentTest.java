@@ -35,7 +35,7 @@ import org.junit.Test;
  * @version $Revision $
  */
 @SuppressWarnings("all")
-public class ControlGrammarsTest {
+public class ArgumentTest {
     static private final String DIRECTORY = "junit/samples/control.gps";
 
     /** Regression bug SF #3536820. */
