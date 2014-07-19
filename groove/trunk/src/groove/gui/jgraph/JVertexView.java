@@ -19,14 +19,14 @@ package groove.gui.jgraph;
 import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import groove.gui.Options;
-import groove.gui.look.HTMLLineFormat;
-import groove.gui.look.LineStyle;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.util.NodeShape;
+import groove.util.line.HTMLLineFormat;
+import groove.util.line.LineStyle;
 
 import java.awt.Color;
 import java.awt.Dimension;

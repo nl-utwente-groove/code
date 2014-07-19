@@ -16,7 +16,7 @@
  */
 package groove.graph;
 
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 /**
  * Abstract label implementation consisting of simple, plain text,

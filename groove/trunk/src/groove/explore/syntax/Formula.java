@@ -20,7 +20,7 @@ import groove.algebra.Precedence;
 import groove.control.Call;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import org.antlr.runtime.RecognitionException;
 

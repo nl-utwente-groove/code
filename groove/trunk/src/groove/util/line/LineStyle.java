@@ -14,9 +14,10 @@
  *
  * $Id$
  */
-package groove.gui.look;
+package groove.util.line;
 
 import groove.gui.Options;
+import groove.gui.look.Values;
 
 import java.util.HashMap;
 import java.util.Map;

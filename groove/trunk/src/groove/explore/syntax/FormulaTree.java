@@ -1,6 +1,5 @@
 package groove.explore.syntax;
 
-import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseInfo;
 import groove.util.antlr.ParseTree;
 
@@ -14,7 +13,7 @@ public class FormulaTree extends ParseTree<FormulaTree,ParseInfo> {
      * Returns the term object corresponding to this tree.
      * All free variables in the tree must be type-derivable.
      */
-    public Formula toFormula() throws FormatException {
+    public Formula toFormula() {
         Formula result = null;
         switch (getType()) {
         case FormulaParser.AMP:

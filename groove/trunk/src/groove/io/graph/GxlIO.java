@@ -35,10 +35,10 @@ import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.gui.look.LineStyle;
 import groove.io.FileType;
 import groove.util.Groove;
 import groove.util.Version;
+import groove.util.line.LineStyle;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;

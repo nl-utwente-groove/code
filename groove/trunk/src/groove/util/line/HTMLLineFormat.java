@@ -14,16 +14,16 @@
  *
  * $Id$
  */
-package groove.gui.look;
+package groove.util.line;
 
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.createColorTag;
 import static groove.io.HTMLConverter.createSpanTag;
 import groove.gui.Options;
-import groove.gui.look.Line.ColorType;
-import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
+import groove.util.line.Line.ColorType;
+import groove.util.line.Line.Style;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -89,7 +89,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
     }
 
     @Override
-    protected HTMLBuilder createResult() {
+    public HTMLBuilder createResult() {
         return new HTMLBuilder();
     }
 

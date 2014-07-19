@@ -20,8 +20,8 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
-import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
+import groove.util.line.Line;
+import groove.util.line.Line.Style;
 
 import java.util.Collections;
 import java.util.Map;

@@ -23,7 +23,7 @@ import groove.algebra.Precedence.Direction;
 import groove.algebra.Precedence.Placement;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import java.util.ArrayList;
 import java.util.Arrays;

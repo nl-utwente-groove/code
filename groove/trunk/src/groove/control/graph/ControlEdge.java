@@ -20,8 +20,8 @@ import groove.control.CallStack;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
-import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
+import groove.util.line.Line;
+import groove.util.line.Line.Style;
 
 import java.awt.Color;
 

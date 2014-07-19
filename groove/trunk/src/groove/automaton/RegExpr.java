@@ -35,10 +35,10 @@ import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.line.Line;
+import groove.util.line.Line.Style;
 import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;

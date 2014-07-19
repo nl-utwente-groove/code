@@ -45,7 +45,6 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
-import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.gui.tree.StateTree;
@@ -61,6 +60,7 @@ import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
+import groove.util.line.LineStyle;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

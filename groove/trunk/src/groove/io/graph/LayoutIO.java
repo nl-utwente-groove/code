@@ -23,9 +23,9 @@ import groove.graph.GraphInfo;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.gui.look.LineStyle;
 import groove.io.FileType;
 import groove.io.HTMLConverter;
+import groove.util.line.LineStyle;
 import groove.util.parse.StringHandler;
 
 import java.awt.Point;

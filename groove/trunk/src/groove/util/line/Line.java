@@ -14,9 +14,10 @@
  *
  * $Id$
  */
-package groove.gui.look;
+package groove.util.line;
 
-import groove.gui.look.LineFormat.Builder;
+import groove.gui.look.Values;
+import groove.util.line.LineFormat.Builder;
 
 import java.awt.Color;
 import java.util.Arrays;
@@ -134,6 +135,20 @@ public abstract class Line {
             result = new Composed(this, Line.atom(atom));
         }
         return result;
+    }
+
+    /** Returns a line that equals this one, except
+     * that the first character has been turned into lowercase.
+     */
+    public Line toLower() {
+        return capitalise(false);
+    }
+
+    /** Returns a line that equals this one, except
+     * that the first character has been turned into uppercase.
+     */
+    public Line toUpper() {
+        return capitalise(true);
     }
 
     /** Returns a line that equals this one, except

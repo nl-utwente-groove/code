@@ -21,7 +21,7 @@ import groove.grammar.AnchorKind;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import java.awt.Color;
 import java.util.Set;

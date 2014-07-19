@@ -22,8 +22,10 @@ import static groove.gui.look.MultiLabel.Orient.LEFT;
 import static groove.gui.look.MultiLabel.Orient.RIGHT;
 import static groove.gui.look.MultiLabel.Orient.UP_LEFT;
 import static groove.gui.look.MultiLabel.Orient.UP_RIGHT;
-import groove.gui.look.LineFormat.Builder;
 import groove.io.Util;
+import groove.util.line.Line;
+import groove.util.line.LineFormat;
+import groove.util.line.LineFormat.Builder;
 
 import java.awt.geom.Point2D;
 import java.util.EnumMap;

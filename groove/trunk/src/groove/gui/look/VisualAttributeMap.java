@@ -18,6 +18,7 @@ package groove.gui.look;
 
 import groove.gui.Options;
 import groove.gui.look.VisualKey.Nature;
+import groove.util.line.LineStyle;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;

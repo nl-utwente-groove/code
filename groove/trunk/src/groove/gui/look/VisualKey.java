@@ -21,6 +21,7 @@ import static groove.gui.look.VisualKey.Nature.DERIVED;
 import static groove.gui.look.VisualKey.Nature.REFRESHABLE;
 import groove.gui.layout.JCellLayout;
 import groove.util.NodeShape;
+import groove.util.line.LineStyle;
 
 import java.awt.Color;
 import java.awt.Dimension;

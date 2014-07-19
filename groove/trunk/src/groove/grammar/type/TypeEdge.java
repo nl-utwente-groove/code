@@ -20,7 +20,7 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.grammar.AnchorKind;
 import groove.graph.AEdge;
 import groove.graph.Label;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import java.util.Set;
 

@@ -1,23 +1,23 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
-package groove.gui.look;
+package groove.util.line;
 
-import groove.gui.look.Line.ColorType;
-import groove.gui.look.Line.Style;
+import groove.util.line.Line.ColorType;
+import groove.util.line.Line.Style;
 
 import java.awt.Color;
 
@@ -51,7 +51,7 @@ abstract public class LineFormat<R extends LineFormat.Builder<R>> {
         return result;
     }
 
-    /** 
+    /**
      * Constructs a composed rendering.
      * This default implementation just concatenates the fragments.
      */
@@ -81,7 +81,7 @@ abstract public class LineFormat<R extends LineFormat.Builder<R>> {
     abstract public R applyAtomic(String text);
 
     /** Callback method to create a result object. */
-    abstract protected R createResult();
+    abstract public R createResult();
 
     /** Result type, to be passed around during the construction. */
     public interface Builder<R extends Builder<R>> {
@@ -91,7 +91,7 @@ abstract public class LineFormat<R extends LineFormat.Builder<R>> {
         /** Returns a string representation of the result. */
         StringBuilder getResult();
 
-        /** 
+        /**
          * Appends another result to this one.
          */
         void append(R other);

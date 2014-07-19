@@ -16,7 +16,7 @@
  */
 package groove.graph;
 
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 /**
  * Abstract edge class that is its own label.

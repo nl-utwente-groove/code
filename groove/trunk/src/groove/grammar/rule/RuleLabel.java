@@ -25,7 +25,7 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import java.util.List;
 import java.util.Set;
