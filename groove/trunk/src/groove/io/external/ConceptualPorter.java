@@ -18,7 +18,6 @@ package groove.io.external;
 
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
@@ -42,6 +41,7 @@ import groove.io.conceptual.lang.groove.InstanceToGroove;
 import groove.io.conceptual.lang.groove.MetaToGroove;
 import groove.io.conceptual.lang.groove.TypeToGroove;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.InputStream;

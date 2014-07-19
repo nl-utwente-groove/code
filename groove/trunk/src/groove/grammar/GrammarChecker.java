@@ -16,8 +16,8 @@
  */
 package groove.grammar;
 
-import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatErrorSet;
 
 /** Functionality to check the consistency of a key value with a grammar. */
 public interface GrammarChecker {

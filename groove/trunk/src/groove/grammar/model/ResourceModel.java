@@ -23,6 +23,8 @@ import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphInfo;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 import groove.util.Status;
 
 import java.util.ArrayList;

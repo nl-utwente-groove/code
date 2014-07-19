@@ -17,7 +17,7 @@
 package groove.grammar.type;
 
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatErrorSet;
+import groove.util.parse.FormatErrorSet;
 
 /**
  * Checker for type constraints that cannot be statically prevented.

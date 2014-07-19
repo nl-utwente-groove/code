@@ -3,7 +3,6 @@ package groove.gui.action;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
@@ -18,6 +17,7 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.LabelTree.EntryNode;
+import groove.util.parse.FormatException;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;

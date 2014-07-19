@@ -22,7 +22,6 @@ import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
 import groove.lts.DefaultRuleTransition;
 import groove.lts.GraphNextState;
@@ -37,6 +36,7 @@ import groove.lts.RuleTransitionStub;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
+import groove.util.parse.FormatException;
 
 import java.util.Collections;
 import java.util.List;

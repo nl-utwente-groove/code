@@ -20,7 +20,7 @@ import groove.explore.config.ExploreKey;
 import groove.explore.config.Setting;
 import groove.explore.config.SettingList;
 import groove.explore.config.TraverseKind;
-import groove.grammar.model.FormatException;
+import groove.util.parse.FormatException;
 
 import java.util.EnumMap;
 import java.util.Map;

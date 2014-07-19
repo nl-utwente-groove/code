@@ -24,11 +24,11 @@ import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.Strategy.Halter;
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 
 import java.util.ArrayList;

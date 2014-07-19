@@ -5,7 +5,6 @@ import groove.explore.util.StatisticsReporter;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
@@ -24,6 +23,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

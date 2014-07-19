@@ -20,12 +20,12 @@ import groove.grammar.Rule;
 import groove.grammar.host.DeltaHostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
 import groove.transform.DeltaApplier;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
+import groove.util.parse.FormatException;
 
 import java.util.Collections;
 import java.util.List;

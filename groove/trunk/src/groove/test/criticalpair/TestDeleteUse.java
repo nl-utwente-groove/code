@@ -23,7 +23,6 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
@@ -34,6 +33,7 @@ import groove.transform.BasicEvent;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent.Reuse;
 import groove.transform.criticalpair.CriticalPair;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

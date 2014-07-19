@@ -19,8 +19,8 @@ package groove.gui.dialog.config;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.SettingKey;
 import groove.explore.config.SettingList;
-import groove.grammar.model.FormatException;
 import groove.gui.action.Refreshable;
+import groove.util.parse.FormatException;
 
 import javax.swing.JPanel;
 

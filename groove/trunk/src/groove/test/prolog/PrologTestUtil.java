@@ -17,7 +17,6 @@
 package groove.test.prolog;
 
 import gnu.prolog.vm.PrologException;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.prolog.GrooveEnvironment;
@@ -25,6 +24,7 @@ import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.prolog.QueryReturnValue;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

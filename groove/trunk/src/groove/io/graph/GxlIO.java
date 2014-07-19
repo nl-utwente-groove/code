@@ -20,8 +20,6 @@ import static groove.grammar.aspect.AspectKind.ABSTRACT;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.io.FileType.LAYOUT;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -39,6 +37,8 @@ import groove.io.FileType;
 import groove.util.Groove;
 import groove.util.Version;
 import groove.util.line.LineStyle;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;

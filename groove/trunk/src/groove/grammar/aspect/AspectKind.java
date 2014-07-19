@@ -26,7 +26,6 @@ import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Expression.Kind;
 import groove.annotation.Help;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.LabelPattern;
 import groove.grammar.type.Multiplicity;
 import groove.grammar.type.TypeLabel;
@@ -35,6 +34,7 @@ import groove.graph.GraphRole;
 import groove.util.Colors;
 import groove.util.Keywords;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 
 import java.awt.Color;
 import java.util.ArrayList;

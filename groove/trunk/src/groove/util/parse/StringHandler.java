@@ -16,7 +16,6 @@
  */
 package groove.util.parse;
 
-import groove.grammar.model.FormatException;
 import groove.util.Pair;
 
 import java.util.ArrayList;
@@ -643,31 +642,8 @@ public class StringHandler {
     }
 
     /**
-     * Converts an ordinary string to a regular expression that matches it, by
-     * escaping all non-word characters.
-     */
-    static public String toRegExpr(String expr) {
-        return expr.replaceAll("(\\W)", "\\\\$1");
-    }
-
-    /**
-     * Converts a regular expression to a non-regular expression, by stripping
-     * away all characters with special meanings (essentially, all escaped word
-     * charaters and all non-escaped non-word characters).
-     */
-    static public String toNormExpr(String regExpr) {
-        String result = regExpr.replaceAll("\\\\\\\\", "" + "\\\\" + PLACEHOLDER);
-        result = result.replaceAll("^\\W", "");
-        result = result.replaceAll("([^\\\\])\\W", "$1");
-        result = result.replaceAll("\\\\(\\W)", "$1");
-        result = result.replace(PLACEHOLDER, '\\');
-        return result;
-    }
-
-    /**
      * Transforms a string by escaping all characters from of a given set.
-     * Escaping a character implies putting {@link #ESCAPE_CHAR} in front. The
-     * {@link #ESCAPE_CHAR} itself is by default also escaped.
+     * Escaping a character implies putting {@link #ESCAPE_CHAR} in front.
      * @param string the original string
      * @param specialChars the characters to be escaped
      * @return the resulting string
@@ -676,7 +652,7 @@ public class StringHandler {
         StringBuffer result = new StringBuffer();
         for (char c : string.toCharArray()) {
             // insert an ESCAPE in front of quotes or ESCAPES
-            if (c == ESCAPE_CHAR || specialChars.contains(c)) {
+            if (specialChars.contains(c)) {
                 result.append(ESCAPE_CHAR);
             }
             result.append(c);
@@ -700,9 +676,36 @@ public class StringHandler {
     }
 
     /**
+     * Transforms a string by removing quote characters around it.
+     * This calls {@link #toUnquoted(String, char)} after discovering the
+     * quote character, which has to be the first character of the string.
+     * @throws FormatException if {@link #toUnquoted(String, char)} does so,
+     * or {@code string} does not start with a quote character
+     */
+    static public String toUnquoted(String string) throws FormatException {
+        if (string.isEmpty()) {
+            throw new FormatException("Can't unquote empty string");
+        }
+        char quote = string.charAt(0);
+        if (quote != SINGLE_QUOTE_CHAR && quote != DOUBLE_QUOTE_CHAR) {
+            throw new FormatException("%s is not quoted", string);
+        }
+        return toUnquoted(string, quote);
+    }
+
+    /**
      * Transforms a string by removing quote characters around it, if there are
-     * any, and unescaping all characters within the string. The original string
-     * does not need to be quoted.
+     * any, and unescaping all quote characters within the string (using '\' as
+     * escape character). No other characters are unescaped, except "\\" occurring
+     * at the end of the string (just before the closing quote).
+     * Hence
+     * <li><code>'line'</code> is converted to <code>line</code></li>
+     * <li><code>'\'lin\'e'</code> is converted to <code>'lin'e</code></li>
+     * <li><code>'\li\\ne\''</code> is converted to <code>\li\\ne'</code></li>
+     * <li><code>'li\'ne\\'</code> is converted to <code>li'ne\</code></li>
+     * </ul>The original string does not need to be quoted; if the first character
+     * is not a quote character, the string is treated the same as if the
+     * quote character were added in front and at the end.
      * @param string the original string
      * @param quote the quote character to be used
      * @return the unquoted string (which may equal the original, if there are
@@ -715,38 +718,37 @@ public class StringHandler {
      */
     static public String toUnquoted(String string, char quote) throws FormatException {
         boolean startsWithQuote = !string.isEmpty() && string.charAt(0) == quote;
-        boolean endsWithQuote = false;
-        char[] content = string.toCharArray();
-        StringBuffer result = new StringBuffer();
-        // flag indicating that the previous character was an ESCAPE
+        int start = startsWithQuote ? 1 : 0;
+        int end = string.length();
+        // count of the number of consecutive escapes
         boolean escaped = false;
-        // number of (unescaped) quotes encountered
-        int quoteCount = 0;
-        for (char c : content) {
-            if (escaped) {
-                result.append(c);
-                escaped = false;
-                endsWithQuote = false;
-            } else {
-                escaped = c == ESCAPE_CHAR;
-                if (!escaped) {
+        // index of first unescaped quote
+        int quoteIndex = -1;
+        StringBuffer result = new StringBuffer();
+        for (int i = start; quoteIndex < 0 && i < end; i++) {
+            char c = string.charAt(i);
+            if (c == quote) {
+                if (escaped) {
                     result.append(c);
-                    if (c == quote) {
-                        endsWithQuote = true;
-                        quoteCount++;
-                    } else {
-                        endsWithQuote = false;
-                    }
+                } else {
+                    quoteIndex = i;
                 }
+            } else if (escaped) {
+                // we didn't append the escape char yet, awaiting a possible quote
+                result.append(ESCAPE_CHAR);
+            }
+            escaped = c == ESCAPE_CHAR;
+            if (!escaped && c != quote) {
+                result.append(c);
             }
         }
-        // check for errors
         if (escaped) {
-            throw new FormatException("String %s ends on escape character");
-        } else if (startsWithQuote ? !(endsWithQuote && quoteCount == 2) : quoteCount != 0) {
+            // outstanding escape character
+            result.append(ESCAPE_CHAR);
+        }
+        // check for errors
+        if (startsWithQuote ? quoteIndex != end - 1 : quoteIndex >= 0) {
             throw new FormatException("Unbalanced quotes in %s", string);
-        } else if (startsWithQuote) {
-            return result.substring(1, result.length() - 1);
         } else {
             return result.toString();
         }
@@ -756,15 +758,8 @@ public class StringHandler {
     static public void main(String[] args) {
         System.out.println("Empty string: " + "".substring(0, 0));
         if (args.length == 0) {
-            System.out.println("Regular expression tests");
-            System.out.println("------- ---------- -----");
-            testRegExpr("a(3)");
-            testRegExpr("$ \\ii*2");
-            testRegExpr("\\\\\\a \\");
-            System.out.println();
-
             System.out.println("String quotation tests");
-            System.out.println("----- --------- -----");
+            System.out.println("------ --------- -----");
             testQuoteString("a\"3\"");
             testQuoteString("\"a \\\"stress\\\" test\"");
             testQuoteString("a\\\"");
@@ -815,14 +810,6 @@ public class StringHandler {
                 testParse(element);
             }
         }
-    }
-
-    static private void testRegExpr(String expr) {
-        System.out.print("Expression " + expr);
-        expr = toRegExpr(expr);
-        System.out.print(". To regular: " + expr);
-        expr = toNormExpr(expr);
-        System.out.println(". To normal: " + expr);
     }
 
     static private void testQuoteString(String string) {
@@ -908,41 +895,45 @@ public class StringHandler {
         }
     }
 
-    /** Tests if a character may occur in a wildcard identifier. */
-    static public boolean isIdentifierChar(char c) {
-        return Character.isLetterOrDigit(c) || IDENTIFIER_CHARS.indexOf(c) >= 0;
+    /** Tests if a character may occur in an identifier. */
+    static public boolean isIdentifierPart(char c) {
+        return Character.isJavaIdentifierPart(c) || c == HYPHEN;
     }
 
     /**
-     * Tests if a character may occur as the first character in a wildcard
+     * Tests if a character may occur as the first character in an
      * identifier.
      */
-    static public boolean isIdentifierStartChar(char c) {
-        return Character.isLetter(c) || IDENTIFIER_START_CHARS.indexOf(c) >= 0;
+    static public boolean isIdentifierStart(char c) {
+        return Character.isJavaIdentifierStart(c);
     }
 
     /**
      * Tests whether a given text can serve as a wildcard identifier. This
      * implementation returns <code>true</code> if <code>text</code> is
      * non-empty, starts with a correct character (according to
-     * {@link #isIdentifierStartChar(char)}), and contains only characters
-     * satisfying {@link #isIdentifierChar(char)}.
+     * {@link #isIdentifierStart(char)}), and contains only characters
+     * satisfying {@link #isIdentifierPart(char)}.
      * @param text the text to be tested
      * @return <tt>true</tt> if the text does not contain any special characters
+     * @see #isIdentifierStart(char)
+     * @see #isIdentifierPart(char)
      */
     static public boolean isIdentifier(String text) {
-        if (text.length() == 0) {
+        if (text == null || text.isEmpty()) {
             return false;
         }
         for (int i = 0; i < text.length(); i++) {
             char nextChar = text.charAt(i);
-            if (!(i == 0 ? isIdentifierStartChar(nextChar) : isIdentifierChar(nextChar))) {
+            if (!(i == 0 ? isIdentifierStart(nextChar) : isIdentifierPart(nextChar))) {
                 return false;
             }
         }
         return true;
     }
 
+    /** The hyphen character. This is allowed as part of an identifier. */
+    static public final char HYPHEN = '-';
     /** The single quote character, to control parsing. */
     static public final char SINGLE_QUOTE_CHAR = '\'';
     /** The double quote character, to control parsing. */

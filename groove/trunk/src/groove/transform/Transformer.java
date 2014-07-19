@@ -28,7 +28,6 @@ import groove.grammar.GrammarKey;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
@@ -37,6 +36,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Groove;
 import groove.util.collect.TransformCollection;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

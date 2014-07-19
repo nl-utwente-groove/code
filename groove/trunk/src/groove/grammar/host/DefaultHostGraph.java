@@ -19,8 +19,6 @@ package groove.grammar.host;
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.graph.AElementMap;
 import groove.graph.Edge;
@@ -29,6 +27,8 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.

@@ -25,7 +25,6 @@ import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatErrorSet;
 import groove.graph.GraphInfo;
 import groove.lts.AbstractGraphState;
 import groove.lts.ActionLabel;
@@ -39,6 +38,7 @@ import groove.lts.StateCache;
 import groove.lts.StateReference;
 import groove.transform.Proof;
 import groove.util.cache.CacheReference;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.Collection;

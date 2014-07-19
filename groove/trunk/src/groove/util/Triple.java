@@ -105,7 +105,7 @@ public class Triple<T,U,V> implements Fixable {
             return true;
         }
         return obj instanceof Triple<?,?,?> && equalsOne((Triple<?,?,?>) obj)
-                && equalsTwo((Triple<?,?,?>) obj) && equalsThree((Triple<?,?,?>) obj);
+            && equalsTwo((Triple<?,?,?>) obj) && equalsThree((Triple<?,?,?>) obj);
     }
 
     /** Tests if the {@link #one()} field of this triple equals that of another. */
@@ -156,7 +156,8 @@ public class Triple<T,U,V> implements Fixable {
 
     @Override
     public String toString() {
-        return String.format("<%s,%s,%s>", this.one, this.two, this.three);
+        return String.format("%s<%s,%s,%s>", getClass().getSimpleName(), this.one, this.two,
+            this.three);
     }
 
     /**

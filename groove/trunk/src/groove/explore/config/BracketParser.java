@@ -16,7 +16,7 @@
  */
 package groove.explore.config;
 
-import groove.grammar.model.FormatException;
+import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 
 /**

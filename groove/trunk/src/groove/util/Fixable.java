@@ -16,7 +16,7 @@
  */
 package groove.util;
 
-import groove.grammar.model.FormatException;
+import groove.util.parse.FormatException;
 
 /**
  * Interface for objects that know a <i>fixing phase</i> before they can be

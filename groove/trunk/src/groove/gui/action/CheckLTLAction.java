@@ -21,11 +21,11 @@ import groove.explore.Exploration;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
 import groove.explore.strategy.Boundary;
-import groove.grammar.model.FormatException;
 import groove.gui.Simulator;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.StringDialog;
 import groove.lts.GraphState;
+import groove.util.parse.FormatException;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
 

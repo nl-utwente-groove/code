@@ -19,6 +19,7 @@ package groove.grammar.model;
 import groove.control.CtrlLoader;
 import groove.control.template.Program;
 import groove.control.template.Template;
+import groove.util.parse.FormatException;
 
 import java.util.Collection;
 import java.util.Collections;

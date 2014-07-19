@@ -18,8 +18,6 @@ package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlPar.Var;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleFactory;
@@ -33,6 +31,8 @@ import groove.io.HTMLConverter;
 import groove.io.Util;
 import groove.match.SearchEngine.SearchMode;
 import groove.util.Fixable;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;

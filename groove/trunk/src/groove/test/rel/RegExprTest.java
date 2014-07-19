@@ -31,9 +31,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.automaton.RegExpr;
 import groove.automaton.RegExpr.Atom;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.type.TypeLabel;
+import groove.util.parse.FormatException;
 
 import java.util.Arrays;
 import java.util.Collections;

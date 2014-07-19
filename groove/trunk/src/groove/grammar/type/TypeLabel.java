@@ -19,7 +19,6 @@ package groove.grammar.type;
 import static groove.graph.EdgeRole.BINARY;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.RuleLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
@@ -27,6 +26,7 @@ import groove.graph.Label;
 import groove.io.HTMLConverter;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.util.EnumMap;
@@ -150,7 +150,7 @@ public final class TypeLabel extends ALabel {
      * equal the text of the resulting label.
      * @param kind kind of label to be created
      * @param text the text of the label; non-null
-     * @param test if {@code true}, a {@link groove.grammar.model.FormatException} may be thrown
+     * @param test if {@code true}, a {@link groove.util.parse.FormatException} may be thrown
      * if {@code text} does not satisfy the requirements of {@code kind}-labels.
      * @return an existing or new label with the given text and kind; non-null
      * @see #createLabel(EdgeRole, String)

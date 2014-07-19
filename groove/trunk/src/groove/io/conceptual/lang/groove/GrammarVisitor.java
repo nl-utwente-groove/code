@@ -2,7 +2,6 @@ package groove.io.conceptual.lang.groove;
 
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.CompositeTypeModel;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
 import groove.grammar.model.ResourceKind;
@@ -15,6 +14,7 @@ import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.lang.ImportException;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 
 import java.awt.Frame;
 import java.util.Collection;

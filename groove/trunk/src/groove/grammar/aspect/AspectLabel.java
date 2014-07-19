@@ -16,7 +16,6 @@
  */
 package groove.grammar.aspect;
 
-import groove.grammar.model.FormatErrorSet;
 import groove.grammar.type.TypeLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
@@ -25,6 +24,7 @@ import groove.graph.Label;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
 import groove.util.line.Line;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

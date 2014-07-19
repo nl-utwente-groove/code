@@ -39,6 +39,9 @@ import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.Pair;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -16,9 +16,6 @@
  */
 package groove.io.graph;
 
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.graph.GraphInfo;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -26,6 +23,9 @@ import groove.gui.layout.LayoutMap;
 import groove.io.FileType;
 import groove.io.HTMLConverter;
 import groove.util.line.LineStyle;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.awt.Point;

@@ -27,7 +27,6 @@ import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
 import groove.graph.AEdge;
 import groove.graph.AGraph;
 import groove.graph.EdgeRole;
@@ -36,6 +35,7 @@ import groove.graph.iso.IsoChecker;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -23,9 +23,9 @@ import groove.grammar.Callable;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseInfo;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.Collection;
 import java.util.HashMap;

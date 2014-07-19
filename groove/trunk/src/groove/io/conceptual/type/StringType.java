@@ -1,10 +1,10 @@
 package groove.io.conceptual.type;
 
-import groove.grammar.model.FormatException;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.Value;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 /** Data type for strings. */

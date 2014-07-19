@@ -16,6 +16,9 @@
  */
 package groove.grammar.model;
 
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
+
 
 /**
  * View for prolog programs (which are just strings).

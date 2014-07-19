@@ -1,10 +1,12 @@
 // $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-07-19 10:54:10
 
 package groove.algebra.syntax;
-import groove.grammar.model.FormatErrorSet;
 
+
+import groove.util.parse.FormatErrorSet;
 
 import org.antlr.runtime.*;
+
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;

@@ -26,9 +26,9 @@ import groove.abstraction.neigh.trans.Materialisation;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.transform.Proof;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

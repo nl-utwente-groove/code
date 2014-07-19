@@ -20,8 +20,6 @@ import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectNode;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
@@ -40,6 +38,8 @@ import groove.gui.layout.LayoutMap;
 import groove.gui.look.VisualMap;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Derived;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatException;
 import groove.util.Groove;
 
 import java.util.ArrayList;

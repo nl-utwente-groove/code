@@ -27,7 +27,6 @@ import groove.automaton.DFAState;
 import groove.automaton.RegAutCalculator;
 import groove.automaton.RegExpr;
 import groove.automaton.SimpleNFA;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.Valuation;
@@ -37,6 +36,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.IOException;
 import java.util.Collections;

@@ -21,8 +21,8 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

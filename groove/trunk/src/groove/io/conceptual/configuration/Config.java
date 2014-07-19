@@ -1,6 +1,5 @@
 package groove.io.conceptual.configuration;
 
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.io.conceptual.Field;
@@ -24,6 +23,7 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
+import groove.util.parse.FormatException;
 
 import java.io.StringReader;
 import java.util.Collection;

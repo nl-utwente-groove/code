@@ -18,9 +18,9 @@ package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.transform.criticalpair.CriticalPair;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

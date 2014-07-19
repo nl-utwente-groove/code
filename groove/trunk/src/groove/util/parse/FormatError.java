@@ -14,12 +14,15 @@
  *
  * $Id$
  */
-package groove.grammar.model;
+package groove.util.parse;
 
 import groove.grammar.GrammarKey;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ControlModel;
+import groove.grammar.model.PrologModel;
+import groove.grammar.model.ResourceKind;
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
 import groove.graph.Element;

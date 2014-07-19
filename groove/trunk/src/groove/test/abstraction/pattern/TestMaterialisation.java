@@ -31,9 +31,9 @@ import groove.abstraction.pattern.trans.Materialisation;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.io.graph.GxlIO;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

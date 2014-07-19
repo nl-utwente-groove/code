@@ -21,9 +21,9 @@ import groove.explore.config.NullContent;
 import groove.explore.config.SettingContent;
 import groove.explore.config.SettingKey;
 import groove.explore.config.SettingList;
-import groove.grammar.model.FormatException;
 import groove.gui.dialog.ConfigDialog;
 import groove.gui.dialog.ConfigDialog.DirtyListener;
+import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 

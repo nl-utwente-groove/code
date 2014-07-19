@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.grammar.model;
+package groove.util.parse;
 
 /**
  * Checker interface that tests for format errors in objects of a given type.

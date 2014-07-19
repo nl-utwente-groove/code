@@ -21,12 +21,12 @@ import static groove.verify.FormulaParser.Token.NOT;
 import static groove.verify.FormulaParser.Token.TRUE;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
-import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.util.parse.FormatException;
 import groove.verify.FormulaParser.Token;
 
 import java.util.ArrayList;

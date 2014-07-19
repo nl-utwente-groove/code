@@ -25,9 +25,9 @@ import groove.control.template.Program;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.graph.Graph;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 import junit.framework.Assert;
 
 /**

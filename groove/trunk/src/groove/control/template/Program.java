@@ -26,10 +26,10 @@ import groove.grammar.Action;
 import groove.grammar.Callable;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.util.Duo;
 import groove.util.Fixable;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;

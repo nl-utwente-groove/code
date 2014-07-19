@@ -25,13 +25,13 @@ import groove.explore.util.LTSReporter;
 import groove.explore.util.LogReporter;
 import groove.explore.util.StateReporter;
 import groove.grammar.GrammarKey;
-import groove.grammar.model.FormatException;
 import groove.lts.GTS;
 import groove.transform.Transformer;
 import groove.util.cli.DirectoryHandler;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

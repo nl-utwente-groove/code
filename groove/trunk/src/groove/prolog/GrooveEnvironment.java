@@ -29,8 +29,6 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.prolog.builtin.AlgebraPredicates;
@@ -40,6 +38,8 @@ import groove.prolog.builtin.LtsPredicates;
 import groove.prolog.builtin.RulePredicates;
 import groove.prolog.builtin.TransPredicates;
 import groove.prolog.builtin.TypePredicates;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.io.InputStream;
 import java.io.OutputStream;

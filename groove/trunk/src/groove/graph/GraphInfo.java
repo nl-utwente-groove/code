@@ -21,12 +21,12 @@ import static groove.graph.GraphProperties.Key.INJECTIVE;
 import static groove.graph.GraphProperties.Key.PRIORITY;
 import groove.grammar.Action.Role;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.graph.GraphProperties.Key;
 import groove.gui.layout.LayoutMap;
 import groove.util.DefaultFixable;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.Collection;
 import java.util.Collections;

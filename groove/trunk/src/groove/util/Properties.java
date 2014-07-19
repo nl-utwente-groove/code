@@ -17,10 +17,10 @@
 package groove.util;
 
 import groove.grammar.GrammarChecker;
-import groove.grammar.model.FormatChecker;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatChecker;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 
 import java.io.IOException;

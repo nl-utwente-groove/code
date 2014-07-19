@@ -23,6 +23,9 @@ import groove.control.parse.CtrlTree;
 import groove.control.template.Program;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.Collection;
 import java.util.Collections;

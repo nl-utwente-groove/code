@@ -20,9 +20,9 @@ import static groove.io.FileType.PROPERTY;
 import groove.explore.ExploreConfig;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.SettingList;
-import groove.grammar.model.FormatException;
 import groove.gui.dialog.config.EditorFactory;
 import groove.gui.dialog.config.SettingEditor;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.FileInputStream;

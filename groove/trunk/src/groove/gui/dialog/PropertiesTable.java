@@ -16,8 +16,6 @@
  */
 package groove.gui.dialog;
 
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
 import groove.gui.display.DismissDelayer;
 import groove.gui.look.Values;
 import groove.io.HTMLConverter;
@@ -25,6 +23,8 @@ import groove.io.HTMLConverter.HTMLTag;
 import groove.util.Properties.CheckerMap;
 import groove.util.PropertyKey;
 import groove.util.collect.ListComparator;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 

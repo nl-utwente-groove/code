@@ -20,8 +20,8 @@
  */
 package groove.grammar;
 
-import groove.grammar.model.FormatException;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;

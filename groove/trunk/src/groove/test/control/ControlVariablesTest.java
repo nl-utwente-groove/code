@@ -20,11 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import groove.explore.Exploration;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.IOException;
 

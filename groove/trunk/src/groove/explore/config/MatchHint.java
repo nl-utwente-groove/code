@@ -17,9 +17,9 @@
 package groove.explore.config;
 
 import static groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
-import groove.grammar.model.FormatException;
 import groove.util.Duo;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 

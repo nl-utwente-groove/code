@@ -21,7 +21,7 @@ import groove.explore.encode.Template;
 import groove.explore.encode.TemplateList;
 import groove.explore.strategy.Strategy;
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
+import groove.util.parse.FormatException;
 
 import java.util.EnumSet;
 import java.util.HashMap;

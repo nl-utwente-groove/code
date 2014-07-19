@@ -36,9 +36,9 @@ import groove.control.template.SwitchStack;
 import groove.grammar.Callable;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.gui.Viewer;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -25,8 +25,6 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
 import groove.graph.GraphInfo;
 import groove.transform.DeltaApplier;
 import groove.transform.Record;
@@ -35,6 +33,8 @@ import groove.util.Groove;
 import groove.util.collect.KeySet;
 import groove.util.collect.SetView;
 import groove.util.collect.TreeHashSet;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;

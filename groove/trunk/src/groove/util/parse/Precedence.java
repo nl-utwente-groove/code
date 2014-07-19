@@ -6,7 +6,7 @@ import static groove.util.parse.Precedence.Direction.RIGHT;
 import static groove.util.parse.Precedence.Placement.INFIX;
 import static groove.util.parse.Precedence.Placement.PREFIX;
 
-/** 
+/**
  * Operator precedence values, from low to high.
  * This is copied directly from the Java operator precedence.
  */
@@ -18,11 +18,13 @@ public enum Precedence {
     /** Conjunction. */
     AND(LEFT),
     /** Negation. */
-    NOT(PREFIX, RIGHT),
+    NOT(PREFIX),
     /** Equality and inequality tests. */
-    EQUAL(LEFT),
+    EQUAL(RIGHT),
     /** Comparison operators: lesser than, greater than (or equal). */
-    COMPARE(LEFT),
+    COMPARE(RIGHT),
+    /** Existential and universal quantification. */
+    QUANT(PREFIX),
     /** Assignment operators. */
     ASSIGN(NEITHER),
     /** Additive operators: addition, subtraction, string concatenation. */
@@ -30,11 +32,13 @@ public enum Precedence {
     /** Multiplicative operators: multiplication, division, modulo. */
     MULT(LEFT),
     /** Unary operator: unary minus. */
-    UNARY(PREFIX, RIGHT),
+    UNARY(PREFIX),
     /** Field expressions. */
     FIELD(LEFT),
+    /** Call expressions. */
+    CALL(PREFIX),
     /** Atomic expressions: variables, constants. */
-    ATOM(NEITHER);
+    ATOM(NEITHER), ;
 
     private Precedence(Placement place, Direction direction) {
         this.direction = direction;
@@ -43,6 +47,10 @@ public enum Precedence {
 
     private Precedence(Direction direction) {
         this(INFIX, direction);
+    }
+
+    private Precedence(Placement placement) {
+        this(placement, placement == PREFIX ? RIGHT : LEFT);
     }
 
     /** Returns the direction of associativity. */

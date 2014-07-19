@@ -28,13 +28,13 @@ import groove.grammar.Recipe;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.transform.RuleApplication;
 import groove.util.line.Line;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

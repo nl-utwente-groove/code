@@ -16,10 +16,10 @@
  */
 package groove.io.graph;
 
-import groove.grammar.model.FormatException;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.io.FileType;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.FileInputStream;

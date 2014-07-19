@@ -68,6 +68,9 @@ import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
 import groove.util.Groove;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.awt.Color;
 import java.util.ArrayList;

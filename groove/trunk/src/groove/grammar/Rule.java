@@ -25,7 +25,6 @@ import groove.control.CtrlVar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
@@ -46,6 +45,7 @@ import groove.match.plan.PlanSearchStrategy;
 import groove.transform.Proof;
 import groove.util.Fixable;
 import groove.util.Visitor;
+import groove.util.parse.FormatException;
 
 import java.awt.Color;
 import java.util.ArrayList;

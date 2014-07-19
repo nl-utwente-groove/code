@@ -16,8 +16,8 @@
  */
 package groove.grammar.type;
 
-import groove.grammar.model.FormatException;
 import groove.util.Duo;
+import groove.util.parse.FormatException;
 
 /**
  * Pair consisting of lower and upper bound.

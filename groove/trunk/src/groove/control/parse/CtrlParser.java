@@ -3,11 +3,14 @@
 package groove.control.parse;
 import groove.control.*;
 import groove.util.antlr.*;
-import groove.grammar.model.FormatErrorSet;
+import groove.util.parse.FormatErrorSet;
+
 import java.util.LinkedList;
 
 
+
 import org.antlr.runtime.*;
+
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;

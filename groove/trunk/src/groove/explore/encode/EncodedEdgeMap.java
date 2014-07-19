@@ -17,10 +17,10 @@
 package groove.explore.encode;
 
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
+import groove.util.parse.FormatException;
 
 import java.util.Map;
 import java.util.TreeMap;

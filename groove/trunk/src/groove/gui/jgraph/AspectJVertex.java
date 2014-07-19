@@ -9,7 +9,6 @@ import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectLabel;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.AspectParser;
-import groove.grammar.model.FormatError;
 import groove.grammar.model.GraphBasedModel.TypeModelMap;
 import groove.grammar.rule.VariableNode;
 import groove.grammar.type.LabelPattern;
@@ -23,6 +22,7 @@ import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
+import groove.util.parse.FormatError;
 
 import java.util.ArrayList;
 import java.util.Collection;
