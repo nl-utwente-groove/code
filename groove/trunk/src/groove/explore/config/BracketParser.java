@@ -27,33 +27,43 @@ import groove.util.parse.Parser;
 public class BracketParser<V> implements Parser<V> {
     /**
      * Creates a parser with '(' and ')' as brackets.
+     * @param inner the parser for the content between the brackets
+     * @param allowsEmpty if {@code true}, the empty string is allowed;
+     * it will be passed on to the inner parser to get the default value
      */
-    public BracketParser(Parser<? extends V> inner) {
-        this(inner, '(', ')');
+    public BracketParser(Parser<? extends V> inner, boolean allowsEmpty) {
+        this(inner, '(', ')', allowsEmpty);
     }
 
     /**
      * Creates a parser with a given start and end symbol.
+     * @param inner the parser for the content between the brackets
+     * @param start the opening bracket
+     * @param end the closing bracket
+     * @param allowsEmpty if {@code true}, the empty string is allowed;
+     * it will be passed on to the inner parser to get the default value
      */
-    public BracketParser(Parser<? extends V> inner, char start, char end) {
+    public BracketParser(Parser<? extends V> inner, char start, char end, boolean allowsEmpty) {
         this.inner = inner;
         this.start = start;
         this.end = end;
+        this.allowsEmpty = allowsEmpty;
     }
 
     private final Parser<? extends V> inner;
     private final char start;
     private final char end;
+    private final boolean allowsEmpty;
 
     @Override
-    public String getDescription(boolean uppercase) {
-        return this.inner.getDescription(uppercase) + " between " + this.start + " and " + this.end;
+    public String getDescription() {
+        return this.inner.getDescription() + " between " + this.start + " and " + this.end;
     }
 
     @Override
     public boolean accepts(String text) {
         if (text == null || text.length() == 0) {
-            return this.inner.accepts(text);
+            return this.allowsEmpty && this.inner.accepts(text);
         }
         if (text.charAt(0) != this.start) {
             return false;
@@ -68,10 +78,15 @@ public class BracketParser<V> implements Parser<V> {
     @Override
     public V parse(String text) throws FormatException {
         if (text == null || text.length() == 0) {
-            return this.inner.parse(text);
+            if (this.allowsEmpty) {
+                return this.inner.parse(text);
+            } else {
+                throw new FormatException("Empty string not allowed");
+            }
+        } else {
+            int last = text.length() - 1;
+            return this.inner.parse(text.substring(1, last));
         }
-        int last = text.length() - 1;
-        return this.inner.parse(text.substring(1, last));
     }
 
     @Override
@@ -88,6 +103,11 @@ public class BracketParser<V> implements Parser<V> {
     @Override
     public boolean isValue(Object value) {
         return this.inner.isValue(value);
+    }
+
+    @Override
+    public boolean hasDefault() {
+        return this.inner.hasDefault();
     }
 
     @Override

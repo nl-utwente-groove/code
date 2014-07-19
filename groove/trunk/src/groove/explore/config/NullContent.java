@@ -32,8 +32,8 @@ public class NullContent implements SettingContent {
     /** Parser for {@link NullContent}. */
     public static Parser<NullContent> PARSER = new Parser<NullContent>() {
         @Override
-        public String getDescription(boolean uppercase) {
-            return uppercase ? "The empty string" : "the empty string";
+        public String getDescription() {
+            return "The empty string";
         }
 
         @Override
@@ -59,6 +59,11 @@ public class NullContent implements SettingContent {
         @Override
         public boolean isValue(Object value) {
             return value == null;
+        }
+
+        @Override
+        public boolean hasDefault() {
+            return true;
         }
 
         @Override

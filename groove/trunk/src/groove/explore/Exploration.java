@@ -307,7 +307,7 @@ public class Exploration {
     static public Parser<Exploration> parser() {
         return new Parser<Exploration>() {
             @Override
-            public String getDescription(boolean uppercase) {
+            public String getDescription() {
                 return SYNTAX_MESSAGE;
             }
 
@@ -353,6 +353,11 @@ public class Exploration {
             @Override
             public boolean isValue(Object value) {
                 return value == null || value instanceof Exploration;
+            }
+
+            @Override
+            public boolean hasDefault() {
+                return true;
             }
 
             @Override

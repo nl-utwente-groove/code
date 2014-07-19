@@ -30,30 +30,31 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Rudimentary parser functionality.
+ * Interface for basic parser functionality.
  * @param <T> the type being parsed
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Id $
  */
 abstract public interface Parser<T> {
     /**
-     * Returns a description of the parsable strings.
-     * @param uppercase if {@code true}, the result stars with an uppercase letter,
-     * otherwise with a lowercase letter.
+     * Returns a HTML-formatted description of the parsable strings, starting with uppercase.
      */
-    public String getDescription(boolean uppercase);
+    public String getDescription();
 
     /**
      * Indicates if a given (possibly {@code null}) textual value can be parsed.
+     * The {@code null} and empty string can only be accepted if the parser
+     * has a default value.
      */
     public boolean accepts(String text);
 
     /**
      * Converts a given (possibly {@code null}) textual value to an instance of the
      * type of this parser.
-     * @param text the text to be parsed
-     * @return a value corresponding to {@code text}; returns
-     * {@link #getDefaultValue()} for {@code null} or empty input
+     * Will return the default value on {@code null} or the empty string, if
+     * the parser has a default value.
+     * @param text the text to be parsed; if {@code null} or empty,
+     * @return a value corresponding to {@code text}
      */
     public T parse(String text) throws FormatException;
 
@@ -75,22 +76,38 @@ abstract public interface Parser<T> {
     public boolean isValue(Object value);
 
     /**
-     * Returns the default value, i.e., the value that the empty or
-     * {@code null} string parses to.
-     * May be {@code null}, so don't use {@link #equals(Object)} to test equality!
+     * Indicates if this parser has a default value.
+     * If there is a default value, then this is the value that both
+     * {@code null} and the empty string parse to.
      */
-    public T getDefaultValue();
-
-    /**
-     * Returns a human-readable string representation of the default value.
-     * Note that the default string and the empty string both parse
-     * to the default value.
-     * @see #getDefaultValue()
-     */
-    public String getDefaultString();
+    public boolean hasDefault();
 
     /** Tests whether a given value is the default value. */
     public boolean isDefault(Object value);
+
+    /**
+     * Returns the default value of this parser, if any.
+     * If the empty and {@code null} string are accepted, then they parse to this value.
+     * Only valid if the parser has a default value according to {@link #hasDefault()}.
+     * @return the default value if {@link #hasDefault()} holds; may be {@code null},
+     * so use {@link #isDefault(Object)} rather than {@link #equals(Object)} to test equality!
+     * @throws UnsupportedOperationException if the parser has no default value
+     * @see #hasDefault()
+     */
+    public T getDefaultValue() throws UnsupportedOperationException;
+
+    /**
+     * Returns a human-readable string representation of the default value.
+     * The default string may be (but does not have to be) the empty string.
+     * Only valid if the parser has a default value according to {@link #hasDefault()}.
+     * Note that if the empty string is accepted, it parses to the same object
+     * as the default string.
+     * @return a non-{@code null} string representation of the default value
+     * @see #hasDefault()
+     * @see #getDefaultValue()
+     * @throws UnsupportedOperationException if the parser has no default value
+     */
+    public String getDefaultString() throws UnsupportedOperationException;
 
     /** Trimmed string parser. */
     public static StringParser trim = new StringParser(true);
@@ -149,8 +166,8 @@ abstract public interface Parser<T> {
         protected abstract S createContent(String value);
 
         @Override
-        public String getDescription(boolean uppercase) {
-            return uppercase ? "Any string value" : "any string value";
+        public String getDescription() {
+            return "Any string value";
         }
 
         @Override
@@ -159,6 +176,11 @@ abstract public interface Parser<T> {
         }
 
         private final Class<S> valueType;
+
+        @Override
+        public boolean hasDefault() {
+            return true;
+        }
 
         @Override
         public S getDefaultValue() {
@@ -264,12 +286,9 @@ abstract public interface Parser<T> {
         protected abstract I createContent(int value);
 
         @Override
-        public String getDescription(boolean uppercase) {
+        public String getDescription() {
             StringBuffer result = new StringBuffer(this.neg ? "Integer value" : "Natural number");
             result.append(" (default " + getDefaultString() + ")");
-            if (!uppercase) {
-                result.setCharAt(0, Character.toLowerCase(result.charAt(0)));
-            }
             return result.toString();
         }
 
@@ -279,6 +298,11 @@ abstract public interface Parser<T> {
         }
 
         private final Class<I> valueType;
+
+        @Override
+        public boolean hasDefault() {
+            return true;
+        }
 
         @Override
         public I getDefaultValue() {
@@ -353,7 +377,7 @@ abstract public interface Parser<T> {
         public List<String> parse(String text) {
             try {
                 return text == null || text.length() == 0 ? getDefaultValue()
-                    : Arrays.asList(exprParser.split(text, " "));
+                    : Arrays.asList(handler.split(text, " "));
             } catch (FormatException exc) {
                 assert false; // we recognise no quotes or brackets, so exceptions can't occur
                 return null;
@@ -361,9 +385,8 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String getDescription(boolean uppercase) {
-            return uppercase ? "A space-separated list of names"
-                : "a space-separated list of names";
+        public String getDescription() {
+            return "A space-separated list of names";
         }
 
         @Override
@@ -393,6 +416,11 @@ abstract public interface Parser<T> {
         }
 
         @Override
+        public boolean hasDefault() {
+            return true;
+        }
+
+        @Override
         public List<String> getDefaultValue() {
             return Collections.<String>emptyList();
         }
@@ -408,7 +436,7 @@ abstract public interface Parser<T> {
         }
 
         /** String parser recognising no quotes or brackets. */
-        private static StringHandler exprParser = new StringHandler("");
+        private static StringHandler handler = new StringHandler("");
     }
 
     /**
@@ -426,8 +454,8 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String getDescription(boolean uppercase) {
-            StringBuffer result = new StringBuffer(uppercase ? "Either " : "either ");
+        public String getDescription() {
+            StringBuffer result = new StringBuffer("Either ");
             result.append(TRUE_LINE);
             if (this.defaultValue) {
                 result.append(" (default)");
@@ -474,6 +502,11 @@ abstract public interface Parser<T> {
         @Override
         public boolean isValue(Object value) {
             return value instanceof Boolean;
+        }
+
+        @Override
+        public boolean hasDefault() {
+            return true;
         }
 
         @Override
@@ -545,6 +578,11 @@ abstract public interface Parser<T> {
         }
 
         @Override
+        public boolean hasDefault() {
+            return true;
+        }
+
+        @Override
         public T getDefaultValue() {
             return this.defaultValue;
         }
@@ -564,8 +602,8 @@ abstract public interface Parser<T> {
         private final T defaultValue;
 
         @Override
-        public String getDescription(boolean uppercase) {
-            StringBuffer result = new StringBuffer(uppercase ? "One of " : "one of ");
+        public String getDescription() {
+            StringBuffer result = new StringBuffer("One of ");
             int i = 0;
             for (Map.Entry<T,String> e : this.toStringMap.entrySet()) {
                 result = result.append(HTMLConverter.ITALIC_TAG.on(e.getValue()));
@@ -615,7 +653,7 @@ abstract public interface Parser<T> {
         private static final <T extends Enum<T>> String[] camel(T[] vals) {
             String[] result = new String[vals.length];
             for (int i = 0; i < vals.length; i++) {
-                result[i] = Groove.camel(vals[i].name());
+                result[i] = StringHandler.toCamel(vals[i].name());
             }
             return result;
         }

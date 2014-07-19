@@ -18,8 +18,8 @@ package groove.explore.config;
 
 import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
-import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class SettingListParser implements Parser<SettingList> {
         this.parserMap = new HashMap<SettingKey,Parser<SettingContent>>();
         for (SettingKey kind : key.getKindType().getEnumConstants()) {
             this.kindMap.put(kind.getName(), kind);
-            this.parserMap.put(kind, new BracketParser<SettingContent>(kind.parser()));
+            this.parserMap.put(kind, new BracketParser<SettingContent>(kind.parser(), true));
         }
         assert this.kindMap.size() > 0;
         if (this.kindMap.size() == 1) {
@@ -71,14 +71,12 @@ public class SettingListParser implements Parser<SettingList> {
     private final Map<SettingKey,Parser<SettingContent>> parserMap;
 
     @Override
-    public String getDescription(boolean uppercase) {
+    public String getDescription() {
         StringBuilder result = new StringBuilder("<body>");
         if (getKey().isSingular()) {
-            result.append(uppercase ? "A " : "a ");
-            result.append("value ");
+            result.append("A value ");
         } else {
-            result.append(uppercase ? "One " : "one ");
-            result.append("or more values ");
+            result.append("One or more values ");
         }
         result.append("of the form <i>kind</i> <i>args</i> (without the space), where <i>kind</i> is one of");
         for (SettingKey key : getKey().getKindType().getEnumConstants()) {
@@ -87,7 +85,7 @@ public class SettingListParser implements Parser<SettingList> {
             result.append(": ");
             result.append(key.getExplanation());
             result.append(", with <i>arg</i> ");
-            result.append(getParser(key).getDescription(false));
+            result.append(StringHandler.toLower(getParser(key).getDescription()));
         }
         return result.toString();
     }
@@ -220,6 +218,11 @@ public class SettingListParser implements Parser<SettingList> {
             }
         }
         return result;
+    }
+
+    @Override
+    public boolean hasDefault() {
+        return true;
     }
 
     @Override

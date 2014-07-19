@@ -24,8 +24,8 @@ import groove.explore.config.SettingList;
 import groove.grammar.model.FormatException;
 import groove.gui.dialog.ConfigDialog;
 import groove.gui.dialog.ConfigDialog.DirtyListener;
-import groove.util.Groove;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -47,7 +47,7 @@ public class TextFieldEditor extends SettingEditor {
         setLayout(new BorderLayout());
         assert kind.getContentType() != NullContent.class;
         this.dialog = dialog;
-        JLabel label = this.label = new JLabel(Groove.convertCase(kind.getName(), true) + ": ");
+        JLabel label = this.label = new JLabel(StringHandler.toUpper(kind.getName()) + ": ");
         add(label, BorderLayout.WEST);
         add(getTextField(), BorderLayout.CENTER);
         this.holder = holder;
