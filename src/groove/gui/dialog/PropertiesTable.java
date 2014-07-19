@@ -25,8 +25,8 @@ import groove.io.HTMLConverter.HTMLTag;
 import groove.util.Properties.CheckerMap;
 import groove.util.PropertyKey;
 import groove.util.collect.ListComparator;
-import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -317,7 +317,7 @@ public class PropertiesTable extends JTable {
                 PropertyKey<?> key = getKey(this.editingValueForKey);
                 if (key != null) {
                     Parser<?> parser = key.parser();
-                    String tip = parser.getDescription(true);
+                    String tip = parser.getDescription();
                     result.setToolTipText(HTMLConverter.HTML_TAG.on(tip));
                 }
             }
@@ -387,7 +387,7 @@ public class PropertiesTable extends JTable {
             } else {
                 // editing a value
                 PropertyKey<?> key = getKey(this.editingValueForKey);
-                String description = key.parser().getDescription(false);
+                String description = StringHandler.toLower(key.parser().getDescription());
                 result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
                     description);
             }
@@ -439,7 +439,7 @@ public class PropertiesTable extends JTable {
                         tip = key.getExplanation();
                     } else {
                         Parser<?> parser = key.parser();
-                        tip = parser.getDescription(true);
+                        tip = parser.getDescription();
                     }
                     FormatErrorSet errors = PropertiesTable.this.errorMap.get(key);
                     error = errors != null && !errors.isEmpty();

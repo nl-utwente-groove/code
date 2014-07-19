@@ -26,6 +26,7 @@ import groove.util.Groove;
 import groove.util.PropertyKey;
 import groove.util.ThreeValued;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -247,7 +248,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         Parser<?> parser, GrammarChecker checker) {
         this.name = name;
         this.system = system;
-        this.keyPhrase = keyPhrase == null ? Groove.unCamel(name, false) : keyPhrase;
+        this.keyPhrase = keyPhrase == null ? StringHandler.unCamel(name, false) : keyPhrase;
         this.explanation = explanation;
         this.parser = parser == null ? Parser.identity : parser;
         this.checker = checker;
@@ -343,7 +344,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
             FormatErrorSet result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());
             if (!unknowns.isEmpty()) {
-                result.add("Unknown %s name%s %s", Groove.convertCase(getKind().getName(), false),
+                result.add("Unknown %s name%s %s", StringHandler.toLower(getKind().getName()),
                     unknowns.size() == 1 ? "" : "s",
                     Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
@@ -402,9 +403,9 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
                     }
                 }
                 if (!unknowns.isEmpty()) {
-                    result.add("Unknown %s name%s %s", Groove.convertCase(getKind().getName(),
-                        false), unknowns.size() == 1 ? "" : "s", Groove.toString(
-                        unknowns.toArray(), "'", "'", "', '", "' and '"));
+                    result.add("Unknown %s name%s %s", StringHandler.toLower(getKind().getName()),
+                        unknowns.size() == 1 ? "" : "s",
+                        Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
                 }
             }
             return result;

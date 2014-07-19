@@ -23,7 +23,7 @@ import groove.explore.config.SettingList;
 import groove.grammar.model.FormatException;
 import groove.gui.action.Refreshable;
 import groove.gui.dialog.ConfigDialog;
-import groove.util.Groove;
+import groove.util.parse.StringHandler;
 
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -220,13 +220,13 @@ public class ButtonEditor extends SettingEditor {
 
     private class SettingButton extends JRadioButton implements Refreshable {
         SettingButton(final SettingKey kind, final SettingEditor kindEditor) {
-            super(Groove.convertCase(kind.getName(), true));
+            super(StringHandler.toUpper(kind.getName()));
             this.kind = kind;
             if (getKey().getDefaultKind() == kind) {
                 setSelected(true);
             }
             addItemListener(getDialog().getDirtyListener());
-            setToolTipText(Groove.convertCase(kind.getExplanation(), true));
+            setToolTipText(StringHandler.toUpper(kind.getExplanation()));
             getDialog().addRefreshable(this);
             addItemListener(new ItemListener() {
                 @Override

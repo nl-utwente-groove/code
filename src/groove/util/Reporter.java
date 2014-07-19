@@ -16,6 +16,8 @@
  */
 package groove.util;
 
+import groove.util.parse.StringHandler;
+
 import java.io.PrintWriter;
 import java.util.Comparator;
 import java.util.Map;
@@ -187,16 +189,16 @@ public class Reporter {
             int nestedCountLength, int totTimeLength, int avgTimeLength) {
         out.println("Reporting " + this.type);
         for (Reporter subreporter : this.subreporters.values()) {
-            out.print(INDENT + Groove.pad(subreporter.getName(), methodNameLength, false) + " ");
+            out.print(INDENT + StringHandler.pad(subreporter.getName(), methodNameLength, false) + " ");
             out.print(TOP_COUNT_FIELD + "="
-                + Groove.pad("" + subreporter.topCount, topCountLength, false) + " ");
+                + StringHandler.pad("" + subreporter.topCount, topCountLength, false) + " ");
             out.print(NESTED_COUNT_FIELD
                 + "="
-                + Groove.pad("" + (subreporter.nestedCount - subreporter.topCount),
+                + StringHandler.pad("" + (subreporter.nestedCount - subreporter.topCount),
                     nestedCountLength, false) + " ");
             if (TIME_METHODS) {
                 out.print(TOT_TIME_FIELD + "="
-                    + Groove.pad("" + subreporter.duration, totTimeLength, false) + " ");
+                    + StringHandler.pad("" + subreporter.duration, totTimeLength, false) + " ");
                 long avgDuration;
                 if (subreporter.duration > 0) {
                     if (TIME_TOP_ONLY) {
@@ -207,7 +209,7 @@ public class Reporter {
                 } else {
                     avgDuration = 0;
                 }
-                out.print(AVG_TIME_FIELD + "=" + Groove.pad("" + avgDuration, avgTimeLength, false)
+                out.print(AVG_TIME_FIELD + "=" + StringHandler.pad("" + avgDuration, avgTimeLength, false)
                     + " ");
             }
             out.println();
@@ -294,7 +296,7 @@ public class Reporter {
             // print the total amounts of time measured by the reporters
             out.println("Total measured time spent in");
             for (Reporter reporter : getAllReporters()) {
-                out.println(INDENT + Groove.pad(reporter.type.toString(), classNameLength, false)
+                out.println(INDENT + StringHandler.pad(reporter.type.toString(), classNameLength, false)
                     + ": " + reporter.totalTime + " ms");
             }
             out.println();

@@ -17,10 +17,10 @@
 package groove.graph;
 
 import groove.grammar.Action.Role;
-import groove.util.Groove;
 import groove.util.Properties;
 import groove.util.PropertyKey;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -126,7 +126,7 @@ public class GraphProperties extends Properties {
             this.system = name.startsWith(SYSTEM_KEY_PREFIX);
             if (keyPhrase == null) {
                 String properName = name.substring(this.system ? SYSTEM_KEY_PREFIX.length() : 0);
-                this.keyPhrase = Groove.unCamel(properName, false);
+                this.keyPhrase = StringHandler.unCamel(properName, false);
             } else {
                 this.keyPhrase = keyPhrase;
             }

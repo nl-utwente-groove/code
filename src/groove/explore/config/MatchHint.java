@@ -20,8 +20,8 @@ import static groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
 import groove.grammar.model.FormatException;
 import groove.util.Duo;
 import groove.util.Groove;
-import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,9 +47,9 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
     /** Parser for match hints. */
     public static final Parser<MatchHint> PARSER = new Parser<MatchHint>() {
         @Override
-        public String getDescription(boolean uppercase) {
+        public String getDescription() {
             return "Either empty, or a comma-separated pair of strings <i>rare,common</i>"
-                + "where <i>rare</i> and <i>common</i> are space-separated lists of labels";
+                + "where <i>rare</i> and <i>common</i> are quoted, space-separated lists of labels";
         }
 
         @Override
@@ -127,6 +127,11 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
         @Override
         public boolean isValue(Object value) {
             return value instanceof MatchHint;
+        }
+
+        @Override
+        public boolean hasDefault() {
+            return true;
         }
 
         @Override

@@ -18,8 +18,8 @@ package groove.grammar;
 
 import groove.grammar.Action.Role;
 import groove.grammar.model.FormatException;
-import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -101,11 +101,11 @@ public enum CheckPolicy {
 
     private static class PolicyMapParser implements Parser<PolicyMap> {
         @Override
-        public String getDescription(boolean uppercase) {
-            StringBuilder result = new StringBuilder(uppercase ? "A " : "a ");
-            result.append("space-separated list of <i>name:value</i> pairs<br>"
+        public String getDescription() {
+            StringBuilder result = new StringBuilder();
+            result.append("A space-separated list of <i>name:value</i> pairs,<br>"
                 + "with <i>value</i> ");
-            result.append(singleParser.getDescription(false));
+            result.append(StringHandler.toLower(singleParser.getDescription()));
             return result.toString();
         }
 
@@ -169,6 +169,11 @@ public enum CheckPolicy {
         @Override
         public boolean isValue(Object value) {
             return value instanceof PolicyMap;
+        }
+
+        @Override
+        public boolean hasDefault() {
+            return true;
         }
 
         @Override

@@ -16,8 +16,8 @@
  */
 package groove.explore.config;
 
-import groove.util.Groove;
 import groove.util.PropertyKey;
+import groove.util.parse.StringHandler;
 
 /**
  * Key type of the exploration configuration.
@@ -43,7 +43,7 @@ public enum ExploreKey implements PropertyKey<SettingList> {
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;
-        this.keyPhrase = Groove.unCamel(name, false);
+        this.keyPhrase = StringHandler.unCamel(name, false);
         this.explanation = explanation;
         this.defaultKind = defaultKind;
         this.singular = singular;
