@@ -12,7 +12,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.BitSet;
 import java.util.HashMap;
@@ -74,7 +74,7 @@ public class AntlrGrapher {
         TypeNode stringNode = result.addNode(STRING_TYPE);
         for (int i = 0; i < this.tokens.length; i++) {
             String token = this.tokens[i];
-            if (ExprParser.isIdentifier(token)) {
+            if (StringHandler.isIdentifier(token)) {
                 TypeLabel typeLabel =
                     TypeLabel.createLabel(EdgeRole.NODE_TYPE, token);
                 TypeNode tokenNode = result.addNode(typeLabel);

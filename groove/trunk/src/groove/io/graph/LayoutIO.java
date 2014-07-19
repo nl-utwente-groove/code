@@ -26,7 +26,7 @@ import groove.gui.layout.LayoutMap;
 import groove.gui.look.LineStyle;
 import groove.io.FileType;
 import groove.io.HTMLConverter;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -75,7 +75,7 @@ public class LayoutIO {
                 layoutReader.readLine()) {
                 String[] parts;
                 try {
-                    parts = ExprParser.splitExpr(nextLine, WHITESPACE);
+                    parts = StringHandler.splitExpr(nextLine, WHITESPACE);
                     if (parts.length > 0) {
                         String command = parts[0];
                         if (command.equals(NODE_PREFIX)) {
@@ -145,7 +145,7 @@ public class LayoutIO {
         }
         String labelTextWithQuotes = parts[3];
         String labelText =
-            ExprParser.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
+            StringHandler.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
         AttrEdge edge = graph.getEdge(source, labelText, target);
         if (edge == null) {
             throw new FormatException("Unknown edge %s --%s-> %s", source,

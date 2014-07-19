@@ -27,7 +27,7 @@ import groove.graph.Label;
 import groove.gui.look.Line;
 import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -125,7 +125,7 @@ public final class TypeLabel extends ALabel {
      */
     public static TypeLabel createLabelWithCheck(String prefixedText) throws FormatException {
         TypeLabel result = createLabel(prefixedText);
-        if (result.getRole() != BINARY && !ExprParser.isIdentifier(result.text())) {
+        if (result.getRole() != BINARY && !StringHandler.isIdentifier(result.text())) {
             throw new FormatException("%s label '%s' is not a valid identifier",
                 result.getRole().getDescription(true), result.text());
         }
@@ -159,7 +159,7 @@ public final class TypeLabel extends ALabel {
      */
     public static TypeLabel createLabel(EdgeRole kind, String text, boolean test)
         throws FormatException {
-        if (test && kind != BINARY && !ExprParser.isIdentifier(text)) {
+        if (test && kind != BINARY && !StringHandler.isIdentifier(text)) {
             throw new FormatException("%s label '%s' is not a valid identifier",
                 kind.getDescription(true), text);
         }

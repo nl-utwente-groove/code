@@ -16,11 +16,11 @@
  */
 package groove.explore.config;
 
-import static groove.util.parse.ExprParser.DOUBLE_QUOTE_CHAR;
+import static groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
 import groove.grammar.model.FormatException;
 import groove.util.Duo;
 import groove.util.Groove;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
 
 import java.util.Arrays;
@@ -102,7 +102,7 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
             if (text.charAt(0) != DOUBLE_QUOTE_CHAR) {
                 throw new FormatException("Label list '%s'should be double-quoted string");
             }
-            return ExprParser.toUnquoted(text, DOUBLE_QUOTE_CHAR);
+            return StringHandler.toUnquoted(text, DOUBLE_QUOTE_CHAR);
         }
 
         @Override
@@ -148,5 +148,5 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
 
     };
 
-    private static final ExprParser exprParser = new ExprParser("\'");
+    private static final StringHandler exprParser = new StringHandler("\'");
 }

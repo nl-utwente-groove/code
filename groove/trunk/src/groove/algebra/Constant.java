@@ -20,7 +20,7 @@ import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
 import groove.gui.look.Line;
 import groove.util.Keywords;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -45,7 +45,7 @@ public class Constant extends Expression {
      * Constructs a new string constant from a given string value.
      */
     private Constant(String value) {
-        this(false, SignatureKind.STRING, ExprParser.toQuoted(value, '"'));
+        this(false, SignatureKind.STRING, StringHandler.toQuoted(value, '"'));
         this.stringRepr = value;
     }
 
@@ -147,7 +147,7 @@ public class Constant extends Expression {
         assert getSignature() == SignatureKind.STRING;
         if (this.stringRepr == null) {
             try {
-                this.stringRepr = ExprParser.toUnquoted(this.symbol, '"');
+                this.stringRepr = StringHandler.toUnquoted(this.symbol, '"');
             } catch (FormatException e) {
                 assert false : String.format(
                     "%s is not a double-quoted string", this.symbol);

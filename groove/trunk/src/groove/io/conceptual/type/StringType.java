@@ -5,7 +5,7 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.Value;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 /** Data type for strings. */
 public class StringType extends DataType {
@@ -27,8 +27,8 @@ public class StringType extends DataType {
     @Override
     public Value valueFromString(String valueString) {
         try {
-            return new StringValue(ExprParser.toUnquoted(valueString,
-                ExprParser.DOUBLE_QUOTE_CHAR));
+            return new StringValue(StringHandler.toUnquoted(valueString,
+                StringHandler.DOUBLE_QUOTE_CHAR));
         } catch (FormatException e) {
             return null;
         }

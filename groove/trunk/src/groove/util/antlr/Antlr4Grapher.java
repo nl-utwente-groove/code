@@ -12,7 +12,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -135,7 +135,7 @@ public class Antlr4Grapher {
         TypeNode stringNode = result.addNode(STRING_TYPE);
         for (Map.Entry<Integer,String> tokenEntry : this.tokenNames.entrySet()) {
             String token = tokenEntry.getValue();
-            if (ExprParser.isIdentifier(token)) {
+            if (StringHandler.isIdentifier(token)) {
                 TypeNode tokenNode = addType(result, topNode, token);
                 if (this.textTypes.get(tokenEntry.getKey())) {
                     result.addEdge(tokenNode, TEXT_LABEL, stringNode);

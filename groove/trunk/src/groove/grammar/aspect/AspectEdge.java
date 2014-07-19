@@ -54,7 +54,7 @@ import groove.gui.look.Line.Style;
 import groove.gui.look.Values;
 import groove.io.Util;
 import groove.util.Fixable;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -614,8 +614,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             RegExpr innerExpr = parse(text.substring(RegExpr.NEG_OPERATOR.length()));
             return new RegExpr.Neg(innerExpr);
         } else {
-            if (text.startsWith("" + ExprParser.LCURLY)) {
-                text = ExprParser.toTrimmed(text, ExprParser.LCURLY, ExprParser.RCURLY);
+            if (text.startsWith("" + StringHandler.LCURLY)) {
+                text = StringHandler.toTrimmed(text, StringHandler.LCURLY, StringHandler.RCURLY);
             }
             return RegExpr.parse(text);
         }

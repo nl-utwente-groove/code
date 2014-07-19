@@ -35,7 +35,7 @@ import static groove.verify.FormulaParser.Token.S_RELEASE;
 import static groove.verify.FormulaParser.Token.TRUE;
 import static groove.verify.FormulaParser.Token.UNTIL;
 import static groove.verify.FormulaParser.Token.W_UNTIL;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 import groove.verify.FormulaParser.Token;
 
 import java.util.Stack;
@@ -134,7 +134,7 @@ public class Formula {
                 if (isAtom(text)) {
                     b.append(getProp());
                 } else {
-                    b.append(ExprParser.toQuoted(text, '\''));
+                    b.append(StringHandler.toQuoted(text, '\''));
                 }
             } else {
                 b.append(getToken());

@@ -43,7 +43,7 @@ import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.io.graph.GxlIO;
 import groove.util.Groove;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -620,7 +620,7 @@ abstract public class AbstractAutomatonTest {
     private static List<String> createWord(String text) {
         List<String> result = null;
         try {
-            result = Arrays.asList(ExprParser.splitExpr(text, " "));
+            result = Arrays.asList(StringHandler.splitExpr(text, " "));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }

@@ -17,7 +17,7 @@
 package groove.algebra;
 
 import groove.algebra.syntax.Expression;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 /**
  * Abstract implementation of the string algebra.
@@ -73,7 +73,7 @@ public abstract class AbstractStringAlgebra<Int> extends StringAlgebra<String,Bo
 
     @Override
     public String getSymbol(Object value) {
-        return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
+        return StringHandler.toQuoted((String) value, StringHandler.DOUBLE_QUOTE_CHAR);
     }
 
     @Override
