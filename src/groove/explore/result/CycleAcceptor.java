@@ -39,7 +39,7 @@ import java.util.Collection;
  * representing the counter-example.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 5191 $
+ * @version $Revision$
  */
 public class CycleAcceptor extends Acceptor implements ProductListener {
     /** Creates a new acceptor with a 1-bounded {@link Result}. */

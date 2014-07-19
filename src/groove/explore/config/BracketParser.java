@@ -17,7 +17,7 @@
 package groove.explore.config;
 
 import groove.grammar.model.FormatException;
-import groove.util.Parser;
+import groove.util.parse.Parser;
 
 /**
  * Derived parser that wraps another parser inside brackets of some kind

@@ -50,7 +50,7 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision: 1787 $
+ * @version $Revision$
  */
 public class BoundedModelCheckingDialog {
 

@@ -18,8 +18,8 @@ package groove.grammar;
 
 import groove.grammar.Action.Role;
 import groove.grammar.model.FormatException;
-import groove.util.ExprParser;
-import groove.util.Parser;
+import groove.util.parse.ExprParser;
+import groove.util.parse.Parser;
 
 import java.util.Map;
 import java.util.TreeMap;

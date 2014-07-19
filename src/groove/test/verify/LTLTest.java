@@ -35,7 +35,7 @@ import org.junit.Test;
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
- * @version $Revision: 3219 $
+ * @version $Revision$
  */
 public class LTLTest {
     private StrategyValue strategyValue;

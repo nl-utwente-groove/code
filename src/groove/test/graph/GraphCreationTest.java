@@ -30,7 +30,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 2754 $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class GraphCreationTest extends TestCase {

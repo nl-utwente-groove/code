@@ -27,7 +27,7 @@ import java.util.Set;
  * Implementation of {@link Graph} based on a mapping from nodes to
  * sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 5110 $ $Date: 2008-01-30 09:32:51 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
 abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AGraph<N,E> implements
 Cloneable {

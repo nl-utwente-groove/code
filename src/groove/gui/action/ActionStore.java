@@ -36,7 +36,7 @@ import javax.swing.Action;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 3382 $
+ * @version $Revision$
  */
 public class ActionStore implements SimulatorListener {
     /**

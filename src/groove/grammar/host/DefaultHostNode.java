@@ -26,7 +26,7 @@ import groove.graph.ANode;
  * Host nodes always have an associated {@link TypeNode};
  * this defaults to {@link TypeLabel#NODE}.
  * @author Arend Rensink
- * @version $Revision: 2936 $
+ * @version $Revision$
  */
 public class DefaultHostNode extends ANode implements HostNode {
     /**

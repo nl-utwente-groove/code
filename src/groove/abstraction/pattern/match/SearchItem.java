@@ -302,7 +302,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink and Eduardo Zambon
-     * @version $Revision: 3291 $
+     * @version $Revision$
      */
     abstract class SingularRecord extends BasicRecord {
 

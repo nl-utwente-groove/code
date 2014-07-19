@@ -47,7 +47,7 @@ import java.util.Stack;
  * required for strategies that perform model checking activities.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 5191 $
+ * @version $Revision$
  */
 public class LTLStrategy extends Strategy implements ExploreIterator {
     @Override

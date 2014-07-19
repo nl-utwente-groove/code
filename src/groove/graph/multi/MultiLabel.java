@@ -21,7 +21,7 @@ import groove.graph.TextLabel;
 /**
  * Simple textual label, for use in {@link MultiGraph}s.
  * @author Arend Rensink
- * @version $Revision: 5110 $
+ * @version $Revision$
  */
 public final class MultiLabel extends TextLabel {
     /**

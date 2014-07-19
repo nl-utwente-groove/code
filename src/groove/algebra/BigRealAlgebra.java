@@ -24,7 +24,7 @@ import java.math.BigDecimal;
  * Double algebra based on reals of arbitrary precision.
  * Implemented by the Java type {@link BigDecimal}.
  * @author Arend Rensink
- * @version $Revision: 1577 $
+ * @version $Revision$
  */
 public class BigRealAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     /** Private constructor for the singleton instance. */

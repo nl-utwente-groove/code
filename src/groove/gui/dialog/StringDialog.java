@@ -55,7 +55,7 @@ import javax.swing.event.DocumentListener;
  * Dialog for entering strings, with a large textfield rather than a text area.
  * The dialog remembers previously entered strings.
  * @author Arend Rensink
- * @version $Revision:  $
+ * @version $Revision$
  */
 abstract public class StringDialog {
     /**

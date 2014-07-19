@@ -53,8 +53,8 @@ import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 import groove.gui.look.Values;
 import groove.io.Util;
-import groove.util.ExprParser;
 import groove.util.Fixable;
+import groove.util.parse.ExprParser;
 
 import java.util.EnumSet;
 import java.util.Set;

@@ -26,7 +26,7 @@ import java.util.List;
  * Composition of a graph-state and a Buchi location.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 5191 $
+ * @version $Revision$
  */
 public class ProductState {
     /**

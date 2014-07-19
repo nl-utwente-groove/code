@@ -12,7 +12,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

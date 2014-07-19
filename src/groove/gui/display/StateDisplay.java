@@ -90,7 +90,7 @@ import org.jgraph.event.GraphSelectionListener;
  * Simulator.
  *
  * @author Arend Rensink
- * @version $Revision: 4278 $ $Date: 2008-02-05 13:28:06 $
+ * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
 public class StateDisplay extends Display implements SimulatorListener {
     /** Creates a LTS panel for a given simulator. */

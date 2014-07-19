@@ -42,7 +42,7 @@ import org.junit.Test;
  * tests if this gives rise to the expected numbers of states and transitions.
  * 
  * @author Arend Rensink
- * @version $Revision: 4463 $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class RecipeTest {

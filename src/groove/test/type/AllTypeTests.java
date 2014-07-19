@@ -21,7 +21,7 @@ import org.junit.runners.Suite;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 2891 $
+ * @version $Revision$
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({TypeCheckTest.class, DynamicConstraintTest.class})

@@ -64,7 +64,7 @@ import java.util.TreeSet;
  * Factory that adds to a graph search plan the following items the search items
  * for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 3291 $
+ * @version $Revision$
  */
 public class PlanSearchEngine extends SearchEngine {
     /**
@@ -600,7 +600,7 @@ public class PlanSearchEngine extends SearchEngine {
      * all needed parts have been matched, the comparator prefers those of which
      * the most bound parts have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 3291 $
+     * @version $Revision$
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<RuleNode> remainingNodes, Set<LabelVar> remainingVars) {
@@ -644,7 +644,7 @@ public class PlanSearchEngine extends SearchEngine {
      * Search item comparator that gives higher priority to items of which more
      * parts have been matched.
      * @author Arend Rensink
-     * @version $Revision: 3291 $
+     * @version $Revision$
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<RuleNode> remainingNodes, Set<LabelVar> remainingVars) {
@@ -844,7 +844,7 @@ public class PlanSearchEngine extends SearchEngine {
      * should be applied. Comparators will be applied in increating order, so
      * the comparators should be ordered in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 3291 $
+     * @version $Revision$
      */
     static class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** Empty constructor with the correct visibility. */

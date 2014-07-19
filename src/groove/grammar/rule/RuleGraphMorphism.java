@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Mapping between {@link RuleGraph} elements.
  * @author Arend Rensink
- * @version $Revision: 2754 $
+ * @version $Revision$
  */
 public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     /** Constructs a morphism to a rule graph with a given type factory. */

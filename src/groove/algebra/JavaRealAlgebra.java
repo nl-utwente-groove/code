@@ -21,7 +21,7 @@ import groove.algebra.syntax.Expression;
 /**
  * Double algebra based on the java type {@link Double}.
  * @author Arend Rensink
- * @version $Revision: 1577 $
+ * @version $Revision$
  */
 public class JavaRealAlgebra extends RealAlgebra<Double,Boolean,String> {
     /** Private constructor for the singleton instance. */

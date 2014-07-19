@@ -12,7 +12,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 
 import java.util.BitSet;
 import java.util.HashMap;

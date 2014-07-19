@@ -33,7 +33,7 @@ import groove.annotation.ToolTipHeader;
  * @param <Bool> The representation type of the boolean algebra 
  * @param <String> The representation type of the string algebra  
  * @author Arend Rensink
- * @version $Revision: 1577 $
+ * @version $Revision$
  */
 @SuppressWarnings("hiding")
 public abstract class RealSignature<Real,Bool,String> implements Signature {

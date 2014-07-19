@@ -16,7 +16,14 @@
  */
 package groove.util;
 
-/** Interface for property keys. */
+import groove.util.parse.ParsableKey;
+
+/**
+ * Interface for property keys; that is,
+ * keys that are used in a {@link Properties} object.
+ * @author Arend Rensink
+ * @version $Id$
+ */
 public interface PropertyKey<V> extends ParsableKey<V> {
     /** Short description for user consumption. */
     public String getKeyPhrase();

@@ -23,7 +23,7 @@ import groove.gui.look.Line;
  * passed in at construction time.
  * Text labels are by default binary; comparison and identity are based on label text.
  * @author Arend Rensink
- * @version $Revision: 5110 $
+ * @version $Revision$
  */
 abstract public class TextLabel implements Label, Cloneable {
     /**

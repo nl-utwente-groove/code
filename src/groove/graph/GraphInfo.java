@@ -38,7 +38,7 @@ import java.util.Map;
  * This is delegated to save space for those graphs that do not have
  * such additional information.
  * @author Harmen Kastenberg
- * @version $Revision: 4089 $ $Date: 2008-01-30 09:32:57 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 public class GraphInfo extends DefaultFixable {
     /** Constructs an empty information object. */

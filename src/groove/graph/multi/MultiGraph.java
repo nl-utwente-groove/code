@@ -22,7 +22,7 @@ import groove.graph.GraphRole;
 /**
  * Plain graph with parallel (equi-labelled) edges.
  * @author Arend Rensink
- * @version $Revision: 5110 $ $Date: 2008-01-30 09:32:51 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
 public class MultiGraph extends EdgeMapGraph<MultiNode,MultiEdge> implements Cloneable {
     /**

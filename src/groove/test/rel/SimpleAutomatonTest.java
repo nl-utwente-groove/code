@@ -22,7 +22,7 @@ import groove.automaton.SimpleNFA;
 /**
  * Tests the available {@link RegAut} interface.
  * @author Arend Rensink
- * @version $Revision: 4155 $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class SimpleAutomatonTest extends AbstractAutomatonTest {

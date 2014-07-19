@@ -21,8 +21,8 @@
 package groove.grammar;
 
 import groove.grammar.model.FormatException;
-import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.util.parse.ExprParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +36,7 @@ import java.util.List;
  * is only a single token); the last token is called the child.
  *
  * @author Angela Lozano and Arend Rensink
- * @version $Revision: 4083 $ $Date: 2008-01-30 09:32:37 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:37 $
  */
 public class QualName implements Comparable<QualName> {
     /**

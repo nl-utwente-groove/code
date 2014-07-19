@@ -27,7 +27,7 @@ import org.junit.Test;
  * <code>IdentityHashMap#keySet().iterator().remove()</code> method does not
  * work correctly. Bug report submitted to http://bugs.sun.com/bugdatabase.
  * @author Arend Rensink
- * @version $Revision: 1482 $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class IdentityHashMapTest {

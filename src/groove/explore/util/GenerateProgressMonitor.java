@@ -23,7 +23,7 @@ import groove.lts.GTSListener;
  * process. The monitor should be added as a {@link GTSListener}
  * to the GTS in question.
  * @author Arend Rensink
- * @version $Revision: 4963 $
+ * @version $Revision$
  */
 public class GenerateProgressMonitor {
     /** Resets all counters, in preparation for a new GTS exploration. */

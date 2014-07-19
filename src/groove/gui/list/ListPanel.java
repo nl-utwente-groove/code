@@ -46,7 +46,7 @@ import javax.swing.event.ListSelectionListener;
  * Panel showing a list of messages. The panel hides itself when the
  * list is empty.
  * @author Arend Rensink
- * @version $Revision: 2142 $
+ * @version $Revision$
  */
 public abstract class ListPanel extends JPanel {
     /**

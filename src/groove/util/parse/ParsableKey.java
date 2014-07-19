@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.util.parse;
 
 /**
  * Interface for keys with values that can be parsed from strings.

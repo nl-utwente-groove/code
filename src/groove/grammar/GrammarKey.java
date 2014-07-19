@@ -23,9 +23,9 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.RuleModel;
 import groove.util.Groove;
-import groove.util.Parser;
 import groove.util.PropertyKey;
 import groove.util.ThreeValued;
+import groove.util.parse.Parser;
 
 import java.util.ArrayList;
 import java.util.Collection;

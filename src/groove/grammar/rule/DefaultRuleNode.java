@@ -31,7 +31,7 @@ import java.util.Set;
  * Default implementation of a graph node. Default nodes have numbers, but node
  * equality is determined by object identity and not by node number.
  * @author Arend Rensink
- * @version $Revision: 2971 $
+ * @version $Revision$
  */
 public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     /**

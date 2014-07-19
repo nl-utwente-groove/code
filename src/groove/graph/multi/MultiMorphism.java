@@ -24,7 +24,7 @@ import groove.graph.Morphism;
  * based on two internally stored hash maps, for the nodes and edges. Labels are
  * not translated.
  * @author Arend Rensink
- * @version $Revision: 4820 $
+ * @version $Revision$
  */
 public class MultiMorphism extends Morphism<MultiNode,MultiEdge> {
     /** Constructs an empty morphism. */

@@ -22,7 +22,7 @@ import groove.grammar.Action;
  * An object recording the necessary information to reconstruct an
  * {@link GraphTransition} from a source {@link GraphState}.
  * @author Arend Rensink
- * @version $Revision: 4083 $
+ * @version $Revision$
  */
 public interface GraphTransitionStub {
     /**

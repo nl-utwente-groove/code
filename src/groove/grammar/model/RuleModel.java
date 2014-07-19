@@ -101,7 +101,7 @@ import javax.swing.SwingUtilities;
  * <li>Creators are RHS elements that are not LHS.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1923 $
+ * @version $Revision$
  */
 public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleModel> {
     /**
