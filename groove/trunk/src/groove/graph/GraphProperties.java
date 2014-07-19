@@ -18,9 +18,9 @@ package groove.graph;
 
 import groove.grammar.Action.Role;
 import groove.util.Groove;
-import groove.util.Parser;
 import groove.util.Properties;
 import groove.util.PropertyKey;
+import groove.util.parse.Parser;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

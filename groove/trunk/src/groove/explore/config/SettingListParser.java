@@ -18,8 +18,8 @@ package groove.explore.config;
 
 import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
-import groove.util.ExprParser;
-import groove.util.Parser;
+import groove.util.parse.ExprParser;
+import groove.util.parse.Parser;
 
 import java.util.HashMap;
 import java.util.Map;

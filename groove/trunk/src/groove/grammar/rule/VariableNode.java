@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * Nodes used to represent attribute variables in rules and conditions.
  * @author Arend Rensink
- * @version $Revision: 1768 $ $Date: 2008-02-12 15:15:32 $
+ * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
 public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /**

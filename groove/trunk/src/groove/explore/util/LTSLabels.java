@@ -18,8 +18,8 @@ package groove.explore.util;
 
 import groove.explore.Generator;
 import groove.grammar.model.FormatException;
-import groove.util.ExprParser;
 import groove.util.Pair;
+import groove.util.parse.ExprParser;
 
 import java.util.EnumMap;
 import java.util.HashMap;

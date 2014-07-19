@@ -26,7 +26,7 @@ import groove.gui.layout.LayoutMap;
 import groove.gui.look.LineStyle;
 import groove.io.FileType;
 import groove.io.HTMLConverter;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -46,7 +46,7 @@ import org.jgraph.graph.GraphConstants;
  * Class wrapping the functionality of reading and writing layout information in
  * the required format.
  * @author Arend Rensink
- * @version $Revision: 1793 $
+ * @version $Revision$
  */
 public class LayoutIO {
     /**

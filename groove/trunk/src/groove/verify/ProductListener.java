@@ -20,7 +20,7 @@ package groove.verify;
 /**
  * A listener to the exploration of product systems.
  * @author Arend Rensink
- * @version $Revision: 2976 $
+ * @version $Revision$
  */
 public interface ProductListener {
     /**

@@ -14,9 +14,10 @@
 /*
  * $Id: ExprParser.java,v 1.11 2008-01-30 09:32:14 iovka Exp $
  */
-package groove.util;
+package groove.util.parse;
 
 import groove.grammar.model.FormatException;
+import groove.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;

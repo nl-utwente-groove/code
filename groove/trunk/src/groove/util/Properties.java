@@ -21,6 +21,7 @@ import groove.grammar.model.FormatChecker;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.Parser;
 
 import java.io.IOException;
 import java.io.InputStream;

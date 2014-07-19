@@ -45,7 +45,7 @@ import java.util.Map;
  * This matcher walks through a search tree built up according to a search plan,
  * in which the matching order of the domain elements is determined.
  * @author Arend Rensink
- * @version $Revision: 3288 $
+ * @version $Revision$
  */
 public class PlanSearchStrategy implements SearchStrategy {
     /**

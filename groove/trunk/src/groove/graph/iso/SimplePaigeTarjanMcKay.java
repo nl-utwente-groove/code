@@ -43,7 +43,7 @@ import java.util.Queue;
  * strategy goes beyond bisimulation in that it breaks all apparent symmetries
  * in all possible ways and accumulates the results.
  * @author Arend Rensink
- * @version $Revision: 1529 $
+ * @version $Revision$
  */
 public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     /**
@@ -308,7 +308,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
      * Class of nodes that carry (and are identified with) an integer
      * certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1529 $
+     * @version $Revision$
      */
     static class MyNodeCert implements NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */

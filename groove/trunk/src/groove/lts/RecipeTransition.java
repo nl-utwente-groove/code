@@ -49,7 +49,7 @@ import java.util.Stack;
  * Models a transition corresponding to the complete execution of
  * a recipe. This comprises a sequence of ordinary graph transitions.
  * @author Arend Rensink
- * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
+ * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
     ActionLabel {

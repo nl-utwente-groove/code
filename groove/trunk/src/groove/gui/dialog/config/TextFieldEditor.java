@@ -25,7 +25,7 @@ import groove.grammar.model.FormatException;
 import groove.gui.dialog.ConfigDialog;
 import groove.gui.dialog.ConfigDialog.DirtyListener;
 import groove.util.Groove;
-import groove.util.Parser;
+import groove.util.parse.Parser;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;

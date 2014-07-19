@@ -60,7 +60,7 @@ import org.jgraph.event.GraphModelEvent;
  * Scroll pane showing the list of labels currently appearing in the graph
  * model.
  * @author Arend Rensink
- * @version $Revision: 1915 $
+ * @version $Revision$
  */
 public class TypeTree extends LabelTree<AspectGraph> {
     /**

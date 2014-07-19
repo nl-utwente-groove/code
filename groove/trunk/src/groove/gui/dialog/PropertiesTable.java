@@ -22,11 +22,11 @@ import groove.gui.display.DismissDelayer;
 import groove.gui.look.Values;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
-import groove.util.ExprParser;
-import groove.util.Parser;
 import groove.util.Properties.CheckerMap;
 import groove.util.PropertyKey;
 import groove.util.collect.ListComparator;
+import groove.util.parse.ExprParser;
+import groove.util.parse.Parser;
 
 import java.awt.Color;
 import java.awt.Component;

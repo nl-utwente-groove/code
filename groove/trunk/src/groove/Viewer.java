@@ -22,7 +22,7 @@ import groove.gui.dialog.BugReportDialog;
  * Wrapper class for the viewer utility.
  * @see groove.gui.Viewer
  * @author Arend Rensink
- * @version $Revision: 5032 $
+ * @version $Revision$
  */
 public class Viewer {
     /**

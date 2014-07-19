@@ -19,7 +19,7 @@ package groove.graph;
 /**
  * Generically typed specialisation of the {@link Edge} interface.
  * @author Arend Rensink
- * @version $Revision: 4712 $
+ * @version $Revision$
  */
 public interface GEdge<N extends Node> extends Edge {
     /*

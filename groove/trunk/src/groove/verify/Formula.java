@@ -35,7 +35,7 @@ import static groove.verify.FormulaParser.Token.S_RELEASE;
 import static groove.verify.FormulaParser.Token.TRUE;
 import static groove.verify.FormulaParser.Token.UNTIL;
 import static groove.verify.FormulaParser.Token.W_UNTIL;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 import groove.verify.FormulaParser.Token;
 
 import java.util.Stack;
@@ -43,7 +43,7 @@ import java.util.Stack;
 /**
  * Data structure for temporal formulae.
  * @author Arend Rensink
- * @version $Revision: 3124 $ $Date: 2008-02-28 05:58:22 $
+ * @version $Revision$ $Date: 2008-02-28 05:58:22 $
  */
 public class Formula {
     /** Default constructor filling all fields. */

@@ -36,7 +36,7 @@ import java.util.List;
  * strategy goes beyond bisimulation in that it breaks all apparent symmetries
  * in all possible ways and accumulates the results.
  * @author Arend Rensink
- * @version $Revision: 1529 $
+ * @version $Revision$
  */
 public class PartitionRefiner extends CertificateStrategy {
     /**
@@ -475,7 +475,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * Class of nodes that carry (and are identified with) an integer
      * certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1529 $
+     * @version $Revision$
      */
     static class MyNodeCert extends MyCert<Node> implements CertificateStrategy.NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
@@ -630,7 +630,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * An edge with certificate nodes as endpoints. The hash code is computed
      * dynamically, on the basis of the current certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1529 $
+     * @version $Revision$
      */
     static class MyEdge2Cert extends MyCert<Edge> implements EdgeCertificate {
         /**
@@ -712,7 +712,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * An edge with only one endpoint. The hash code is computed dynamically, on
      * the basis of the current certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1529 $
+     * @version $Revision$
      */
     static class MyEdge1Cert extends MyCert<Edge> implements EdgeCertificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */

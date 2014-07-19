@@ -69,7 +69,7 @@ import org.jgraph.graph.ParentMap;
  * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
  * used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 2982 $
+ * @version $Revision$
  */
 final public class AspectJModel extends JModel<AspectGraph> {
     /** 

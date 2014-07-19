@@ -20,8 +20,8 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.io.Util;
 import groove.io.store.EditType;
-import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.util.parse.ExprParser;
 
 import java.awt.Font;
 import java.awt.FontFormatException;

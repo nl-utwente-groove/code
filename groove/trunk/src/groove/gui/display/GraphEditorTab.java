@@ -979,7 +979,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
      * <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 3512 $
+     * @version $Revision$
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

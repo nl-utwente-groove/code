@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from HTML code.
  * @author Arend Rensink
- * @version $Revision: 3122 $
+ * @version $Revision$
  */
 public class HTMLConverter {
     /** Converts a string representation of a unicode hex char to a HTML encoding thereof. */

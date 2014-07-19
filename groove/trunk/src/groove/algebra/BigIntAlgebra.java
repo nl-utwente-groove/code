@@ -23,7 +23,7 @@ import java.math.BigInteger;
 /**
  * Integer algebra based on the java type {@link Integer}.
  * @author Arend Rensink
- * @version $Revision: 1580 $
+ * @version $Revision$
  */
 public class BigIntAlgebra extends IntAlgebra<BigInteger,Boolean,String> {
     /** Private constructor for the singleton instance. */

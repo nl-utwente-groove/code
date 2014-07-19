@@ -16,7 +16,7 @@
  */
 package groove.explore.config;
 
-import groove.util.Parser;
+import groove.util.parse.Parser;
 
 /** The matching strategy. */
 public enum MatchKind implements SettingKey {

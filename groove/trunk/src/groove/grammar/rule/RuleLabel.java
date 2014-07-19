@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 2876 $ $Date: 2008-01-30 09:32:28 $
+ * @version $Revision$ $Date: 2008-01-30 09:32:28 $
  */
 public class RuleLabel extends ALabel {
     /**

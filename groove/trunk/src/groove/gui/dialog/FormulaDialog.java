@@ -56,7 +56,7 @@ import javax.swing.event.ListDataListener;
  * Dialog for entering strings.
  * The dialog remembers previously entered strings and attempts to autocomplete.
  * @author Arend Rensink
- * @version $Revision:  $
+ * @version $Revision$
  */
 abstract public class FormulaDialog {
     /**

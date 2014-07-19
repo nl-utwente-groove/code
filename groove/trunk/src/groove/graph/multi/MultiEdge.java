@@ -22,7 +22,7 @@ import groove.graph.AEdge;
  * Default implementation of a multi-graph edge, with an identity
  * (represented by a number) in addition to source and target nodes and label.
  * @author Arend Rensink
- * @version $Revision: 4813 $ $Date: 2008-02-12 15:15:31 $
+ * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
 public class MultiEdge extends AEdge<MultiNode,MultiLabel> {
     /**

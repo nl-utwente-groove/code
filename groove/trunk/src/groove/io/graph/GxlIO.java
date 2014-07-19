@@ -74,7 +74,7 @@ import de.gupro.gxl.gxl_1_0.TypedElementType;
  * Class to convert graphs to GXL format and back. 
  * This class is implemented using JAXB data binding.
  * @author Arend Rensink
- * @version $Revision: 2973 $
+ * @version $Revision$
  */
 public class GxlIO extends GraphIO<AttrGraph> {
     private GxlIO() {

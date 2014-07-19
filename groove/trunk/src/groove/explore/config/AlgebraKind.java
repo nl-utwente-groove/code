@@ -17,7 +17,7 @@
 package groove.explore.config;
 
 import groove.algebra.AlgebraFamily;
-import groove.util.Parser;
+import groove.util.parse.Parser;
 
 /**
  * Kind of exploration strategies.

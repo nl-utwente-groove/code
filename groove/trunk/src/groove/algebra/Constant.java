@@ -19,8 +19,8 @@ package groove.algebra;
 import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
 import groove.gui.look.Line;
-import groove.util.ExprParser;
 import groove.util.Keywords;
+import groove.util.parse.ExprParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

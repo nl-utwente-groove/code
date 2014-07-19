@@ -17,7 +17,7 @@
 package groove.algebra;
 
 import groove.algebra.syntax.Expression;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 
 /**
  * Abstract implementation of the string algebra.

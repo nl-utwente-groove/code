@@ -20,9 +20,9 @@ import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COM
 import groove.annotation.Help;
 import groove.grammar.model.FormatException;
 import groove.io.FileType;
-import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.parse.ExprParser;
 
 import java.io.File;
 import java.io.FileNotFoundException;

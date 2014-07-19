@@ -22,7 +22,7 @@ import org.junit.runners.Suite;
 /**
  * Comprehensive test suite including time-consuming tests.
  * @author Arend Rensink
- * @version $Revision: 5323 $
+ * @version $Revision$
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({CheckinTests.class, GrammarsTest.class, ImagerTest.class})

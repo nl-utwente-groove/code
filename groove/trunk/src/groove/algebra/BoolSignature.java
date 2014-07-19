@@ -30,7 +30,7 @@ import groove.annotation.ToolTipHeader;
  * Signature for boolean algebras.
  * <Bool> Representation type for boolean values
  * @author Arend Rensink
- * @version $Revision: 1577 $
+ * @version $Revision$
  */
 public abstract class BoolSignature<Bool> implements Signature {
     /** Negation. */

@@ -588,7 +588,7 @@ public class JGraphUI<G extends Graph> extends BasicGraphUI {
      * Inspired by swingfx
      * @author rwickesser
      * @since 1.0
-     * $Revision: 1.2 $
+     * $Revision$
      */
     static public class RubberBand extends MouseInputAdapter {
         /**
@@ -716,7 +716,7 @@ public class JGraphUI<G extends Graph> extends BasicGraphUI {
      * Inspired by swingfx
      * @author rwickesser
      * @since 1.0
-     * $Revision: 1.2 $
+     * $Revision$
      */
     static public class EdgePreview extends MouseInputAdapter {
         /**

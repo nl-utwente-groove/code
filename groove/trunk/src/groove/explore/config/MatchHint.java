@@ -16,12 +16,12 @@
  */
 package groove.explore.config;
 
-import static groove.util.ExprParser.DOUBLE_QUOTE_CHAR;
+import static groove.util.parse.ExprParser.DOUBLE_QUOTE_CHAR;
 import groove.grammar.model.FormatException;
 import groove.util.Duo;
-import groove.util.ExprParser;
 import groove.util.Groove;
-import groove.util.Parser;
+import groove.util.parse.ExprParser;
+import groove.util.parse.Parser;
 
 import java.util.Arrays;
 import java.util.Collections;

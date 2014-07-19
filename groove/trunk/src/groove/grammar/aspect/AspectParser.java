@@ -24,7 +24,7 @@ import groove.util.Pair;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 2929 $
+ * @version $Revision$
  */
 public class AspectParser {
     /** Creates an aspect parser for a particular graph role. */

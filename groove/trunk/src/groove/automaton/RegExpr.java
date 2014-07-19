@@ -17,12 +17,12 @@
 package groove.automaton;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
-import static groove.util.ExprParser.DOUBLE_QUOTE_CHAR;
-import static groove.util.ExprParser.LANGLE_CHAR;
-import static groove.util.ExprParser.LPAR_CHAR;
-import static groove.util.ExprParser.PLACEHOLDER;
-import static groove.util.ExprParser.RPAR_CHAR;
-import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
+import static groove.util.parse.ExprParser.DOUBLE_QUOTE_CHAR;
+import static groove.util.parse.ExprParser.LANGLE_CHAR;
+import static groove.util.parse.ExprParser.LPAR_CHAR;
+import static groove.util.parse.ExprParser.PLACEHOLDER;
+import static groove.util.parse.ExprParser.RPAR_CHAR;
+import static groove.util.parse.ExprParser.SINGLE_QUOTE_CHAR;
 import groove.annotation.Help;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
@@ -37,9 +37,9 @@ import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.gui.look.Line;
 import groove.gui.look.Line.Style;
-import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.parse.ExprParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;

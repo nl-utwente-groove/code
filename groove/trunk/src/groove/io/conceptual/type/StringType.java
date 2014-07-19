@@ -5,7 +5,7 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.Value;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 
 /** Data type for strings. */
 public class StringType extends DataType {

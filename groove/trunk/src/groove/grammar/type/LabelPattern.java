@@ -23,8 +23,8 @@ import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
-import groove.util.ExprParser;
 import groove.util.Pair;
+import groove.util.parse.ExprParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;

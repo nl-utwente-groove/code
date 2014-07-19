@@ -29,7 +29,7 @@ import java.io.InputStream;
 /**
  * Class for saving and loading graphs.
  * @author Arend Rensink
- * @version $Revision: 2968 $
+ * @version $Revision$
  */
 public abstract class GraphIO<G extends Graph> {
     /** Indicates if this IO implementation can save graphs. 

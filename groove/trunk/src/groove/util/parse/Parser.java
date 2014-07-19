@@ -14,10 +14,11 @@
  *
  * $Id: Property.java,v 1.1 2008-01-30 09:32:03 iovka Exp $
  */
-package groove.util;
+package groove.util.parse;
 
 import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
+import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.Arrays;

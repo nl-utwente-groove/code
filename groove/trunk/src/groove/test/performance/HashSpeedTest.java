@@ -37,7 +37,7 @@ import java.util.Set;
  * the entry set.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 2265 $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class HashSpeedTest {

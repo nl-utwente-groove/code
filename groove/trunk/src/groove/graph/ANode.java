@@ -20,7 +20,7 @@ package groove.graph;
  * Default implementation of a graph node. Default nodes have numbers, but node
  * equality is determined by object identity and not by node number.
  * @author Arend Rensink
- * @version $Revision: 2894 $
+ * @version $Revision$
  */
 abstract public class ANode implements Node, Cloneable {
     /**

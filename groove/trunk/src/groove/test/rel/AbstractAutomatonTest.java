@@ -42,8 +42,8 @@ import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.io.graph.GxlIO;
-import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.util.parse.ExprParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ import org.junit.Test;
 /**
  * Tests the available {@link RegAut} interface.
  * @author Arend Rensink
- * @version $Revision: 4155 $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 abstract public class AbstractAutomatonTest {

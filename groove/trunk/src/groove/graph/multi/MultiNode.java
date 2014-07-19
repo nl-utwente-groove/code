@@ -22,7 +22,7 @@ import groove.graph.ANode;
  * Graph node in a multi-graph. Multi-nodes have numbers, but node
  * equality is determined by object identity and not by node number.
  * @author Arend Rensink
- * @version $Revision: 4813 $
+ * @version $Revision$
  */
 public class MultiNode extends ANode {
     /**

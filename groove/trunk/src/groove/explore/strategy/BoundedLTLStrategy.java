@@ -28,7 +28,7 @@ import groove.verify.ProductTransition;
  * strategy, such as setting the boundary and collecting the boundary graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 5191 $
+ * @version $Revision$
  */
 public class BoundedLTLStrategy extends LTLStrategy {
     /**

@@ -27,7 +27,7 @@ import groove.graph.Label;
 import groove.gui.look.Line;
 import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
-import groove.util.ExprParser;
+import groove.util.parse.ExprParser;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -36,7 +36,7 @@ import java.util.Map;
  * Labels encapsulating node or edge types.
  * These are the labels that occur in host graphs.
  * @author Arend Rensink
- * @version $Revision: 2709 $
+ * @version $Revision$
  */
 public final class TypeLabel extends ALabel {
     /**

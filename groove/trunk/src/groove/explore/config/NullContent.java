@@ -16,7 +16,7 @@
  */
 package groove.explore.config;
 
-import groove.util.Parser;
+import groove.util.parse.Parser;
 
 /**
  * Exploration content that can only have a {@code null} instance.

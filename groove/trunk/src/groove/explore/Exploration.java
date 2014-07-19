@@ -28,8 +28,8 @@ import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.util.Parser;
 import groove.util.Reporter;
+import groove.util.parse.Parser;
 
 import java.util.ArrayList;
 import java.util.List;

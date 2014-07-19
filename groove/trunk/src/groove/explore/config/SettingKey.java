@@ -16,8 +16,8 @@
  */
 package groove.explore.config;
 
-import groove.util.ParsableKey;
-import groove.util.Parser;
+import groove.util.parse.ParsableKey;
+import groove.util.parse.Parser;
 
 /**
  * Supertype for the discriminators of {@link Setting}s
