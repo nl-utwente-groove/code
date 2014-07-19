@@ -34,7 +34,6 @@ import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.rule.VariableNode;
 import groove.grammar.type.LabelPattern;
@@ -61,6 +60,7 @@ import groove.lts.Status.Flag;
 import groove.util.Colors;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
+import groove.util.parse.FormatException;
 
 import java.util.EnumMap;
 import java.util.List;

@@ -25,7 +25,6 @@ import static groove.io.FileType.TYPE;
 import groove.explore.Verbosity;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
@@ -44,6 +43,7 @@ import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.cli.ExistingFileHandler;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;

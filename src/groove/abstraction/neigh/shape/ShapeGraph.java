@@ -25,8 +25,6 @@ import groove.algebra.AlgebraFamily;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AGraph;
@@ -34,6 +32,8 @@ import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.Collection;
 import java.util.Map;

@@ -37,9 +37,9 @@ import groove.explore.util.ExplorationReporter;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.explore.util.LTSReporter;
-import groove.grammar.model.FormatException;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

@@ -20,9 +20,9 @@ import groove.explore.config.ExploreKey;
 import groove.explore.config.NullContent;
 import groove.explore.config.SettingKey;
 import groove.explore.config.SettingList;
-import groove.grammar.model.FormatException;
 import groove.gui.action.Refreshable;
 import groove.gui.dialog.ConfigDialog;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.awt.CardLayout;

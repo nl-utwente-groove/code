@@ -12,9 +12,9 @@ import groove.grammar.Callable;
 import groove.grammar.Callable.Kind;
 import groove.grammar.CheckPolicy;
 import groove.grammar.QualName;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;

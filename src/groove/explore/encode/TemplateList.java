@@ -20,11 +20,11 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.explore.ParsableValue;
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
 import groove.util.Version;
+import groove.util.parse.FormatException;
 
 import java.awt.CardLayout;
 import java.awt.Color;

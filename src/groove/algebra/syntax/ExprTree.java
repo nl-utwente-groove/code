@@ -6,9 +6,9 @@ import groove.algebra.Operator;
 import groove.algebra.RealSignature;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
-import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseInfo;
 import groove.util.antlr.ParseTree;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;

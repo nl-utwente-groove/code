@@ -17,8 +17,8 @@
 package groove.explore.util;
 
 import groove.explore.Generator;
-import groove.grammar.model.FormatException;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.util.EnumMap;

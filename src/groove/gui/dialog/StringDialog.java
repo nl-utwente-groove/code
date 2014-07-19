@@ -16,9 +16,9 @@
  */
 package groove.gui.dialog;
 
-import groove.grammar.model.FormatException;
 import groove.gui.Options;
 import groove.gui.display.DismissDelayer;
+import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

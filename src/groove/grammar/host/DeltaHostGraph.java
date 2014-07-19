@@ -18,8 +18,6 @@ package groove.grammar.host;
 
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AGraph;
@@ -33,6 +31,8 @@ import groove.transform.DeltaStore;
 import groove.transform.DeltaTarget;
 import groove.transform.FrozenDeltaApplier;
 import groove.transform.StoredDeltaApplier;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

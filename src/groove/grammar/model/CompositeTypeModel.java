@@ -9,6 +9,9 @@ import groove.grammar.type.ImplicitTypeGraph;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.util.EnumSet;
 import java.util.HashMap;

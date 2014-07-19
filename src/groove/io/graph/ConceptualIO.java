@@ -17,7 +17,6 @@
 package groove.io.graph;
 
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
@@ -27,6 +26,7 @@ import groove.io.external.Exportable;
 import groove.io.external.Importer.Resource;
 import groove.io.external.PortException;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

@@ -16,9 +16,9 @@
  */
 package groove.grammar.aspect;
 
-import groove.grammar.model.FormatErrorSet;
 import groove.graph.Element;
 import groove.util.Fixable;
+import groove.util.parse.FormatErrorSet;
 
 /**
  * Extension of the {@link Element} interface with support for {@link Aspect}s.

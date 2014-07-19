@@ -26,7 +26,6 @@ import static groove.io.FileType.ZIP;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
@@ -35,6 +34,7 @@ import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
 import groove.io.graph.LayoutIO;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

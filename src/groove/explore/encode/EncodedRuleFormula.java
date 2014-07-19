@@ -19,9 +19,9 @@ package groove.explore.encode;
 import groove.explore.result.Predicate;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.lts.GraphState;
+import groove.util.parse.FormatException;
 
 /**
  * An <code>EncodedRuleFormula</code> describes a predicate over graph states

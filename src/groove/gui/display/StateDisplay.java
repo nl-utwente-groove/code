@@ -29,7 +29,6 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
-import groove.grammar.model.FormatError;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
 import groove.grammar.rule.RuleNode;
@@ -61,6 +60,7 @@ import groove.lts.StartGraphState;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.util.line.LineStyle;
+import groove.util.parse.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

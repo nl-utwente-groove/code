@@ -14,7 +14,7 @@
  * 
  * $Id$
  */
-package groove.grammar.model;
+package groove.util.parse;
 
 import groove.util.Groove;
 

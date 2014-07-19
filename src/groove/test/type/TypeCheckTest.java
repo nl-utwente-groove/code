@@ -16,11 +16,11 @@
  */
 package groove.test.type;
 
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.IOException;
 import java.util.EnumSet;

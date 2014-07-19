@@ -9,7 +9,6 @@ import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectLabel;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.AspectParser;
-import groove.grammar.model.FormatError;
 import groove.grammar.model.GraphBasedModel.TypeModelMap;
 import groove.grammar.rule.RuleLabel;
 import groove.grammar.type.TypeEdge;
@@ -21,6 +20,7 @@ import groove.graph.Label;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
+import groove.util.parse.FormatError;
 
 import java.util.Collection;
 import java.util.Collections;

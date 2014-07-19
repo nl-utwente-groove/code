@@ -18,10 +18,10 @@ package groove.control.parse;
 
 import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COMMENT;
 import groove.annotation.Help;
-import groove.grammar.model.FormatException;
 import groove.io.FileType;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.io.File;

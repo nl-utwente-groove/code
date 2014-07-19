@@ -23,8 +23,8 @@ import groove.algebra.SignatureKind;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.LabelPattern;
+import groove.util.parse.FormatException;
 import junit.framework.Assert;
 
 import org.junit.Test;

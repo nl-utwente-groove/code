@@ -23,7 +23,6 @@ import groove.grammar.CheckPolicy;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatErrorSet;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -31,6 +30,7 @@ import groove.lts.Status.Flag;
 import groove.transform.Record;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;

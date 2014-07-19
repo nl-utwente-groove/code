@@ -19,9 +19,9 @@ package groove.grammar.type;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatErrorSet;
 import groove.graph.Direction;
 import groove.util.Pair;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;

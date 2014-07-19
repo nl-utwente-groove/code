@@ -31,6 +31,8 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.GraphInfo;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.awt.Color;
 import java.util.Collections;

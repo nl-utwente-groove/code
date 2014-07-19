@@ -21,8 +21,8 @@ import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatException;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -25,12 +25,12 @@ import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Viewer;
 import groove.lts.GTS;
 import groove.lts.GTSCounter;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

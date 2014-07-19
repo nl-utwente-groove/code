@@ -19,9 +19,9 @@ package groove.lts;
 import groove.control.template.Switch;
 import groove.grammar.Action;
 import groove.grammar.host.HostGraphMorphism;
-import groove.grammar.model.FormatException;
 import groove.graph.GEdge;
 import groove.transform.Event;
+import groove.util.parse.FormatException;
 
 /**
  * Models a transition in a GTS.

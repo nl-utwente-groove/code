@@ -1,7 +1,6 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-import groove.grammar.model.FormatException;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -9,6 +8,7 @@ import groove.gui.dialog.StringDialog;
 import groove.gui.display.DisplayKind;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.util.parse.FormatException;
 import groove.verify.CTLMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;

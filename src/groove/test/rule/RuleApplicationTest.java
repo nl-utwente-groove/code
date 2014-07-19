@@ -22,7 +22,6 @@ import groove.algebra.AlgebraFamily;
 import groove.grammar.Rule;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
@@ -30,6 +29,7 @@ import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

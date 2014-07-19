@@ -19,7 +19,6 @@ package groove.grammar;
 import static groove.grammar.model.ResourceKind.RULE;
 import groove.automaton.RegAut;
 import groove.grammar.Condition.Op;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.RuleModel;
@@ -32,6 +31,7 @@ import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.io.IOException;
 import java.util.ArrayList;

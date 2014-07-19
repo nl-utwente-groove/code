@@ -17,8 +17,8 @@
 package groove.explore.encode;
 
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatException;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
 

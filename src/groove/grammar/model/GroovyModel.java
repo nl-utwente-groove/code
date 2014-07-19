@@ -18,6 +18,7 @@ package groove.grammar.model;
 
 import static groove.grammar.model.ResourceKind.GROOVY;
 import groove.grammar.groovy.Util;
+import groove.util.parse.FormatException;
 
 /**
  * Model for Groovy programs, which are just strings

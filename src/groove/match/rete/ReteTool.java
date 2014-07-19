@@ -16,11 +16,11 @@
  */
 package groove.match.rete;
 
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.io.FileType;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

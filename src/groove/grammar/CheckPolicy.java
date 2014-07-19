@@ -17,7 +17,7 @@
 package groove.grammar;
 
 import groove.grammar.Action.Role;
-import groove.grammar.model.FormatException;
+import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 

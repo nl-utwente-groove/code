@@ -20,7 +20,6 @@ import groove.abstraction.neigh.lts.AGTS;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
@@ -28,6 +27,7 @@ import groove.grammar.rule.VariableNode;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.transform.Transformer;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

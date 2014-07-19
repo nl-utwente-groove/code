@@ -25,7 +25,7 @@ import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
-import groove.grammar.model.FormatException;
+import groove.util.parse.FormatException;
 
 import org.junit.Test;
 

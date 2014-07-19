@@ -19,9 +19,9 @@ package groove.transform;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
+import groove.util.parse.FormatException;
 
 /**
  * Object wrapping a host graph,

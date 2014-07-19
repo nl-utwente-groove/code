@@ -27,9 +27,9 @@ import gnu.prolog.term.VariableTerm;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.prolog.util.TermConverter;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.io.IOException;
 import java.io.StringReader;

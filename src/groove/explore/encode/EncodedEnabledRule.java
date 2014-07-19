@@ -18,9 +18,9 @@ package groove.explore.encode;
 
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.util.parse.FormatException;
 
 import java.util.Map;
 import java.util.TreeMap;

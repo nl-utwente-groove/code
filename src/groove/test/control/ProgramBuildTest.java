@@ -31,8 +31,8 @@ import groove.control.term.Term;
 import groove.grammar.Callable;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatException;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.util.Arrays;
 import java.util.Map;

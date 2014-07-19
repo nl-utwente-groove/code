@@ -34,8 +34,6 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR;
 import groove.grammar.GrammarKey;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Element;
@@ -63,6 +61,8 @@ import groove.gui.list.SearchResult;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.MyJMenu;
 import groove.util.Groove;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;

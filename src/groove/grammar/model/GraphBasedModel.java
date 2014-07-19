@@ -29,6 +29,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.ElementMap;
 import groove.graph.Node;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.HashMap;
 import java.util.Map;

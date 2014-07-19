@@ -1,9 +1,9 @@
 package groove.io.conceptual.configuration;
 
-import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
+import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

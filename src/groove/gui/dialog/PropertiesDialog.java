@@ -16,10 +16,10 @@
  */
 package groove.gui.dialog;
 
-import groove.grammar.model.FormatErrorSet;
 import groove.gui.look.Values;
 import groove.util.Properties;
 import groove.util.Properties.CheckerMap;
+import groove.util.parse.FormatErrorSet;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

@@ -23,8 +23,6 @@ import static groove.io.store.EditType.LAYOUT;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.gui.Options;
@@ -33,6 +31,8 @@ import groove.io.FileType;
 import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
 import groove.util.Groove;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.FileInputStream;

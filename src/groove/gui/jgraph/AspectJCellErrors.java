@@ -16,9 +16,9 @@
  */
 package groove.gui.jgraph;
 
-import groove.grammar.model.FormatError;
 import groove.gui.look.VisualKey;
 import groove.util.collect.NestedIterator;
+import groove.util.parse.FormatError;
 
 import java.util.ArrayList;
 import java.util.Collection;

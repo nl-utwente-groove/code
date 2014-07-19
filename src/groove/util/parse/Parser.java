@@ -16,7 +16,6 @@
  */
 package groove.util.parse;
 
-import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
 

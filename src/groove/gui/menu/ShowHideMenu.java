@@ -19,7 +19,6 @@ package groove.gui.menu;
 import groove.automaton.NodeRelation;
 import groove.automaton.RegExpr;
 import groove.automaton.RelationCalculator;
-import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -35,6 +34,7 @@ import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
+import groove.util.parse.FormatException;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;

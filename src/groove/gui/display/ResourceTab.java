@@ -17,7 +17,6 @@
 package groove.gui.display;
 
 import groove.grammar.QualName;
-import groove.grammar.model.FormatError;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
@@ -30,6 +29,7 @@ import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.list.ListPanel;
+import groove.util.parse.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;

@@ -17,12 +17,12 @@
 package groove.grammar.host;
 
 import groove.algebra.AlgebraFamily;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.graph.GGraph;
 import groove.graph.GraphInfo;
 import groove.transform.DeltaTarget;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 /**
  * Graph type used for graphs under transformation.

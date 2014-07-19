@@ -19,9 +19,9 @@ package groove.grammar.aspect;
 import groove.algebra.Constant;
 import groove.algebra.syntax.Expression;
 import groove.grammar.aspect.AspectKind.ContentKind;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphRole;
+import groove.util.parse.FormatException;
 
 import java.util.HashMap;
 import java.util.Map;

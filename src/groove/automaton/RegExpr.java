@@ -28,7 +28,6 @@ import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 import groove.annotation.ToolTipPars;
-import groove.grammar.model.FormatException;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleLabel;
 import groove.grammar.type.TypeGuard;
@@ -39,6 +38,7 @@ import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;
@@ -504,7 +504,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * rules of regular expressions. (If not, then it should be single-quoted.)
      * Atoms may be preceded by a label kind prefix.
      * Throws an exception if the text is empty or contains any
-     * characters not allowed by {@link StringHandler#isIdentifierChar(char)}.
+     * characters not allowed by {@link StringHandler#isIdentifierPart(char)}.
      * @param text the text to be tested
      * @throws FormatException if the text contains a special character
      * @see #isAtom(String)

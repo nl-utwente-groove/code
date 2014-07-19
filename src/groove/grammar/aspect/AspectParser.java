@@ -16,10 +16,10 @@
  */
 package groove.grammar.aspect;
 
-import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.

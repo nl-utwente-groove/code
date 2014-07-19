@@ -25,7 +25,6 @@ import groove.automaton.RegExprTyper.Result;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.type.ImplicitTypeGraph;
@@ -37,6 +36,7 @@ import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 
 import java.io.IOException;
 import java.util.Collections;

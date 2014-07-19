@@ -24,10 +24,10 @@ import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.HostModel;
 import groove.graph.EdgeRole;
 import groove.graph.Node;
+import groove.util.parse.FormatException;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;

@@ -30,7 +30,6 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.Valuation;
@@ -43,6 +42,7 @@ import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.io.graph.GxlIO;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.io.File;

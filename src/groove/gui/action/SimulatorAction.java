@@ -1,7 +1,6 @@
 package groove.gui.action;
 
 import groove.grammar.QualName;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
@@ -29,6 +28,7 @@ import groove.io.store.EditType;
 import groove.io.store.SystemStore;
 import groove.util.Duo;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 import java.awt.event.ActionEvent;
 import java.io.File;

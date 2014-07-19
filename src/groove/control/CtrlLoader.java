@@ -28,10 +28,10 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
-import groove.grammar.model.FormatException;
 import groove.util.Groove;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;

@@ -5,13 +5,13 @@ import groove.control.graph.ControlGraph;
 import groove.control.template.Program;
 import groove.control.template.Template;
 import groove.grammar.model.ControlModel;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
+import groove.util.parse.FormatException;
 
 import java.awt.MouseInfo;
 import java.awt.Point;

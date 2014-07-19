@@ -21,9 +21,9 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;

@@ -3,17 +3,20 @@
 package groove.control.parse;
 import groove.control.*;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseTreeAdaptor;
 import groove.util.antlr.ParseInfo;
+import groove.util.parse.FormatErrorSet;
+
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
 import java.util.HashMap;
 
 
+
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.*;
+
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;

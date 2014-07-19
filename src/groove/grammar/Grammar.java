@@ -20,10 +20,10 @@ import groove.control.instance.Automaton;
 import groove.grammar.Action.Role;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
-import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.prolog.GrooveEnvironment;
 import groove.util.Fixable;
+import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;

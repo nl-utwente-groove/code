@@ -20,10 +20,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.explore.Exploration;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.lts.GTS;
 import groove.prolog.GrooveState;
+import groove.util.parse.FormatException;
 
 import org.junit.Test;
 

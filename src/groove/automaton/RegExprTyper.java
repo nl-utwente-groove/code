@@ -27,8 +27,6 @@ import groove.automaton.RegExpr.Sharp;
 import groove.automaton.RegExpr.Star;
 import groove.automaton.RegExpr.Wildcard;
 import groove.automaton.RegExprTyper.Result;
-import groove.grammar.model.FormatError;
-import groove.grammar.model.FormatErrorSet;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeElement;
@@ -37,6 +35,8 @@ import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 import java.util.Collection;
 import java.util.HashMap;

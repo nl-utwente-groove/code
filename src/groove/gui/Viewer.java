@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.gui.dialog.GraphPreviewDialog;
@@ -26,6 +25,7 @@ import groove.io.graph.GraphIO;
 import groove.util.Groove;
 import groove.util.cli.ExistingFileHandler;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;

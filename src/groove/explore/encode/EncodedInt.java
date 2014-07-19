@@ -17,8 +17,8 @@
 package groove.explore.encode;
 
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatException;
 
 /**
  * An <code>EncodedInt</code> describes an encoding of a positive number
