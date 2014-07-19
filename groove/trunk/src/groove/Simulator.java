@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Simulator.java,v 1.3 2007-05-09 22:53:37 rensink Exp $
+ * $Id$
  */
 package groove;
 

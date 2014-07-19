@@ -12,15 +12,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: RealSignature.java,v 1.3 2007-08-26 07:24:19 rensink Exp $
+ * $Id$
  */
 package groove.algebra;
 
-import static groove.algebra.Precedence.ADD;
-import static groove.algebra.Precedence.COMPARE;
-import static groove.algebra.Precedence.EQUAL;
-import static groove.algebra.Precedence.MULT;
-import static groove.algebra.Precedence.UNARY;
+import static groove.util.parse.Precedence.ADD;
+import static groove.util.parse.Precedence.COMPARE;
+import static groove.util.parse.Precedence.EQUAL;
+import static groove.util.parse.Precedence.MULT;
+import static groove.util.parse.Precedence.UNARY;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;

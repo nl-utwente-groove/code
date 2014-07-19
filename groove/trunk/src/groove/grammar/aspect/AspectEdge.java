@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: AspectEdge.java,v 1.10 2008-01-30 09:31:33 iovka Exp $
+ * $Id$
  */
 package groove.grammar.aspect;
 

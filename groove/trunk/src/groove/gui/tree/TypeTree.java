@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: LabelList.java,v 1.20 2007-12-03 08:56:08 rensink Exp $
+ * $Id$
  */
 package groove.gui.tree;
 

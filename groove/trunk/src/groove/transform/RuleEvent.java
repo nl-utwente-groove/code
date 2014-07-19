@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.21 2008-03-03 21:27:40 rensink Exp $
+ * $Id$
  */
 package groove.transform;
 

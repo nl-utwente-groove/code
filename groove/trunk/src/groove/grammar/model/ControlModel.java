@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: ControlView.java,v 1.10 2008-03-18 12:17:29 fladder Exp $
+ * $Id$
  */
 package groove.grammar.model;
 

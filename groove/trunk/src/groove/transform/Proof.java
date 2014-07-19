@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: RuleMatch.java,v 1.9 2008-03-03 21:27:40 rensink Exp $
+ * $Id$
  */
 package groove.transform;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: AbstrGraphStateImpl.java,v 1.3 2008-01-31 08:22:52 rensink Exp $
+ * $Id$
  */
 package groove.abstraction.neigh.lts;
 

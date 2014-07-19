@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.18 2008-03-25 15:13:55 rensink Exp $
+ * $Id$
  */
 package groove.io.graph;
 

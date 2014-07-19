@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: SPOEvent.java,v 1.55 2008-03-04 11:01:33 fladder Exp $
+ * $Id$
  */
 package groove.transform;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: Namespace.java,v 1.4 2008-02-05 13:27:53 rensink Exp $
+ * $Id$
  */
 package groove.control.parse;
 

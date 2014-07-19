@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: VarNodeEdgeHashMap.java,v 1.6 2008-03-18 10:02:04 iovka Exp $
+ * $Id$
  */
 package groove.grammar.rule;
 

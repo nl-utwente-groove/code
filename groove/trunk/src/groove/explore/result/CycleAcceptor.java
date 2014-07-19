@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: CycleAcceptor.java,v 1.4 2008-03-04 14:48:17 kastenberg Exp $
+ * $Id$
  */
 
 package groove.explore.result;

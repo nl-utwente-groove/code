@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: GrooveFileView.java,v 1.4 2008-01-30 09:33:42 iovka Exp $
+ * $Id$
  */
 package groove.io;
 

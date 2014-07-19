@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.17 2008-01-09 16:21:36 rensink Exp $
+ * $Id$
  */
 package groove.io;
 

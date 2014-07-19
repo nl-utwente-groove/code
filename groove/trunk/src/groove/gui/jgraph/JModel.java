@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: GraphJModel.java,v 1.21 2008-02-29 11:02:19 fladder Exp $
+ * $Id$
  */
 
 package groove.gui.jgraph;

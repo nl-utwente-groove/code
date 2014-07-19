@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Converter.java,v 1.10 2008-01-30 09:32:02 iovka Exp $
+ * $Id$
  */
 package groove.io;
 

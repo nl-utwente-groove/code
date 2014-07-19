@@ -18,12 +18,12 @@ package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
 import groove.algebra.Operator;
-import groove.algebra.Precedence;
-import groove.algebra.Precedence.Direction;
-import groove.algebra.Precedence.Placement;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
+import groove.util.parse.Precedence;
+import groove.util.parse.Precedence.Direction;
+import groove.util.parse.Precedence.Placement;
 
 import java.util.ArrayList;
 import java.util.Arrays;

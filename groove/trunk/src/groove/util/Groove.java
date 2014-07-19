@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Groove.java,v 1.27 2008-03-13 14:52:56 rensink Exp $
+ * $Id$
  */
 package groove.util;
 

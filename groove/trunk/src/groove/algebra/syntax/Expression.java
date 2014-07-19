@@ -17,11 +17,11 @@
 package groove.algebra.syntax;
 
 import groove.algebra.Constant;
-import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
+import groove.util.parse.Precedence;
 
 import java.util.HashMap;
 import java.util.Map;

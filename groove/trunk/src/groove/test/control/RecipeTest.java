@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: ExplorationTest.java,v 1.20 2008-01-31 14:25:54 fladder Exp $
+ * $Id$
  */
 
 package groove.test.control;

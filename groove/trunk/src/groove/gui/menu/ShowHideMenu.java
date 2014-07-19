@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: ShowHideMenu.java,v 1.13 2008-01-30 09:33:37 iovka Exp $
+ * $Id$
  */
 package groove.gui.menu;
 

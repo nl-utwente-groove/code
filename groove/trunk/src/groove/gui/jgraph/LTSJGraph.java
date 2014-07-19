@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: LTSJGraph.java,v 1.10 2008-01-30 09:33:14 iovka Exp $
+ * $Id$
  */
 package groove.gui.jgraph;
 

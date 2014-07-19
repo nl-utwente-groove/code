@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: UnknownSymbolException.java,v 1.2 2007-05-21 22:19:28 rensink Exp $
+ * $Id$
  */
 package groove.algebra;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: FormulaDialog.java,v 1.9 2008-02-04 08:50:00 kastenberg Exp $
+ * $Id$
  */
 package groove.gui.dialog;
 

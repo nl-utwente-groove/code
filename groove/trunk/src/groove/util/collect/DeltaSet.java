@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaSet.java,v 1.4 2008-01-30 09:32:13 iovka Exp $
+ * $Id$
  */
 package groove.util.collect;
 

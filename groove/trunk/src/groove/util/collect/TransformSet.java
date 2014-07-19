@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformSet.java,v 1.5 2008-02-05 13:43:21 rensink Exp $
+ * $Id$
  */
 package groove.util.collect;
 

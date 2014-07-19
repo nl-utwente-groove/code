@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: NewDeltaGraph.java,v 1.11 2008-01-21 14:59:48 rensink Exp $
+ * $Id$
  */
 package groove.grammar.host;
 

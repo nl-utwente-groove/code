@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: AspectParser.java,v 1.16 2008-03-13 14:41:55 rensink Exp $
+ * $Id$
  */
 package groove.grammar.aspect;
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: SPORule.java,v 1.53 2008-03-05 16:52:12 rensink Exp $
+ * $Id$
  */
 package groove.grammar;
 

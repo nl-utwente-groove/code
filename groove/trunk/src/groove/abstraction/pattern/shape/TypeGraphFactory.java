@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.21 2007-12-03 08:55:18 rensink Exp $
+ * $Id$
  */
 package groove.abstraction.pattern.shape;
 

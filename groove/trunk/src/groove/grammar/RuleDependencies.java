@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: RuleDependencies.java,v 1.19 2008-03-04 10:51:27 rensink Exp $
+ * $Id$
  */
 package groove.grammar;
 

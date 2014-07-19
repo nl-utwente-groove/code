@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleNameLabel.java,v 1.2 2008-01-30 09:32:37 iovka Exp $
+ * $Id$
  *
  * Angela Lozano's thesis. EMOOSE student 2002 - 2003 EMOOSE (European Master in
  * Object-Oriented & Software Engineering technologies) Vrije Universiteit

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: CTLModelChecker.java,v 1.14 2008-03-28 07:03:03 kastenberg Exp $
+ * $Id$
  */
 package groove;
 

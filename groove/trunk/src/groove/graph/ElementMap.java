@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: GenericNodeEdgeHashMap.java,v 1.3 2008-01-30 09:32:50 iovka Exp $
+ * $Id$
  */
 package groove.graph;
 

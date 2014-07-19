@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: PropertiesDialog.java,v 1.11 2008-01-30 09:33:37 iovka Exp $
+ * $Id$
  */
 package groove.gui.dialog;
 

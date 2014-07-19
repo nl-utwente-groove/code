@@ -16,11 +16,11 @@
  */
 package groove.explore.syntax;
 
-import groove.algebra.Precedence;
 import groove.control.Call;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
+import groove.util.parse.Precedence;
 
 import org.antlr.runtime.RecognitionException;
 

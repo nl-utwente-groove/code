@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformCollection.java,v 1.3 2008-01-30 09:32:12 iovka Exp $
+ * $Id$
  */
 package groove.util.collect;
 
