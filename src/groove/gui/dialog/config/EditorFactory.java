@@ -17,11 +17,11 @@
 package groove.gui.dialog.config;
 
 import groove.explore.config.AcceptorKind;
+import groove.explore.config.CountKind;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.MatchKind;
-import groove.explore.config.CountKind;
 import groove.explore.config.SettingKey;
-import groove.explore.config.StrategyKind;
+import groove.explore.config.TraverseKind;
 import groove.gui.dialog.ConfigDialog;
 
 import javax.swing.JPanel;
@@ -44,15 +44,15 @@ public class EditorFactory {
         case ACCEPTOR:
             return new ButtonEditor(getDialog(), key, "Acceptor");
         case ALGEBRA:
-            return new ButtonEditor(getDialog(), key, "Search strategy");
+            return new ButtonEditor(getDialog(), key, "Algebra for data values");
         case COUNT:
             return new ButtonEditor(getDialog(), key, "Result count");
         case MATCHER:
-            return new ButtonEditor(getDialog(), key, "Search strategy");
-        case STRATEGY:
-            return new ButtonEditor(getDialog(), key, "Search strategy");
+            return new ButtonEditor(getDialog(), key, "Match strategy");
+        case TRAVERSE:
+            return new ButtonEditor(getDialog(), key, "Traversal strategy");
         case ISO:
-            return new CheckBoxEditor(getDialog(), key, "Randomisation");
+            return new CheckBoxEditor(getDialog(), key, "Isomorphicm checking");
         case RANDOM:
             return new CheckBoxEditor(getDialog(), key, "Randomisation");
         default:
@@ -89,13 +89,11 @@ public class EditorFactory {
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
             }
             break;
-        case STRATEGY:
-            switch ((StrategyKind) kind) {
+        case TRAVERSE:
+            switch ((TraverseKind) kind) {
             case BEST_FIRST:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
                 break;
-            case LTL:
-                result = new TextFieldEditor(getDialog(), holder, key, kind);
             }
             break;
         case ALGEBRA:

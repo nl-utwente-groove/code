@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-06-22 10:36:33
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-07-18 20:39:02
 
 package groove.algebra.syntax;
 
@@ -41,7 +41,7 @@ public class ExprLexer extends Lexer {
     public static final int NAT_LIT=31;
     public static final int NEQ=32;
     public static final int NOT=33;
-    public static final int Naturalumber=34;
+    public static final int NaturalNumber=34;
     public static final int NonIntegerNumber=35;
     public static final int OPER=36;
     public static final int PAR=37;
@@ -126,10 +126,10 @@ public class ExprLexer extends Lexer {
         try {
             int _type = NAT_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:3: ( Naturalumber )
-            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:5: Naturalumber
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:3: ( NaturalNumber )
+            // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:5: NaturalNumber
             {
-            mNaturalumber(); 
+            mNaturalNumber(); 
 
 
             }
@@ -143,8 +143,8 @@ public class ExprLexer extends Lexer {
     }
     // $ANTLR end "NAT_LIT"
 
-    // $ANTLR start "Naturalumber"
-    public final void mNaturalumber() throws RecognitionException {
+    // $ANTLR start "NaturalNumber"
+    public final void mNaturalNumber() throws RecognitionException {
         try {
             // E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:170:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt2=2;
@@ -220,7 +220,7 @@ public class ExprLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "Naturalumber"
+    // $ANTLR end "NaturalNumber"
 
     // $ANTLR start "REAL_LIT"
     public final void mREAL_LIT() throws RecognitionException {

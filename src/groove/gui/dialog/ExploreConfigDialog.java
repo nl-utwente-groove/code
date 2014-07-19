@@ -94,7 +94,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         JPanel basicPanel = new JPanel();
         basicPanel.setBorder(createEmptyBorder());
         basicPanel.setLayout(new BoxLayout(basicPanel, BoxLayout.Y_AXIS));
-        basicPanel.add(getEditor(ExploreKey.STRATEGY));
+        basicPanel.add(getEditor(ExploreKey.TRAVERSE));
         basicPanel.add(getEditor(ExploreKey.RANDOM));
         basicPanel.add(getEditor(ExploreKey.ACCEPTOR));
         basicPanel.add(getEditor(ExploreKey.COUNT));
@@ -142,7 +142,6 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
                     break;
                 }
             } catch (FormatException exc) {
-                exc.printStackTrace();
                 // do nothing
             }
         }

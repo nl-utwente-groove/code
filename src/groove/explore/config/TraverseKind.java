@@ -19,11 +19,11 @@ package groove.explore.config;
 import groove.util.Parser;
 
 /**
- * Kind of exploration strategies.
+ * Kind of traversal strategies.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum StrategyKind implements SettingKey, Setting<StrategyKind,NullContent> {
+public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent> {
     /** Depth-first search. */
     DEPTH_FIRST("DFS", "Depth-first search"),
     /** Breadth-first search. */
@@ -33,9 +33,10 @@ public enum StrategyKind implements SettingKey, Setting<StrategyKind,NullContent
     /** Best-first search, driven by some heuristic. */
     BEST_FIRST("Heuristic", "Heuristic search according to a given function"),
     /** LTL model checking, driven by some property to be checked. */
-    LTL("LTL", "LTL model checking of a given formula"), ;
+    //LTL("LTL", "LTL model checking of a given formula"),
+    ;
 
-    private StrategyKind(String name, String explanation) {
+    private TraverseKind(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }
@@ -54,12 +55,12 @@ public enum StrategyKind implements SettingKey, Setting<StrategyKind,NullContent
     }
 
     @Override
-    public StrategyKind createSettting() {
+    public TraverseKind createSettting() {
         return this;
     }
 
     @Override
-    public StrategyKind createSetting(SettingContent content) throws IllegalArgumentException {
+    public TraverseKind createSetting(SettingContent content) throws IllegalArgumentException {
         if (content != null) {
             throw new IllegalArgumentException();
         }
@@ -72,7 +73,7 @@ public enum StrategyKind implements SettingKey, Setting<StrategyKind,NullContent
     }
 
     @Override
-    public StrategyKind getKind() {
+    public TraverseKind getKind() {
         return this;
     }
 

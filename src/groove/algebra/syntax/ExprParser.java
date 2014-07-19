@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-06-22 10:36:33
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-07-18 20:39:02
 
 package groove.algebra.syntax;
 import groove.grammar.model.FormatErrorSet;
@@ -15,7 +15,7 @@ import org.antlr.runtime.tree.*;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class ExprParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "AMP", "ASSIGN", "ASTERISK", "BAR", "BECOMES", "BOOL", "BSLASH", "CALL", "COLON", "COMMA", "CONST", "DOLLAR", "DONT_CARE", "DOT", "EQ", "EscapeSequence", "FALSE", "FIELD", "GE", "GT", "ID", "INT", "LCURLY", "LE", "LPAR", "LT", "MINUS", "NAT_LIT", "NEQ", "NOT", "Naturalumber", "NonIntegerNumber", "OPER", "PAR", "PERCENT", "PLUS", "QUOTE", "RCURLY", "REAL", "REAL_LIT", "RPAR", "SEMI", "SHARP", "SLASH", "STRING", "STRING_LIT", "TRUE", "WS"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "AMP", "ASSIGN", "ASTERISK", "BAR", "BECOMES", "BOOL", "BSLASH", "CALL", "COLON", "COMMA", "CONST", "DOLLAR", "DONT_CARE", "DOT", "EQ", "EscapeSequence", "FALSE", "FIELD", "GE", "GT", "ID", "INT", "LCURLY", "LE", "LPAR", "LT", "MINUS", "NAT_LIT", "NEQ", "NOT", "NaturalNumber", "NonIntegerNumber", "OPER", "PAR", "PERCENT", "PLUS", "QUOTE", "RCURLY", "REAL", "REAL_LIT", "RPAR", "SEMI", "SHARP", "SLASH", "STRING", "STRING_LIT", "TRUE", "WS"
     };
 
     public static final int EOF=-1;
@@ -49,7 +49,7 @@ public class ExprParser extends Parser {
     public static final int NAT_LIT=31;
     public static final int NEQ=32;
     public static final int NOT=33;
-    public static final int Naturalumber=34;
+    public static final int NaturalNumber=34;
     public static final int NonIntegerNumber=35;
     public static final int OPER=36;
     public static final int PAR=37;

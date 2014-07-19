@@ -159,12 +159,12 @@ TRUE : 'true';
 FALSE : 'false';
 
 NAT_LIT
-  : Naturalumber 
+  : NaturalNumber 
   ;
 
 fragment
 // can't include unary - in the constant as then parsing 1-2 would go wrong
-Naturalumber
+NaturalNumber
   : '0' 
   | '1'..'9' ('0'..'9')*     
   ;
