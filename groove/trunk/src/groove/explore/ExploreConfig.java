@@ -19,7 +19,7 @@ package groove.explore;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.Setting;
 import groove.explore.config.SettingList;
-import groove.explore.config.StrategyKind;
+import groove.explore.config.TraverseKind;
 import groove.grammar.model.FormatException;
 
 import java.util.EnumMap;
@@ -47,13 +47,13 @@ public class ExploreConfig {
     }
 
     /** Returns the currently set search strategy. */
-    public StrategyKind getStrategy() {
-        return (StrategyKind) this.pars.get(ExploreKey.STRATEGY).single();
+    public TraverseKind getStrategy() {
+        return (TraverseKind) this.pars.get(ExploreKey.TRAVERSE).single();
     }
 
     /** Sets the search strategy to a non-{@code null} value. */
-    public void setStrategy(StrategyKind order) {
-        this.pars.put(ExploreKey.STRATEGY, SettingList.single(order));
+    public void setStrategy(TraverseKind order) {
+        this.pars.put(ExploreKey.TRAVERSE, SettingList.single(order));
     }
 
     /** Returns the current setting for a given key. */

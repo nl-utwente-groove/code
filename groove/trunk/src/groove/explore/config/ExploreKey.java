@@ -25,7 +25,7 @@ import groove.util.PropertyKey;
  */
 public enum ExploreKey implements PropertyKey<SettingList> {
     /** The basic search strategy. */
-    STRATEGY("strategy", "Basic exploration strategy", StrategyKind.DEPTH_FIRST, true),
+    TRAVERSE("traverse", "State space traversal strategy", TraverseKind.DEPTH_FIRST, true),
     /** The acceptor for results. */
     RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, true),
     /** The acceptor for results. */
