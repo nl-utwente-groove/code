@@ -21,7 +21,7 @@ import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import java.util.HashMap;
 import java.util.Map;

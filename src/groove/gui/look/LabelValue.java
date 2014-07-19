@@ -17,8 +17,8 @@
 package groove.gui.look;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
-import static groove.gui.look.Line.Style.ITALIC;
-import static groove.gui.look.Line.Style.UNDERLINE;
+import static groove.util.line.Line.Style.ITALIC;
+import static groove.util.line.Line.Style.UNDERLINE;
 import groove.algebra.SignatureKind;
 import groove.control.CtrlVar;
 import groove.control.Position;
@@ -51,7 +51,6 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
-import groove.gui.look.Line.Style;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
 import groove.io.Util;
@@ -60,6 +59,8 @@ import groove.lts.GraphTransition;
 import groove.lts.StartGraphState;
 import groove.lts.Status.Flag;
 import groove.util.Colors;
+import groove.util.line.Line;
+import groove.util.line.Line.Style;
 
 import java.util.EnumMap;
 import java.util.List;

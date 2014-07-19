@@ -24,9 +24,9 @@ import groove.grammar.rule.RuleLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
+import groove.util.line.Line;
+import groove.util.line.Line.Style;
 import groove.util.parse.StringHandler;
 
 import java.util.EnumMap;

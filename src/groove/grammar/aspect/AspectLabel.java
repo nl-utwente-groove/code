@@ -22,9 +22,9 @@ import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.gui.look.Line;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
+import groove.util.line.Line;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

@@ -27,11 +27,11 @@ import groove.grammar.host.ValueNode;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.gui.look.Line;
-import groove.gui.look.Line.Style;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
 import groove.util.ThreeValued;
+import groove.util.line.Line;
+import groove.util.line.Line.Style;
 
 import java.util.Arrays;
 import java.util.List;

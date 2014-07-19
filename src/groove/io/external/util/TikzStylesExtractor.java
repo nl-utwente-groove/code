@@ -79,13 +79,13 @@ import static groove.gui.look.VisualKey.TEXT_SIZE;
 import static groove.gui.look.VisualKey.VISIBLE;
 import groove.gui.jgraph.JAttr;
 import groove.gui.look.EdgeEnd;
-import groove.gui.look.Line.ColorType;
 import groove.gui.look.Look;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.util.Duo;
 import groove.util.NodeShape;
+import groove.util.line.Line.ColorType;
 
 import java.awt.Color;
 import java.util.ArrayList;

@@ -16,9 +16,9 @@
  */
 package groove.gui.layout;
 
-import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
+import groove.util.line.LineStyle;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;

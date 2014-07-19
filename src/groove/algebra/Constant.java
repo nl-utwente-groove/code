@@ -18,8 +18,8 @@ package groove.algebra;
 
 import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
-import groove.gui.look.Line;
 import groove.util.Keywords;
+import groove.util.line.Line;
 import groove.util.parse.StringHandler;
 
 import java.math.BigDecimal;

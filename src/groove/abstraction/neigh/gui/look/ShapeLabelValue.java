@@ -27,8 +27,8 @@ import groove.graph.Edge;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JEdge;
 import groove.gui.look.LabelValue;
-import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
+import groove.util.line.Line;
 
 /**
  * Label value refresher for neighbourhood shapes.

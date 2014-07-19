@@ -19,7 +19,7 @@ package groove.algebra.syntax;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 import org.antlr.runtime.RecognitionException;
 

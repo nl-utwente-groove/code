@@ -16,12 +16,12 @@
  */
 package groove.io.external.util;
 
-import groove.gui.look.Line.ColorType;
-import groove.gui.look.Line.Style;
-import groove.gui.look.LineFormat;
 import groove.io.Util;
 import groove.util.Duo;
 import groove.util.Pair;
+import groove.util.line.Line.ColorType;
+import groove.util.line.Line.Style;
+import groove.util.line.LineFormat;
 
 import java.awt.Color;
 import java.util.EnumMap;
@@ -74,7 +74,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     }
 
     @Override
-    protected TeXBuilder createResult() {
+    public TeXBuilder createResult() {
         return new TeXBuilder();
     }
 

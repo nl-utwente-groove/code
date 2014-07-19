@@ -32,11 +32,11 @@ import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.display.DisplayKind;
-import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.gui.menu.MyJMenu;
 import groove.gui.tree.RuleLevelTree;
+import groove.util.line.LineStyle;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;

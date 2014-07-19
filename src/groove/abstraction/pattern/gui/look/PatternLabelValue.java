@@ -27,8 +27,8 @@ import groove.graph.Graph;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JVertex;
 import groove.gui.look.LabelValue;
-import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
+import groove.util.line.Line;
 
 /**
  * Label value refresher for pattern graphs.

@@ -16,7 +16,7 @@
  */
 package groove.graph;
 
-import groove.gui.look.Line;
+import groove.util.line.Line;
 
 /**
  * Provides a partial implementation of the Label interface, consisting only of

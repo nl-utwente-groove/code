@@ -48,12 +48,12 @@ import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.plain.PlainLabel;
-import groove.gui.look.Line;
-import groove.gui.look.Line.ColorType;
-import groove.gui.look.Line.Style;
 import groove.gui.look.Values;
 import groove.io.Util;
 import groove.util.Fixable;
+import groove.util.line.Line;
+import groove.util.line.Line.ColorType;
+import groove.util.line.Line.Style;
 import groove.util.parse.StringHandler;
 
 import java.util.EnumSet;

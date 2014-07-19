@@ -33,8 +33,8 @@ import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.gui.look.Line;
 import groove.transform.RuleApplication;
+import groove.util.line.Line;
 
 import java.util.ArrayList;
 import java.util.Arrays;
