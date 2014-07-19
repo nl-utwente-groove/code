@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: BuchiGraphState.java,v 1.3 2008/03/20 13:28:38 kastenberg Exp $
+ * $Id$
  */
 package groove.verify;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: AutomatonCalculator.java,v 1.4 2008-01-30 09:32:28 iovka Exp $
+ * $Id$
  */
 package groove.automaton;
 

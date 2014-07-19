@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: CAPanel.java,v 1.18 2008-03-18 12:18:19 fladder Exp $
+ * $Id$
  */
 package groove.gui.display;
 

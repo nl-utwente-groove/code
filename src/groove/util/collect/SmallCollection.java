@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: SmallCollection.java,v 1.2 2008-01-30 09:32:02 iovka Exp $
+ * $Id$
  */
 package groove.util.collect;
 

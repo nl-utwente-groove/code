@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: CertificateStrategy.java,v 1.5 2007-09-19 09:01:05 rensink Exp $
+ * $Id$
  */
 package groove.graph.iso;
 

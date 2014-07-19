@@ -11,7 +11,7 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
-/* $Id: Dispenser.java,v 1.2 2008-01-30 09:32:14 iovka Exp $ */
+/* $Id$ */
 package groove.util;
 
 import java.util.NoSuchElementException;

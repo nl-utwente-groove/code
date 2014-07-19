@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: DefaultLabel.java,v 1.14 2008-01-30 09:32:52 iovka Exp $
+ * $Id$
  */
 package groove.graph.plain;
 

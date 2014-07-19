@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: AspectJModel.java,v 1.35 2008-03-13 14:40:32 rensink Exp $
+ * $Id$
  */
 package groove.gui.jgraph;
 

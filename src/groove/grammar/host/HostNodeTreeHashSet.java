@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: NodeSet.java,v 1.9 2008-01-30 09:32:57 iovka Exp $
+ * $Id$
  */
 package groove.grammar.host;
 

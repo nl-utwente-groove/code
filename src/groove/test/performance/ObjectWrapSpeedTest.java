@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: ObjectWrapSpeedTest.java,v 1.2 2008-01-30 09:33:07 iovka Exp $
+ * $Id$
  */
 package groove.test.performance;
 

@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
+/* $Id$ */
 package groove.match.plan;
 
 import groove.automaton.RegAut;

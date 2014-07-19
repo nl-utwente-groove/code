@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: AspectualGraphView.java,v 1.18 2008-01-30 09:33:25 iovka Exp $
+ * $Id$
  */
 package groove.grammar.model;
 

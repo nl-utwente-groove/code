@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: AspectualRuleView.java,v 1.40 2008-03-04 10:10:15 fladder Exp $
+ * $Id$
  */
 
 package groove.grammar.model;

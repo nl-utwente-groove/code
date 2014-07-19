@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: GraphReporter.java,v 1.2 2007-11-30 08:29:28 rensink Exp $
+ * $Id$
  */
 package groove.util;
 

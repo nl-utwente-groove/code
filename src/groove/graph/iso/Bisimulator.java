@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: Bisimulator.java,v 1.16 2007-11-02 08:42:38 rensink Exp $
+ * $Id$
  */
 package groove.graph.iso;
 

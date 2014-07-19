@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: BehaviourOption.java,v 1.4 2008-03-05 06:07:23 rensink Exp $
+ * $Id$
  */
 package groove.gui;
 

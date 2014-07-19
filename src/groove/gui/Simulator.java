@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: Simulator.java,v 1.92 2008/03/18 15:34:40 iovka Exp $
+ * $Id$
  */
 package groove.gui;
 

@@ -1,4 +1,4 @@
-/* $Id: StartGraphState.java,v 1.7 2008-01-30 09:32:19 iovka Exp $ */
+/* $Id$ */
 package groove.lts;
 
 import groove.control.instance.Automaton;

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: RuleJTree.java,v 1.33 2008-03-18 12:54:42 iovka Exp $
+ * $Id$
  */
 package groove.gui.tree;
 

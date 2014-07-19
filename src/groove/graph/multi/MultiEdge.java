@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: DefaultEdge.java,v 1.15 2008-02-12 15:15:31 fladder Exp $
+ * $Id$
  */
 package groove.graph.multi;
 

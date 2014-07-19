@@ -17,11 +17,11 @@
 package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
-import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
+import groove.util.parse.Precedence;
 
 import java.util.Collections;
 import java.util.Map;

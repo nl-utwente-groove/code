@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: Edge2SearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $
+ * $Id$
  */
 package groove.match.plan;
 

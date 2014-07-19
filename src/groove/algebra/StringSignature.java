@@ -16,9 +16,9 @@
  */
 package groove.algebra;
 
-import static groove.algebra.Precedence.ADD;
-import static groove.algebra.Precedence.COMPARE;
-import static groove.algebra.Precedence.EQUAL;
+import static groove.util.parse.Precedence.ADD;
+import static groove.util.parse.Precedence.COMPARE;
+import static groove.util.parse.Precedence.EQUAL;
 import groove.annotation.InfixSymbol;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;

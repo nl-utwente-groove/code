@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultApplication.java,v 1.10 2008-02-06 17:04:38 rensink Exp $
+ * $Id$
  */
 package groove.transform;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: GraphNodeSizeBoundary.java,v 1.2 2008-02-20 08:37:54 kastenberg Exp $
+ * $Id$
  */
 package groove.explore.strategy;
 

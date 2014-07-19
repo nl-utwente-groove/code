@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExtensionFilter.java,v 1.10 2008-03-11 15:46:59 kastenberg Exp $
+ * $Id$
  */
 package groove.io;
 

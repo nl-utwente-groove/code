@@ -1,10 +1,10 @@
-package groove.algebra;
+package groove.util.parse;
 
-import static groove.algebra.Precedence.Direction.LEFT;
-import static groove.algebra.Precedence.Direction.NEITHER;
-import static groove.algebra.Precedence.Direction.RIGHT;
-import static groove.algebra.Precedence.Placement.INFIX;
-import static groove.algebra.Precedence.Placement.PREFIX;
+import static groove.util.parse.Precedence.Direction.LEFT;
+import static groove.util.parse.Precedence.Direction.NEITHER;
+import static groove.util.parse.Precedence.Direction.RIGHT;
+import static groove.util.parse.Precedence.Placement.INFIX;
+import static groove.util.parse.Precedence.Placement.PREFIX;
 
 /** 
  * Operator precedence values, from low to high.

@@ -16,9 +16,9 @@
  */
 package groove.algebra.syntax;
 
-import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.util.line.Line;
+import groove.util.parse.Precedence;
 
 import java.util.Collections;
 import java.util.Map;

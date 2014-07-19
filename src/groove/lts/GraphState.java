@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: GraphState.java,v 1.11 2008-02-22 13:02:44 rensink Exp $
+ * $Id$
  */
 package groove.lts;
 

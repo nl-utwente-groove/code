@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: AbstractGraph.java,v 1.25 2008-02-19 10:35:31 fladder Exp $
+ * $Id$
  */
 package groove.graph;
 

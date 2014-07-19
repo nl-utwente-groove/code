@@ -16,7 +16,7 @@
  */
 package groove.annotation;
 
-import groove.algebra.Precedence;
+import groove.util.parse.Precedence;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

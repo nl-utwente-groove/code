@@ -20,6 +20,7 @@ import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
 import groove.util.Keywords;
 import groove.util.line.Line;
+import groove.util.parse.Precedence;
 import groove.util.parse.StringHandler;
 
 import java.math.BigDecimal;

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: FormatException.java,v 1.5 2008-01-30 09:33:26 iovka Exp $
+ * $Id$
  */
 package groove.grammar.model;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: StateGenerator.java,v 1.32 2008/03/04 14:48:00 kastenberg Exp $
+ * $Id$
  */
 package groove.lts;
 

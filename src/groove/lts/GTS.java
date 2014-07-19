@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: GTS.java,v 1.39 2008-03-18 10:58:51 fladder Exp $
+ * $Id$
  */
 package groove.lts;
 

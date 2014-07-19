@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: ValueNode.java,v 1.10 2008-02-12 15:15:32 fladder Exp $
+ * $Id$
  */
 package groove.grammar.rule;
 

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: CTLStarFormula.java,v 1.11 2008-02-28 05:58:22 kastenberg Exp $
+ * $Id$
  */
 
 package groove.verify;

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: EditorDialog.java,v 1.15 2008-01-30 09:33:35 iovka Exp $
+ * $Id$
  */
 package groove.gui.display;
 

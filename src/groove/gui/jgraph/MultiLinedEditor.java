@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: MultiLinedEditor.java,v 1.6 2008-01-30 09:33:13 iovka Exp $
+ * $Id$
  */
 package groove.gui.jgraph;
 

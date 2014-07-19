@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: JGraphPanel.java,v 1.20 2008-01-30 09:33:36 iovka Exp $
+ * $Id$
  */
 package groove.gui.display;
 

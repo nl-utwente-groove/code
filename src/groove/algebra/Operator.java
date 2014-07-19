@@ -7,6 +7,7 @@ import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.ToolTipHeader;
 import groove.util.Groove;
+import groove.util.parse.Precedence;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

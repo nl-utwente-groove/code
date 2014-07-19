@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: AbstractGraphTransitionStub.java,v 1.11 2008-01-30 09:32:20 iovka Exp $
+ * $Id$
  */
 package groove.lts;
 
