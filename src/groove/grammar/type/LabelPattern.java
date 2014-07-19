@@ -24,7 +24,7 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
 import groove.util.Pair;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -186,7 +186,7 @@ public class LabelPattern {
         Pair<String,List<String>> result = parser.parse(text);
         String resultText = result.one();
         List<String> resultArgs = result.two();
-        if (resultText.isEmpty() || resultText.charAt(0) != ExprParser.PLACEHOLDER
+        if (resultText.isEmpty() || resultText.charAt(0) != StringHandler.PLACEHOLDER
             || resultArgs.size() != 1) {
             throw new FormatException("Incorrect label pattern %s", text);
         }
@@ -218,5 +218,5 @@ public class LabelPattern {
         return result;
     }
 
-    private static ExprParser parser = new ExprParser("\"");
+    private static StringHandler parser = new StringHandler("\"");
 }

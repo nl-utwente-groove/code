@@ -18,7 +18,7 @@ package groove.grammar;
 
 import groove.grammar.Action.Role;
 import groove.grammar.model.FormatException;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
 
 import java.util.Map;
@@ -135,7 +135,7 @@ public enum CheckPolicy {
                     String name = pair.substring(0, pos);
                     String value = pair.substring(pos + 1, pair.length());
                     CheckPolicy policy = singleParser.parse(value);
-                    if (!ExprParser.isIdentifier(name) || policy == null) {
+                    if (!StringHandler.isIdentifier(name) || policy == null) {
                         result = null;
                         break;
                     }

@@ -17,12 +17,12 @@
 package groove.automaton;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
-import static groove.util.parse.ExprParser.DOUBLE_QUOTE_CHAR;
-import static groove.util.parse.ExprParser.LANGLE_CHAR;
-import static groove.util.parse.ExprParser.LPAR_CHAR;
-import static groove.util.parse.ExprParser.PLACEHOLDER;
-import static groove.util.parse.ExprParser.RPAR_CHAR;
-import static groove.util.parse.ExprParser.SINGLE_QUOTE_CHAR;
+import static groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
+import static groove.util.parse.StringHandler.LANGLE_CHAR;
+import static groove.util.parse.StringHandler.LPAR_CHAR;
+import static groove.util.parse.StringHandler.PLACEHOLDER;
+import static groove.util.parse.StringHandler.RPAR_CHAR;
+import static groove.util.parse.StringHandler.SINGLE_QUOTE_CHAR;
 import groove.annotation.Help;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
@@ -39,7 +39,7 @@ import groove.gui.look.Line;
 import groove.gui.look.Line.Style;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -490,7 +490,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * an exception.
      * @param expr the expression to be parsed; this is guaranteed to have
      *        correct bracketing and quoting (according to
-     *        {@link ExprParser#parseExpr(String)}).
+     *        {@link StringHandler#parseExpr(String)}).
      * @return a valid regular expression, or <tt>null</tt> if <tt>expr</tt>
      *         does not appear to be a regular expression of the kind
      *         implemented by this class
@@ -504,7 +504,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * rules of regular expressions. (If not, then it should be single-quoted.)
      * Atoms may be preceded by a label kind prefix.
      * Throws an exception if the text is empty or contains any
-     * characters not allowed by {@link ExprParser#isIdentifierChar(char)}.
+     * characters not allowed by {@link StringHandler#isIdentifierChar(char)}.
      * @param text the text to be tested
      * @throws FormatException if the text contains a special character
      * @see #isAtom(String)
@@ -517,7 +517,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             case DOUBLE_QUOTE_CHAR:
             case LANGLE_CHAR:
                 // quoted/bracketed atoms
-                Pair<String,List<String>> parseResult = ExprParser.parseExpr(text);
+                Pair<String,List<String>> parseResult = StringHandler.parseExpr(text);
                 if (parseResult.one().length() != 1) {
                     String error;
                     if (text.charAt(0) == DOUBLE_QUOTE_CHAR) {
@@ -628,7 +628,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     static public RegExpr parse(String expr) throws FormatException {
         // first test if the quoting and bracketing is correct
-        ExprParser.parseExpr(expr);
+        StringHandler.parseExpr(expr);
         // try to parse the expression using each of the available operators in
         // turn
         for (RegExpr prototype : prototypes) {
@@ -851,7 +851,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * The characters allowed in a regular expression atom, apart from letters
      * and digits.
-     * @see ExprParser#isIdentifier(String)
+     * @see StringHandler#isIdentifier(String)
      */
     static public final String ATOM_CHARS = "_$-";
 
@@ -972,7 +972,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
             String[] operands =
-                ExprParser.splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
+                StringHandler.splitExpr(expr, getOperator(), StringHandler.INFIX_POSITION);
             if (operands.length < 2) {
                 return null;
             }
@@ -1164,7 +1164,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
             String[] operands =
-                ExprParser.splitExpr(expr, getOperator(), ExprParser.POSTFIX_POSITION);
+                StringHandler.splitExpr(expr, getOperator(), StringHandler.POSTFIX_POSITION);
             if (operands == null) {
                 return null;
             }
@@ -1274,7 +1274,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
             String[] operands =
-                ExprParser.splitExpr(expr, getOperator(), ExprParser.PREFIX_POSITION);
+                StringHandler.splitExpr(expr, getOperator(), StringHandler.PREFIX_POSITION);
             if (operands == null) {
                 return null;
             }
@@ -1629,21 +1629,21 @@ abstract public class RegExpr { // implements VarSetSupport {
             String parameter = null;
             if (!text.isEmpty()) {
                 // decompose text into identifier and label list
-                Pair<String,List<String>> operand = ExprParser.parseExpr(text);
+                Pair<String,List<String>> operand = StringHandler.parseExpr(text);
                 int subStringCount = operand.two().size();
                 identifier = operand.one();
                 if (subStringCount > 1) {
                     throw error;
                 } else if (subStringCount == 1) {
                     parameter = operand.two().iterator().next();
-                    if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
+                    if (identifier.indexOf(StringHandler.PLACEHOLDER) != identifier.length() - 1) {
                         throw error;
                     }
                     identifier = identifier.substring(0, identifier.length() - 1);
                 }
                 if (identifier.isEmpty()) {
                     identifier = null;
-                } else if (!ExprParser.isIdentifier(identifier)) {
+                } else if (!StringHandler.isIdentifier(identifier)) {
                     throw new FormatException("Invalid wildcard identifier '%s'", text);
                 }
             }
@@ -1664,7 +1664,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         private Pair<List<String>,Boolean> getConstraint(String parameter) throws FormatException {
             String constraintList =
-                ExprParser.toTrimmed(parameter, TypeGuard.OPEN, TypeGuard.CLOSE);
+                StringHandler.toTrimmed(parameter, TypeGuard.OPEN, TypeGuard.CLOSE);
             if (constraintList == null) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
@@ -1673,8 +1673,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                 constraintList = constraintList.substring(1);
             }
             String[] constraintParts =
-                ExprParser.splitExpr(constraintList, "" + TypeGuard.SEPARATOR,
-                    ExprParser.INFIX_POSITION);
+                StringHandler.splitExpr(constraintList, "" + TypeGuard.SEPARATOR,
+                    StringHandler.INFIX_POSITION);
             if (constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
@@ -1795,7 +1795,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * First tries the super implementation, but if that does not work,
          * tries to parse <code>expr</code> as a prefix expression where the
          * operand is an identifier (according to
-         * {@link ExprParser#isIdentifier(String)}).
+         * {@link StringHandler#isIdentifier(String)}).
          */
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
@@ -1948,7 +1948,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return text();
             } else {
                 // the atom text looks like something else if we parse it as is
-                return ExprParser.toQuoted(text(), SINGLE_QUOTE_CHAR);
+                return StringHandler.toQuoted(text(), SINGLE_QUOTE_CHAR);
             }
         }
 
@@ -1989,14 +1989,14 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return newInstance(expr);
             } else {
                 // the only hope is that the expression is quoted or bracketed
-                Pair<String,List<String>> parseResult = ExprParser.parseExpr(expr);
+                Pair<String,List<String>> parseResult = StringHandler.parseExpr(expr);
                 if (parseResult.one().length() == 1 && parseResult.one().charAt(0) == PLACEHOLDER) {
                     String parsedExpr = parseResult.two().get(0);
                     switch (parsedExpr.charAt(0)) {
                     case LPAR_CHAR:
                         return parse(parsedExpr.substring(1, expr.length() - 1));
                     case SINGLE_QUOTE_CHAR:
-                        return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
+                        return newInstance(StringHandler.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
                     default:
                         return null;
                     }

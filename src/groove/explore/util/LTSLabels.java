@@ -19,7 +19,7 @@ package groove.explore.util;
 import groove.explore.Generator;
 import groove.grammar.model.FormatException;
 import groove.util.Pair;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -289,8 +289,8 @@ public class LTSLabels {
     /** Flags object with all labels set to default. */
     public static final LTSLabels DEFAULT = new LTSLabels(Flag.values());
 
-    private static final char SINGLE_QUOTE = ExprParser.SINGLE_QUOTE_CHAR;
-    private static final ExprParser FLAG_PARSER = new ExprParser(SINGLE_QUOTE, "" + SINGLE_QUOTE);
+    private static final char SINGLE_QUOTE = StringHandler.SINGLE_QUOTE_CHAR;
+    private static final StringHandler FLAG_PARSER = new StringHandler(SINGLE_QUOTE, "" + SINGLE_QUOTE);
 
     private static final Map<Character,Flag> flagMap = new HashMap<Character,LTSLabels.Flag>();
 

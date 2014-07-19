@@ -35,14 +35,14 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ExprParser {
+public class StringHandler {
 
     /**
      * Constructs a parser based on the standard quoting and bracketing
      * settings. The standard settings consist of double quotes and round,
      * curly, square and angle brackets.
      */
-    public ExprParser() {
+    public StringHandler() {
         this(DEFAULT_BRACKETS);
     }
 
@@ -53,7 +53,7 @@ public class ExprParser {
      * @param brackets a sequence of two-element strings,
      * consisting of opening and closing brackets
      */
-    public ExprParser(String quoteChars, String... brackets) {
+    public StringHandler(String quoteChars, String... brackets) {
         this(PLACEHOLDER, quoteChars.toCharArray(), toCharArray(brackets));
     }
 
@@ -65,7 +65,7 @@ public class ExprParser {
      * @param brackets a sequence of two-element strings,
      * consisting of opening and closing brackets
      */
-    public ExprParser(char placeholder, String quoteChars, String... brackets) {
+    public StringHandler(char placeholder, String quoteChars, String... brackets) {
         this(placeholder, quoteChars.toCharArray(), toCharArray(brackets));
     }
 
@@ -86,7 +86,7 @@ public class ExprParser {
      * @param brackets a sequence of two-element character arrays,
      * containing opening and closing brackets
      */
-    public ExprParser(char[]... brackets) {
+    public StringHandler(char[]... brackets) {
         this(PLACEHOLDER, DEFAULT_QUOTE_CHARS, brackets);
     }
 
@@ -97,7 +97,7 @@ public class ExprParser {
      * @param brackets a sequence of two-element character arrays,
      * containing opening and closing brackets
      */
-    public ExprParser(char placeholder, char[] quoteChars, char[]... brackets) {
+    public StringHandler(char placeholder, char[] quoteChars, char[]... brackets) {
         for (char element : quoteChars) {
             this.quoteChars[element] = true;
         }
@@ -402,7 +402,7 @@ public class ExprParser {
      */
     static public Pair<String,List<String>> parseExpr(String expr) throws FormatException {
 
-        ExprParser p = ExprParser.prototype;
+        StringHandler p = StringHandler.prototype;
 
         return p.parse(expr);
     }
@@ -500,7 +500,7 @@ public class ExprParser {
      */
     static public String toTrimmed(String expr, char open, char close) throws FormatException {
         Pair<String,List<String>> parseResult =
-            new ExprParser(new char[] {open, close}).parse(expr);
+            new StringHandler(new char[] {open, close}).parse(expr);
         if (parseResult.one().length() != 1 || parseResult.two().get(0).charAt(0) != open) {
             throw new FormatException("Expression %s not surrounded by bracket pair %c%c", expr,
                 open, close);
@@ -884,18 +884,18 @@ public class ExprParser {
     /**
      * The characters allowed in a wildcard identifier, apart from letters and
      * digits.
-     * @see ExprParser#isIdentifier(String)
+     * @see StringHandler#isIdentifier(String)
      */
     static public final String IDENTIFIER_CHARS = "_$";
     /**
      * The characters allowed at the start of a wildcard identifier, apart from
      * letters.
-     * @see ExprParser#isIdentifier(String)
+     * @see StringHandler#isIdentifier(String)
      */
     static public final String IDENTIFIER_START_CHARS = "_";
 
     /** Prototype parser, used to evaluate the static methods on. */
-    static private final ExprParser prototype = new ExprParser();
+    static private final StringHandler prototype = new StringHandler();
 
     /** Class wrapping a fixed length char array
      * with functionality to add chars and convert the result into a string.

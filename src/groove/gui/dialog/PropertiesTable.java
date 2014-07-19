@@ -25,7 +25,7 @@ import groove.io.HTMLConverter.HTMLTag;
 import groove.util.Properties.CheckerMap;
 import groove.util.PropertyKey;
 import groove.util.collect.ListComparator;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
 
 import java.awt.Color;
@@ -354,7 +354,7 @@ public class PropertiesTable extends JTable {
          */
         private boolean isEditedValueCorrect(String value) {
             if (this.editingValueForKey == null) {
-                return ExprParser.isIdentifier(value)
+                return StringHandler.isIdentifier(value)
                     && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
                 PropertyKey<?> key = getKey(this.editingValueForKey);

@@ -408,7 +408,7 @@ abstract public interface Parser<T> {
         }
 
         /** String parser recognising no quotes or brackets. */
-        private static ExprParser exprParser = new ExprParser("");
+        private static StringHandler exprParser = new StringHandler("");
     }
 
     /**

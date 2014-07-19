@@ -21,7 +21,7 @@ import groove.grammar.model.ResourceKind;
 import groove.io.Util;
 import groove.io.store.EditType;
 import groove.util.Groove;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -896,14 +896,14 @@ public class Options implements Cloneable {
         String[] result = new String[0];
         String storedValue = userPrefs.get(key, "");
         try {
-            result = ExprParser.splitExpr(storedValue, ",");
+            result = StringHandler.splitExpr(storedValue, ",");
         } catch (FormatException e) {
             assert false : String.format("Format error in user preference string %s: %s",
                 storedValue, e.getMessage());
         }
         for (int i = 0; i < result.length; i++) {
             try {
-                String newValue = ExprParser.toUnquoted(result[i], '"');
+                String newValue = StringHandler.toUnquoted(result[i], '"');
                 assert result[i] != null : String.format(
                     "User preference string %s is not correctly quoted", result[i]);
                 result[i] = newValue;
@@ -925,7 +925,7 @@ public class Options implements Cloneable {
             if (result.length() > 0) {
                 result.append(",");
             }
-            value = ExprParser.toQuoted(value, '"');
+            value = StringHandler.toQuoted(value, '"');
             result.append(value);
         }
         userPrefs.put(key, result.toString());

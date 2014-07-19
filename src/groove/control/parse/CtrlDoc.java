@@ -22,7 +22,7 @@ import groove.grammar.model.FormatException;
 import groove.io.FileType;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -237,7 +237,7 @@ public class CtrlDoc {
             ATEToken token = tokens.get(i);
             if (token.type == ATESyntaxLexer.TOKEN_SINGLE_QUOTE_STRING) {
                 try {
-                    result = ExprParser.toUnquoted(token.getAttribute(), '\'');
+                    result = StringHandler.toUnquoted(token.getAttribute(), '\'');
                 } catch (FormatException e) {
                     // do nothing
                 }

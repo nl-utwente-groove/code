@@ -22,7 +22,7 @@ package groove.grammar;
 
 import groove.grammar.model.FormatException;
 import groove.util.Groove;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +63,7 @@ public class QualName implements Comparable<QualName> {
      * @require <tt>name != null</tt>
      */
     public QualName(String name) throws FormatException {
-        this(Arrays.asList(ExprParser.splitExpr(name, SEPARATOR)));
+        this(Arrays.asList(StringHandler.splitExpr(name, SEPARATOR)));
     }
 
     /**

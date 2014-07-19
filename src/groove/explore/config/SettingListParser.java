@@ -18,7 +18,7 @@ package groove.explore.config;
 
 import groove.grammar.model.FormatException;
 import groove.io.HTMLConverter;
-import groove.util.parse.ExprParser;
+import groove.util.parse.StringHandler;
 import groove.util.parse.Parser;
 
 import java.util.HashMap;
@@ -251,5 +251,5 @@ public class SettingListParser implements Parser<SettingList> {
         return getDefaultValue().equals(value);
     }
 
-    private static final ExprParser exprParser = new ExprParser("\"", "()");
+    private static final StringHandler exprParser = new StringHandler("\"", "()");
 }
