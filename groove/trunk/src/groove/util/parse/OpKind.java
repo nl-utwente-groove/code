@@ -1,17 +1,17 @@
 package groove.util.parse;
 
-import static groove.util.parse.Precedence.Direction.LEFT;
-import static groove.util.parse.Precedence.Direction.NEITHER;
-import static groove.util.parse.Precedence.Direction.RIGHT;
-import static groove.util.parse.Precedence.Placement.INFIX;
-import static groove.util.parse.Precedence.Placement.PREFIX;
+import static groove.util.parse.OpKind.Direction.LEFT;
+import static groove.util.parse.OpKind.Direction.NEITHER;
+import static groove.util.parse.OpKind.Direction.RIGHT;
+import static groove.util.parse.OpKind.Placement.INFIX;
+import static groove.util.parse.OpKind.Placement.PREFIX;
 
 /**
  * Operator kind, consisting of an implicit precedence ordering,
  * a {@link Placement} type, and (for infix operators) an associativity {@link Direction}.
  * The precedence mimics the Java operator precedence.
  */
-public enum Precedence {
+public enum OpKind {
     /** Dummy value used for lowest-level context of an expression. */
     NONE(NEITHER),
     /** Disjunction. */
@@ -45,16 +45,16 @@ public enum Precedence {
     /** Atomic expressions: variable names and constants. */
     ATOM(NEITHER), ;
 
-    private Precedence(Placement place, Direction direction) {
+    private OpKind(Placement place, Direction direction) {
         this.direction = direction;
         this.place = place;
     }
 
-    private Precedence(Direction direction) {
+    private OpKind(Direction direction) {
         this(INFIX, direction);
     }
 
-    private Precedence(Placement placement) {
+    private OpKind(Placement placement) {
         this(placement, placement == PREFIX ? RIGHT : LEFT);
     }
 
@@ -69,7 +69,7 @@ public enum Precedence {
     }
 
     /** Returns the next higher precedence, or {@code null} if this is the highest value. */
-    public Precedence increase() {
+    public OpKind increase() {
         int nextIx = ordinal() + 1;
         return nextIx >= values().length ? null : values()[nextIx];
     }

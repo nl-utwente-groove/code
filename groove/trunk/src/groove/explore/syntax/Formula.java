@@ -20,7 +20,7 @@ import groove.control.Call;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
-import groove.util.parse.Precedence;
+import groove.util.parse.OpKind;
 
 import org.antlr.runtime.RecognitionException;
 
@@ -54,14 +54,14 @@ public abstract class Formula {
      * the display string does not contain type prefixes.
      */
     final public Line toLine() {
-        return toLine(Precedence.NONE);
+        return toLine(OpKind.NONE);
     }
 
     /**
      * Builds the display string for this expression in the
      * result parameter.
      */
-    abstract protected Line toLine(Precedence context);
+    abstract protected Line toLine(OpKind context);
 
     /**
      * Returns a string representation from which
@@ -92,10 +92,10 @@ public abstract class Formula {
     private String parseString;
 
     /** Returns the precedence of the top-level operator of this expression,
-     * or {@link Precedence#ATOM} if this is not a call expression.
+     * or {@link OpKind#ATOM} if this is not a call expression.
      */
-    public Precedence getPrecedence() {
-        return Precedence.ATOM;
+    public OpKind getPrecedence() {
+        return OpKind.ATOM;
     }
 
     /**
@@ -166,7 +166,7 @@ public abstract class Formula {
         }
 
         @Override
-        protected Line toLine(Precedence context) {
+        protected Line toLine(OpKind context) {
             return Line.atom(this.call.toString());
         }
 

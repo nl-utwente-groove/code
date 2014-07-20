@@ -16,10 +16,10 @@
  */
 package groove.algebra;
 
-import static groove.util.parse.Precedence.AND;
-import static groove.util.parse.Precedence.EQUAL;
-import static groove.util.parse.Precedence.NOT;
-import static groove.util.parse.Precedence.OR;
+import static groove.util.parse.OpKind.AND;
+import static groove.util.parse.OpKind.EQUAL;
+import static groove.util.parse.OpKind.NOT;
+import static groove.util.parse.OpKind.OR;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;

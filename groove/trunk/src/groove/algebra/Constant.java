@@ -20,7 +20,7 @@ import groove.algebra.syntax.Expression;
 import groove.util.Keywords;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
-import groove.util.parse.Precedence;
+import groove.util.parse.OpKind;
 import groove.util.parse.StringHandler;
 
 import java.math.BigDecimal;
@@ -127,7 +127,7 @@ public class Constant extends Expression {
     }
 
     @Override
-    protected Line toLine(Precedence context) {
+    protected Line toLine(OpKind context) {
         return Line.atom(this.symbol);
     }
 

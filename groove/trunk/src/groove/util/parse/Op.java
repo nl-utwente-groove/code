@@ -29,7 +29,7 @@ public interface Op {
     public String getSymbol();
 
     /** Returns the operator precedence. */
-    public Precedence getPrecedence();
+    public OpKind getKind();
 
     /** Returns the expected number of arguments of the operator. */
     public int getArity();
