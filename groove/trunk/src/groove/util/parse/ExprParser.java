@@ -34,8 +34,11 @@ import groove.util.parse.Precedence.Direction;
 import groove.util.parse.Precedence.Placement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * General expression parser, parameterised with the type of operators to be recognised.
@@ -45,28 +48,28 @@ import java.util.List;
 public class ExprParser<O extends Op> implements Parser<Expr<O>> {
     /**
      * Constructs a parser for a given operator type.
-     * @param constOp operator instance to be used for parser constants;
+     * @param atomOp operator instance to be used for parser constants;
      * should be parameterless and without a symbol
      * @param description description of the parsed expression values.
      */
-    public ExprParser(O constOp, String description) {
-        assert constOp.getArity() == 0 && !constOp.hasSymbol();
-        this.errorOp = constOp;
+    public ExprParser(O atomOp, String description) {
+        assert atomOp.getArity() == 0 && !atomOp.hasSymbol();
+        this.atomOp = atomOp;
         this.description = description;
     }
 
     /** Returns the type of expression operators that this parser handles. */
     @SuppressWarnings("unchecked")
     public Class<? extends O> getOpType() {
-        return (Class<? extends O>) this.errorOp.getClass();
+        return (Class<? extends O>) this.atomOp.getClass();
     }
 
     /** Returns the error operator used by this parser. */
-    public O getErrorOp() {
-        return this.errorOp;
+    public O getAtomOp() {
+        return this.atomOp;
     }
 
-    private final O errorOp;
+    private final O atomOp;
 
     @Override
     public String getDescription() {
@@ -126,34 +129,50 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         throw new UnsupportedOperationException();
     }
 
-    SymbolMap getSymbolMap() {
-        if (this.symbolMap == null) {
-            List<Token> tokens = new ArrayList<Token>();
-            for (O op : getOpType().getEnumConstants()) {
-                if (op.hasSymbol()) {
-                    tokens.add(new Token(TokenType.OP, op.getSymbol(), op));
-                }
-            }
-            for (TokenType type : TokenType.values()) {
-                Token token = type.token();
-                if (token != null) {
-                    tokens.add(token);
-                }
-            }
-            this.symbolMap = new SymbolMap(tokens);
+    /** Returns the symbol table for the prefix operators and other tokens. */
+    SymbolTable getPrefixTable() {
+        if (this.prefixTable == null) {
+            this.prefixTable = createSymbolTable(Placement.PREFIX);
         }
-        return this.symbolMap;
+        return this.prefixTable;
     }
 
-    private SymbolMap symbolMap;
+    private SymbolTable prefixTable;
+
+    /** Returns the symbol table for the non-prefix operators and other tokens. */
+    SymbolTable getNonPrefixTable() {
+        if (this.nonPrefixTable == null) {
+            this.nonPrefixTable = createSymbolTable(Placement.INFIX, Placement.POSTFIX);
+        }
+        return this.nonPrefixTable;
+    }
+
+    private SymbolTable nonPrefixTable;
+
+    private SymbolTable createSymbolTable(Placement... places) {
+        Set<Placement> placeSet = EnumSet.copyOf(Arrays.asList(places));
+        List<Token> tokens = new ArrayList<Token>();
+        for (O op : getOpType().getEnumConstants()) {
+            if (op.hasSymbol() && placeSet.contains(op.getPrecedence().getPlace())) {
+                tokens.add(new Token(TokenType.OP, op.getSymbol(), op));
+            }
+        }
+        for (TokenType type : TokenType.values()) {
+            Token token = type.token();
+            if (token != null) {
+                tokens.add(token);
+            }
+        }
+        return new SymbolTable(tokens);
+    }
 
     /** Mapping to enable efficient scanning of tokens. */
-    private class SymbolMap extends HashMap<Character,SymbolMap> {
-        SymbolMap(List<Token> tokens) {
+    private class SymbolTable extends HashMap<Character,SymbolTable> {
+        SymbolTable(List<Token> tokens) {
             this(tokens, "");
         }
 
-        SymbolMap(List<Token> tokens, String prefix) {
+        SymbolTable(List<Token> tokens, String prefix) {
             Token mine = null;
             for (Token token : tokens) {
                 String symbol = token.getParseString();
@@ -161,12 +180,14 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                     continue;
                 }
                 if (symbol.equals(prefix)) {
-                    assert mine == null;
+                    if (mine != null) {
+                        throw new IllegalArgumentException("Duplicate token " + symbol);
+                    }
                     mine = token;
                 } else {
                     char next = symbol.charAt(prefix.length());
                     if (!containsKey(next)) {
-                        put(next, new SymbolMap(tokens, prefix + next));
+                        put(next, new SymbolTable(tokens, prefix + next));
                     }
                 }
             }
@@ -192,7 +213,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         }
 
         /** Parses the string with which this instance was initialised. */
-        Expr<O> parse(Precedence context) {
+        private Expr<O> parse(Precedence context) {
             Expr<O> result = null;
             try {
                 int start = nextIx();
@@ -210,9 +231,13 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                     consumeToken();
                     result = parseBracketed(nextToken, start);
                     break;
+                case ID:
+                    consumeToken();
+                    result = parseCall(nextToken, start);
+                    break;
                 default:
                     consumeToken();
-                    result = createExpr(getErrorOp(), nextToken.getContent());
+                    result = createExpr(getAtomOp(), nextToken.getContent());
                 }
                 boolean more = hasNext();
                 while (more & hasNext()) {
@@ -256,7 +281,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                 }
             } catch (FormatException exc) {
                 if (result == null) {
-                    result = createExpr(getErrorOp());
+                    result = createExpr(getAtomOp());
                 }
                 result.addErrors(exc.getErrors());
             }
@@ -286,20 +311,39 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             return result;
         }
 
-        /** Attempts to parse the string as an operator-prefixed expression.
-         * @return an operator-prefixed expression, or {@code null} if the input string does not
-         * start with an operator
-         */
-        Expr<O> parsePrefixed(Token opToken, int opIx) {
+        /** Attempts to parse the string as a prefix operator expression. */
+        private Expr<O> parsePrefixed(Token opToken, int opIx) {
             Expr<O> result = null;
             O op = opToken.getOp();
-            Precedence prec = op.getPrecedence();
+            Precedence opPrec = op.getPrecedence();
             result = createExpr(op);
-            result.addArg(parse(prec));
-            if (prec.getPlace() != Placement.PREFIX) {
+            result.addArg(parse(opPrec));
+            if (opPrec.getPlace() != Placement.PREFIX) {
                 result.addError(new FormatError("%s operator '%s' in prefix position at index %s",
-                    StringHandler.toUpper(prec.getPlace().name().toLowerCase()), op.getSymbol(),
+                    StringHandler.toUpper(opPrec.getPlace().name().toLowerCase()), op.getSymbol(),
                     opIx));
+            }
+            return result;
+        }
+
+        /** Parses the input as a call expression. */
+        private Expr<O> parseCall(Token idToken, int idIx) throws FormatException {
+            assert idToken.getType() == ID;
+            Expr<O> result = createExpr(getAtomOp(), idToken.getContent());
+            if (!atEnd() && next(false).getType() == TokenType.LPAR) {
+                consumeToken();
+                result.addArg(parse(Precedence.NONE));
+                while (!atEnd() && next(false).getType() == TokenType.COMMA) {
+                    consumeToken();
+                    result.addArg(parse(Precedence.NONE));
+                }
+                if (atEnd()) {
+                    result.addErrors(unexpectedEnd().getErrors());
+                } else if (next(false).getType() != TokenType.RPAR) {
+                    result.addErrors(unexpectedToken().getErrors());new FormatError("Expected ')' at index %s", nextIx()));
+                } else {
+                    consumeToken();
+                }
             }
             return result;
         }
@@ -322,13 +366,13 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         }
 
         /** Returns the next unconsumed token in the input stream. */
-        private Token next() throws FormatException {
+        private Token next(boolean prefix) throws FormatException {
             if (this.nextToken == null && !atEnd()) {
                 this.nextIx = this.ix;
-                this.nextToken = scan();
+                this.nextToken = scan(prefix);
             }
             if (this.nextToken == null) {
-                throw new FormatException("Unexpected ent of line");
+                throw unexpectedEnd();
             }
             return this.nextToken;
         }
@@ -352,7 +396,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          * Scans and returns the next token in the input string.
          * Whitespace should have been skipped before this method is invoked.
          */
-        private Token scan() throws FormatException {
+        private Token scan(boolean prefix) throws FormatException {
             Token result = scanStatic();
             if (result == null) {
                 char c = charAt();
@@ -384,10 +428,10 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         private Token scanStatic() {
             Token result = null;
             int start = this.ix;
-            SymbolMap map = getSymbolMap();
+            SymbolTable map = getSymbolMap();
             while (start < this.input.length()) {
                 char nextChar = this.input.charAt(this.ix);
-                SymbolMap nextMap = map.get(nextChar);
+                SymbolTable nextMap = map.get(nextChar);
                 if (nextMap == null) {
                     // nextChar is not part of any operator symbol
                     result = map.getToken();
@@ -451,6 +495,10 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
 
         private FormatException unexpectedEnd() {
             return new FormatException("Unexpected end of input");
+        }
+
+        private FormatException unexpectedToken() {
+            return new FormatException("Unexpected token '%s' at index %s", next(false), nextIx());
         }
 
         private FormatException malformedId(int start) {
@@ -595,11 +643,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         /** A static token, representing a right parenthesis. */
         RPAR(")"),
         /** A static token, representing a comma. */
-        COMMA(","),
-        /** A static token, representing a dot. */
-        DOT("."),
-        /** A static token, representing a colon. */
-        COLON(":"), ;
+        COMMA(",");
 
         private TokenType() {
             this(null);
