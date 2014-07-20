@@ -7,11 +7,12 @@ import static groove.util.parse.Precedence.Placement.INFIX;
 import static groove.util.parse.Precedence.Placement.PREFIX;
 
 /**
- * Operator precedence values, from low to high.
- * This is copied directly from the Java operator precedence.
+ * Operator kind, consisting of an implicit precedence ordering,
+ * a {@link Placement} type, and (for infix operators) an associativity {@link Direction}.
+ * The precedence mimics the Java operator precedence.
  */
 public enum Precedence {
-    /** Dummy value used for context of an expression. */
+    /** Dummy value used for lowest-level context of an expression. */
     NONE(NEITHER),
     /** Disjunction. */
     OR(LEFT),
@@ -26,7 +27,7 @@ public enum Precedence {
     /** Existential and universal quantification. */
     QUANT(PREFIX),
     /** Assignment operators. */
-    ASSIGN(NEITHER),
+    ASSIGN(RIGHT),
     /** Additive operators: addition, subtraction, string concatenation. */
     ADD(LEFT),
     /** Multiplicative operators: multiplication, division, modulo. */
@@ -37,7 +38,11 @@ public enum Precedence {
     FIELD(LEFT),
     /** Call expressions. */
     CALL(PREFIX),
-    /** Atomic expressions: variables, constants. */
+    /** Identifier prefix separator. */
+    PREFIX_ID(NEITHER),
+    /** Qualified identifier separator. */
+    QUAL_ID(LEFT),
+    /** Atomic expressions: variable names and constants. */
     ATOM(NEITHER), ;
 
     private Precedence(Placement place, Direction direction) {
