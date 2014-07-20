@@ -16,46 +16,80 @@
  */
 package groove.util.parse;
 
-import static groove.util.parse.ExprParser.TokenType.ID;
-import static groove.util.parse.ExprParser.TokenType.INT;
-import static groove.util.parse.ExprParser.TokenType.NAME;
-import static groove.util.parse.ExprParser.TokenType.REAL;
-import static groove.util.parse.ExprParser.TokenType.RPAR;
-import static groove.util.parse.ExprParser.TokenType.STRING;
+import static groove.algebra.SignatureKind.INT;
+import static groove.algebra.SignatureKind.REAL;
+import static groove.util.parse.ExprParser.TokenClaz.EOT;
+import static groove.util.parse.ExprParser.TokenClaz.LPAR;
+import static groove.util.parse.ExprParser.TokenClaz.NAME;
+import static groove.util.parse.ExprParser.TokenClaz.RPAR;
+import groove.algebra.SignatureKind;
+import groove.io.Util;
+import groove.util.Duo;
+import groove.util.Pair;
 import groove.util.Triple;
-import groove.util.parse.Expr.BoolContent;
 import groove.util.parse.Expr.Content;
-import groove.util.parse.Expr.Id;
 import groove.util.parse.Expr.IdContent;
-import groove.util.parse.Expr.IntContent;
-import groove.util.parse.Expr.RealContent;
-import groove.util.parse.Expr.StringContent;
-import groove.util.parse.Precedence.Direction;
-import groove.util.parse.Precedence.Placement;
+import groove.util.parse.OpKind.Direction;
+import groove.util.parse.OpKind.Placement;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * General expression parser, parameterised with the type of operators to be recognised.
+ * The parser operates according to the following rules:
+ * <code><ul>
+ * <li> EX ::= ID
+ * <br>     | LITERAL
+ * <br>     | ID '(' (EX (',' EX)*)? ')'
+ * <br>     | prefix-op EX
+ * <br>     | EX infix-op EX
+ * <br>     | EX postfix-op
+ * <br>     | '(' EX ')'
+ * <li> ID ::= (NAME ':')? NAME ('.' NAME)*
+ * </ul></code>
+ * Here, <code>LITERAL</code> is a literal data constant, and <code>NAME</code> a name
+ * formed according to the Java rules, where additionally hyphens are allowed inside names.
+ * <p>
+ * Identifier prefixes and identifier qualification are only enabled if the
+ * passed-in operator type includes operators of kind {@link OpKind#PREFIX_ID}
+ * and {@link OpKind#QUAL_ID}, respectively; likewise, call expressions are only enabled if the
+ * passed-in operator type includes an operator of kind {@link OpKind#CALL}.
  * @author Arend Rensink
  * @version $Id$
  */
 public class ExprParser<O extends Op> implements Parser<Expr<O>> {
     /**
-     * Constructs a parser for a given operator type.
+     * Constructs a parser for a given operator type, without 
+     * prefixed or qualified identifiers.
      * @param atomOp operator instance to be used for parser constants;
-     * should be parameterless and without a symbol
+     * should be of kind {@link OpKind#ATOM}
      * @param description description of the parsed expression values.
      */
     public ExprParser(O atomOp, String description) {
-        assert atomOp.getArity() == 0 && !atomOp.hasSymbol();
+        this(atomOp, false, false, description);
+    }
+
+    /**
+     * Constructs a parser for a given operator type.
+     * @param atomOp operator instance to be used for parser constants;
+     * should be of kind {@link OpKind#ATOM}
+     * @param prefixIds if {@code true}, IDs can have an optional prefix (a name),
+     * separated from the main ID by the #createPrefixSymbol
+     * @param qualIds if {@code true}, IDs can be qualified (consisting of
+     * a #createQualSymbol-separated names)
+     * separated from the main ID by the #createPrefixSymbol
+     * @param description description of the parsed expression values.
+     */
+    public ExprParser(O atomOp, boolean prefixIds, boolean qualIds, String description) {
+        assert atomOp.getKind() == OpKind.ATOM;
         this.atomOp = atomOp;
         this.description = description;
+        this.prefixIds = prefixIds;
+        this.qualIds = qualIds;
     }
 
     /** Returns the type of expression operators that this parser handles. */
@@ -64,7 +98,92 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         return (Class<? extends O>) this.atomOp.getClass();
     }
 
-    /** Returns the error operator used by this parser. */
+    /** Indicates if the operator type has a call operator. */
+    boolean hasCallOp() {
+        return getCallOp() != null;
+    }
+
+    /** Returns the call operator, if any. */
+    public O getCallOp() {
+        if (this.callOp == null) {
+            this.callOp = retrieveKindOp(OpKind.CALL);
+        }
+        return this.callOp;
+    }
+
+    private O callOp;
+
+    /** Indicates if the parser recognises prefixed identifiers. */
+    public boolean hasPrefixIds() {
+        return this.prefixIds;
+    }
+
+    private final boolean prefixIds;
+
+    /** Returns the token separating the prefix from the main ID,
+     * if {@link #hasPrefixIds()} holds.
+     */
+    TokenType getPrefixIdToken() {
+        assert hasPrefixIds();
+        if (this.prefixIdToken == null) {
+            this.prefixIdToken = new TokenType(getPrefixSep());
+        }
+        return this.prefixIdToken;
+    }
+
+    private TokenType prefixIdToken;
+
+    /** Callback factory method for the separator symbol between prefix
+     * and main ID, if {@link #hasPrefixIds()} holds.
+     */
+    protected String getPrefixSep() {
+        return ":";
+    }
+
+    /** Indicates if the parser recognises qualified identifiers. */
+    boolean hasQualIds() {
+        return this.qualIds;
+    }
+
+    private final boolean qualIds;
+
+    /** Returns the token separating the prefix from the main ID,
+     * if {@link #hasPrefixIds()} holds.
+     */
+    TokenType getQualSepToken() {
+        assert hasPrefixIds();
+        if (this.qualSepToken == null) {
+            this.qualSepToken = new TokenType(getQualSep());
+        }
+        return this.qualSepToken;
+    }
+
+    private TokenType qualSepToken;
+
+    /** Callback factory method for the separator symbol between prefix
+     * and main ID, if {@link #hasPrefixIds()} holds.
+     */
+    protected String getQualSep() {
+        return ".";
+    }
+
+    /** Retrieves the (supposedly unique) operator of a given kind. */
+    private O retrieveKindOp(OpKind kind) {
+        O result = null;
+        for (O op : getOpType().getEnumConstants()) {
+            if (op.getKind() == kind) {
+                if (result == null) {
+                    result = op;
+                } else {
+                    throw new IllegalArgumentException(String.format(
+                        "Duplicate %s operators %s and %s", kind, result, op));
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Returns the atom operator used by this parser. */
     public O getAtomOp() {
         return this.atomOp;
     }
@@ -129,53 +248,83 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         throw new UnsupportedOperationException();
     }
 
-    /** Returns the symbol table for the prefix operators and other tokens. */
-    SymbolTable getPrefixTable() {
-        if (this.prefixTable == null) {
-            this.prefixTable = createSymbolTable(Placement.PREFIX);
-        }
-        return this.prefixTable;
-    }
-
-    private SymbolTable prefixTable;
-
-    /** Returns the symbol table for the non-prefix operators and other tokens. */
-    SymbolTable getNonPrefixTable() {
-        if (this.nonPrefixTable == null) {
-            this.nonPrefixTable = createSymbolTable(Placement.INFIX, Placement.POSTFIX);
-        }
-        return this.nonPrefixTable;
-    }
-
-    private SymbolTable nonPrefixTable;
-
-    private SymbolTable createSymbolTable(Placement... places) {
-        Set<Placement> placeSet = EnumSet.copyOf(Arrays.asList(places));
-        List<Token> tokens = new ArrayList<Token>();
-        for (O op : getOpType().getEnumConstants()) {
-            if (op.hasSymbol() && placeSet.contains(op.getPrecedence().getPlace())) {
-                tokens.add(new Token(TokenType.OP, op.getSymbol(), op));
+    /** Returns the map from symbols to predefined (parsable) token types of this parser. */
+    Map<String,TokenType> getTokens() {
+        if (this.tokens == null) {
+            this.tokens = new TreeMap<String,TokenType>();
+            for (O op : getOpType().getEnumConstants()) {
+                if (op.hasSymbol()) {
+                    String symbol = op.getSymbol();
+                    TokenType opToken = this.tokens.get(symbol);
+                    OpFamily<O> family;
+                    if (opToken == null) {
+                        family = new OpFamily<O>(op);
+                        addToken(new TokenType(family));
+                    } else {
+                        family = opToken.op();
+                        family.add(op);
+                    }
+                }
+            }
+            for (TokenClaz claz : TokenClaz.values()) {
+                if (claz.parsable()) {
+                    addToken(claz.getSingleType());
+                }
+            }
+            if (hasPrefixIds()) {
+                addToken(getPrefixIdToken());
+            }
+            if (hasQualIds()) {
+                addToken(getQualSepToken());
             }
         }
-        for (TokenType type : TokenType.values()) {
-            Token token = type.token();
-            if (token != null) {
-                tokens.add(token);
+        return this.tokens;
+    }
+
+    private void addToken(TokenType token) {
+        TokenType oldType = this.tokens.put(token.symbol(), token);
+        assert oldType == null;
+    }
+
+    private Map<String,TokenType> tokens;
+
+    /** Returns the fixed token type for a given signature kind. */
+    TokenType getTokenType(SignatureKind sig) {
+        return getSigTokenMap().get(sig);
+    }
+
+    private Map<SignatureKind,TokenType> getSigTokenMap() {
+        if (this.sigTokenMap == null) {
+            this.sigTokenMap = new EnumMap<SignatureKind,TokenType>(SignatureKind.class);
+            for (SignatureKind sig : SignatureKind.values()) {
+                this.sigTokenMap.put(sig, new TokenType(sig));
             }
         }
-        return new SymbolTable(tokens);
+        return this.sigTokenMap;
     }
+
+    private Map<SignatureKind,TokenType> sigTokenMap;
+
+    /** Returns the symbol table for this parser. */
+    SymbolTable getSymbolTable() {
+        if (this.symbolTable == null) {
+            this.symbolTable = new SymbolTable(getTokens().values());
+        }
+        return this.symbolTable;
+    }
+
+    private SymbolTable symbolTable;
 
     /** Mapping to enable efficient scanning of tokens. */
     private class SymbolTable extends HashMap<Character,SymbolTable> {
-        SymbolTable(List<Token> tokens) {
+        SymbolTable(Collection<TokenType> tokens) {
             this(tokens, "");
         }
 
-        SymbolTable(List<Token> tokens, String prefix) {
-            Token mine = null;
-            for (Token token : tokens) {
-                String symbol = token.getParseString();
+        SymbolTable(Collection<TokenType> tokens, String prefix) {
+            TokenType mine = null;
+            for (TokenType token : tokens) {
+                String symbol = token.symbol();
                 if (!symbol.startsWith(prefix)) {
                     continue;
                 }
@@ -194,14 +343,14 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             this.mine = mine;
         }
 
-        Token getToken() {
+        TokenType getTokenType() {
             return this.mine;
         }
 
-        private final Token mine;
+        private final TokenType mine;
     }
 
-    /** Throwaway instance of this parser. */
+    /** Throwaway instance of this parser, initialised on a given string. */
     private class Instance {
         Instance(String input) {
             this.input = input;
@@ -209,81 +358,68 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
 
         /** Parses the string with which this instance was initialised. */
         Expr<O> parse() {
-            return parse(Precedence.NONE);
+            Expr<O> result;
+            try {
+                result = parse(OpKind.NONE);
+            } catch (FormatException exc) {
+                result = createExpr(getAtomOp());
+                result.addErrors(exc);
+            }
+            return result;
         }
 
         /** Parses the string with which this instance was initialised. */
-        private Expr<O> parse(Precedence context) {
+        private Expr<O> parse(OpKind context) throws FormatException {
             Expr<O> result = null;
-            try {
-                int start = nextIx();
-                Token nextToken = next();
-                switch (nextToken.one()) {
-                case RPAR:
-                case COMMA:
-                    throw new FormatException("Unexpected token '%s' at index %s",
-                        nextToken.getParseString(), nextIx());
-                case OP:
-                    consumeToken();
-                    result = parsePrefixed(nextToken, start);
+            Token nextToken = next();
+            switch (nextToken.claz()) {
+            case OP:
+                result = parsePrefixed();
+                break;
+            case LPAR:
+                consumeToken();
+                result = parseBracketed();
+                break;
+            case NAME:
+                consumeToken();
+                result = parseCall();
+                break;
+            case CONST:
+                consumeToken();
+                result = createExpr(getAtomOp(), nextToken.toContent());
+                break;
+            default:
+                throw unexpectedToken(nextToken);
+            }
+            while (hasNext()) {
+                nextToken = next();
+                if (nextToken.claz() != TokenClaz.OP) {
                     break;
-                case LPAR:
-                    consumeToken();
-                    result = parseBracketed(nextToken, start);
+                }
+                OpFamily<O> ops = nextToken.ops();
+                if (!ops.hasLatefixOp()) {
                     break;
-                case ID:
-                    consumeToken();
-                    result = parseCall(nextToken, start);
+                }
+                O op = ops.latefixOp();
+                OpKind kind = op.getKind();
+                if (context.compareTo(kind) > 0) {
                     break;
-                default:
-                    consumeToken();
-                    result = createExpr(getAtomOp(), nextToken.getContent());
                 }
-                boolean more = hasNext();
-                while (more & hasNext()) {
-                    nextToken = next();
-                    switch (nextToken.one()) {
-                    case RPAR:
-                    case BOOL:
-                    case ID:
-                    case INT:
-                    case REAL:
-                    case STRING:
-                        throw new FormatException("Unexpected token '%s' at index %s",
-                            nextToken.getParseString(), nextIx());
-                    case OP:
-                        O op = nextToken.getOp();
-                        Precedence opPrec = op.getPrecedence();
-                        int compare = context.compareTo(opPrec);
-                        if (compare < 0 || context.getDirection() == Direction.LEFT && compare == 0) {
-                            consumeToken();
-                            Expr<O> arg0 = result;
-                            result = createExpr(op);
-                            switch (opPrec.getPlace()) {
-                            case POSTFIX:
-                                result.addArg(arg0);
-                                more = false;
-                                break;
-                            case INFIX:
-                                Expr<O> arg1 = parse(opPrec);
-                                result.addArg(arg0);
-                                result.addArg(arg1);
-                                break;
-                            case PREFIX:
-                            }
-                        } else {
-                            more = false;
-                        }
-                        break;
-                    default:
-                        more = false;
-                    }
+                if (context.equals(kind) && kind.getDirection() != Direction.RIGHT) {
+                    break;
                 }
-            } catch (FormatException exc) {
-                if (result == null) {
-                    result = createExpr(getAtomOp());
+                consumeToken();
+                if (kind.getPlace() == Placement.POSTFIX) {
+                    Expr<O> arg = result;
+                    result = createExpr(op);
+                    result.addArg(arg);
+                    break;
                 }
-                result.addErrors(exc.getErrors());
+                Expr<O> arg0 = result;
+                Expr<O> arg1 = parse(kind);
+                result = createExpr(op);
+                result.addArg(arg0);
+                result.addArg(arg1);
             }
             return result;
         }
@@ -293,57 +429,88 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          * @return the expression in brackets, or {@code null} if the input string does not
          * correspond to a bracketed expression
          */
-        private Expr<O> parseBracketed(Token first, int firstIx) {
+        private Expr<O> parseBracketed() throws FormatException {
+            assert next().claz() == LPAR;
             Expr<O> result = null;
-            result = parse(Precedence.NONE);
-            String error = "Unbalanced opening bracket at index " + firstIx;
-            try {
-                if (next().one() == RPAR) {
-                    consumeToken();
-                    error = null;
-                }
-            } catch (FormatException exc) {
-                // do nothing
+            consumeToken();
+            result = parse(OpKind.NONE);
+            if (next().claz() != RPAR) {
+                throw unbalancedBracket(next());
             }
-            if (error != null) {
-                result.addError(new FormatError(error));
-            }
+            consumeToken();
             return result;
         }
 
-        /** Attempts to parse the string as a prefix operator expression. */
-        private Expr<O> parsePrefixed(Token opToken, int opIx) {
+        /**
+         * Attempts to parse the string as a prefix expression.
+         * The next token is known to be an operator (though not necessarily
+         * a prefix operator).
+         */
+        private Expr<O> parsePrefixed() throws FormatException {
             Expr<O> result = null;
-            O op = opToken.getOp();
-            Precedence opPrec = op.getPrecedence();
-            result = createExpr(op);
-            result.addArg(parse(opPrec));
-            if (opPrec.getPlace() != Placement.PREFIX) {
-                result.addError(new FormatError("%s operator '%s' in prefix position at index %s",
-                    StringHandler.toUpper(opPrec.getPlace().name().toLowerCase()), op.getSymbol(),
-                    opIx));
+            Token opToken = next();
+            consumeToken();
+            OpFamily<O> ops = next().ops();
+            assert ops != null;
+            if (ops.hasPrefixOp()) {
+                O op = ops.prefixOp();
+                Expr<O> arg = parse(op.getKind());
+                result = createExpr(op);
+                result.addArg(arg);
+            } else {
+                result = parse();
+                result.addErrors(noPrefixOp(opToken));
             }
             return result;
         }
 
         /** Parses the input as a call expression. */
-        private Expr<O> parseCall(Token idToken, int idIx) throws FormatException {
-            assert idToken.getType() == ID;
-            Expr<O> result = createExpr(getAtomOp(), idToken.getContent());
-            if (!atEnd() && next(false).getType() == TokenType.LPAR) {
+        private Expr<O> parseCall() throws FormatException {
+            assert next().claz() == NAME;
+            Expr<O> result = parseId();
+            if (next().claz() == LPAR) {
+                if (!hasCallOp()) {
+                    throw unexpectedToken(next());
+                }
                 consumeToken();
-                result.addArg(parse(Precedence.NONE));
-                while (!atEnd() && next(false).getType() == TokenType.COMMA) {
+                result = createExpr(getCallOp(), result.getContent());
+                result.addArg(parse(OpKind.NONE));
+                while (next().claz() == TokenClaz.COMMA) {
                     consumeToken();
-                    result.addArg(parse(Precedence.NONE));
+                    result.addArg(parse(OpKind.NONE));
                 }
-                if (atEnd()) {
-                    result.addErrors(unexpectedEnd().getErrors());
-                } else if (next(false).getType() != TokenType.RPAR) {
-                    result.addErrors(unexpectedToken().getErrors());new FormatError("Expected ')' at index %s", nextIx()));
-                } else {
-                    consumeToken();
+                if (next().claz() != RPAR) {
+                    throw unbalancedBracket(next());
                 }
+                consumeToken();
+            }
+            return result;
+        }
+
+        /** Parses the input as a call expression. */
+        private Expr<O> parseId() throws FormatException {
+            assert next().claz() == NAME;
+            Expr<O> result;
+            Token nameToken = next();
+            consumeToken();
+            Id id;
+            if (next().type() == getPrefixIdToken()) {
+                consumeToken();
+                id = new Id(nameToken.substring());
+                if (next().claz() != NAME) {
+                    throw unexpectedToken(next());
+                }
+            } else {
+                id = new Id(null);
+                id.addName(nameToken.substring());
+            }
+            result = createExpr(getAtomOp(), new IdContent(this.input, id));
+            while (next().type() == getQualSepToken()) {
+                consumeToken();
+                if (next().claz() != NAME) {
+                    throw unexpectedToken(next());
+                }
+                id.addName(next().substring());
             }
             return result;
         }
@@ -366,20 +533,15 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         }
 
         /** Returns the next unconsumed token in the input stream. */
-        private Token next(boolean prefix) throws FormatException {
-            if (this.nextToken == null && !atEnd()) {
-                this.nextIx = this.ix;
-                this.nextToken = scan(prefix);
-            }
+        private Token next() throws FormatException {
             if (this.nextToken == null) {
-                throw unexpectedEnd();
+                if (atEnd()) {
+                    this.nextToken = eot();
+                } else {
+                    this.nextToken = scan();
+                }
             }
             return this.nextToken;
-        }
-
-        /** Returns the start position of the token last returned by {@link #next()}. */
-        private int nextIx() {
-            return this.nextIx;
         }
 
         /** Consumes the current token, causing the next call or {@link #next()}
@@ -390,20 +552,20 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         }
 
         private Token nextToken;
-        private int nextIx;
 
         /**
          * Scans and returns the next token in the input string.
          * Whitespace should have been skipped before this method is invoked.
          */
-        private Token scan(boolean prefix) throws FormatException {
+        private Token scan() throws FormatException {
             Token result = scanStatic();
             if (result == null) {
+                // we're not at the end of input
                 char c = charAt();
                 if (Character.isDigit(c)) {
                     result = scanNumber();
                 } else if (StringHandler.isIdentifierStart(c)) {
-                    result = scanId();
+                    result = scanName();
                 } else {
                     switch (c) {
                     case StringHandler.SINGLE_QUOTE_CHAR:
@@ -414,7 +576,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                 }
             }
             if (result == null) {
-                throw new FormatException("Unrecognised token at index " + this.ix);
+                throw unrecognisedToken();
             }
             return result;
         }
@@ -426,38 +588,49 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          * is at an end or the next token is not static
          */
         private Token scanStatic() {
-            Token result = null;
+            TokenType type = null;
             int start = this.ix;
-            SymbolTable map = getSymbolMap();
-            while (start < this.input.length()) {
-                char nextChar = this.input.charAt(this.ix);
+            int end = start;
+            SymbolTable map = getSymbolTable();
+            while (end < this.input.length()) {
+                char nextChar = this.input.charAt(end);
                 SymbolTable nextMap = map.get(nextChar);
                 if (nextMap == null) {
                     // nextChar is not part of any operator symbol
-                    result = map.getToken();
+                    type = map.getTokenType();
                     break;
                 }
-                start++;
-                if (start == this.input.length()) {
+                end++;
+                if (end == this.input.length()) {
                     // there is no next character after this
-                    result = nextMap.getToken();
+                    type = nextMap.getTokenType();
                     break;
                 }
                 map = nextMap;
             }
-            if (result != null) {
-                this.ix += result.getParseString().length();
+            Token result = null;
+            if (atEnd()) {
+                result = eot();
+            } else if (type != null) {
+                this.ix = end;
+                result = new Token(type, createFragment(start, end));
             }
             return result;
         }
 
-        private Token scanNumber() throws FormatException {
+        /** Scans in a number token from the input text.
+         * It is guaranteed that the current character is a digit or decimal point;
+         * if a decimal point, the next character is a digit.
+         */
+        private Token scanNumber() {
+            assert Character.isDigit(charAt()) || charAt() == '.'
+                && Character.isDigit(this.input.charAt(this.ix + 1));
             int start = this.ix;
             while (!atEnd() && Character.isDigit(charAt())) {
                 nextChar();
             }
-            TokenType type = !atEnd() && charAt() == '.' ? REAL : INT;
-            if (type == REAL) {
+            SignatureKind sig = !atEnd() && charAt() == '.' ? REAL : INT;
+            if (sig == REAL) {
                 nextChar();
                 while (!atEnd() && Character.isDigit(charAt())) {
                     nextChar();
@@ -465,59 +638,46 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             }
             Token result;
             String content = this.input.substring(start, this.ix);
-            if (type == REAL && content.length() == 1) {
-                throw new FormatException("Can't parse stand-alone '.' at index " + this.ix);
-            }
-            result = new Token(type, content);
+            result = new Token(getTokenType(sig), createFragment(start, this.ix), content);
             return result;
         }
 
-        private Token scanId() throws FormatException {
-            int start = this.ix;
-            Token token = scanName();
-            String prefix = null;
-            List<String> names = new ArrayList<String>();
-            if (hasNext()) {
-                if (next().getType() == TokenType.COLON) {
-                    consumeToken();
-                    token = scanName();
-                }
-                names.add(token.getParseString());
-                while (hasNext() && next().getType() == TokenType.DOT) {
-                    consumeToken();
-                    token = scanName();
-                    names.add(token.getParseString());
-                }
+        private FormatException unexpectedToken(Token token) {
+            if (token.claz() == EOT) {
+                return new FormatException("Unexpected end of input");
+            } else {
+                return new FormatException("Unexpected token '%s' at index %s", token.substring(),
+                    token.start());
             }
-            Id id = new Id(prefix, names);
-            return new Token(ID, this.input.substring(start, this.ix), id);
         }
 
-        private FormatException unexpectedEnd() {
-            return new FormatException("Unexpected end of input");
+        private FormatException unrecognisedToken() {
+            return new FormatException("Unrecognised token '%s' at index %s", charAt(), this.ix);
         }
 
-        private FormatException unexpectedToken() {
-            return new FormatException("Unexpected token '%s' at index %s", next(false), nextIx());
+        private FormatException unbalancedBracket(Token token) {
+            return new FormatException("Expected ')' at index %s", token.start());
         }
 
-        private FormatException malformedId(int start) {
-            return new FormatException("Malformed identifier '%s' at index %s",
-                this.input.substring(start, this.ix), start);
+        private FormatException noPrefixOp(Token opToken) {
+            Op op = opToken.ops().latefixOp();
+            return new FormatException("%s operator '%s' in prefix position at index %s",
+                StringHandler.toUpper(op.getKind().getPlace().name().toLowerCase()),
+                op.getSymbol(), opToken.start());
         }
 
-        private Token scanName() throws FormatException {
+        /**
+         * Scans a name token.
+         * The current character is guaranteed to be an identifier start.
+         */
+        private Token scanName() {
+            assert StringHandler.isIdentifierStart(charAt());
             int start = this.ix;
-            if (atEnd()) {
-                throw unexpectedEnd();
-            } else if (!StringHandler.isIdentifierStart(charAt())) {
-                throw malformedId(start);
-            }
             nextChar();
             while (!atEnd() && StringHandler.isIdentifierPart(charAt())) {
                 nextChar();
             }
-            return new Token(NAME, this.input.substring(start, this.ix));
+            return new Token(NAME.getSingleType(), createFragment(start, this.ix));
         }
 
         private Token scanString() throws FormatException {
@@ -532,9 +692,10 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             if (atEnd()) {
                 throw new FormatException("%s-quoted string is not closed", quote);
             } else {
+                assert charAt() == quote;
                 nextChar();
             }
-            return new Token(STRING, this.input.substring(start, this.ix));
+            return new Token(getTokenType(SignatureKind.STRING), createFragment(start, this.ix));
         }
 
         /** Consumes all whitespace characters from the input,
@@ -551,113 +712,329 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             this.ix++;
         }
 
-        private char charAt() throws FormatException {
-            if (this.ix < this.input.length()) {
-                return this.input.charAt(this.ix);
-            } else {
-                throw unexpectedEnd();
-            }
-
+        private char charAt() {
+            return this.input.charAt(this.ix);
         }
 
         private int ix;
         private final String input;
-    }
 
-    static class Token extends Triple<TokenType,String,Object> {
-        public Token(TokenType type, String parseString) {
-            super(type, parseString, null);
+        /** End-of-text token. */
+        private Token eot() {
+            if (this.eot == null) {
+                int end = this.input.length();
+                this.eot = new Token(TokenClaz.EOT.getSingleType(), createFragment(end, end));
+            }
+            return this.eot;
         }
 
-        public Token(TokenType one, String parseString, Object payload) {
-            super(one, parseString, payload);
+        private Token eot;
+
+        /** Factory method for a line fragment.
+         * @param start start position of the fragment
+         * @param end end position of the fragment
+         */
+        private LineFragment createFragment(int start, int end) {
+            return new LineFragment(this.input, start, end);
+        }
+    }
+
+    static class Token extends Triple<TokenType,LineFragment,Object> {
+        public Token(TokenType type, LineFragment fragment) {
+            super(type, fragment, null);
+        }
+
+        public Token(TokenType one, LineFragment fragment, Object payload) {
+            super(one, fragment, payload);
         }
 
         /** Returns the type of this token. */
-        public TokenType getType() {
+        public TokenType type() {
             return one();
         }
 
-        /** Returns the token content as an operator. */
-        @SuppressWarnings("unchecked")
-        public <O extends Op> O getOp() {
-            assert one() == TokenType.OP;
-            return (O) three();
+        /** Returns the type class of this token. */
+        public TokenClaz claz() {
+            return type().claz();
         }
 
-        /** Returns the token payload as an identifier. */
-        public Id getId() {
-            assert one() == ID;
-            return (Id) three();
+        /** Returns the operator family of the token type. */
+        public <O extends Op> OpFamily<O> ops() {
+            return type().op();
+        }
+
+        /** Returns the start position of this token. */
+        public int start() {
+            return two().start();
+        }
+
+        /** Returns the end position of this token. */
+        public int end() {
+            return two().end();
         }
 
         /** Returns the string representation of the token content. */
-        public String getParseString() {
-            return two();
+        public String substring() {
+            return two().substring();
         }
 
-        /** Returns the content wrapped in this token.
-         * Only valid for non-static tokens.
+        /** Converts this token into expression content.
          */
-        public Content<?> getContent() {
-            switch (one()) {
-            case BOOL:
-                return new BoolContent(getParseString());
-            case INT:
-                return new IntContent(getParseString());
-            case REAL:
-                return new RealContent(getParseString());
-            case STRING:
-                return new StringContent(getParseString());
-            case ID:
-                return new IdContent(getParseString(), getId());
+        public Content<?> toContent() {
+            switch (claz()) {
+            case CONST:
+                return Expr.createContent(type().sig(), two().substring());
             default:
                 throw new UnsupportedOperationException();
             }
         }
     }
 
-    static enum TokenType {
-        /** Operator. */
-        OP,
-        /** Single- or double-quoted string value. */
-        STRING,
-        /** Integer value. */
-        INT,
-        /** Real-number value. */
-        REAL,
-        /** Boolean value. */
-        BOOL,
+    /** A placement-indexed family of operators with the same symbol. */
+    static class OpFamily<O extends Op> extends Duo<O> {
+        /** Returns an operator family, initialised with a given operator. */
+        OpFamily(O op) {
+            super(null, null);
+            this.symbol = op.getSymbol();
+            add(op);
+        }
+
+        /** Adds an operator to this family. */
+        public void add(O value) {
+            O oldValue;
+            if (value.getKind().getPlace() == Placement.PREFIX) {
+                oldValue = setOne(value);
+            } else {
+                oldValue = setTwo(value);
+            }
+            assert oldValue == null;
+            assert value.getSymbol().equals(symbol());
+        }
+
+        /** Indicates if there is a prefix operator in this family. */
+        public boolean hasPrefixOp() {
+            return prefixOp() != null;
+        }
+
+        /** Returns the prefix operator in this family. */
+        public O prefixOp() {
+            return one();
+        }
+
+        /** Indicates if there is a non-prefix operator in this family. */
+        public boolean hasLatefixOp() {
+            return latefixOp() != null;
+        }
+
+        /** Returns the non-prefix operator in this family. */
+        public O latefixOp() {
+            return two();
+        }
+
+        /** Returns the common symbol for the operators in this family. */
+        String symbol() {
+            return this.symbol;
+        }
+
+        private final String symbol;
+    }
+
+    /** A string fragment, consisting of an input line with start and end position. */
+    static class LineFragment extends Triple<String,Integer,Integer> {
         /**
-         * Composite identifier, consisting of an optional prefix (an atomic name),
-         * separated by a colon from the remainder, and a non-empty dot-separated list of atomic names.
+         * Constructs a string fragment.
+         * @param line the input line
+         * @param start start position
+         * @param end end position
          */
-        ID,
+        public LineFragment(String line, Integer start, Integer end) {
+            super(line, start, end);
+            assert start >= 0;
+            assert end >= start && end <= line.length();
+        }
+
+        /** Returns the fragment substring. */
+        public String substring() {
+            return line().substring(start(), end());
+        }
+
+        /** Returns complete input line. */
+        public String line() {
+            return one();
+        }
+
+        /** Returns the start position of the fragment. */
+        public int start() {
+            return two();
+        }
+
+        /** Returns the end position of the fragment. */
+        public int end() {
+            return three();
+        }
+    }
+
+    /**
+     * Token kind; consists of a token type class and (if the type class is non-singular)
+     * possibly some additional information.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static class TokenType extends Pair<TokenClaz,Object> {
+        /**
+         * Constructs a token type for a singular type class.
+         */
+        public TokenType(TokenClaz claz) {
+            super(claz, null);
+            assert claz.single();
+        }
+
+        /**
+         * Constructs a separator token type with a given symbol.
+         */
+        public TokenType(String symbol) {
+            super(TokenClaz.SEP, symbol);
+        }
+
+        /**
+         * Constructs a token type for an operator.
+         * @param op the (non-{@code null}) associated operator.
+         */
+        public TokenType(OpFamily<?> op) {
+            super(TokenClaz.OP, op);
+            assert op != null;
+        }
+
+        /**
+         * Constructs a token type for a constant type.
+         * @param sig the (non-{@code null}) associated constant type.
+         */
+        public TokenType(SignatureKind sig) {
+            super(TokenClaz.CONST, sig);
+            assert sig != null;
+        }
+
+        /** Returns the type class of this token type. */
+        public TokenClaz claz() {
+            return one();
+        }
+
+        /** Returns the operator wrapped in this token type, if any. */
+        @SuppressWarnings("unchecked")
+        public <O extends Op> OpFamily<O> op() {
+            return claz() == TokenClaz.OP ? (OpFamily<O>) two() : null;
+        }
+
+        /** Returns the signature kind wrapped in this token type, if any. */
+        public SignatureKind sig() {
+            return claz() == TokenClaz.CONST ? (SignatureKind) two() : null;
+        }
+
+        /**
+         * Returns the symbol for this token type, if
+         * it is a singleton type.
+         */
+        public String symbol() {
+            String result = null;
+            if (claz() == TokenClaz.OP) {
+                result = op().symbol();
+            } else if (claz() == TokenClaz.SEP) {
+                return (String) two();
+            } else if (claz().single()) {
+                result = claz().symbol();
+            }
+            return result;
+        }
+    }
+
+    /** 
+     * Token type class class.
+     * Every token type has a class. 
+     * A token type class can either be singular, meaning that
+     * there exists exactly one type of that class, or multiple.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static enum TokenClaz {
+        /** Id-separator (for prefix and qualification. */
+        SEP(false),
+        /** Operator. */
+        OP(false),
+        /** Algebraic constant token. */
+        CONST(false),
         /**
          * Atomic name, formed like a Java identifier, with hyphens allowed in the middle.
          * @see StringHandler#isIdentifier(String)
          */
-        NAME,
+        NAME(true),
         /** A static token, representing a left parenthesis. */
         LPAR("("),
         /** A static token, representing a right parenthesis. */
         RPAR(")"),
         /** A static token, representing a comma. */
-        COMMA(",");
+        COMMA(","),
+        /** A static token, representing the end of the input text. */
+        EOT("" + Util.EOT), ;
 
-        private TokenType() {
-            this(null);
+        /**
+         * Constructs a token kind instance.
+         * @param single if {@code true}, there is only a single type of this kind.
+         */
+        private TokenClaz(boolean single) {
+            this(single, null);
         }
 
-        private TokenType(String text) {
-            this.token = text == null ? null : new Token(this, text);
+        /**
+         * Constructs a singular token kind instance.
+         * @param text non-{@code null} text of the token kind (and type)
+         */
+        private TokenClaz(String text) {
+            this(true, text);
         }
 
-        /** Returns the default token of this type, if any. */
-        public Token token() {
-            return this.token;
+        /**
+         * General constructor for a token kind instance.
+         * @param single if {@code true}, there is only a single type of this kind.
+         * @param text if single, a non-{@code null} text of the token kind (and type)
+         */
+        private TokenClaz(boolean single, String text) {
+            this.symbol = text;
+            this.type = single ? null : new TokenType(this);
         }
 
-        private final Token token;
+        /**
+         * Indicates if this is a token kind 
+         * of which only a single token type can exist.
+         * If that is the case, then the unique
+         * token type is given by {@link #getSingleType()}
+         */
+        public boolean single() {
+            return getSingleType() != null;
+        }
+
+        /** Returns the unique token type of this kind, if 
+         * the kind is singular.
+         */
+        public TokenType getSingleType() {
+            return this.type;
+        }
+
+        private final TokenType type;
+
+        /** Indicates if this token kind is parsable, i.e., has a non-{@code null} symbol.
+         * Only singular token kinds can be parsable.
+         */
+        public boolean parsable() {
+            return symbol() != null;
+        }
+
+        /**
+         * Returns the (possibly {@code null}) symbol of this token type class.
+         */
+        public String symbol() {
+            return this.symbol;
+        }
+
+        private final String symbol;
     }
 }

@@ -7,7 +7,7 @@ import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.ToolTipHeader;
 import groove.util.Groove;
-import groove.util.parse.Precedence;
+import groove.util.parse.OpKind;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -63,7 +63,7 @@ public class Operator {
             infix == null ? (prefix == null ? null : prefix.symbol())
                     : infix.symbol();
         this.precedence =
-            infix == null ? (prefix == null ? Precedence.ATOM
+            infix == null ? (prefix == null ? OpKind.ATOM
                     : prefix.precedence()) : infix.precedence();
         this.description = method.getAnnotation(ToolTipHeader.class).value();
     }
@@ -124,11 +124,11 @@ public class Operator {
     private final String symbol;
 
     /** Returns the priority of this operator. */
-    public Precedence getPrecedence() {
+    public OpKind getPrecedence() {
         return this.precedence;
     }
 
-    private final Precedence precedence;
+    private final OpKind precedence;
 
     /**
      * Returns the description in the {@link ToolTipHeader} annotation of the method.

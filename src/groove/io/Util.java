@@ -349,4 +349,6 @@ public class Util {
     static public final char THIN_SPACE = '\u2009';
     /** Unicode plusminus symbol. */
     static public final char PLUSMINUS = '\u00b1';
+    /** Unicode end-of-text character. */
+    static public final char EOT = '\u0003';
 }

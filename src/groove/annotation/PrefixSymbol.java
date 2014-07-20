@@ -16,7 +16,7 @@
  */
 package groove.annotation;
 
-import groove.util.parse.Precedence;
+import groove.util.parse.OpKind;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,5 +30,5 @@ public @interface PrefixSymbol {
     /** 
      * The operator priority.
      */
-    public Precedence precedence();
+    public OpKind precedence();
 }

@@ -18,7 +18,7 @@ package groove.algebra.syntax;
 
 import groove.algebra.SignatureKind;
 import groove.util.line.Line;
-import groove.util.parse.Precedence;
+import groove.util.parse.OpKind;
 
 import java.util.Collections;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class Variable extends Expression {
     }
 
     @Override
-    protected Line toLine(Precedence context) {
+    protected Line toLine(OpKind context) {
         return Line.atom(getName());
     }
 

@@ -17,11 +17,10 @@
 package groove.util.parse;
 
 import groove.algebra.SignatureKind;
-import groove.util.Pair;
 import groove.util.Triple;
 import groove.util.line.Line;
-import groove.util.parse.Precedence.Direction;
-import groove.util.parse.Precedence.Placement;
+import groove.util.parse.OpKind.Direction;
+import groove.util.parse.OpKind.Placement;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -109,19 +108,24 @@ public class Expr<O extends Op> implements Fallible {
         errors.addAll(errors);
     }
 
+    @Override
+    public void addErrors(FormatException exc) {
+        addErrors(exc.getErrors());
+    }
+
     private final FormatErrorSet errors;
 
     /** Returns a formatted line representation of this expression. */
     public Line toLine() {
-        return toLine(Precedence.NONE);
+        return toLine(OpKind.NONE);
     }
 
     /**
      * Builds the display string for this expression in the
      * result parameter.
      */
-    private Line toLine(Precedence context) {
-        if (getOp().getPrecedence() == Precedence.CALL) {
+    private Line toLine(OpKind context) {
+        if (getOp().getKind() == OpKind.CALL) {
             return toCallLine();
         } else {
             return toFixLine(context);
@@ -139,18 +143,18 @@ public class Expr<O extends Op> implements Fallible {
             } else {
                 firstArg = false;
             }
-            result.add(arg.toLine(Precedence.NONE));
+            result.add(arg.toLine(OpKind.NONE));
         }
         result.add(Line.atom(")"));
         return Line.composed(result);
     }
 
     /** Builds a display string for an operator with an infix or prefix symbol. */
-    private Line toFixLine(Precedence context) {
+    private Line toFixLine(OpKind context) {
         List<Line> result = new ArrayList<Line>();
-        Precedence me = getOp().getPrecedence();
+        OpKind me = getOp().getKind();
         boolean addPars = me.compareTo(context) < 0;
-        boolean addSpaces = me.compareTo(Precedence.MULT) < 0;
+        boolean addSpaces = me.compareTo(OpKind.MULT) < 0;
         int nextArgIx = 0;
         if (addPars) {
             result.add(Line.atom("("));
@@ -246,36 +250,20 @@ public class Expr<O extends Op> implements Fallible {
     /** The singleton null content instance. */
     public static final NullContent NULL = new NullContent();
 
-    /**
-     * An identifier as can appear in the payload of an {@link Expr} object.
-     * An identifier consists of an optional prefix and a list of names.
-     * @author Arend Rensink
-     * @version $Id$
-     */
-    public static class Id extends Pair<String,List<String>> {
-        /** Constructs an identifier with a given (possibly {@code null}) prefix
-         * and an initially empty list of names.
-         */
-        public Id(String prefix) {
-            super(prefix, new ArrayList<String>());
+    /** Creates expression content for an algebraic constant. */
+    public static final Content<?> createContent(SignatureKind sig, String payload) {
+        switch (sig) {
+        case BOOL:
+            return new BoolContent(payload);
+        case INT:
+            return new IntContent(payload);
+        case REAL:
+            return new RealContent(payload);
+        case STRING:
+            return new StringContent(payload);
         }
-
-        /** Constructs an identifier with a given (possibly {@code null}) prefix
-         * and an initially empty list of names.
-         */
-        public Id(String prefix, List<String> names) {
-            super(prefix, names);
-        }
-
-        /** Returns the (possibly {@code null}) prefix of this identifier. */
-        public String getPrefix() {
-            return one();
-        }
-
-        /** Returns the (nonempty) list of names that this identifier consists of. */
-        public List<String> getNames() {
-            return two();
-        }
+        assert false;
+        return null;
     }
 
     /**

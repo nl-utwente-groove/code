@@ -23,7 +23,7 @@ package groove.explore.syntax;
 
 @header {
 package groove.explore.syntax;
-import groove.grammar.model.FormatErrorSet;
+import groove.util.parse.FormatErrorSet;
 }
 
 @members {

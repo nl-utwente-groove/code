@@ -21,7 +21,7 @@ import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
-import groove.util.parse.Precedence;
+import groove.util.parse.OpKind;
 
 import java.util.Collections;
 import java.util.Map;
@@ -71,7 +71,7 @@ public class FieldExpr extends Expression {
     }
 
     @Override
-    protected Line toLine(Precedence context) {
+    protected Line toLine(OpKind context) {
         Line result;
         if (getTarget() != null) {
             result =

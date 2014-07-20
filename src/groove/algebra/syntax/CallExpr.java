@@ -21,9 +21,9 @@ import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
-import groove.util.parse.Precedence;
-import groove.util.parse.Precedence.Direction;
-import groove.util.parse.Precedence.Placement;
+import groove.util.parse.OpKind;
+import groove.util.parse.OpKind.Direction;
+import groove.util.parse.OpKind.Placement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +90,7 @@ public class CallExpr extends Expression {
     }
 
     @Override
-    public Precedence getPrecedence() {
+    public OpKind getPrecedence() {
         return getOperator().getPrecedence();
     }
 
@@ -150,7 +150,7 @@ public class CallExpr extends Expression {
     }
 
     @Override
-    protected Line toLine(Precedence context) {
+    protected Line toLine(OpKind context) {
         if (getOperator().getSymbol() == null) {
             return toCallLine();
         } else {
@@ -169,18 +169,18 @@ public class CallExpr extends Expression {
             } else {
                 firstArg = false;
             }
-            result.add(arg.toLine(Precedence.NONE));
+            result.add(arg.toLine(OpKind.NONE));
         }
         result.add(Line.atom(")"));
         return Line.composed(result);
     }
 
     /** Builds a display string for an operator with an infix or prefix symbol. */
-    private Line toFixLine(Precedence context) {
+    private Line toFixLine(OpKind context) {
         List<Line> result = new ArrayList<Line>();
-        Precedence me = getOperator().getPrecedence();
+        OpKind me = getOperator().getPrecedence();
         boolean addPars = me.compareTo(context) < 0;
-        boolean addSpaces = me.compareTo(Precedence.MULT) < 0;
+        boolean addSpaces = me.compareTo(OpKind.MULT) < 0;
         int nextArgIx = 0;
         if (addPars) {
             result.add(Line.atom("("));

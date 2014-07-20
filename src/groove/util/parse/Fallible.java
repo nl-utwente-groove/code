@@ -35,4 +35,7 @@ public interface Fallible {
 
     /** Adds multiple errors to this object. */
     public void addErrors(Set<FormatError> errors);
+
+    /** Adds the errors from a format exception to this object. */
+    public void addErrors(FormatException errors);
 }
