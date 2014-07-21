@@ -895,9 +895,14 @@ public class StringHandler {
         }
     }
 
-    /** Tests if a character may occur in an identifier. */
+    /** Tests if a character may occur within an identifier. */
     static public boolean isIdentifierPart(char c) {
         return Character.isJavaIdentifierPart(c) || c == HYPHEN;
+    }
+
+    /** Tests if a character may occur at the end of an identifier. */
+    static public boolean isIdentifierEnd(char c) {
+        return Character.isJavaIdentifierPart(c);
     }
 
     /**

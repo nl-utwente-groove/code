@@ -29,8 +29,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      */
     public Assignment toAssignment() throws FormatException {
         if (getType() != ExprParser.ASSIGN) {
-            throw new FormatException("'%s' is not an assignment",
-                toInputString());
+            throw new FormatException("'%s' is not an assignment", toInputString());
         }
         String lhs = getChild(0).getText();
         Expression rhs = getChild(1).toExpression();
@@ -52,12 +51,10 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    public Expression toExpression(Map<String,SignatureKind> varMap)
-        throws FormatException {
+    public Expression toExpression(Map<String,SignatureKind> varMap) throws FormatException {
         Map<SignatureKind,? extends Expression> choice = toExpressions(varMap);
         if (choice.size() > 1) {
-            throw new FormatException(
-                "Can't derive type of '%s': add type prefix", toInputString());
+            throw new FormatException("Can't derive type of '%s': add type prefix", toInputString());
         }
         Expression result = choice.values().iterator().next();
         result.setParseString(toInputString());
@@ -69,14 +66,13 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    private Map<SignatureKind,? extends Expression> toExpressions(
-            Map<String,SignatureKind> varMap) throws FormatException {
+    private Map<SignatureKind,? extends Expression> toExpressions(Map<String,SignatureKind> varMap)
+        throws FormatException {
         Map<SignatureKind,? extends Expression> result;
         switch (getToken().getType()) {
         case ExprParser.CONST:
             Constant constant = toConstant();
-            result =
-                Collections.singletonMap(constant.getSignature(), constant);
+            result = Collections.singletonMap(constant.getSignature(), constant);
             break;
         case ExprParser.PAR:
             result = toParameters();
@@ -103,21 +99,18 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      */
     public Constant toConstant() throws FormatException {
         if (getToken().getType() != ExprParser.CONST) {
-            throw new FormatException("'%s' does not represent a constant",
-                toInputString());
+            throw new FormatException("'%s' does not represent a constant", toInputString());
         }
         Constant result = getChild(0).findConstant();
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();
             SignatureKind sig = SignatureKind.getKind(prefix);
             if (sig == null) {
-                throw new FormatException(
-                    "Prefix '%s' in '%s' does not represent a type", prefix,
+                throw new FormatException("Prefix '%s' in '%s' does not represent a type", prefix,
                     toInputString());
             }
             if (result.getSignature() != sig) {
-                throw new FormatException("Literal %s is not of type %s",
-                    result, prefix);
+                throw new FormatException("Literal %s is not of type %s", result, prefix);
             }
         }
         result.setParseString(toInputString());
@@ -131,7 +124,13 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         SignatureKind type = getSigKind(literal.getToken());
         String literalText = minus ? getText() : "";
         literalText += literal.getChild(0).getText();
-        return Constant.instance(type, literalText);
+        try {
+            return type.createConstant(literalText);
+        } catch (FormatException exc) {
+            // the text was obtained from the parser and so should be a valid symbol
+            assert false : exc.getMessage();
+            return null;
+        }
     }
 
     private Map<SignatureKind,Parameter> toParameters() throws FormatException {
@@ -140,16 +139,14 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
             new EnumMap<SignatureKind,Parameter>(SignatureKind.class);
         int number = Integer.parseInt(getChild(0).getText());
         if (number < 0) {
-            throw new FormatException(
-                "Parameter '%s' must have a non-negative number",
+            throw new FormatException("Parameter '%s' must have a non-negative number",
                 toInputString());
         }
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();
             SignatureKind type = SignatureKind.getKind(prefix);
             if (type == null) {
-                throw new FormatException(
-                    "Prefix '%s' does not represent a type", prefix);
+                throw new FormatException("Prefix '%s' does not represent a type", prefix);
             }
             result.put(type, new Parameter(true, number, type));
         } else {
@@ -160,8 +157,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         return result;
     }
 
-    private Map<SignatureKind,Expression> toFieldOrVarExprs(
-            Map<String,SignatureKind> varMap) throws FormatException {
+    private Map<SignatureKind,Expression> toFieldOrVarExprs(Map<String,SignatureKind> varMap)
+        throws FormatException {
         assert getType() == ExprParser.FIELD;
         Map<SignatureKind,Expression> result =
             new EnumMap<SignatureKind,Expression>(SignatureKind.class);
@@ -169,14 +166,12 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
             String prefix = getChild(1).getText();
             SignatureKind type = SignatureKind.getKind(prefix);
             if (type == null) {
-                throw new FormatException(
-                    "Prefix '%s' does not represent a type", prefix);
+                throw new FormatException("Prefix '%s' does not represent a type", prefix);
             }
             result.put(type, getChild(0).toFieldOrVarExpr(true, varMap, type));
         } else {
             for (SignatureKind type : SignatureKind.values()) {
-                result.put(type,
-                    getChild(0).toFieldOrVarExpr(false, varMap, type));
+                result.put(type, getChild(0).toFieldOrVarExpr(false, varMap, type));
             }
         }
         return result;
@@ -189,15 +184,12 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap variable typing
      * @param type expected type of the expression
      */
-    private Expression toFieldOrVarExpr(boolean prefixed,
-            Map<String,SignatureKind> varMap, SignatureKind type)
-        throws FormatException {
+    private Expression toFieldOrVarExpr(boolean prefixed, Map<String,SignatureKind> varMap,
+        SignatureKind type) throws FormatException {
         Expression result;
         if (getType() == ExprParser.DOT) {
             assert getChildCount() == 2;
-            result =
-                new FieldExpr(prefixed, getChild(0).getText(),
-                    getChild(1).getText(), type);
+            result = new FieldExpr(prefixed, getChild(0).getText(), getChild(1).getText(), type);
         } else {
             assert getChildCount() == 0;
             String name = getText();
@@ -206,8 +198,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
                 // this is a self-field
                 result = new FieldExpr(prefixed, null, name, type);
             } else if (varSig != type) {
-                throw new FormatException("Variable %s is of type %s, not %s",
-                    name, varSig.getName(), type.getName());
+                throw new FormatException("Variable %s is of type %s, not %s", name,
+                    varSig.getName(), type.getName());
             } else {
                 result = new Variable(prefixed, name, type);
             }
@@ -219,8 +211,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * Returns the set of derivable expressions for an operator tree,
      * i.e., in which the root represents an operator.
      */
-    private Map<SignatureKind,Expression> toOpExprs(
-            Map<String,SignatureKind> varMap) throws FormatException {
+    private Map<SignatureKind,Expression> toOpExprs(Map<String,SignatureKind> varMap)
+        throws FormatException {
         List<Map<SignatureKind,? extends Expression>> args =
             new ArrayList<Map<SignatureKind,? extends Expression>>();
         // all children are arguments
@@ -235,8 +227,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * i.e., in which the root is a {@link ExprParser#CALL} node.
      * @param varMap variable typing
      */
-    private Map<SignatureKind,Expression> toCallExprs(
-            Map<String,SignatureKind> varMap) throws FormatException {
+    private Map<SignatureKind,Expression> toCallExprs(Map<String,SignatureKind> varMap)
+        throws FormatException {
         Map<SignatureKind,Expression> result =
             new EnumMap<SignatureKind,Expression>(SignatureKind.class);
         List<Map<SignatureKind,? extends Expression>> args =
@@ -248,8 +240,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         ExprTree opTree = getChild(0);
         String opName = opTree.getChild(0).getText();
         if (opTree.getChildCount() == 2) {
-            result =
-                toCallExprs(opTree.getChild(1).getText(), opName, args, varMap);
+            result = toCallExprs(opTree.getChild(1).getText(), opName, args, varMap);
         } else {
             result = toCallExprs(opName, args, varMap);
         }
@@ -265,16 +256,15 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * possible types to corresponding expressions
      * @param varMap variable typing
      */
-    private Map<SignatureKind,Expression> toCallExprs(String prefix,
-            String opName, List<Map<SignatureKind,? extends Expression>> args,
-            Map<String,SignatureKind> varMap) throws FormatException {
+    private Map<SignatureKind,Expression> toCallExprs(String prefix, String opName,
+        List<Map<SignatureKind,? extends Expression>> args, Map<String,SignatureKind> varMap)
+        throws FormatException {
         Map<SignatureKind,Expression> result =
             new EnumMap<SignatureKind,Expression>(SignatureKind.class);
         SignatureKind opSig = SignatureKind.getKind(prefix);
         Operator op = opSig.getOperator(opName);
         if (op == null) {
-            throw new FormatException("Operator '%s:%s' does exist",
-                opSig.getName(), opName);
+            throw new FormatException("Operator '%s:%s' does exist", opSig.getName(), opName);
         }
         result.put(op.getResultType(), newCallExp(true, op, args));
         return result;
@@ -289,33 +279,29 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap variable typing
      */
     private Map<SignatureKind,Expression> toCallExprs(String opName,
-            List<Map<SignatureKind,? extends Expression>> args,
-            Map<String,SignatureKind> varMap) throws FormatException {
+        List<Map<SignatureKind,? extends Expression>> args, Map<String,SignatureKind> varMap)
+        throws FormatException {
         Map<SignatureKind,Expression> result =
             new EnumMap<SignatureKind,Expression>(SignatureKind.class);
         List<Operator> ops = Operator.getOps(opName);
         // look up op based on argument types
         if (ops.isEmpty()) {
-            throw new FormatException("No such operator '%s' in '%s'", opName,
-                toInputString());
+            throw new FormatException("No such operator '%s' in '%s'", opName, toInputString());
         }
         for (Operator op : ops) {
             boolean duplicate = false;
             try {
-                duplicate =
-                    (result.put(op.getResultType(), newCallExp(false, op, args)) != null);
+                duplicate = (result.put(op.getResultType(), newCallExp(false, op, args)) != null);
             } catch (FormatException e) {
                 // this candidate did not work out; proceed
             }
             if (duplicate) {
-                throw new FormatException(
-                    "Typing of '%s' is ambiguous: add type prefixes",
+                throw new FormatException("Typing of '%s' is ambiguous: add type prefixes",
                     toInputString());
             }
         }
         if (result.isEmpty()) {
-            throw new FormatException(
-                "Operator '%s' not applicable to arguments in '%s'", opName,
+            throw new FormatException("Operator '%s' not applicable to arguments in '%s'", opName,
                 toInputString());
         }
         return result;
@@ -330,11 +316,9 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * for the required operator types
      */
     private Expression newCallExp(boolean prefixed, Operator op,
-            List<Map<SignatureKind,? extends Expression>> args)
-        throws FormatException {
+        List<Map<SignatureKind,? extends Expression>> args) throws FormatException {
         if (op.getArity() != args.size()) {
-            throw new FormatException(
-                "Operator '%s' expects %s parameters but has %s",
+            throw new FormatException("Operator '%s' expects %s parameters but has %s",
                 op.toString(), op.getArity(), args.size());
         }
         List<SignatureKind> parTypes = op.getParamTypes();
@@ -342,8 +326,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         for (int i = 0; i < args.size(); i++) {
             Expression arg = args.get(i).get(parTypes.get(i));
             if (arg == null) {
-                throw new FormatException(
-                    "Parameter %s of '%s' should have type %s", i,
+                throw new FormatException("Parameter %s of '%s' should have type %s", i,
                     toInputString(), parTypes.get(i));
             }
             selectedArgs.add(arg);
@@ -353,8 +336,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         OpValue opValue = op.getOpValue();
         if ((opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG)
             && selectedArgs.get(0) instanceof Constant) {
-            return Constant.instance(op.getResultType(), op.getSymbol()
-                + selectedArgs.get(0).toDisplayString());
+            return op.getResultType().createConstant(
+                op.getSymbol() + selectedArgs.get(0).toDisplayString());
         } else {
             return new CallExpr(prefixed, op, selectedArgs);
         }

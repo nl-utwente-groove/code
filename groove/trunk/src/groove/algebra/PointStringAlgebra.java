@@ -25,7 +25,7 @@ import groove.algebra.syntax.Expression;
  * @version $Revision $
  */
 public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer> implements
-        PointAlgebra<String> {
+    PointAlgebra<String> {
     /** Private constructor for the singleton instance. */
     private PointStringAlgebra() {
         // empty

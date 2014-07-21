@@ -16,14 +16,11 @@
  */
 package groove.util.parse;
 
-import groove.algebra.SignatureKind;
-import groove.util.Triple;
+import groove.algebra.Constant;
 import groove.util.line.Line;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,22 +34,14 @@ import java.util.Set;
  */
 public class Expr<O extends Op> implements Fallible {
     /**
-     * Constructs an initially argument-free expression with a given top-level operator
-     * and {@code null} content.
+     * Constructs an initially argument- and content-free expression
+     * with a given top-level operator.
      */
-    public Expr(O op) {
-        this(op, null);
-    }
-
-    /**
-     * Constructs an initially argument-free expression with a given top-level operator
-     * and given (possibly {@code null}) content.
-     */
-    public Expr(O op, Content<?> content) {
+    protected Expr(O op) {
+        assert op != null;
         this.op = op;
         this.args = new ArrayList<Expr<O>>();
         this.errors = new FormatErrorSet();
-        this.content = content;
     }
 
     /** Returns the top-level operator of this expression. */
@@ -62,21 +51,46 @@ public class Expr<O extends Op> implements Fallible {
 
     private final O op;
 
-    /** Indicates if this expression has non-{@code null} top-level content. */
-    public boolean hasContent() {
-        return getContent() != null;
+    /** Sets a top-level constant for this expression. */
+    public void setConstant(Constant constant) {
+        assert this.op.getKind() == OpKind.ATOM;
+        assert !hasId();
+        this.constant = constant;
     }
 
-    /** Returns the top-level content of this expression, if any. */
-    public Content<?> getContent() {
-        return this.content;
+    /** Indicates if this expression contains constant content. */
+    public boolean hasConstant() {
+        return getConstant() != null;
     }
 
-    private final Content<?> content;
+    /** Returns the constant wrapped in this expression, if any. */
+    public Constant getConstant() {
+        return this.constant;
+    }
+
+    private Constant constant;
+
+    /** Sets a top-level identifier for this expression. */
+    public void setId(Id id) {
+        assert this.op.getKind() == OpKind.ATOM || this.op.getKind() == OpKind.CALL;
+        assert !hasConstant();
+        this.id = id;
+    }
+
+    /** Indicates if this expression contains a top-level identifier. */
+    public boolean hasId() {
+        return getId() != null;
+    }
+
+    /** Returns the identifier wrapped in this expression, if any. */
+    public Id getId() {
+        return this.id;
+    }
+
+    private Id id;
 
     /** Adds an argument to this expression. */
     public void addArg(Expr<O> arg) {
-        assert this.args.size() < getOp().getArity();
         this.args.add(arg);
         addErrors(arg.getErrors());
     }
@@ -105,7 +119,7 @@ public class Expr<O extends Op> implements Fallible {
 
     @Override
     public void addErrors(Set<FormatError> errors) {
-        errors.addAll(errors);
+        this.errors.addAll(errors);
     }
 
     @Override
@@ -115,46 +129,67 @@ public class Expr<O extends Op> implements Fallible {
 
     private final FormatErrorSet errors;
 
-    /** Returns a formatted line representation of this expression. */
+    /** Returns a formatted line representation of this expression,
+     * without spaces for readability.
+     */
     public Line toLine() {
-        return toLine(OpKind.NONE);
+        return toLine(false);
+    }
+
+    /** Returns a formatted line representation of this expression,
+     * with optional spaces for readability.
+     * @param spaces if {@code true}, spaces are introduced for readability
+     */
+    public Line toLine(boolean spaces) {
+        return toLine(OpKind.NONE, spaces);
     }
 
     /**
      * Builds the display string for this expression in the
      * result parameter.
+     * @param spaces if {@code true}, spaces are introduced for readability
      */
-    private Line toLine(OpKind context) {
+    private Line toLine(OpKind context, boolean spaces) {
         if (getOp().getKind() == OpKind.CALL) {
-            return toCallLine();
+            return toCallLine(spaces);
+        } else if (getOp().getKind() == OpKind.ATOM) {
+            if (hasId()) {
+                return getId().toLine();
+            } else {
+                return Line.atom(getConstant().toDisplayString());
+            }
         } else {
-            return toFixLine(context);
+            return toFixLine(context, spaces);
         }
     }
 
-    /** Builds a display string for an operator without symbol. */
-    private Line toCallLine() {
+    /** Builds a display string for an operator without symbol.
+     * @param spaces if {@code true}, spaces are introduced for readability */
+    private Line toCallLine(boolean spaces) {
         List<Line> result = new ArrayList<Line>();
-        result.add(Line.atom(this.op.getSymbol() + '('));
+        result.add(getId().toLine());
+        result.add(Line.atom("("));
         boolean firstArg = true;
         for (Expr<?> arg : getArgs()) {
             if (!firstArg) {
-                result.add(Line.atom(", "));
+                result.add(Line.atom(spaces ? ", " : ","));
+
             } else {
                 firstArg = false;
             }
-            result.add(arg.toLine(OpKind.NONE));
+            result.add(arg.toLine(OpKind.NONE, spaces));
         }
         result.add(Line.atom(")"));
         return Line.composed(result);
     }
 
-    /** Builds a display string for an operator with an infix or prefix symbol. */
-    private Line toFixLine(OpKind context) {
+    /** Builds a display string for an operator with an infix or prefix symbol.
+     * @param spaces if {@code true}, spaces are introduced for readability */
+    private Line toFixLine(OpKind context, boolean spaces) {
         List<Line> result = new ArrayList<Line>();
         OpKind me = getOp().getKind();
         boolean addPars = me.compareTo(context) < 0;
-        boolean addSpaces = me.compareTo(OpKind.MULT) < 0;
+        boolean addSpaces = spaces && me.compareTo(OpKind.MULT) < 0;
         int nextArgIx = 0;
         if (addPars) {
             result.add(Line.atom("("));
@@ -162,7 +197,7 @@ public class Expr<O extends Op> implements Fallible {
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
             result.add(this.args.get(nextArgIx).toLine(
-                me.getDirection() == Direction.LEFT ? me : me.increase()));
+                me.getDirection() == Direction.LEFT ? me : me.increase(), spaces));
             nextArgIx++;
             if (addSpaces) {
                 result.add(Line.atom(" "));
@@ -175,7 +210,7 @@ public class Expr<O extends Op> implements Fallible {
                 result.add(Line.atom(" "));
             }
             result.add(this.args.get(nextArgIx).toLine(
-                me.getDirection() == Direction.RIGHT ? me : me.increase()));
+                me.getDirection() == Direction.RIGHT ? me : me.increase(), spaces));
             nextArgIx++;
         }
         if (addPars) {
@@ -209,8 +244,10 @@ public class Expr<O extends Op> implements Fallible {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.op.hashCode();
-        result = prime * result + (hasContent() ? getContent().hashCode() : 0);
         result = prime * result + this.args.hashCode();
+        result = prime * result + this.errors.hashCode();
+        result = prime * result + ((this.constant == null) ? 0 : this.constant.hashCode());
+        result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
         return result;
     }
 
@@ -226,17 +263,24 @@ public class Expr<O extends Op> implements Fallible {
         if (!this.op.equals(other.op)) {
             return false;
         }
-        if (hasContent()) {
-            if (!other.hasContent()) {
-                return false;
-            }
-            if (!other.getContent().equals(getContent())) {
-                return false;
-            }
-        } else if (!other.hasContent()) {
+        if (!this.args.equals(other.args)) {
             return false;
         }
-        if (!this.args.equals(other.args)) {
+        if (!this.errors.equals(other.errors)) {
+            return false;
+        }
+        if (this.constant == null) {
+            if (other.constant != null) {
+                return false;
+            }
+        } else if (!this.constant.equals(other.constant)) {
+            return false;
+        }
+        if (this.id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!this.id.equals(other.id)) {
             return false;
         }
         return true;
@@ -244,153 +288,12 @@ public class Expr<O extends Op> implements Fallible {
 
     @Override
     public String toString() {
-        return this.op.toString() + (hasContent() ? "(" + getContent() + ")" : "") + this.args;
-    }
-
-    /** The singleton null content instance. */
-    public static final NullContent NULL = new NullContent();
-
-    /** Creates expression content for an algebraic constant. */
-    public static final Content<?> createContent(SignatureKind sig, String payload) {
-        switch (sig) {
-        case BOOL:
-            return new BoolContent(payload);
-        case INT:
-            return new IntContent(payload);
-        case REAL:
-            return new RealContent(payload);
-        case STRING:
-            return new StringContent(payload);
+        String result = this.op.toString();
+        if (hasId()) {
+            result += getId();
+        } else if (hasConstant()) {
+            result += "<" + getConstant() + ">";
         }
-        assert false;
-        return null;
-    }
-
-    /**
-     * Top-level content of an expression.
-     * @author Arend Rensink
-     * @version $Id$
-     */
-    abstract public static class Content<P> extends Triple<ContentKind,String,P> {
-        /** Constructs content of a given kind. */
-        protected Content(ContentKind kind, String parseString, P payload) {
-            super(kind, parseString, payload);
-        }
-
-        /** Returns the kind of content. */
-        public ContentKind getKind() {
-            return one();
-        }
-
-        /** Returns the payload of this content object. */
-        public P getPayload() {
-            return three();
-        }
-
-        /** Indicates if this content has a data payload. */
-        public boolean hasSig() {
-            return getSig() != null;
-        }
-
-        /** Returns the signature of the data payload. */
-        public SignatureKind getSig() {
-            return getKind().getSig();
-        }
-    }
-
-    /** Null content. */
-    public static class NullContent extends Content<Object> {
-        /** Constructs the singleton instance of this content class. */
-        private NullContent() {
-            super(ContentKind.NULL, "", null);
-        }
-    }
-
-    /** Identifier content. */
-    public static class IdContent extends Content<Id> {
-        /** Constructs a content object wrapping a given identifier. */
-        public IdContent(String parseString, Id id) {
-            super(ContentKind.ID, parseString, id);
-        }
-
-        /** Adds a name to the identifier wrapped in this content. */
-        public void addName(String name) {
-            getPayload().two().add(name);
-        }
-    }
-
-    /** String content. */
-    public static class StringContent extends Content<String> {
-        /** Constructs a content object wrapping a given string. */
-        public StringContent(String value) {
-            super(ContentKind.STRING, value, toUnquoted(value));
-        }
-
-        private static String toUnquoted(String value) {
-            try {
-                return StringHandler.toUnquoted(value);
-            } catch (FormatException exc) {
-                throw new IllegalArgumentException();
-            }
-        }
-    }
-
-    /** Boolean content. */
-    public static class BoolContent extends Content<Boolean> {
-        /** Constructs a content object wrapping a given boolean value represented as a string. */
-        public BoolContent(String value) {
-            super(ContentKind.BOOL, value, new Boolean(value));
-        }
-    }
-
-    /** Real-number content. */
-    public static class RealContent extends Content<BigDecimal> {
-        /** Constructs a content object wrapping a given real value represented as a string. */
-        public RealContent(String value) {
-            super(ContentKind.REAL, value, new BigDecimal(value));
-        }
-    }
-
-    /** Integer content. */
-    public static class IntContent extends Content<BigInteger> {
-        /** Constructs a content object wrapping a given integer value represented as a string. */
-        public IntContent(String value) {
-            super(ContentKind.INT, value, new BigInteger(value));
-        }
-    }
-
-    /**
-     * Kind of top-level expression content.
-     * @author Arend Rensink
-     * @version $Id$
-     */
-    public static enum ContentKind {
-        /** Identifier. */
-        ID,
-        /** Identifier. */
-        NULL,
-        /** Boolean content. */
-        BOOL(SignatureKind.STRING),
-        /** Integer content. */
-        INT(SignatureKind.STRING),
-        /** Real-number content. */
-        REAL(SignatureKind.STRING),
-        /** String content. */
-        STRING(SignatureKind.STRING), ;
-
-        private ContentKind() {
-            this(null);
-        }
-
-        private ContentKind(SignatureKind sig) {
-            this.sig = sig;
-        }
-
-        /** Returns the signature kind of this content, if any. */
-        public SignatureKind getSig() {
-            return this.sig;
-        }
-
-        private final SignatureKind sig;
+        return result + getArgs();
     }
 }

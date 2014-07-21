@@ -22,13 +22,13 @@ import static groove.util.parse.ExprParser.TokenClaz.EOT;
 import static groove.util.parse.ExprParser.TokenClaz.LPAR;
 import static groove.util.parse.ExprParser.TokenClaz.NAME;
 import static groove.util.parse.ExprParser.TokenClaz.RPAR;
+import groove.algebra.BoolSignature;
+import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
 import groove.io.Util;
 import groove.util.Duo;
 import groove.util.Pair;
 import groove.util.Triple;
-import groove.util.parse.Expr.Content;
-import groove.util.parse.Expr.IdContent;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
 
@@ -54,9 +54,8 @@ import java.util.TreeMap;
  * Here, <code>LITERAL</code> is a literal data constant, and <code>NAME</code> a name
  * formed according to the Java rules, where additionally hyphens are allowed inside names.
  * <p>
- * Identifier prefixes and identifier qualification are only enabled if the
- * passed-in operator type includes operators of kind {@link OpKind#PREFIX_ID}
- * and {@link OpKind#QUAL_ID}, respectively; likewise, call expressions are only enabled if the
+ * Identifier prefixes and identifier qualification are only enabled set in the constructor;
+ * call expressions are only enabled if the
  * passed-in operator type includes an operator of kind {@link OpKind#CALL}.
  * @author Arend Rensink
  * @version $Id$
@@ -148,10 +147,10 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
     private final boolean qualIds;
 
     /** Returns the token separating the prefix from the main ID,
-     * if {@link #hasPrefixIds()} holds.
+     * if {@link #hasQualIds()} holds.
      */
     TokenType getQualSepToken() {
-        assert hasPrefixIds();
+        assert hasQualIds();
         if (this.qualSepToken == null) {
             this.qualSepToken = new TokenType(getQualSep());
         }
@@ -196,6 +195,14 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
     }
 
     private final String description;
+
+    /**
+     * Callback factory method for the expression objects to be constructed.
+     * May be overridden to specialise the expression type.
+     */
+    protected Expr<O> createExpr(O op) {
+        return new Expr<O>(op);
+    }
 
     @Override
     public boolean accepts(String text) {
@@ -361,14 +368,19 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             Expr<O> result;
             try {
                 result = parse(OpKind.NONE);
+                if (next() != eot()) {
+                    result.addErrors(unexpectedToken(next()));
+                    result.addError(new FormatError("Unparsed suffix: %s", this.input.substring(
+                        next().start(), this.input.length())));
+                }
             } catch (FormatException exc) {
-                result = createExpr(getAtomOp());
-                result.addErrors(exc);
+                result = createErrorExpr(exc);
             }
             return result;
         }
 
         /** Parses the string with which this instance was initialised. */
+        @SuppressWarnings("unchecked")
         private Expr<O> parse(OpKind context) throws FormatException {
             Expr<O> result = null;
             Token nextToken = next();
@@ -377,21 +389,19 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                 result = parsePrefixed();
                 break;
             case LPAR:
-                consumeToken();
                 result = parseBracketed();
                 break;
             case NAME:
-                consumeToken();
                 result = parseCall();
                 break;
             case CONST:
-                consumeToken();
-                result = createExpr(getAtomOp(), nextToken.toContent());
+                consume();
+                result = createConstantExpr(nextToken.createConstant());
                 break;
             default:
                 throw unexpectedToken(nextToken);
             }
-            while (hasNext()) {
+            while (next().claz() != EOT) {
                 nextToken = next();
                 if (nextToken.claz() != TokenClaz.OP) {
                     break;
@@ -408,18 +418,15 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                 if (context.equals(kind) && kind.getDirection() != Direction.RIGHT) {
                     break;
                 }
-                consumeToken();
+                consume();
                 if (kind.getPlace() == Placement.POSTFIX) {
-                    Expr<O> arg = result;
-                    result = createExpr(op);
-                    result.addArg(arg);
+                    result = createNodrmalExpr(op, result);
                     break;
                 }
-                Expr<O> arg0 = result;
-                Expr<O> arg1 = parse(kind);
-                result = createExpr(op);
-                result.addArg(arg0);
-                result.addArg(arg1);
+                result = createNodrmalExpr(op, result, parse(kind));
+                if (kind.getDirection() == Direction.NEITHER) {
+                    break;
+                }
             }
             return result;
         }
@@ -432,12 +439,12 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         private Expr<O> parseBracketed() throws FormatException {
             assert next().claz() == LPAR;
             Expr<O> result = null;
-            consumeToken();
+            consume();
             result = parse(OpKind.NONE);
             if (next().claz() != RPAR) {
                 throw unbalancedBracket(next());
             }
-            consumeToken();
+            consume();
             return result;
         }
 
@@ -446,17 +453,17 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          * The next token is known to be an operator (though not necessarily
          * a prefix operator).
          */
+        @SuppressWarnings("unchecked")
         private Expr<O> parsePrefixed() throws FormatException {
             Expr<O> result = null;
             Token opToken = next();
-            consumeToken();
-            OpFamily<O> ops = next().ops();
+            consume();
+            OpFamily<O> ops = opToken.ops();
             assert ops != null;
             if (ops.hasPrefixOp()) {
                 O op = ops.prefixOp();
                 Expr<O> arg = parse(op.getKind());
-                result = createExpr(op);
-                result.addArg(arg);
+                result = createNodrmalExpr(op, arg);
             } else {
                 result = parse();
                 result.addErrors(noPrefixOp(opToken));
@@ -472,17 +479,19 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                 if (!hasCallOp()) {
                     throw unexpectedToken(next());
                 }
-                consumeToken();
-                result = createExpr(getCallOp(), result.getContent());
-                result.addArg(parse(OpKind.NONE));
-                while (next().claz() == TokenClaz.COMMA) {
-                    consumeToken();
+                consume();
+                result = createIdExpr(getCallOp(), result.getId());
+                if (next().claz() != RPAR) {
                     result.addArg(parse(OpKind.NONE));
+                    while (next().claz() == TokenClaz.COMMA) {
+                        consume();
+                        result.addArg(parse(OpKind.NONE));
+                    }
                 }
                 if (next().claz() != RPAR) {
                     throw unbalancedBracket(next());
                 }
-                consumeToken();
+                consume();
             }
             return result;
         }
@@ -492,62 +501,83 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             assert next().claz() == NAME;
             Expr<O> result;
             Token nameToken = next();
-            consumeToken();
+            consume();
             Id id;
             if (next().type() == getPrefixIdToken()) {
-                consumeToken();
+                consume();
                 id = new Id(nameToken.substring());
                 if (next().claz() != NAME) {
                     throw unexpectedToken(next());
                 }
+                nameToken = next();
+                consume();
             } else {
                 id = new Id(null);
-                id.addName(nameToken.substring());
             }
-            result = createExpr(getAtomOp(), new IdContent(this.input, id));
+            id.addName(nameToken.substring());
+            result = createIdExpr(getAtomOp(), id);
             while (next().type() == getQualSepToken()) {
-                consumeToken();
+                consume();
                 if (next().claz() != NAME) {
                     throw unexpectedToken(next());
                 }
                 id.addName(next().substring());
+                consume();
             }
             return result;
         }
 
-        /** Factory method for an expression with a given operator. */
-        private Expr<O> createExpr(O op) {
-            return createExpr(op, null);
-        }
-
-        /** Factory method for an expression with a given operator and content. */
-        private Expr<O> createExpr(O op, Content<?> content) {
-            Expr<O> result = new Expr<O>(op, content);
+        /** Factory method for an expression with a given operator 
+         * and list of arguments. 
+         */
+        private Expr<O> createNodrmalExpr(O op, Expr<O>... args) {
+            Expr<O> result = createExpr(op);
+            for (Expr<O> arg : args) {
+                result.addArg(arg);
+            }
             result.setParseString(this.input);
             return result;
         }
 
-        /** Returns {@code true} if scanning has not yet reached the end of the input. */
-        private boolean hasNext() {
-            return !atEnd();
+        /**
+         * Factory method for an expression with a given operator and identifier,
+         * and a list of arguments. 
+         */
+        private Expr<O> createIdExpr(O op, Id id) {
+            Expr<O> result = createExpr(op);
+            result.setId(id);
+            result.setParseString(this.input);
+            return result;
+        }
+
+        /** Factory method for a constant expression. */
+        private Expr<O> createConstantExpr(Constant constant) {
+            Expr<O> result = createExpr(getAtomOp());
+            result.setConstant(constant);
+            result.setParseString(this.input);
+            return result;
+        }
+
+        /** Factory method for atomic expression with a given error. */
+        private Expr<O> createErrorExpr(FormatException exc) {
+            Expr<O> result = createExpr(getAtomOp());
+            result.setParseString(this.input);
+            result.addErrors(exc);
+            return result;
         }
 
         /** Returns the next unconsumed token in the input stream. */
         private Token next() throws FormatException {
             if (this.nextToken == null) {
-                if (atEnd()) {
-                    this.nextToken = eot();
-                } else {
-                    this.nextToken = scan();
-                }
+                this.nextToken = scan();
             }
             return this.nextToken;
         }
 
-        /** Consumes the current token, causing the next call or {@link #next()}
+        /** Consumes the current token, causing the next call of {@link #next()}
          * to scan the next token.
          */
-        private void consumeToken() {
+        private void consume() {
             this.nextToken = null;
         }
 
@@ -558,22 +588,32 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          * Whitespace should have been skipped before this method is invoked.
          */
         private Token scan() throws FormatException {
-            Token result = scanStatic();
-            if (result == null) {
-                // we're not at the end of input
-                char c = charAt();
-                if (Character.isDigit(c)) {
-                    result = scanNumber();
-                } else if (StringHandler.isIdentifierStart(c)) {
-                    result = scanName();
-                } else {
-                    switch (c) {
-                    case StringHandler.SINGLE_QUOTE_CHAR:
-                    case StringHandler.DOUBLE_QUOTE_CHAR:
-                        result = scanString();
+            Token result = null;
+            if (atEnd()) {
+                result = eot();
+            } else if (Character.isDigit(charAt())) {
+                result = scanNumber();
+            } else if (StringHandler.isIdentifierStart(charAt())) {
+                result = scanName();
+            } else {
+                switch (charAt()) {
+                case StringHandler.SINGLE_QUOTE_CHAR:
+                case StringHandler.DOUBLE_QUOTE_CHAR:
+                    result = scanString();
+                    break;
+                case '.':
+                    int nextIx = this.ix + 1;
+                    if (nextIx == this.input.length()) {
                         break;
                     }
+                    if (!Character.isDigit(this.input.charAt(nextIx))) {
+                        break;
+                    }
+                    result = scanNumber();
                 }
+            }
+            if (result == null) {
+                result = scanStatic();
             }
             if (result == null) {
                 throw unrecognisedToken();
@@ -636,34 +676,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
                     nextChar();
                 }
             }
-            Token result;
-            String content = this.input.substring(start, this.ix);
-            result = new Token(getTokenType(sig), createFragment(start, this.ix), content);
-            return result;
-        }
-
-        private FormatException unexpectedToken(Token token) {
-            if (token.claz() == EOT) {
-                return new FormatException("Unexpected end of input");
-            } else {
-                return new FormatException("Unexpected token '%s' at index %s", token.substring(),
-                    token.start());
-            }
-        }
-
-        private FormatException unrecognisedToken() {
-            return new FormatException("Unrecognised token '%s' at index %s", charAt(), this.ix);
-        }
-
-        private FormatException unbalancedBracket(Token token) {
-            return new FormatException("Expected ')' at index %s", token.start());
-        }
-
-        private FormatException noPrefixOp(Token opToken) {
-            Op op = opToken.ops().latefixOp();
-            return new FormatException("%s operator '%s' in prefix position at index %s",
-                StringHandler.toUpper(op.getKind().getPlace().name().toLowerCase()),
-                op.getSymbol(), opToken.start());
+            return new Token(getTokenType(sig), createFragment(start, this.ix));
         }
 
         /**
@@ -677,7 +690,17 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             while (!atEnd() && StringHandler.isIdentifierPart(charAt())) {
                 nextChar();
             }
-            return new Token(NAME.getSingleType(), createFragment(start, this.ix));
+            if (!StringHandler.isIdentifierEnd(this.input.charAt(this.ix - 1))) {
+                prevChar();
+            }
+            LineFragment fragment = createFragment(start, this.ix);
+            String substring = fragment.substring();
+            if (substring.equals(BoolSignature.TRUE.toDisplayString())
+                || substring.equals(BoolSignature.FALSE.toDisplayString())) {
+                return new Token(getTokenType(SignatureKind.BOOL), fragment);
+            } else {
+                return new Token(NAME.getSingleType(), fragment);
+            }
         }
 
         private Token scanString() throws FormatException {
@@ -712,6 +735,10 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             this.ix++;
         }
 
+        private void prevChar() {
+            this.ix--;
+        }
+
         private char charAt() {
             return this.input.charAt(this.ix);
         }
@@ -730,6 +757,31 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
 
         private Token eot;
 
+        private FormatException unexpectedToken(Token token) {
+            if (token.claz() == EOT) {
+                return new FormatException("Unexpected end of input");
+            } else {
+                return new FormatException("Unexpected token '%s' at index %s", token.substring(),
+                    token.start());
+            }
+        }
+
+        private FormatException unrecognisedToken() {
+            return new FormatException("Unrecognised token '%s' at index %s", charAt(), this.ix);
+        }
+
+        private FormatException unbalancedBracket(Token token) {
+            return new FormatException("Expected ')' rather than %s at index %s", token == eot()
+                ? "end of line" : "'" + token.substring() + "'", token.start());
+        }
+
+        private FormatException noPrefixOp(Token opToken) {
+            Op op = opToken.ops().latefixOp();
+            return new FormatException("%s operator '%s' in prefix position at index %s",
+                StringHandler.toUpper(op.getKind().getPlace().name().toLowerCase()),
+                op.getSymbol(), opToken.start());
+        }
+
         /** Factory method for a line fragment.
          * @param start start position of the fragment
          * @param end end position of the fragment
@@ -739,13 +791,13 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
         }
     }
 
-    static class Token extends Triple<TokenType,LineFragment,Object> {
+    /**
+     * Token class used during parsing.
+     * A token consists of a token type and a line fragment where the token occurs.
+     */
+    static class Token extends Pair<TokenType,LineFragment> {
         public Token(TokenType type, LineFragment fragment) {
-            super(type, fragment, null);
-        }
-
-        public Token(TokenType one, LineFragment fragment, Object payload) {
-            super(one, fragment, payload);
+            super(type, fragment);
         }
 
         /** Returns the type of this token. */
@@ -778,15 +830,8 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
             return two().substring();
         }
 
-        /** Converts this token into expression content.
-         */
-        public Content<?> toContent() {
-            switch (claz()) {
-            case CONST:
-                return Expr.createContent(type().sig(), two().substring());
-            default:
-                throw new UnsupportedOperationException();
-            }
+        public Constant createConstant() throws FormatException {
+            return one().sig().createConstant(substring());
         }
     }
 
@@ -886,7 +931,6 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          */
         public TokenType(TokenClaz claz) {
             super(claz, null);
-            assert claz.single();
         }
 
         /**
@@ -999,7 +1043,7 @@ public class ExprParser<O extends Op> implements Parser<Expr<O>> {
          */
         private TokenClaz(boolean single, String text) {
             this.symbol = text;
-            this.type = single ? null : new TokenType(this);
+            this.type = single ? new TokenType(this) : null;
         }
 
         /**

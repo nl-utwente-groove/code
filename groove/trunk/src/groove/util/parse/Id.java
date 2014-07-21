@@ -17,6 +17,7 @@
 package groove.util.parse;
 
 import groove.util.Pair;
+import groove.util.line.Line;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,11 @@ public class Id extends Pair<String,List<String>> {
         super(prefix, names);
     }
 
+    /** Tests if this identifier has a prefix. */
+    public boolean hasPrefix() {
+        return getPrefix() != null;
+    }
+
     /** Returns the (possibly {@code null}) prefix of this identifier. */
     public String getPrefix() {
         return one();
@@ -55,5 +61,20 @@ public class Id extends Pair<String,List<String>> {
     /** Returns the (nonempty) list of names that this identifier consists of. */
     public List<String> getNames() {
         return two();
+    }
+
+    /** Returns a formatted line representation of this identifier. */
+    public Line toLine() {
+        StringBuffer result = new StringBuffer();
+        if (hasPrefix()) {
+            result.append(getPrefix());
+            result.append(":");
+        }
+        result.append(getNames().get(0));
+        for (int i = 1; i < getNames().size(); i++) {
+            result.append('.');
+            result.append(getNames().get(i));
+        }
+        return Line.atom(result.toString());
     }
 }
