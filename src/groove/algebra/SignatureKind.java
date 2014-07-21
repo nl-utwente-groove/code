@@ -18,7 +18,11 @@ package groove.algebra;
 
 import groove.algebra.Signature.OpValue;
 import groove.util.Keywords;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -34,11 +38,29 @@ import java.util.TreeMap;
  */
 public enum SignatureKind {
     /** Signature kind of booleans. */
-    BOOL(Keywords.BOOL, BoolSignature.class,
-            EnumSet.allOf(BoolSignature.Op.class)) {
+    BOOL(Keywords.BOOL, BoolSignature.class, EnumSet.allOf(BoolSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
             return BoolSignature.FALSE;
+        }
+
+        @Override
+        public Constant createConstant(String symbol) throws FormatException {
+            Constant result;
+            if (symbol.equals("" + true)) {
+                result = BoolSignature.TRUE;
+            } else if (symbol.equals("" + false)) {
+                result = BoolSignature.FALSE;
+            } else {
+                throw new FormatException("'%s' is not a valid Boolean constant", symbol);
+            }
+            result.setSymbol(symbol);
+            return result;
+        }
+
+        @Override
+        public boolean denotesConstant(String symbol) {
+            return symbol.equals("" + true) || symbol.equals("" + false);
         }
     },
     /** Signature kind of integers. */
@@ -47,27 +69,88 @@ public enum SignatureKind {
         public Constant getDefaultValue() {
             return IntSignature.ZERO;
         }
+
+        @Override
+        public Constant createConstant(String symbol) throws FormatException {
+            try {
+                Constant result = Constant.instance(new BigInteger(symbol));
+                result.setSymbol(symbol);
+                return result;
+            } catch (NumberFormatException exc) {
+                throw new FormatException("'%s' does not denote an integer number", symbol);
+            }
+        }
+
+        @Override
+        public boolean denotesConstant(String symbol) {
+            try {
+                new BigInteger(symbol);
+                return true;
+            } catch (NumberFormatException exc) {
+                return false;
+            }
+        }
     },
     /** Signature kind of real numbers. */
-    REAL(Keywords.REAL, RealSignature.class,
-            EnumSet.allOf(RealSignature.Op.class)) {
+    REAL(Keywords.REAL, RealSignature.class, EnumSet.allOf(RealSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
             return RealSignature.ZERO;
         }
+
+        @Override
+        public Constant createConstant(String symbol) throws FormatException {
+            try {
+                Constant result = Constant.instance(new BigDecimal(symbol));
+                result.setSymbol(symbol);
+                return result;
+            } catch (NumberFormatException exc) {
+                throw new FormatException("'%s' does not denote a real-valued number", symbol);
+            }
+        }
+
+        @Override
+        public boolean denotesConstant(String symbol) {
+            try {
+                new BigDecimal(symbol);
+                return true;
+            } catch (NumberFormatException exc) {
+                return false;
+            }
+        }
     },
     /** Signature kind of strings. */
-    STRING(Keywords.STRING, StringSignature.class,
-            EnumSet.allOf(StringSignature.Op.class)) {
+    STRING(Keywords.STRING, StringSignature.class, EnumSet.allOf(StringSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
             return StringSignature.EMPTY;
+        }
+
+        @Override
+        public Constant createConstant(String symbol) throws FormatException {
+            try {
+                Constant result = Constant.instance(StringHandler.toUnquoted(symbol));
+                result.setSymbol(symbol);
+                return result;
+            } catch (NumberFormatException exc) {
+                throw new FormatException("'%s' does not denote properly quoted string", symbol);
+            }
+        }
+
+        @Override
+        public boolean denotesConstant(String symbol) {
+            try {
+                createConstant(symbol);
+                return true;
+            } catch (FormatException exc) {
+                return false;
+            }
         }
     };
 
     /** Constructs a signature kind with a given name. */
     private SignatureKind(String name, Class<? extends Signature> sigClass,
-            Set<? extends OpValue> opValues) {
+        Set<? extends OpValue> opValues) {
         assert name != null;
         this.name = name;
         this.sigClass = sigClass;
@@ -78,6 +161,8 @@ public enum SignatureKind {
     final public String getName() {
         return this.name;
     }
+
+    private final String name;
 
     /** Returns a symbolic representation of the default value for this signature. */
     abstract public Constant getDefaultValue();
@@ -92,17 +177,21 @@ public enum SignatureKind {
         return this.sigClass;
     }
 
+    private final Class<? extends Signature> sigClass;
+
+    /** Returns all the operators defined by this signature. */
+    public Set<? extends OpValue> getOpValues() {
+        return this.opValues;
+    }
+
+    private final Set<? extends OpValue> opValues;
+
     /** Returns the operator corresponding to a given operator name of this signature. */
     public Operator getOperator(String name) {
         if (this.operatorMap == null) {
             this.operatorMap = computeOperatorMap();
         }
         return this.operatorMap.get(name);
-    }
-
-    /** Returns all the operators defined by this signature. */
-    public Set<? extends OpValue> getOpValues() {
-        return this.opValues;
     }
 
     /** Creates content for {@link #operatorMap}. */
@@ -115,10 +204,23 @@ public enum SignatureKind {
         return result;
     }
 
-    private final String name;
-    private final Class<? extends Signature> sigClass;
-    private final Set<? extends OpValue> opValues;
     private Map<String,Operator> operatorMap;
+
+    /**
+     * Creates a constant of this signature kind
+     * from a given symbolic string representation. 
+     * @param symbol the symbolic representation; non-{@code null}
+     * @throws FormatException if {@code symbol} is not a valid representation
+     * of a constant of this signature kind
+     * @see #denotesConstant(String)
+     */
+    public abstract Constant createConstant(String symbol) throws FormatException;
+
+    /**
+     * Indicates if a given string is a valid symbolic representation of 
+     * a constant of this signature kind.
+     */
+    public abstract boolean denotesConstant(String symbol);
 
     /** Returns the signature kind for a given signature name. */
     public static SignatureKind getKind(String sigName) {
@@ -136,8 +238,7 @@ public enum SignatureKind {
     }
 
     /** Inverse mapping from signature names to signature kinds. */
-    private static Map<String,SignatureKind> sigNameMap =
-        new HashMap<String,SignatureKind>();
+    private static Map<String,SignatureKind> sigNameMap = new HashMap<String,SignatureKind>();
     /** Inverse mapping from signature classes to signature kinds. */
     private static Map<Class<? extends Signature>,SignatureKind> sigClassMap =
         new HashMap<Class<? extends Signature>,SignatureKind>();

@@ -30,7 +30,4 @@ public interface Op {
 
     /** Returns the operator precedence. */
     public OpKind getKind();
-
-    /** Returns the expected number of arguments of the operator. */
-    public int getArity();
 }

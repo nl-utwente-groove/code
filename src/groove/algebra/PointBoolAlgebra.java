@@ -23,8 +23,7 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointBoolAlgebra extends BoolAlgebra<Boolean> implements
-        PointAlgebra<Boolean> {
+public class PointBoolAlgebra extends BoolAlgebra<Boolean> implements PointAlgebra<Boolean> {
     /** Private constructor for the singleton instance. */
     private PointBoolAlgebra() {
         // empty
@@ -82,7 +81,7 @@ public class PointBoolAlgebra extends BoolAlgebra<Boolean> implements
 
     @Override
     public Expression toTerm(Object value) {
-        return Constant.instance(singleBool);
+        return singleBool ? BoolSignature.TRUE : BoolSignature.FALSE;
     }
 
     @Override

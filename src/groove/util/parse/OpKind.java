@@ -21,7 +21,7 @@ public enum OpKind {
     /** Negation. */
     NOT(PREFIX),
     /** Equality and inequality tests. */
-    EQUAL(RIGHT),
+    EQUAL(NEITHER),
     /** Comparison operators: lesser than, greater than (or equal). */
     COMPARE(RIGHT),
     /** Existential and universal quantification. */
@@ -38,10 +38,6 @@ public enum OpKind {
     FIELD(LEFT),
     /** Call expressions. */
     CALL(PREFIX),
-    /** Identifier prefix separator. */
-    PREFIX_ID(NEITHER),
-    /** Qualified identifier separator. */
-    QUAL_ID(LEFT),
     /** Atomic expressions: variable names and constants. */
     ATOM(NEITHER), ;
 

@@ -43,8 +43,7 @@ public class CallExpr extends Expression {
         super(prefixed);
         this.op = op;
         this.args = new ArrayList<Expression>(args);
-        assert isTypeCorrect() : String.format("%s is not a type correct term",
-            toString());
+        assert isTypeCorrect() : String.format("%s is not a type correct term", toString());
     }
 
     /**
@@ -89,11 +88,6 @@ public class CallExpr extends Expression {
         return this.op;
     }
 
-    @Override
-    public OpKind getPrecedence() {
-        return getOperator().getPrecedence();
-    }
-
     /** Returns an unmodifiable view on the list of arguments of this term. */
     public List<Expression> getArgs() {
         return Collections.unmodifiableList(this.args);
@@ -112,8 +106,7 @@ public class CallExpr extends Expression {
                 isNew |= newArg != oldArg;
             }
             if (isNew) {
-                result =
-                    new CallExpr(isPrefixed(), getOperator(), newArgs);
+                result = new CallExpr(isPrefixed(), getOperator(), newArgs);
             }
         }
         return result;

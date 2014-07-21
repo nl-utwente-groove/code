@@ -205,7 +205,7 @@ public enum AspectKind {
         // give the text to the content kind to parse
         Pair<Object,String> result = getContentKind().parse(input, getName().length(), role);
         return new Pair<Aspect,String>(new Aspect(this, getContentKind(), result.one()),
-                result.two());
+            result.two());
     }
 
     /**
@@ -322,7 +322,7 @@ public enum AspectKind {
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
         return this.contentKind != ContentKind.LEVEL
-                && this.contentKind != ContentKind.MULTIPLICITY && this != COMPOSITE;
+            && this.contentKind != ContentKind.MULTIPLICITY && this != COMPOSITE;
     }
 
     private final ContentKind contentKind;
@@ -418,7 +418,7 @@ public enum AspectKind {
     }
 
     private static Help computeHelp(AspectKind kind, GraphRole role, boolean forNode,
-            boolean withLabel) {
+        boolean withLabel) {
         String h = null;
         String s = null;
         List<String> b = new ArrayList<String>();
@@ -899,10 +899,10 @@ public enum AspectKind {
 
     /** For every relevant graph role the node syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> nodeDocMapMap =
-            new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
+        new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** For every relevant graph role the edge syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> edgeDocMapMap =
-            new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
+        new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap = new HashMap<String,AspectKind>();
     /** Static mapping from nested value texts to values. */
@@ -911,7 +911,7 @@ public enum AspectKind {
     private static final Map<String,String> tokenMap = new HashMap<String,String>();
     /** Mapping from signature names to aspect kinds. */
     private static final Map<SignatureKind,AspectKind> sigKindMap =
-            new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
+        new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
 
     static {
         // initialise the aspect kind map
@@ -964,10 +964,10 @@ public enum AspectKind {
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
-            new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
+        new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
     /** Mapping from graph roles to the edge aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedEdgeKinds =
-            new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
+        new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
 
     static {
         for (GraphRole role : GraphRole.values()) {
@@ -979,21 +979,21 @@ public enum AspectKind {
                 break;
             case RULE:
                 nodeKinds =
-                EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
-                    STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
-                    EXISTS_OPT, ID, COLOR);
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
+                        STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, ID, COLOR);
                 edgeKinds =
-                        EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT,
-                            REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                            EXISTS_OPT, NESTED, LET, TEST);
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT,
+                        REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
                 nodeKinds =
-                EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR,
-                    EDGE);
+                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR,
+                        EDGE);
                 edgeKinds =
-                        EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
-                            MULT_OUT, COMPOSITE);
+                    EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
+                        MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
@@ -1133,11 +1133,11 @@ public enum AspectKind {
                 case ASSIGN:
                     if (text.charAt(pos + 1) != PARAM_START_CHAR) {
                         throw new FormatException("Parameter number should start with '%s'", ""
-                                + PARAM_START_CHAR);
+                            + PARAM_START_CHAR);
                     }
                     if (text.charAt(text.length() - 1) != SEPARATOR) {
                         throw new FormatException("Parameter line should end with '%s'", ""
-                                + SEPARATOR);
+                            + SEPARATOR);
                     }
                     nrText = text.substring(pos + 2, text.length() - 1);
                     if (nrText.length() == 0) {
@@ -1410,19 +1410,11 @@ public enum AspectKind {
                 // in a host graph, this is a term
                 result = Expression.parse(text);
             } else {
-                Constant constant = null;
                 try {
-                    constant = Constant.parseConstant(text);
+                    result = this.signature.createConstant(text);
                 } catch (FormatException e) {
                     // try for operator
-                }
-                if (constant == null) {
                     result = this.signature.getOperator(text);
-                } else if (constant.getSignature() != this.signature) {
-                    throw new FormatException("Constant '%s' is not of type '%s'", constant,
-                        this.signature);
-                } else {
-                    result = constant;
                 }
                 if (result == null) {
                     throw new FormatException("Signature '%s' has no constant or operator %s",
@@ -1442,7 +1434,7 @@ public enum AspectKind {
             if (content == null) {
                 return "";
             } else if (content instanceof Constant) {
-                return ((Constant) content).toParseString();
+                return ((Constant) content).getSymbol();
             } else if (content instanceof Operator) {
                 return ((Operator) content).getName();
             } else if (content instanceof Color) {

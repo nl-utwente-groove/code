@@ -26,6 +26,7 @@ import groove.test.rel.AllRelTests;
 import groove.test.rule.AllRuleTests;
 import groove.test.sts.AllSTSTests;
 import groove.test.type.AllTypeTests;
+import groove.test.util.AllUtilTests;
 import groove.test.verify.AllVerifyTests;
 
 import org.junit.runner.RunWith;
@@ -41,8 +42,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({AllAbstractionTests.class, AllAlgebraTests.class, AllControlTests.class,
     AllCriticalPairTests.class, AllGraphTests.class, AllPrologTests.class, AllRuleTests.class,
     AllTypeTests.class, AllRelTests.class, AllVerifyTests.class, BinaryEdgeTest.class,
-    ExplorationTest.class, HashBagTest.class, IOTest.class, TreeHashSetTest.class,
-    AllSTSTests.class})
+    ExplorationTest.class, IOTest.class, AllUtilTests.class, AllSTSTests.class})
 public class CheckinTests {
     // Empty by design.
 }

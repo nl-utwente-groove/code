@@ -28,8 +28,7 @@
 	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
 	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
 	<classpathentry kind="lib" path="lib/args4j-2.0.26.jar" sourcepath="lib/src/args4j-2.0.26-sources.jar"/>
-	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
-	<classpathentry kind="lib" path="lib/antlr-4.0-complete.jar"/>
+	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlr-3.4-src.zip"/>
 	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jdt.annotation_1.1.0.v20140129-1625.jar"/>

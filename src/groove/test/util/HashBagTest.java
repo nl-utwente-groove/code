@@ -14,7 +14,7 @@
 /*
  * $Id$
  */
-package groove.test;
+package groove.test.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

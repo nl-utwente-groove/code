@@ -126,13 +126,6 @@ public abstract class Expression {
         return this.varMap;
     }
 
-    /** Returns the precedence of the top-level operator of this expression,
-     * or {@link OpKind#ATOM} if this is not a call expression.
-     */
-    public OpKind getPrecedence() {
-        return OpKind.ATOM;
-    }
-
     /** Factory method to create the variable map for this expression. */
     abstract protected Map<String,SignatureKind> computeVarMap();
 
@@ -192,18 +185,16 @@ public abstract class Expression {
      * @param test if {@code true}, {@link ExprParser#test_expression()}
      * is used for parsing, otherwise {@link ExprParser#expression()}
      */
-    private static ExprTree parseToTree(String term, boolean test)
-        throws FormatException {
+    private static ExprTree parseToTree(String term, boolean test) throws FormatException {
         ExprParser parser = ExprTree.getParser(term);
         try {
             ExprTree result =
                 (ExprTree) (test ? parser.test_expression().getTree()
-                        : parser.expression().getTree());
+                    : parser.expression().getTree());
             parser.getErrors().throwException();
             return result;
         } catch (FormatException e) {
-            throw new FormatException("Can't parse %s: %s", term,
-                e.getMessage());
+            throw new FormatException("Can't parse %s: %s", term, e.getMessage());
         } catch (RecognitionException re) {
             throw new FormatException(re);
         }
@@ -216,8 +207,7 @@ public abstract class Expression {
             System.out.printf("Original expression: %s%n", args[0]);
             System.out.printf("Flattened term tree: %s%n", tree.toStringTree());
             System.out.printf("Corresponding term:  %s%n", tree.toExpression());
-            System.out.printf("Display string:      %s%n",
-                tree.toExpression().toDisplayString());
+            System.out.printf("Display string:      %s%n", tree.toExpression().toDisplayString());
         } catch (FormatException e) {
             e.printStackTrace();
         }
