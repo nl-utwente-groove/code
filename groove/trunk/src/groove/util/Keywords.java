@@ -16,7 +16,7 @@
  */
 package groove.util;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.Parameter;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectKind.ContentKind;
@@ -29,13 +29,13 @@ import groove.grammar.aspect.AspectKind.ContentKind;
 public class Keywords {
     /**
      * The boolean type.
-     * @see SignatureKind#BOOL
+     * @see Sort#BOOL
      * @see AspectKind#BOOL
      */
     public static final String BOOL = "bool";
     /**
      * Boolean value for "false"
-     * @see SignatureKind#BOOL
+     * @see Sort#BOOL
      */
     public static final String FALSE = "false";
     /** The id prefix. 
@@ -43,7 +43,7 @@ public class Keywords {
      */
     public static final String ID = "id";
     /** The integer type.
-     * @see SignatureKind#INT
+     * @see Sort#INT
      * @see AspectKind#INT
      */
     public static final String INT = "int";
@@ -64,7 +64,7 @@ public class Keywords {
      */
     public static final String PAR_OUT = "parout";
     /** The real type. 
-     * @see SignatureKind#REAL
+     * @see Sort#REAL
      * @see AspectKind#REAL
      */
     public static final String REAL = "real";
@@ -74,13 +74,13 @@ public class Keywords {
      */
     public static final String SELF = "self";
     /** The string type. 
-     * @see SignatureKind#STRING
+     * @see Sort#STRING
      * @see AspectKind#STRING
      */
     public static final String STRING = "string";
     /**
      * Boolean value for "true"
-     * @see SignatureKind#BOOL
+     * @see Sort#BOOL
      */
     public static final String TRUE = "true";
 }

@@ -18,7 +18,7 @@ package groove.grammar.type;
 
 import static groove.graph.EdgeRole.BINARY;
 import static groove.graph.EdgeRole.NODE_TYPE;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.rule.RuleLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
@@ -99,7 +99,7 @@ public final class TypeLabel extends ALabel {
     private final EdgeRole role;
 
     /** Returns the node type label for a given data signature. */
-    static public final TypeLabel getLabel(SignatureKind sigKind) {
+    static public final TypeLabel getLabel(Sort sigKind) {
         return sigLabelMap.get(sigKind);
     }
 
@@ -204,10 +204,10 @@ public final class TypeLabel extends ALabel {
         return result;
     }
 
-    static private final Map<SignatureKind,TypeLabel> sigLabelMap =
-        new EnumMap<SignatureKind,TypeLabel>(SignatureKind.class);
+    static private final Map<Sort,TypeLabel> sigLabelMap =
+        new EnumMap<Sort,TypeLabel>(Sort.class);
     static {
-        for (SignatureKind sigKind : SignatureKind.values()) {
+        for (Sort sigKind : Sort.values()) {
             sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(), EdgeRole.NODE_TYPE));
         }
     }

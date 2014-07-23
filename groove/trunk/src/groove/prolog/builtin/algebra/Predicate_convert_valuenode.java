@@ -43,7 +43,7 @@ public class Predicate_convert_valuenode extends AlgebraPrologCode {
             Term result;
             Algebra<?> alg = node.getAlgebra();
             Object value = alg.toJavaValue(node.getValue());
-            switch (alg.getSignature()) {
+            switch (alg.getSort()) {
             case BOOL:
                 result = new JavaObjectTerm(value);
                 break;

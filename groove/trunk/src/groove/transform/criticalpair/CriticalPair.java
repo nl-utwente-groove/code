@@ -19,7 +19,7 @@ package groove.transform.criticalpair;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
@@ -448,7 +448,7 @@ public class CriticalPair {
                     //The constant may be merged if no group contains the constant
                     //i.e. constantGroup == null or if constantGroup is equal to group
                     if (constantGroup == null || constantGroup.equals(group)) {
-                        SignatureKind sigKind = varRuleNode.getSignature();
+                        Sort sigKind = varRuleNode.getSignature();
                         Algebra<?> alg = algebraFamily.getAlgebra(sigKind);
                         Object consValue = alg.toValueFromConstant(cons);
                         for (RuleNode other : pair.getCombination(group)) {

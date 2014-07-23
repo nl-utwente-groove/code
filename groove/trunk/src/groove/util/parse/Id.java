@@ -28,10 +28,16 @@ import java.util.List;
  * @version $Id$
  */
 public class Id extends ArrayList<String> {
-    /** Constructs an identifier with a given (possibly {@code null}) prefix
-     * and an initially empty list of names.
+    /** Constructs an identifier with an initially empty list of names.
      */
     public Id() {
+        // empty
+    }
+
+    /** Constructs an identifier with a list of names initially consisting of a given name.
+     */
+    public Id(String name) {
+        add(name);
     }
 
     /** Constructs an identifier with a given (possibly {@code null}) prefix

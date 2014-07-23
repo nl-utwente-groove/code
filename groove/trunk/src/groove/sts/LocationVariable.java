@@ -1,6 +1,6 @@
 package groove.sts;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.host.HostEdge;
 
 /**
@@ -18,7 +18,7 @@ public class LocationVariable extends Variable {
      * @param type The type of the new variable.
      * @param initialValue The initial value of the new variable.
      */
-    public LocationVariable(String label, SignatureKind type,
+    public LocationVariable(String label, Sort type,
             Object initialValue) {
         super(label, type);
         this.initialValue = initialValue;

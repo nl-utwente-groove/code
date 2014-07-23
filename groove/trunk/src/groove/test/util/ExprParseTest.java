@@ -34,7 +34,8 @@ import org.junit.Test;
 public class ExprParseTest {
     @Test
     public void backAndForth() {
-        roundtrip("int:ge(a.b,c(),true)");
+        roundtrip("ge(a.b,c())");
+        roundtrip("c(ge(0,1),ge,b.a)");
         roundtrip("ge+ge");
         // extension of predefined operator
         roundtrip("gee");
@@ -50,8 +51,8 @@ public class ExprParseTest {
 
     @Test
     public void normalisation() {
-        parseToEqual("bool:true", "true");
-        parseToEqual("int: - 10", "-10");
+        //        parseToEqual("bool:true", "true");
+        //        parseToEqual("int: - 10", "-10");
         parseToEqual("a+b+c", "((a)+b)+c");
         parseToEqual("a->b->c", "a->(b->(c))");
         parseToEqual("a+b*c", "a+(b*c)");
@@ -68,15 +69,20 @@ public class ExprParseTest {
         parseError("'a");
         parseError("0a");
         parseError("0.1.");
-        parseError("string:0");
-        parseError("string:-true");
-        parseError("int:<");
-        parseError("int:noop()");
-        // malformed prefixes
-        parseError("a:");
-        parseError("a:b");
-        parseError("int:");
-        parseError(":b");
+        //        parseError("string:0");
+        //        parseError("string:-true");
+        //        parseError("int:<");
+        //        parseError("int:noop()");
+        // arity errors
+        parseError("ge()");
+        parseError("ge(1)");
+        parseError("ge(1,2,3)");
+        // no sort prefixes
+        parseError("int:0");
+        //        parseError("a:");
+        //        parseError("a:b");
+        //        parseError("int:");
+        //        parseError(":b");
         parseError("a.");
         parseError(".b");
         parseError("-");
@@ -122,11 +128,10 @@ public class ExprParseTest {
         }
     }
 
-    static ExprParser<MyOp> parser = new ExprParser<MyOp>(MyOp.class);
+    static ExprParser<MyOp,Expr<MyOp>> parser = new ExprParser<MyOp,Expr<MyOp>>(MyOp.class);
 
     static {
         parser.setQualIds(true);
-        parser.setSigPrefixes(true);
     }
 
     private static enum MyOp implements Op {
@@ -139,16 +144,22 @@ public class ExprParseTest {
         AND(OpKind.AND, "&"),
         EQ(OpKind.EQUAL, "="),
         IMPL(OpKind.COMPARE, "->"),
-        CALL(OpKind.CALL),
-        ATOM(OpKind.ATOM),
-        GE(OpKind.CALL, "ge"), ;
-        private MyOp(OpKind kind) {
-            this(kind, null);
+        CALL(OpKind.CALL, -1),
+        ATOM(OpKind.ATOM, 0),
+        GE(OpKind.CALL, "ge", 2), ;
+
+        private MyOp(OpKind kind, int arity) {
+            this(kind, null, arity);
         }
 
         private MyOp(OpKind kind, String symbol) {
+            this(kind, symbol, kind.getArity());
+        }
+
+        private MyOp(OpKind kind, String symbol, int arity) {
             this.kind = kind;
             this.symbol = symbol;
+            this.arity = arity;
         }
 
         @Override
@@ -169,5 +180,12 @@ public class ExprParseTest {
         }
 
         private final OpKind kind;
+
+        @Override
+        public int getArity() {
+            return this.arity;
+        }
+
+        private final int arity;
     }
 }

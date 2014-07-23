@@ -66,7 +66,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
     public VariableNode createVariableNode(int nr, Expression term) {
-        TypeNode type = getTypeFactory().getDataType(term.getSignature());
+        TypeNode type = getTypeFactory().getDataType(term.getSort());
         VariableNode result = new VariableNode(nr, term, type);
         registerNode(result);
         return result;

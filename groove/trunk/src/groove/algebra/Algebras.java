@@ -35,10 +35,10 @@ public class Algebras {
      * are actually themselves signatures.
      */
     static private void checkSignatureConsistency() {
-        for (SignatureKind sigKind : SignatureKind.values()) {
+        for (Sort sigKind : Sort.values()) {
             for (TypeVariable<?> type : sigKind.getSignatureClass().getTypeParameters()) {
                 String typeName = type.getName().toLowerCase();
-                if (SignatureKind.getKind(typeName) == null) {
+                if (Sort.getKind(typeName) == null) {
                     throw new IllegalArgumentException(String.format(
                         "Type '%s' not declared by any signature", typeName));
                 }
@@ -63,7 +63,7 @@ public class Algebras {
 
     private static Map<String,String> computeDocMap() {
         Map<String,String> result = new TreeMap<String,String>();
-        for (SignatureKind sigKind : SignatureKind.values()) {
+        for (Sort sigKind : Sort.values()) {
             Map<String,String> sigMap = new HashMap<String,String>(tokenMap);
             for (Method method : sigKind.getSignatureClass().getMethods()) {
                 sigMap.put("Q" + method.getName(),

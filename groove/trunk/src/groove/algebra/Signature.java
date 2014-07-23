@@ -35,8 +35,8 @@ package groove.algebra;
  * @version $Revision $
  */
 public interface Signature {
-    /** Returns the signature kind of this signature. */
-    public SignatureKind getSignature();
+    /** Returns the primary sort of this signature. */
+    public Sort getSort();
 
     /** Enumeration of operators for this signature. */
     public interface OpValue {

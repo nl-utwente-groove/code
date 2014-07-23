@@ -274,7 +274,7 @@ public abstract class CtrlPar {
         public Const(Algebra<?> algebra, Object value) {
             this.algebra = algebra;
             this.value = value;
-            this.type = CtrlType.getType(algebra.getSignature());
+            this.type = CtrlType.getType(algebra.getSort());
         }
 
         @Override

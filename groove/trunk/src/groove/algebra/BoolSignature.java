@@ -37,40 +37,40 @@ public abstract class BoolSignature<Bool> implements Signature {
     @ToolTipHeader("Inversion")
     @Syntax("Q%s.LPAR.b1.RPAR")
     @ToolTipBody("Yields TRUE if boolean %s is FALSE")
-    @PrefixSymbol(symbol = "!", precedence = NOT)
+    @PrefixSymbol(symbol = "!", kind = NOT)
     public abstract Bool not(Bool arg);
 
     /** Conjunction. */
     @ToolTipHeader("Conjunction")
     @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
     @ToolTipBody("Yields TRUE if booleans %s and %s are both TRUE")
-    @InfixSymbol(symbol = "&", precedence = AND)
+    @InfixSymbol(symbol = "&", kind = AND)
     public abstract Bool and(Bool arg0, Bool arg1);
 
     /** Disjunction. */
     @ToolTipHeader("Disjunction")
     @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
     @ToolTipBody("Yields TRUE if at least one of booleans %s and %s is TRUE")
-    @InfixSymbol(symbol = "|", precedence = OR)
+    @InfixSymbol(symbol = "|", kind = OR)
     public abstract Bool or(Bool arg0, Bool arg1);
 
     /** Equality test. */
     @ToolTipHeader("Boolean equality test")
     @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
     @ToolTipBody("Yields TRUE if boolean %s equals boolean %s")
-    @InfixSymbol(symbol = "==", precedence = EQUAL)
+    @InfixSymbol(symbol = "==", kind = EQUAL)
     public abstract Bool eq(Bool arg0, Bool arg1);
 
     /** Inequality test. */
     @ToolTipHeader("Boolean inequality test")
     @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
     @ToolTipBody("Yields TRUE if boolean %s is not equal to boolean %s")
-    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    @InfixSymbol(symbol = "!=", kind = EQUAL)
     public abstract Bool neq(Bool arg0, Bool arg1);
 
     @Override
-    public SignatureKind getSignature() {
-        return SignatureKind.BOOL;
+    public Sort getSort() {
+        return Sort.BOOL;
     }
 
     /** The constant for the true value. */
@@ -95,7 +95,7 @@ public abstract class BoolSignature<Bool> implements Signature {
         @Override
         public Operator getOperator() {
             if (this.operator == null) {
-                this.operator = Operator.newInstance(SignatureKind.BOOL, this);
+                this.operator = Operator.newInstance(Sort.BOOL, this);
             }
             return this.operator;
         }

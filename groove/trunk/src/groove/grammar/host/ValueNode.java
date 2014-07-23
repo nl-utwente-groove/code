@@ -17,7 +17,7 @@
 package groove.grammar.host;
 
 import groove.algebra.Algebra;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.Expression;
 import groove.grammar.AnchorKind;
 import groove.grammar.aspect.AspectParser;
@@ -50,7 +50,7 @@ public class ValueNode extends ANode implements HostNode {
     public ValueNode(int nr, Algebra<?> algebra, Object value, TypeNode type) {
         super(nr);
         this.algebra = algebra;
-        this.signature = algebra.getSignature();
+        this.signature = algebra.getSort();
         this.value = value;
         this.type = type;
         assert algebra != null && value != null && type != null;
@@ -114,7 +114,7 @@ public class ValueNode extends ANode implements HostNode {
      * Returns the signature to which the value node
      * belongs.
      */
-    public SignatureKind getSignature() {
+    public Sort getSignature() {
         assert this != DUMMY_NODE;
         return this.signature;
     }
@@ -130,7 +130,7 @@ public class ValueNode extends ANode implements HostNode {
     }
 
     /** The signature of this value node. */
-    private final SignatureKind signature;
+    private final Sort signature;
     /** The algebra of this value node. */
     private final Algebra<?> algebra;
     /**

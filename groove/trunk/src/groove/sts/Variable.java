@@ -1,6 +1,6 @@
 package groove.sts;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 
 /**
  * A variable in an sts.
@@ -17,14 +17,14 @@ public class Variable {
     /**
      * The data type of this variable.
      */
-    protected SignatureKind type;
+    protected Sort type;
 
     /**
      * Creates a new instance.
      * @param label The label of the new variable.
      * @param type The type of the new variable.
      */
-    public Variable(String label, SignatureKind type) {
+    public Variable(String label, Sort type) {
         this.label = label;
         this.type = type;
     }
@@ -34,7 +34,7 @@ public class Variable {
      * @param s The type.
      * @return The default value.
      */
-    public static Object getDefaultValue(SignatureKind s) {
+    public static Object getDefaultValue(Sort s) {
         switch (s) {
         case INT:
             return new Integer(0);
@@ -61,7 +61,7 @@ public class Variable {
      * Gets the type of this variable.
      * @return The type.
      */
-    public SignatureKind getType() {
+    public Sort getType() {
         return this.type;
     }
 

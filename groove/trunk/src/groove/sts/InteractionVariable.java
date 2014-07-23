@@ -1,6 +1,6 @@
 package groove.sts;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.Rule;
 import groove.grammar.rule.VariableNode;
 
@@ -16,7 +16,7 @@ public class InteractionVariable extends Variable {
      * @param label The label of this variable.
      * @param type They type of this variable.
      */
-    public InteractionVariable(String label, SignatureKind type) {
+    public InteractionVariable(String label, Sort type) {
         super(label, type);
     }
 

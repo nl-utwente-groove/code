@@ -47,28 +47,28 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipHeader("Real number addition")
     @ToolTipBody("Returns the sum of %s and %s")
-    @InfixSymbol(symbol = "+", precedence = ADD)
+    @InfixSymbol(symbol = "+", kind = ADD)
     public abstract Real add(Real arg0, Real arg1);
 
     /** Subtraction of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipHeader("Real number subtraction")
     @ToolTipBody("Returns the difference between %s and %s")
-    @InfixSymbol(symbol = "-", precedence = ADD)
+    @InfixSymbol(symbol = "-", kind = ADD)
     public abstract Real sub(Real arg0, Real arg1);
 
     /** Multiplication of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipHeader("Real number multiplication")
     @ToolTipBody("Returns the product of %s and %s")
-    @InfixSymbol(symbol = "*", precedence = MULT)
+    @InfixSymbol(symbol = "*", kind = MULT)
     public abstract Real mul(Real arg0, Real arg1);
 
     /** Division of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipHeader("Real number division")
     @ToolTipBody("Returns the quotient of %s and %s")
-    @InfixSymbol(symbol = "/", precedence = MULT)
+    @InfixSymbol(symbol = "/", kind = MULT)
     public abstract Real div(Real arg0, Real arg1);
 
     /** Minimum of two real numbers. */
@@ -87,49 +87,49 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     @ToolTipHeader("Real number lesser-than test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipBody("Yields TRUE if real number %s is properly smaller than real number %s")
-    @InfixSymbol(symbol = "<", precedence = COMPARE)
+    @InfixSymbol(symbol = "<", kind = COMPARE)
     public abstract Bool lt(Real arg0, Real arg1);
 
     /** Lesser-or-equal comparison. */
     @ToolTipHeader("Real number lesser-or-equal test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipBody("Yields TRUE if real number %s is smaller than real number %s")
-    @InfixSymbol(symbol = "<=", precedence = COMPARE)
+    @InfixSymbol(symbol = "<=", kind = COMPARE)
     public abstract Bool le(Real arg0, Real arg1);
 
     /** Greater-than comparison. */
     @ToolTipHeader("Real number greater-than test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipBody("Yields TRUE if real number %2$s is properly larger than real number %1$s")
-    @InfixSymbol(symbol = ">", precedence = COMPARE)
+    @InfixSymbol(symbol = ">", kind = COMPARE)
     public abstract Bool gt(Real arg0, Real arg1);
 
     /** Greater-or-equal comparison. */
     @ToolTipHeader("Real number greater-or-equal test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipBody("Yields TRUE if real number %s is larger than real number %s")
-    @InfixSymbol(symbol = ">=", precedence = COMPARE)
+    @InfixSymbol(symbol = ">=", kind = COMPARE)
     public abstract Bool ge(Real arg0, Real arg1);
 
     /** Equality test. */
     @ToolTipHeader("Real number equality test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipBody("Yields TRUE if real number %s equals real number %s")
-    @InfixSymbol(symbol = "==", precedence = EQUAL)
+    @InfixSymbol(symbol = "==", kind = EQUAL)
     public abstract Bool eq(Real arg0, Real arg1);
 
     /** Inequality test. */
     @ToolTipHeader("Real number equality test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipBody("Yields TRUE if real number %s does not equal real number %s")
-    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    @InfixSymbol(symbol = "!=", kind = EQUAL)
     public abstract Bool neq(Real arg0, Real arg1);
 
     /** Inversion. */
     @ToolTipHeader("Real inversion")
     @Syntax("Q%s.LPAR.r1.RPAR")
     @ToolTipBody("Yields the inverse of %s")
-    @PrefixSymbol(symbol = "-", precedence = UNARY)
+    @PrefixSymbol(symbol = "-", kind = UNARY)
     public abstract Real neg(Real arg);
 
     /** String representation. */
@@ -139,8 +139,8 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     public abstract String toString(Real arg);
 
     @Override
-    public SignatureKind getSignature() {
-        return SignatureKind.REAL;
+    public Sort getSort() {
+        return Sort.REAL;
     }
 
     /** Real constant for the value zero. */
@@ -182,7 +182,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
         @Override
         public Operator getOperator() {
             if (this.operator == null) {
-                this.operator = Operator.newInstance(SignatureKind.REAL, this);
+                this.operator = Operator.newInstance(Sort.REAL, this);
             }
             return this.operator;
         }

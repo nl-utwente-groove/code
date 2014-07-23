@@ -1,6 +1,6 @@
 package groove.grammar.type;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
@@ -26,7 +26,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     TypeFactory(TypeGraph typeGraph) {
         assert typeGraph.isEmpty();
         this.typeGraph = typeGraph;
-        for (SignatureKind sig : SignatureKind.values()) {
+        for (Sort sig : Sort.values()) {
             this.dataTypeMap.put(sig, createNode(TypeLabel.getLabel(sig)));
         }
     }
@@ -104,7 +104,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     }
 
     /** Returns the default type node for a given data signature. */
-    public TypeNode getDataType(SignatureKind signature) {
+    public TypeNode getDataType(Sort signature) {
         return this.dataTypeMap.get(signature);
     }
 
@@ -119,8 +119,8 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     }
 
     /** Mapping from signatures to corresponding type nodes. */
-    private final Map<SignatureKind,TypeNode> dataTypeMap =
-        new EnumMap<SignatureKind,TypeNode>(SignatureKind.class);
+    private final Map<Sort,TypeNode> dataTypeMap =
+        new EnumMap<Sort,TypeNode>(Sort.class);
 
     /**
      * Returns a label with the given text, reusing previously created

@@ -16,7 +16,7 @@
  */
 package groove.test.sts;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.sts.Gate;
 import groove.sts.InteractionVariable;
 
@@ -47,8 +47,8 @@ public class GateTest extends TestCase {
     @Override
     protected void setUp() {
         Set<InteractionVariable> s = new HashSet();
-        s.add(new InteractionVariable("label", SignatureKind.INT));
-        s.add(new InteractionVariable("lebal", SignatureKind.BOOL));
+        s.add(new InteractionVariable("label", Sort.INT));
+        s.add(new InteractionVariable("lebal", Sort.BOOL));
         this.g1 = new Gate("?ding", s);
     }
 

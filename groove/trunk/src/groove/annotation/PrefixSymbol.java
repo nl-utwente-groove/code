@@ -30,5 +30,5 @@ public @interface PrefixSymbol {
     /** 
      * The operator priority.
      */
-    public OpKind precedence();
+    public OpKind kind();
 }

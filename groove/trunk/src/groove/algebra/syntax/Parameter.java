@@ -16,7 +16,7 @@
  */
 package groove.algebra.syntax;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.util.line.Line;
 import groove.util.parse.OpKind;
 
@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class Parameter extends Expression {
     /** Constructs a new parameter. */
-    public Parameter(boolean prefixed, int nr, SignatureKind type) {
+    public Parameter(boolean prefixed, int nr, Sort type) {
         super(prefixed);
         assert nr >= 0;
         this.nr = nr;
@@ -38,7 +38,7 @@ public class Parameter extends Expression {
     }
 
     @Override
-    public SignatureKind getSignature() {
+    public Sort getSort() {
         return this.type;
     }
 
@@ -63,7 +63,7 @@ public class Parameter extends Expression {
     }
 
     @Override
-    protected Map<String,SignatureKind> computeVarMap() {
+    protected Map<String,Sort> computeVarMap() {
         return Collections.emptyMap();
     }
 
@@ -88,16 +88,16 @@ public class Parameter extends Expression {
     protected String createParseString() {
         String result = toDisplayString();
         if (isPrefixed()) {
-            result = getSignature() + ":" + toDisplayString();
+            result = getSort() + ":" + toDisplayString();
         }
         return result;
     }
 
     @Override
     public String toString() {
-        return getSignature() + ":" + toDisplayString();
+        return getSort() + ":" + toDisplayString();
     }
 
     private final int nr;
-    private final SignatureKind type;
+    private final Sort type;
 }

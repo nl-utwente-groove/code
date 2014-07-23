@@ -28,7 +28,7 @@ import static groove.grammar.aspect.AspectKind.IMPORT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
 import static groove.grammar.aspect.AspectKind.READER;
 import groove.algebra.Operator;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.type.LabelPattern;
 import groove.grammar.type.TypeLabel;
 import groove.graph.ANode;
@@ -359,7 +359,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** Attempts to set the aspect type of this node to a given data type. */
-    private void setDataType(SignatureKind type) throws FormatException {
+    private void setDataType(Sort type) throws FormatException {
         assert !isFixed();
         Aspect newType = Aspect.getAspect(type.getName());
         assert newType.getKind().hasSignature();
@@ -429,7 +429,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             this.argNodes.set(index, edge.target());
             // infer target type if an operator edge is already present
             if (this.operatorEdge != null) {
-                List<SignatureKind> paramTypes = this.operatorEdge.getOperator().getParamTypes();
+                List<Sort> paramTypes = this.operatorEdge.getOperator().getParamTypes();
                 if (index < paramTypes.size()) {
                     edge.target().setDataType(paramTypes.get(index));
                 }
@@ -453,7 +453,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 for (int i = 0; i < this.argNodes.size(); i++) {
                     AspectNode argNode = this.argNodes.get(i);
                     if (argNode != null) {
-                        SignatureKind paramType =
+                        Sort paramType =
                             this.operatorEdge.getOperator().getParamTypes().get(i);
                         argNode.setDataType(paramType);
                     }

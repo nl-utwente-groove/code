@@ -40,49 +40,49 @@ public abstract class StringSignature<String,Bool,Int> implements Signature {
     @ToolTipHeader("String concatenation")
     @ToolTipBody("Returns a string consisting of %s followed by %s")
     @ToolTipPars({"First string parameter", "Second string parameter"})
-    @InfixSymbol(symbol = "+", precedence = ADD)
+    @InfixSymbol(symbol = "+", kind = ADD)
     public abstract String concat(String arg0, String arg1);
 
     /** Lesser-than comparison. */
     @ToolTipHeader("String lesser-than test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s is a proper prefix of string %s")
-    @InfixSymbol(symbol = "<", precedence = COMPARE)
+    @InfixSymbol(symbol = "<", kind = COMPARE)
     public abstract Bool lt(String arg0, String arg1);
 
     /** Lesser-or-equal comparison. */
     @ToolTipHeader("String lesser-or-equal test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s is a prefix of string %s")
-    @InfixSymbol(symbol = "<=", precedence = COMPARE)
+    @InfixSymbol(symbol = "<=", kind = COMPARE)
     public abstract Bool le(String arg0, String arg1);
 
     /** Greater-than comparison. */
     @ToolTipHeader("String greater-than test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %2$s is a prefix of string %1$s")
-    @InfixSymbol(symbol = ">", precedence = COMPARE)
+    @InfixSymbol(symbol = ">", kind = COMPARE)
     public abstract Bool gt(String arg0, String arg1);
 
     /** Greater-or-equal comparison. */
     @ToolTipHeader("String greater-or-equals test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %2$s is a prefix of string %1$s")
-    @InfixSymbol(symbol = ">=", precedence = COMPARE)
+    @InfixSymbol(symbol = ">=", kind = COMPARE)
     public abstract Bool ge(String arg0, String arg1);
 
     /** Equality test. */
     @ToolTipHeader("String equality test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s equals string %s")
-    @InfixSymbol(symbol = "==", precedence = EQUAL)
+    @InfixSymbol(symbol = "==", kind = EQUAL)
     public abstract Bool eq(String arg0, String arg1);
 
     /** Inequality test. */
     @ToolTipHeader("String equality test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s does not equal string %s")
-    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    @InfixSymbol(symbol = "!=", kind = EQUAL)
     public abstract Bool neq(String arg0, String arg1);
 
     /** Size function. */
@@ -92,8 +92,8 @@ public abstract class StringSignature<String,Bool,Int> implements Signature {
     public abstract Int length(String arg);
 
     @Override
-    public SignatureKind getSignature() {
-        return SignatureKind.STRING;
+    public Sort getSort() {
+        return Sort.STRING;
     }
 
     /** String constant for the empty string. */
@@ -121,7 +121,7 @@ public abstract class StringSignature<String,Bool,Int> implements Signature {
         @Override
         public Operator getOperator() {
             if (this.operator == null) {
-                this.operator = Operator.newInstance(SignatureKind.STRING, this);
+                this.operator = Operator.newInstance(Sort.STRING, this);
             }
             return this.operator;
         }

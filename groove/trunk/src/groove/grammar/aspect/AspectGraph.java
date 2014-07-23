@@ -373,7 +373,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 owner, source);
         }
         // look up the field
-        AspectKind sigKind = AspectKind.toAspectKind(field.getSignature());
+        AspectKind sigKind = AspectKind.toAspectKind(field.getSort());
         AspectNode result = findTarget(owner, field.getField(), sigKind);
         if (result == null) {
             result = addNestedNode(owner);
@@ -420,7 +420,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 call.toParseString(), source);
         }
         AspectNode result = addNestedNode(source);
-        result.setAspects(createLabel(AspectKind.toAspectKind(call.getSignature())));
+        result.setAspects(createLabel(AspectKind.toAspectKind(call.getSort())));
         AspectNode product = addNestedNode(source);
         product.setAspects(createLabel(AspectKind.PRODUCT));
         // add the operator edge
@@ -451,7 +451,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         AspectNode result = addNode();
         AspectLabel parLabel = parser.parse(AspectKind.PARAM_IN.getPrefix() + nr, getRole());
         result.setAspects(parLabel);
-        AspectLabel typeLabel = createLabel(AspectKind.toAspectKind(par.getSignature()));
+        AspectLabel typeLabel = createLabel(AspectKind.toAspectKind(par.getSort()));
         result.setAspects(typeLabel);
         return result;
     }

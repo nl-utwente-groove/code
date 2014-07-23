@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +32,13 @@ public enum CtrlType {
     /** Node type. */
     NODE,
     /** Boolean type. */
-    BOOL(SignatureKind.BOOL),
+    BOOL(Sort.BOOL),
     /** Integer type. */
-    INT(SignatureKind.INT),
+    INT(Sort.INT),
     /** Real number type. */
-    REAL(SignatureKind.REAL),
+    REAL(Sort.REAL),
     /** String type. */
-    STRING(SignatureKind.STRING);
+    STRING(Sort.STRING);
 
     /** Constructs a control data type from a given data signature. */
     private CtrlType() {
@@ -47,7 +47,7 @@ public enum CtrlType {
     }
 
     /** Constructs a control data type from a given data signature. */
-    private CtrlType(SignatureKind signature) {
+    private CtrlType(Sort signature) {
         this.signature = signature;
         this.name = signature.getName();
     }
@@ -62,20 +62,20 @@ public enum CtrlType {
      * @return the data signature, or {@code null} if this type
      * is a node type.
      */
-    public SignatureKind getSignature() {
+    public Sort getSignature() {
         return this.signature;
     }
 
     /** Name of this control type. */
     private final String name;
     /** Data signature of this type, in case it is a data type. */
-    private final SignatureKind signature;
+    private final Sort signature;
 
     /**
      * Returns a data type instance for a given signature.
      * @throws IllegalArgumentException if there is no signature with the given name
      */
-    public static CtrlType getType(SignatureKind signature) {
+    public static CtrlType getType(Sort signature) {
         return valueOf(signature.name());
     }
 

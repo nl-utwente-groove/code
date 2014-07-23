@@ -22,7 +22,7 @@ import groove.algebra.AlgebraFamily;
 import groove.algebra.BoolAlgebra;
 import groove.algebra.IntAlgebra;
 import groove.algebra.RealAlgebra;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.StringAlgebra;
 
 import org.junit.Test;
@@ -33,13 +33,13 @@ public abstract class AlgebraTest<B,I,R,S> {
     AlgebraTest(AlgebraFamily family) {
         this.family = family;
         this.intAlgebra =
-            (IntAlgebra<I,B,S>) family.getAlgebra(SignatureKind.INT);
+            (IntAlgebra<I,B,S>) family.getAlgebra(Sort.INT);
         this.boolAlgebra =
-            (BoolAlgebra<B>) family.getAlgebra(SignatureKind.BOOL);
+            (BoolAlgebra<B>) family.getAlgebra(Sort.BOOL);
         this.realAlgebra =
-            (RealAlgebra<R,B,S>) family.getAlgebra(SignatureKind.REAL);
+            (RealAlgebra<R,B,S>) family.getAlgebra(Sort.REAL);
         this.stringAlgebra =
-            (StringAlgebra<S,B,I>) family.getAlgebra(SignatureKind.STRING);
+            (StringAlgebra<S,B,I>) family.getAlgebra(Sort.STRING);
         this.TRUE = this.boolAlgebra.toValueFromJava(true);
         this.FALSE = this.boolAlgebra.toValueFromJava(false);
     }

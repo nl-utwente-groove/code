@@ -19,7 +19,7 @@ package groove.test.graph;
 import static org.junit.Assert.assertTrue;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.DefaultHostNode;
 import groove.grammar.host.HostNode;
@@ -36,7 +36,7 @@ public class DefaultHostGraphTest {
     public void testNodeType() {
         DefaultHostGraph host = new DefaultHostGraph("testGraph");
         host.removeNode(host.addNode(
-            AlgebraFamily.TERM.getAlgebra(SignatureKind.INT),
+            AlgebraFamily.TERM.getAlgebra(Sort.INT),
             Constant.instance(1)));
         HostNode newNode = host.addNode();
         //the assertion below is false; newNode is an instance of VariableNode

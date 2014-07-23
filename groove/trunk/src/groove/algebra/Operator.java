@@ -31,49 +31,43 @@ public class Operator {
      * @throws IllegalArgumentException if the method parameter or return types
      * are not type variables.
      */
-    private Operator(SignatureKind signature, OpValue opValue, Method method)
-        throws IllegalArgumentException {
+    private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
-        this.signature = signature;
+        this.sort = sort;
         this.opValue = opValue;
         this.arity = methodParameterTypes.length;
         this.name = method.getName();
-        this.parameterTypes = new ArrayList<SignatureKind>();
+        this.parameterTypes = new ArrayList<Sort>();
         for (int i = 0; i < this.arity; i++) {
             if (!(methodParameterTypes[i] instanceof TypeVariable<?>)) {
                 throw new IllegalArgumentException(String.format(
-                    "Method '%s' should only have generic parameter types",
-                    method.getName()));
+                    "Method '%s' should only have generic parameter types", method.getName()));
             }
-            String typeName =
-                ((TypeVariable<?>) methodParameterTypes[i]).getName();
-            this.parameterTypes.add(SignatureKind.getKind(typeName.toLowerCase()));
+            String typeName = ((TypeVariable<?>) methodParameterTypes[i]).getName();
+            this.parameterTypes.add(Sort.getKind(typeName.toLowerCase()));
         }
         Type returnType = method.getGenericReturnType();
         if (!(returnType instanceof TypeVariable<?>)) {
-            throw new IllegalArgumentException(
-                String.format("Method '%s' should have generic return type",
-                    method.getName()));
+            throw new IllegalArgumentException(String.format(
+                "Method '%s' should have generic return type", method.getName()));
         }
         String typeName = ((TypeVariable<?>) returnType).getName();
-        this.returnType = SignatureKind.getKind(typeName.toLowerCase());
+        this.returnType = Sort.getKind(typeName.toLowerCase());
         InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
         PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
-        this.symbol =
-            infix == null ? (prefix == null ? null : prefix.symbol())
-                    : infix.symbol();
-        this.precedence =
-            infix == null ? (prefix == null ? OpKind.ATOM
-                    : prefix.precedence()) : infix.precedence();
+        this.symbol = infix == null ? (prefix == null ? null : prefix.symbol()) : infix.symbol();
+        this.kind =
+            infix == null ? (prefix == null ? OpKind.ATOM : prefix.kind())
+                : infix.kind();
         this.description = method.getAnnotation(ToolTipHeader.class).value();
     }
 
-    /** Returns the signature to which this operator belongs. */
-    public SignatureKind getSignature() {
-        return this.signature;
+    /** Returns the sort to which this operator belongs. */
+    public Sort getSort() {
+        return this.sort;
     }
 
-    private final SignatureKind signature;
+    private final Sort sort;
 
     /** Returns the enumerated operator value of the operator. */
     public OpValue getOpValue() {
@@ -100,21 +94,21 @@ public class Operator {
      * Returns the parameter type names of this operator.
      * The type names are actually the names of the defining signatures. 
      */
-    public List<SignatureKind> getParamTypes() {
+    public List<Sort> getParamTypes() {
         return this.parameterTypes;
     }
 
-    private final List<SignatureKind> parameterTypes;
+    private final List<Sort> parameterTypes;
 
     /** 
      * Returns the result type name of this operator.
      * The type name is actually the name of the defining signature.
      */
-    public SignatureKind getResultType() {
+    public Sort getResultType() {
         return this.returnType;
     }
 
-    private final SignatureKind returnType;
+    private final Sort returnType;
 
     /** Returns the in- or prefix symbol of this operator, or {@code null} if it has none. */
     public String getSymbol() {
@@ -123,12 +117,12 @@ public class Operator {
 
     private final String symbol;
 
-    /** Returns the priority of this operator. */
-    public OpKind getPrecedence() {
-        return this.precedence;
+    /** Returns the kind of this operator. */
+    public OpKind getKind() {
+        return this.kind;
     }
 
-    private final OpKind precedence;
+    private final OpKind kind;
 
     /**
      * Returns the description in the {@link ToolTipHeader} annotation of the method.
@@ -164,13 +158,12 @@ public class Operator {
 
     /** Returns the name of the operator, preceded with its containing signature. */
     public String getFullName() {
-        return getSignature() + ":" + getName();
+        return getSort() + ":" + getName();
     }
 
     @Override
     public String toString() {
-        return getFullName()
-            + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
+        return getFullName() + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
     }
 
     /** 
@@ -186,8 +179,7 @@ public class Operator {
      * This method is supposed to implement an operator, and should therefore be
      * declared exactly once, as a public abstract method.
      */
-    static private Method getOperatorMethod(Class<?> sigClass,
-            java.lang.String name) {
+    static private Method getOperatorMethod(Class<?> sigClass, java.lang.String name) {
         Method result = null;
         java.lang.String className = sigClass.getSimpleName();
         java.lang.String sigName =
@@ -197,8 +189,7 @@ public class Operator {
             if (method.getName().equals(name)) {
                 if (result != null) {
                     throw new IllegalArgumentException(java.lang.String.format(
-                        "Operator overloading for '%s:%s' not allowed",
-                        sigName, name));
+                        "Operator overloading for '%s:%s' not allowed", sigName, name));
                 }
                 result = method;
             }
@@ -208,10 +199,8 @@ public class Operator {
                 "No method found for operator '%s:%s'", sigName, name));
         }
         if (!Modifier.isAbstract(result.getModifiers())) {
-            throw new IllegalArgumentException(
-                java.lang.String.format(
-                    "Method for operator '%s:%s' should be abstract", sigName,
-                    name));
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Method for operator '%s:%s' should be abstract", sigName, name));
         }
         if (!Modifier.isPublic(result.getModifiers())) {
             throw new IllegalArgumentException(java.lang.String.format(
@@ -239,10 +228,9 @@ public class Operator {
     }
 
     /** Creates the operator for a given signature and operator value. */
-    static Operator newInstance(SignatureKind sigKind, OpValue opValue) {
+    static Operator newInstance(Sort sigKind, OpValue opValue) {
         String opName = getOperatorName(opValue);
-        Method opMethod =
-            getOperatorMethod(opValue.getClass().getEnclosingClass(), opName);
+        Method opMethod = getOperatorMethod(opValue.getClass().getEnclosingClass(), opName);
         return new Operator(sigKind, opValue, opMethod);
     }
 
@@ -250,8 +238,8 @@ public class Operator {
     public static List<Operator> getOps(String symbol) {
         if (opLookupMap.isEmpty()) {
             // register all operators
-            for (SignatureKind sig : SignatureKind.values()) {
-                for (OpValue opValue : sig.getOpValues()) {
+            for (Sort sort : Sort.values()) {
+                for (OpValue opValue : sort.getOpValues()) {
                     registerOp(opValue.getOperator());
                 }
             }

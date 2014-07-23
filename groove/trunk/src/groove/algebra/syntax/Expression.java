@@ -17,7 +17,7 @@
 package groove.algebra.syntax;
 
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
@@ -46,7 +46,7 @@ public abstract class Expression {
     }
 
     /** Returns the type of this term. */
-    public abstract SignatureKind getSignature();
+    public abstract Sort getSort();
 
     /**
      * Returns a text representation of the term.
@@ -119,7 +119,7 @@ public abstract class Expression {
      * Returns a mapping from all variables occurring in this expression
      * to the corresponding types.
      */
-    public Map<String,SignatureKind> getVariables() {
+    public Map<String,Sort> getVariables() {
         if (this.varMap == null) {
             this.varMap = computeVarMap();
         }
@@ -127,7 +127,7 @@ public abstract class Expression {
     }
 
     /** Factory method to create the variable map for this expression. */
-    abstract protected Map<String,SignatureKind> computeVarMap();
+    abstract protected Map<String,Sort> computeVarMap();
 
     /**
      * Returns an expression obtained from this one by changing all
@@ -161,7 +161,7 @@ public abstract class Expression {
     /** Flag indicating if the parsed text for this expression had a type prefix. */
     private final boolean prefixed;
     /** The mapping from variables occurring in this expression to their types. */
-    private Map<String,SignatureKind> varMap;
+    private Map<String,Sort> varMap;
 
     /**
      * Returns the expression tree for a given test:-content string. 

@@ -20,7 +20,7 @@ import static groove.grammar.aspect.AspectKind.ABSTRACT;
 import static groove.grammar.aspect.AspectKind.DEFAULT;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.graph.EdgeRole.NODE_TYPE;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
@@ -187,7 +187,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 typeLabel.text(), oldTypeNode.label().text(), modelNode);
         }
         TypeNode typeNode;
-        SignatureKind signature = modelNode.getAttrKind().getSignature();
+        Sort signature = modelNode.getAttrKind().getSignature();
         if (signature == null) {
             typeNode = factory.createNode(typeLabel);
         } else {

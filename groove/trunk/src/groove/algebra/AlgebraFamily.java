@@ -90,7 +90,7 @@ public enum AlgebraFamily {
      * @param algebra the algebra to be added
      */
     private void setImplementation(Algebra<?> algebra) {
-        SignatureKind sigKind = algebra.getSignature();
+        Sort sigKind = algebra.getSort();
         Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
             throw new IllegalArgumentException(String.format(
@@ -104,7 +104,7 @@ public enum AlgebraFamily {
      *         some signature.
      */
     private void checkCompleteness() throws IllegalStateException {
-        for (SignatureKind sigKind : SignatureKind.values()) {
+        for (Sort sigKind : Sort.values()) {
             if (!this.algebraMap.containsKey(sigKind)) {
                 throw new IllegalStateException(String.format(
                     "Implementation of signature '%s' is missing", sigKind));
@@ -130,7 +130,7 @@ public enum AlgebraFamily {
     /**
      * Returns the algebra class registered for a given named signature, if any.
      */
-    public Algebra<?> getAlgebra(SignatureKind sigKind) {
+    public Algebra<?> getAlgebra(Sort sigKind) {
         return this.algebraMap.get(sigKind);
     }
 
@@ -146,10 +146,10 @@ public enum AlgebraFamily {
     public Object toValue(Expression term) {
         switch (term.getKind()) {
         case CONST:
-            return getAlgebra(term.getSignature()).toValueFromConstant((Constant) term);
+            return getAlgebra(term.getSort()).toValueFromConstant((Constant) term);
         case VAR:
             assert this == POINT;
-            return ((PointAlgebra<?>) getAlgebra(term.getSignature())).getPointValue();
+            return ((PointAlgebra<?>) getAlgebra(term.getSort())).getPointValue();
         case CALL:
             CallExpr call = (CallExpr) term;
             List<Object> args = new ArrayList<Object>();
@@ -167,7 +167,7 @@ public enum AlgebraFamily {
      * Returns the method associated with a certain operator.
      */
     public Operation getOperation(Operator operator) {
-        Algebra<?> algebra = getAlgebra(operator.getSignature());
+        Algebra<?> algebra = getAlgebra(operator.getSort());
         assert algebra != null;
         return getOperations(algebra).get(operator.getName());
     }
@@ -192,7 +192,7 @@ public enum AlgebraFamily {
         Map<String,Operation> result = new HashMap<String,Operation>();
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<String>();
-        Method[] signatureMethods = algebra.getSignature().getSignatureClass().getDeclaredMethods();
+        Method[] signatureMethods = algebra.getSort().getSignatureClass().getDeclaredMethods();
         for (Method method : signatureMethods) {
             if (Modifier.isAbstract(method.getModifiers())
                 && Modifier.isPublic(method.getModifiers())) {
@@ -227,8 +227,8 @@ public enum AlgebraFamily {
     }
 
     /** A map from signature kinds to algebras registered for that name. */
-    private final Map<SignatureKind,Algebra<?>> algebraMap = new EnumMap<SignatureKind,Algebra<?>>(
-        SignatureKind.class);
+    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<Sort,Algebra<?>>(
+        Sort.class);
     /** Store of operations created from the algebras. */
     private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
         new HashMap<Algebra<?>,Map<String,Operation>>();
@@ -259,8 +259,8 @@ public enum AlgebraFamily {
         Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
-            SignatureKind returnType =
-                algebra.getSignature().getOperator(method.getName()).getResultType();
+            Sort returnType =
+                algebra.getSort().getOperator(method.getName()).getResultType();
             this.returnType = register.getAlgebra(returnType);
         }
 
