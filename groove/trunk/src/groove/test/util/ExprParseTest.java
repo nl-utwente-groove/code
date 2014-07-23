@@ -34,7 +34,10 @@ import org.junit.Test;
 public class ExprParseTest {
     @Test
     public void backAndForth() {
-        roundtrip("prf:a(a.b,c(),prf:a.b)");
+        roundtrip("int:ge(a.b,c(),true)");
+        roundtrip("ge+ge");
+        // extension of predefined operator
+        roundtrip("gee");
         roundtrip("-true");
         roundtrip("0-true");
         roundtrip("a+b+c");
@@ -47,6 +50,8 @@ public class ExprParseTest {
 
     @Test
     public void normalisation() {
+        parseToEqual("bool:true", "true");
+        parseToEqual("int: - 10", "-10");
         parseToEqual("a+b+c", "((a)+b)+c");
         parseToEqual("a->b->c", "a->(b->(c))");
         parseToEqual("a+b*c", "a+(b*c)");
@@ -59,7 +64,18 @@ public class ExprParseTest {
 
     @Test
     public void errors() {
+        // malformed constants
+        parseError("'a");
+        parseError("0a");
+        parseError("0.1.");
+        parseError("string:0");
+        parseError("string:-true");
+        parseError("int:<");
+        parseError("int:noop()");
+        // malformed prefixes
         parseError("a:");
+        parseError("a:b");
+        parseError("int:");
         parseError(":b");
         parseError("a.");
         parseError(".b");
@@ -69,7 +85,11 @@ public class ExprParseTest {
         parseError("1+");
         parseError("(1");
         parseError("1)");
+        // associativity error
         parseError("1=2=3");
+        // unrecognised symbols
+        parseError(";");
+        parseError("/");
     }
 
     /** Asserts that parsing a string and converting at back results in the same string. */
@@ -102,7 +122,12 @@ public class ExprParseTest {
         }
     }
 
-    static ExprParser<MyOp> parser = new ExprParser<MyOp>(MyOp.ATOM, true, true, "Test value");
+    static ExprParser<MyOp> parser = new ExprParser<MyOp>(MyOp.class);
+
+    static {
+        parser.setQualIds(true);
+        parser.setSigPrefixes(true);
+    }
 
     private static enum MyOp implements Op {
         INVERT(OpKind.UNARY, "-"),
@@ -115,7 +140,8 @@ public class ExprParseTest {
         EQ(OpKind.EQUAL, "="),
         IMPL(OpKind.COMPARE, "->"),
         CALL(OpKind.CALL),
-        ATOM(OpKind.ATOM), ;
+        ATOM(OpKind.ATOM),
+        GE(OpKind.CALL, "ge"), ;
         private MyOp(OpKind kind) {
             this(kind, null);
         }

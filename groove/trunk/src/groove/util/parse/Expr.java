@@ -17,6 +17,7 @@
 package groove.util.parse;
 
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.util.line.Line;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
@@ -89,6 +90,25 @@ public class Expr<O extends Op> implements Fallible {
 
     private Id id;
 
+    /** Sets an explicit signature declaration for this expression. */
+    public void setSig(SignatureKind sig) {
+        assert this.op.getKind() == OpKind.CALL && this.op.hasSymbol();
+        assert !hasConstant();
+        this.sig = sig;
+    }
+
+    /** Indicates if this expression contains an explicit signature declaration. */
+    public boolean hasSig() {
+        return getSig() != null;
+    }
+
+    /** Returns the signature declaration wrapped in this expression, if any. */
+    public SignatureKind getSig() {
+        return this.sig;
+    }
+
+    private SignatureKind sig;
+
     /** Adds an argument to this expression. */
     public void addArg(Expr<O> arg) {
         this.args.add(arg);
@@ -150,24 +170,29 @@ public class Expr<O extends Op> implements Fallible {
      * @param spaces if {@code true}, spaces are introduced for readability
      */
     private Line toLine(OpKind context, boolean spaces) {
+        Line result;
         if (getOp().getKind() == OpKind.CALL) {
-            return toCallLine(spaces);
+            result = toCallLine(spaces);
         } else if (getOp().getKind() == OpKind.ATOM) {
             if (hasId()) {
-                return getId().toLine();
+                result = getId().toLine();
             } else {
-                return Line.atom(getConstant().toDisplayString());
+                result = Line.atom(getConstant().toDisplayString());
             }
         } else {
-            return toFixLine(context, spaces);
+            result = toFixLine(context, spaces);
         }
+        if (hasSig()) {
+            result = Line.atom(getSig().getName() + ":").append(result);
+        }
+        return result;
     }
 
     /** Builds a display string for an operator without symbol.
      * @param spaces if {@code true}, spaces are introduced for readability */
     private Line toCallLine(boolean spaces) {
         List<Line> result = new ArrayList<Line>();
-        result.add(getId().toLine());
+        result.add(hasId() ? getId().toLine() : Line.atom(getOp().getSymbol()));
         result.add(Line.atom("("));
         boolean firstArg = true;
         for (Expr<?> arg : getArgs()) {
@@ -248,6 +273,7 @@ public class Expr<O extends Op> implements Fallible {
         result = prime * result + this.errors.hashCode();
         result = prime * result + ((this.constant == null) ? 0 : this.constant.hashCode());
         result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+        result = prime * result + ((this.sig == null) ? 0 : this.sig.hashCode());
         return result;
     }
 
@@ -283,12 +309,22 @@ public class Expr<O extends Op> implements Fallible {
         } else if (!this.id.equals(other.id)) {
             return false;
         }
+        if (this.sig == null) {
+            if (other.sig != null) {
+                return false;
+            }
+        } else if (!this.sig.equals(other.sig)) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
         String result = this.op.toString();
+        if (hasSig()) {
+            result += getSig().getName() + ":";
+        }
         if (hasId()) {
             result += getId();
         } else if (hasConstant()) {
