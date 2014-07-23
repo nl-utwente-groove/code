@@ -16,7 +16,6 @@
  */
 package groove.util.parse;
 
-import groove.util.Pair;
 import groove.util.line.Line;
 
 import java.util.ArrayList;
@@ -28,52 +27,27 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Id$
  */
-public class Id extends Pair<String,List<String>> {
+public class Id extends ArrayList<String> {
     /** Constructs an identifier with a given (possibly {@code null}) prefix
      * and an initially empty list of names.
      */
-    public Id(String prefix) {
-        super(prefix, new ArrayList<String>());
+    public Id() {
     }
 
     /** Constructs an identifier with a given (possibly {@code null}) prefix
      * and an initially empty list of names.
      */
-    public Id(String prefix, List<String> names) {
-        super(prefix, names);
-    }
-
-    /** Tests if this identifier has a prefix. */
-    public boolean hasPrefix() {
-        return getPrefix() != null;
-    }
-
-    /** Returns the (possibly {@code null}) prefix of this identifier. */
-    public String getPrefix() {
-        return one();
-    }
-
-    /** Adds a name to the qualified name list. */
-    public void addName(String name) {
-        two().add(name);
-    }
-
-    /** Returns the (nonempty) list of names that this identifier consists of. */
-    public List<String> getNames() {
-        return two();
+    public Id(List<String> names) {
+        super(names);
     }
 
     /** Returns a formatted line representation of this identifier. */
     public Line toLine() {
         StringBuffer result = new StringBuffer();
-        if (hasPrefix()) {
-            result.append(getPrefix());
-            result.append(":");
-        }
-        result.append(getNames().get(0));
-        for (int i = 1; i < getNames().size(); i++) {
+        result.append(get(0));
+        for (int i = 1; i < size(); i++) {
             result.append('.');
-            result.append(getNames().get(i));
+            result.append(get(i));
         }
         return Line.atom(result.toString());
     }
