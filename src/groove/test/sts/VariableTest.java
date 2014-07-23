@@ -16,7 +16,7 @@
  */
 package groove.test.sts;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.sts.InteractionVariable;
 import groove.sts.LocationVariable;
 import groove.sts.Variable;
@@ -44,8 +44,8 @@ public class VariableTest extends TestCase {
 
     @Override
     protected void setUp() {
-        this.iVar = new InteractionVariable("iLabel", SignatureKind.INT);
-        this.lVar = new LocationVariable("lLabel", SignatureKind.REAL, 1.2);
+        this.iVar = new InteractionVariable("iLabel", Sort.INT);
+        this.lVar = new LocationVariable("lLabel", Sort.REAL, 1.2);
     }
 
     /**
@@ -60,8 +60,8 @@ public class VariableTest extends TestCase {
      * Tests getType.
      */
     public void testGetType() {
-        Assert.assertEquals(this.iVar.getType(), SignatureKind.INT);
-        Assert.assertEquals(this.lVar.getType(), SignatureKind.REAL);
+        Assert.assertEquals(this.iVar.getType(), Sort.INT);
+        Assert.assertEquals(this.lVar.getType(), Sort.REAL);
     }
 
     /**
@@ -107,16 +107,16 @@ public class VariableTest extends TestCase {
      */
     public void testGetDefaultValue() {
         Assert.assertEquals(
-            Variable.getDefaultValue(SignatureKind.INT).getClass(),
+            Variable.getDefaultValue(Sort.INT).getClass(),
             Integer.class);
         Assert.assertEquals(
-            Variable.getDefaultValue(SignatureKind.REAL).getClass(),
+            Variable.getDefaultValue(Sort.REAL).getClass(),
             Double.class);
         Assert.assertEquals(
-            Variable.getDefaultValue(SignatureKind.BOOL).getClass(),
+            Variable.getDefaultValue(Sort.BOOL).getClass(),
             Boolean.class);
         Assert.assertEquals(
-            Variable.getDefaultValue(SignatureKind.STRING).getClass(),
+            Variable.getDefaultValue(Sort.STRING).getClass(),
             String.class);
     }
 }

@@ -17,7 +17,7 @@
 package groove.match;
 
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.Condition;
 import groove.grammar.rule.VariableNode;
 
@@ -32,7 +32,7 @@ public class DefaultValueOracle implements ValueOracle {
 
     @Override
     public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        SignatureKind sig = var.getSignature();
+        Sort sig = var.getSignature();
         return Collections.singleton(sig.getDefaultValue());
     }
 

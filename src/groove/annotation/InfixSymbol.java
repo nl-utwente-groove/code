@@ -28,7 +28,7 @@ public @interface InfixSymbol {
     public String symbol();
 
     /** 
-     * The operator priority.
+     * The operator kind.
      */
-    public OpKind precedence();
+    public OpKind kind();
 }

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
 import groove.util.parse.FormatException;
@@ -65,10 +65,10 @@ public class ExpressionTest {
     /** Tests all operators. */
     @Test
     public void testOperators() {
-        testOperators(SignatureKind.INT, "1", "2", "3");
-        testOperators(SignatureKind.REAL, "1.", "2.", "3.");
-        testOperators(SignatureKind.STRING, "\"1\"", "\"2\"", "\"3\"");
-        testOperators(SignatureKind.BOOL, "true", "false", "true");
+        testOperators(Sort.INT, "1", "2", "3");
+        testOperators(Sort.REAL, "1.", "2.", "3.");
+        testOperators(Sort.STRING, "\"1\"", "\"2\"", "\"3\"");
+        testOperators(Sort.BOOL, "true", "false", "true");
 
         assertEquals(parse("x == 2"), parse("x=2", true));
     }
@@ -80,7 +80,7 @@ public class ExpressionTest {
         parse("int:self.x-max(p1.speed,p2.speed)");
     }
 
-    private void testOperators(SignatureKind sig, String... args) {
+    private void testOperators(Sort sig, String... args) {
         for (OpValue opValue : sig.getOpValues()) {
             Operator op = opValue.getOperator();
             String call = op.getName() + "(";
@@ -98,7 +98,7 @@ public class ExpressionTest {
             }
             String symbol = op.getSymbol();
             if (symbol != null) {
-                switch (op.getPrecedence().getPlace()) {
+                switch (op.getKind().getPlace()) {
                 case INFIX:
                     assertEquals(result, parse(args[0] + symbol + args[1]));
                     break;

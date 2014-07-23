@@ -32,12 +32,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Enumeration of the currently supported signatures. 
+ * Enumeration of the currently supported signatures sorts. 
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum SignatureKind {
-    /** Signature kind of booleans. */
+public enum Sort {
+    /** Boolean sort. */
     BOOL(Keywords.BOOL, BoolSignature.class, EnumSet.allOf(BoolSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -63,7 +63,7 @@ public enum SignatureKind {
             return symbol.equals("" + true) || symbol.equals("" + false);
         }
     },
-    /** Signature kind of integers. */
+    /** Integer sort. */
     INT(Keywords.INT, IntSignature.class, EnumSet.allOf(IntSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -91,7 +91,7 @@ public enum SignatureKind {
             }
         }
     },
-    /** Signature kind of real numbers. */
+    /** Real number sort. */
     REAL(Keywords.REAL, RealSignature.class, EnumSet.allOf(RealSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -119,7 +119,7 @@ public enum SignatureKind {
             }
         }
     },
-    /** Signature kind of strings. */
+    /** String sort. */
     STRING(Keywords.STRING, StringSignature.class, EnumSet.allOf(StringSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -149,8 +149,7 @@ public enum SignatureKind {
     };
 
     /** Constructs a signature kind with a given name. */
-    private SignatureKind(String name, Class<? extends Signature> sigClass,
-        Set<? extends OpValue> opValues) {
+    private Sort(String name, Class<? extends Signature> sigClass, Set<? extends OpValue> opValues) {
         assert name != null;
         this.name = name;
         this.sigClass = sigClass;
@@ -223,12 +222,12 @@ public enum SignatureKind {
     public abstract boolean denotesConstant(String symbol);
 
     /** Returns the signature kind for a given signature name. */
-    public static SignatureKind getKind(String sigName) {
+    public static Sort getKind(String sigName) {
         return sigNameMap.get(sigName);
     }
 
     /** Returns the signature kind for a given signature class. */
-    public static SignatureKind getKind(Class<?> sigClass) {
+    public static Sort getKind(Class<?> sigClass) {
         return sigClassMap.get(sigClass);
     }
 
@@ -238,13 +237,13 @@ public enum SignatureKind {
     }
 
     /** Inverse mapping from signature names to signature kinds. */
-    private static Map<String,SignatureKind> sigNameMap = new HashMap<String,SignatureKind>();
+    private static Map<String,Sort> sigNameMap = new HashMap<String,Sort>();
     /** Inverse mapping from signature classes to signature kinds. */
-    private static Map<Class<? extends Signature>,SignatureKind> sigClassMap =
-        new HashMap<Class<? extends Signature>,SignatureKind>();
+    private static Map<Class<? extends Signature>,Sort> sigClassMap =
+        new HashMap<Class<? extends Signature>,Sort>();
 
     static {
-        for (SignatureKind kind : SignatureKind.values()) {
+        for (Sort kind : Sort.values()) {
             sigNameMap.put(kind.getName(), kind);
             sigClassMap.put(kind.getSignatureClass(), kind);
         }

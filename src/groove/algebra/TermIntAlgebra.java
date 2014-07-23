@@ -42,7 +42,7 @@ public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression>
 
     @Override
     public boolean isValue(Object value) {
-        return value instanceof Expression && ((Expression) value).getSignature() == getSignature();
+        return value instanceof Expression && ((Expression) value).getSort() == getSort();
     }
 
     @Override

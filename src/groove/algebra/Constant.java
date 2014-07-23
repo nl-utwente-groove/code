@@ -33,7 +33,7 @@ public class Constant extends Expression {
      */
     Constant(String value) {
         super(true);
-        this.signature = SignatureKind.STRING;
+        this.signature = Sort.STRING;
         this.stringRepr = value;
         this.boolRepr = null;
         this.intRepr = null;
@@ -45,7 +45,7 @@ public class Constant extends Expression {
      */
     Constant(Boolean value) {
         super(true);
-        this.signature = SignatureKind.BOOL;
+        this.signature = Sort.BOOL;
         this.boolRepr = value;
         this.stringRepr = null;
         this.intRepr = null;
@@ -57,7 +57,7 @@ public class Constant extends Expression {
      */
     Constant(BigDecimal value) {
         super(true);
-        this.signature = SignatureKind.REAL;
+        this.signature = Sort.REAL;
         this.symbol = value.toString();
         this.realRepr = value;
         this.boolRepr = null;
@@ -70,7 +70,7 @@ public class Constant extends Expression {
      */
     Constant(BigInteger value) {
         super(true);
-        this.signature = SignatureKind.INT;
+        this.signature = Sort.INT;
         this.symbol = value.toString();
         this.intRepr = value;
         this.boolRepr = null;
@@ -89,7 +89,7 @@ public class Constant extends Expression {
     }
 
     @Override
-    protected Map<String,SignatureKind> computeVarMap() {
+    protected Map<String,Sort> computeVarMap() {
         return Collections.emptyMap();
     }
 
@@ -143,11 +143,11 @@ public class Constant extends Expression {
 
     @Override
     public String toString() {
-        return getSignature() + ":" + toDisplayString();
+        return getSort() + ":" + toDisplayString();
     }
 
     @Override
-    public final SignatureKind getSignature() {
+    public final Sort getSort() {
         return this.signature;
     }
 
@@ -160,61 +160,61 @@ public class Constant extends Expression {
     protected String createParseString() {
         String result = toDisplayString();
         if (isPrefixed()) {
-            result = getSignature() + ":" + result;
+            result = getSort() + ":" + result;
         }
         return result;
     }
 
     /**
-     * Returns the internal string representation, if this is a {@link SignatureKind#STRING} constant.
+     * Returns the internal string representation, if this is a {@link Sort#STRING} constant.
      * This is the unquoted version of the constant symbol. 
      */
     public String getStringRepr() {
-        assert getSignature() == SignatureKind.STRING;
+        assert getSort() == Sort.STRING;
         return this.stringRepr;
     }
 
     /**
-     * Returns the internal integer representation, if this is a {@link SignatureKind#INT} constant.
+     * Returns the internal integer representation, if this is a {@link Sort#INT} constant.
      * This is the unquoted version of the constant symbol. 
      */
     public BigInteger getIntRepr() {
-        assert getSignature() == SignatureKind.INT;
+        assert getSort() == Sort.INT;
         return this.intRepr;
     }
 
     /**
-     * Returns the internal string representation, if this is a {@link SignatureKind#REAL} constant.
+     * Returns the internal string representation, if this is a {@link Sort#REAL} constant.
      * This is the unquoted version of the constant symbol. 
      */
     public BigDecimal getRealRepr() {
-        assert getSignature() == SignatureKind.REAL;
+        assert getSort() == Sort.REAL;
         return this.realRepr;
     }
 
     /**
-     * Returns the internal string representation, if this is a {@link SignatureKind#BOOL} constant.
+     * Returns the internal string representation, if this is a {@link Sort#BOOL} constant.
      * This is the unquoted version of the constant symbol. 
      */
     public Boolean getBoolRepr() {
-        assert getSignature() == SignatureKind.BOOL;
+        assert getSort() == Sort.BOOL;
         return this.boolRepr;
     }
 
-    private final SignatureKind signature;
-    /** Internal representation in case this is a {@link SignatureKind#STRING} constant. */
+    private final Sort signature;
+    /** Internal representation in case this is a {@link Sort#STRING} constant. */
     private final String stringRepr;
-    /** Internal representation in case this is a {@link SignatureKind#INT} constant. */
+    /** Internal representation in case this is a {@link Sort#INT} constant. */
     private final BigInteger intRepr;
-    /** Internal representation in case this is a {@link SignatureKind#REAL} constant. */
+    /** Internal representation in case this is a {@link Sort#REAL} constant. */
     private final BigDecimal realRepr;
-    /** Internal representation in case this is a {@link SignatureKind#BOOL} constant. */
+    /** Internal representation in case this is a {@link Sort#BOOL} constant. */
     private final Boolean boolRepr;
 
     /** Returns the symbolic string representation of this constant. */
     public String getSymbol() {
         if (this.symbol == null) {
-            switch (getSignature()) {
+            switch (getSort()) {
             case BOOL:
                 this.symbol = this.boolRepr.toString();
                 break;

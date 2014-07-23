@@ -16,7 +16,7 @@
  */
 package groove.algebra.syntax;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.util.line.Line;
 import groove.util.parse.OpKind;
 
@@ -30,14 +30,14 @@ import java.util.Map;
  */
 public class Variable extends Expression {
     /** Constructs a new variable with a given name and signature. */
-    public Variable(boolean prefixed, String name, SignatureKind signature) {
+    public Variable(boolean prefixed, String name, Sort signature) {
         super(prefixed);
         this.signature = signature;
         this.name = name;
     }
 
     /** Constructs a new, non-prefixed variable with a given name and signature. */
-    public Variable(String name, SignatureKind signature) {
+    public Variable(String name, Sort signature) {
         this(false, name, signature);
     }
 
@@ -52,7 +52,7 @@ public class Variable extends Expression {
     }
 
     @Override
-    public SignatureKind getSignature() {
+    public Sort getSort() {
         return this.signature;
     }
 
@@ -72,8 +72,8 @@ public class Variable extends Expression {
     }
 
     @Override
-    public Map<String,SignatureKind> computeVarMap() {
-        return Collections.singletonMap(getName(), getSignature());
+    public Map<String,Sort> computeVarMap() {
+        return Collections.singletonMap(getName(), getSort());
     }
 
     @Override
@@ -88,7 +88,7 @@ public class Variable extends Expression {
         if (!getName().equals(other.getName())) {
             return false;
         }
-        assert getSignature() == other.getSignature();
+        assert getSort() == other.getSort();
         return true;
     }
 
@@ -96,18 +96,18 @@ public class Variable extends Expression {
     protected String createParseString() {
         String result = toDisplayString();
         if (isPrefixed()) {
-            result = getSignature() + ":" + toDisplayString();
+            result = getSort() + ":" + toDisplayString();
         }
         return result;
     }
 
     @Override
     public String toString() {
-        return getSignature().getName() + ":" + getName();
+        return getSort().getName() + ":" + getName();
     }
 
     /** The name of this variable. */
     private final String name;
     /** The signature of this variable. */
-    private final SignatureKind signature;
+    private final Sort signature;
 }

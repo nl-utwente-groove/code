@@ -19,7 +19,7 @@ package groove.gui.look;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.util.line.Line.Style.ITALIC;
 import static groove.util.line.Line.Style.UNDERLINE;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.control.Valuator;
@@ -202,7 +202,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     Line line = edge.label().toLine();
                     // check for primitive type edges
                     if (!edge.isLoop()) {
-                        SignatureKind type = edge.target().getAttrKind().getSignature();
+                        Sort type = edge.target().getAttrKind().getSignature();
                         line = line.append(Line.atom(type.getName()));
                     }
                     result.add(line);
@@ -722,14 +722,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private final GraphRole role;
 
     /** Returns the label prefix associated with a given role. */
-    private static Line getSignatureLine(SignatureKind kind) {
+    private static Line getSignatureLine(Sort kind) {
         return sigLineMap.get(kind);
     }
 
-    static private final Map<SignatureKind,Line> sigLineMap;
+    static private final Map<Sort,Line> sigLineMap;
     static {
-        Map<SignatureKind,Line> map = new EnumMap<SignatureKind,Line>(SignatureKind.class);
-        for (SignatureKind kind : SignatureKind.values()) {
+        Map<Sort,Line> map = new EnumMap<Sort,Line>(Sort.class);
+        for (Sort kind : Sort.values()) {
             map.put(kind, Line.atom(kind.getName()).style(Style.BOLD));
         }
         sigLineMap = map;

@@ -17,7 +17,7 @@
 package groove.util.parse;
 
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.util.DefaultFixable;
 import groove.util.line.Line;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Id$
  */
-public class Expr<O extends Op> implements Fallible {
+public class Expr<O extends Op> extends DefaultFixable implements Fallible {
     /**
      * Constructs an initially argument- and content-free expression
      * with a given top-level operator.
@@ -54,6 +54,7 @@ public class Expr<O extends Op> implements Fallible {
 
     /** Sets a top-level constant for this expression. */
     public void setConstant(Constant constant) {
+        assert !isFixed();
         assert this.op.getKind() == OpKind.ATOM;
         assert !hasId();
         this.constant = constant;
@@ -73,6 +74,7 @@ public class Expr<O extends Op> implements Fallible {
 
     /** Sets a top-level identifier for this expression. */
     public void setId(Id id) {
+        assert !isFixed();
         assert this.op.getKind() == OpKind.ATOM || this.op.getKind() == OpKind.CALL;
         assert !hasConstant();
         this.id = id;
@@ -90,29 +92,10 @@ public class Expr<O extends Op> implements Fallible {
 
     private Id id;
 
-    /** Sets an explicit signature declaration for this expression. */
-    public void setSig(SignatureKind sig) {
-        assert this.op.getKind() == OpKind.CALL && this.op.hasSymbol();
-        assert !hasConstant();
-        this.sig = sig;
-    }
-
-    /** Indicates if this expression contains an explicit signature declaration. */
-    public boolean hasSig() {
-        return getSig() != null;
-    }
-
-    /** Returns the signature declaration wrapped in this expression, if any. */
-    public SignatureKind getSig() {
-        return this.sig;
-    }
-
-    private SignatureKind sig;
-
     /** Adds an argument to this expression. */
     public void addArg(Expr<O> arg) {
+        assert !isFixed();
         this.args.add(arg);
-        addErrors(arg.getErrors());
     }
 
     /** Returns an unmodifiable view on the list of arguments of this expression. */
@@ -134,20 +117,36 @@ public class Expr<O extends Op> implements Fallible {
 
     @Override
     public void addError(FormatError error) {
+        assert !isFixed();
         this.errors.add(error);
     }
 
     @Override
     public void addErrors(Set<FormatError> errors) {
+        assert !isFixed();
         this.errors.addAll(errors);
     }
 
     @Override
     public void addErrors(FormatException exc) {
+        assert !isFixed();
         addErrors(exc.getErrors());
     }
 
     private final FormatErrorSet errors;
+
+    @Override
+    public boolean setFixed() {
+        if (!hasErrors() && getOp().getArity() >= 0 && getOp().getArity() != getArgs().size()) {
+            addError(new FormatError("Operator '%s' expects %s but has %s operands in %s",
+                getOp().getSymbol(), getOp().getArity(), getArgs().size(), toParsableString()));
+        }
+        for (Expr<O> arg : getArgs()) {
+            arg.setFixed();
+            addErrors(arg.getErrors());
+        }
+        return super.setFixed();
+    }
 
     /** Returns a formatted line representation of this expression,
      * without spaces for readability.
@@ -161,6 +160,7 @@ public class Expr<O extends Op> implements Fallible {
      * @param spaces if {@code true}, spaces are introduced for readability
      */
     public Line toLine(boolean spaces) {
+        assert isFixed();
         return toLine(OpKind.NONE, spaces);
     }
 
@@ -181,9 +181,6 @@ public class Expr<O extends Op> implements Fallible {
             }
         } else {
             result = toFixLine(context, spaces);
-        }
-        if (hasSig()) {
-            result = Line.atom(getSig().getName() + ":").append(result);
         }
         return result;
     }
@@ -273,7 +270,6 @@ public class Expr<O extends Op> implements Fallible {
         result = prime * result + this.errors.hashCode();
         result = prime * result + ((this.constant == null) ? 0 : this.constant.hashCode());
         result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
-        result = prime * result + ((this.sig == null) ? 0 : this.sig.hashCode());
         return result;
     }
 
@@ -309,22 +305,12 @@ public class Expr<O extends Op> implements Fallible {
         } else if (!this.id.equals(other.id)) {
             return false;
         }
-        if (this.sig == null) {
-            if (other.sig != null) {
-                return false;
-            }
-        } else if (!this.sig.equals(other.sig)) {
-            return false;
-        }
         return true;
     }
 
     @Override
     public String toString() {
         String result = this.op.toString();
-        if (hasSig()) {
-            result += getSig().getName() + ":";
-        }
         if (hasId()) {
             result += getId();
         } else if (hasConstant()) {

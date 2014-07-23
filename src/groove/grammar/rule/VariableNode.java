@@ -17,7 +17,7 @@
 package groove.grammar.rule;
 
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.grammar.AnchorKind;
@@ -84,8 +84,8 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
      * Returns the (non-{@code null}) signature to which the variable node
      * belongs.
      */
-    public SignatureKind getSignature() {
-        return this.term.getSignature();
+    public Sort getSignature() {
+        return this.term.getSort();
     }
 
     /**

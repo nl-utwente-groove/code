@@ -19,7 +19,7 @@ package groove.transform.criticalpair;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.CallExpr;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
@@ -302,7 +302,7 @@ class ParallelPair {
         for (RuleNode rn : ruleGraph.nodeSet()) {
             if (rn instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) rn;
-                SignatureKind sig = opNode.getOperator().getResultType();
+                Sort sig = opNode.getOperator().getResultType();
                 Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                 Expression[] args = new Expression[opNode.getArguments().size()];
                 for (int i = 0; i < opNode.getArguments().size(); i++) {
@@ -325,7 +325,7 @@ class ParallelPair {
                 VariableNode varNode = (VariableNode) rn;
                 //add unconnected constants to the match
                 if (varNode.hasConstant()) {
-                    SignatureKind sig = varNode.getSignature();
+                    Sort sig = varNode.getSignature();
                     Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                     //Create this node in the host graph
                     //(if a node with this constant already exists, it will be reused)

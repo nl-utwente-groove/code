@@ -18,7 +18,7 @@ package groove.util;
 
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.io.FileType;
 import groove.util.cli.GrooveCmdLineTool;
 
@@ -56,11 +56,11 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
 
     private List<String[]> collectOperators() {
         List<String[]> result = new ArrayList<String[]>();
-        for (SignatureKind sig : SignatureKind.values()) {
+        for (Sort sig : Sort.values()) {
             for (OpValue opValue : sig.getOpValues()) {
                 Operator op = opValue.getOperator();
                 StringBuilder argTypes = new StringBuilder();
-                for (SignatureKind argType : op.getParamTypes()) {
+                for (Sort argType : op.getParamTypes()) {
                     if (argTypes.length() > 0) {
                         argTypes.append(this.argTypeSeparator);
                     }

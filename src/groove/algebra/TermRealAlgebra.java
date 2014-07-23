@@ -42,7 +42,7 @@ public class TermRealAlgebra extends RealAlgebra<Expression,Expression,Expressio
 
     @Override
     public boolean isValue(Object value) {
-        return value instanceof Expression && ((Expression) value).getSignature() == getSignature();
+        return value instanceof Expression && ((Expression) value).getSort() == getSort();
     }
 
     @Override

@@ -18,7 +18,7 @@ package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
 import groove.algebra.Operator;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.parse.OpKind;
@@ -70,8 +70,8 @@ public class CallExpr extends Expression {
     }
 
     @Override
-    protected Map<String,SignatureKind> computeVarMap() {
-        Map<String,SignatureKind> result = new HashMap<String,SignatureKind>();
+    protected Map<String,Sort> computeVarMap() {
+        Map<String,Sort> result = new HashMap<String,Sort>();
         for (Expression arg : getArgs()) {
             result.putAll(arg.getVariables());
         }
@@ -79,7 +79,7 @@ public class CallExpr extends Expression {
     }
 
     @Override
-    public SignatureKind getSignature() {
+    public Sort getSort() {
         return this.op.getResultType();
     }
 
@@ -171,7 +171,7 @@ public class CallExpr extends Expression {
     /** Builds a display string for an operator with an infix or prefix symbol. */
     private Line toFixLine(OpKind context) {
         List<Line> result = new ArrayList<Line>();
-        OpKind me = getOperator().getPrecedence();
+        OpKind me = getOperator().getKind();
         boolean addPars = me.compareTo(context) < 0;
         boolean addSpaces = me.compareTo(OpKind.MULT) < 0;
         int nextArgIx = 0;
@@ -245,12 +245,12 @@ public class CallExpr extends Expression {
     /** Method to check the type correctness of the operator/arguments combination. */
     private boolean isTypeCorrect() {
         int arity = this.op.getArity();
-        List<SignatureKind> argTypes = this.op.getParamTypes();
+        List<Sort> argTypes = this.op.getParamTypes();
         if (arity != getArgs().size()) {
             return false;
         }
         for (int i = 0; i < arity; i++) {
-            if (getArgs().get(i).getSignature() != argTypes.get(i)) {
+            if (getArgs().get(i).getSort() != argTypes.get(i)) {
                 return false;
             }
         }

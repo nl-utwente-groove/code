@@ -18,7 +18,7 @@ package groove.test.rel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.automaton.RegExpr;
 import groove.automaton.RegExprTyper;
 import groove.automaton.RegExprTyper.Result;
@@ -128,16 +128,16 @@ public class RegExprTyperTest {
         C = explicitType.getNode("type:C");
         D = explicitType.getNode("type:D");
         TypeFactory explicitFactory = explicitType.getFactory();
-        XBool = explicitFactory.getDataType(SignatureKind.BOOL);
-        XInt = explicitFactory.getDataType(SignatureKind.INT);
-        XReal = explicitFactory.getDataType(SignatureKind.REAL);
-        XString = explicitFactory.getDataType(SignatureKind.STRING);
+        XBool = explicitFactory.getDataType(Sort.BOOL);
+        XInt = explicitFactory.getDataType(Sort.INT);
+        XReal = explicitFactory.getDataType(Sort.REAL);
+        XString = explicitFactory.getDataType(Sort.STRING);
         Top = implicitType.getTopNode();
         TypeFactory implicitFactory = implicitType.getFactory();
-        IBool = implicitFactory.getDataType(SignatureKind.BOOL);
-        IInt = implicitFactory.getDataType(SignatureKind.INT);
-        IReal = implicitFactory.getDataType(SignatureKind.REAL);
-        IString = implicitFactory.getDataType(SignatureKind.STRING);
+        IBool = implicitFactory.getDataType(Sort.BOOL);
+        IInt = implicitFactory.getDataType(Sort.INT);
+        IReal = implicitFactory.getDataType(Sort.REAL);
+        IString = implicitFactory.getDataType(Sort.STRING);
     }
 
     /** Tests the construction of atoms. */

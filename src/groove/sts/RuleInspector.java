@@ -18,7 +18,7 @@ package groove.sts;
 
 import groove.algebra.Constant;
 import groove.algebra.Operator;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.Rule;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
@@ -163,7 +163,7 @@ public class RuleInspector {
                     String expr =
                         ("(" + subExpressions[0] + " " + op.getSymbol() + " "
                             + subExpressions[1] + ")");
-                    if (!op.getResultType().equals(SignatureKind.BOOL)) {
+                    if (!op.getResultType().equals(Sort.BOOL)) {
                         expr = "(" + expr + "== " + value + ")";
                     }
                     result.add(expr);
@@ -205,7 +205,7 @@ public class RuleInspector {
      */
     public String getSymbol(Constant constant) {
         String result = constant.toDisplayString();
-        if (constant.getSignature() == SignatureKind.STRING) {
+        if (constant.getSort() == Sort.STRING) {
             // add a layer of \-escapes
             result = result.replace("\\", "\\\\");
             result = result.replace("\"", "\\\"");

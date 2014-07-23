@@ -17,7 +17,7 @@
 package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
@@ -34,7 +34,7 @@ import java.util.Map;
 public class FieldExpr extends Expression {
     /** Constructs a new field expression. */
     public FieldExpr(boolean prefixed, String target, String field,
-            SignatureKind type) {
+            Sort type) {
         super(prefixed);
         assert field != null && type != null;
         this.target = target;
@@ -43,7 +43,7 @@ public class FieldExpr extends Expression {
     }
 
     @Override
-    public SignatureKind getSignature() {
+    public Sort getSort() {
         return this.type;
     }
 
@@ -64,7 +64,7 @@ public class FieldExpr extends Expression {
     public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         if (oldLabel.getRole() == BINARY && oldLabel.text().equals(getField())) {
             return new FieldExpr(isPrefixed(), getTarget(),
-                newLabel.text(), getSignature());
+                newLabel.text(), getSort());
         } else {
             return this;
         }
@@ -94,7 +94,7 @@ public class FieldExpr extends Expression {
     }
 
     @Override
-    protected Map<String,SignatureKind> computeVarMap() {
+    protected Map<String,Sort> computeVarMap() {
         return Collections.emptyMap();
     }
 
@@ -134,17 +134,17 @@ public class FieldExpr extends Expression {
     protected String createParseString() {
         String result = toDisplayString();
         if (isPrefixed()) {
-            result = getSignature() + ":" + toDisplayString();
+            result = getSort() + ":" + toDisplayString();
         }
         return result;
     }
 
     @Override
     public String toString() {
-        return getSignature() + ":" + toDisplayString();
+        return getSort() + ":" + toDisplayString();
     }
 
     private final String target;
     private final String field;
-    private final SignatureKind type;
+    private final Sort type;
 }

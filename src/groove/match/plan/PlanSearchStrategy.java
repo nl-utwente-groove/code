@@ -16,7 +16,7 @@
  */
 package groove.match.plan;
 
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.Condition;
 import groove.grammar.host.DefaultHostNode;
 import groove.grammar.host.HostEdge;
@@ -517,7 +517,7 @@ public class PlanSearchStrategy implements SearchStrategy {
                 if (!keyIsVariableNode) {
                     return false;
                 } else {
-                    SignatureKind keySignature =
+                    Sort keySignature =
                         ((VariableNode) nodeKey).getSignature();
                     if (((ValueNode) image).getSignature() != keySignature) {
                         return false;

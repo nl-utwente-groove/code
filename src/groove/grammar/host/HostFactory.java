@@ -283,7 +283,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         @Override
         protected ValueNode newNode(int nr) {
             TypeNode type =
-                getTypeFactory().getDataType(this.algebra.getSignature());
+                getTypeFactory().getDataType(this.algebra.getSort());
             return new ValueNode(nr, this.algebra, this.value, type);
         }
 

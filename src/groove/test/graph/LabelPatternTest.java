@@ -19,7 +19,7 @@ package groove.test.graph;
 import static org.junit.Assert.fail;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -70,9 +70,9 @@ public class LabelPatternTest {
         HostGraph graph = new DefaultHostGraph("test");
         HostNode n1 = graph.addNode();
         Algebra<?> intAlgebra =
-            AlgebraFamily.getInstance().getAlgebra(SignatureKind.INT);
+            AlgebraFamily.getInstance().getAlgebra(Sort.INT);
         Algebra<?> stringAlgebra =
-            AlgebraFamily.getInstance().getAlgebra(SignatureKind.STRING);
+            AlgebraFamily.getInstance().getAlgebra(Sort.STRING);
         HostNode i1 =
             graph.getFactory().createNode(intAlgebra,
                 intAlgebra.toValueFromJava(11));

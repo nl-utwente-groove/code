@@ -19,7 +19,7 @@ package groove.test.algebra;
 import static org.junit.Assert.assertTrue;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,7 +33,7 @@ public class AlgebrasTest {
     public void testConsistency() {
         Set<String> names = new HashSet<String>();
         for (AlgebraFamily family : AlgebraFamily.values()) {
-            for (SignatureKind kind : SignatureKind.values()) {
+            for (Sort kind : Sort.values()) {
                 Algebra<?> algebra = family.getAlgebra(kind);
                 boolean freshName = names.add(algebra.getName());
                 assertTrue(freshName);

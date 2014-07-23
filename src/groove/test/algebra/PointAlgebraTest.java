@@ -25,7 +25,7 @@ import groove.algebra.PointBoolAlgebra;
 import groove.algebra.PointIntAlgebra;
 import groove.algebra.PointRealAlgebra;
 import groove.algebra.PointStringAlgebra;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +42,7 @@ public class PointAlgebraTest extends
     public void testConsistency() {
         super.testConsistency();
         Set<Object> points = new HashSet<Object>();
-        for (SignatureKind kind : SignatureKind.values()) {
+        for (Sort kind : Sort.values()) {
             PointAlgebra<?> algebra =
                 (PointAlgebra<?>) AlgebraFamily.POINT.getAlgebra(kind);
             Object point = algebra.getPointValue();

@@ -21,7 +21,7 @@ import static groove.grammar.aspect.AspectParser.SEPARATOR;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Expression.Kind;
@@ -268,7 +268,7 @@ public enum AspectKind {
      * Returns the (possibly {@code null}) signature of this aspect kind.
      * @see #hasSignature()
      */
-    public SignatureKind getSignature() {
+    public Sort getSignature() {
         return this.contentKind.signature;
     }
 
@@ -370,7 +370,7 @@ public enum AspectKind {
     }
 
     /** Returns the aspect kinds corresponding to a given signature. */
-    public static AspectKind toAspectKind(SignatureKind signature) {
+    public static AspectKind toAspectKind(Sort signature) {
         return sigKindMap.get(signature);
     }
 
@@ -888,7 +888,7 @@ public enum AspectKind {
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
         assert kind.hasSignature();
-        for (OpValue op : SignatureKind.getKind(kind.getName()).getOpValues()) {
+        for (OpValue op : Sort.getKind(kind.getName()).getOpValues()) {
             if (result.length() > 0) {
                 result.append(", ");
             }
@@ -910,8 +910,8 @@ public enum AspectKind {
     /** Mapping from kind value names to symbols. */
     private static final Map<String,String> tokenMap = new HashMap<String,String>();
     /** Mapping from signature names to aspect kinds. */
-    private static final Map<SignatureKind,AspectKind> sigKindMap =
-        new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
+    private static final Map<Sort,AspectKind> sigKindMap =
+        new EnumMap<Sort,AspectKind>(Sort.class);
 
     static {
         // initialise the aspect kind map
@@ -919,7 +919,7 @@ public enum AspectKind {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
             tokenMap.put(kind.name(), kind.getName());
-            SignatureKind sigKind = SignatureKind.getKind(kind.getName());
+            Sort sigKind = Sort.getKind(kind.getName());
             if (sigKind != null) {
                 sigKindMap.put(sigKind, kind);
             }
@@ -1073,19 +1073,19 @@ public enum AspectKind {
         /**
          * String constant, used in a typed value aspect.
          */
-        STRING_LITERAL(SignatureKind.STRING),
+        STRING_LITERAL(Sort.STRING),
         /**
          * Boolean constant, used in a typed value aspect.
          */
-        BOOL_LITERAL(SignatureKind.BOOL),
+        BOOL_LITERAL(Sort.BOOL),
         /**
          * Integer number constant, used in a typed value aspect.
          */
-        INT_LITERAL(SignatureKind.INT),
+        INT_LITERAL(Sort.INT),
         /**
          * Real number constant, used in a typed value aspect.
          */
-        REAL_LITERAL(SignatureKind.REAL),
+        REAL_LITERAL(Sort.REAL),
         /**
          * Multiplicity: either a single number,
          * or of the form {@code n..m} where {@code n<m} or {@code m=*}.
@@ -1287,7 +1287,7 @@ public enum AspectKind {
                     throw new FormatException(
                         "Field expression '%s' not allowed as predicate expression", text);
                 }
-                if (result.getSignature() != SignatureKind.BOOL) {
+                if (result.getSort() != Sort.BOOL) {
                     throw new FormatException(
                         "Non-boolean expression '%s' not allowed as predicate expression", text);
                 }
@@ -1352,7 +1352,7 @@ public enum AspectKind {
         }
 
         /** Constructor for literals of a given signature. */
-        private ContentKind(SignatureKind signature) {
+        private ContentKind(Sort signature) {
             this.signature = signature;
         }
 
@@ -1501,7 +1501,7 @@ public enum AspectKind {
             return Character.isJavaIdentifierPart(c);
         }
 
-        private final SignatureKind signature;
+        private final Sort signature;
 
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';

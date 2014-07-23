@@ -32,7 +32,7 @@ import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.grammar.aspect.AspectKind.TEST;
 import static groove.graph.GraphRole.RULE;
 import groove.algebra.Operator;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.automaton.RegExpr;
@@ -491,7 +491,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             }
         }
         if (onNode) {
-            SignatureKind type = null;
+            Sort type = null;
             if (!isLoop()) {
                 switch (getGraphRole()) {
                 case HOST:
@@ -744,7 +744,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     }
 
     /** Returns the signature of the attribute aspect, if any. */
-    public SignatureKind getSignature() {
+    public Sort getSignature() {
         return this.signature;
     }
 
@@ -857,7 +857,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     /** An optional attribute-related aspect. */
     private Aspect attr;
     /** The signature of the attribute-related aspect, if any. */
-    private SignatureKind signature;
+    private Sort signature;
     /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
     private Aspect labelMode;
     /** The quantifier level name, if any. */

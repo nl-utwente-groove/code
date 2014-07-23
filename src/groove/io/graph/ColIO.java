@@ -18,7 +18,7 @@ package groove.io.graph;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -68,7 +68,7 @@ public class ColIO extends GraphIO<HostGraph> {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         try {
             Algebra<?> intAlgebra =
-                AlgebraFamily.getInstance().getAlgebra(SignatureKind.INT);
+                AlgebraFamily.getInstance().getAlgebra(Sort.INT);
             TypeLabel valueLabel = TypeLabel.createBinaryLabel("value");
             for (String nextLine = reader.readLine(); nextLine != null; nextLine =
                 reader.readLine()) {

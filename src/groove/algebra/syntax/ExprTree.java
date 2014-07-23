@@ -5,7 +5,7 @@ import groove.algebra.IntSignature;
 import groove.algebra.Operator;
 import groove.algebra.RealSignature;
 import groove.algebra.Signature.OpValue;
-import groove.algebra.SignatureKind;
+import groove.algebra.Sort;
 import groove.util.antlr.ParseInfo;
 import groove.util.antlr.ParseTree;
 import groove.util.parse.FormatException;
@@ -43,7 +43,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * All free variables in the tree must be type-derivable.
      */
     public Expression toExpression() throws FormatException {
-        return toExpression(Collections.<String,SignatureKind>emptyMap());
+        return toExpression(Collections.<String,Sort>emptyMap());
     }
 
     /**
@@ -51,8 +51,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    public Expression toExpression(Map<String,SignatureKind> varMap) throws FormatException {
-        Map<SignatureKind,? extends Expression> choice = toExpressions(varMap);
+    public Expression toExpression(Map<String,Sort> varMap) throws FormatException {
+        Map<Sort,? extends Expression> choice = toExpressions(varMap);
         if (choice.size() > 1) {
             throw new FormatException("Can't derive type of '%s': add type prefix", toInputString());
         }
@@ -66,13 +66,13 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    private Map<SignatureKind,? extends Expression> toExpressions(Map<String,SignatureKind> varMap)
+    private Map<Sort,? extends Expression> toExpressions(Map<String,Sort> varMap)
         throws FormatException {
-        Map<SignatureKind,? extends Expression> result;
+        Map<Sort,? extends Expression> result;
         switch (getToken().getType()) {
         case ExprParser.CONST:
             Constant constant = toConstant();
-            result = Collections.singletonMap(constant.getSignature(), constant);
+            result = Collections.singletonMap(constant.getSort(), constant);
             break;
         case ExprParser.PAR:
             result = toParameters();
@@ -104,12 +104,12 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         Constant result = getChild(0).findConstant();
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();
-            SignatureKind sig = SignatureKind.getKind(prefix);
+            Sort sig = Sort.getKind(prefix);
             if (sig == null) {
                 throw new FormatException("Prefix '%s' in '%s' does not represent a type", prefix,
                     toInputString());
             }
-            if (result.getSignature() != sig) {
+            if (result.getSort() != sig) {
                 throw new FormatException("Literal %s is not of type %s", result, prefix);
             }
         }
@@ -121,7 +121,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
     private Constant findConstant() {
         boolean minus = getType() == ExprParser.MINUS;
         ExprTree literal = minus ? getChild(0) : this;
-        SignatureKind type = getSigKind(literal.getToken());
+        Sort type = getSigKind(literal.getToken());
         String literalText = minus ? getText() : "";
         literalText += literal.getChild(0).getText();
         try {
@@ -133,10 +133,10 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         }
     }
 
-    private Map<SignatureKind,Parameter> toParameters() throws FormatException {
+    private Map<Sort,Parameter> toParameters() throws FormatException {
         assert getType() == ExprParser.PAR;
-        Map<SignatureKind,Parameter> result =
-            new EnumMap<SignatureKind,Parameter>(SignatureKind.class);
+        Map<Sort,Parameter> result =
+            new EnumMap<Sort,Parameter>(Sort.class);
         int number = Integer.parseInt(getChild(0).getText());
         if (number < 0) {
             throw new FormatException("Parameter '%s' must have a non-negative number",
@@ -144,33 +144,33 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         }
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();
-            SignatureKind type = SignatureKind.getKind(prefix);
+            Sort type = Sort.getKind(prefix);
             if (type == null) {
                 throw new FormatException("Prefix '%s' does not represent a type", prefix);
             }
             result.put(type, new Parameter(true, number, type));
         } else {
-            for (SignatureKind type : SignatureKind.values()) {
+            for (Sort type : Sort.values()) {
                 result.put(type, new Parameter(false, number, type));
             }
         }
         return result;
     }
 
-    private Map<SignatureKind,Expression> toFieldOrVarExprs(Map<String,SignatureKind> varMap)
+    private Map<Sort,Expression> toFieldOrVarExprs(Map<String,Sort> varMap)
         throws FormatException {
         assert getType() == ExprParser.FIELD;
-        Map<SignatureKind,Expression> result =
-            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
+        Map<Sort,Expression> result =
+            new EnumMap<Sort,Expression>(Sort.class);
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();
-            SignatureKind type = SignatureKind.getKind(prefix);
+            Sort type = Sort.getKind(prefix);
             if (type == null) {
                 throw new FormatException("Prefix '%s' does not represent a type", prefix);
             }
             result.put(type, getChild(0).toFieldOrVarExpr(true, varMap, type));
         } else {
-            for (SignatureKind type : SignatureKind.values()) {
+            for (Sort type : Sort.values()) {
                 result.put(type, getChild(0).toFieldOrVarExpr(false, varMap, type));
             }
         }
@@ -184,8 +184,8 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @param varMap variable typing
      * @param type expected type of the expression
      */
-    private Expression toFieldOrVarExpr(boolean prefixed, Map<String,SignatureKind> varMap,
-        SignatureKind type) throws FormatException {
+    private Expression toFieldOrVarExpr(boolean prefixed, Map<String,Sort> varMap,
+        Sort type) throws FormatException {
         Expression result;
         if (getType() == ExprParser.DOT) {
             assert getChildCount() == 2;
@@ -193,7 +193,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
         } else {
             assert getChildCount() == 0;
             String name = getText();
-            SignatureKind varSig = varMap.get(name);
+            Sort varSig = varMap.get(name);
             if (varSig == null) {
                 // this is a self-field
                 result = new FieldExpr(prefixed, null, name, type);
@@ -211,10 +211,10 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * Returns the set of derivable expressions for an operator tree,
      * i.e., in which the root represents an operator.
      */
-    private Map<SignatureKind,Expression> toOpExprs(Map<String,SignatureKind> varMap)
+    private Map<Sort,Expression> toOpExprs(Map<String,Sort> varMap)
         throws FormatException {
-        List<Map<SignatureKind,? extends Expression>> args =
-            new ArrayList<Map<SignatureKind,? extends Expression>>();
+        List<Map<Sort,? extends Expression>> args =
+            new ArrayList<Map<Sort,? extends Expression>>();
         // all children are arguments
         for (int i = 0; i < getChildCount(); i++) {
             args.add(getChild(i).toExpressions(varMap));
@@ -227,12 +227,12 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * i.e., in which the root is a {@link ExprParser#CALL} node.
      * @param varMap variable typing
      */
-    private Map<SignatureKind,Expression> toCallExprs(Map<String,SignatureKind> varMap)
+    private Map<Sort,Expression> toCallExprs(Map<String,Sort> varMap)
         throws FormatException {
-        Map<SignatureKind,Expression> result =
-            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
-        List<Map<SignatureKind,? extends Expression>> args =
-            new ArrayList<Map<SignatureKind,? extends Expression>>();
+        Map<Sort,Expression> result =
+            new EnumMap<Sort,Expression>(Sort.class);
+        List<Map<Sort,? extends Expression>> args =
+            new ArrayList<Map<Sort,? extends Expression>>();
         // last token is an artificial CLOSE
         for (int i = 1; i < getChildCount() - 1; i++) {
             args.add(getChild(i).toExpressions(varMap));
@@ -256,12 +256,12 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * possible types to corresponding expressions
      * @param varMap variable typing
      */
-    private Map<SignatureKind,Expression> toCallExprs(String prefix, String opName,
-        List<Map<SignatureKind,? extends Expression>> args, Map<String,SignatureKind> varMap)
+    private Map<Sort,Expression> toCallExprs(String prefix, String opName,
+        List<Map<Sort,? extends Expression>> args, Map<String,Sort> varMap)
         throws FormatException {
-        Map<SignatureKind,Expression> result =
-            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
-        SignatureKind opSig = SignatureKind.getKind(prefix);
+        Map<Sort,Expression> result =
+            new EnumMap<Sort,Expression>(Sort.class);
+        Sort opSig = Sort.getKind(prefix);
         Operator op = opSig.getOperator(opName);
         if (op == null) {
             throw new FormatException("Operator '%s:%s' does exist", opSig.getName(), opName);
@@ -278,11 +278,11 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * possible types to corresponding expressions
      * @param varMap variable typing
      */
-    private Map<SignatureKind,Expression> toCallExprs(String opName,
-        List<Map<SignatureKind,? extends Expression>> args, Map<String,SignatureKind> varMap)
+    private Map<Sort,Expression> toCallExprs(String opName,
+        List<Map<Sort,? extends Expression>> args, Map<String,Sort> varMap)
         throws FormatException {
-        Map<SignatureKind,Expression> result =
-            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
+        Map<Sort,Expression> result =
+            new EnumMap<Sort,Expression>(Sort.class);
         List<Operator> ops = Operator.getOps(opName);
         // look up op based on argument types
         if (ops.isEmpty()) {
@@ -316,12 +316,12 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * for the required operator types
      */
     private Expression newCallExp(boolean prefixed, Operator op,
-        List<Map<SignatureKind,? extends Expression>> args) throws FormatException {
+        List<Map<Sort,? extends Expression>> args) throws FormatException {
         if (op.getArity() != args.size()) {
             throw new FormatException("Operator '%s' expects %s parameters but has %s",
                 op.toString(), op.getArity(), args.size());
         }
-        List<SignatureKind> parTypes = op.getParamTypes();
+        List<Sort> parTypes = op.getParamTypes();
         List<Expression> selectedArgs = new ArrayList<Expression>();
         for (int i = 0; i < args.size(); i++) {
             Expression arg = args.get(i).get(parTypes.get(i));
@@ -344,16 +344,16 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
     }
 
     /** Returns the signature kind corresponding to a given type token. */
-    private SignatureKind getSigKind(Token token) {
+    private Sort getSigKind(Token token) {
         switch (token.getType()) {
         case ExprParser.STRING:
-            return SignatureKind.STRING;
+            return Sort.STRING;
         case ExprParser.INT:
-            return SignatureKind.INT;
+            return Sort.INT;
         case ExprParser.BOOL:
-            return SignatureKind.BOOL;
+            return Sort.BOOL;
         case ExprParser.REAL:
-            return SignatureKind.REAL;
+            return Sort.REAL;
         }
         return null;
     }

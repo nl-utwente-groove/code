@@ -81,7 +81,7 @@ public class TermStringAlgebra extends StringAlgebra<Expression,Expression,Expre
 
     @Override
     public boolean isValue(Object value) {
-        return value instanceof Expression && ((Expression) value).getSignature() == getSignature();
+        return value instanceof Expression && ((Expression) value).getSort() == getSort();
     }
 
     @Override
