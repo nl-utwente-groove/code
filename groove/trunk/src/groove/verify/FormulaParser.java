@@ -43,6 +43,9 @@ import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 import groove.util.Pair;
+import groove.util.parse.FormatException;
+import groove.util.parse.Op;
+import groove.util.parse.OpKind;
 
 import java.lang.reflect.Field;
 import java.util.EnumSet;
@@ -64,14 +67,14 @@ import java.util.Set;
  */
 public class FormulaParser {
     /** Parses a string into a formula over strings. */
-    public static Formula parse(String str) throws ParseException { // "aObAc"
+    public static Formula parse(String str) throws FormatException { // "aObAc"
 
         Input i = new Input(str);
 
         Formula result = parse(i, 0);
         String suffix = i.rest();
         if (suffix.length() > 0) {
-            throw new ParseException("unparsed formula suffix: " + i.rest());
+            throw new FormatException("unparsed formula suffix: " + i.rest());
         }
         if (DEBUG) {
             System.out.println("Formula: " + result);
@@ -112,7 +115,7 @@ public class FormulaParser {
         return result;
     }
 
-    private static Formula parse(Input i, int precedence) throws ParseException {
+    private static Formula parse(Input i, int precedence) throws FormatException {
         Formula formula;
         Token token;
         int priority = i.get().getPriority();
@@ -144,13 +147,13 @@ public class FormulaParser {
             i.skip();
             formula = parse(i, priority);
             if (i.get() != RPAR) {
-                throw new ParseException("Expected " + RPAR);
+                throw new FormatException("Expected " + RPAR);
             }
             i.skip();
             break;
 
         default:
-            throw new ParseException("Unexpected token: " + token);
+            throw new FormatException("Unexpected token: " + token);
         }
 
         while (!i.done()) {
@@ -176,7 +179,7 @@ public class FormulaParser {
                 return formula;
 
             default:
-                throw new ParseException("Unexpected token: " + token);
+                throw new FormatException("Unexpected token: " + token);
             }
         }
         return formula;
@@ -224,40 +227,40 @@ public class FormulaParser {
          * If the token is a {@link Token#ATOM}, the
          * corresponding text can be retrieved by a subsequent call to
          * #text().
-         * @throws ParseException if there is no more token
+         * @throws FormatException if there is no more token
          */
-        public Token get() throws ParseException {
+        public Token get() throws FormatException {
             if (readNext()) {
                 Pair<Token,String> next = this.q.peek();
                 return next.one();
             } else {
-                throw new ParseException("Unexpected end of text");
+                throw new FormatException("Unexpected end of text");
             }
         }
 
         /**
          * Returns the text of the front token in the input stream
          * if that is a {@link Token#ATOM}, or {@code null} if it is not.
-         * @throws ParseException if there is no more token
+         * @throws FormatException if there is no more token
          */
-        public String text() throws ParseException {
+        public String text() throws FormatException {
             if (readNext()) {
                 Pair<Token,String> next = this.q.peek();
                 return next.two();
             } else {
-                throw new ParseException("Unexpected end of text");
+                throw new FormatException("Unexpected end of text");
             }
         }
 
         /**
          * Skips to the next token in the input stream.
-         * @throws ParseException if there is no token to skip.
+         * @throws FormatException if there is no token to skip.
          */
-        public void skip() throws ParseException {
+        public void skip() throws FormatException {
             if (readNext()) {
                 this.q.poll();
             } else {
-                throw new ParseException("Unexpected end of text");
+                throw new FormatException("Unexpected end of text");
             }
         }
 
@@ -279,17 +282,17 @@ public class FormulaParser {
         }
 
         /** Tests if the input stream is empty. */
-        public boolean done() throws ParseException {
+        public boolean done() throws FormatException {
             return !readNext();
         }
 
         /**
          * Scans the next tokens from the input stream and appends them
          * to the token queue.
-         * @throws ParseException if there is no more token, or
+         * @throws FormatException if there is no more token, or
          * the input string cannot be parsed into tokens
          */
-        private boolean readNext() throws ParseException {
+        private boolean readNext() throws FormatException {
             if (!this.q.isEmpty()) {
                 return true;
             }
@@ -313,9 +316,9 @@ public class FormulaParser {
         /**
          * Reads a token consisting of non-letter characters.
          * @param c the first character
-         * @throws ParseException if an unknown token is found
+         * @throws FormatException if an unknown token is found
          */
-        private void readNextOther(char c) throws ParseException {
+        private void readNextOther(char c) throws FormatException {
             StringBuffer text = new StringBuffer();
             text.append(c);
             // concatenate other chars, if and when appropriate
@@ -333,9 +336,9 @@ public class FormulaParser {
          * This could constitute a sequence of temporal operators,
          * or an atom.
          * @param c the first character out of the sequence.
-         * @throws ParseException if an unknown temporal operator is found
+         * @throws FormatException if an unknown temporal operator is found
          */
-        private void readNextWord(char c) throws ParseException {
+        private void readNextWord(char c) throws FormatException {
             StringBuffer text = new StringBuffer();
             text.append(c);
             boolean caps = Character.isUpperCase(c);
@@ -347,7 +350,7 @@ public class FormulaParser {
             }
             if (caps) {
                 if (!allCaps) {
-                    throw new ParseException("Uppercase atom '%s' not allowed", text);
+                    throw new FormatException("Uppercase atom '%s' not allowed", text);
                 }
                 // each letter is parsed as an operator
                 for (int i = 0; i < text.length(); i++) {
@@ -362,10 +365,10 @@ public class FormulaParser {
         /**
          * Reads a quoted atom.
          * @param c the opening quote character
-         * @throws ParseException if the end of text is read before
+         * @throws FormatException if the end of text is read before
          * the atom is closed
          */
-        private void readNextQuotedAtom(char c) throws ParseException {
+        private void readNextQuotedAtom(char c) throws FormatException {
             StringBuffer text = new StringBuffer();
             char quote = c;
             int i;
@@ -374,17 +377,17 @@ public class FormulaParser {
                     // test if this is an escaped single quote or escape
                     i++;
                     if (i == this.sb.length()) {
-                        throw new ParseException("Unexpected end of text");
+                        throw new FormatException("Unexpected end of text");
                     }
                     c = this.sb.charAt(i);
                     if (c != '\\' && c != quote) {
-                        throw new ParseException("Invalid escaped character: " + c);
+                        throw new FormatException("Invalid escaped character: " + c);
                     }
                 }
                 text.append(c);
             }
             if (i == this.sb.length()) {
-                throw new ParseException("Unexpected end of text while scanning for closing "
+                throw new FormatException("Unexpected end of text while scanning for closing "
                     + quote);
             }
             this.q.add(createAtom(text.toString()));
@@ -395,12 +398,12 @@ public class FormulaParser {
          * Creates a token/string pair consisting of the token with a given
          * symbol, and a {@code null} string.
          * @param symbol the symbol of the requested token
-         * @throws ParseException if no token with {@code symbol} exists
+         * @throws FormatException if no token with {@code symbol} exists
          */
-        private Pair<Token,String> createToken(String symbol) throws ParseException {
+        private Pair<Token,String> createToken(String symbol) throws FormatException {
             Token token = symbolToTokenMap.get(symbol);
             if (token == null) {
-                throw new ParseException("Can't parse token '%s'", symbol);
+                throw new FormatException("Can't parse token '%s'", symbol);
             }
             return new Pair<Token,String>(token, null);
         }
@@ -439,131 +442,127 @@ public class FormulaParser {
     }
 
     /** The kind (i.e., top level operator) of a formula. */
-    static public enum Token {
+    static public enum Token implements Op {
         /** Atomic proposition. */
         @Syntax("rule")
         @ToolTipHeader("Atomic proposition")
         @ToolTipBody({"Holds if %s is enabled in the current state.",
             "Note that this does <i>not</i> mean that %1$s has just been executed."})
-        ATOM("", 0, 7),
+        ATOM("", OpKind.ATOM),
 
         /** True. */
         @Syntax("TRUE")
         @ToolTipHeader("True")
         @ToolTipBody("Trivially holds in every state.")
-        TRUE("true", 0, 7),
+        TRUE("true", OpKind.ATOM),
 
         /** False. */
         @Syntax("FALSE")
         @ToolTipHeader("FALSE")
         @ToolTipBody("Always fails to hold.")
-        FALSE("false", 0, 7),
+        FALSE("false", OpKind.ATOM),
 
         /** Negation. */
         @Syntax("NOT form")
         @ToolTipHeader("Negation")
         @ToolTipBody("Holds if and only if %s does not hold.")
-        NOT("!", 1, 6),
+        NOT("!", OpKind.NOT),
 
         /** Disjunction. */
         @Syntax("form1 OR form2")
         @ToolTipHeader("Disjunction")
         @ToolTipBody("Either %s or %s (or both) holds.")
-        OR("|", 2, 2),
+        OR("|", OpKind.OR),
 
         /** Conjunction. */
         @Syntax("form1 AND form2")
         @ToolTipHeader("Conjunction")
         @ToolTipBody("Both %s and %s hold.")
-        AND("&", 2, 3),
+        AND("&", OpKind.AND),
 
         /** Implication. */
         @Syntax("pre IMPLIES post")
         @ToolTipHeader("Implication")
         @ToolTipBody({"Either%s fails to hold, or %s holds;", "in other words, %1$s implies %2$s."})
-        IMPLIES("->", 2, 1),
+        IMPLIES("->", OpKind.IMPLIES),
 
         /** Inverse implication. */
         @Syntax("post FOLLOWS pre")
         @ToolTipHeader("Inverse implication")
         @ToolTipBody({"Either %2$s fails to hold, or %1$s holds;",
             "in other words, %1$s is implied by %2$s."})
-        FOLLOWS("<-", 2, 1),
+        FOLLOWS("<-", OpKind.IMPLIES),
 
         /** Equivalence. */
         @Syntax("form1 EQUIV form2")
         @ToolTipHeader("Equivalence")
         @ToolTipBody("Either %s and %s both hold, or both fail to hold.")
-        EQUIV("<->", 2, 1),
+        EQUIV("<->", OpKind.EQUIV),
 
         /** Next-state. */
         @Syntax("NEXT form")
         @ToolTipHeader("Next")
         @ToolTipBody({"In the next state of the current path, %s holds."})
-        NEXT("X", 1, 6),
+        NEXT("X", OpKind.UNARY),
 
         /** Temporal until. */
         @Syntax("first UNTIL second")
         @ToolTipHeader("Until")
         @ToolTipBody({"%1$s holds up until one state before %2$s holds,",
             "and %2$s will indeed eventually hold."})
-        UNTIL("U", 2, 4),
+        UNTIL("U", OpKind.COMPARE),
 
         /** Weak temporal until (second operand may never hold). */
         @Syntax("first W_UNTIL second")
         @ToolTipHeader("Weak until")
         @ToolTipBody({"Either %1$s holds up until one state before %2$s holds,",
             "or %1$s holds forever."})
-        W_UNTIL("W", 2, 4),
+        W_UNTIL("W", OpKind.COMPARE),
 
         /** Temporal release. */
-        RELEASE("R", 2, 4),
+        RELEASE("R", OpKind.COMPARE),
 
         /** Strong temporal release (second operand must eventually hold). */
-        S_RELEASE("M", 2, 4),
+        S_RELEASE("M", OpKind.COMPARE),
 
         /** Everywhere along a path. */
         @Syntax("ALWAYS form")
         @ToolTipHeader("Globally")
         @ToolTipBody("In all states of the current path %s holds.")
-        ALWAYS("G", 1, 6),
+        ALWAYS("G", OpKind.QUANT),
 
         /** Eventually along a path. */
         @Syntax("EVENTUALLY form")
         @ToolTipHeader("Eventually")
         @ToolTipBody("There is a state of the current path in which %s holds.")
-        EVENTUALLY("F", 1, 6),
+        EVENTUALLY("F", OpKind.QUANT),
 
         /** For all paths. */
         @Syntax("FORALL form")
         @ToolTipHeader("For all paths")
         @ToolTipBody("Along all paths starting in the current state %s holds.")
-        FORALL("A", 1, 3),
+        FORALL("A", OpKind.QUANT),
 
         /** There exists a path. */
         @Syntax("EXISTS form")
         @ToolTipHeader("For some path")
         @ToolTipBody("There is a path, starting in the current state, along which %s holds.")
-        EXISTS("E", 1, 3),
+        EXISTS("E", OpKind.QUANT),
 
         /** Left parenthesis. */
         @Syntax("LPAR form RPAR")
         @ToolTipHeader("Bracketed formula")
-        LPAR("("),
+        LPAR("(", OpKind.NONE),
 
         /** Right parenthesis. */
-        RPAR(")");
-
-        /** Private constructor for a non-operator token. */
-        private Token(String symbol) {
-            this(symbol, -1, 0);
-        }
+        RPAR(")", OpKind.NONE);
 
         /** Private constructor for an operator token. */
-        private Token(String symbol, int arity, int priority) {
+        private Token(String symbol, OpKind kind) {
             this.symbol = symbol;
-            this.arity = arity;
-            this.priority = priority;
+            this.arity = kind.getArity();
+            this.kind = kind;
+            this.priority = kind.ordinal();
         }
 
         @Override
@@ -571,25 +570,40 @@ public class FormulaParser {
             return getSymbol();
         }
 
-        /** Returns the symbol for the top-level operator. */
-        String getSymbol() {
+        @Override
+        public boolean hasSymbol() {
+            return getSymbol() != null;
+        }
+
+        @Override
+        public String getSymbol() {
             return this.symbol;
         }
 
-        /** Returns the number of arguments of the operator. */
-        int getArity() {
+        /** The symbol for the top-level operator. */
+        private final String symbol;
+
+        @Override
+        public int getArity() {
             return this.arity;
         }
+
+        /** The number of operands of a formula of this kind. */
+        private final int arity;
+
+        @Override
+        public OpKind getKind() {
+            return this.kind;
+        }
+
+        /** The kind of this operator. */
+        private final OpKind kind;
 
         /** Returns the priority of the operator. */
         int getPriority() {
             return this.priority;
         }
 
-        /** The symbol for the top-level operator. */
-        private final String symbol;
-        /** The number of operands of a formula of this kind. */
-        private final int arity;
         /** The priority of the top-level operator. */
         private final int priority;
     }

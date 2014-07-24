@@ -14,18 +14,22 @@ import static groove.util.parse.OpKind.Placement.PREFIX;
 public enum OpKind {
     /** Dummy value used for lowest-level context of an expression. */
     NONE(PREFIX, NEITHER, 0),
+    /** (In)equivalence. */
+    EQUIV(NEITHER),
+    /** Implication. */
+    IMPLIES(RIGHT),
     /** Disjunction. */
     OR(LEFT),
     /** Conjunction. */
     AND(LEFT),
     /** Negation. */
     NOT(PREFIX),
+    /** Existential and universal quantification. */
+    QUANT(PREFIX),
     /** Equality and inequality tests. */
     EQUAL(NEITHER),
     /** Comparison operators: lesser than, greater than (or equal). */
     COMPARE(RIGHT),
-    /** Existential and universal quantification. */
-    QUANT(PREFIX),
     /** Assignment operators. */
     ASSIGN(RIGHT),
     /** Additive operators: addition, subtraction, string concatenation. */

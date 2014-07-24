@@ -17,11 +17,11 @@
 package groove.test.verify;
 
 import static org.junit.Assert.fail;
+import groove.util.parse.FormatException;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.FormulaParser;
-import groove.verify.ParseException;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -155,13 +155,13 @@ public class LTL2BuchiGraphTest {
             // check whether the Buchi-graph is the one we expected
             testAllTransitions(buchiGraph.getInitial(), set, new HashSet<BuchiLocation>());
             printf("Initial location: %s%n", buchiGraph.getInitial());
-        } catch (ParseException e) {
+        } catch (FormatException e) {
             fail();
         }
     }
 
     private void testAllTransitions(BuchiLocation location, Set<String> applicableRules,
-            Set<BuchiLocation> done) {
+        Set<BuchiLocation> done) {
         if (!done.contains(location)) {
             done.add(location);
             for (BuchiTransition transition : location.outTransitions()) {

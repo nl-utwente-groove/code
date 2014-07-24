@@ -35,6 +35,7 @@ import static groove.verify.FormulaParser.Token.S_RELEASE;
 import static groove.verify.FormulaParser.Token.TRUE;
 import static groove.verify.FormulaParser.Token.UNTIL;
 import static groove.verify.FormulaParser.Token.W_UNTIL;
+import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 import groove.verify.FormulaParser.Token;
 
@@ -80,14 +81,10 @@ public class Formula {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result =
-            prime * result + ((this.arg1 == null) ? 0 : this.arg1.hashCode());
-        result =
-            prime * result + ((this.arg2 == null) ? 0 : this.arg2.hashCode());
-        result =
-            prime * result + ((this.token == null) ? 0 : this.token.hashCode());
-        result =
-            prime * result + ((this.prop == null) ? 0 : this.prop.hashCode());
+        result = prime * result + ((this.arg1 == null) ? 0 : this.arg1.hashCode());
+        result = prime * result + ((this.arg2 == null) ? 0 : this.arg2.hashCode());
+        result = prime * result + ((this.token == null) ? 0 : this.token.hashCode());
+        result = prime * result + ((this.prop == null) ? 0 : this.prop.hashCode());
         return result;
     }
 
@@ -153,12 +150,9 @@ public class Formula {
             break;
         default:
             assert getToken().getArity() == 2;
-            boolean arg1Par =
-                getArg1().getToken().getPriority() <= getToken().getPriority();
-            boolean arg2Par =
-                getArg2().getToken().getPriority() < getToken().getPriority();
-            boolean opLetter =
-                Character.isLetter(getToken().toString().charAt(0));
+            boolean arg1Par = getArg1().getToken().getPriority() <= getToken().getPriority();
+            boolean arg2Par = getArg2().getToken().getPriority() < getToken().getPriority();
+            boolean opLetter = Character.isLetter(getToken().toString().charAt(0));
             if (arg1Par) {
                 getArg1().toParString(b);
             } else {
@@ -224,12 +218,10 @@ public class Formula {
         }
     }
 
-    private static final void addIndent(Stack<Boolean> indent,
-            StringBuilder result) {
+    private static final void addIndent(Stack<Boolean> indent, StringBuilder result) {
         for (int i = 0; i < indent.size(); i++) {
             boolean b = indent.get(i);
-            result.append(b ? (i == indent.size() - 1 ? " +--" : " |  ")
-                    : "    ");
+            result.append(b ? (i == indent.size() - 1 ? " +--" : " |  ") : "    ");
         }
     }
 
@@ -278,8 +270,7 @@ public class Formula {
             case NEXT:
                 return arg.getArg1().isCtlFormula();
             case UNTIL:
-                return arg.getArg1().isCtlFormula()
-                    && arg.getArg2().isCtlFormula();
+                return arg.getArg1().isCtlFormula() && arg.getArg2().isCtlFormula();
             default:
                 return false;
             }
@@ -294,10 +285,10 @@ public class Formula {
      * formula are immediately nested inside a path quantifier, and
      * vice versa.
      * @return the CTL formula corresponding to this formula
-     * @throws ParseException if this formula contains combinations of operators
+     * @throws FormatException if this formula contains combinations of operators
      * that are illegal in CTL.
      */
-    public Formula toCtlFormula() throws ParseException {
+    public Formula toCtlFormula() throws FormatException {
         switch (getToken()) {
         case ATOM:
         case TRUE:
@@ -310,20 +301,19 @@ public class Formula {
         case IMPLIES:
         case FOLLOWS:
         case EQUIV:
-            return new Formula(getToken(), getArg1().toCtlFormula(),
-                getArg2().toCtlFormula());
+            return new Formula(getToken(), getArg1().toCtlFormula(), getArg2().toCtlFormula());
         case NEXT:
         case UNTIL:
         case ALWAYS:
         case EVENTUALLY:
-            throw new ParseException(
+            throw new FormatException(
                 "Temporal operator '%s' should be nested inside path quantifier in CTL formula",
                 getToken());
         case W_UNTIL:
         case RELEASE:
         case S_RELEASE:
-            throw new ParseException(
-                "Temporal operator '%s' not allowed in CTL formula", getToken());
+            throw new FormatException("Temporal operator '%s' not allowed in CTL formula",
+                getToken());
         case FORALL:
         case EXISTS:
             FormulaParser.Token subKind = getArg1().getToken();
@@ -334,27 +324,24 @@ public class Formula {
                 return new Formula(getToken(), Next(subArg1.toCtlFormula()));
             case ALWAYS:
                 Token dual = getToken() == EXISTS ? FORALL : EXISTS;
-                return Not(new Formula(dual, Until(True(),
-                    Not(subArg1.toCtlFormula()))));
+                return Not(new Formula(dual, Until(True(), Not(subArg1.toCtlFormula()))));
             case EVENTUALLY:
-                return new Formula(getToken(), Until(True(),
-                    subArg1.toCtlFormula()));
+                return new Formula(getToken(), Until(True(), subArg1.toCtlFormula()));
             case UNTIL:
-                return new Formula(getToken(), Until(subArg1.toCtlFormula(),
-                    subArg2.toCtlFormula()));
+                return new Formula(getToken(),
+                    Until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
             case W_UNTIL:
             case RELEASE:
             case S_RELEASE:
-                throw new ParseException(
-                    "Temporal operator '%s' not allowed in CTL formula",
+                throw new FormatException("Temporal operator '%s' not allowed in CTL formula",
                     subKind);
             default:
-                throw new ParseException(
+                throw new FormatException(
                     "Path quantifier '%s' must have nested temporal operator in CTL formula",
                     getToken());
             }
         default:
-            throw new ParseException("Unknown temporal operator %s", getToken());
+            throw new FormatException("Unknown temporal operator %s", getToken());
         }
     }
 
@@ -363,11 +350,10 @@ public class Formula {
      * This succeeds if and only if the formula does not contain
      * {@link Token#FORALL} or {@link Token#EXISTS} operators.
      * @return the NASA LTL formula corresponding to this formula
-     * @throws ParseException if this formula contains operators
+     * @throws FormatException if this formula contains operators
      * that are illegal in LTL.
      */
-    public gov.nasa.ltl.trans.Formula<String> toLtlFormula()
-        throws ParseException {
+    public gov.nasa.ltl.trans.Formula<String> toLtlFormula() throws FormatException {
         gov.nasa.ltl.trans.Formula<String> arg1 =
             getArg1() == null ? null : getArg1().toLtlFormula();
         gov.nasa.ltl.trans.Formula<String> arg2 =
@@ -375,8 +361,7 @@ public class Formula {
         switch (getToken()) {
         case FORALL:
         case EXISTS:
-            throw new ParseException(
-                "Path quantifier '%s' not allowed in LTL formula", getToken());
+            throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getToken());
         case ATOM:
             return gov.nasa.ltl.trans.Formula.Proposition(getProp());
         case TRUE:
@@ -404,14 +389,13 @@ public class Formula {
         case EVENTUALLY:
             return gov.nasa.ltl.trans.Formula.Eventually(arg1);
         case EQUIV:
-            return And(Implies(getArg1(), getArg2()),
-                Follows(getArg1(), getArg2())).toLtlFormula();
+            return And(Implies(getArg1(), getArg2()), Follows(getArg1(), getArg2())).toLtlFormula();
         case FOLLOWS:
             return Or(getArg1(), Not(getArg2())).toLtlFormula();
         case IMPLIES:
             return Or(Not(getArg1()), getArg2()).toLtlFormula();
         }
-        throw new ParseException("Unknown temporal operator %s", getToken());
+        throw new FormatException("Unknown temporal operator %s", getToken());
     }
 
     private final Token token;
