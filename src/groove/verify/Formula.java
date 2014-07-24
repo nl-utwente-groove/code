@@ -37,28 +37,27 @@ import static groove.verify.FormulaParser.Token.UNTIL;
 import static groove.verify.FormulaParser.Token.W_UNTIL;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
+import groove.util.parse.Tree;
 import groove.verify.FormulaParser.Token;
-
-import java.util.Stack;
 
 /**
  * Data structure for temporal formulae.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-28 05:58:22 $
  */
-public class Formula {
+public class Formula extends Tree<Token,Formula> {
     /** Default constructor filling all fields. */
-    Formula(Token kind, Formula arg1, Formula arg2, String prop) {
-        this.token = kind;
-        this.arg1 = arg1;
-        this.arg2 = arg2;
+    Formula(Token op, Formula arg1, Formula arg2, String prop) {
+        super(op);
+        addArg(arg1);
+        addArg(arg2);
         this.prop = prop;
     }
 
     /** Constructor for a logical constant (not an atom). */
-    Formula(Token operator) {
-        this(operator, null, null, null);
-        assert operator.getArity() == 0 && operator != ATOM;
+    Formula(Token op) {
+        this(op, null, null, null);
+        assert op.getArity() == 0 && op != ATOM;
     }
 
     /** Constructor for a unary operator. */
@@ -81,9 +80,7 @@ public class Formula {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.arg1 == null) ? 0 : this.arg1.hashCode());
-        result = prime * result + ((this.arg2 == null) ? 0 : this.arg2.hashCode());
-        result = prime * result + ((this.token == null) ? 0 : this.token.hashCode());
+        result = prime * result + super.hashCode();
         result = prime * result + ((this.prop == null) ? 0 : this.prop.hashCode());
         return result;
     }
@@ -93,22 +90,10 @@ public class Formula {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (!super.equals(obj)) {
             return false;
         }
         Formula other = (Formula) obj;
-        if (this.token != other.token) {
-            return false;
-        }
-        if (this.arg1 != null && !this.arg1.equals(other.arg1)) {
-            return false;
-        }
-        if (this.arg2 != null && !this.arg2.equals(other.arg2)) {
-            return false;
-        }
         if (this.prop != null && !this.prop.equals(other.prop)) {
             return false;
         }
@@ -124,9 +109,9 @@ public class Formula {
 
     /** Appends a given string buffer with a string description of this formula. */
     private void toString(StringBuffer b) {
-        switch (getToken().getArity()) {
+        switch (getOp().getArity()) {
         case 0:
-            if (getToken() == ATOM) {
+            if (getOp() == ATOM) {
                 String text = getProp();
                 if (isAtom(text)) {
                     b.append(getProp());
@@ -134,25 +119,25 @@ public class Formula {
                     b.append(StringHandler.toQuoted(text, '\''));
                 }
             } else {
-                b.append(getToken());
+                b.append(getOp());
             }
             break;
         case 1:
-            b.append(getToken());
-            if (getArg1().getToken().getPriority() < getToken().getPriority()) {
+            b.append(getOp());
+            if (getArg1().getOp().getPriority() < getOp().getPriority()) {
                 getArg1().toParString(b);
             } else {
-                if (Character.isLetter(getToken().toString().charAt(0))) {
+                if (Character.isLetter(getOp().toString().charAt(0))) {
                     b.append(' ');
                 }
                 getArg1().toString(b);
             }
             break;
         default:
-            assert getToken().getArity() == 2;
-            boolean arg1Par = getArg1().getToken().getPriority() <= getToken().getPriority();
-            boolean arg2Par = getArg2().getToken().getPriority() < getToken().getPriority();
-            boolean opLetter = Character.isLetter(getToken().toString().charAt(0));
+            assert getOp().getArity() == 2;
+            boolean arg1Par = getArg1().getOp().getPriority() <= getOp().getPriority();
+            boolean arg2Par = getArg2().getOp().getPriority() < getOp().getPriority();
+            boolean opLetter = Character.isLetter(getOp().toString().charAt(0));
             if (arg1Par) {
                 getArg1().toParString(b);
             } else {
@@ -161,7 +146,7 @@ public class Formula {
             if (opLetter && !arg1Par) {
                 b.append(' ');
             }
-            b.append(getToken());
+            b.append(getOp());
             if (opLetter && !arg2Par) {
                 b.append(' ');
             }
@@ -183,61 +168,19 @@ public class Formula {
         b.append(')');
     }
 
-    /** Returns the syntax tree of the formula. */
-    public final String toTree() {
-        StringBuilder result = new StringBuilder();
-        toTree(new Stack<Boolean>(), result);
-        result.append('\n');
-        return result.toString();
-    }
-
-    private final void toTree(Stack<Boolean> indent, StringBuilder result) {
-        switch (getToken().getArity()) {
-        case 2:
-            result.append(getToken() + "+-");
-            indent.push(true);
-            getArg1().toTree(indent, result);
-            result.append('\n');
-            addIndent(indent, result);
-            indent.pop();
-            indent.push(false);
-            getArg2().toTree(indent, result);
-            indent.pop();
-            break;
-        case 1:
-            result.append(getToken() + "--");
-            indent.push(false);
-            getArg1().toTree(indent, result);
-            indent.pop();
-            break;
-        case 0:
-            if (getToken() == ATOM) {
-                result.append(getToken() == ATOM ? getProp() : getToken());
-            }
-            break;
-        }
-    }
-
-    private static final void addIndent(Stack<Boolean> indent, StringBuilder result) {
-        for (int i = 0; i < indent.size(); i++) {
-            boolean b = indent.get(i);
-            result.append(b ? (i == indent.size() - 1 ? " +--" : " |  ") : "    ");
-        }
-    }
-
-    /** Returns the top-level operator of the formula. */
-    public Token getToken() {
-        return this.token;
-    }
-
     /** Returns the first argument of the top-level operator, if any. */
     public Formula getArg1() {
-        return this.arg1;
+        return getArg(0);
     }
 
     /** Returns the second argument of the top-level operator, if any. */
     public Formula getArg2() {
-        return this.arg2;
+        return getArg(1);
+    }
+
+    @Override
+    public String getContentString() {
+        return getProp();
     }
 
     /** Returns the proposition wrapped in this formula, if any. */
@@ -245,12 +188,14 @@ public class Formula {
         return this.prop;
     }
 
+    private final String prop;
+
     /** 
      * Tests if this formula is of the restricted format corresponding
      * to a directly model checkable CTL formula.
      */
     public boolean isCtlFormula() {
-        switch (getToken()) {
+        switch (getOp()) {
         case ATOM:
         case TRUE:
         case FALSE:
@@ -266,7 +211,7 @@ public class Formula {
         case EXISTS:
         case FORALL:
             Formula arg = getArg1();
-            switch (arg.getToken()) {
+            switch (arg.getOp()) {
             case NEXT:
                 return arg.getArg1().isCtlFormula();
             case UNTIL:
@@ -289,7 +234,7 @@ public class Formula {
      * that are illegal in CTL.
      */
     public Formula toCtlFormula() throws FormatException {
-        switch (getToken()) {
+        switch (getOp()) {
         case ATOM:
         case TRUE:
         case FALSE:
@@ -301,35 +246,33 @@ public class Formula {
         case IMPLIES:
         case FOLLOWS:
         case EQUIV:
-            return new Formula(getToken(), getArg1().toCtlFormula(), getArg2().toCtlFormula());
+            return new Formula(getOp(), getArg1().toCtlFormula(), getArg2().toCtlFormula());
         case NEXT:
         case UNTIL:
         case ALWAYS:
         case EVENTUALLY:
             throw new FormatException(
                 "Temporal operator '%s' should be nested inside path quantifier in CTL formula",
-                getToken());
+                getOp());
         case W_UNTIL:
         case RELEASE:
         case S_RELEASE:
-            throw new FormatException("Temporal operator '%s' not allowed in CTL formula",
-                getToken());
+            throw new FormatException("Temporal operator '%s' not allowed in CTL formula", getOp());
         case FORALL:
         case EXISTS:
-            FormulaParser.Token subKind = getArg1().getToken();
+            FormulaParser.Token subKind = getArg1().getOp();
             Formula subArg1 = getArg1().getArg1();
             Formula subArg2 = getArg1().getArg2();
             switch (subKind) {
             case NEXT:
-                return new Formula(getToken(), Next(subArg1.toCtlFormula()));
+                return new Formula(getOp(), Next(subArg1.toCtlFormula()));
             case ALWAYS:
-                Token dual = getToken() == EXISTS ? FORALL : EXISTS;
+                Token dual = getOp() == EXISTS ? FORALL : EXISTS;
                 return Not(new Formula(dual, Until(True(), Not(subArg1.toCtlFormula()))));
             case EVENTUALLY:
-                return new Formula(getToken(), Until(True(), subArg1.toCtlFormula()));
+                return new Formula(getOp(), Until(True(), subArg1.toCtlFormula()));
             case UNTIL:
-                return new Formula(getToken(),
-                    Until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                return new Formula(getOp(), Until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
             case W_UNTIL:
             case RELEASE:
             case S_RELEASE:
@@ -338,10 +281,10 @@ public class Formula {
             default:
                 throw new FormatException(
                     "Path quantifier '%s' must have nested temporal operator in CTL formula",
-                    getToken());
+                    getOp());
             }
         default:
-            throw new FormatException("Unknown temporal operator %s", getToken());
+            throw new FormatException("Unknown temporal operator %s", getOp());
         }
     }
 
@@ -358,10 +301,10 @@ public class Formula {
             getArg1() == null ? null : getArg1().toLtlFormula();
         gov.nasa.ltl.trans.Formula<String> arg2 =
             getArg2() == null ? null : getArg2().toLtlFormula();
-        switch (getToken()) {
+        switch (getOp()) {
         case FORALL:
         case EXISTS:
-            throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getToken());
+            throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getOp());
         case ATOM:
             return gov.nasa.ltl.trans.Formula.Proposition(getProp());
         case TRUE:
@@ -395,13 +338,8 @@ public class Formula {
         case IMPLIES:
             return Or(Not(getArg1()), getArg2()).toLtlFormula();
         }
-        throw new FormatException("Unknown temporal operator %s", getToken());
+        throw new FormatException("Unknown temporal operator %s", getOp());
     }
-
-    private final Token token;
-    private final Formula arg1;
-    private final Formula arg2;
-    private final String prop;
 
     /** Tests if a given string can be understood as an atom without
      * being quoted.

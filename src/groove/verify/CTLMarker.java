@@ -193,9 +193,9 @@ public class CTLMarker {
         if (!this.formulaNr.containsKey(formula)) {
             Integer index = this.formulaNr.size();
             this.formulaNr.put(formula, index);
-            switch (formula.getToken().getArity()) {
+            switch (formula.getOp().getArity()) {
             case 0:
-                if (formula.getToken() == TRUE || formula.getToken() == FALSE) {
+                if (formula.getOp() == TRUE || formula.getOp() == FALSE) {
                     break;
                 }
                 String prop = formula.getProp();
@@ -234,7 +234,7 @@ public class CTLMarker {
         if (result != null) {
             return result;
         }
-        Token token = property.getToken();
+        Token token = property.getOp();
         // compute the arguments, if any
         BitSet arg1 = null;
         BitSet arg2 = null;
@@ -288,7 +288,7 @@ public class CTLMarker {
     }
 
     private BitSet markExists(Formula property) {
-        switch (property.getToken()) {
+        switch (property.getOp()) {
         case NEXT:
             return computeEX(mark(property.getArg1()));
         case UNTIL:
@@ -305,7 +305,7 @@ public class CTLMarker {
     }
 
     private BitSet markForall(Formula property) {
-        switch (property.getToken()) {
+        switch (property.getOp()) {
         case NEXT:
             return computeAX(mark(property.getArg1()));
         case UNTIL:
