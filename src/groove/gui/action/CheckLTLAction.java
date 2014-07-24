@@ -27,7 +27,6 @@ import groove.gui.dialog.StringDialog;
 import groove.lts.GraphState;
 import groove.util.parse.FormatException;
 import groove.verify.FormulaParser;
-import groove.verify.ParseException;
 
 import java.util.Collection;
 
@@ -93,11 +92,7 @@ public class CheckLTLAction extends ExploreAction {
                 new StringDialog("Enter the LTL Formula", FormulaParser.getDocMap(false)) {
                     @Override
                     public String parse(String text) throws FormatException {
-                        try {
-                            FormulaParser.parse(text).toLtlFormula();
-                        } catch (ParseException e) {
-                            throw new FormatException(e.getMessage());
-                        }
+                        FormulaParser.parse(text).toLtlFormula();
                         return text;
                     }
                 };

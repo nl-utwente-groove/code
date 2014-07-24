@@ -39,9 +39,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import groove.util.parse.FormatException;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
-import groove.verify.ParseException;
 
 import org.junit.Test;
 
@@ -77,10 +77,10 @@ public class FormulaTest {
         // implies/follows/equiv
         testParse("a->b", Implies(a, b));
         testParse("a|c<-(b&dc)", Follows(Or(a, c), And(b, dc)));
-        testParse("a->b<->c", Implies(a, Equiv(b, c)));
+        testParse("a->b<->c", Equiv(Implies(a, b), c));
+        testParse("a->(b<->c)", Implies(a, Equiv(b, c)));
         //
-        testParse("(a U b) M c R (d M e)",
-            SRelease(Until(a, b), Release(c, SRelease(d, e))));
+        testParse("(a U b) M c R (d M e)", SRelease(Until(a, b), Release(c, SRelease(d, e))));
         //
         testParse("AFG X true", Forall(Eventually(Always(Next(True())))));
         // errors
@@ -100,7 +100,7 @@ public class FormulaTest {
         try {
             Formula result = FormulaParser.parse(text);
             assertEquals(expected, result);
-        } catch (ParseException e) {
+        } catch (FormatException e) {
             fail(e.getMessage());
         }
     }
@@ -109,7 +109,7 @@ public class FormulaTest {
         try {
             FormulaParser.parse(text);
             fail();
-        } catch (ParseException e) {
+        } catch (FormatException e) {
             // success
         }
     }
@@ -199,7 +199,7 @@ public class FormulaTest {
     private void testToCtlFormula(String expected, Formula f) {
         try {
             assertEquals(FormulaParser.parse(expected), f.toCtlFormula());
-        } catch (ParseException e) {
+        } catch (FormatException e) {
             fail(e.getMessage());
         }
     }

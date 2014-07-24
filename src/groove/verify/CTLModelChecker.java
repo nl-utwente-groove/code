@@ -23,6 +23,7 @@ import groove.graph.Graph;
 import groove.util.Groove;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -107,8 +108,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             try {
                 model = Generator.execute(genArgs);
             } catch (Exception e) {
-                throw new Exception("Error while invoking Generator\n"
-                    + e.getMessage(), e);
+                throw new Exception("Error while invoking Generator\n" + e.getMessage(), e);
             }
         } else {
             emit("Model: %s%n", this.modelGraph);
@@ -124,8 +124,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
         emit("%nModel checking outcome:%n");
         for (Formula property : this.properties) {
-            emit("    %-" + maxWidth + "s : %s%n", property,
-                outcome.get(property) ? "satisfied" : "violated");
+            emit("    %-" + maxWidth + "s : %s%n", property, outcome.get(property) ? "satisfied"
+                : "violated");
         }
         long endTime = System.currentTimeMillis();
 
@@ -133,30 +133,25 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
     }
 
-    @Option(
-            name = "-ef",
-            metaVar = "flags",
-            usage = ""
-                + "Special GTS labels. Legal values are:\n" //
-                + "  s - start state label (default: 'start')\n" //
-                + "  f - final states label (default: 'final')\n" //
-                + "  o - open states label (default: 'open')\n" //
-                + "  r - result state label (default: 'result')" //
-                + "Specify label to be used by appending flag with 'label' (single-quoted)",
-            handler = LTSLabelsHandler.class)
+    @Option(name = "-ef", metaVar = "flags", usage = "" + "Special GTS labels. Legal values are:\n" //
+        + "  s - start state label (default: 'start')\n" //
+        + "  f - final states label (default: 'final')\n" //
+        + "  o - open states label (default: 'open')\n" //
+        + "  r - result state label (default: 'result')" //
+        + "Specify label to be used by appending flag with 'label' (single-quoted)",
+        handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
-    @Option(name = "-ctl", metaVar = "form",
-            usage = "Check the formula <form> (multiple allowed)",
-            handler = FormulaHandler.class, required = true)
+    @Option(name = "-ctl", metaVar = "form", usage = "Check the formula <form> (multiple allowed)",
+        handler = FormulaHandler.class, required = true)
     private List<Formula> properties;
     @Option(name = "-g", metaVar = "args",
-            usage = "Invoke the generator using <args> as options + arguments",
-            handler = GeneratorHandler.class)
+        usage = "Invoke the generator using <args> as options + arguments",
+        handler = GeneratorHandler.class)
     private GeneratorArgs genArgs;
 
     @Argument(metaVar = "graph", usage = "File name of graph to be checked",
-            handler = FileOptionHandler.class)
+        handler = FileOptionHandler.class)
     private File modelGraph;
 
     /**
@@ -178,13 +173,11 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     }
 
     /** Option handler for CTL formulas. */
-    public static class FormulaHandler extends
-            OneArgumentOptionHandler<Formula> {
+    public static class FormulaHandler extends OneArgumentOptionHandler<Formula> {
         /**
          * Required constructor.
          */
-        public FormulaHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super Formula> setter) {
+        public FormulaHandler(CmdLineParser parser, OptionDef option, Setter<? super Formula> setter) {
             super(parser, option, setter);
         }
 
@@ -192,7 +185,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         protected Formula parse(String argument) throws CmdLineException {
             try {
                 return FormulaParser.parse(argument).toCtlFormula();
-            } catch (ParseException e) {
+            } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }
         }
@@ -202,7 +195,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     public static class GeneratorHandler extends OptionHandler<GeneratorArgs> {
         /** Required constructor. */
         public GeneratorHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super GeneratorArgs> setter) {
+            Setter<? super GeneratorArgs> setter) {
             super(parser, option, setter);
         }
 

@@ -12,7 +12,6 @@ import groove.util.parse.FormatException;
 import groove.verify.CTLMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
-import groove.verify.ParseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +43,7 @@ public class CheckCTLAction extends SimulatorAction {
             if (doCheck) {
                 try {
                     doCheckProperty(gts, FormulaParser.parse(property).toCtlFormula());
-                } catch (ParseException e) {
+                } catch (FormatException e) {
                     // the property has already been parsed by the dialog
                     assert false;
                 }
@@ -59,11 +58,7 @@ public class CheckCTLAction extends SimulatorAction {
                 new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(true)) {
                     @Override
                     public String parse(String text) throws FormatException {
-                        try {
-                            FormulaParser.parse(text).toCtlFormula();
-                        } catch (ParseException efe) {
-                            throw new FormatException(efe.getMessage());
-                        }
+                        FormulaParser.parse(text).toCtlFormula();
                         return text;
                     }
                 };

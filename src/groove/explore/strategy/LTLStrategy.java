@@ -28,12 +28,12 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.match.MatcherFactory;
+import groove.util.parse.FormatException;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.FormulaParser;
 import groove.verify.ModelChecking.Record;
-import groove.verify.ParseException;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
@@ -110,7 +110,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
             Formula<String> formula = FormulaParser.parse(property).toLtlFormula();
             BuchiGraph buchiGraph = BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
             this.startLocation = buchiGraph.getInitial();
-        } catch (ParseException e) {
+        } catch (FormatException e) {
             throw new IllegalStateException(String.format("Error in property '%s'", property), e);
         }
     }
@@ -315,7 +315,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @see ProductState#addTransition(ProductTransition)
      */
     private ProductTransition addTransition(ProductState source, GraphTransition transition,
-            BuchiLocation targetLocation) {
+        BuchiLocation targetLocation) {
         ProductTransition result = null;
         if (!source.isClosed()) {
             // we assume that we only add transitions for modifying graph
@@ -349,7 +349,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * a Buchi location.
      */
     private ProductState createState(GraphState state, GraphTransition transition,
-            BuchiLocation targetLocation) {
+        BuchiLocation targetLocation) {
         if (transition == null) {
             // the system-state is a final one for which we add an artificial
             // self-loop
@@ -360,7 +360,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     }
 
     private ProductTransition createProductTransition(ProductState source,
-            GraphTransition transition, ProductState target) {
+        GraphTransition transition, ProductState target) {
         return new ProductTransition(source, transition, target);
     }
 
