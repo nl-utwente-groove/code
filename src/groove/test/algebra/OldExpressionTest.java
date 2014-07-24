@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: ExpressionTest.java 5485 2014-07-23 17:41:40Z rensink $
  */
 package groove.test.algebra;
 
@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.Sort;
-import groove.algebra.syntax.ExprTreeParser;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
 import groove.util.parse.FormatException;
@@ -31,7 +30,7 @@ import groove.util.parse.FormatException;
 import org.junit.Test;
 
 /** Tests the parsing abilities of the {@link Expression} class. */
-public class ExpressionTest {
+public class OldExpressionTest {
     /** Test constant representations. */
     @Test
     public void testConstants() {
@@ -150,11 +149,11 @@ public class ExpressionTest {
     private Expression parse(String expr, boolean test) {
         Expression result = null;
         try {
-            result =
-                (test ? ExprTreeParser.TEST_PARSER : ExprTreeParser.EXPR_PARSER).parse(expr).toExpression();
+            result = test ? Expression.parseTest(expr) : Expression.parse(expr);
         } catch (FormatException e) {
-            fail(String.format("Expression %s should have been parsable but fails with %s", expr,
-                e.getMessage()));
+            fail(String.format(
+                "Expression %s should have been parsable but fails with %s",
+                expr, e.getMessage()));
         }
         if (result != null) {
             String display = result.toDisplayString();
@@ -170,8 +169,9 @@ public class ExpressionTest {
     private void parseFail(String expr) {
         try {
             Expression result = Expression.parse(expr);
-            fail(String.format("Expression %s should not have been parsable but yields %s", expr,
-                result.toDisplayString()));
+            fail(String.format(
+                "Expression %s should not have been parsable but yields %s",
+                expr, result.toDisplayString()));
         } catch (FormatException e) {
             // this is the desired outcome
         }

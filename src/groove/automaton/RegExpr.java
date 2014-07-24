@@ -504,7 +504,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * rules of regular expressions. (If not, then it should be single-quoted.)
      * Atoms may be preceded by a label kind prefix.
      * Throws an exception if the text is empty or contains any
-     * characters not allowed by {@link StringHandler#isIdentifierPart(char)}.
+     * characters not allowed by {@link #isAtomChar(char)}.
      * @param text the text to be tested
      * @throws FormatException if the text contains a special character
      * @see #isAtom(String)

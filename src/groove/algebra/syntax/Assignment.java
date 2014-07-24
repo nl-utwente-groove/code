@@ -21,8 +21,6 @@ import groove.graph.EdgeRole;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
 
-import org.antlr.runtime.RecognitionException;
-
 /**
  * Assignment in a host or rule graph.
  * @author Arend Rensink
@@ -116,8 +114,7 @@ public class Assignment {
         Assignment result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
             Expression newRhs = getRhs().relabel(oldLabel, newLabel);
-            String newLhs =
-                oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();
+            String newLhs = oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();
             if (newRhs != getRhs() || newLhs != getLhs()) {
                 result = new Assignment(newLhs, newRhs);
             }
@@ -135,25 +132,6 @@ public class Assignment {
      * @throws FormatException if the input string contains syntax errors
      */
     public static Assignment parse(String text) throws FormatException {
-        return parseToTree(text).toAssignment();
-    }
-
-    /**
-     * Returns the expression tree for a given string, using the
-     * {@link ExprParser#assignment()} as start rule. 
-     * @param term the string to be parsed as an expression
-     */
-    private static ExprTree parseToTree(String term) throws FormatException {
-        ExprParser parser = ExprTree.getParser(term);
-        try {
-            ExprTree result = (ExprTree) parser.assignment().getTree();
-            parser.getErrors().throwException();
-            return result;
-        } catch (FormatException e) {
-            throw new FormatException("Can't parse %s: %s", term,
-                e.getMessage());
-        } catch (RecognitionException re) {
-            throw new FormatException(re);
-        }
+        return ExprTreeParser.parseAssign(text).toAssignment();
     }
 }

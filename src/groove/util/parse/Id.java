@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An identifier as can appear in the payload of an atomic {@link Expr} object.
+ * An identifier as can appear in the payload of an atomic {@link Tree} object.
  * An identifier consists of an optional prefix and a list of names.
  * @author Arend Rensink
  * @version $Id$
@@ -56,5 +56,10 @@ public class Id extends ArrayList<String> {
             result.append(get(i));
         }
         return Line.atom(result.toString());
+    }
+
+    /** Returns the concatenated name of this identifier. */
+    public String getName() {
+        return toLine().toFlatString();
     }
 }

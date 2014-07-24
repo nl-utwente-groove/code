@@ -26,8 +26,6 @@ import groove.util.parse.OpKind;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.antlr.runtime.RecognitionException;
-
 /**
  * Expressions are constants, variables, field expressions or call expressions.
  * @author Arend Rensink
@@ -168,7 +166,7 @@ public abstract class Expression {
      * @param term the string to be parsed as a test-expression
      */
     public static Expression parseTest(String term) throws FormatException {
-        return parseToTree(term, true).toExpression();
+        return ExprTreeParser.parseExpr(term, true).toExpression();
     }
 
     /**
@@ -176,36 +174,15 @@ public abstract class Expression {
      * @param term the string to be parsed as an expression
      */
     public static Expression parse(String term) throws FormatException {
-        return parseToTree(term, false).toExpression();
-    }
-
-    /**
-     * Returns the expression tree for a given string. 
-     * @param term the string to be parsed as an expression
-     * @param test if {@code true}, {@link ExprParser#test_expression()}
-     * is used for parsing, otherwise {@link ExprParser#expression()}
-     */
-    private static ExprTree parseToTree(String term, boolean test) throws FormatException {
-        ExprParser parser = ExprTree.getParser(term);
-        try {
-            ExprTree result =
-                (ExprTree) (test ? parser.test_expression().getTree()
-                    : parser.expression().getTree());
-            parser.getErrors().throwException();
-            return result;
-        } catch (FormatException e) {
-            throw new FormatException("Can't parse %s: %s", term, e.getMessage());
-        } catch (RecognitionException re) {
-            throw new FormatException(re);
-        }
+        return ExprTreeParser.parseExpr(term, false).toExpression();
     }
 
     /** Call with &lt;expression> */
     public static void main(String[] args) {
         try {
-            ExprTree tree = parseToTree(args[0], false);
+            ExprTree tree = ExprTreeParser.parseExpr(args[0], false);
             System.out.printf("Original expression: %s%n", args[0]);
-            System.out.printf("Flattened term tree: %s%n", tree.toStringTree());
+            System.out.printf("Flattened term tree: %s%n", tree.toString());
             System.out.printf("Corresponding term:  %s%n", tree.toExpression());
             System.out.printf("Display string:      %s%n", tree.toExpression().toDisplayString());
         } catch (FormatException e) {
