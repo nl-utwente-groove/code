@@ -18,6 +18,7 @@ package groove.util.parse;
 
 import groove.algebra.Constant;
 import groove.util.DefaultFixable;
+import groove.util.Pair;
 import groove.util.line.Line;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * General expression type.
@@ -92,6 +94,17 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
 
     private Id id;
 
+    /** Returns a string representation of the top-level content of this tree. */
+    public String getContentString() {
+        if (hasConstant()) {
+            return getConstant().getSymbol();
+        } else if (hasId()) {
+            return getId().getName();
+        } else {
+            return "";
+        }
+    }
+
     /** Adds an argument to this expression. */
     public void addArg(T arg) {
         assert !isFixed();
@@ -155,6 +168,46 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
             super.setFixed();
         }
         return result;
+    }
+
+    /** Returns a string representation of the syntax tree of the formula. */
+    public final String toTreeString() {
+        assert isFixed();
+        StringBuilder result = new StringBuilder();
+        toTree(new Stack<Pair<Integer,Boolean>>(), result);
+        result.append('\n');
+        return result.toString();
+    }
+
+    private final void toTree(Stack<Pair<Integer,Boolean>> indent, StringBuilder result) {
+        if (getArgs().size() > 0) {
+            String symbol = getOp().hasSymbol() ? getOp().getSymbol() : getId().getName();
+            result.append(symbol);
+            result.append(getArgs().size() == 1 ? " --- " : " +-- ");
+            int i;
+            for (i = 0; i < getArgs().size() - 1; i++) {
+                indent.push(Pair.newPair(symbol.length(), true));
+                getArg(i).toTree(indent, result);
+                result.append('\n');
+                addIndent(indent, result);
+                indent.pop();
+            }
+            indent.push(Pair.newPair(symbol.length(), false));
+            getArg(i).toTree(indent, result);
+            indent.pop();
+        } else if (getOp().getKind() == OpKind.ATOM) {
+            result.append(getContentString());
+        }
+    }
+
+    private static final void addIndent(Stack<Pair<Integer,Boolean>> indent, StringBuilder result) {
+        for (int i = 0; i < indent.size(); i++) {
+            Pair<Integer,Boolean> p = indent.get(i);
+            for (int s = 0; s < p.one(); s++) {
+                result.append(" ");
+            }
+            result.append(p.two() ? (i == indent.size() - 1 ? " +-- " : " |   ") : "     ");
+        }
     }
 
     /** Returns a formatted line representation of this expression,

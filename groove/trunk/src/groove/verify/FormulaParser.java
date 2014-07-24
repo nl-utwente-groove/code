@@ -18,15 +18,25 @@
  */
 package groove.verify;
 
+import static groove.verify.FormulaParser.Token.AF;
+import static groove.verify.FormulaParser.Token.AFG;
+import static groove.verify.FormulaParser.Token.AG;
+import static groove.verify.FormulaParser.Token.AGF;
 import static groove.verify.FormulaParser.Token.ALWAYS;
 import static groove.verify.FormulaParser.Token.AND;
 import static groove.verify.FormulaParser.Token.ATOM;
+import static groove.verify.FormulaParser.Token.EF;
+import static groove.verify.FormulaParser.Token.EFG;
+import static groove.verify.FormulaParser.Token.EG;
+import static groove.verify.FormulaParser.Token.EGF;
 import static groove.verify.FormulaParser.Token.EQUIV;
 import static groove.verify.FormulaParser.Token.EVENTUALLY;
 import static groove.verify.FormulaParser.Token.EXISTS;
 import static groove.verify.FormulaParser.Token.FALSE;
+import static groove.verify.FormulaParser.Token.FG;
 import static groove.verify.FormulaParser.Token.FOLLOWS;
 import static groove.verify.FormulaParser.Token.FORALL;
+import static groove.verify.FormulaParser.Token.GF;
 import static groove.verify.FormulaParser.Token.IMPLIES;
 import static groove.verify.FormulaParser.Token.LPAR;
 import static groove.verify.FormulaParser.Token.NEXT;
@@ -78,7 +88,7 @@ public class FormulaParser {
         }
         if (DEBUG) {
             System.out.println("Formula: " + result);
-            System.out.print(result.toTree());
+            System.out.print(result.toTreeString());
         }
         return result;
     }
@@ -206,11 +216,12 @@ public class FormulaParser {
 
     /** Set of tokens that can occur in CTL formulas. */
     private final static Set<Token> CTLTokens = EnumSet.of(ATOM, TRUE, FALSE, NOT, OR, AND,
-        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY, FORALL, EXISTS, LPAR);
+        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY, FG, GF, FORALL, EXISTS, AG, AF,
+        EG, EF, AFG, AGF, EFG, EGF, LPAR);
     /** Set of tokens that can occur in LTL formulas. */
-    private final static Set<Token> LTLTokens =
-        EnumSet.of(ATOM, TRUE, FALSE, NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL,
-            RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, LPAR);
+    private final static Set<Token> LTLTokens = EnumSet.of(ATOM, TRUE, FALSE, NOT, OR, AND,
+        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, FG,
+        GF, LPAR);
 
     /**
      * Input stream for the parser.
@@ -548,6 +559,36 @@ public class FormulaParser {
         @ToolTipHeader("For some path")
         @ToolTipBody("There is a path, starting in the current state, along which %s holds.")
         EXISTS("E", OpKind.QUANT),
+
+        /** Always eventually. */
+        GF("GF", OpKind.QUANT),
+
+        /** Eventually always. */
+        FG("FG", OpKind.QUANT),
+
+        /** For all paths eventually. */
+        AF("AF", OpKind.QUANT),
+
+        /** For all paths always. */
+        AG("AG", OpKind.QUANT),
+
+        /** For all paths always eventually. */
+        AGF("AGF", OpKind.QUANT),
+
+        /** For all paths eventually always. */
+        AFG("AFG", OpKind.QUANT),
+
+        /** For some path eventually. */
+        EF("EF", OpKind.QUANT),
+
+        /** For some path always. */
+        EG("EG", OpKind.QUANT),
+
+        /** For some path always eventually. */
+        EGF("AGF", OpKind.QUANT),
+
+        /** For some path eventually always. */
+        EFG("AFG", OpKind.QUANT),
 
         /** Left parenthesis. */
         @Syntax("LPAR form RPAR")

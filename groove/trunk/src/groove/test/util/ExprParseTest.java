@@ -112,6 +112,10 @@ public class ExprParseTest {
     private MyTree parse(String text) {
         MyTree result = parser.parse(text);
         assertFalse(result.hasErrors());
+        if (DEBUG) {
+            System.out.printf("Tree representation of %s:%n", result.toString());
+            System.out.println(result.toTreeString());
+        }
         return result;
     }
 
@@ -134,6 +138,8 @@ public class ExprParseTest {
     static {
         parser.setQualIds(true);
     }
+
+    private static final boolean DEBUG = false;
 
     private static enum MyOp implements Op {
         INVERT(OpKind.UNARY, "-"),
