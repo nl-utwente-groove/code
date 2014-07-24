@@ -148,7 +148,7 @@ public enum Sort {
         }
     };
 
-    /** Constructs a signature kind with a given name. */
+    /** Constructs a sort with a given name. */
     private Sort(String name, Class<? extends Signature> sigClass, Set<? extends OpValue> opValues) {
         assert name != null;
         this.name = name;
@@ -156,14 +156,14 @@ public enum Sort {
         this.opValues = opValues;
     }
 
-    /** Returns the name of this signature. */
+    /** Returns the name of this sort. */
     final public String getName() {
         return this.name;
     }
 
     private final String name;
 
-    /** Returns a symbolic representation of the default value for this signature. */
+    /** Returns a symbolic representation of the default value for this sort. */
     abstract public Constant getDefaultValue();
 
     @Override
@@ -171,21 +171,21 @@ public enum Sort {
         return getName();
     }
 
-    /** Returns the signature class defining this signature kind. */
+    /** Returns the signature class defining this sort. */
     Class<? extends Signature> getSignatureClass() {
         return this.sigClass;
     }
 
     private final Class<? extends Signature> sigClass;
 
-    /** Returns all the operators defined by this signature. */
+    /** Returns all the operators defined by this sort. */
     public Set<? extends OpValue> getOpValues() {
         return this.opValues;
     }
 
     private final Set<? extends OpValue> opValues;
 
-    /** Returns the operator corresponding to a given operator name of this signature. */
+    /** Returns the operator corresponding to a given operator name of this sort. */
     public Operator getOperator(String name) {
         if (this.operatorMap == null) {
             this.operatorMap = computeOperatorMap();
@@ -206,27 +206,27 @@ public enum Sort {
     private Map<String,Operator> operatorMap;
 
     /**
-     * Creates a constant of this signature kind
+     * Creates a constant of this sort
      * from a given symbolic string representation. 
      * @param symbol the symbolic representation; non-{@code null}
      * @throws FormatException if {@code symbol} is not a valid representation
-     * of a constant of this signature kind
+     * of a constant of this sort
      * @see #denotesConstant(String)
      */
     public abstract Constant createConstant(String symbol) throws FormatException;
 
     /**
      * Indicates if a given string is a valid symbolic representation of 
-     * a constant of this signature kind.
+     * a constant of this sort.
      */
     public abstract boolean denotesConstant(String symbol);
 
-    /** Returns the signature kind for a given signature name. */
+    /** Returns the sort for a given signature name. */
     public static Sort getKind(String sigName) {
         return sigNameMap.get(sigName);
     }
 
-    /** Returns the signature kind for a given signature class. */
+    /** Returns the sort for a given signature class. */
     public static Sort getKind(Class<?> sigClass) {
         return sigClassMap.get(sigClass);
     }
@@ -236,9 +236,9 @@ public enum Sort {
         return Collections.unmodifiableSet(sigNameMap.keySet());
     }
 
-    /** Inverse mapping from signature names to signature kinds. */
+    /** Inverse mapping from signature names to sorts. */
     private static Map<String,Sort> sigNameMap = new HashMap<String,Sort>();
-    /** Inverse mapping from signature classes to signature kinds. */
+    /** Inverse mapping from signature classes to sorts. */
     private static Map<Class<? extends Signature>,Sort> sigClassMap =
         new HashMap<Class<? extends Signature>,Sort>();
 

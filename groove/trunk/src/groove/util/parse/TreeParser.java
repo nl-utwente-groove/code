@@ -18,13 +18,13 @@ package groove.util.parse;
 
 import static groove.algebra.Sort.INT;
 import static groove.algebra.Sort.REAL;
-import static groove.util.parse.ExprParser.TokenClaz.CONST;
-import static groove.util.parse.ExprParser.TokenClaz.EOT;
-import static groove.util.parse.ExprParser.TokenClaz.LATE_OP;
-import static groove.util.parse.ExprParser.TokenClaz.LPAR;
-import static groove.util.parse.ExprParser.TokenClaz.NAME;
-import static groove.util.parse.ExprParser.TokenClaz.PRE_OP;
-import static groove.util.parse.ExprParser.TokenClaz.RPAR;
+import static groove.util.parse.TreeParser.TokenClaz.CONST;
+import static groove.util.parse.TreeParser.TokenClaz.EOT;
+import static groove.util.parse.TreeParser.TokenClaz.LATE_OP;
+import static groove.util.parse.TreeParser.TokenClaz.LPAR;
+import static groove.util.parse.TreeParser.TokenClaz.NAME;
+import static groove.util.parse.TreeParser.TokenClaz.PRE_OP;
+import static groove.util.parse.TreeParser.TokenClaz.RPAR;
 import groove.algebra.BoolSignature;
 import groove.algebra.Constant;
 import groove.algebra.Sort;
@@ -35,6 +35,7 @@ import groove.util.Triple;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,16 +68,19 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Id$
  */
-public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
+public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
     /**
      * Constructs a parser recognising a given enumeration of operators.
      * Neither sort declarations nor qualified identifiers are recognised
      * by default.
+     * @param treeType class object of the tree type; used to construct instances.
+     * The class is assumed to have a constructor with a single {@code O}-valued argument.
      * @param opType enumerated type of the operators;
      * should contain exactly one instance of type {@link OpKind#ATOM}
      */
-    public ExprParser(Class<? extends O> opType) {
+    public TreeParser(Class<? extends X> treeType, Class<? extends O> opType) {
         this.ops = Arrays.asList(opType.getEnumConstants());
+        this.treeConstructor = getConstructor(treeType);
     }
 
     /**
@@ -86,8 +90,29 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
      * @param ops collection of operators to be recognised by this parser;
      * should contain exactly one instance of type {@link OpKind#ATOM}
      */
-    public ExprParser(Collection<? extends O> ops) {
+    public TreeParser(Class<? extends X> treeType, Collection<? extends O> ops) {
         this.ops = Collections.unmodifiableList(new ArrayList<O>(ops));
+        this.treeConstructor = getConstructor(treeType);
+    }
+
+    /** Tests whether a certain type object can be used to create prototype trees. */
+    private Constructor<? extends X> getConstructor(Class<? extends X> treeType) {
+        Constructor<? extends X> result;
+        Op prototype = getOps().iterator().next();
+        try {
+            result = treeType.getConstructor(prototype.getClass());
+        } catch (SecurityException exc) {
+            throw new IllegalArgumentException(exc);
+        } catch (NoSuchMethodException exc) {
+            throw new IllegalArgumentException(exc);
+        }
+        // attempt to call the constructor
+        try {
+            result.newInstance(prototype);
+        } catch (Exception exc) {
+            throw new IllegalArgumentException(exc);
+        }
+        return result;
     }
 
     /** Returns the list of operators that this parser recognises. */
@@ -156,6 +181,21 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
 
     private O atomOp;
 
+    /** Sets the criterion for valid identifier names. */
+    protected void setIdValidator(IdValidator idValidator) {
+        this.idValidator = idValidator;
+    }
+
+    /** Retrieves the criterion for valid identifier names. */
+    private IdValidator getIdValidator() {
+        if (this.idValidator == null) {
+            this.idValidator = IdValidator.JAVA_ID;
+        }
+        return this.idValidator;
+    }
+
+    private IdValidator idValidator;
+
     /** Sets the description of the expressions being parsed. */
     public void setDescription(String description) {
         this.description = description;
@@ -172,10 +212,20 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
      * Callback factory method for the expression objects to be constructed.
      * Should be overridden to specialise the expression type.
      */
-    @SuppressWarnings("unchecked")
     protected X createExpr(O op) {
-        return (X) new Expr<O>(op);
+        try {
+            return this.treeConstructor.newInstance(op);
+        } catch (Exception exc) {
+            if (exc instanceof RuntimeException) {
+                throw (RuntimeException) exc;
+            }
+            exc.printStackTrace();
+            assert false;
+            return null;
+        }
     }
+
+    private final Constructor<? extends X> treeConstructor;
 
     @Override
     public boolean accepts(String text) {
@@ -185,7 +235,6 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
     @Override
     public X parse(String text) {
         init(text);
-        this.input = text;
         X result = parse();
         result.setFixed();
         return result;
@@ -193,20 +242,20 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
 
     @Override
     public String toParsableString(Object value) {
-        return ((Expr<?>) value).toParsableString();
+        return ((Tree<?,?>) value).getParseString();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Class<X> getValueType() {
-        return (Class<X>) (Class<? extends Expr<?>>) Expr.class;
+        return (Class<X>) (Class<? extends Tree<?,?>>) Tree.class;
     }
 
     @Override
     public boolean isValue(Object value) {
-        boolean result = value instanceof Expr;
+        boolean result = value instanceof Tree;
         if (result) {
-            Expr<?> expr = (Expr<?>) value;
+            Tree<?,?> expr = (Tree<?,?>) value;
             result = getOpType().equals(expr.getOp().getClass());
         }
         return result;
@@ -358,7 +407,7 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
         } else if (nextToken.has(NAME)) {
             result = parseCall();
         } else if (nextToken.has(CONST)) {
-            result = createConstantExpr(consume(CONST).createConstant());
+            result = parseConst();
         } else if (nextToken.has(PRE_OP)) {
             result = parsePrefixed();
         } else {
@@ -381,53 +430,68 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
                 }
             }
             consume(LATE_OP);
-            Expr<O> arg0 = result;
-            result = createOpExpr(op);
+            X arg0 = result;
+            result = createExpr(op);
             result.addArg(arg0);
             if (kind.getPlace() == Placement.POSTFIX) {
                 break;
             }
             result.addArg(parse(kind));
         }
+        setParseString(result, nextToken);
+        return result;
+    }
+
+    /**
+     * Attempts to parse the string as a constant expression.
+     * The next token is known to be a constant token.
+     */
+    protected X parseConst() throws ScanException {
+        X result;
+        result = createExpr(getAtomOp());
+        result.setConstant(consume(CONST).createConstant());
         return result;
     }
 
     /**
      * Attempts to parse the string as a bracketed expression.
+     * The next token is known to be a left parenthesis.
      * @return the expression in brackets, or {@code null} if the input string does not
      * correspond to a bracketed expression
      */
-    private X parseBracketed() throws FormatException {
+    protected X parseBracketed() throws FormatException {
         X result = null;
-        Token next = consume(LPAR);
-        assert next != null;
+        Token lparToken = consume(LPAR);
+        assert lparToken != null;
         result = parse(OpKind.NONE);
         if (consume(RPAR) == null) {
             throw expectedToken(RPAR, next());
         }
+        setParseString(result, lparToken);
         return result;
     }
 
     /**
      * Attempts to parse the string as a prefix expression.
-     * The next token is known to be an operator (though not necessarily
-     * a prefix operator).
+     * The next token is known to be a prefix operator.
      */
-    private X parsePrefixed() throws FormatException {
+    protected X parsePrefixed() throws FormatException {
         Token opToken = consume(TokenClaz.PRE_OP);
         O op = opToken.type(TokenClaz.PRE_OP).op();
-        X result = createOpExpr(op);
+        X result = createExpr(op);
         result.addArg(parse(op.getKind()));
+        setParseString(result, opToken);
         return result;
     }
 
     /**
-     * Parses the input as a call or atomic expression,
-     * optionally sort-prefixed.
+     * Parses the input as a call or atomic expression.
+     * The next token is known to be a name token.
      */
     protected X parseCall() throws FormatException {
         assert has(NAME);
         X result = null;
+        Token firstToken = next();
         // we now expect either a call operation or a user-defined identifier
         if (has(TokenClaz.PRE_OP)) {
             O op = consume(TokenClaz.PRE_OP).type(TokenClaz.PRE_OP).op();
@@ -435,20 +499,21 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
                 // this wasn't an operator call after all
                 rollBack();
             } else {
-                result = createOpExpr(op);
+                result = createExpr(op);
             }
         }
         if (result == null) {
             Id id = parseId();
             if (has(LPAR)) {
                 if (hasCallOp()) {
-                    result = createCallExpr(id);
+                    result = createExpr(getCallOp());
                 } else {
                     throw unexpectedToken(next());
                 }
             } else {
-                result = createAtomExpr(id);
+                result = createExpr(getAtomOp());
             }
+            result.setId(id);
         }
         if (consume(LPAR) != null) {
             if (consume(RPAR) == null) {
@@ -461,9 +526,7 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
                 }
             }
         }
-        if (result == null) {
-            throw unexpectedToken(next());
-        }
+        setParseString(result, firstToken);
         return result;
     }
 
@@ -486,50 +549,28 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
         return result;
     }
 
-    /** Factory method for an expression with a given operator. 
-     */
-    protected X createOpExpr(O op) {
-        X result = createExpr(op);
-        result.setParseString(this.input);
-        return result;
-    }
-
-    /**
-     * Factory method for a user-defined atom expression with a given identifier. 
-     */
-    protected X createAtomExpr(Id id) {
-        X result = createExpr(getAtomOp());
-        result.setId(id);
-        result.setParseString(this.input);
-        return result;
-    }
-
-    /**
-     * Factory method for a user-defined call with a given identifier. 
-     * Only valid if the grammar has a user-defined call operation.
-     */
-    protected X createCallExpr(Id id) {
-        assert hasCallOp();
-        X result = createExpr(getCallOp());
-        result.setId(id);
-        result.setParseString(this.input);
-        return result;
-    }
-
-    /** Factory method for a constant expression. */
-    protected X createConstantExpr(Constant constant) {
-        X result = createExpr(getAtomOp());
-        result.setConstant(constant);
-        result.setParseString(this.input);
-        return result;
-    }
-
     /** Factory method for atomic expression with a given error. */
     protected X createErrorExpr(FormatException exc) {
         X result = createExpr(getAtomOp());
         result.setParseString(this.input);
         result.addErrors(exc);
         return result;
+    }
+
+    /** Sets the parse string of a given expression to the substring
+     * starting at a given token and ending at the current position.
+     * The text is only set if the tree is non-{@code null} and has no errors
+     * @param tree the tree of which the parse string should be set
+     * @param start the start token of the tree
+     */
+    protected void setParseString(X tree, Token start) {
+        if (tree != null) {
+            if (tree.hasErrors()) {
+                tree.setParseString(this.input);
+            } else {
+                tree.setParseString(this.input.substring(start.start(), this.previousToken.end()));
+            }
+        }
     }
 
     /** Initialises the parser with a given input line. */
@@ -601,12 +642,12 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
      */
     private Token scan() throws ScanException {
         Token result = null;
-        // the atEnd() call skips all whitespace
-        if (atEnd()) {
+        // the hasNext() call skips all whitespace
+        if (!hasNext()) {
             result = eot();
         } else if (Character.isDigit(charAt())) {
             result = scanNumber();
-        } else if (StringHandler.isIdentifierStart(charAt())) {
+        } else if (getIdValidator().isIdentifierStart(charAt())) {
             result = scanName();
         } else {
             switch (charAt()) {
@@ -662,11 +703,11 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
             map = nextMap;
         }
         Token result = null;
-        if (atEnd()) {
-            result = eot();
-        } else if (type != null) {
+        if (type != null) {
             this.ix = end;
             result = new Token(type, createFragment(start, end));
+        } else if (atEnd()) {
+            result = eot();
         }
         return result;
     }
@@ -697,13 +738,13 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
      * The current character is guaranteed to be an identifier start.
      */
     private Token scanName() {
-        assert StringHandler.isIdentifierStart(charAt());
+        assert getIdValidator().isIdentifierStart(charAt());
         int start = this.ix;
         nextChar();
-        while (!atEnd() && StringHandler.isIdentifierPart(charAt())) {
+        while (!atEnd() && getIdValidator().isIdentifierPart(charAt())) {
             nextChar();
         }
-        if (!StringHandler.isIdentifierEnd(this.input.charAt(this.ix - 1))) {
+        if (!getIdValidator().isIdentifierEnd(this.input.charAt(this.ix - 1))) {
             prevChar();
         }
         LineFragment fragment = createFragment(start, this.ix);
@@ -738,12 +779,19 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
         return createConstToken(Sort.STRING, start, this.ix);
     }
 
+    /** 
+     * Tests if there is a next non-EOT token.
+     */
+    private boolean hasNext() {
+        while (!atEnd() && Character.isWhitespace(charAt())) {
+            nextChar();
+        }
+        return !atEnd();
+    }
+
     /** Consumes all whitespace characters from the input,
      * then tests whether the end of the input string has been reached. */
     private boolean atEnd() {
-        while (this.ix < this.input.length() && Character.isWhitespace(this.input.charAt(this.ix))) {
-            nextChar();
-        }
         return this.ix == this.input.length();
     }
 
@@ -937,15 +985,18 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
          */
         public Constant createConstant() {
             assert has(TokenClaz.CONST);
+            Constant result = null;
             Sort sort = type(TokenClaz.CONST).sort();
             try {
-                return sort.createConstant(substring());
+                String symbol = substring();
+                result = sort.createConstant(symbol);
+                result.setParseString(symbol);
             } catch (FormatException exc) {
                 assert false : String.format(
                     "'%s' has been scanned as a token; how can it fail to be one? (%s)",
                     substring(), exc.getMessage());
-                return null;
             }
+            return result;
         }
     }
 
@@ -1173,7 +1224,7 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
      * @author Arend Rensink
      * @version $Revision $
      */
-    protected static enum TokenClaz {
+    public static enum TokenClaz {
         /** Prefix operator (including call operator). */
         PRE_OP(false),
         /** Latefix (i.e., non-prefix) operator. */
@@ -1191,8 +1242,8 @@ public class ExprParser<O extends Op,X extends Expr<O>> implements Parser<X> {
         QUAL_SEP("."),
         /** Sort separator. */
         SORT_SEP(":"),
-        /** Assignment operator. */
-        TEST("="),
+        /** Assignment symbol. */
+        ASSIGN("="),
         /** Minus sign, used for negated constants. */
         MINUS("-"),
         /** A static token, representing a left parenthesis. */

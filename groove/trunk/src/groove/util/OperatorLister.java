@@ -32,6 +32,8 @@ import org.kohsuke.args4j.Option;
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**
+ * Command-line tool to list the available operators in a format that
+ * can then be used as input to the user manual
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -67,9 +69,8 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
                     argTypes.append(argType.getName());
                 }
                 String[] line =
-                    {sig.getName(), op.getName(), op.getSymbol(),
-                        op.getDescription(), op.getResultType().getName(),
-                        argTypes.toString()};
+                    {sig.getName(), op.getName(), op.getSymbol(), op.getDescription(),
+                        op.getResultType().getName(), argTypes.toString()};
                 result.add(line);
             }
         }

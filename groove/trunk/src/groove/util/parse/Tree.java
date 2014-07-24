@@ -33,15 +33,15 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Id$
  */
-public class Expr<O extends Op> extends DefaultFixable implements Fallible {
+public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable implements Fallible {
     /**
      * Constructs an initially argument- and content-free expression
      * with a given top-level operator.
      */
-    protected Expr(O op) {
+    protected Tree(O op) {
         assert op != null;
         this.op = op;
-        this.args = new ArrayList<Expr<O>>();
+        this.args = new ArrayList<T>();
         this.errors = new FormatErrorSet();
     }
 
@@ -93,17 +93,22 @@ public class Expr<O extends Op> extends DefaultFixable implements Fallible {
     private Id id;
 
     /** Adds an argument to this expression. */
-    public void addArg(Expr<O> arg) {
+    public void addArg(T arg) {
         assert !isFixed();
         this.args.add(arg);
     }
 
+    /** Retrieves the argument at a given position. */
+    public T getArg(int index) {
+        return this.args.get(index);
+    }
+
     /** Returns an unmodifiable view on the list of arguments of this expression. */
-    public List<Expr<O>> getArgs() {
+    public List<T> getArgs() {
         return Collections.unmodifiableList(this.args);
     }
 
-    private final List<Expr<O>> args;
+    private final List<T> args;
 
     @Override
     public boolean hasErrors() {
@@ -137,15 +142,19 @@ public class Expr<O extends Op> extends DefaultFixable implements Fallible {
 
     @Override
     public boolean setFixed() {
-        if (!hasErrors() && getOp().getArity() >= 0 && getOp().getArity() != getArgs().size()) {
-            addError(new FormatError("Operator '%s' expects %s but has %s operands in %s",
-                getOp().getSymbol(), getOp().getArity(), getArgs().size(), toParsableString()));
+        boolean result = !isFixed();
+        if (result) {
+            if (!hasErrors() && getOp().getArity() >= 0 && getOp().getArity() != getArgs().size()) {
+                addError(new FormatError("Operator '%s' expects %s but has %s operands in %s",
+                    getOp().getSymbol(), getOp().getArity(), getArgs().size(), getParseString()));
+            }
+            for (T arg : getArgs()) {
+                arg.setFixed();
+                addErrors(arg.getErrors());
+            }
+            super.setFixed();
         }
-        for (Expr<O> arg : getArgs()) {
-            arg.setFixed();
-            addErrors(arg.getErrors());
-        }
-        return super.setFixed();
+        return result;
     }
 
     /** Returns a formatted line representation of this expression,
@@ -192,7 +201,7 @@ public class Expr<O extends Op> extends DefaultFixable implements Fallible {
         result.add(hasId() ? getId().toLine() : Line.atom(getOp().getSymbol()));
         result.add(Line.atom("("));
         boolean firstArg = true;
-        for (Expr<?> arg : getArgs()) {
+        for (T arg : getArgs()) {
             if (!firstArg) {
                 result.add(Line.atom(spaces ? ", " : ","));
 
@@ -242,7 +251,7 @@ public class Expr<O extends Op> extends DefaultFixable implements Fallible {
     }
 
     /** Returns the string from which this expression was parsed, if any. */
-    public String toParsableString() {
+    public String getParseString() {
         if (this.parseString == null) {
             return toLine().toFlatString();
         } else {
@@ -253,7 +262,7 @@ public class Expr<O extends Op> extends DefaultFixable implements Fallible {
     /**
      * Sets the parse string for this expression.
      * @param parseString the complete parse string
-     * @see #toParsableString()
+     * @see #getParseString()
      */
     public void setParseString(String parseString) {
         this.parseString = parseString;
@@ -278,10 +287,10 @@ public class Expr<O extends Op> extends DefaultFixable implements Fallible {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Expr)) {
+        if (!(obj instanceof Tree)) {
             return false;
         }
-        Expr<?> other = (Expr<?>) obj;
+        Tree<?,?> other = (Tree<?,?>) obj;
         if (!this.op.equals(other.op)) {
             return false;
         }

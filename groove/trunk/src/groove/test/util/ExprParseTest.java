@@ -19,10 +19,10 @@ package groove.test.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import groove.util.parse.Expr;
-import groove.util.parse.ExprParser;
 import groove.util.parse.Op;
 import groove.util.parse.OpKind;
+import groove.util.parse.Tree;
+import groove.util.parse.TreeParser;
 
 import org.junit.Test;
 
@@ -45,6 +45,7 @@ public class ExprParseTest {
         roundtrip("0");
         roundtrip("1234567890123456789");
         roundtrip("0.0");
+        roundtrip("\"\"");
         roundtrip("\"\\\"'a\"");
         roundtrip("a+b+c");
     }
@@ -100,7 +101,7 @@ public class ExprParseTest {
 
     /** Asserts that parsing a string and converting at back results in the same string. */
     private void roundtrip(String text) {
-        Expr<?> expr = parse(text);
+        MyTree expr = parse(text);
         assertEquals(text, expr.toLine().toFlatString());
     }
 
@@ -108,8 +109,8 @@ public class ExprParseTest {
         assertEquals(parse(one), parse(two));
     }
 
-    private Expr<?> parse(String text) {
-        Expr<?> result = parser.parse(text);
+    private MyTree parse(String text) {
+        MyTree result = parser.parse(text);
         assertFalse(result.hasErrors());
         return result;
     }
@@ -121,14 +122,14 @@ public class ExprParseTest {
     /** Main method: prints all its arguments and writes the result to stdout. */
     public static void main(String[] args) {
         for (String arg : args) {
-            Expr<?> expr = parser.parse(arg);
+            MyTree expr = parser.parse(arg);
             String error = expr.hasErrors() ? " with errors " + expr.getErrors().toString() : "";
             System.out.printf("%s parsed to %s%s%n -> %s", arg, expr, error,
                 expr.toLine().toFlatString());
         }
     }
 
-    static ExprParser<MyOp,Expr<MyOp>> parser = new ExprParser<MyOp,Expr<MyOp>>(MyOp.class);
+    static TreeParser<MyOp,MyTree> parser = new TreeParser<MyOp,MyTree>(MyTree.class, MyOp.class);
 
     static {
         parser.setQualIds(true);
@@ -187,5 +188,14 @@ public class ExprParseTest {
         }
 
         private final int arity;
+    }
+
+    public static class MyTree extends Tree<MyOp,MyTree> {
+        /**
+         * Constructs a tree with a given top-level operator.
+         */
+        public MyTree(MyOp op) {
+            super(op);
+        }
     }
 }

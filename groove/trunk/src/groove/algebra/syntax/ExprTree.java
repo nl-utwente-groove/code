@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2011 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.algebra.syntax;
 
 import groove.algebra.Constant;
@@ -6,35 +22,70 @@ import groove.algebra.Operator;
 import groove.algebra.RealSignature;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.Sort;
-import groove.util.antlr.ParseInfo;
-import groove.util.antlr.ParseTree;
+import groove.util.parse.DefaultOp;
+import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
+import groove.util.parse.Id;
+import groove.util.parse.OpKind;
+import groove.util.parse.Tree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.runtime.Token;
-
 /**
- * Dedicated tree node for term parsing.
+ * Expression tree, with functionality to convert to an {@link Expression} or {@link Assignment}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
+public class ExprTree extends Tree<ExprTree.ExprOp,ExprTree> {
+    /**
+     * Constructs a new expression with a given top-level operator.
+     */
+    public ExprTree(ExprOp op) {
+        super(op);
+        assert op.getKind() != OpKind.NONE;
+    }
+
+    /** Sets an explicit (non-{@code null}) sort declaration for this expression. */
+    public void setSort(Sort sort) {
+        assert !isFixed();
+        assert sort != null;
+        this.sort = sort;
+        if (hasConstant() && sort != getConstant().getSort()) {
+            addError(new FormatError("Invalid sorted expression '%s:%s'", sort.getName(),
+                getConstant().getSymbol()));
+        }
+    }
+
+    /** Indicates if this expression contains an explicit sort declaration. */
+    public boolean hasSort() {
+        return getSort() != null;
+    }
+
+    /** Returns the sort declaration wrapped in this expression, if any. */
+    public Sort getSort() {
+        return this.sort;
+    }
+
+    private Sort sort;
+
     /** 
      * Converts this parse tree into an {@link Assignment}.
      */
     public Assignment toAssignment() throws FormatException {
-        if (getType() != ExprParser.ASSIGN) {
-            throw new FormatException("'%s' is not an assignment", toInputString());
+        assert isFixed();
+        getErrors().throwException();
+        if (getOp() != ASSIGN) {
+            throw new FormatException("'%s' is not an assignment", getParseString());
         }
-        String lhs = getChild(0).getText();
-        Expression rhs = getChild(1).toExpression();
+        String lhs = getArg(0).getId().getName();
+        Expression rhs = getArg(1).toExpression();
         Assignment result = new Assignment(lhs, rhs);
-        result.setParseString(toInputString());
+        result.setParseString(getParseString());
         return result;
     }
 
@@ -43,6 +94,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * All free variables in the tree must be type-derivable.
      */
     public Expression toExpression() throws FormatException {
+        assert isFixed();
         return toExpression(Collections.<String,Sort>emptyMap());
     }
 
@@ -52,42 +104,32 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * allowed to occur in the term.
      */
     public Expression toExpression(Map<String,Sort> varMap) throws FormatException {
+        assert isFixed();
+        getErrors().throwException();
         Map<Sort,? extends Expression> choice = toExpressions(varMap);
         if (choice.size() > 1) {
-            throw new FormatException("Can't derive type of '%s': add type prefix", toInputString());
+            throw new FormatException("Can't derive type of '%s': add type prefix",
+                getParseString());
         }
         Expression result = choice.values().iterator().next();
-        result.setParseString(toInputString());
+        result.setParseString(getParseString());
         return result;
     }
 
     /**
-     * Returns the set of expression objects corresponding to this tree.
+     * Returns the multi-expression derived from this tree.
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    private Map<Sort,? extends Expression> toExpressions(Map<String,Sort> varMap)
-        throws FormatException {
-        Map<Sort,? extends Expression> result;
-        switch (getToken().getType()) {
-        case ExprParser.CONST:
+    private MultiExpression toExpressions(Map<String,Sort> varMap) throws FormatException {
+        MultiExpression result;
+        if (hasConstant()) {
             Constant constant = toConstant();
-            result = Collections.singletonMap(constant.getSort(), constant);
-            break;
-        case ExprParser.PAR:
-            result = toParameters();
-            break;
-        case ExprParser.FIELD:
-            result = toFieldOrVarExprs(varMap);
-            break;
-        case ExprParser.CALL:
+            result = new MultiExpression(constant.getSort(), constant);
+        } else if (getOp().getKind() == OpKind.ATOM) {
+            result = toAtomExprs(varMap);
+        } else {
             result = toCallExprs(varMap);
-            break;
-        case ExprParser.LPAR:
-            result = getChild(0).toExpressions(varMap);
-            break;
-        default:
-            result = toOpExprs(varMap);
         }
         return result;
     }
@@ -98,80 +140,29 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
      * @throws FormatException if this tree does not represent a constant
      */
     public Constant toConstant() throws FormatException {
-        if (getToken().getType() != ExprParser.CONST) {
-            throw new FormatException("'%s' does not represent a constant", toInputString());
+        assert isFixed();
+        getErrors().throwException();
+        if (!hasConstant()) {
+            throw new FormatException("'%s' does not represent a constant", getParseString());
         }
-        Constant result = getChild(0).findConstant();
-        if (getChildCount() == 2) {
-            String prefix = getChild(1).getText();
-            Sort sig = Sort.getKind(prefix);
-            if (sig == null) {
-                throw new FormatException("Prefix '%s' in '%s' does not represent a type", prefix,
-                    toInputString());
-            }
-            if (result.getSort() != sig) {
-                throw new FormatException("Literal %s is not of type %s", result, prefix);
-            }
-        }
-        result.setParseString(toInputString());
+        Constant result = getConstant();
         return result;
     }
 
-    /** Returns the constant represented by this subtree. */
-    private Constant findConstant() {
-        boolean minus = getType() == ExprParser.MINUS;
-        ExprTree literal = minus ? getChild(0) : this;
-        Sort type = getSigKind(literal.getToken());
-        String literalText = minus ? getText() : "";
-        literalText += literal.getChild(0).getText();
-        try {
-            return type.createConstant(literalText);
-        } catch (FormatException exc) {
-            // the text was obtained from the parser and so should be a valid symbol
-            assert false : exc.getMessage();
-            return null;
-        }
-    }
-
-    private Map<Sort,Parameter> toParameters() throws FormatException {
-        assert getType() == ExprParser.PAR;
-        Map<Sort,Parameter> result =
-            new EnumMap<Sort,Parameter>(Sort.class);
-        int number = Integer.parseInt(getChild(0).getText());
-        if (number < 0) {
-            throw new FormatException("Parameter '%s' must have a non-negative number",
-                toInputString());
-        }
-        if (getChildCount() == 2) {
-            String prefix = getChild(1).getText();
-            Sort type = Sort.getKind(prefix);
-            if (type == null) {
-                throw new FormatException("Prefix '%s' does not represent a type", prefix);
-            }
-            result.put(type, new Parameter(true, number, type));
+    /** 
+     * Converts this tree to a multi-sorted {@link Variable} or a {@link FieldExpr}.
+     * Chained field expressions are currently unsupported.
+     * @param varMap variable typing
+     */
+    private MultiExpression toAtomExprs(Map<String,Sort> varMap) throws FormatException {
+        assert getOp().getKind() == OpKind.ATOM;
+        MultiExpression result = new MultiExpression();
+        if (hasSort()) {
+            Sort sort = getSort();
+            result.put(sort, toAtomExpr(varMap, sort));
         } else {
-            for (Sort type : Sort.values()) {
-                result.put(type, new Parameter(false, number, type));
-            }
-        }
-        return result;
-    }
-
-    private Map<Sort,Expression> toFieldOrVarExprs(Map<String,Sort> varMap)
-        throws FormatException {
-        assert getType() == ExprParser.FIELD;
-        Map<Sort,Expression> result =
-            new EnumMap<Sort,Expression>(Sort.class);
-        if (getChildCount() == 2) {
-            String prefix = getChild(1).getText();
-            Sort type = Sort.getKind(prefix);
-            if (type == null) {
-                throw new FormatException("Prefix '%s' does not represent a type", prefix);
-            }
-            result.put(type, getChild(0).toFieldOrVarExpr(true, varMap, type));
-        } else {
-            for (Sort type : Sort.values()) {
-                result.put(type, getChild(0).toFieldOrVarExpr(false, varMap, type));
+            for (Sort sort : Sort.values()) {
+                result.put(sort, toAtomExpr(varMap, sort));
             }
         }
         return result;
@@ -180,143 +171,95 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
     /** 
      * Converts this tree to a {@link Variable} or a {@link FieldExpr}.
      * Chained field expressions are currently unsupported.
-     * @param prefixed signals if the expression was explicitly typed in the parsed text
      * @param varMap variable typing
-     * @param type expected type of the expression
+     * @param sort expected type of the expression
      */
-    private Expression toFieldOrVarExpr(boolean prefixed, Map<String,Sort> varMap,
-        Sort type) throws FormatException {
+    private Expression toAtomExpr(Map<String,Sort> varMap, Sort sort) throws FormatException {
         Expression result;
-        if (getType() == ExprParser.DOT) {
-            assert getChildCount() == 2;
-            result = new FieldExpr(prefixed, getChild(0).getText(), getChild(1).getText(), type);
+        assert hasId();
+        Id id = getId();
+        if (id.size() > 2) {
+            throw new FormatException("Nested field expression '%s' not supported", id.getName());
+        } else if (id.size() > 1) {
+            result = new FieldExpr(hasSort(), id.get(0), id.get(1), sort);
         } else {
-            assert getChildCount() == 0;
-            String name = getText();
-            Sort varSig = varMap.get(name);
-            if (varSig == null) {
+            String name = id.get(0);
+            Sort varSort = varMap.get(name);
+            if (varSort == null) {
                 // this is a self-field
-                result = new FieldExpr(prefixed, null, name, type);
-            } else if (varSig != type) {
+                result = new FieldExpr(hasSort(), null, name, sort);
+            } else if (varSort != sort) {
                 throw new FormatException("Variable %s is of type %s, not %s", name,
-                    varSig.getName(), type.getName());
+                    varSort.getName(), sort.getName());
             } else {
-                result = new Variable(prefixed, name, type);
+                result = toVarExpr(name, sort);
             }
         }
         return result;
     }
 
-    /**
-     * Returns the set of derivable expressions for an operator tree,
-     * i.e., in which the root represents an operator.
+    /** 
+     * Converts this tree to a {@link Variable} or a {@link Parameter}.
+     * @param name variable name
+     * @param sort expected type of the expression
      */
-    private Map<Sort,Expression> toOpExprs(Map<String,Sort> varMap)
-        throws FormatException {
-        List<Map<Sort,? extends Expression>> args =
-            new ArrayList<Map<Sort,? extends Expression>>();
-        // all children are arguments
-        for (int i = 0; i < getChildCount(); i++) {
-            args.add(getChild(i).toExpressions(varMap));
-        }
-        return toCallExprs(getText(), args, varMap);
-    }
-
-    /**
-     * Returns the set of derivable expressions for a call tree,
-     * i.e., in which the root is a {@link ExprParser#CALL} node.
-     * @param varMap variable typing
-     */
-    private Map<Sort,Expression> toCallExprs(Map<String,Sort> varMap)
-        throws FormatException {
-        Map<Sort,Expression> result =
-            new EnumMap<Sort,Expression>(Sort.class);
-        List<Map<Sort,? extends Expression>> args =
-            new ArrayList<Map<Sort,? extends Expression>>();
-        // last token is an artificial CLOSE
-        for (int i = 1; i < getChildCount() - 1; i++) {
-            args.add(getChild(i).toExpressions(varMap));
-        }
-        ExprTree opTree = getChild(0);
-        String opName = opTree.getChild(0).getText();
-        if (opTree.getChildCount() == 2) {
-            result = toCallExprs(opTree.getChild(1).getText(), opName, args, varMap);
+    private Expression toVarExpr(String name, Sort sort) throws FormatException {
+        Expression result;
+        if (name.charAt(0) == '$') {
+            int number;
+            try {
+                number = Integer.parseInt(name.substring(1));
+            } catch (NumberFormatException exc) {
+                throw new FormatException(
+                    "Parameter '%s' should equal '$number' for a non-negative number",
+                    getParseString());
+            }
+            result = new Parameter(hasSort(), number, sort);
         } else {
-            result = toCallExprs(opName, args, varMap);
+            result = new Variable(hasSort(), name, sort);
         }
         return result;
     }
 
     /**
-     * Returns the set of derivable expressions for an operator call
-     * with an explicitly typed operator.
-     * @param prefix signature name of the operator
-     * @param opName operator name
-     * @param args operator arguments. Each argument is a map from 
-     * possible types to corresponding expressions
-     * @param varMap variable typing
+     * Returns the set of derivable expressions in case the top level is
+     * a non-atomic operator.
      */
-    private Map<Sort,Expression> toCallExprs(String prefix, String opName,
-        List<Map<Sort,? extends Expression>> args, Map<String,Sort> varMap)
-        throws FormatException {
-        Map<Sort,Expression> result =
-            new EnumMap<Sort,Expression>(Sort.class);
-        Sort opSig = Sort.getKind(prefix);
-        Operator op = opSig.getOperator(opName);
-        if (op == null) {
-            throw new FormatException("Operator '%s:%s' does exist", opSig.getName(), opName);
+    private MultiExpression toCallExprs(Map<String,Sort> varMap) throws FormatException {
+        MultiExpression result = new MultiExpression();
+        List<MultiExpression> resultArgs = new ArrayList<MultiExpression>();
+        // all children are arguments
+        for (ExprTree arg : getArgs()) {
+            resultArgs.add(arg.toExpressions(varMap));
         }
-        result.put(op.getResultType(), newCallExp(true, op, args));
-        return result;
-    }
-
-    /**
-     * Returns the set of derivable expressions for an operator call
-     * with an untyped operator.
-     * @param opName operator name
-     * @param args operator arguments. Each argument is a map from 
-     * possible types to corresponding expressions
-     * @param varMap variable typing
-     */
-    private Map<Sort,Expression> toCallExprs(String opName,
-        List<Map<Sort,? extends Expression>> args, Map<String,Sort> varMap)
-        throws FormatException {
-        Map<Sort,Expression> result =
-            new EnumMap<Sort,Expression>(Sort.class);
-        List<Operator> ops = Operator.getOps(opName);
-        // look up op based on argument types
-        if (ops.isEmpty()) {
-            throw new FormatException("No such operator '%s' in '%s'", opName, toInputString());
-        }
-        for (Operator op : ops) {
+        for (Operator op : getOp().getOperators()) {
             boolean duplicate = false;
             try {
-                duplicate = (result.put(op.getResultType(), newCallExp(false, op, args)) != null);
+                duplicate = (result.put(op.getResultType(), newCallExpr(op, resultArgs)) != null);
             } catch (FormatException e) {
                 // this candidate did not work out; proceed
             }
             if (duplicate) {
                 throw new FormatException("Typing of '%s' is ambiguous: add type prefixes",
-                    toInputString());
+                    getParseString());
             }
         }
         if (result.isEmpty()) {
-            throw new FormatException("Operator '%s' not applicable to arguments in '%s'", opName,
-                toInputString());
+            throw new FormatException("Operator '%s' not applicable to arguments in '%s'",
+                getOp().getSymbol(), getParseString());
         }
         return result;
     }
 
     /**
-     * Factory method for a new operator call expression.
+     * Factory method for a new operator expression.
      * @param op the operator of the new expression
      * @param args operator arguments. Each argument is a map from 
      * possible types to corresponding expressions
      * @throws FormatException if {@code args} does not have values
      * for the required operator types
      */
-    private Expression newCallExp(boolean prefixed, Operator op,
-        List<Map<Sort,? extends Expression>> args) throws FormatException {
+    private Expression newCallExpr(Operator op, List<MultiExpression> args) throws FormatException {
         if (op.getArity() != args.size()) {
             throw new FormatException("Operator '%s' expects %s parameters but has %s",
                 op.toString(), op.getArity(), args.size());
@@ -327,7 +270,7 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
             Expression arg = args.get(i).get(parTypes.get(i));
             if (arg == null) {
                 throw new FormatException("Parameter %s of '%s' should have type %s", i,
-                    toInputString(), parTypes.get(i));
+                    getParseString(), parTypes.get(i));
             }
             selectedArgs.add(arg);
         }
@@ -339,29 +282,109 @@ public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
             return op.getResultType().createConstant(
                 op.getSymbol() + selectedArgs.get(0).toDisplayString());
         } else {
-            return new CallExpr(prefixed, op, selectedArgs);
+            return new CallExpr(hasSort(), op, selectedArgs);
         }
     }
 
-    /** Returns the signature kind corresponding to a given type token. */
-    private Sort getSigKind(Token token) {
-        switch (token.getType()) {
-        case ExprParser.STRING:
-            return Sort.STRING;
-        case ExprParser.INT:
-            return Sort.INT;
-        case ExprParser.BOOL:
-            return Sort.BOOL;
-        case ExprParser.REAL:
-            return Sort.REAL;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((this.sort == null) ? 0 : this.sort.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return null;
+        if (!super.equals(obj)) {
+            return false;
+        }
+        ExprTree other = (ExprTree) obj;
+        if (this.sort == null) {
+            if (other.sort != null) {
+                return false;
+            }
+        } else if (!this.sort.equals(other.sort)) {
+            return false;
+        }
+        return true;
     }
 
-    /** Returns an expression parser for a given string. */
-    public static ExprParser getParser(String term) {
-        return PROTOTYPE.createParser(ExprParser.class, null, term);
+    @Override
+    public String toString() {
+        String result = super.toString();
+        if (hasSort()) {
+            result = getSort().getName() + ":" + result;
+        }
+        return result;
     }
 
-    private static final ExprTree PROTOTYPE = new ExprTree();
+    /** Auxiliary operator to represent assignment. */
+    public static ExprOp ASSIGN = new ExprOp(OpKind.ASSIGN, "=", 2);
+
+    private static class MultiExpression extends EnumMap<Sort,Expression> {
+        /** Creates an empty instance. */
+        public MultiExpression() {
+            super(Sort.class);
+        }
+
+        /** Creates a singleton instance. */
+        public MultiExpression(Sort sort, Expression expr) {
+            this();
+            put(sort, expr);
+        }
+    }
+
+    /**
+     * Operator class collecting data operators with the same symbol.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static class ExprOp extends DefaultOp {
+        /**
+         * Constructs an operator with a given kind and symbol.
+         * The arity is derived from the kind.
+         */
+        public ExprOp(OpKind kind, String symbol) {
+            super(kind, symbol);
+        }
+
+        /**
+         * Constructs an operator with a given kind, symbol and arity.
+         * The arity should equal the kind's arity, unless the latter is unspecified.
+         */
+        public ExprOp(OpKind kind, String symbol, int arity) {
+            super(kind, symbol, arity);
+        }
+
+        /** Adds an algebra operator to the operators wrapped in this object. */
+        public void add(Operator sortOp) {
+            Operator old = this.sortOps.put(sortOp.getSort(), sortOp);
+            assert old == null;
+        }
+
+        /** Returns the algebra operator of a given sort wrapped into this object,
+         * if any. 
+         * @param sort the non-{@code null} sort for which the operator is requested
+         */
+        public Operator getOperator(Sort sort) {
+            assert sort != null;
+            return this.sortOps.get(sort);
+        }
+
+        /** Returns the collection of algebra operators wrapped in this object. */
+        public Collection<Operator> getOperators() {
+            return this.sortOps.values();
+        }
+
+        private Map<Sort,Operator> sortOps = new EnumMap<Sort,Operator>(Sort.class);
+
+        @Override
+        public String toString() {
+            return "ExprOp[" + this.sortOps + "]";
+        }
+    }
 }

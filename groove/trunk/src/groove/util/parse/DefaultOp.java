@@ -37,12 +37,13 @@ public class DefaultOp implements Op {
     }
 
     /**
-     * Constructs an operator of a given kind symbol and arity.
+     * Constructs an operator of a given kind, symbol and arity.
      */
-    private DefaultOp(OpKind kind, String symbol, int arity) {
+    protected DefaultOp(OpKind kind, String symbol, int arity) {
         this.kind = kind;
         this.symbol = symbol;
         this.arity = arity;
+        assert kind.getArity() < 0 || kind.getArity() == arity;
     }
 
     @Override

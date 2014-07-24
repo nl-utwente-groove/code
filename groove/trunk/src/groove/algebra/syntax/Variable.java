@@ -29,16 +29,16 @@ import java.util.Map;
  * @version $Revision $
  */
 public class Variable extends Expression {
-    /** Constructs a new variable with a given name and signature. */
-    public Variable(boolean prefixed, String name, Sort signature) {
+    /** Constructs a new variable with a given name and sort. */
+    public Variable(boolean prefixed, String name, Sort sort) {
         super(prefixed);
-        this.signature = signature;
+        this.sort = sort;
         this.name = name;
     }
 
-    /** Constructs a new, non-prefixed variable with a given name and signature. */
-    public Variable(String name, Sort signature) {
-        this(false, name, signature);
+    /** Constructs a new, non-prefixed variable with a given name and sort. */
+    public Variable(String name, Sort sort) {
+        this(false, name, sort);
     }
 
     /** Returns the name of this variable. */
@@ -53,7 +53,7 @@ public class Variable extends Expression {
 
     @Override
     public Sort getSort() {
-        return this.signature;
+        return this.sort;
     }
 
     @Override
@@ -109,5 +109,20 @@ public class Variable extends Expression {
     /** The name of this variable. */
     private final String name;
     /** The signature of this variable. */
-    private final Sort signature;
+    private final Sort sort;
+
+    /** Callback method to determine if a given character is suitable as first character for a variable name. */
+    static public boolean isIdentifierStart(char c) {
+        return Character.isJavaIdentifierStart(c);
+    }
+
+    /** Callback method to determine if a given character is suitable as middle character of a variable name. */
+    static public boolean isIdentifierPart(char c) {
+        return Character.isJavaIdentifierPart(c);
+    }
+
+    /** Callback method to determine if a given character is suitable as last character of a variable name. */
+    static public boolean isIdentifierEnd(char c) {
+        return Character.isJavaIdentifierPart(c);
+    }
 }

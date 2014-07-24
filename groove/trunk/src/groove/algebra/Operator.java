@@ -56,9 +56,7 @@ public class Operator {
         InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
         PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
         this.symbol = infix == null ? (prefix == null ? null : prefix.symbol()) : infix.symbol();
-        this.kind =
-            infix == null ? (prefix == null ? OpKind.ATOM : prefix.kind())
-                : infix.kind();
+        this.kind = infix == null ? (prefix == null ? OpKind.ATOM : prefix.kind()) : infix.kind();
         this.description = method.getAnnotation(ToolTipHeader.class).value();
     }
 
@@ -234,20 +232,37 @@ public class Operator {
         return new Operator(sigKind, opValue, opMethod);
     }
 
-    /** Returns the operators for a given (prefix or infix) operator symbol or name. */
-    public static List<Operator> getOps(String symbol) {
-        if (opLookupMap.isEmpty()) {
-            // register all operators
+    /** Returns the list of all operators of all sorts. */
+    public static List<Operator> getOps() {
+        if (ops.isEmpty()) {
             for (Sort sort : Sort.values()) {
                 for (OpValue opValue : sort.getOpValues()) {
-                    registerOp(opValue.getOperator());
+                    ops.add(opValue.getOperator());
                 }
             }
         }
-        return opLookupMap.get(symbol);
+        return ops;
     }
 
-    /** Adds an operator to the store. */
+    static private final List<Operator> ops = new ArrayList<Operator>();
+
+    /** Returns the operators for a given (prefix or infix) operator symbol or name. */
+    public static List<Operator> getOps(String symbol) {
+        return getOpsMap().get(symbol);
+    }
+
+    /** Returns a map from operator symbols and names to operators with that symbol/name. */
+    public static Map<String,List<Operator>> getOpsMap() {
+        if (opLookupMap.isEmpty()) {
+            // register all operators
+            for (Operator op : getOps()) {
+                registerOp(op);
+            }
+        }
+        return opLookupMap;
+    }
+
+    /** Adds an operator to the store, both by symbol and by name. */
     private static void registerOp(Operator op) {
         String symbol = op.getSymbol();
         if (symbol != null) {

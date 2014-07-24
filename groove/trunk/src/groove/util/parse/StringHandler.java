@@ -895,46 +895,29 @@ public class StringHandler {
         }
     }
 
-    /** Tests if a character may occur within an identifier. */
-    static public boolean isIdentifierPart(char c) {
-        return Character.isJavaIdentifierPart(c) || c == HYPHEN;
-    }
+    /** Validator that allows hyphens within names. */
+    public static final IdValidator ID_VALIDATOR = new IdValidator() {
+        @Override
+        public boolean isIdentifierPart(char c) {
+            return Character.isJavaIdentifierPart(c) || c == HYPHEN;
+        }
 
-    /** Tests if a character may occur at the end of an identifier. */
-    static public boolean isIdentifierEnd(char c) {
-        return Character.isJavaIdentifierPart(c);
-    }
+        @Override
+        public boolean isIdentifierEnd(char c) {
+            return Character.isJavaIdentifierPart(c);
+        }
+
+        @Override
+        public boolean isIdentifierStart(char c) {
+            return Character.isJavaIdentifierStart(c);
+        }
+    };
 
     /**
-     * Tests if a character may occur as the first character in an
-     * identifier.
-     */
-    static public boolean isIdentifierStart(char c) {
-        return Character.isJavaIdentifierStart(c);
-    }
-
-    /**
-     * Tests whether a given text can serve as a wildcard identifier. This
-     * implementation returns <code>true</code> if <code>text</code> is
-     * non-empty, starts with a correct character (according to
-     * {@link #isIdentifierStart(char)}), and contains only characters
-     * satisfying {@link #isIdentifierPart(char)}.
-     * @param text the text to be tested
-     * @return <tt>true</tt> if the text does not contain any special characters
-     * @see #isIdentifierStart(char)
-     * @see #isIdentifierPart(char)
+     * Invokes {@link IdValidator#isValid(String)} on {@link #ID_VALIDATOR}.
      */
     static public boolean isIdentifier(String text) {
-        if (text == null || text.isEmpty()) {
-            return false;
-        }
-        for (int i = 0; i < text.length(); i++) {
-            char nextChar = text.charAt(i);
-            if (!(i == 0 ? isIdentifierStart(nextChar) : isIdentifierPart(nextChar))) {
-                return false;
-            }
-        }
-        return true;
+        return ID_VALIDATOR.isValid(text);
     }
 
     /** The hyphen character. This is allowed as part of an identifier. */
