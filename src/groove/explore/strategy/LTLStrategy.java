@@ -32,7 +32,6 @@ import groove.util.parse.FormatException;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
-import groove.verify.FormulaParser;
 import groove.verify.ModelChecking.Record;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
@@ -107,7 +106,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         assert property != null;
         this.property = property;
         try {
-            Formula<String> formula = FormulaParser.parse(property).toLtlFormula();
+            Formula<String> formula = groove.verify.Formula.parse(property).toLtlFormula();
             BuchiGraph buchiGraph = BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
             this.startLocation = buchiGraph.getInitial();
         } catch (FormatException e) {

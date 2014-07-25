@@ -35,12 +35,13 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Id$
  */
-public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable implements Fallible {
+abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends DefaultFixable
+    implements Fallible {
     /**
      * Constructs an initially argument- and content-free expression
      * with a given top-level operator.
      */
-    protected Tree(O op) {
+    protected TermTree(O op) {
         assert op != null;
         this.op = op;
         this.args = new ArrayList<T>();
@@ -236,7 +237,9 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
         if (getOp().getKind() == OpKind.CALL) {
             result = toCallLine(spaces);
         } else if (getOp().getKind() == OpKind.ATOM) {
-            if (hasId()) {
+            if (getOp().hasSymbol()) {
+                result = Line.atom(getOp().getSymbol());
+            } else if (hasId()) {
                 result = getId().toLine();
             } else {
                 result = Line.atom(getConstant().toDisplayString());
@@ -287,7 +290,7 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
                 result.add(Line.atom(" "));
             }
         }
-        result.add(Line.atom(getOp().getSymbol()));
+        result.add(getOpLine(addSpaces));
         if (me.getPlace() != Placement.POSTFIX) {
             // add left argument
             if (addSpaces) {
@@ -301,6 +304,14 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
             result.add(Line.atom(")"));
         }
         return Line.composed(result);
+    }
+
+    /** Returns the display line for the top-level operator of this tree. 
+     * @param addSpaces if {@code true}, additional space may already have been
+     * added to the left and/or right of the operator.
+     */
+    protected Line getOpLine(boolean addSpaces) {
+        return Line.atom(getOp().getSymbol());
     }
 
     /** Returns the string from which this expression was parsed, if any. */
@@ -324,6 +335,19 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
     private String parseString;
 
     @Override
+    public T clone() {
+        T result = createTree(getOp());
+        result.args.addAll(this.args);
+        result.errors.addAll(this.errors);
+        result.constant = this.constant;
+        result.id = this.id;
+        return result;
+    }
+
+    /** Callback factory method for an otherwise empty tree with a given top-level operator. */
+    public abstract T createTree(O op);
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -340,10 +364,10 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Tree)) {
+        if (!(obj instanceof TermTree)) {
             return false;
         }
-        Tree<?,?> other = (Tree<?,?>) obj;
+        TermTree<?,?> other = (TermTree<?,?>) obj;
         if (!this.op.equals(other.op)) {
             return false;
         }
@@ -374,7 +398,7 @@ public class Tree<O extends Op,T extends Tree<O,T>> extends DefaultFixable imple
     public String toString() {
         String result = this.op.toString();
         if (hasId()) {
-            result += getId();
+            result += getId().getName();
         } else if (hasConstant()) {
             result += "<" + getConstant() + ">";
         }

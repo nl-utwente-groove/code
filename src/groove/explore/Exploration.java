@@ -325,12 +325,12 @@ public class Exploration {
             }
 
             @Override
-            public Exploration parse(String text) {
-                if (text == null || text.length() == 0) {
+            public Exploration parse(String input) {
+                if (input == null || input.length() == 0) {
                     return null;
                 }
                 try {
-                    return Exploration.parse(text);
+                    return Exploration.parse(input);
                 } catch (FormatException exc) {
                     return null;
                 }

@@ -42,7 +42,7 @@ public class CheckCTLAction extends SimulatorAction {
             }
             if (doCheck) {
                 try {
-                    doCheckProperty(gts, FormulaParser.parse(property).toCtlFormula());
+                    doCheckProperty(gts, Formula.parse(property).toCtlFormula());
                 } catch (FormatException e) {
                     // the property has already been parsed by the dialog
                     assert false;
@@ -58,7 +58,7 @@ public class CheckCTLAction extends SimulatorAction {
                 new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(true)) {
                     @Override
                     public String parse(String text) throws FormatException {
-                        FormulaParser.parse(text).toCtlFormula();
+                        Formula.parse(text).toCtlFormula();
                         return text;
                     }
                 };
@@ -103,7 +103,6 @@ public class CheckCTLAction extends SimulatorAction {
     }
 
     private final boolean full;
-
     /**
      * Dialog for entering temporal formulae.
      */

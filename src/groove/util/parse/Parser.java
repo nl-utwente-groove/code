@@ -52,10 +52,10 @@ abstract public interface Parser<T> {
      * type of this parser.
      * Will return the default value on {@code null} or the empty string, if
      * the parser has a default value.
-     * @param text the text to be parsed; if {@code null} or empty,
+     * @param input the text to be parsed; if {@code null} or empty,
      * @return a value corresponding to {@code text}
      */
-    public T parse(String text) throws FormatException;
+    public T parse(String input) throws FormatException;
 
     /**
      * Turns a given value into a string that, when fed into {@link #parse(String)},
@@ -153,11 +153,11 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public S parse(String text) {
-            if (text == null || text.length() == 0) {
+        public S parse(String input) {
+            if (input == null || input.length() == 0) {
                 return getDefaultValue();
             } else {
-                return createContent(this.trim ? text.trim() : text);
+                return createContent(this.trim ? input.trim() : input);
             }
         }
 
@@ -273,11 +273,11 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public I parse(String text) {
-            if (text == null || text.length() == 0) {
+        public I parse(String input) {
+            if (input == null || input.length() == 0) {
                 return getDefaultValue();
             } else {
-                return createContent(Integer.parseInt(text));
+                return createContent(Integer.parseInt(input));
             }
         }
 
@@ -373,10 +373,10 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public List<String> parse(String text) {
+        public List<String> parse(String input) {
             try {
-                return text == null || text.length() == 0 ? getDefaultValue()
-                    : Arrays.asList(handler.split(text, " "));
+                return input == null || input.length() == 0 ? getDefaultValue()
+                    : Arrays.asList(handler.split(input, " "));
             } catch (FormatException exc) {
                 assert false; // we recognise no quotes or brackets, so exceptions can't occur
                 return null;
@@ -472,13 +472,13 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Boolean parse(String text) {
+        public Boolean parse(String input) {
             Boolean result = null;
-            if (text == null || text.length() == 0) {
+            if (input == null || input.length() == 0) {
                 result = getDefaultValue();
-            } else if (TRUE.equals(text)) {
+            } else if (TRUE.equals(input)) {
                 result = true;
-            } else if (FALSE.equals(text)) {
+            } else if (FALSE.equals(input)) {
                 result = false;
             }
             return result;
@@ -625,8 +625,8 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public T parse(String text) {
-            return this.toValueMap.get(text);
+        public T parse(String input) {
+            return this.toValueMap.get(input);
         }
 
         @Override

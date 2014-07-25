@@ -19,7 +19,7 @@ package groove.explore.encode;
 import groove.grammar.Grammar;
 import groove.grammar.model.GrammarModel;
 import groove.util.parse.FormatException;
-import groove.verify.FormulaParser;
+import groove.verify.Formula;
 
 /**
  * Encoding of an LTL property.
@@ -45,7 +45,7 @@ public class EncodedLtlProperty implements EncodedType<String,String> {
     @Override
     public String parse(Grammar rules, String source) throws FormatException {
         try {
-            FormulaParser.parse(source).toLtlFormula();
+            Formula.parse(source).toLtlFormula();
             return source;
         } catch (FormatException e) {
             throw new FormatException("Error in LTL formula '%s': %s", source, e.getMessage());

@@ -27,7 +27,7 @@ import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
 import groove.util.parse.Id;
 import groove.util.parse.OpKind;
-import groove.util.parse.Tree;
+import groove.util.parse.TermTree;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,7 +41,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTree extends Tree<ExprTree.ExprOp,ExprTree> {
+public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
     /**
      * Constructs a new expression with a given top-level operator.
      */
@@ -284,6 +284,18 @@ public class ExprTree extends Tree<ExprTree.ExprOp,ExprTree> {
         } else {
             return new CallExpr(hasSort(), op, selectedArgs);
         }
+    }
+
+    @Override
+    public ExprTree clone() {
+        ExprTree result = super.clone();
+        result.sort = this.sort;
+        return result;
+    }
+
+    @Override
+    public ExprTree createTree(ExprOp op) {
+        return new ExprTree(op);
     }
 
     @Override

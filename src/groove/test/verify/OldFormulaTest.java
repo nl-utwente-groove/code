@@ -19,7 +19,7 @@ package groove.test.verify;
 
 import static groove.verify.Formula.Always;
 import static groove.verify.Formula.And;
-import static groove.verify.Formula.Call;
+import static groove.verify.Formula.Prop;
 import static groove.verify.Formula.Equiv;
 import static groove.verify.Formula.Eventually;
 import static groove.verify.Formula.Exists;
@@ -30,7 +30,6 @@ import static groove.verify.Formula.Implies;
 import static groove.verify.Formula.Next;
 import static groove.verify.Formula.Not;
 import static groove.verify.Formula.Or;
-import static groove.verify.Formula.Prop;
 import static groove.verify.Formula.Release;
 import static groove.verify.Formula.SRelease;
 import static groove.verify.Formula.True;
@@ -41,9 +40,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.util.parse.FormatException;
-import groove.util.parse.Id;
 import groove.verify.Formula;
-import groove.verify.FormulaParser;
+import groove.verify.OldFormulaParser;
 
 import org.junit.Test;
 
@@ -53,8 +51,8 @@ import org.junit.Test;
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public class FormulaTest {
-    /** Tests {@link FormulaParser#parse(String)}. */
+public class OldFormulaTest {
+    /** Tests {@link OldFormulaParser#parse(String)}. */
     @Test
     public void testParse() {
         Formula a = Prop("a");
@@ -67,7 +65,6 @@ public class FormulaTest {
         testParse("'a'", a);
         testParse("\"a\"", a);
         testParse("'a(1)'", Prop("a(1)"));
-        testParse("a(1,id,'value')", Call(Id.id("a"), "1", "id", "'value'"));
         testParse("true", True());
         testParse("false", False());
         // and/or/not
@@ -94,21 +91,27 @@ public class FormulaTest {
         testParseError("(a)U");
         testParseError("AX");
         testParseError("'a");
+        testParseError("'\\a'");
+        testParseError("Xtrue");
         testParseError("U true");
-        testParseError("F!(final U)");
     }
 
     private void testParse(String text, Formula expected) {
-        Formula result = FormulaParser.instance().parse(text);
-        assertEquals(expected, result);
-        if (result.hasErrors()) {
-            fail(result.getErrors().toString());
+        try {
+            Formula result = OldFormulaParser.parse(text);
+            assertEquals(expected, result);
+        } catch (FormatException e) {
+            fail(e.getMessage());
         }
     }
 
     private void testParseError(String text) {
-        Formula result = FormulaParser.instance().parse(text);
-        assertTrue(result.hasErrors());
+        try {
+            OldFormulaParser.parse(text);
+            fail();
+        } catch (FormatException e) {
+            // success
+        }
     }
 
     /** Tests the toString method of the Formula class. */
@@ -118,42 +121,38 @@ public class FormulaTest {
         Formula b = Prop("b");
         Formula c = Prop("c");
         // atoms
-        testEquals("a", a);
-        testEquals("true", True());
-        testEquals("false", False());
+        assertEquals("a", a.toString());
+        assertEquals("true", True().toString());
+        assertEquals("false", False().toString());
         // negation
-        testEquals("!a", Not(a));
-        testEquals("!(a|b)", Not(Or(a, b)));
-        testEquals("!a|b", Or(Not(a), b));
+        assertEquals("!a", Not(a).toString());
+        assertEquals("!(a|b)", Not(Or(a, b)).toString());
+        assertEquals("!a|b", Or(Not(a), b).toString());
         // and/or
-        testEquals("a&b", And(a, b));
-        testEquals("a&b|c", Or(And(a, b), c));
-        testEquals("a&(b|c)", And(a, Or(b, c)));
+        assertEquals("a&b", And(a, b).toString());
+        assertEquals("a&b|c", Or(And(a, b), c).toString());
+        assertEquals("a&(b|c)", And(a, Or(b, c)).toString());
         // implies/follows/equiv
-        testEquals("a->b", Implies(a, b));
-        testEquals("a<-b", Follows(a, b));
-        testEquals("a<->b", Equiv(a, b));
-        testEquals("a<->b->c", Equiv(a, Implies(b, c)));
-        testEquals("(a<->b)->c", Implies(Equiv(a, b), c));
+        assertEquals("a->b", Implies(a, b).toString());
+        assertEquals("a<-b", Follows(a, b).toString());
+        assertEquals("a<->b", Equiv(a, b).toString());
+        assertEquals("a<->b->c", Equiv(a, Implies(b, c)).toString());
+        assertEquals("(a<->b)->c", Implies(Equiv(a, b), c).toString());
         // next/always/eventually
-        testEquals("X X a", Next(Next(a)));
-        testEquals("F G a", Eventually(Always(a)));
+        assertEquals("X X a", Next(Next(a)).toString());
+        assertEquals("F G a", Eventually(Always(a)).toString());
         // until/release
-        testEquals("a R b", Release(a, b));
-        testEquals("a M b", SRelease(a, b));
-        testEquals("a U b", Until(a, b));
-        testEquals("a W b", WUntil(a, b));
-        testEquals("(a->b) U c", Until(Implies(a, b), c));
-        testEquals("a->b U c", Implies(a, Until(b, c)));
+        assertEquals("a R b", Release(a, b).toString());
+        assertEquals("a M b", SRelease(a, b).toString());
+        assertEquals("a U b", Until(a, b).toString());
+        assertEquals("a W b", WUntil(a, b).toString());
+        assertEquals("(a->b)U c", Until(Implies(a, b), c).toString());
+        assertEquals("a->b U c", Implies(a, Until(b, c)).toString());
         // forall/exists
-        testEquals("A true", Forall(True()));
-        testEquals("E F a", Exists(Eventually(a)));
-        testEquals("A a U b", Forall(Until(a, b)));
-        testEquals("(A a) U b", Until(Forall(a), b));
-    }
-
-    private void testEquals(String s, Formula f) {
-        assertEquals(s, f.toLine().toFlatString());
+        assertEquals("A true", Forall(True()).toString());
+        assertEquals("E F a", Exists(Eventually(a)).toString());
+        assertEquals("A a U b", Forall(Until(a, b)).toString());
+        assertEquals("(A a)U b", Until(Forall(a), b).toString());
     }
 
     /** Tests if a given formula is ripe for CTL verification. */
@@ -199,7 +198,7 @@ public class FormulaTest {
 
     private void testToCtlFormula(String expected, Formula f) {
         try {
-            assertEquals(FormulaParser.instance().parse(expected), f.toCtlFormula());
+            assertEquals(OldFormulaParser.parse(expected), f.toCtlFormula());
         } catch (FormatException e) {
             fail(e.getMessage());
         }

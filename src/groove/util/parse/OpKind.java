@@ -12,16 +12,18 @@ import static groove.util.parse.OpKind.Placement.PREFIX;
  * The precedence mimics the Java operator precedence.
  */
 public enum OpKind {
-    /** Dummy value used for lowest-level context of an expression. */
+    /** Dummy value used for lowest-level context of an expression.
+     * Operators of this kind will be ignored by the parser.
+     */
     NONE(PREFIX, NEITHER, 0),
     /** (In)equivalence. */
     EQUIV(NEITHER),
     /** Implication. */
     IMPLIES(RIGHT),
     /** Disjunction. */
-    OR(LEFT),
+    OR(RIGHT),
     /** Conjunction. */
-    AND(LEFT),
+    AND(RIGHT),
     /** Negation. */
     NOT(PREFIX),
     /** Existential and universal quantification. */

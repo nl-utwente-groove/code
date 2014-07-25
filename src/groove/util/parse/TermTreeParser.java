@@ -18,14 +18,13 @@ package groove.util.parse;
 
 import static groove.algebra.Sort.INT;
 import static groove.algebra.Sort.REAL;
-import static groove.util.parse.TreeParser.TokenClaz.CONST;
-import static groove.util.parse.TreeParser.TokenClaz.EOT;
-import static groove.util.parse.TreeParser.TokenClaz.LATE_OP;
-import static groove.util.parse.TreeParser.TokenClaz.LPAR;
-import static groove.util.parse.TreeParser.TokenClaz.NAME;
-import static groove.util.parse.TreeParser.TokenClaz.PRE_OP;
-import static groove.util.parse.TreeParser.TokenClaz.RPAR;
-import groove.algebra.BoolSignature;
+import static groove.util.parse.TermTreeParser.TokenClaz.CONST;
+import static groove.util.parse.TermTreeParser.TokenClaz.EOT;
+import static groove.util.parse.TermTreeParser.TokenClaz.LATE_OP;
+import static groove.util.parse.TermTreeParser.TokenClaz.LPAR;
+import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
+import static groove.util.parse.TermTreeParser.TokenClaz.PRE_OP;
+import static groove.util.parse.TermTreeParser.TokenClaz.RPAR;
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.io.Util;
@@ -35,7 +34,6 @@ import groove.util.Triple;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,51 +66,52 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Id$
  */
-public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
+public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Parser<X> {
     /**
      * Constructs a parser recognising a given enumeration of operators.
      * Neither sort declarations nor qualified identifiers are recognised
      * by default.
-     * @param treeType class object of the tree type; used to construct instances.
-     * The class is assumed to have a constructor with a single {@code O}-valued argument.
-     * @param opType enumerated type of the operators;
-     * should contain exactly one instance of type {@link OpKind#ATOM}
+     * @param prototype prototype object of the tree type; used to construct instances.
+     * The operator type is assumed to be an {@link Enum}, and the operator 
+     * kind to be {@link OpKind#ATOM}; this kind will be used to construct
+     * term instances for atomic terms
      */
-    public TreeParser(Class<? extends X> treeType, Class<? extends O> opType) {
-        this.ops = Arrays.asList(opType.getEnumConstants());
-        this.treeConstructor = getConstructor(treeType);
+    public TermTreeParser(X prototype) {
+        this.prototype = prototype;
+        this.atomOp = prototype.getOp();
+        assert prototype.getOp().getKind() == OpKind.ATOM;
+        assert prototype.getOp() instanceof Enum;
+        @SuppressWarnings("unchecked")
+        Class<? extends O> oType = (Class<? extends O>) prototype.getOp().getClass();
+        this.ops = computeParsableOps(Arrays.asList(oType.getEnumConstants()));
     }
 
     /**
      * Constructs a parser recognising a given set of operators.
      * Neither sort declarations nor qualified identifiers are recognised
      * by default.
+     * @param prototype prototype object of the tree type; used to construct instances.
+     * The operator type is assumed to be an {@link Enum}, and the operator 
+     * kind to be {@link OpKind#ATOM}; this kind will be used to construct
+     * term instances for atomic terms
      * @param ops collection of operators to be recognised by this parser;
      * should contain exactly one instance of type {@link OpKind#ATOM}
      */
-    public TreeParser(Class<? extends X> treeType, Collection<? extends O> ops) {
-        this.ops = Collections.unmodifiableList(new ArrayList<O>(ops));
-        this.treeConstructor = getConstructor(treeType);
+    public TermTreeParser(X prototype, Collection<? extends O> ops) {
+        this.prototype = prototype;
+        this.atomOp = prototype.getOp();
+        assert prototype.getOp().getKind() == OpKind.ATOM;
+        this.ops = computeParsableOps(ops);
     }
 
-    /** Tests whether a certain type object can be used to create prototype trees. */
-    private Constructor<? extends X> getConstructor(Class<? extends X> treeType) {
-        Constructor<? extends X> result;
-        Op prototype = getOps().iterator().next();
-        try {
-            result = treeType.getConstructor(prototype.getClass());
-        } catch (SecurityException exc) {
-            throw new IllegalArgumentException(exc);
-        } catch (NoSuchMethodException exc) {
-            throw new IllegalArgumentException(exc);
+    private List<O> computeParsableOps(Collection<? extends O> ops) {
+        List<O> result = new ArrayList<O>();
+        for (O op : ops) {
+            if (op.getKind() != OpKind.NONE) {
+                result.add(op);
+            }
         }
-        // attempt to call the constructor
-        try {
-            result.newInstance(prototype);
-        } catch (Exception exc) {
-            throw new IllegalArgumentException(exc);
-        }
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     /** Returns the list of operators that this parser recognises. */
@@ -128,21 +127,6 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         return (Class<? extends O>) getAtomOp().getClass();
     }
 
-    /** Indicates if the operator type has a call operator. */
-    boolean hasCallOp() {
-        return getCallOp() != null;
-    }
-
-    /** Returns the call operator, if any. */
-    public O getCallOp() {
-        if (this.callOp == null) {
-            this.callOp = retrieveKindOp(OpKind.CALL);
-        }
-        return this.callOp;
-    }
-
-    private O callOp;
-
     /** Sets the ability to recognise qualified identifiers. */
     public void setQualIds(boolean qualIds) {
         this.qualIds = qualIds;
@@ -155,31 +139,12 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
 
     private boolean qualIds;
 
-    /** Retrieves the (supposedly unique) operator of a given kind. */
-    private O retrieveKindOp(OpKind kind) {
-        O result = null;
-        for (O op : getOps()) {
-            if (op.getKind() == kind && !op.hasSymbol()) {
-                if (result == null) {
-                    result = op;
-                } else {
-                    throw new IllegalArgumentException(String.format(
-                        "Duplicate %s operators %s and %s", kind, result, op));
-                }
-            }
-        }
-        return result;
-    }
-
     /** Returns the (supposedly unique) atom operator used by this parser. */
-    public O getAtomOp() {
-        if (this.atomOp == null) {
-            this.atomOp = retrieveKindOp(OpKind.ATOM);
-        }
+    protected O getAtomOp() {
         return this.atomOp;
     }
 
-    private O atomOp;
+    private final O atomOp;
 
     /** Sets the criterion for valid identifier names. */
     protected void setIdValidator(IdValidator idValidator) {
@@ -209,23 +174,13 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
     private String description;
 
     /**
-     * Callback factory method for the expression objects to be constructed.
-     * Should be overridden to specialise the expression type.
+     * Callback factory method for the term trees to be constructed.
      */
-    protected X createExpr(O op) {
-        try {
-            return this.treeConstructor.newInstance(op);
-        } catch (Exception exc) {
-            if (exc instanceof RuntimeException) {
-                throw (RuntimeException) exc;
-            }
-            exc.printStackTrace();
-            assert false;
-            return null;
-        }
+    protected X createTree(O op) {
+        return this.prototype.createTree(op);
     }
 
-    private final Constructor<? extends X> treeConstructor;
+    private final X prototype;
 
     @Override
     public boolean accepts(String text) {
@@ -233,8 +188,8 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
     }
 
     @Override
-    public X parse(String text) {
-        init(text);
+    public X parse(String input) {
+        init(input);
         X result = parse();
         result.setFixed();
         return result;
@@ -242,20 +197,20 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
 
     @Override
     public String toParsableString(Object value) {
-        return ((Tree<?,?>) value).getParseString();
+        return ((TermTree<?,?>) value).getParseString();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Class<X> getValueType() {
-        return (Class<X>) (Class<? extends Tree<?,?>>) Tree.class;
+        return (Class<X>) (Class<? extends TermTree<?,?>>) TermTree.class;
     }
 
     @Override
     public boolean isValue(Object value) {
-        boolean result = value instanceof Tree;
+        boolean result = value instanceof TermTree;
         if (result) {
-            Tree<?,?> expr = (Tree<?,?>) value;
+            TermTree<?,?> expr = (TermTree<?,?>) value;
             result = getOpType().equals(expr.getOp().getClass());
         }
         return result;
@@ -324,8 +279,10 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
                         result.put(symbol, family = new TokenFamily());
                     }
                     family.add(type);
-                    // also add a NAME type for the symbol, if it is an identifier
-                    if (StringHandler.isIdentifier(symbol)) {
+                    // also add a NAME or BOOL type for the symbol, if appropriate
+                    if (Sort.BOOL.denotesConstant(symbol)) {
+                        family.add(getConstTokenType(Sort.BOOL));
+                    } else if (getIdValidator().isValid(symbol)) {
                         family.add(NAME.type());
                     }
                 }
@@ -385,12 +342,11 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
-                result.addErrors(unexpectedToken(next()));
                 result.addError(new FormatError("Unparsed suffix: %s", this.input.substring(
                     next().start(), this.input.length())));
             }
         } catch (FormatException exc) {
-            result = createErrorExpr(exc);
+            result = createErrorTree(exc);
         }
         return result;
     }
@@ -404,12 +360,12 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         Token nextToken = next();
         if (nextToken.has(LPAR)) {
             result = parseBracketed();
-        } else if (nextToken.has(NAME)) {
-            result = parseCall();
-        } else if (nextToken.has(CONST)) {
-            result = parseConst();
         } else if (nextToken.has(PRE_OP)) {
             result = parsePrefixed();
+        } else if (nextToken.has(NAME)) {
+            result = parseName();
+        } else if (nextToken.has(CONST)) {
+            result = parseConst();
         } else {
             throw unexpectedToken(nextToken);
         }
@@ -431,7 +387,7 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
             }
             consume(LATE_OP);
             X arg0 = result;
-            result = createExpr(op);
+            result = createTree(op);
             result.addArg(arg0);
             if (kind.getPlace() == Placement.POSTFIX) {
                 break;
@@ -446,10 +402,11 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
      * Attempts to parse the string as a constant expression.
      * The next token is known to be a constant token.
      */
-    protected X parseConst() throws ScanException {
-        X result;
-        result = createExpr(getAtomOp());
-        result.setConstant(consume(CONST).createConstant());
+    protected X parseConst() throws FormatException {
+        X result = createTree(getAtomOp());
+        Token constToken = consume(CONST);
+        result.setConstant(constToken.createConstant());
+        setParseString(result, constToken);
         return result;
     }
 
@@ -473,49 +430,33 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
 
     /**
      * Attempts to parse the string as a prefix expression.
-     * The next token is known to be a prefix operator.
+     * The next token is known to be a prefix operator;
+     * it might still be the start of a qualified identifier.
      */
     protected X parsePrefixed() throws FormatException {
+        X result;
         Token opToken = consume(TokenClaz.PRE_OP);
-        O op = opToken.type(TokenClaz.PRE_OP).op();
-        X result = createExpr(op);
-        result.addArg(parse(op.getKind()));
-        setParseString(result, opToken);
+        if (hasQualIds() && opToken.has(NAME) && has(TokenClaz.QUAL_SEP)) {
+            rollBack();
+            result = parseName();
+        } else {
+            result = parsePrefixed(opToken);
+        }
         return result;
     }
 
     /**
-     * Parses the input as a call or atomic expression.
-     * The next token is known to be a name token.
+     * Attempts to parse the string as a prefix expression.
+     * @param opToken the operator token for the prefix expression;
+     * guaranteed to contain a prefix operator
      */
-    protected X parseCall() throws FormatException {
-        assert has(NAME);
-        X result = null;
-        Token firstToken = next();
-        // we now expect either a call operation or a user-defined identifier
-        if (has(TokenClaz.PRE_OP)) {
-            O op = consume(TokenClaz.PRE_OP).type(TokenClaz.PRE_OP).op();
-            if (!has(LPAR)) {
-                // this wasn't an operator call after all
-                rollBack();
-            } else {
-                result = createExpr(op);
+    protected X parsePrefixed(Token opToken) throws FormatException {
+        O op = opToken.type(TokenClaz.PRE_OP).op();
+        X result = createTree(op);
+        if (op.getKind() == OpKind.CALL) {
+            if (consume(LPAR) == null) {
+                throw expectedToken(LPAR, next());
             }
-        }
-        if (result == null) {
-            Id id = parseId();
-            if (has(LPAR)) {
-                if (hasCallOp()) {
-                    result = createExpr(getCallOp());
-                } else {
-                    throw unexpectedToken(next());
-                }
-            } else {
-                result = createExpr(getAtomOp());
-            }
-            result.setId(id);
-        }
-        if (consume(LPAR) != null) {
             if (consume(RPAR) == null) {
                 result.addArg(parse(OpKind.NONE));
                 while (consume(TokenClaz.COMMA) != null) {
@@ -524,8 +465,31 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
                 if (consume(RPAR) == null) {
                     throw expectedToken(RPAR, next());
                 }
+                if (result.getArgs().size() != op.getArity()) {
+                    throw argumentMismatch(op, result.getArgs().size(), opToken);
+                }
             }
+        } else if (op.getArity() == 1) {
+            result.addArg(parse(op.getKind()));
+        } else {
+            assert op.getKind() == OpKind.ATOM : String.format(
+                "Encountered '%s' in prefix position", op);
         }
+        setParseString(result, opToken);
+        return result;
+    }
+
+    /**
+     * Parses any sub-expression starting with a name token.
+     * The name is guaranteed to be the start of an identifier,
+     * and does not have to be investigated as operator.
+     */
+    protected X parseName() throws FormatException {
+        assert has(NAME);
+        X result = createTree(getAtomOp());
+        Token firstToken = next();
+        Id id = parseId();
+        result.setId(id);
         setParseString(result, firstToken);
         return result;
     }
@@ -549,9 +513,9 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         return result;
     }
 
-    /** Factory method for atomic expression with a given error. */
-    protected X createErrorExpr(FormatException exc) {
-        X result = createExpr(getAtomOp());
+    /** Factory method for atomic tree with a given error. */
+    protected X createErrorTree(FormatException exc) {
+        X result = createTree(getAtomOp());
         result.setParseString(this.input);
         result.addErrors(exc);
         return result;
@@ -645,25 +609,23 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         // the hasNext() call skips all whitespace
         if (!hasNext()) {
             result = eot();
-        } else if (Character.isDigit(charAt())) {
+        } else if (Character.isDigit(curChar())) {
             result = scanNumber();
-        } else if (getIdValidator().isIdentifierStart(charAt())) {
+        } else if (getIdValidator().isIdentifierStart(curChar())) {
             result = scanName();
         } else {
-            switch (charAt()) {
+            switch (curChar()) {
             case StringHandler.SINGLE_QUOTE_CHAR:
             case StringHandler.DOUBLE_QUOTE_CHAR:
                 result = scanString();
                 break;
             case '.':
-                int nextIx = this.ix + 1;
-                if (nextIx == this.input.length()) {
-                    break;
+                incChar();
+                boolean isNumber = !atEnd() && Character.isDigit(curChar());
+                decChar();
+                if (isNumber) {
+                    result = scanNumber();
                 }
-                if (!Character.isDigit(this.input.charAt(nextIx))) {
-                    break;
-                }
-                result = scanNumber();
             }
         }
         if (result == null) {
@@ -682,32 +644,31 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
      * is at an end or the next token is not static
      */
     private Token scanStatic() {
-        TokenFamily type = null;
-        int start = this.ix;
-        int end = start;
-        SymbolTable map = getSymbolTable();
-        while (end < this.input.length()) {
-            char nextChar = this.input.charAt(end);
-            SymbolTable nextMap = map.get(nextChar);
-            if (nextMap == null) {
-                // nextChar is not part of any operator symbol
-                type = map.getTokenFamily();
-                break;
-            }
-            end++;
-            if (end == this.input.length()) {
-                // there is no next character after this
-                type = nextMap.getTokenFamily();
-                break;
-            }
-            map = nextMap;
-        }
         Token result = null;
-        if (type != null) {
-            this.ix = end;
-            result = new Token(type, createFragment(start, end));
-        } else if (atEnd()) {
+        if (atEnd()) {
             result = eot();
+        } else {
+            TokenFamily type = null;
+            int start = this.ix;
+            SymbolTable map = getSymbolTable();
+            while (!atEnd()) {
+                SymbolTable nextMap = map.get(curChar());
+                if (nextMap == null) {
+                    // nextChar is not part of any operator symbol
+                    type = map.getTokenFamily();
+                    break;
+                }
+                incChar();
+                if (atEnd()) {
+                    // there is no next character after this
+                    type = nextMap.getTokenFamily();
+                    break;
+                }
+                map = nextMap;
+            }
+            if (type != null) {
+                result = new Token(type, createFragment(start, this.ix));
+            }
         }
         return result;
     }
@@ -717,17 +678,16 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
      * if a decimal point, the next character is a digit.
      */
     private Token scanNumber() {
-        assert Character.isDigit(charAt()) || charAt() == '.'
-            && Character.isDigit(this.input.charAt(this.ix + 1));
+        assert Character.isDigit(curChar()) || curChar() == '.' && Character.isDigit(nextChar());
         int start = this.ix;
-        while (!atEnd() && Character.isDigit(charAt())) {
-            nextChar();
+        while (!atEnd() && Character.isDigit(curChar())) {
+            incChar();
         }
-        Sort sort = !atEnd() && charAt() == '.' ? REAL : INT;
+        Sort sort = !atEnd() && curChar() == '.' ? REAL : INT;
         if (sort == REAL) {
-            nextChar();
-            while (!atEnd() && Character.isDigit(charAt())) {
-                nextChar();
+            incChar();
+            while (!atEnd() && Character.isDigit(curChar())) {
+                incChar();
             }
         }
         return createConstToken(sort, start, this.ix);
@@ -738,43 +698,42 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
      * The current character is guaranteed to be an identifier start.
      */
     private Token scanName() {
-        assert getIdValidator().isIdentifierStart(charAt());
+        IdValidator validator = getIdValidator();
+        assert validator.isIdentifierStart(curChar());
         int start = this.ix;
-        nextChar();
-        while (!atEnd() && getIdValidator().isIdentifierPart(charAt())) {
-            nextChar();
+        incChar();
+        while (!atEnd()
+            && (validator.isIdentifierPart(curChar()) || validator.isIdentifierEnd(curChar()))) {
+            incChar();
         }
-        if (!getIdValidator().isIdentifierEnd(this.input.charAt(this.ix - 1))) {
-            prevChar();
+        while (!validator.isIdentifierEnd(prevChar())) {
+            decChar();
         }
         LineFragment fragment = createFragment(start, this.ix);
         String symbol = fragment.substring();
-        if (symbol.equals(BoolSignature.TRUE.toDisplayString())
-            || symbol.equals(BoolSignature.FALSE.toDisplayString())) {
-            return createConstToken(Sort.BOOL, start, this.ix);
-        } else {
-            TokenFamily family = getTokenFamily(symbol);
-            if (family == null) {
-                family = getTokenFamily(NAME.type());
-            }
-            return createFamilyToken(family, start, this.ix);
+        TokenFamily family = getTokenFamily(symbol);
+        if (family == null) {
+            TokenType type =
+                Sort.BOOL.denotesConstant(symbol) ? getConstTokenType(Sort.BOOL) : NAME.type();
+            family = getTokenFamily(type);
         }
+        return createFamilyToken(family, start, this.ix);
     }
 
     private Token scanString() throws ScanException {
         int start = this.ix;
-        char quote = charAt();
-        nextChar();
+        char quote = curChar();
+        incChar();
         boolean escaped = false;
-        while (!atEnd() && (escaped || charAt() != quote)) {
-            escaped = charAt() == StringHandler.ESCAPE_CHAR;
-            nextChar();
+        while (!atEnd() && (escaped || curChar() != quote)) {
+            escaped = curChar() == StringHandler.ESCAPE_CHAR;
+            incChar();
         }
         if (atEnd()) {
             throw new ScanException("%s-quoted string is not closed", quote);
         } else {
-            assert charAt() == quote;
-            nextChar();
+            assert curChar() == quote;
+            incChar();
         }
         return createConstToken(Sort.STRING, start, this.ix);
     }
@@ -783,8 +742,8 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
      * Tests if there is a next non-EOT token.
      */
     private boolean hasNext() {
-        while (!atEnd() && Character.isWhitespace(charAt())) {
-            nextChar();
+        while (!atEnd() && Character.isWhitespace(curChar())) {
+            incChar();
         }
         return !atEnd();
     }
@@ -795,16 +754,29 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         return this.ix == this.input.length();
     }
 
-    private void nextChar() {
+    /** Increments the character position. */
+    private void incChar() {
         this.ix++;
     }
 
-    private void prevChar() {
+    /** Decrements the character position. */
+    private void decChar() {
         this.ix--;
     }
 
-    private char charAt() {
+    /** Returns the character just before the current position. */
+    private char prevChar() {
+        return this.input.charAt(this.ix - 1);
+    }
+
+    /** Returns the character at the current position. */
+    private char curChar() {
         return this.input.charAt(this.ix);
+    }
+
+    /** Returns the character just after current position. */
+    private char nextChar() {
+        return this.input.charAt(this.ix + 1);
     }
 
     /** String currently being parsed. */
@@ -856,8 +828,14 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
         }
     }
 
+    /** Creates an exception reporting an unexpected token. */
+    protected ParseException argumentMismatch(O op, int argCount, Token token) {
+        return new ParseException("Operator '%s' expects %s arguments but has %s at index %s",
+            op.getSymbol(), op.getArity(), argCount, token.start());
+    }
+
     private ScanException unrecognisedToken() {
-        return new ScanException("Unrecognised token '%s' at index %s", charAt(), this.ix);
+        return new ScanException("Unrecognised token '%s' at index %s", curChar(), this.ix);
     }
 
     /** Factory method for a line fragment.
@@ -1029,7 +1007,7 @@ public class TreeParser<O extends Op,X extends Tree<O,X>> implements Parser<X> {
             if (this.symbol == null) {
                 this.symbol = type.symbol();
             } else {
-                assert type.claz() == NAME || this.symbol.equals(type.symbol());
+                assert !type.parsable() || this.symbol.equals(type.symbol());
             }
         }
 

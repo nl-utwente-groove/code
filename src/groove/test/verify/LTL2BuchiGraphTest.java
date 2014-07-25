@@ -21,7 +21,7 @@ import groove.util.parse.FormatException;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
-import groove.verify.FormulaParser;
+import groove.verify.Formula;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -63,7 +63,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testOrFormula() {
-        String formula = "[](put || get)";
+        String formula = "G(put | get)";
         String rules[] = {"put", "get"};
         testFormula(formula, rules);
     }
@@ -83,7 +83,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testAndFormula() {
-        String formula = "[](put && get)";
+        String formula = "G(put & get)";
         String rules[] = {"put", "get"};
         testFormula(formula, rules);
     }
@@ -93,7 +93,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testImplyFormula() {
-        String formula = "!([](put-><>get))";
+        String formula = "!(G(put->F get))";
         String rules[] = {"put", "get"};
         testFormula(formula, rules);
     }
@@ -103,7 +103,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testNegationFormula() {
-        String formula = "<>[](!put)";
+        String formula = "FG(!put)";
         String rules[] = {"put"};
         testFormula(formula, rules);
     }
@@ -113,7 +113,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testAndOrFormula() {
-        String formula = "<>[](put && (get || empty))";
+        String formula = "FG(put & (get | empty))";
         String rules[] = {"put"};
         testFormula(formula, rules);
     }
@@ -123,7 +123,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testOrAndFormula() {
-        String formula = "<>[](put || (get && !empty))";
+        String formula = "FG(put | (get & !empty))";
         String rules[] = {"get", "put"};
         testFormula(formula, rules);
     }
@@ -133,7 +133,7 @@ public class LTL2BuchiGraphTest {
      */
     @Test
     public void testFinallyFormula() {
-        String formula = "<>(extend)";
+        String formula = "F(extend)";
         String rules[] = {"get", "put"};
         testFormula(formula, rules);
     }
@@ -150,13 +150,13 @@ public class LTL2BuchiGraphTest {
     private void testGraph(String formula, String[] rules) {
         try {
             BuchiGraph buchiGraph =
-                this.prototype.newBuchiGraph(FormulaParser.parse(formula).toLtlFormula());
+                this.prototype.newBuchiGraph(Formula.parse(formula).toLtlFormula());
             Set<String> set = new HashSet<String>(Arrays.asList(rules));
             // check whether the Buchi-graph is the one we expected
             testAllTransitions(buchiGraph.getInitial(), set, new HashSet<BuchiLocation>());
             printf("Initial location: %s%n", buchiGraph.getInitial());
         } catch (FormatException e) {
-            fail();
+            fail(e.getMessage());
         }
     }
 

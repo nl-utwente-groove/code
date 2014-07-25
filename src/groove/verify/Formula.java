@@ -17,106 +17,78 @@
 
 package groove.verify;
 
-import static groove.verify.FormulaParser.Token.ALWAYS;
-import static groove.verify.FormulaParser.Token.AND;
-import static groove.verify.FormulaParser.Token.ATOM;
-import static groove.verify.FormulaParser.Token.EQUIV;
-import static groove.verify.FormulaParser.Token.EVENTUALLY;
-import static groove.verify.FormulaParser.Token.EXISTS;
-import static groove.verify.FormulaParser.Token.FALSE;
-import static groove.verify.FormulaParser.Token.FOLLOWS;
-import static groove.verify.FormulaParser.Token.FORALL;
-import static groove.verify.FormulaParser.Token.IMPLIES;
-import static groove.verify.FormulaParser.Token.NEXT;
-import static groove.verify.FormulaParser.Token.NOT;
-import static groove.verify.FormulaParser.Token.OR;
-import static groove.verify.FormulaParser.Token.RELEASE;
-import static groove.verify.FormulaParser.Token.S_RELEASE;
-import static groove.verify.FormulaParser.Token.TRUE;
-import static groove.verify.FormulaParser.Token.UNTIL;
-import static groove.verify.FormulaParser.Token.W_UNTIL;
+import static groove.verify.LogicOp.ALWAYS;
+import static groove.verify.LogicOp.AND;
+import static groove.verify.LogicOp.EQUIV;
+import static groove.verify.LogicOp.EVENTUALLY;
+import static groove.verify.LogicOp.EXISTS;
+import static groove.verify.LogicOp.FALSE;
+import static groove.verify.LogicOp.FOLLOWS;
+import static groove.verify.LogicOp.FORALL;
+import static groove.verify.LogicOp.IMPLIES;
+import static groove.verify.LogicOp.NEXT;
+import static groove.verify.LogicOp.NOT;
+import static groove.verify.LogicOp.OR;
+import static groove.verify.LogicOp.PROP;
+import static groove.verify.LogicOp.RELEASE;
+import static groove.verify.LogicOp.S_RELEASE;
+import static groove.verify.LogicOp.TRUE;
+import static groove.verify.LogicOp.UNTIL;
+import static groove.verify.LogicOp.W_UNTIL;
+import groove.algebra.Constant;
+import groove.algebra.Sort;
+import groove.util.line.Line;
 import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
-import groove.util.parse.Tree;
-import groove.verify.FormulaParser.Token;
+import groove.util.parse.Id;
+import groove.util.parse.IdValidator;
+import groove.util.parse.TermTree;
 
 /**
  * Data structure for temporal formulae.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-28 05:58:22 $
  */
-public class Formula extends Tree<Token,Formula> {
+public class Formula extends TermTree<LogicOp,Formula> {
     /** Default constructor filling all fields. */
-    Formula(Token op, Formula arg1, Formula arg2, String prop) {
+    Formula(LogicOp op, Formula arg1, Formula arg2) {
         super(op);
-        addArg(arg1);
-        addArg(arg2);
-        this.prop = prop;
+        if (arg1 != null) {
+            assert op.getArity() >= 1;
+            addArg(arg1);
+        }
+        if (arg2 != null) {
+            assert op.getArity() >= 2;
+            addArg(arg2);
+        }
     }
 
     /** Constructor for a logical constant (not an atom). */
-    Formula(Token op) {
-        this(op, null, null, null);
-        assert op.getArity() == 0 && op != ATOM;
+    Formula(LogicOp op) {
+        this(op, null, null);
     }
 
     /** Constructor for a unary operator. */
-    Formula(Token operator, Formula arg) {
-        this(operator, arg, null, null);
+    Formula(LogicOp operator, Formula arg) {
+        this(operator, arg, null);
         assert operator.getArity() == 1;
     }
 
-    /** Constructor for a binary operator. */
-    Formula(Token token, Formula arg1, Formula arg2) {
-        this(token, arg1, arg2, null);
-        assert token.getArity() == 2;
-    }
-
-    private Formula(String prop) {
-        this(ATOM, null, null, prop);
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + super.hashCode();
-        result = prime * result + ((this.prop == null) ? 0 : this.prop.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        Formula other = (Formula) obj;
-        if (this.prop != null && !this.prop.equals(other.prop)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer result = new StringBuffer();
-        toString(result);
-        return result.toString();
-    }
+    //    @Override
+    //    public String toString() {
+    //        StringBuffer result = new StringBuffer();
+    //        toString(result);
+    //        return result.toString();
+    //    }
 
     /** Appends a given string buffer with a string description of this formula. */
     private void toString(StringBuffer b) {
         switch (getOp().getArity()) {
         case 0:
-            if (getOp() == ATOM) {
-                String text = getProp();
-                if (isAtom(text)) {
-                    b.append(getProp());
+            if (getOp() == PROP) {
+                if (hasId()) {
+                    b.append(getId().getName());
                 } else {
-                    b.append(StringHandler.toQuoted(text, '\''));
+                    b.append(getConstant().getSymbol());
                 }
             } else {
                 b.append(getOp());
@@ -134,7 +106,6 @@ public class Formula extends Tree<Token,Formula> {
             }
             break;
         default:
-            assert getOp().getArity() == 2;
             boolean arg1Par = getArg1().getOp().getPriority() <= getOp().getPriority();
             boolean arg2Par = getArg2().getOp().getPriority() < getOp().getPriority();
             boolean opLetter = Character.isLetter(getOp().toString().charAt(0));
@@ -170,25 +141,59 @@ public class Formula extends Tree<Token,Formula> {
 
     /** Returns the first argument of the top-level operator, if any. */
     public Formula getArg1() {
-        return getArg(0);
+        return getArgs().size() >= 1 ? getArg(0) : null;
     }
 
     /** Returns the second argument of the top-level operator, if any. */
     public Formula getArg2() {
-        return getArg(1);
+        return getArgs().size() >= 2 ? getArg(1) : null;
     }
 
     @Override
-    public String getContentString() {
-        return getProp();
+    public void setConstant(Constant constant) {
+        if (getOp() == PROP && constant.getSort() == Sort.STRING && isId(constant.getStringRepr())) {
+            super.setId(new Id(constant.getStringRepr()));
+        } else {
+            super.setConstant(constant);
+        }
+    }
+
+    @Override
+    protected Line getOpLine(boolean addSpaces) {
+        Line result = null;
+        if (!addSpaces) {
+            switch (getOp()) {
+            case ALWAYS:
+            case EVENTUALLY:
+            case EXISTS:
+            case FORALL:
+            case NEXT:
+                result = Line.atom(getOp().getSymbol() + " ");
+                break;
+            case RELEASE:
+            case S_RELEASE:
+            case UNTIL:
+            case W_UNTIL:
+                result = Line.atom(" " + getOp().getSymbol() + " ");
+            }
+        }
+        if (result == null) {
+            result = super.getOpLine(addSpaces);
+        }
+        return result;
     }
 
     /** Returns the proposition wrapped in this formula, if any. */
     public String getProp() {
-        return this.prop;
+        if (hasConstant()) {
+            assert getConstant().getSort() == Sort.STRING;
+            return getConstant().getStringRepr();
+        } else if (hasId()) {
+            return getId().getName();
+        } else {
+            return "";
+        }
     }
-
-    private final String prop;
 
     /** 
      * Tests if this formula is of the restricted format corresponding
@@ -196,7 +201,8 @@ public class Formula extends Tree<Token,Formula> {
      */
     public boolean isCtlFormula() {
         switch (getOp()) {
-        case ATOM:
+        case PROP:
+        case CALL:
         case TRUE:
         case FALSE:
             return true;
@@ -235,10 +241,16 @@ public class Formula extends Tree<Token,Formula> {
      */
     public Formula toCtlFormula() throws FormatException {
         switch (getOp()) {
-        case ATOM:
+        case PROP:
         case TRUE:
         case FALSE:
             return this;
+        case CALL:
+            throw new FormatException("Rule call of '%s' not yet supported in CTL",
+                getId().getName());
+        case ARG:
+            // this is called recursively but can be ignored
+            return null;
         case NOT:
             return Not(getArg1().toCtlFormula());
         case OR:
@@ -260,14 +272,14 @@ public class Formula extends Tree<Token,Formula> {
             throw new FormatException("Temporal operator '%s' not allowed in CTL formula", getOp());
         case FORALL:
         case EXISTS:
-            FormulaParser.Token subKind = getArg1().getOp();
+            LogicOp subKind = getArg1().getOp();
             Formula subArg1 = getArg1().getArg1();
             Formula subArg2 = getArg1().getArg2();
             switch (subKind) {
             case NEXT:
                 return new Formula(getOp(), Next(subArg1.toCtlFormula()));
             case ALWAYS:
-                Token dual = getOp() == EXISTS ? FORALL : EXISTS;
+                LogicOp dual = getOp() == EXISTS ? FORALL : EXISTS;
                 return Not(new Formula(dual, Until(True(), Not(subArg1.toCtlFormula()))));
             case EVENTUALLY:
                 return new Formula(getOp(), Until(True(), subArg1.toCtlFormula()));
@@ -291,7 +303,7 @@ public class Formula extends Tree<Token,Formula> {
     /** 
      * Converts this formula to a NASA LTL formula, if possible.
      * This succeeds if and only if the formula does not contain
-     * {@link Token#FORALL} or {@link Token#EXISTS} operators.
+     * {@link LogicOp#FORALL} or {@link LogicOp#EXISTS} operators.
      * @return the NASA LTL formula corresponding to this formula
      * @throws FormatException if this formula contains operators
      * that are illegal in LTL.
@@ -305,7 +317,7 @@ public class Formula extends Tree<Token,Formula> {
         case FORALL:
         case EXISTS:
             throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getOp());
-        case ATOM:
+        case PROP:
             return gov.nasa.ltl.trans.Formula.Proposition(getProp());
         case TRUE:
             return gov.nasa.ltl.trans.Formula.True();
@@ -337,8 +349,19 @@ public class Formula extends Tree<Token,Formula> {
             return Or(getArg1(), Not(getArg2())).toLtlFormula();
         case IMPLIES:
             return Or(Not(getArg1()), getArg2()).toLtlFormula();
+        case CALL:
+            throw new FormatException("Rule call of '%s' not yet supported in LTL",
+                getId().getName());
+        case ARG:
+            // this is called recursively but can be ignored
+            return null;
         }
         throw new FormatException("Unknown temporal operator %s", getOp());
+    }
+
+    @Override
+    public Formula createTree(LogicOp op) {
+        return new Formula(op);
     }
 
     /** Tests if a given string can be understood as an atom without
@@ -347,104 +370,170 @@ public class Formula extends Tree<Token,Formula> {
      * @param text the text to be tested
      * @return {@code true} if {@code text} does not require quotes
      */
-    public boolean isAtom(String text) {
-        boolean result = text.length() > 0;
-        if (result) {
-            result = Character.isJavaIdentifierStart(text.charAt(0));
-            for (int i = 1; result && i < text.length(); i++) {
-                result = Character.isJavaIdentifierPart(text.charAt(i));
-            }
-        }
+    static public boolean isId(String text) {
+        return IdValidator.JAVA_ID.isValid(text);
+    }
+
+    /** Factory method for an atomic formula testing for a string constant. */
+    public static Formula Prop(String prop) {
+        Formula result = new Formula(PROP);
+        result.setConstant(Constant.instance(prop));
+        result.setFixed();
         return result;
     }
 
-    /** Factory method for a propositional formula. */
-    public static Formula Atom(String prop) {
-        return new Formula(prop);
+    /** Factory method for an atomic formula testing for an identifier. */
+    public static Formula Prop(Id id) {
+        Formula result = new Formula(PROP);
+        result.setId(id);
+        result.setFixed();
+        return result;
+    }
+
+    /** Factory method for a propositional formula consisting of a rule call. */
+    public static Formula Call(Id id, String... args) {
+        Formula result = new Formula(LogicOp.CALL);
+        result.setId(id);
+        for (String arg : args) {
+            Formula f = new Formula(LogicOp.ARG);
+            if (isId(arg)) {
+                f.setId(Id.id(arg));
+            } else {
+                f.setConstant(Constant.instance(arg));
+            }
+            result.addArg(f);
+        }
+        result.setFixed();
+        return result;
     }
 
     /** The constant formula for true. */
     public static final Formula True() {
-        return new Formula(TRUE);
+        Formula result = new Formula(TRUE);
+        result.setFixed();
+        return result;
     }
 
     /** The constant formula for false. */
     public static final Formula False() {
-        return new Formula(FALSE);
+        Formula result = new Formula(FALSE);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a negation. */
     public static Formula Not(Formula f) {
-        return new Formula(NOT, f);
+        Formula result = new Formula(NOT, f);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a conjunction. */
     public static Formula And(Formula f1, Formula f2) {
-        return new Formula(AND, f1, f2);
+        Formula result = new Formula(AND, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a disjunction. */
     public static Formula Or(Formula f1, Formula f2) {
-        return new Formula(OR, f1, f2);
+        Formula result = new Formula(OR, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an implication. */
     public static Formula Implies(Formula f1, Formula f2) {
-        return new Formula(IMPLIES, f1, f2);
+        Formula result = new Formula(IMPLIES, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an inverse implication. */
     public static Formula Follows(Formula f1, Formula f2) {
-        return new Formula(FOLLOWS, f1, f2);
+        Formula result = new Formula(FOLLOWS, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an equivalence. */
     public static Formula Equiv(Formula f1, Formula f2) {
-        return new Formula(EQUIV, f1, f2);
+        Formula result = new Formula(EQUIV, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an until formula. */
     public static Formula Until(Formula f1, Formula f2) {
-        return new Formula(UNTIL, f1, f2);
+        Formula result = new Formula(UNTIL, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an until formula. */
     public static Formula Next(Formula f) {
-        return new Formula(NEXT, f);
+        Formula result = new Formula(NEXT, f);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a release formula. */
     public static Formula Release(Formula f1, Formula f2) {
-        return new Formula(RELEASE, f1, f2);
+        Formula result = new Formula(RELEASE, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a weak until formula. */
     public static Formula WUntil(Formula f1, Formula f2) {
-        return new Formula(W_UNTIL, f1, f2);
+        Formula result = new Formula(W_UNTIL, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a strong release formula. */
     public static Formula SRelease(Formula f1, Formula f2) {
-        return new Formula(S_RELEASE, f1, f2);
+        Formula result = new Formula(S_RELEASE, f1, f2);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an always-true formula. */
     public static Formula Always(Formula f) {
-        return new Formula(ALWAYS, f);
+        Formula result = new Formula(ALWAYS, f);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for an eventually-true formula. */
     public static Formula Eventually(Formula f) {
-        return new Formula(EVENTUALLY, f);
+        Formula result = new Formula(EVENTUALLY, f);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a for-all-paths formula. */
     public static Formula Forall(Formula f) {
-        return new Formula(FORALL, f);
+        Formula result = new Formula(FORALL, f);
+        result.setFixed();
+        return result;
     }
 
     /** Creator method for a for-some-path formula. */
     public static Formula Exists(Formula f) {
-        return new Formula(EXISTS, f);
+        Formula result = new Formula(EXISTS, f);
+        result.setFixed();
+        return result;
+    }
+
+    /** Parses a given input string into a formula.
+     * @param input The (non-{@code null}) input string
+     * @return the resulting formula
+     * @throws FormatException if there were parse errors
+     */
+    public static Formula parse(String input) throws FormatException {
+        Formula result = FormulaParser.instance().parse(input);
+        result.getErrors().throwException();
+        return result;
     }
 }

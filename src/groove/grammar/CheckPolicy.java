@@ -119,10 +119,10 @@ public enum CheckPolicy {
         }
 
         @Override
-        public PolicyMap parse(String text) throws FormatException {
+        public PolicyMap parse(String input) throws FormatException {
             PolicyMap result = new PolicyMap();
-            if (text != null) {
-                String[] split = text.trim().split("\\s");
+            if (input != null) {
+                String[] split = input.trim().split("\\s");
                 for (String pair : split) {
                     if (pair.length() == 0) {
                         continue;

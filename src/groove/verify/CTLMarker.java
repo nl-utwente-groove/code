@@ -16,9 +16,9 @@
  */
 package groove.verify;
 
-import static groove.verify.FormulaParser.Token.FALSE;
-import static groove.verify.FormulaParser.Token.NOT;
-import static groove.verify.FormulaParser.Token.TRUE;
+import static groove.verify.LogicOp.FALSE;
+import static groove.verify.LogicOp.NOT;
+import static groove.verify.LogicOp.TRUE;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.graph.Edge;
@@ -27,7 +27,6 @@ import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.parse.FormatException;
-import groove.verify.FormulaParser.Token;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -234,7 +233,7 @@ public class CTLMarker {
         if (result != null) {
             return result;
         }
-        Token token = property.getOp();
+        LogicOp token = property.getOp();
         // compute the arguments, if any
         BitSet arg1 = null;
         BitSet arg2 = null;
@@ -295,10 +294,10 @@ public class CTLMarker {
             return computeEU(mark(property.getArg1()), mark(property.getArg2()));
         case EVENTUALLY:
             throw new UnsupportedOperationException(
-                    "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
+                "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
         case ALWAYS:
             throw new UnsupportedOperationException(
-                    "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
+                "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
         default:
             throw new IllegalArgumentException();
         }
@@ -312,10 +311,10 @@ public class CTLMarker {
             return computeAU(mark(property.getArg1()), mark(property.getArg2()));
         case EVENTUALLY:
             throw new UnsupportedOperationException(
-                    "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
+                "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
         case ALWAYS:
             throw new UnsupportedOperationException(
-                    "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
+                "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
         default:
             throw new IllegalArgumentException();
         }
@@ -505,7 +504,7 @@ public class CTLMarker {
     private boolean hasValue(Formula formula, boolean value) {
         if (!hasRoot()) {
             throw new IllegalArgumentException(
-                    "The model being checked does not have an unabiguous root node");
+                "The model being checked does not have an unabiguous root node");
         }
         assert this.formulaNr.containsKey(formula);
         return hasValue(formula, getRoot(), value);
@@ -589,9 +588,9 @@ public class CTLMarker {
                         }
                         Node result = CTLMarker.this.states[this.stateIx];
                         this.stateIx =
-                                value ? sat.nextSetBit(this.stateIx + 1)
-                                        : sat.nextClearBit(this.stateIx + 1);
-                                return result;
+                            value ? sat.nextSetBit(this.stateIx + 1)
+                                : sat.nextClearBit(this.stateIx + 1);
+                        return result;
                     }
 
                     @Override
@@ -647,12 +646,12 @@ public class CTLMarker {
         for (Flag flag : Flag.values()) {
             String text = "$" + flag.getDefault();
             flagText.put(flag, text);
-            Formula atom = Formula.Atom(text);
+            Formula atom = Formula.Prop(text);
             formulaFlag.put(atom, flag);
         }
     }
     /** Proposition text expressing that a node is the start state of the GTS. */
-    static public final Formula START_ATOM = Formula.Atom(flagText.get(Flag.START));
+    static public final Formula START_ATOM = Formula.Prop(flagText.get(Flag.START));
 
     /** Facade for models, with the functionality required by this class. */
     private static interface Model {
