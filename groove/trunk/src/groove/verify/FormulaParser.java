@@ -22,6 +22,24 @@ import static groove.util.parse.TermTreeParser.TokenClaz.CONST;
 import static groove.util.parse.TermTreeParser.TokenClaz.LPAR;
 import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
 import static groove.util.parse.TermTreeParser.TokenClaz.RPAR;
+import static groove.verify.LogicOp.ALWAYS;
+import static groove.verify.LogicOp.AND;
+import static groove.verify.LogicOp.EQUIV;
+import static groove.verify.LogicOp.EVENTUALLY;
+import static groove.verify.LogicOp.EXISTS;
+import static groove.verify.LogicOp.FALSE;
+import static groove.verify.LogicOp.FOLLOWS;
+import static groove.verify.LogicOp.FORALL;
+import static groove.verify.LogicOp.IMPLIES;
+import static groove.verify.LogicOp.NEXT;
+import static groove.verify.LogicOp.NOT;
+import static groove.verify.LogicOp.OR;
+import static groove.verify.LogicOp.PROP;
+import static groove.verify.LogicOp.RELEASE;
+import static groove.verify.LogicOp.S_RELEASE;
+import static groove.verify.LogicOp.TRUE;
+import static groove.verify.LogicOp.UNTIL;
+import static groove.verify.LogicOp.W_UNTIL;
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.annotation.Help;
@@ -32,10 +50,12 @@ import groove.util.parse.TermTreeParser;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Renewed parser for temporal formulas, following the {@code groove.util.parse} architecture.
@@ -166,7 +186,7 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
         for (Field field : LogicOp.class.getFields()) {
             if (field.isEnumConstant()) {
                 LogicOp token = nameToTokenMap.get(field.getName());
-                if ((ctl ? OldFormulaParser.CTLTokens : OldFormulaParser.LTLTokens).contains(token)) {
+                if ((ctl ? FormulaParser.CTLTokens : FormulaParser.LTLTokens).contains(token)) {
                     Help help = Help.createHelp(field, nameToSymbolMap);
                     if (help != null) {
                         result.put(help.getItem(), help.getTip());
@@ -180,15 +200,12 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
     /** Mapping from token names to token values. */
     private static Map<String,LogicOp> nameToTokenMap = new HashMap<String,LogicOp>();
     /** Mapping from token symbols to token values. */
-    private static Map<String,LogicOp> symbolToTokenMap = new HashMap<String,LogicOp>();
-    /** Mapping from token names to HTML-formatted token strings. */
     private static Map<String,String> nameToSymbolMap = new HashMap<String,String>();
     private static Map<Boolean,Map<String,String>> docMapMap =
         new HashMap<Boolean,Map<String,String>>();
 
     static {
         for (LogicOp token : LogicOp.values()) {
-            symbolToTokenMap.put(token.getSymbol(), token);
             nameToTokenMap.put(token.name(), token);
             nameToSymbolMap.put(token.name(), token.getSymbol());
         }
@@ -200,4 +217,11 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
     }
 
     private final static FormulaParser INSTANCE = new FormulaParser();
+    /** Set of tokens that can occur in CTL formulas. */
+    private final static Set<LogicOp> CTLTokens = EnumSet.of(PROP, TRUE, FALSE, NOT, OR, AND,
+        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY, FORALL, EXISTS, LogicOp.LPAR);
+    /** Set of tokens that can occur in LTL formulas. */
+    private final static Set<LogicOp> LTLTokens = EnumSet.of(PROP, TRUE, FALSE, NOT, OR, AND,
+        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE, S_RELEASE, ALWAYS, EVENTUALLY,
+        LogicOp.LPAR);
 }
