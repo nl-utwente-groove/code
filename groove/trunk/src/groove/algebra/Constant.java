@@ -29,10 +29,11 @@ import java.util.Map;
 /** A constant symbol for a particular signature. */
 public class Constant extends Expression {
     /**
-     * Constructs a new string constant from a given string value.
+     * Constructs a new string constant from a given (non-{@code null}) string value.
      */
     Constant(String value) {
         super(true);
+        assert value != null;
         this.signature = Sort.STRING;
         this.stringRepr = value;
         this.boolRepr = null;
@@ -41,10 +42,11 @@ public class Constant extends Expression {
     }
 
     /**
-     * Constructs a new boolean constant from a given boolean value.
+     * Constructs a new boolean constant from a given (non-{@code null}) boolean value.
      */
     Constant(Boolean value) {
         super(true);
+        assert value != null;
         this.signature = Sort.BOOL;
         this.boolRepr = value;
         this.stringRepr = null;
@@ -53,7 +55,7 @@ public class Constant extends Expression {
     }
 
     /**
-     * Constructs a new real constant from a given {@link BigDecimal} value.
+     * Constructs a new real constant from a given (non-{@code null}) {@link BigDecimal} value.
      */
     Constant(BigDecimal value) {
         super(true);
@@ -66,7 +68,7 @@ public class Constant extends Expression {
     }
 
     /**
-     * Constructs a new integer constant from a given {@link BigInteger} value.
+     * Constructs a new integer constant from a given (non-{@code null}) {@link BigInteger} value.
      */
     Constant(BigInteger value) {
         super(true);

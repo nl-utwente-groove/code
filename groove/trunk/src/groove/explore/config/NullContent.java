@@ -42,7 +42,7 @@ public class NullContent implements SettingContent {
         }
 
         @Override
-        public NullContent parse(String text) {
+        public NullContent parse(String input) {
             return null;
         }
 

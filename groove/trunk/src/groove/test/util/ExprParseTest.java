@@ -21,8 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import groove.util.parse.Op;
 import groove.util.parse.OpKind;
-import groove.util.parse.Tree;
-import groove.util.parse.TreeParser;
+import groove.util.parse.TermTree;
+import groove.util.parse.TermTreeParser;
 
 import org.junit.Test;
 
@@ -34,9 +34,7 @@ import org.junit.Test;
 public class ExprParseTest {
     @Test
     public void backAndForth() {
-        roundtrip("ge(a.b,c())");
-        roundtrip("c(ge(0,1),ge,b.a)");
-        roundtrip("ge+ge");
+        roundtrip("ge(a.b,c)");
         // extension of predefined operator
         roundtrip("gee");
         roundtrip("-true");
@@ -97,6 +95,10 @@ public class ExprParseTest {
         // unrecognised symbols
         parseError(";");
         parseError("/");
+        // wrong use of operator
+        parseError("ge+ge");
+        parseError("ge()");
+        parseError("ge(2)");
     }
 
     /** Asserts that parsing a string and converting at back results in the same string. */
@@ -133,7 +135,8 @@ public class ExprParseTest {
         }
     }
 
-    static TreeParser<MyOp,MyTree> parser = new TreeParser<MyOp,MyTree>(MyTree.class, MyOp.class);
+    static TermTreeParser<MyOp,MyTree> parser = new TermTreeParser<MyOp,MyTree>(new MyTree(
+        MyOp.ATOM));
 
     static {
         parser.setQualIds(true);
@@ -196,12 +199,17 @@ public class ExprParseTest {
         private final int arity;
     }
 
-    public static class MyTree extends Tree<MyOp,MyTree> {
+    public static class MyTree extends TermTree<MyOp,MyTree> {
         /**
          * Constructs a tree with a given top-level operator.
          */
         public MyTree(MyOp op) {
             super(op);
+        }
+
+        @Override
+        public MyTree createTree(MyOp op) {
+            return new MyTree(op);
         }
     }
 }

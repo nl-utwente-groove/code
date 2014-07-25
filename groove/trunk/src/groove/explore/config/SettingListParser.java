@@ -141,15 +141,15 @@ public class SettingListParser implements Parser<SettingList> {
     }
 
     @Override
-    public SettingList parse(String text) throws FormatException {
-        if (text == null || text.length() == 0) {
+    public SettingList parse(String input) throws FormatException {
+        if (input == null || input.length() == 0) {
             return getDefaultValue();
         } else if (getKey().isSingular()) {
-            return SettingList.single(parseSingle(text));
+            return SettingList.single(parseSingle(input));
         } else {
             try {
                 SettingList result = SettingList.multiple();
-                for (String part : exprParser.split(text, " ")) {
+                for (String part : exprParser.split(input, " ")) {
                     result.add(parseSingle(part));
                 }
                 return result;

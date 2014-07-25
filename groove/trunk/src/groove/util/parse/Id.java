@@ -19,10 +19,11 @@ package groove.util.parse;
 import groove.util.line.Line;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * An identifier as can appear in the payload of an atomic {@link Tree} object.
+ * An identifier as can appear in the payload of an atomic {@link TermTree} object.
  * An identifier consists of an optional prefix and a list of names.
  * @author Arend Rensink
  * @version $Id$
@@ -61,5 +62,12 @@ public class Id extends ArrayList<String> {
     /** Returns the concatenated name of this identifier. */
     public String getName() {
         return toLine().toFlatString();
+    }
+
+    /** Returns an identifier consisting of a list of names. */
+    public static Id id(String name, String... strings) {
+        Id result = new Id(name);
+        result.addAll(Arrays.asList(strings));
+        return result;
     }
 }

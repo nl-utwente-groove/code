@@ -71,13 +71,13 @@ public class MatchHint extends Duo<List<String>> implements SettingContent {
         }
 
         @Override
-        public MatchHint parse(String text) {
+        public MatchHint parse(String input) {
             MatchHint result;
-            if (text == null || text.isEmpty()) {
+            if (input == null || input.isEmpty()) {
                 result = getDefaultValue();
             } else {
                 try {
-                    String[] split = exprParser.split(text, ",");
+                    String[] split = exprParser.split(input, ",");
                     if (split.length == 2) {
                         String rare = toUnquoted(split[0]);
                         String common = toUnquoted(split[1]);

@@ -26,7 +26,6 @@ import groove.lts.GTS;
 import groove.util.Groove;
 import groove.verify.CTLMarker;
 import groove.verify.Formula;
-import groove.verify.FormulaParser;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -123,7 +122,7 @@ public class CTLTest {
     private void testFormula(String formula, int stateCount) {
         try {
             // all states satisfy the following property
-            Formula property = FormulaParser.parse(formula).toCtlFormula();
+            Formula property = Formula.parse(formula).toCtlFormula();
             CTLMarker modelChecker = new CTLMarker(property, this.gts);
             assertEquals(stateCount, modelChecker.getCount(true));
             modelChecker = new CTLMarker(property, this.gtsGraph, this.ltsLabels);

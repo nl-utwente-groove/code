@@ -184,7 +184,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         @Override
         protected Formula parse(String argument) throws CmdLineException {
             try {
-                return FormulaParser.parse(argument).toCtlFormula();
+                return Formula.parse(argument).toCtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }

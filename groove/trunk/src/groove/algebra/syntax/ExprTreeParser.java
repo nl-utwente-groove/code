@@ -16,8 +16,8 @@
  */
 package groove.algebra.syntax;
 
-import static groove.util.parse.TreeParser.TokenClaz.ASSIGN;
-import static groove.util.parse.TreeParser.TokenClaz.NAME;
+import static groove.util.parse.TermTreeParser.TokenClaz.ASSIGN;
+import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.algebra.syntax.ExprTree.ExprOp;
@@ -39,7 +39,7 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp,ExprTree> {
+public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.ExprOp,ExprTree> {
     /** Constructs a parser, with optional flags for assignment and test mode.
      * {@code assign} and {@code test} may not be simultaneously true
      * @param assign if {@code true}, the parser expects a top-level assignment
@@ -47,7 +47,7 @@ public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp
      * (having a "=" on the top level), which is converted to  
      */
     private ExprTreeParser(boolean assign, boolean test) {
-        super(ExprTree.class, getOpList());
+        super(new ExprTree(getAtom()), getOpList());
         super.setQualIds(true);
         assert !assign || !test;
         this.assign = assign;
@@ -83,7 +83,7 @@ public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp
                 result = super.parse();
             }
         } catch (FormatException exc) {
-            result = createErrorExpr(exc);
+            result = createErrorTree(exc);
         }
         return result;
     }
@@ -103,9 +103,9 @@ public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp
                 rollBack();
             } else {
                 // replace the top-level "=" by "=="
-                ExprTree lhs = createExpr(getAtomOp());
+                ExprTree lhs = createTree(getAtomOp());
                 lhs.setId(new Id(nameToken.substring()));
-                result = createExpr(getEquality());
+                result = createTree(getEquality());
                 result.addArg(lhs);
                 result.addArg(super.parse());
             }
@@ -129,9 +129,9 @@ public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp
         } else if (consume(ASSIGN) == null) {
             throw expectedToken(ASSIGN, next());
         } else {
-            ExprTree lhs = createExpr(getAtomOp());
+            ExprTree lhs = createTree(getAtomOp());
             lhs.setId(new Id(nameToken.substring()));
-            result = createExpr(ExprTree.ASSIGN);
+            result = createTree(ExprTree.ASSIGN);
             result.addArg(lhs);
             result.addArg(super.parse());
         }
@@ -140,12 +140,12 @@ public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp
     }
 
     @Override
-    protected ExprTree parseCall() throws FormatException {
+    protected ExprTree parseName() throws FormatException {
         ExprTree result;
         Token firstToken = next();
         Sort sort = parseSortPrefix();
         if (sort == null) {
-            result = super.parseCall();
+            result = super.parseName();
         } else {
             result = super.parse(OpKind.ATOM);
             result.setSort(sort);
@@ -252,6 +252,19 @@ public class ExprTreeParser extends groove.util.parse.TreeParser<ExprTree.ExprOp
     static public final ExprTreeParser ASSIGN_PARSER = new ExprTreeParser(true, false);
     /** Expression parser allowing legacy test syntax (top-level "="). */
     static public final ExprTreeParser TEST_PARSER = new ExprTreeParser(false, true);
+
+    /** Retrieves the atom operator from the list of predefined operators. */
+    private static ExprOp getAtom() {
+        ExprOp result = null;
+        for (ExprOp op : getOpList()) {
+            if (op.getKind() == OpKind.ATOM) {
+                result = op;
+                break;
+            }
+        }
+        assert result != null;
+        return result;
+    }
 
     /** Retrieves the equality operator from the list of predefined operators. */
     private static ExprOp getEquality() {

@@ -76,16 +76,16 @@ public class BracketParser<V> implements Parser<V> {
     }
 
     @Override
-    public V parse(String text) throws FormatException {
-        if (text == null || text.length() == 0) {
+    public V parse(String input) throws FormatException {
+        if (input == null || input.length() == 0) {
             if (this.allowsEmpty) {
-                return this.inner.parse(text);
+                return this.inner.parse(input);
             } else {
                 throw new FormatException("Empty string not allowed");
             }
         } else {
-            int last = text.length() - 1;
-            return this.inner.parse(text.substring(1, last));
+            int last = input.length() - 1;
+            return this.inner.parse(input.substring(1, last));
         }
     }
 
