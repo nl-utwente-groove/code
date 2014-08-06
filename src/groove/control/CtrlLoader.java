@@ -112,7 +112,7 @@ public class CtrlLoader {
         errors.throwException();
         if (!result.hasMain()) {
             // try to parse "any" for static semantic checks
-            Program main = parse(" main", "#any;").check().toProgram();
+            Program main = parse("main", "# *.any;").check().toProgram();
             result.add(main);
         }
         result.setProperties(this.namespace.getProperties());
