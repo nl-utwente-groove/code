@@ -198,7 +198,11 @@ public class Namespace implements ParseInfo {
                 if (callable instanceof Action) {
                     if (callable.getKind().isProcedure()) {
                         String name = callable.getFullName();
-                        Set<String> newCalledNames = new HashSet<String>(this.calleeMap.get(name));
+                        Set<String> newCalledNames = new HashSet<String>();
+                        Set<String> calleeMapValue = this.calleeMap.get(name);
+                        if (calleeMapValue != null) {
+                            newCalledNames.addAll(calleeMapValue);
+                        }
                         newCalledNames.remove(name);
                         calledNames.addAll(newCalledNames);
                     }
