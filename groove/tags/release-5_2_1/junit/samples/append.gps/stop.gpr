@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="stop">
+        <node id="n225">
+            <attr name="layout">
+                <string>230 136 53 50</string>
+            </attr>
+        </node>
+        <node id="n226">
+            <attr name="layout">
+                <string>142 156 18 18</string>
+            </attr>
+        </node>
+        <node id="n223">
+            <attr name="layout">
+                <string>335 135 18 18</string>
+            </attr>
+        </node>
+        <node id="n224">
+            <attr name="layout">
+                <string>246 40 18 18</string>
+            </attr>
+        </node>
+        <node id="n227">
+            <attr name="layout">
+                <string>134 36 35 34</string>
+            </attr>
+        </node>
+        <edge to="n223" from="n224">
+            <attr name="label">
+                <string>val</string>
+            </attr>
+        </edge>
+        <edge to="n225" from="n225">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+        <edge to="n227" from="n227">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n226" from="n225">
+            <attr name="label">
+                <string>caller</string>
+            </attr>
+        </edge>
+        <edge to="n227" from="n226">
+            <attr name="label">
+                <string>return</string>
+            </attr>
+        </edge>
+        <edge to="n225" from="n225">
+            <attr name="label">
+                <string>control</string>
+            </attr>
+        </edge>
+        <edge to="n225" from="n225">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge to="n224" from="n225">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge to="n223" from="n225">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge to="n227" from="n227">
+            <attr name="label">
+                <string>void</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
