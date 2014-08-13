@@ -432,8 +432,7 @@ public class CtrlHelper {
             Expression constant = Expression.parse(argTree.getChild(0).getText());
             AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
             CtrlPar result =
-                new CtrlPar.Const(family.getAlgebra(constant.getSort()),
-                    family.toValue(constant));
+                new CtrlPar.Const(family.getAlgebra(constant.getSort()), family.toValue(constant));
             argTree.setCtrlPar(result);
             return result;
         } catch (FormatException e) {
@@ -547,6 +546,7 @@ public class CtrlHelper {
                 // and reported earlier; we silently fail
                 if (arg == null) {
                     result = null;
+                    break;
                 }
                 result.add(arg);
             }
