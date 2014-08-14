@@ -61,10 +61,10 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20140812";
+    public static final String BUILD = "20140814";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "12.08.2014";
+    public static final String DATE = "14.08.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -75,7 +75,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.2.1+";
+    public static final String NUMBER = "5.2.2+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
