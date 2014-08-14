@@ -119,7 +119,9 @@ public class CTLMarker {
         }
         for (Node node : this.model.nodeSet()) {
             Set<? extends Edge> outEdges = this.model.outEdgeSet(node);
-            int nodeNr = node.getNumber();
+            // EZ says: change for SF bug #442.
+            // int nodeNr = node.getNumber();
+            int nodeNr = this.model.nodeIndex(node);
             this.states[nodeNr] = node;
             int specialEdgeCount = 0;
             for (Edge outEdge : outEdges) {
@@ -127,7 +129,9 @@ public class CTLMarker {
                 Flag flag = getFlag(label);
                 if (flag == null) {
                     Node target = outEdge.target();
-                    int targetNr = target.getNumber();
+                    // EZ says: change for SF bug #442.
+                    // int targetNr = target.getNumber();
+                    int targetNr = this.model.nodeIndex(target);
                     if (backward[targetNr] == null) {
                         backward[targetNr] = new ArrayList<Integer>();
                     }
@@ -516,7 +520,10 @@ public class CTLMarker {
         if (!isVerified()) {
             verify();
         }
-        return this.marking[this.formulaNr.get(formula)].get(state.getNumber()) == value;
+        // EZ says: change for SF bug #442.
+        int stateIdx = this.model.nodeIndex(state);
+        // return this.marking[this.formulaNr.get(formula)].get(state.getNumber()) == value;
+        return this.marking[this.formulaNr.get(formula)].get(stateIdx) == value;
     }
 
     /** Indicates if the model has an unambiguous root. */
@@ -666,16 +673,41 @@ public class CTLMarker {
 
         /** Tests if a given node satisfies the special property expressed by a given flag. */
         boolean isSpecial(Node node, Flag flag);
+
+        // EZ says: change for SF bug #442. See below.
+        /**
+         * Return the proper index of the given node to be used in the arrays.
+         * Usually the index is the same as the node number, but this can change
+         * when the GTS has absent states.
+         */
+        int nodeIndex(Node node);
     }
 
+    /*
+     * EZ says: this is a hack to fix SF bug #442.
+     * The new level of indirection introduced by having to check the node
+     * index with the model obviously hurts performance a bit. But... this
+     * change touched just a few parts of the code and mainly at the
+     * initialization. So I'd say that this is not so bad...
+     */
     private static class GTSModel implements Model {
         GTSModel(GTS gts) {
             this.gts = gts;
+            if (!gts.hasAbsentStates()) {
+                this.nodeIdxMap = null;
+            } else {
+                this.nodeIdxMap = new HashMap<GraphState,Integer>();
+                int nr = 0;
+                for (GraphState state : gts.getStates()) {
+                    this.nodeIdxMap.put(state, nr);
+                    nr++;
+                }
+            }
         }
 
         @Override
         public int nodeCount() {
-            return this.gts.getStates().size();
+            return this.nodeSet().size();
         }
 
         @Override
@@ -707,7 +739,18 @@ public class CTLMarker {
             return result;
         }
 
+        @Override
+        public int nodeIndex(Node node) {
+            if (this.nodeIdxMap == null) {
+                return node.getNumber();
+            } else {
+                return this.nodeIdxMap.get(node);
+            }
+        }
+
         private final GTS gts;
+        private final Map<GraphState,Integer> nodeIdxMap;
+
     }
 
     private static class GraphModel implements Model {
@@ -736,5 +779,10 @@ public class CTLMarker {
         }
 
         private final Graph graph;
+
+        @Override
+        public int nodeIndex(Node node) {
+            return node.getNumber();
+        }
     }
 }
