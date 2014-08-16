@@ -693,15 +693,15 @@ public class CTLMarker {
     private static class GTSModel implements Model {
         GTSModel(GTS gts) {
             this.gts = gts;
-            if (!gts.hasAbsentStates()) {
-                this.nodeIdxMap = null;
-            } else {
+            if (gts.hasAbsentStates() || gts.hasTransientStates()) {
                 this.nodeIdxMap = new HashMap<GraphState,Integer>();
                 int nr = 0;
                 for (GraphState state : gts.getStates()) {
                     this.nodeIdxMap.put(state, nr);
                     nr++;
                 }
+            } else {
+                this.nodeIdxMap = null;
             }
         }
 
