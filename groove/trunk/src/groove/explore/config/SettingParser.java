@@ -17,12 +17,10 @@
 package groove.explore.config;
 
 import groove.io.HTMLConverter;
+import groove.util.Duo;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Parser for settings of a given exploration key.
@@ -35,19 +33,7 @@ public class SettingParser implements Parser<Setting<?,?>> {
      */
     public SettingParser(ExploreKey key) {
         this.key = key;
-        this.kindMap = new HashMap<String,SettingKey>();
-        this.parserMap = new HashMap<SettingKey,Parser<?>>();
-        for (SettingKey kind : key.getKindType().getEnumConstants()) {
-            this.kindMap.put(kind.getName(), kind);
-            this.parserMap.put(kind, new BracketParser<Object>(kind.parser(), true));
-        }
-        assert this.kindMap.size() > 0;
-        if (this.kindMap.size() == 1) {
-            this.defaultString = key.getDefaultKind().parser().getDefaultString();
-        } else {
-            this.defaultString =
-                key.getDefaultKind().getName() + getParser(key.getDefaultKind()).getDefaultString();
-        }
+        this.kindMap = key.getKindMap();
     }
 
     /** Returns the exploration key of this setting parser. */
@@ -57,18 +43,12 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     private final ExploreKey key;
 
+    /** Returns the kind corresponding to a given kind name, converted to lower case. */
     private SettingKey getKind(String name) {
-        return this.kindMap.get(name);
+        return this.kindMap.get(name.toLowerCase());
     }
 
-    private final Map<String,SettingKey> kindMap;
-
-    /** Returns the pre-initialised parser for a given setting kind. */
-    private Parser<?> getParser(SettingKey kind) {
-        return this.parserMap.get(kind);
-    }
-
-    private final Map<SettingKey,Parser<?>> parserMap;
+    private final KindMap kindMap;
 
     @Override
     public String getDescription() {
@@ -85,7 +65,7 @@ public class SettingParser implements Parser<Setting<?,?>> {
             result.append(": ");
             result.append(key.getExplanation());
             result.append(", with <i>arg</i> ");
-            result.append(StringHandler.toLower(getParser(key).getDescription()));
+            result.append(StringHandler.toLower(key.parser().getDescription()));
         }
         return result.toString();
     }
@@ -120,24 +100,32 @@ public class SettingParser implements Parser<Setting<?,?>> {
         if (text == null || text.length() == 0) {
             return true;
         } else {
-            String name = getNamePrefix(text);
-            SettingKey key = getKind(name);
-            return key == null ? false : getParser(key).accepts(text.substring(name.length()));
+            Duo<String> splitText = split(text);
+            SettingKey kind = getKind(splitText.one());
+            return kind == null ? false : kind.parser().accepts(splitText.two());
         }
     }
 
     /**
-     * Returns the name prefix of a potential exploration value string.
-     * This consists of the sequence of initial alphanumerical characters.
+     * Splits a string into (potential) kind name and (potential) content part.
+     * The string is split at the first occurrence of {@link #CONTENT_SEPARATOR}.
+     * If there is no {@link #CONTENT_SEPARATOR} and {@code input}
+     * is an identifier, {@code input} is assumed to be a name with empty content;
+     * otherwise, it is assumed to be content for an empty (default) name.
      */
-    private String getNamePrefix(String text) {
-        StringBuilder name = new StringBuilder();
-        int i;
-        char c;
-        for (i = 0; i < text.length() && Character.isLetterOrDigit(c = text.charAt(i)); i++) {
-            name.append(c);
+    private Duo<String> split(String input) {
+        Duo<String> result;
+        int pos = input.indexOf(CONTENT_SEPARATOR);
+        if (pos < 0) {
+            if (StringHandler.isIdentifier(input)) {
+                result = Duo.newDuo(input, "");
+            } else {
+                result = Duo.newDuo("", input);
+            }
+        } else {
+            result = Duo.newDuo(input.substring(0, pos), input.substring(pos + 1));
         }
-        return name.toString();
+        return result;
     }
 
     @Override
@@ -151,15 +139,17 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     /** Parses a string holding a single setting value. */
     public Setting<?,?> parseSingle(String text) throws FormatException {
-        String name = getNamePrefix(text);
-        if (name.isEmpty()) {
-            throw new FormatException("Value '%s' should start with identifier", text);
-        }
+        Duo<String> splitText = split(text);
+        String name = splitText.one();
         SettingKey kind = getKind(name);
         if (kind == null) {
-            throw new FormatException("Unknown setting kind '%s' in '%s'", name, text);
+            if (name.isEmpty()) {
+                throw new FormatException("Value '%s' should start with setting kind", text);
+            } else {
+                throw new FormatException("Unknown setting kind '%s' in '%s'", name, text);
+            }
         }
-        Object content = getParser(kind).parse(text.substring(name.length()));
+        Object content = kind.parser().parse(splitText.two());
         return kind.createSetting(content);
     }
 
@@ -170,8 +160,17 @@ public class SettingParser implements Parser<Setting<?,?>> {
         if (!isDefault(value)) {
             StringBuilder builder = new StringBuilder();
             SettingKey kind = setting.getKind();
-            builder.append(kind.getName());
-            builder.append(getParser(kind).toParsableString(setting.getContent()));
+            String kindName = kind.getName().toLowerCase();
+            String contentString = kind.parser().toParsableString(setting.getContent());
+            if (contentString.isEmpty()) {
+                builder.append(kindName);
+            } else if (getKind("") == kind) {
+                builder.append(contentString);
+            } else {
+                builder.append(kindName);
+                builder.append(CONTENT_SEPARATOR);
+                builder.append(contentString);
+            }
             result = builder.toString();
         }
         return result;
@@ -211,10 +210,13 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     @Override
     public String getDefaultString() {
+        if (this.defaultString == null) {
+            this.defaultString = toParsableString(getDefaultValue());
+        }
         return this.defaultString;
     }
 
-    private final String defaultString;
+    private String defaultString;
 
     @Override
     public boolean isDefault(Object value) {
@@ -222,4 +224,6 @@ public class SettingParser implements Parser<Setting<?,?>> {
     }
 
     private static final StringHandler exprParser = new StringHandler("\"", "()");
+    /** Separator between kind name and (optional) setting content. */
+    private static final char CONTENT_SEPARATOR = ':';
 }

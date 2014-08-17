@@ -191,10 +191,12 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
                 setForeground(Color.GRAY);
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setText("No parameters");
+                setEnabled(false);
             } else {
                 setForeground(Color.BLACK);
                 setFont(getFont().deriveFont(Font.NORMAL));
                 setText(commandLine);
+                setEnabled(true);
             }
         }
     }

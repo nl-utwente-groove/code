@@ -160,7 +160,9 @@ public class TextFieldEditor extends SettingEditor {
             if (text.isEmpty()) {
                 result = "Empty string is not valid";
             } else {
-                result = "Value '" + text + "' is not valid";
+                result =
+                    "Value '" + text + "' is not valid (" + StringHandler.toLower(exc.getMessage())
+                        + ")";
             }
         }
         return result == null ? null : "Error in " + getKind().getContentName() + ": " + result;

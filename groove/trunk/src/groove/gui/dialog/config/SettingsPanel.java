@@ -74,7 +74,7 @@ public class SettingsPanel extends JPanel {
         JPanel result = new JPanel();
         result.setBorder(getDialog().createEmptyBorder());
         result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
-        result.setPreferredSize(new Dimension(200, 100));
+        result.setPreferredSize(new Dimension(250, 100));
         return result;
     }
 
@@ -92,7 +92,7 @@ public class SettingsPanel extends JPanel {
         JPanel result = new JPanel(new CardLayout());
         result.setBorder(new CompoundBorder(getDialog().createEmptyBorder(),
             BorderFactory.createTitledBorder("Help")));
-        result.setPreferredSize(new Dimension(150, 100));
+        result.setPreferredSize(new Dimension(200, 100));
         return result;
     }
 
