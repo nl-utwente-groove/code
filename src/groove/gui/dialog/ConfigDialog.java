@@ -187,6 +187,7 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     private DefaultListModel configListModel;
 
+    /** Returns the panel with the name field, main panel, syntax help, close buttons and error field. */
     private JPanel getConfigPanel() {
         if (this.configPanel == null) {
             // configuration name
@@ -321,18 +322,23 @@ abstract public class ConfigDialog<C> extends JDialog {
         return new JPanel();
     }
 
+    /** Factory method for the help panel. */
+    protected JComponent createHelpPanel() {
+        return new JPanel();
+    }
+
     /** Factory method for a line border with small insets. */
     protected final Border createBorder() {
         return BorderFactory.createCompoundBorder(createLineBorder(), createEmptyBorder());
     }
 
     /** Factory method for a line border. */
-    protected final Border createLineBorder() {
+    public final Border createLineBorder() {
         return BorderFactory.createLineBorder(Color.DARK_GRAY);
     }
 
     /** Factory method for small insets border. */
-    protected final Border createEmptyBorder() {
+    public final Border createEmptyBorder() {
         return BorderFactory.createEmptyBorder(3, 3, 3, 3);
     }
 

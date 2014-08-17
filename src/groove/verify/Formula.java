@@ -196,38 +196,38 @@ public class Formula extends TermTree<LogicOp,Formula> {
     }
 
     /** 
+     * Returns the particular logic of this formula, if any.
+     * Convenience method for {@code getLogic() != null}.
+     * @see #getLogic()
+     */
+    public boolean hasLogic() {
+        return getLogic() != null;
+    }
+
+    /** Returns the logic of this formula,
+     * if either {@link #toLtlFormula()} or {@link #toCtlFormula()} has been invoked.
+     * @return {@link Logic#LTL} if {@link #toLtlFormula()} has been invoked,
+     * or {@link Logic#CTL} if {@link #toCtlFormula()} has been invoked, or {@code null}
+     * otherwise.
+     */
+    public Logic getLogic() {
+        return this.logic;
+    }
+
+    private Logic logic;
+
+    /** 
      * Tests if this formula is of the restricted format corresponding
      * to a directly model checkable CTL formula.
      */
     public boolean isCtlFormula() {
-        switch (getOp()) {
-        case PROP:
-        case CALL:
-        case TRUE:
-        case FALSE:
-            return true;
-        case NOT:
-            return getArg1().isCtlFormula();
-        case OR:
-        case AND:
-        case IMPLIES:
-        case FOLLOWS:
-        case EQUIV:
-            return getArg1().isCtlFormula() && getArg2().isCtlFormula();
-        case EXISTS:
-        case FORALL:
-            Formula arg = getArg1();
-            switch (arg.getOp()) {
-            case NEXT:
-                return arg.getArg1().isCtlFormula();
-            case UNTIL:
-                return arg.getArg1().isCtlFormula() && arg.getArg2().isCtlFormula();
-            default:
-                return false;
-            }
-        default:
-            return false;
+        boolean result = true;
+        try {
+            toCtlFormula();
+        } catch (FormatException exc) {
+            result = false;
         }
+        return result;
     }
 
     /** 
@@ -240,6 +240,36 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * that are illegal in CTL.
      */
     public Formula toCtlFormula() throws FormatException {
+        getErrors().throwException();
+        if (this.ctlFormula == null) {
+            if (getLogic() == Logic.LTL) {
+                throw new FormatException("LTL formula %s cannot be converted to CTL",
+                    getParseString());
+            }
+            this.logic = Logic.CTL;
+            try {
+                this.ctlFormula = computeCtlFormula();
+            } catch (FormatException exc) {
+                addErrors(exc);
+                throw exc;
+            }
+        }
+        return this.ctlFormula;
+    }
+
+    /** The CTL formula obtained by converting this formula. */
+    private Formula ctlFormula;
+
+    /** 
+     * Converts this formula to a CTL formula, if possible.
+     * This succeeds if and only if all temporal operators in this
+     * formula are immediately nested inside a path quantifier, and
+     * vice versa.
+     * @return the CTL formula corresponding to this formula
+     * @throws FormatException if this formula contains combinations of operators
+     * that are illegal in CTL.
+     */
+    private Formula computeCtlFormula() throws FormatException {
         switch (getOp()) {
         case PROP:
         case TRUE:
@@ -309,6 +339,35 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * that are illegal in LTL.
      */
     public gov.nasa.ltl.trans.Formula<String> toLtlFormula() throws FormatException {
+        getErrors().throwException();
+        if (this.ltlFormula == null) {
+            if (getLogic() == Logic.CTL) {
+                throw new FormatException("CTL formula %s cannot be converted to LTL",
+                    getParseString());
+            }
+            this.logic = Logic.LTL;
+            try {
+                this.ltlFormula = computeLtlFormula();
+            } catch (FormatException exc) {
+                addErrors(exc);
+                throw exc;
+            }
+        }
+        return this.ltlFormula;
+    }
+
+    /** The LTL formula obtained by converting this formula. */
+    private gov.nasa.ltl.trans.Formula<String> ltlFormula;
+
+    /** 
+     * Converts this formula to a NASA LTL formula, if possible.
+     * This succeeds if and only if the formula does not contain
+     * {@link LogicOp#FORALL} or {@link LogicOp#EXISTS} operators.
+     * @return the NASA LTL formula corresponding to this formula
+     * @throws FormatException if this formula contains operators
+     * that are illegal in LTL.
+     */
+    private gov.nasa.ltl.trans.Formula<String> computeLtlFormula() throws FormatException {
         gov.nasa.ltl.trans.Formula<String> arg1 =
             getArg1() == null ? null : getArg1().toLtlFormula();
         gov.nasa.ltl.trans.Formula<String> arg2 =
@@ -533,6 +592,18 @@ public class Formula extends TermTree<LogicOp,Formula> {
      */
     public static Formula parse(String input) throws FormatException {
         Formula result = FormulaParser.instance().parse(input);
+        result.getErrors().throwException();
+        return result;
+    }
+
+    /** Parses a given input string into a formula of a given logic.
+     * @param logic the logic according to which the formula should be parsed
+     * @param input The (non-{@code null}) input string
+     * @return the resulting formula
+     * @throws FormatException if there were parse errors
+     */
+    public static Formula parse(Logic logic, String input) throws FormatException {
+        Formula result = FormulaParser.instance(logic).parse(input);
         result.getErrors().throwException();
         return result;
     }

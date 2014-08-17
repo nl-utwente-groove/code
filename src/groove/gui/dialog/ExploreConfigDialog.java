@@ -19,11 +19,17 @@ package groove.gui.dialog;
 import static groove.io.FileType.PROPERTY;
 import groove.explore.ExploreConfig;
 import groove.explore.config.ExploreKey;
-import groove.explore.config.SettingList;
+import groove.explore.config.Setting;
+import groove.explore.config.SettingKey;
+import groove.gui.action.Refreshable;
 import groove.gui.dialog.config.EditorFactory;
 import groove.gui.dialog.config.SettingEditor;
+import groove.gui.dialog.config.SettingsPanel;
 import groove.util.parse.FormatException;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,11 +40,14 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+
+import com.itextpdf.text.Font;
 
 /**
  * Dialog to manage exploration configurations.
@@ -89,31 +98,44 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
 
     @Override
     protected JComponent createMainPanel() {
-        JTabbedPane result = new JTabbedPane();
-        // panel with basic settings
-        JPanel basicPanel = new JPanel();
-        basicPanel.setBorder(createEmptyBorder());
-        basicPanel.setLayout(new BoxLayout(basicPanel, BoxLayout.Y_AXIS));
-        basicPanel.add(getEditor(ExploreKey.TRAVERSE));
-        basicPanel.add(getEditor(ExploreKey.RANDOM));
-        basicPanel.add(getEditor(ExploreKey.ACCEPTOR));
-        basicPanel.add(getEditor(ExploreKey.COUNT));
-        basicPanel.add(Box.createGlue());
-        // panel with advanced settings
-        JPanel advancedPanel = new JPanel();
-        advancedPanel.setBorder(createEmptyBorder());
-        advancedPanel.setLayout(new BoxLayout(advancedPanel, BoxLayout.Y_AXIS));
-        advancedPanel.add(getEditor(ExploreKey.ALGEBRA));
-        advancedPanel.add(getEditor(ExploreKey.ISO));
-        advancedPanel.add(Box.createGlue());
-        result.add(basicPanel, "Basic");
-        result.add(advancedPanel, "Advanced");
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(createTabsPanel(), BorderLayout.CENTER);
+        result.add(createCommandLinePanel(), BorderLayout.SOUTH);
         return result;
     }
 
-    private SettingEditor getEditor(ExploreKey key) {
-        return getEditorMap().get(key);
+    private JComponent createTabsPanel() {
+        JTabbedPane result = new JTabbedPane();
+        result.setPreferredSize(new Dimension(500, 100));
+        // panel with basic settings
+        SettingsPanel searchPanel = new SettingsPanel(this, "Search");
+        addEditor(searchPanel, ExploreKey.TRAVERSE);
+        addEditor(searchPanel, ExploreKey.RANDOM);
+        addEditor(searchPanel, ExploreKey.ACCEPTOR);
+        addEditor(searchPanel, ExploreKey.COUNT);
+        addTab(result, searchPanel);
+        // panel with basic settings
+        SettingsPanel checkingPanel = new SettingsPanel(this, "Model Checking");
+        addEditor(checkingPanel, ExploreKey.CHECKING);
+        addTab(result, checkingPanel);
+        // panel with advanced settings
+        SettingsPanel advancedPanel = new SettingsPanel(this, "Advanced");
+        addEditor(advancedPanel, ExploreKey.ALGEBRA);
+        addEditor(advancedPanel, ExploreKey.ISO);
+        addEditor(advancedPanel, ExploreKey.MATCHER);
+        addTab(result, advancedPanel);
+        return result;
     }
+
+    /** Adds the editor for a given exploration key to a given settings panel. */
+    private void addEditor(SettingsPanel panel, ExploreKey key) {
+        SettingsPanel oldPanel = this.panelMap.put(key, panel);
+        assert oldPanel == null;
+        panel.add(getEditorMap().get(key));
+    }
+
+    private final Map<ExploreKey,SettingsPanel> panelMap = new EnumMap<ExploreKey,SettingsPanel>(
+        ExploreKey.class);
 
     private Map<ExploreKey,SettingEditor> getEditorMap() {
         if (this.editorMap == null) {
@@ -128,13 +150,62 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
 
     private Map<ExploreKey,SettingEditor> editorMap;
 
+    /** Adds a given settings panel as tab to the tabbed pane of the main panel. */
+    private void addTab(JTabbedPane pane, SettingsPanel panel) {
+        panel.addGlue();
+        pane.add(panel, panel.getName());
+    }
+
+    private JPanel createCommandLinePanel() {
+        JPanel result = new JPanel(new BorderLayout());
+        result.setBorder(BorderFactory.createEmptyBorder(6, 5, 0, 5));
+        result.add(new JLabel("Command: "), BorderLayout.WEST);
+        result.add(getCommandLineField(), BorderLayout.CENTER);
+        return result;
+    }
+
+    private CommandLineField getCommandLineField() {
+        if (this.commandLineField == null) {
+            this.commandLineField = new CommandLineField();
+        }
+        return this.commandLineField;
+    }
+
+    private CommandLineField commandLineField;
+
+    private class CommandLineField extends JTextField implements Refreshable {
+        /**
+         * Constructs an initially empty command line field.
+         */
+        CommandLineField() {
+            addRefreshable(this);
+            setEditable(false);
+            setBackground(Color.WHITE);
+        }
+
+        @Override
+        public void refresh() {
+            ExploreConfig config = extractConfig();
+            String commandLine = config.toCommandLine();
+            if (commandLine.isEmpty()) {
+                setForeground(Color.GRAY);
+                setFont(getFont().deriveFont(Font.ITALIC));
+                setText("No parameters");
+            } else {
+                setForeground(Color.BLACK);
+                setFont(getFont().deriveFont(Font.NORMAL));
+                setText(commandLine);
+            }
+        }
+    }
+
     @Override
     protected boolean testDirty() {
         boolean result = false;
         for (SettingEditor editor : getEditorMap().values()) {
             try {
-                SettingList selectedValue = getSelectedConfig().get(editor.getKey());
-                SettingList editedValue = editor.getSetting();
+                Setting<?,?> selectedValue = getSelectedConfig().get(editor.getKey());
+                Setting<?,?> editedValue = editor.getSetting();
                 result =
                     selectedValue == null ? editedValue != null
                         : !selectedValue.equals(editedValue);
@@ -153,7 +224,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         ExploreConfig result = createConfig();
         for (SettingEditor editor : getEditorMap().values()) {
             try {
-                SettingList editedValue = editor.getSetting();
+                Setting<?,?> editedValue = editor.getSetting();
                 if (editedValue != null) {
                     result.put(editor.getKey(), editedValue);
                 }
@@ -204,6 +275,14 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
 
     private File getFile(String name) {
         return new File(CONFIG_DIR, PROPERTY.addExtension(name));
+    }
+
+    /** Sets the help panel for a given combination of exploration key and setting kind. */
+    public void setHelp(ExploreKey key, SettingKey kind) {
+        SettingsPanel panel = this.panelMap.get(key);
+        if (panel != null) {
+            panel.setHelp(key, kind);
+        }
     }
 
     /** Name of the configuration directory. */

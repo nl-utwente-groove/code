@@ -25,21 +25,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Parser for a setting list of a given exploration key.
+ * Parser for settings of a given exploration key.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SettingListParser implements Parser<SettingList> {
+public class SettingParser implements Parser<Setting<?,?>> {
     /**
-     * Constructs a parser for explore values.
+     * Constructs a parser for settings of a given key.
      */
-    public SettingListParser(ExploreKey key) {
+    public SettingParser(ExploreKey key) {
         this.key = key;
         this.kindMap = new HashMap<String,SettingKey>();
-        this.parserMap = new HashMap<SettingKey,Parser<SettingContent>>();
+        this.parserMap = new HashMap<SettingKey,Parser<?>>();
         for (SettingKey kind : key.getKindType().getEnumConstants()) {
             this.kindMap.put(kind.getName(), kind);
-            this.parserMap.put(kind, new BracketParser<SettingContent>(kind.parser(), true));
+            this.parserMap.put(kind, new BracketParser<Object>(kind.parser(), true));
         }
         assert this.kindMap.size() > 0;
         if (this.kindMap.size() == 1) {
@@ -64,11 +64,11 @@ public class SettingListParser implements Parser<SettingList> {
     private final Map<String,SettingKey> kindMap;
 
     /** Returns the pre-initialised parser for a given setting kind. */
-    private Parser<SettingContent> getParser(SettingKey kind) {
+    private Parser<?> getParser(SettingKey kind) {
         return this.parserMap.get(kind);
     }
 
-    private final Map<SettingKey,Parser<SettingContent>> parserMap;
+    private final Map<SettingKey,Parser<?>> parserMap;
 
     @Override
     public String getDescription() {
@@ -141,22 +141,11 @@ public class SettingListParser implements Parser<SettingList> {
     }
 
     @Override
-    public SettingList parse(String input) throws FormatException {
+    public Setting<?,?> parse(String input) throws FormatException {
         if (input == null || input.length() == 0) {
             return getDefaultValue();
-        } else if (getKey().isSingular()) {
-            return SettingList.single(parseSingle(input));
         } else {
-            try {
-                SettingList result = SettingList.multiple();
-                for (String part : exprParser.split(input, " ")) {
-                    result.add(parseSingle(part));
-                }
-                return result;
-            } catch (FormatException exc) {
-                // the string contains unbalanced quotes or brackets
-                return null;
-            }
+            return parseSingle(input);
         }
     }
 
@@ -170,52 +159,36 @@ public class SettingListParser implements Parser<SettingList> {
         if (kind == null) {
             throw new FormatException("Unknown setting kind '%s' in '%s'", name, text);
         }
-        SettingContent content = getParser(kind).parse(text.substring(name.length()));
+        Object content = getParser(kind).parse(text.substring(name.length()));
         return kind.createSetting(content);
     }
 
     @Override
     public String toParsableString(Object value) {
         String result = "";
-        SettingList settings = (SettingList) value;
+        Setting<?,?> setting = (Setting<?,?>) value;
         if (!isDefault(value)) {
             StringBuilder builder = new StringBuilder();
-            boolean first = true;
-            for (Setting<?,?> setting : settings) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append(" ");
-                }
-                SettingKey kind = setting.getKind();
-                builder.append(kind.getName());
-                builder.append(getParser(kind).toParsableString(setting.getContent()));
-            }
+            SettingKey kind = setting.getKind();
+            builder.append(kind.getName());
+            builder.append(getParser(kind).toParsableString(setting.getContent()));
             result = builder.toString();
         }
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends SettingList> getValueType() {
-        return SettingList.class;
+    public Class<? extends Setting<?,?>> getValueType() {
+        return (Class<? extends Setting<?,?>>) Setting.class;
     }
 
     @Override
     public boolean isValue(Object value) {
-        boolean result = value instanceof SettingList;
+        boolean result = value instanceof Setting;
         if (result) {
-            SettingList settings = (SettingList) value;
-            if (settings.isSingular() == getKey().isSingular()) {
-                for (Setting<?,?> setting : settings) {
-                    if (!setting.getKind().isValue(setting.getContent())) {
-                        result = false;
-                        break;
-                    }
-                }
-            } else {
-                result = false;
-            }
+            Setting<?,?> setting = (Setting<?,?>) value;
+            result = setting.getKind().isValue(setting.getContent());
         }
         return result;
     }
@@ -226,21 +199,15 @@ public class SettingListParser implements Parser<SettingList> {
     }
 
     @Override
-    public SettingList getDefaultValue() {
+    public Setting<?,?> getDefaultValue() {
         if (this.defaultValue == null) {
-            if (getKey().isSingular()) {
-                SettingKey defaultKind = getKey().getDefaultKind();
-                Setting<?,?> defaultSetting =
-                    defaultKind.createSetting(defaultKind.getDefaultValue());
-                this.defaultValue = SettingList.single(defaultSetting);
-            } else {
-                this.defaultValue = SettingList.multiple();
-            }
+            SettingKey defaultKind = getKey().getDefaultKind();
+            this.defaultValue = defaultKind.createSetting(defaultKind.getDefaultValue());
         }
         return this.defaultValue;
     }
 
-    private SettingList defaultValue;
+    private Setting<?,?> defaultValue;
 
     @Override
     public String getDefaultString() {

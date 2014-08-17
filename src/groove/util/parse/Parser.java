@@ -108,10 +108,6 @@ abstract public interface Parser<T> {
      */
     public String getDefaultString() throws UnsupportedOperationException;
 
-    /** Trimmed string parser. */
-    public static StringParser trim = new StringParser(true);
-    /** Identity string parser. */
-    public static StringParser identity = new StringParser(false);
     /** Integer number parser. */
     public static IntParser integer = new IntParser(true);
     /** Natural number parser. */
@@ -208,33 +204,6 @@ abstract public interface Parser<T> {
 
         /** Callback method to extract an integer value from a content object. */
         protected abstract String extractValue(S content);
-    }
-
-    /** Identity string parser. */
-    static public class StringParser extends AbstractStringParser<String> {
-        private StringParser(boolean trim) {
-            super(String.class, trim);
-        }
-
-        @Override
-        protected String createContent(String value) {
-            return value;
-        }
-
-        @Override
-        protected String extractValue(String content) {
-            return content;
-        }
-
-        @Override
-        public boolean isValue(Object value) {
-            return value == null || value instanceof String;
-        }
-
-        @Override
-        public boolean isDefault(Object value) {
-            return (value instanceof String) && ((String) value).length() == 0;
-        }
     }
 
     /** Integer parser. */

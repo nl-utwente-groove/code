@@ -17,9 +17,10 @@
 package groove.gui.dialog.config;
 
 import groove.explore.config.ExploreKey;
-import groove.explore.config.NullContent;
+import groove.explore.config.Null;
+import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
-import groove.explore.config.SettingList;
+import groove.gui.dialog.ConfigDialog;
 import groove.util.parse.FormatException;
 
 import java.awt.CardLayout;
@@ -34,9 +35,11 @@ import javax.swing.JPanel;
 public class NullEditor extends SettingEditor {
     /**
      * Constructs a null editor for a given exploration key and setting kind.
+     * @param dialog the configuration dialog for which this is an editor
      */
-    public NullEditor(JPanel holder, ExploreKey key, SettingKey kind) {
-        assert kind.getContentType() == NullContent.class;
+    public NullEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
+        assert kind.getContentType() == Null.class;
+        this.dialog = dialog;
         this.holder = holder;
         this.key = key;
         this.kind = kind;
@@ -44,6 +47,12 @@ public class NullEditor extends SettingEditor {
             holder.add(this, kind.getName());
         }
     }
+
+    private ConfigDialog<?> getDialog() {
+        return this.dialog;
+    }
+
+    private final ConfigDialog<?> dialog;
 
     /** Tests if this editor is placed on a parent container. */
     private boolean hasHolder() {
@@ -85,17 +94,18 @@ public class NullEditor extends SettingEditor {
         if (hasHolder()) {
             CardLayout layout = (CardLayout) getHolder().getLayout();
             layout.show(getHolder(), getKind().getName());
+            getDialog().setError(getKey(), getError());
         }
     }
 
     @Override
-    public SettingList getSetting() throws FormatException {
+    public Setting<?,?> getSetting() throws FormatException {
         return getKind().getDefaultSetting();
     }
 
     @Override
-    public void setSetting(SettingList content) {
-        assert content.isSingular() && content.single().getKind() == getKind();
+    public void setSetting(Setting<?,?> content) {
+        assert content.getKind() == getKind();
     }
 
     @Override

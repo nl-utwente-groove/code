@@ -23,7 +23,7 @@ import groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
+public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
     /** Key for the boolean value {@code false}. */
     FALSE,
     /** Key for the boolean value {@code true}. */
@@ -35,17 +35,22 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     }
 
     @Override
+    public String getContentName() {
+        return null;
+    }
+
+    @Override
     public String getExplanation() {
         return "Boolean value";
     }
 
     @Override
-    public Parser<? extends SettingContent> parser() {
-        return NullContent.PARSER;
+    public Parser<Null> parser() {
+        return Null.PARSER;
     }
 
     @Override
-    public SettingContent getDefaultValue() {
+    public Object getDefaultValue() {
         return null;
     }
 
@@ -55,26 +60,21 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     }
 
     @Override
-    public SettingList getDefaultSetting() {
-        return SettingList.single(createSetting(getDefaultValue()));
+    public BooleanKey getDefaultSetting() {
+        return createSetting(getDefaultValue());
     }
 
     @Override
-    public Setting<?,?> createSettting() throws IllegalArgumentException {
+    public BooleanKey createSettting() throws IllegalArgumentException {
         return this;
     }
 
     @Override
-    public Setting<?,?> createSetting(SettingContent content) throws IllegalArgumentException {
+    public BooleanKey createSetting(Object content) throws IllegalArgumentException {
         if (content != null) {
             throw new IllegalArgumentException();
         }
         return this;
-    }
-
-    @Override
-    public SettingList wrap() {
-        return SettingList.single(this);
     }
 
     @Override
@@ -83,13 +83,13 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,NullContent> {
     }
 
     @Override
-    public NullContent getContent() {
+    public Null getContent() {
         return null;
     }
 
     @Override
-    public Class<NullContent> getContentType() {
-        return NullContent.class;
+    public Class<Null> getContentType() {
+        return Null.class;
     }
 
     /** Returns the key for a given boolean value. */

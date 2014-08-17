@@ -20,8 +20,7 @@ package groove.explore.config;
  * Default implementation of {@link Setting}
  * @author Arend Rensink
  */
-public class DefaultSetting<K extends Enum<K> & SettingKey,C extends SettingContent> implements
-    Setting<K,C> {
+public class DefaultSetting<K extends Enum<K> & SettingKey,C> implements Setting<K,C> {
     /** Constructs a value with a given value kind and {@code null} content. */
     protected DefaultSetting(K kind) {
         this(kind, null);
@@ -52,11 +51,6 @@ public class DefaultSetting<K extends Enum<K> & SettingKey,C extends SettingCont
     }
 
     private final C content;
-
-    @Override
-    public SettingList wrap() {
-        return SettingList.single(this);
-    }
 
     @Override
     public int hashCode() {

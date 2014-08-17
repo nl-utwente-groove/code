@@ -24,16 +24,19 @@ import groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface SettingKey extends ParsableKey<SettingContent> {
+public interface SettingKey extends ParsableKey<Object> {
+    /** Returns a description of the content expected for this key. */
+    public String getContentName();
+
     /** Returns the type of content that this key expects. */
-    public Class<? extends SettingContent> getContentType();
+    public Class<?> getContentType();
 
     /** Returns the default setting for this key, if any.
      * Convenience method for {@code createSetting(getDefaultValue())}.
-     * @see #createSetting(SettingContent)
+     * @see #createSetting(Object)
      * @see #getDefaultValue()
      */
-    public SettingList getDefaultSetting();
+    public Setting<?,?> getDefaultSetting();
 
     /** Convenience method for {@code createValue(null)}
      * @throws IllegalArgumentException if {@code null} does not satisfy {@link Parser#isValue}
@@ -45,5 +48,5 @@ public interface SettingKey extends ParsableKey<SettingContent> {
      * @param content exploration content; should be compatible with this kind
      * @throws IllegalArgumentException if {@code content} does not satisfy {@link Parser#isValue}
      */
-    public Setting<?,?> createSetting(SettingContent content) throws IllegalArgumentException;
+    public Setting<?,?> createSetting(Object content) throws IllegalArgumentException;
 }

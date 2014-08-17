@@ -23,7 +23,7 @@ import groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent> {
+public enum TraverseKind implements SettingKey, Setting<TraverseKind,Null> {
     /** Depth-first search. */
     DEPTH_FIRST("DFS", "Depth-first search"),
     /** Breadth-first search. */
@@ -50,8 +50,13 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent
     private final String name;
 
     @Override
-    public SettingList getDefaultSetting() {
-        return SettingList.single(createSetting(getDefaultValue()));
+    public String getContentName() {
+        return null;
+    }
+
+    @Override
+    public TraverseKind getDefaultSetting() {
+        return createSetting(getDefaultValue());
     }
 
     @Override
@@ -60,16 +65,11 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent
     }
 
     @Override
-    public TraverseKind createSetting(SettingContent content) throws IllegalArgumentException {
+    public TraverseKind createSetting(Object content) throws IllegalArgumentException {
         if (content != null) {
             throw new IllegalArgumentException();
         }
         return this;
-    }
-
-    @Override
-    public SettingList wrap() {
-        return SettingList.single(this);
     }
 
     @Override
@@ -78,7 +78,7 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent
     }
 
     @Override
-    public NullContent getContent() {
+    public Null getContent() {
         return null;
     }
 
@@ -90,12 +90,12 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent
     private final String explanation;
 
     @Override
-    public Parser<? extends SettingContent> parser() {
-        return NullContent.PARSER;
+    public Parser<Null> parser() {
+        return Null.PARSER;
     }
 
     @Override
-    public SettingContent getDefaultValue() {
+    public Null getDefaultValue() {
         return null;
     }
 
@@ -105,7 +105,7 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,NullContent
     }
 
     @Override
-    public Class<NullContent> getContentType() {
-        return NullContent.class;
+    public Class<Null> getContentType() {
+        return Null.class;
     }
 }

@@ -18,7 +18,6 @@ package groove.explore;
 
 import groove.explore.config.ExploreKey;
 import groove.explore.config.Setting;
-import groove.explore.config.SettingList;
 import groove.explore.config.TraverseKind;
 import groove.util.parse.FormatException;
 
@@ -40,7 +39,7 @@ public class ExploreConfig {
 
     /** Creates a configuration with all default values. */
     public ExploreConfig() {
-        this.pars = new EnumMap<ExploreKey,SettingList>(ExploreKey.class);
+        this.pars = new EnumMap<ExploreKey,Setting<?,?>>(ExploreKey.class);
         for (ExploreKey key : ExploreKey.values()) {
             this.pars.put(key, key.getDefaultValue());
         }
@@ -48,52 +47,41 @@ public class ExploreConfig {
 
     /** Returns the currently set search strategy. */
     public TraverseKind getStrategy() {
-        return (TraverseKind) this.pars.get(ExploreKey.TRAVERSE).single();
+        return (TraverseKind) this.pars.get(ExploreKey.TRAVERSE);
     }
 
     /** Sets the search strategy to a non-{@code null} value. */
     public void setStrategy(TraverseKind order) {
-        this.pars.put(ExploreKey.TRAVERSE, SettingList.single(order));
+        this.pars.put(ExploreKey.TRAVERSE, order);
     }
 
     /** Returns the current setting for a given key. */
-    public SettingList get(ExploreKey key) {
+    public Setting<?,?> get(ExploreKey key) {
         return this.pars.get(key);
     }
 
     /** Changes the setting for a given key. */
-    public SettingList put(ExploreKey key, SettingList value) {
+    public Setting<?,?> put(ExploreKey key, Setting<?,?> value) {
         return this.pars.put(key, value);
     }
 
     /** Parameter map of this configuration. */
-    private final Map<ExploreKey,SettingList> pars;
+    private final Map<ExploreKey,Setting<?,?>> pars;
 
     /** Converts this properties object to a command-line string. */
     public String toCommandLine() {
         StringBuilder result = new StringBuilder();
-        for (Map.Entry<ExploreKey,SettingList> e : this.pars.entrySet()) {
+        for (Map.Entry<ExploreKey,Setting<?,?>> e : this.pars.entrySet()) {
             ExploreKey key = e.getKey();
-            SettingList settingList = e.getValue();
-            if (settingList.isEmpty()) {
-                continue;
-            }
-            if (key.parser().isDefault(settingList)) {
+            Setting<?,?> setting = e.getValue();
+            if (key.parser().isDefault(setting)) {
                 continue;
             }
             result.append(OPTION);
             result.append(key.getName());
             result.append(SEPARATOR);
-            StringBuilder value = new StringBuilder();
-            boolean first = true;
-            for (Setting<?,?> setting : settingList) {
-                if (first) {
-                    first = false;
-                } else {
-                    result.append(" ");
-                }
-                value.append(key.parser().toParsableString(setting));
-            }
+            result.append(key.parser().toParsableString(setting));
+            result.append(" ");
         }
         return result.toString().trim();
     }
@@ -101,9 +89,9 @@ public class ExploreConfig {
     /** Converts this configuration into a properties map. */
     public Properties getProperties() {
         Properties result = new Properties();
-        for (Map.Entry<ExploreKey,SettingList> e : this.pars.entrySet()) {
+        for (Map.Entry<ExploreKey,Setting<?,?>> e : this.pars.entrySet()) {
             ExploreKey key = e.getKey();
-            SettingList setting = e.getValue();
+            Setting<?,?> setting = e.getValue();
             if (!key.parser().isDefault(setting)) {
                 result.setProperty(key.getName(), key.parser().toParsableString(setting));
             }

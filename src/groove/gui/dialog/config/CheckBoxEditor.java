@@ -18,13 +18,14 @@ package groove.gui.dialog.config;
 
 import groove.explore.config.BooleanKey;
 import groove.explore.config.ExploreKey;
+import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
-import groove.explore.config.SettingList;
 import groove.gui.action.Refreshable;
-import groove.gui.dialog.ConfigDialog;
-import groove.util.parse.FormatException;
+import groove.gui.dialog.ExploreConfigDialog;
 
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -42,7 +43,7 @@ public class CheckBoxEditor extends SettingEditor {
     /**
      * Creates a button editor for a given explore key.
      */
-    public CheckBoxEditor(ConfigDialog<?> dialog, ExploreKey key, String title) {
+    public CheckBoxEditor(ExploreConfigDialog dialog, ExploreKey key, String title) {
         this.dialog = dialog;
         this.key = key;
         setBorder(BorderFactory.createTitledBorder(title));
@@ -53,11 +54,11 @@ public class CheckBoxEditor extends SettingEditor {
         dialog.addRefreshable(this);
     }
 
-    private ConfigDialog<?> getDialog() {
+    private ExploreConfigDialog getDialog() {
         return this.dialog;
     }
 
-    private final ConfigDialog<?> dialog;
+    private final ExploreConfigDialog dialog;
 
     private JPanel createCheckBoxPanel() {
         JPanel result = new JPanel();
@@ -90,7 +91,7 @@ public class CheckBoxEditor extends SettingEditor {
 
     @Override
     public SettingKey getKind() {
-        return null;
+        return getSetting();
     }
 
     @Override
@@ -99,13 +100,13 @@ public class CheckBoxEditor extends SettingEditor {
     }
 
     @Override
-    public SettingList getSetting() throws FormatException {
+    public BooleanKey getSetting() {
         return (getCheckBox().isSelected() ? BooleanKey.TRUE : BooleanKey.FALSE).getDefaultSetting();
     }
 
     @Override
-    public void setSetting(SettingList content) {
-        getCheckBox().setSelected(content.single().getKind() == BooleanKey.TRUE);
+    public void setSetting(Setting<?,?> content) {
+        getCheckBox().setSelected(content.getKind() == BooleanKey.TRUE);
     }
 
     @Override
@@ -124,6 +125,12 @@ public class CheckBoxEditor extends SettingEditor {
             addItemListener(getDialog().getDirtyListener());
             setToolTipText(key.getExplanation());
             getDialog().addRefreshable(this);
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    getDialog().setHelp(getKey(), getKind());
+                }
+            });
         }
 
         @Override

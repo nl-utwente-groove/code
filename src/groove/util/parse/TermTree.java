@@ -136,19 +136,16 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
 
     @Override
     public void addError(FormatError error) {
-        assert !isFixed();
         this.errors.add(error);
     }
 
     @Override
     public void addErrors(Set<FormatError> errors) {
-        assert !isFixed();
         this.errors.addAll(errors);
     }
 
     @Override
     public void addErrors(FormatException exc) {
-        assert !isFixed();
         addErrors(exc.getErrors());
     }
 

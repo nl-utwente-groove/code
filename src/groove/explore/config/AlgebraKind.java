@@ -24,7 +24,7 @@ import groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> {
+public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,Null> {
     /** Depth-first search. */
     DEFAULT(AlgebraFamily.DEFAULT),
     /** Breadth-first search. */
@@ -45,15 +45,19 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> 
 
     private final AlgebraFamily family;
 
-    /** Returns the name of this algebra. */
     @Override
     public String getName() {
         return getFamily().getName();
     }
 
     @Override
-    public SettingList getDefaultSetting() {
-        return SettingList.single(createSetting(getDefaultValue()));
+    public String getContentName() {
+        return null;
+    }
+
+    @Override
+    public AlgebraKind getDefaultSetting() {
+        return createSetting(getDefaultValue());
     }
 
     @Override
@@ -62,7 +66,7 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> 
     }
 
     @Override
-    public AlgebraKind createSetting(SettingContent content) throws IllegalArgumentException {
+    public AlgebraKind createSetting(Object content) throws IllegalArgumentException {
         if (content != null) {
             throw new IllegalArgumentException();
         }
@@ -75,13 +79,8 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> 
     }
 
     @Override
-    public NullContent getContent() {
+    public Null getContent() {
         return null;
-    }
-
-    @Override
-    public SettingList wrap() {
-        return SettingList.single(this);
     }
 
     @Override
@@ -90,12 +89,12 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> 
     }
 
     @Override
-    public Parser<? extends SettingContent> parser() {
-        return NullContent.PARSER;
+    public Parser<Null> parser() {
+        return Null.PARSER;
     }
 
     @Override
-    public SettingContent getDefaultValue() {
+    public Null getDefaultValue() {
         return null;
     }
 
@@ -105,7 +104,7 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,NullContent> 
     }
 
     @Override
-    public Class<NullContent> getContentType() {
-        return NullContent.class;
+    public Class<Null> getContentType() {
+        return Null.class;
     }
 }

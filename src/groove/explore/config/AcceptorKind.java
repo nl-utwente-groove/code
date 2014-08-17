@@ -16,7 +16,9 @@
  */
 package groove.explore.config;
 
+import groove.util.parse.NullParser;
 import groove.util.parse.Parser;
+import groove.util.parse.StringParser;
 
 /**
  * Key determining which states are accepted as results.
@@ -25,42 +27,45 @@ import groove.util.parse.Parser;
  */
 public enum AcceptorKind implements SettingKey {
     /** Final states. */
-    FINAL("final", NullContent.PARSER),
+    FINAL("final", null, "Final states are results", null),
     /** States satisfying a graph condition. */
-    CONDITION("condition", StringContent.PARSER) {
+    CONDITION("condition", "Property name", "Any state satisfying a given property",
+        StringParser.TRIM) {
         @Override
         public Setting<?,?> createSettting() throws IllegalArgumentException {
             throw new IllegalArgumentException();
         }
 
         @Override
-        public Setting<?,?> createSetting(SettingContent content) throws IllegalArgumentException {
-            return new DefaultSetting<AcceptorKind,SettingContent>(this, content);
+        public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
+            return new DefaultSetting<AcceptorKind,Object>(this, content);
         }
     },
     /** States satisfying a propositional formula. */
-    FORMULA("formula", StringContent.PARSER) {
+    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula",
+        StringParser.TRIM) {
         @Override
         public Setting<?,?> createSettting() throws IllegalArgumentException {
             throw new IllegalArgumentException();
         }
 
         @Override
-        public Setting<?,?> createSetting(SettingContent content) throws IllegalArgumentException {
-            return new DefaultSetting<AcceptorKind,SettingContent>(this, content);
+        public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
+            return new DefaultSetting<AcceptorKind,Object>(this, content);
         }
     },
     /** All states. */
-    ANY("any", NullContent.PARSER),
+    ANY("any", null, "All states are results", null),
     /** No states. */
-    NONE("none", NullContent.PARSER), ;
+    NONE("none", null, "No state is considered a result", null), ;
 
-    private AcceptorKind(String name, Parser<? extends SettingContent> parser) {
+    private AcceptorKind(String name, String contentName, String explanation, Parser<?> parser) {
         this.name = name;
-        this.parser = parser;
+        this.contentName = contentName;
+        this.explanation = explanation;
+        this.parser = parser == null ? NullParser.instance(Object.class) : parser;
     }
 
-    /** Returns the name of this search order. */
     @Override
     public String getName() {
         return this.name;
@@ -69,34 +74,43 @@ public enum AcceptorKind implements SettingKey {
     private final String name;
 
     @Override
-    public SettingList getDefaultSetting() {
-        return SettingList.single(createSetting(getDefaultValue()));
+    public String getContentName() {
+        return this.contentName;
+    }
+
+    private final String contentName;
+
+    @Override
+    public Setting<?,?> getDefaultSetting() {
+        return createSetting(getDefaultValue());
     }
 
     @Override
     public Setting<?,?> createSettting() throws IllegalArgumentException {
-        return new DefaultSetting<AcceptorKind,NullContent>(this);
+        return new DefaultSetting<AcceptorKind,Null>(this);
     }
 
     @Override
-    public Setting<?,?> createSetting(SettingContent content) throws IllegalArgumentException {
-        return new DefaultSetting<AcceptorKind,NullContent>(this);
+    public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
+        return new DefaultSetting<AcceptorKind,Null>(this);
     }
 
     @Override
     public String getExplanation() {
-        return "Condition for result states";
+        return this.explanation;
     }
 
+    private final String explanation;
+
     @Override
-    public Parser<? extends SettingContent> parser() {
+    public Parser<?> parser() {
         return this.parser;
     }
 
-    private final Parser<? extends SettingContent> parser;
+    private final Parser<?> parser;
 
     @Override
-    public SettingContent getDefaultValue() {
+    public Object getDefaultValue() {
         return this.parser.getDefaultValue();
     }
 
@@ -106,7 +120,7 @@ public enum AcceptorKind implements SettingKey {
     }
 
     @Override
-    public Class<? extends SettingContent> getContentType() {
+    public Class<?> getContentType() {
         return this.parser.getValueType();
     }
 }

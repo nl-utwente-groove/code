@@ -23,13 +23,15 @@ import groove.util.parse.StringHandler;
  * Key type of the exploration configuration.
  * @author Arend Rensink
  */
-public enum ExploreKey implements PropertyKey<SettingList> {
-    /** The basic search strategy. */
+public enum ExploreKey implements PropertyKey<Setting<?,?>> {
+    /** The search traversal strategy. */
     TRAVERSE("traverse", "State space traversal strategy", TraverseKind.DEPTH_FIRST, true),
+    /** Model checking settings. */
+    CHECKING("checking", "Model checking mode", CheckingKind.NONE, true),
     /** The acceptor for results. */
     RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, true),
     /** The acceptor for results. */
-    ACCEPTOR("accept", "Acceptor for result values", AcceptorKind.FINAL, true),
+    ACCEPTOR("accept", "Criterion for results", AcceptorKind.FINAL, true),
     /** The matching strategy. */
     MATCHER("match", "Match strategy", MatchKind.PLAN, true),
     /** The algebra for data values. */
@@ -39,7 +41,7 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     /** Conditions for where to stop exploring. */
     //BOUNDARY("bound", "Boundary conditions for exploration", null, false),
     /** Number of results after which to stop exploring. */
-    COUNT("count", "Number of results before halting; 0 means unbounded", CountKind.ALL, true), ;
+    COUNT("count", "Result count before exploration halts", CountKind.ALL, true), ;
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;
@@ -76,24 +78,24 @@ public enum ExploreKey implements PropertyKey<SettingList> {
     private final String explanation;
 
     @Override
-    public SettingListParser parser() {
+    public SettingParser parser() {
         if (this.parser == null) {
-            this.parser = new SettingListParser(this);
+            this.parser = new SettingParser(this);
         }
         return this.parser;
     }
 
-    private SettingListParser parser;
+    private SettingParser parser;
 
     @Override
-    public SettingList getDefaultValue() {
+    public Setting<?,?> getDefaultValue() {
         if (this.defaultValue == null) {
             this.defaultValue = parser().getDefaultValue();
         }
         return this.defaultValue;
     }
 
-    private SettingList defaultValue;
+    private Setting<?,?> defaultValue;
 
     /** Returns the default setting kind for this exploration key. */
     public SettingKey getDefaultKind() {

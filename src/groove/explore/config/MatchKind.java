@@ -16,19 +16,21 @@
  */
 package groove.explore.config;
 
+import groove.util.parse.NullParser;
 import groove.util.parse.Parser;
 
 /** The matching strategy. */
 public enum MatchKind implements SettingKey {
     /** Search plan-based matching. */
-    PLAN("plan", "Search plan-based matching", MatchHint.PARSER),
+    PLAN("plan", "Match hint", "Search plan-based matching", MatchHint.PARSER),
     /** RETE-based incremental matching. */
-    RETE("rete", "Incremental (rete-based) matching", NullContent.PARSER), ;
+    RETE("rete", null, "Incremental (rete-based) matching", null), ;
 
-    private MatchKind(String name, String explanation, Parser<? extends SettingContent> parser) {
+    private MatchKind(String name, String contentName, String explanation, Parser<MatchHint> parser) {
         this.name = name;
+        this.contentName = contentName;
         this.explanation = explanation;
-        this.parser = parser;
+        this.parser = parser == null ? NullParser.instance(MatchHint.class) : parser;
     }
 
     @Override
@@ -39,6 +41,13 @@ public enum MatchKind implements SettingKey {
     private final String name;
 
     @Override
+    public String getContentName() {
+        return this.contentName;
+    }
+
+    private final String contentName;
+
+    @Override
     public String getExplanation() {
         return this.explanation;
     }
@@ -46,14 +55,14 @@ public enum MatchKind implements SettingKey {
     private final String explanation;
 
     @Override
-    public Parser<? extends SettingContent> parser() {
+    public Parser<MatchHint> parser() {
         return this.parser;
     }
 
-    private final Parser<? extends SettingContent> parser;
+    private final Parser<MatchHint> parser;
 
     @Override
-    public SettingContent getDefaultValue() {
+    public MatchHint getDefaultValue() {
         return parser().getDefaultValue();
     }
 
@@ -63,25 +72,26 @@ public enum MatchKind implements SettingKey {
     }
 
     @Override
-    public Class<? extends SettingContent> getContentType() {
+    public Class<? extends MatchHint> getContentType() {
         return parser().getValueType();
     }
 
     @Override
-    public SettingList getDefaultSetting() {
-        return SettingList.single(createSetting(getDefaultValue()));
+    public Setting<MatchKind,MatchHint> getDefaultSetting() {
+        return createSetting(getDefaultValue());
     }
 
     @Override
-    public Setting<?,?> createSettting() throws IllegalArgumentException {
+    public Setting<MatchKind,MatchHint> createSettting() throws IllegalArgumentException {
         return createSetting(null);
     }
 
     @Override
-    public Setting<?,?> createSetting(SettingContent content) throws IllegalArgumentException {
+    public Setting<MatchKind,MatchHint> createSetting(Object content)
+        throws IllegalArgumentException {
         if (!isValue(content)) {
             throw new IllegalArgumentException();
         }
-        return new DefaultSetting<MatchKind,SettingContent>(this, content);
+        return new DefaultSetting<MatchKind,MatchHint>(this, (MatchHint) content);
     }
 }

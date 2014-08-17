@@ -16,11 +16,20 @@
  */
 package groove.explore.config;
 
+import groove.util.parse.NullParser;
+import groove.util.parse.Parser;
+
 /**
- * Content payload of an exploration setting.
- * @author Arend Rensink
- * @version $Revision $
+ * Exploration content that can only have a {@code null} instance.
  */
-public interface SettingContent {
-    // empty
+public class Null {
+    /**
+     * Private constructor that is never invoked
+     */
+    private Null() {
+        assert false;
+    }
+
+    /** Parser for {@link Null}. */
+    public static Parser<Null> PARSER = NullParser.instance(Null.class);
 }
