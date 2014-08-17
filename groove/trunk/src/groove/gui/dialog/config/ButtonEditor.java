@@ -17,11 +17,12 @@
 package groove.gui.dialog.config;
 
 import groove.explore.config.ExploreKey;
-import groove.explore.config.NullContent;
+import groove.explore.config.Null;
+import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
-import groove.explore.config.SettingList;
 import groove.gui.action.Refreshable;
-import groove.gui.dialog.ConfigDialog;
+import groove.gui.dialog.ExploreConfigDialog;
+import groove.io.HTMLConverter;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
@@ -29,6 +30,8 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,14 +53,14 @@ public class ButtonEditor extends SettingEditor {
     /**
      * Creates a button editor for a given explore key.
      */
-    public ButtonEditor(ConfigDialog<?> dialog, ExploreKey key, String title) {
+    public ButtonEditor(ExploreConfigDialog dialog, ExploreKey key, String title) {
         this.dialog = dialog;
         this.key = key;
         this.factory = new EditorFactory(dialog);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         boolean content = false;
         for (SettingKey kind : key.getKindType().getEnumConstants()) {
-            content |= kind.getContentType() != NullContent.class;
+            content |= kind.getContentType() != Null.class;
         }
         add(createButtonsPanel());
         if (content) {
@@ -71,11 +74,11 @@ public class ButtonEditor extends SettingEditor {
         dialog.addRefreshable(this);
     }
 
-    private ConfigDialog<?> getDialog() {
+    private ExploreConfigDialog getDialog() {
         return this.dialog;
     }
 
-    private final ConfigDialog<?> dialog;
+    private final ExploreConfigDialog dialog;
 
     /** The editor factory for this dialog. */
     private final EditorFactory factory;
@@ -85,8 +88,8 @@ public class ButtonEditor extends SettingEditor {
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
         for (SettingKey kind : getKey().getKindType().getEnumConstants()) {
             buttons.add(getButton(kind));
+            buttons.add(Box.createGlue());
         }
-        buttons.add(Box.createGlue());
         return buttons;
     }
 
@@ -181,7 +184,7 @@ public class ButtonEditor extends SettingEditor {
     }
 
     @Override
-    public SettingList getSetting() throws FormatException {
+    public Setting<?,?> getSetting() throws FormatException {
         SettingKey selected = getSelectedKind();
         return getEditor(selected).getSetting();
     }
@@ -202,8 +205,8 @@ public class ButtonEditor extends SettingEditor {
     }
 
     @Override
-    public void setSetting(SettingList content) {
-        SettingKey kind = content.single().getKind();
+    public void setSetting(Setting<?,?> content) {
+        SettingKey kind = content.getKind();
         getButton(kind).setSelected(true);
         getEditor(kind).setSetting(content);
     }
@@ -226,12 +229,20 @@ public class ButtonEditor extends SettingEditor {
                 setSelected(true);
             }
             addItemListener(getDialog().getDirtyListener());
-            setToolTipText(StringHandler.toUpper(kind.getExplanation()));
+            setToolTipText(HTMLConverter.HTML_TAG.on(StringHandler.toUpper(kind.getExplanation())));
             getDialog().addRefreshable(this);
             addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
-                    getEditor(kind).activate();
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        getEditor(kind).activate();
+                    }
+                }
+            });
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    getDialog().setHelp(getKey(), getKind());
                 }
             });
         }

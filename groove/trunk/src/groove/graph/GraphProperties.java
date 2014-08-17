@@ -21,6 +21,7 @@ import groove.util.Properties;
 import groove.util.PropertyKey;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
+import groove.util.parse.StringParser;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -82,7 +83,7 @@ public class GraphProperties extends Properties {
             "printFormat",
             "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. "
                 + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
-            Parser.trim),
+            StringParser.TRIM),
 
         /** Alternative transition label. */
         TRANSITION_LABEL(
@@ -108,7 +109,7 @@ public class GraphProperties extends Properties {
          * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
          * @param explanation short explanation of the meaning of the key
          * @param parser parser for values for this key; if {@code null},
-         * {@link Parser#identity} is used
+         * {@link StringParser#IDENTITY} is used
          */
         private Key(String name, String explanation, Parser<?> parser) {
             this(name, null, explanation, parser);
@@ -131,7 +132,7 @@ public class GraphProperties extends Properties {
                 this.keyPhrase = keyPhrase;
             }
             this.explanation = explanation;
-            this.parser = parser == null ? Parser.identity : parser;
+            this.parser = parser == null ? StringParser.IDENTITY : parser;
         }
 
         @Override

@@ -27,6 +27,7 @@ import groove.util.ThreeValued;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
+import groove.util.parse.StringParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -213,7 +214,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
      * @param explanation short explanation of the meaning of the key
      * @param parser the parser used to convert key values to string representations and back; if {@code null},
-     * {@link Parser#identity} is used
+     * {@link StringParser#IDENTITY} is used
      */
     private GrammarKey(String name, String explanation, Parser<?> parser) {
         this(name, false, null, explanation, parser, null);
@@ -224,7 +225,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
      * @param explanation short explanation of the meaning of the key
      * @param parser the parser used to convert key values to string representations and back; if {@code null},
-     * {@link Parser#identity} is used
+     * {@link StringParser#IDENTITY} is used
      * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
      * {@code this} is used
      */
@@ -240,7 +241,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * the key phrase is constructed from {@code name}
      * @param explanation short explanation of the meaning of the key
      * @param parser the parser used to convert key values to string representations and back; if {@code null},
-     * {@link Parser#identity} is used
+     * {@link StringParser#IDENTITY} is used
      * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
      * {@code this} is used
      */
@@ -250,7 +251,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         this.system = system;
         this.keyPhrase = keyPhrase == null ? StringHandler.unCamel(name, false) : keyPhrase;
         this.explanation = explanation;
-        this.parser = parser == null ? Parser.identity : parser;
+        this.parser = parser == null ? StringParser.IDENTITY : parser;
         this.checker = checker;
     }
 

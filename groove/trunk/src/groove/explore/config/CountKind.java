@@ -16,6 +16,7 @@
  */
 package groove.explore.config;
 
+import groove.util.parse.NullParser;
 import groove.util.parse.Parser;
 
 /**
@@ -23,17 +24,17 @@ import groove.util.parse.Parser;
  * @version $Revision $
  */
 public enum CountKind implements SettingKey {
-    /** The single key, wrapping a natural number that is the actual count. */
-    ALL("All", "Continues irregardless of the number of results", NullContent.PARSER),
-    /** The single key, wrapping a natural number that is the actual count. */
-    ONE("One", "Halts after the first result", NullContent.PARSER),
-    /** The single key, wrapping a natural number that is the actual count. */
-    COUNT("Count", "Number of results before halting; 0 means unbounded", IntContent.NAT_PARSER), ;
+    /** Continue regardless of results found. */
+    ALL("All", "Continue regardless of the number of results", null),
+    /** Halt after the first result. */
+    ONE("One", "Halt after the first result", null),
+    /** User-defined count; 0 means unbounded. */
+    COUNT("Count", "User-defined; 0 means unbounded", Parser.natural), ;
 
-    private CountKind(String name, String explanation, Parser<? extends SettingContent> parser) {
+    private CountKind(String name, String explanation, Parser<Integer> parser) {
         this.name = name;
         this.explanation = explanation;
-        this.parser = parser;
+        this.parser = parser == null ? NullParser.instance(Integer.class) : parser;
     }
 
     @Override
@@ -44,6 +45,11 @@ public enum CountKind implements SettingKey {
     private final String name;
 
     @Override
+    public String getContentName() {
+        return "Result count";
+    }
+
+    @Override
     public String getExplanation() {
         return this.explanation;
     }
@@ -51,14 +57,14 @@ public enum CountKind implements SettingKey {
     private final String explanation;
 
     @Override
-    public Parser<? extends SettingContent> parser() {
+    public Parser<Integer> parser() {
         return this.parser;
     }
 
-    private final Parser<? extends SettingContent> parser;
+    private final Parser<Integer> parser;
 
     @Override
-    public SettingContent getDefaultValue() {
+    public Integer getDefaultValue() {
         return parser().getDefaultValue();
     }
 
@@ -68,26 +74,25 @@ public enum CountKind implements SettingKey {
     }
 
     @Override
-    public SettingList getDefaultSetting() {
-        return SettingList.single(createSetting(getDefaultValue()));
+    public Setting<CountKind,Integer> getDefaultSetting() {
+        return createSetting(getDefaultValue());
     }
 
     @Override
-    public Setting<CountKind,IntContent> createSettting() throws IllegalArgumentException {
+    public Setting<CountKind,Integer> createSettting() throws IllegalArgumentException {
         return createSetting(null);
     }
 
     @Override
-    public Setting<CountKind,IntContent> createSetting(SettingContent content)
-        throws IllegalArgumentException {
+    public Setting<CountKind,Integer> createSetting(Object content) throws IllegalArgumentException {
         if (!isValue(content)) {
             throw new IllegalArgumentException();
         }
-        return new DefaultSetting<CountKind,IntContent>(this, (IntContent) content);
+        return new DefaultSetting<CountKind,Integer>(this, (Integer) content);
     }
 
     @Override
-    public Class<? extends SettingContent> getContentType() {
+    public Class<?> getContentType() {
         return parser().getValueType();
     }
 }

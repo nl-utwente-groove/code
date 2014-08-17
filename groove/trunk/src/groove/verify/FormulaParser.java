@@ -22,24 +22,6 @@ import static groove.util.parse.TermTreeParser.TokenClaz.CONST;
 import static groove.util.parse.TermTreeParser.TokenClaz.LPAR;
 import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
 import static groove.util.parse.TermTreeParser.TokenClaz.RPAR;
-import static groove.verify.LogicOp.ALWAYS;
-import static groove.verify.LogicOp.AND;
-import static groove.verify.LogicOp.EQUIV;
-import static groove.verify.LogicOp.EVENTUALLY;
-import static groove.verify.LogicOp.EXISTS;
-import static groove.verify.LogicOp.FALSE;
-import static groove.verify.LogicOp.FOLLOWS;
-import static groove.verify.LogicOp.FORALL;
-import static groove.verify.LogicOp.IMPLIES;
-import static groove.verify.LogicOp.NEXT;
-import static groove.verify.LogicOp.NOT;
-import static groove.verify.LogicOp.OR;
-import static groove.verify.LogicOp.PROP;
-import static groove.verify.LogicOp.RELEASE;
-import static groove.verify.LogicOp.S_RELEASE;
-import static groove.verify.LogicOp.TRUE;
-import static groove.verify.LogicOp.UNTIL;
-import static groove.verify.LogicOp.W_UNTIL;
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.annotation.Help;
@@ -50,15 +32,14 @@ import groove.util.parse.TermTreeParser;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Renewed parser for temporal formulas, following the {@code groove.util.parse} architecture.
+ * Parser for temporal formulas, following the {@code groove.util.parse} architecture.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -167,26 +148,26 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
 
     /**
      * Returns a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.
-     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators.
+     * @param logic the logic variant concerned
      */
-    public static Map<String,String> getDocMap(boolean ctl) {
-        Map<String,String> result = docMapMap.get(ctl);
+    public static Map<String,String> getDocMap(Logic logic) {
+        Map<String,String> result = docMapMap.get(logic);
         if (result == null) {
-            docMapMap.put(ctl, result = computeDocMap(ctl));
+            docMapMap.put(logic, result = computeDocMap(logic));
         }
         return result;
     }
 
     /**
      * Computes a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.
-     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators.
+     * @param logic the logic variant concerned
      */
-    private static Map<String,String> computeDocMap(boolean ctl) {
+    private static Map<String,String> computeDocMap(Logic logic) {
         Map<String,String> result = new LinkedHashMap<String,String>();
         for (Field field : LogicOp.class.getFields()) {
             if (field.isEnumConstant()) {
                 LogicOp token = nameToTokenMap.get(field.getName());
-                if ((ctl ? FormulaParser.CTLTokens : FormulaParser.LTLTokens).contains(token)) {
+                if (logic.getOps().contains(token)) {
                     Help help = Help.createHelp(field, nameToSymbolMap);
                     if (help != null) {
                         result.put(help.getItem(), help.getTip());
@@ -201,8 +182,8 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
     private static Map<String,LogicOp> nameToTokenMap = new HashMap<String,LogicOp>();
     /** Mapping from token symbols to token values. */
     private static Map<String,String> nameToSymbolMap = new HashMap<String,String>();
-    private static Map<Boolean,Map<String,String>> docMapMap =
-        new HashMap<Boolean,Map<String,String>>();
+    private static Map<Logic,Map<String,String>> docMapMap = new EnumMap<Logic,Map<String,String>>(
+        Logic.class);
 
     static {
         for (LogicOp token : LogicOp.values()) {
@@ -211,17 +192,39 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
         }
     }
 
-    /** Returns the singleton instance of this parser. */
+    /** Returns the singleton instance of this parser not specialised to any logic. */
     public final static FormulaParser instance() {
         return INSTANCE;
     }
 
+    /** Returns the singleton instance of this parser for CTL or LTL. */
+    public final static FormulaParser instance(Logic logic) {
+        return logic == Logic.LTL ? LTL_INSTANCE : CTL_INSTANCE;
+    }
+
     private final static FormulaParser INSTANCE = new FormulaParser();
-    /** Set of tokens that can occur in CTL formulas. */
-    private final static Set<LogicOp> CTLTokens = EnumSet.of(PROP, TRUE, FALSE, NOT, OR, AND,
-        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY, FORALL, EXISTS, LogicOp.LPAR);
-    /** Set of tokens that can occur in LTL formulas. */
-    private final static Set<LogicOp> LTLTokens = EnumSet.of(PROP, TRUE, FALSE, NOT, OR, AND,
-        IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE, S_RELEASE, ALWAYS, EVENTUALLY,
-        LogicOp.LPAR);
+    private final static FormulaParser LTL_INSTANCE = new FormulaParser() {
+        @Override
+        public Formula parse(String input) {
+            Formula result = super.parse(input);
+            try {
+                result.toLtlFormula();
+            } catch (FormatException exc) {
+                // do nothing; errors are now stored in the formula object
+            }
+            return result;
+        }
+    };
+    private final static FormulaParser CTL_INSTANCE = new FormulaParser() {
+        @Override
+        public Formula parse(String input) {
+            Formula result = super.parse(input);
+            try {
+                result.toCtlFormula();
+            } catch (FormatException exc) {
+                // do nothing; errors are now stored in the formula object
+            }
+            return result;
+        }
+    };
 }

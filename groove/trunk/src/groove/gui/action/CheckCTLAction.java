@@ -12,6 +12,7 @@ import groove.util.parse.FormatException;
 import groove.verify.CTLMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
+import groove.verify.Logic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +56,10 @@ public class CheckCTLAction extends SimulatorAction {
     private StringDialog getCtlFormulaDialog() {
         if (this.ctlFormulaDialog == null) {
             this.ctlFormulaDialog =
-                new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(true)) {
+                new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(Logic.CTL)) {
                     @Override
                     public String parse(String text) throws FormatException {
-                        Formula.parse(text).toCtlFormula();
+                        Formula.parse(Logic.CTL, text);
                         return text;
                     }
                 };

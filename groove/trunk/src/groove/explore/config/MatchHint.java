@@ -31,7 +31,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class MatchHint extends Duo<List<String>> implements SettingContent {
+public class MatchHint extends Duo<List<String>> {
     /**
      * Constructs an empty match hint.
      */

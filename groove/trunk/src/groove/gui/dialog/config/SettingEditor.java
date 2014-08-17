@@ -17,8 +17,8 @@
 package groove.gui.dialog.config;
 
 import groove.explore.config.ExploreKey;
+import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
-import groove.explore.config.SettingList;
 import groove.gui.action.Refreshable;
 import groove.util.parse.FormatException;
 
@@ -43,10 +43,10 @@ abstract public class SettingEditor extends JPanel implements Refreshable {
      * Returns the content according to the current state of the editor.
      * @throws FormatException if the current state cannot be parsed.
      */
-    abstract public SettingList getSetting() throws FormatException;
+    abstract public Setting<?,?> getSetting() throws FormatException;
 
     /** Fills the editor with a certain content. */
-    abstract public void setSetting(SettingList content);
+    abstract public void setSetting(Setting<?,?> content);
 
     /** Indicates that the editor is in an erroneous state. */
     abstract public boolean hasError();

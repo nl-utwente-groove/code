@@ -17,12 +17,13 @@
 package groove.gui.dialog.config;
 
 import groove.explore.config.AcceptorKind;
+import groove.explore.config.CheckingKind;
 import groove.explore.config.CountKind;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.MatchKind;
 import groove.explore.config.SettingKey;
 import groove.explore.config.TraverseKind;
-import groove.gui.dialog.ConfigDialog;
+import groove.gui.dialog.ExploreConfigDialog;
 
 import javax.swing.JPanel;
 
@@ -34,7 +35,7 @@ import javax.swing.JPanel;
  */
 public class EditorFactory {
     /** Constructs a factory for a given dialog. */
-    public EditorFactory(ConfigDialog<?> dialog) {
+    public EditorFactory(ExploreConfigDialog dialog) {
         this.dialog = dialog;
     }
 
@@ -51,6 +52,8 @@ public class EditorFactory {
             return new ButtonEditor(getDialog(), key, "Match strategy");
         case TRAVERSE:
             return new ButtonEditor(getDialog(), key, "Traversal strategy");
+        case CHECKING:
+            return new ButtonEditor(getDialog(), key, "Property to check");
         case ISO:
             return new CheckBoxEditor(getDialog(), key, "Isomorphicm checking");
         case RANDOM:
@@ -92,25 +95,32 @@ public class EditorFactory {
         case TRAVERSE:
             switch ((TraverseKind) kind) {
             case BEST_FIRST:
-                result = new TextFieldEditor(getDialog(), holder, key, kind);
+                //result = new TextFieldEditor(getDialog(), holder, key, kind);
                 break;
+            }
+            break;
+        case CHECKING:
+            switch ((CheckingKind) kind) {
+            case LTL_CHECK:
+            case CTL_CHECK:
+                result = new TextFieldEditor(getDialog(), holder, key, kind);
             }
             break;
         case ALGEBRA:
         case ISO:
         case RANDOM:
             // these keys do not have content, hence no holder
-            result = new NullEditor(null, key, kind);
+            result = new NullEditor(getDialog(), null, key, kind);
         }
         if (result == null) {
-            result = new NullEditor(holder, key, kind);
+            result = new NullEditor(getDialog(), holder, key, kind);
         }
         return result;
     }
 
-    private ConfigDialog<?> getDialog() {
+    private ExploreConfigDialog getDialog() {
         return this.dialog;
     }
 
-    private final ConfigDialog<?> dialog;
+    private final ExploreConfigDialog dialog;
 }

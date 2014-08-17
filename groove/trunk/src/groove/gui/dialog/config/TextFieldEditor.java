@@ -17,12 +17,12 @@
 package groove.gui.dialog.config;
 
 import groove.explore.config.ExploreKey;
-import groove.explore.config.NullContent;
-import groove.explore.config.SettingContent;
+import groove.explore.config.Null;
+import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
-import groove.explore.config.SettingList;
 import groove.gui.dialog.ConfigDialog;
 import groove.gui.dialog.ConfigDialog.DirtyListener;
+import groove.util.parse.Fallible;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
@@ -45,9 +45,9 @@ public class TextFieldEditor extends SettingEditor {
      */
     public TextFieldEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
         setLayout(new BorderLayout());
-        assert kind.getContentType() != NullContent.class;
+        assert kind.getContentType() != Null.class;
         this.dialog = dialog;
-        JLabel label = this.label = new JLabel(StringHandler.toUpper(kind.getName()) + ": ");
+        JLabel label = this.label = new JLabel(StringHandler.toUpper(kind.getContentName()) + ": ");
         add(label, BorderLayout.WEST);
         add(getTextField(), BorderLayout.CENTER);
         this.holder = holder;
@@ -70,11 +70,11 @@ public class TextFieldEditor extends SettingEditor {
 
     private final JPanel holder;
 
-    private final Parser<? extends SettingContent> getContentParser() {
+    private final Parser<?> getContentParser() {
         return this.contentParser;
     }
 
-    private final Parser<? extends SettingContent> contentParser;
+    private final Parser<?> contentParser;
 
     private JLabel getLabel() {
         return this.label;
@@ -118,23 +118,25 @@ public class TextFieldEditor extends SettingEditor {
     @Override
     public void activate() {
         getTextField().setText("");
+        testError();
         CardLayout layout = (CardLayout) getHolder().getLayout();
         layout.show(getHolder(), getKind().getName());
+        getTextField().requestFocus();
     }
 
     @Override
-    public SettingList getSetting() throws FormatException {
+    public Setting<?,?> getSetting() throws FormatException {
         String error = getError();
         if (error == null) {
-            return getKind().createSetting(getContentParser().parse(getTextField().getText())).wrap();
+            return getKind().createSetting(getContentParser().parse(getTextField().getText()));
         } else {
             throw new FormatException(error);
         }
     }
 
     @Override
-    public void setSetting(SettingList setting) {
-        getTextField().setText(getContentParser().toParsableString(setting.single().getContent()));
+    public void setSetting(Setting<?,?> setting) {
+        getTextField().setText(getContentParser().toParsableString(setting.getContent()));
     }
 
     @Override
@@ -144,16 +146,32 @@ public class TextFieldEditor extends SettingEditor {
 
     @Override
     public String getError() {
-        String result;
+        String result = null;
         String text = getTextField().getText();
-        if (getContentParser().accepts(text)) {
-            result = null;
-        } else if (text.isEmpty()) {
-            result = "Empty string is not valid for " + getKind().getName();
-        } else {
-            result = "Value '" + text + "' is not valid for " + getKind().getName();
+        try {
+            Object parsedValue = getContentParser().parse(text);
+            if (parsedValue instanceof Fallible) {
+                Fallible fallible = (Fallible) parsedValue;
+                if (fallible.hasErrors()) {
+                    result = fallible.getErrors().iterator().next().toString();
+                }
+            }
+        } catch (FormatException exc) {
+            if (text.isEmpty()) {
+                result = "Empty string is not valid";
+            } else {
+                result = "Value '" + text + "' is not valid";
+            }
         }
-        return result;
+        return result == null ? null : "Error in " + getKind().getContentName() + ": " + result;
+    }
+
+    /** Tests if the editor currently contains an erroneous value, and if so,
+     * reports it to the dialog.
+     */
+    private void testError() {
+        getTextField().setForeground(hasError() ? Color.RED : Color.BLACK);
+        getDialog().setError(getKey(), getError());
     }
 
     private class TextDirtyListener extends DirtyListener {
@@ -163,8 +181,7 @@ public class TextFieldEditor extends SettingEditor {
 
         @Override
         protected void notifyDocumentChanged() {
-            getTextField().setForeground(hasError() ? Color.RED : Color.BLACK);
-            getDialog().setError(getKey(), getError());
+            testError();
             super.notifyDocumentChanged();
         }
     }
