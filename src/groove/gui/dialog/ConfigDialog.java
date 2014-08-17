@@ -804,6 +804,7 @@ abstract public class ConfigDialog<C> extends JDialog {
             if (askSave()) {
                 String newName = generateNewName(suggestedName);
                 addConfig(newName, createConfig());
+                refreshActions();
             }
         }
 

@@ -20,6 +20,7 @@ import groove.explore.config.ExploreKey;
 import groove.explore.config.Setting;
 import groove.explore.config.TraverseKind;
 import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -78,9 +79,15 @@ public class ExploreConfig {
                 continue;
             }
             result.append(OPTION);
-            result.append(key.getName());
-            result.append(SEPARATOR);
-            result.append(key.parser().toParsableString(setting));
+            StringBuilder arg = new StringBuilder();
+            arg.append(key.getName());
+            arg.append(SEPARATOR);
+            arg.append(key.parser().toParsableString(setting));
+            if (arg.indexOf(" ") > 0) {
+                result.append(StringHandler.toQuoted(arg.toString(), '"'));
+            } else {
+                result.append(arg);
+            }
             result.append(" ");
         }
         return result.toString().trim();

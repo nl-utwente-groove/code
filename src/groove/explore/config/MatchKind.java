@@ -90,7 +90,8 @@ public enum MatchKind implements SettingKey {
     public Setting<MatchKind,MatchHint> createSetting(Object content)
         throws IllegalArgumentException {
         if (!isValue(content)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(String.format("'%s' is not a valid value for '%s'",
+                content, this));
         }
         return new DefaultSetting<MatchKind,MatchHint>(this, (MatchHint) content);
     }

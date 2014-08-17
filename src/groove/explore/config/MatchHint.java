@@ -71,24 +71,21 @@ public class MatchHint extends Duo<List<String>> {
         }
 
         @Override
-        public MatchHint parse(String input) {
+        public MatchHint parse(String input) throws FormatException {
             MatchHint result;
             if (input == null || input.isEmpty()) {
                 result = getDefaultValue();
             } else {
-                try {
-                    String[] split = exprParser.split(input, ",");
-                    if (split.length == 2) {
-                        String rare = toUnquoted(split[0]);
-                        String common = toUnquoted(split[1]);
-                        List<String> rareList = Arrays.asList(exprParser.split(rare, " "));
-                        List<String> commonList = Arrays.asList(exprParser.split(common, " "));
-                        result = new MatchHint(rareList, commonList);
-                    } else {
-                        result = null;
-                    }
-                } catch (FormatException exc) {
-                    result = null;
+                String[] split = exprParser.split(input, ",");
+                if (split.length == 2) {
+                    String rare = toUnquoted(split[0]);
+                    String common = toUnquoted(split[1]);
+                    List<String> rareList = Arrays.asList(exprParser.split(rare, " "));
+                    List<String> commonList = Arrays.asList(exprParser.split(common, " "));
+                    result = new MatchHint(rareList, commonList);
+                } else {
+                    throw new FormatException(
+                        "Match hint should be comma-separated pair of label lists");
                 }
             }
             return result;

@@ -122,4 +122,23 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     }
 
     private final boolean singular;
+
+    /** Returns a mapping from strings to corresponding values of this key's setting kind. */
+    public KindMap getKindMap() {
+        if (this.kindMap == null) {
+            this.kindMap = new KindMap(getKindType());
+            switch (this) {
+            case COUNT:
+                this.kindMap.put("", CountKind.COUNT);
+                break;
+            case ISO:
+            case RANDOM:
+                this.kindMap.put("yes", BooleanKey.TRUE);
+                this.kindMap.put("no", BooleanKey.FALSE);
+            }
+        }
+        return this.kindMap;
+    }
+
+    private KindMap kindMap;
 }

@@ -29,7 +29,7 @@ public enum CountKind implements SettingKey {
     /** Halt after the first result. */
     ONE("One", "Halt after the first result", null),
     /** User-defined count; 0 means unbounded. */
-    COUNT("Count", "User-defined; 0 means unbounded", Parser.natural), ;
+    COUNT("Value", "User-defined; 0 means unbounded", Parser.natural), ;
 
     private CountKind(String name, String explanation, Parser<Integer> parser) {
         this.name = name;

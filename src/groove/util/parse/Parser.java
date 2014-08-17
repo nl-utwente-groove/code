@@ -242,11 +242,15 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public I parse(String input) {
+        public I parse(String input) throws FormatException {
             if (input == null || input.length() == 0) {
                 return getDefaultValue();
             } else {
-                return createContent(Integer.parseInt(input));
+                try {
+                    return createContent(Integer.parseInt(input));
+                } catch (NumberFormatException exc) {
+                    throw new FormatException(exc.getMessage());
+                }
             }
         }
 
