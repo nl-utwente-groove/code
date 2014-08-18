@@ -11,7 +11,6 @@ options {
 package groove.control.parse;
 import groove.control.*;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseTreeAdaptor;
 import groove.util.antlr.ParseInfo;
 import java.util.LinkedList;
