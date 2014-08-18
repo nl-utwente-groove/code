@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-08-18 20:15:52
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-08-18 21:43:55
 
 package groove.control.parse;
 import groove.control.*;
@@ -1626,32 +1626,37 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:14: '//' ( options {greedy=false; } : . )* '\\n'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:12: ( '//' (~ ( '\\n' ) )* )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:14: '//' (~ ( '\\n' ) )*
             {
             match("//"); 
 
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:19: ( options {greedy=false; } : . )*
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:19: (~ ( '\\n' ) )*
             loop10:
             do {
                 int alt10=2;
                 int LA10_0 = input.LA(1);
 
-                if ( (LA10_0=='\n') ) {
-                    alt10=2;
-                }
-                else if ( ((LA10_0 >= '\u0000' && LA10_0 <= '\t')||(LA10_0 >= '\u000B' && LA10_0 <= '\uFFFF')) ) {
+                if ( ((LA10_0 >= '\u0000' && LA10_0 <= '\t')||(LA10_0 >= '\u000B' && LA10_0 <= '\uFFFF')) ) {
                     alt10=1;
                 }
 
 
                 switch (alt10) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:500:47: .
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:
             	    {
-            	    matchAny(); 
+            	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\uFFFF') ) {
+            	        input.consume();
+            	    }
+            	    else {
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;
+            	    }
+
 
             	    }
             	    break;
@@ -1661,8 +1666,6 @@ public class CtrlLexer extends Lexer {
                 }
             } while (true);
 
-
-            match('\n'); 
 
              _channel=HIDDEN; 
 
