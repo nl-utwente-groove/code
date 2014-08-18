@@ -497,7 +497,7 @@ LCURLY    : '{' ;
 RCURLY    : '}' ;
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
-SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };
+SL_COMMENT : '//' ~('\n')* { $channel=HIDDEN; };
 
 WS  :   (   ' '
         |   '\t'
