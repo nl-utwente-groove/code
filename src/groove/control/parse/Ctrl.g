@@ -49,7 +49,6 @@ import java.util.LinkedList;
 package groove.control.parse;
 import groove.control.*;
 import groove.util.antlr.*;
-import groove.grammar.model.FormatErrorSet;
 import java.util.LinkedList;
 }
 
