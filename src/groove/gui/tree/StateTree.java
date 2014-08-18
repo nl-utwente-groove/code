@@ -470,7 +470,7 @@ public class StateTree extends JTree implements SimulatorListener {
         }
     }
 
-    /** Callback factory method to creaet a {@link TreePath} object for a node. */
+    /** Callback factory method to create a {@link TreePath} object for a node. */
     private TreePath createPath(DefaultMutableTreeNode node) {
         return new TreePath(node.getPath());
     }
@@ -492,7 +492,7 @@ public class StateTree extends JTree implements SimulatorListener {
 
     /**
      * Retrieves the child of a given parent node that is
-     * a number tree node with a given number, if any.
+     * a numbered tree node with a given number, if any.
      * @return the correctly numbered child, or {@code null} if there
      * is none such
      */
@@ -521,7 +521,7 @@ public class StateTree extends JTree implements SimulatorListener {
      * top level of range nodes.
      */
     private boolean hasRangeNodes() {
-        return this.states.length >= RANGE_SIZE;
+        return this.states.length > RANGE_SIZE;
     }
 
     /** Returns the simulator to which the state list belongs. */
