@@ -113,7 +113,7 @@ import_decl
 
 /** Dot-separated sequence of identifiers, translated to a flattened identifier. */
 qual_name[boolean any]
-  : id=ID ( DOT rest=qual_name[any] )?
+  : ID ( DOT rest=qual_name[any] )?
                      -> { helper.toQualName($ID, $rest.tree) }
   | { any }? ( ASTERISK DOT )?
              ( ANY   -> { helper.toQualName($ASTERISK, $ANY) }
@@ -407,7 +407,7 @@ var_type
 	  //@B The type of real number values.
 	  REAL
 	;
-	
+
 // LEXER RULES
 
 ALAP     : 'alap';
@@ -474,7 +474,10 @@ EscapeSequence
     )          
   ;    
 
-ID  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
+ID
+  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
+  | BQUOTE ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')* BQUOTE
+  ;
 
 AMP       : '&' ;
 DOT       : '.' ;
@@ -486,6 +489,7 @@ ASTERISK  : '*' ;
 DONT_CARE	: '_' ;
 MINUS     : '-' ;
 QUOTE     : '"' ;
+BQUOTE    : '`' ;
 BSLASH    : '\\';
 COMMA     : ',' ;
 SEMI      : ';' ;
