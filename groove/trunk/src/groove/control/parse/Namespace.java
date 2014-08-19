@@ -293,6 +293,11 @@ public class Namespace implements ParseInfo {
         return this.errors;
     }
 
+    /** Indicates if any errors were collected. */
+    public boolean hasError() {
+        return !getErrors().isEmpty();
+    }
+
     private final FormatErrorSet errors = new FormatErrorSet();
 
     /** Returns a prototype term, to be shared by all programs compiled
