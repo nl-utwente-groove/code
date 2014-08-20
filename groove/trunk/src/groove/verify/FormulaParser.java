@@ -220,7 +220,7 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
         public Formula parse(String input) {
             Formula result = super.parse(input);
             try {
-                result.toCtlFormula();
+                result = result.toCtlFormula();
             } catch (FormatException exc) {
                 // do nothing; errors are now stored in the formula object
             }

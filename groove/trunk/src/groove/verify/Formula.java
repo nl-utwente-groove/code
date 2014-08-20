@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 
@@ -131,7 +131,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
 
     /**
      * Appends a given string buffer with a string description of this formula,
-     * surrounded by parentheses. 
+     * surrounded by parentheses.
      */
     private void toParString(StringBuffer b) {
         b.append('(');
@@ -195,7 +195,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
         }
     }
 
-    /** 
+    /**
      * Returns the particular logic of this formula, if any.
      * Convenience method for {@code getLogic() != null}.
      * @see #getLogic()
@@ -216,7 +216,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
 
     private Logic logic;
 
-    /** 
+    /**
      * Tests if this formula is of the restricted format corresponding
      * to a directly model checkable CTL formula.
      */
@@ -230,7 +230,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
         return result;
     }
 
-    /** 
+    /**
      * Converts this formula to a CTL formula, if possible.
      * This succeeds if and only if all temporal operators in this
      * formula are immediately nested inside a path quantifier, and
@@ -260,7 +260,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
     /** The CTL formula obtained by converting this formula. */
     private Formula ctlFormula;
 
-    /** 
+    /**
      * Converts this formula to a CTL formula, if possible.
      * This succeeds if and only if all temporal operators in this
      * formula are immediately nested inside a path quantifier, and
@@ -270,25 +270,30 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * that are illegal in CTL.
      */
     private Formula computeCtlFormula() throws FormatException {
+        Formula result;
         switch (getOp()) {
         case PROP:
         case TRUE:
         case FALSE:
-            return this;
+            result = this;
+            break;
         case CALL:
             throw new FormatException("Rule call of '%s' not yet supported in CTL",
                 getId().getName());
         case ARG:
             // this is called recursively but can be ignored
-            return null;
+            result = null;
+            break;
         case NOT:
-            return Not(getArg1().toCtlFormula());
+            result = Not(getArg1().toCtlFormula());
+            break;
         case OR:
         case AND:
         case IMPLIES:
         case FOLLOWS:
         case EQUIV:
-            return new Formula(getOp(), getArg1().toCtlFormula(), getArg2().toCtlFormula());
+            result = new Formula(getOp(), getArg1().toCtlFormula(), getArg2().toCtlFormula());
+            break;
         case NEXT:
         case UNTIL:
         case ALWAYS:
@@ -307,14 +312,19 @@ public class Formula extends TermTree<LogicOp,Formula> {
             Formula subArg2 = getArg1().getArg2();
             switch (subKind) {
             case NEXT:
-                return new Formula(getOp(), Next(subArg1.toCtlFormula()));
+                result = new Formula(getOp(), Next(subArg1.toCtlFormula()));
+                break;
             case ALWAYS:
                 LogicOp dual = getOp() == EXISTS ? FORALL : EXISTS;
-                return Not(new Formula(dual, Until(True(), Not(subArg1.toCtlFormula()))));
+                result = Not(new Formula(dual, Until(True(), Not(subArg1.toCtlFormula()))));
+                break;
             case EVENTUALLY:
-                return new Formula(getOp(), Until(True(), subArg1.toCtlFormula()));
+                result = new Formula(getOp(), Until(True(), subArg1.toCtlFormula()));
+                break;
             case UNTIL:
-                return new Formula(getOp(), Until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                result =
+                    new Formula(getOp(), Until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                break;
             case W_UNTIL:
             case RELEASE:
             case S_RELEASE:
@@ -325,12 +335,15 @@ public class Formula extends TermTree<LogicOp,Formula> {
                     "Path quantifier '%s' must have nested temporal operator in CTL formula",
                     getOp());
             }
+            break;
         default:
             throw new FormatException("Unknown temporal operator %s", getOp());
         }
+        result.setParseString(getParseString());
+        return result;
     }
 
-    /** 
+    /**
      * Converts this formula to a NASA LTL formula, if possible.
      * This succeeds if and only if the formula does not contain
      * {@link LogicOp#FORALL} or {@link LogicOp#EXISTS} operators.
@@ -359,7 +372,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
     /** The LTL formula obtained by converting this formula. */
     private gov.nasa.ltl.trans.Formula<String> ltlFormula;
 
-    /** 
+    /**
      * Converts this formula to a NASA LTL formula, if possible.
      * This succeeds if and only if the formula does not contain
      * {@link LogicOp#FORALL} or {@link LogicOp#EXISTS} operators.
