@@ -148,10 +148,10 @@ public class CtrlHelper {
         String topText;
         Token topToken;
         if (asterisk == null) {
-            topText = getIdText(call);
+            topText = getText(call);
             topToken = call;
         } else {
-            topText = QualName.extend(asterisk.getText(), getIdText(call));
+            topText = QualName.extend(getText(asterisk), getText(call));
             topToken = asterisk;
         }
         CommonToken top = new CommonToken(call.getType(), topText);
@@ -179,8 +179,8 @@ public class CtrlHelper {
         } else {
             Token subTop = subTree.getToken();
             String qualText =
-                subTop.getText().isEmpty() ? getIdText(init) : QualName.extend(getIdText(init),
-                    subTop.getText());
+                getText(subTop).isEmpty() ? getText(init) : QualName.extend(getText(init),
+                    getText(subTop));
             CommonToken top = new CommonToken(subTop.getType(), qualText);
             top.setLine(init.getLine());
             top.setTokenIndex(init.getTokenIndex());
@@ -215,12 +215,12 @@ public class CtrlHelper {
     }
 
     /**
-     * Retrieves the possibly backquoted text in an ID-token.
+     * Retrieves the text in a token,
+     * while stripping the optional backquotes from an ID token
      */
-    String getIdText(Token idToken) {
-        assert idToken.getType() == CtrlParser.ID;
+    String getText(Token idToken) {
         String result = idToken.getText();
-        if (!result.isEmpty() && result.charAt(0) == '`') {
+        if (idToken.getType() == CtrlParser.ID && !result.isEmpty() && result.charAt(0) == '`') {
             assert result.charAt(result.length() - 1) == '`';
             result = result.substring(1, result.length() - 1);
         }
