@@ -181,7 +181,9 @@ public class Template {
             }
             state.addVars(vars);
         }
+        // mapping from locations to their predecessors
         Map<Location,Set<Location>> inMap = getPredMap();
+        // queue of locations to be processed
         Queue<Location> todo = new LinkedList<Location>(getLocations());
         while (!todo.isEmpty()) {
             Location loc = todo.poll();

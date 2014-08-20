@@ -163,11 +163,9 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     @Override
     public List<CtrlVar> getVars() {
         if (this.vars == null) {
-            if (isSpecial()) {
-                this.vars = Collections.emptyList();
-            } else {
-                getTemplate().initVars();
-            }
+            // this may only happen before the variables have been
+            // properly initialised; use the empty list as initial value.
+            this.vars = Collections.emptyList();
         }
         return this.vars;
     }
