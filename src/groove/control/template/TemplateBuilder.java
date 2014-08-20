@@ -130,7 +130,6 @@ public class TemplateBuilder {
                 if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
                     // we need an intermediate location to go to after the property test
                     Location aux = result.addLocation(0);
-                    //aux.setVars(loc.getVars());
                     SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux);
                     locAttempt.addAll(switches);
                     loc.setType(Type.TRIAL);
@@ -296,8 +295,12 @@ public class TemplateBuilder {
         assert orig.getStart().getTransience() == 0;
         Partition partition = computePartition(orig);
         Map<Template,Template> result = computeQuotient(partition);
+        for (Template newTemplate : result.values()) {
+            newTemplate.initVars();
+        }
         for (Map.Entry<Procedure,Template> e : this.templateMap.entrySet()) {
-            e.setValue(result.get(e.getValue()));
+            Template newTemplate = result.get(e.getValue());
+            e.setValue(newTemplate);
         }
         return result.get(orig);
     }
