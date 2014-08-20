@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.verify;
@@ -20,6 +20,7 @@ import groove.explore.Generator;
 import groove.explore.Generator.LTSLabelsHandler;
 import groove.explore.util.LTSLabels;
 import groove.graph.Graph;
+import groove.lts.GTS;
 import groove.util.Groove;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
@@ -47,7 +48,7 @@ import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Command-line tool directing the model checking process.
- * 
+ *
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-03-28 07:03:03 $
  */
@@ -118,19 +119,29 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
         for (Formula property : this.properties) {
-            maxWidth = Math.max(maxWidth, property.toString().length());
-            CTLMarker marker = new CTLMarker(property, model, this.ltsLabels);
+            maxWidth = Math.max(maxWidth, property.getParseString().length());
+            CTLMarker marker = createMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
         emit("%nModel checking outcome:%n");
         for (Formula property : this.properties) {
-            emit("    %-" + maxWidth + "s : %s%n", property, outcome.get(property) ? "satisfied"
-                : "violated");
+            emit("    %-" + maxWidth + "s : %s%n", property.getParseString(), outcome.get(property)
+                ? "satisfied" : "violated");
         }
         long endTime = System.currentTimeMillis();
 
         emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
+    }
+
+    /** Factory method to create a marker for a given property and model.
+     */
+    private CTLMarker createMarker(Formula property, Graph model) throws FormatException {
+        if (model instanceof GTS) {
+            return new CTLMarker(property, (GTS) model);
+        } else {
+            return new CTLMarker(property, model, this.ltsLabels);
+        }
     }
 
     @Option(name = "-ef", metaVar = "flags", usage = "" + "Special GTS labels. Legal values are:\n" //
@@ -184,7 +195,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         @Override
         protected Formula parse(String argument) throws CmdLineException {
             try {
-                return Formula.parse(Logic.CTL, argument);
+                return Formula.parse(Logic.CTL, argument).toCtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }
