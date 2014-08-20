@@ -106,12 +106,18 @@ stat
        stat
        { helper.startBranch(); }
        stat
+       // if the while condition fails straight away, this equates
+       // an empty else branch, in which no variables are initialised
+       { helper.nextBranch(); }
        { helper.endBranch(); }
      )
   | ^( UNTIL
        stat
        { helper.startBranch(); }
        stat
+       // if the until condition fails straight away, this equates
+       // an empty else branch, in which no variables are initialised
+       { helper.nextBranch(); }
        { helper.endBranch(); }
      )
   | ^( TRY
