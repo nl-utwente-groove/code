@@ -895,7 +895,8 @@ abstract public class ConfigDialog<C> extends JDialog {
         }
 
         /** Sets the name error to a given value.
-         * @param error the name rror text; if {@code null} or empty, the error is reset
+         * @param category the category of the error; only used to distinguish errors 
+         * @param error the error text; if {@code null} or empty, the error is reset
          */
         void setError(Object category, String error) {
             if (error == null || error.isEmpty()) {

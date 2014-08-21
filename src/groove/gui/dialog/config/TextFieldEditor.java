@@ -28,7 +28,6 @@ import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 
 import javax.swing.JLabel;
@@ -39,36 +38,21 @@ import javax.swing.JTextField;
  * @author rensink
  * @version $Revision $
  */
-public class TextFieldEditor extends SettingEditor {
+public class TextFieldEditor extends ContentEditor {
     /**
      * Constructs an editor with a text field for user-defined input.
      */
     public TextFieldEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
+        super(dialog, holder, key, kind);
         setLayout(new BorderLayout());
         assert kind.getContentType() != Null.class;
-        this.dialog = dialog;
         JLabel label = this.label = new JLabel(StringHandler.toUpper(kind.getContentName()) + ": ");
         add(label, BorderLayout.WEST);
         add(getTextField(), BorderLayout.CENTER);
-        this.holder = holder;
-        this.kind = kind;
-        this.key = key;
         this.contentParser = kind.parser();
         holder.add(this, kind.getName());
         dialog.addRefreshable(this);
     }
-
-    private ConfigDialog<?> getDialog() {
-        return this.dialog;
-    }
-
-    private final ConfigDialog<?> dialog;
-
-    private JPanel getHolder() {
-        return this.holder;
-    }
-
-    private final JPanel holder;
 
     private final Parser<?> getContentParser() {
         return this.contentParser;
@@ -102,25 +86,9 @@ public class TextFieldEditor extends SettingEditor {
     }
 
     @Override
-    public ExploreKey getKey() {
-        return this.key;
-    }
-
-    private final ExploreKey key;
-
-    @Override
-    public SettingKey getKind() {
-        return this.kind;
-    }
-
-    private final SettingKey kind;
-
-    @Override
     public void activate() {
         getTextField().setText("");
-        testError();
-        CardLayout layout = (CardLayout) getHolder().getLayout();
-        layout.show(getHolder(), getKind().getName());
+        super.activate();
         getTextField().requestFocus();
     }
 
@@ -137,11 +105,6 @@ public class TextFieldEditor extends SettingEditor {
     @Override
     public void setSetting(Setting<?,?> setting) {
         getTextField().setText(getContentParser().toParsableString(setting.getContent()));
-    }
-
-    @Override
-    public boolean hasError() {
-        return getError() != null;
     }
 
     @Override
@@ -168,12 +131,10 @@ public class TextFieldEditor extends SettingEditor {
         return result == null ? null : "Error in " + getKind().getContentName() + ": " + result;
     }
 
-    /** Tests if the editor currently contains an erroneous value, and if so,
-     * reports it to the dialog.
-     */
-    private void testError() {
+    @Override
+    protected void testError() {
         getTextField().setForeground(hasError() ? Color.RED : Color.BLACK);
-        getDialog().setError(getKey(), getError());
+        super.testError();
     }
 
     private class TextDirtyListener extends DirtyListener {
