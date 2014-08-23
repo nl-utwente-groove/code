@@ -117,6 +117,11 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         return this.args.get(index);
     }
 
+    /** Returns the argument at a given position, upcast to the {@code TermTree} supertype. */
+    private TermTree<O,T> getUpArg(int index) {
+        return getArg(index);
+    }
+
     /** Returns an unmodifiable view on the list of arguments of this expression. */
     public List<T> getArgs() {
         return Collections.unmodifiableList(this.args);
@@ -185,13 +190,13 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
             int i;
             for (i = 0; i < getArgs().size() - 1; i++) {
                 indent.push(Pair.newPair(symbol.length(), true));
-                getArg(i).toTree(indent, result);
+                getUpArg(i).toTree(indent, result);
                 result.append('\n');
                 addIndent(indent, result);
                 indent.pop();
             }
             indent.push(Pair.newPair(symbol.length(), false));
-            getArg(i).toTree(indent, result);
+            getUpArg(i).toTree(indent, result);
             indent.pop();
         } else if (getOp().getKind() == OpKind.ATOM) {
             result.append(getContentString());
@@ -254,7 +259,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         result.add(hasId() ? getId().toLine() : Line.atom(getOp().getSymbol()));
         result.add(Line.atom("("));
         boolean firstArg = true;
-        for (T arg : getArgs()) {
+        for (TermTree<O,T> arg : getArgs()) {
             if (!firstArg) {
                 result.add(Line.atom(spaces ? ", " : ","));
 
@@ -280,7 +285,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         }
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
-            result.add(this.args.get(nextArgIx).toLine(
+            result.add(getUpArg(nextArgIx).toLine(
                 me.getDirection() == Direction.LEFT ? me : me.increase(), spaces));
             nextArgIx++;
             if (addSpaces) {
@@ -293,7 +298,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
-            result.add(this.args.get(nextArgIx).toLine(
+            result.add(getUpArg(nextArgIx).toLine(
                 me.getDirection() == Direction.RIGHT ? me : me.increase(), spaces));
             nextArgIx++;
         }
@@ -303,7 +308,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         return Line.composed(result);
     }
 
-    /** Returns the display line for the top-level operator of this tree. 
+    /** Returns the display line for the top-level operator of this tree.
      * @param addSpaces if {@code true}, additional space may already have been
      * added to the left and/or right of the operator.
      */
@@ -334,10 +339,11 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
     @Override
     public T clone() {
         T result = createTree(getOp());
-        result.args.addAll(this.args);
-        result.errors.addAll(this.errors);
-        result.constant = this.constant;
-        result.id = this.id;
+        TermTree<O,T> upcast = result;
+        upcast.args.addAll(this.args);
+        upcast.errors.addAll(this.errors);
+        upcast.constant = this.constant;
+        upcast.id = this.id;
         return result;
     }
 
