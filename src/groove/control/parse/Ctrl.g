@@ -113,7 +113,7 @@ import_decl
 
 /** @H Dot-separated sequence of simple names. */
 qual_name[boolean any]
-  : //@S (qual_name DOT)? name
+  : //@S [qual_name DOT] name
     //@B Name %2$s in namespace %1$s.
     //@P optional namespace
     //@P sub-name; use backward quotes for reserved words, e.g., <tt>`any`</tt> or <tt>`out`</tt>
@@ -129,7 +129,7 @@ qual_name[boolean any]
   * @B During exploration, the body is treated as an atomic transaction.
   */
 recipe
-  : //@S RECIPE name par_list (PRIORITY int)? block
+  : //@S RECIPE name par_list [PRIORITY int] block
     //@B Declares an atomic rule %s, with parameters %s and body %4$s.
     //@B The optional priority %3$s assigns preference in a group call.
     //@P name of the declared recipe
@@ -239,7 +239,7 @@ stat
     //@B Statement %s is executed if it is enabled,
     //@B otherwise the (optional) %s is executed.
     TRY^ stat ( (ELSE) => ELSE! stat )?
-  | //@S CHOICE stat [OR stat]+
+  | //@S CHOICE stat (OR stat)+
     //@B Nondeterministic choice of statements.
     CHOICE^ stat ( (OR) => OR! stat)+
 	| //@S expr SEMI
@@ -310,7 +310,9 @@ expr_atom
 	| //@S expr: call
 	  //@B Invokes a function or rule.
 	  call
-	| assign
+	| //@S expr: assign
+	  //@B Invokes a function or rule, assigning the output parameters to target variables 
+	  assign
 	; 
 
 /** @H Rule, procedure or group call. */
@@ -324,8 +326,16 @@ call
 	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
 	;
 
+/** @H Call with assignment; syntactic sugar for a call with output parameters. */
 assign
-  : target (COMMA target)* BECOMES call
+  : //@S id1 (COMMA id2)* BECOMES call
+    //@B Rule call of %3$s with assignment syntax for output parameters.
+    //@B The argument list of %1$s contains only non-output parameters.
+    //@B The %1$s/%2$s-list corresponds to the output parameters of the call.
+    //@P variable serving as output parameter 
+    //@P optional further output parameters
+    //@P the call, with only (optionally) non-output arguments
+    target (COMMA target)* BECOMES call
     -> ^(BECOMES ^(ARGS target+ RPAR) call)
   ;
 
@@ -335,11 +345,11 @@ target
 
 /** @H Qualified rule, procedure or group name. */
 rule_name
-  : //@S (qual_name DOT)? name
+  : //@S [ qual_name DOT ] name
     //@B Explicit rule or procedure (i.e., recipe or function) call of %2$s, optionally qualified with %1$s
     //@P optional (qualified) package name
     //@P rule or procedure name; use backward quotes for reserved words, e.g., <tt>`any`</tt> or <tt>`out`</tt>
-    //@S (qual_name DOT)? (ASTERISK DOT)? group
+    //@S [ qual_name DOT ] [ ASTERISK DOT ] group
     //@B Invokes all (if %2$s is ANY) or all not explicitly invoked (if %2$s is OTHER) actions
     //@B in %1$s (including all subpackages if %2$s is preceded by ASTERISK)
     //@B or in the current scope if %1$s and ASTERISK are absent
