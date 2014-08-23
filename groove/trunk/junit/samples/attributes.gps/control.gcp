@@ -5,7 +5,7 @@ set_name("attributes test");
 
 add_score(_,100);
 add_score(_,100);
-get_score(_,out score1);
+score1 := get_score;
 set_score(_,score1);
 set_score(_,1000);
 

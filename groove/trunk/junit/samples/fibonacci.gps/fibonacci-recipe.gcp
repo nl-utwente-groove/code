@@ -11,13 +11,13 @@ recipe fib(int x, out int result) {
 		// decrease x if non-negative
 		decr(x, out x);
 		// y := fib(x-1)
-		fib(x, out y);
+		y := fib(x);
 		// decrease x
-		decr(x, out x);
+		x := decr(x);
 		// z := fib(x-z)
 		fib(x, out z);
 		// result := y+z
-		add(y, z, out result);
+		result := add(y, z);
 	}
 }
 

@@ -163,6 +163,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         int arity;
         switch (getType()) {
         case CtrlParser.VAR:
+        case CtrlParser.BECOMES:
         case CtrlParser.CALL:
             arity = 0;
             break;
@@ -232,6 +233,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.STAR:
             result = args[0].star();
             break;
+        case CtrlParser.BECOMES:
         case CtrlParser.CALL:
             if (getChild(0).getType() == CtrlParser.ID) {
                 // it's a single call

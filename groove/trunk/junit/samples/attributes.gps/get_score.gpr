@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="get_score">
+    <graph role="rule" edgeids="false" edgemode="directed" id="get_score">
         <attr name="actionRole">
             <string>transformer</string>
         </attr>
@@ -9,30 +9,30 @@
         </attr>
         <node id="n1">
             <attr name="layout">
-                <string>250 166 37 54</string>
+                <string>260 185 17 15</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>220 62 24 24</string>
+                <string>222 64 19 19</string>
             </attr>
         </node>
-        <edge to="n1" from="n1">
+        <edge from="n1" to="n1">
             <attr name="label">
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>par:1</string>
+                <string>parout:1</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge from="n0" to="n0">
             <attr name="label">
                 <string>par:0</string>
             </attr>
         </edge>
-        <edge to="n1" from="n0">
+        <edge from="n0" to="n1">
             <attr name="label">
                 <string>score</string>
             </attr>

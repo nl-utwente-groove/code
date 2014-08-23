@@ -149,13 +149,19 @@ stat
        stat
        { helper.endBranch(); }
      )
-  | rule
+  | call
+  | assign
   | TRUE
   ;
 
-rule
+call
 @after{ helper.checkGroupCall($tree); }
-  : ^(CALL qual_id (^(ARGS arg* RPAR))?)
+  : ^(CALL qual_id arg_list?)
+  ;
+
+assign
+@after{ helper.checkAssign($tree); }
+  : ^(BECOMES arg_list ^(CALL qual_id arg_list?))
   ;
 
 var_decl
@@ -181,7 +187,11 @@ type
   | INT -> INT
   | REAL -> REAL
   ;
-  
+
+arg_list
+  : ^(ARGS arg* RPAR)
+  ;
+
 arg
 	: ^( ARG 
 	     ( OUT? ID { helper.checkVarArg($ARG); }
