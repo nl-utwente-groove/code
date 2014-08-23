@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="add">
+    <graph role="rule" edgeids="false" edgemode="directed" id="add">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -29,62 +29,62 @@
                 <string>176 39 111 15</string>
             </attr>
         </node>
-        <edge to="n3" from="n3">
+        <edge from="n3" to="n3">
             <attr name="label">
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge from="n3" to="n3">
             <attr name="label">
-                <string>par:2</string>
+                <string>parout:2</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge from="n2" to="n2">
             <attr name="label">
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge to="n1" from="n2">
-            <attr name="label">
-                <string>arg:1</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n2">
+        <edge from="n2" to="n3">
             <attr name="label">
                 <string>int:add</string>
             </attr>
         </edge>
-        <edge to="n0" from="n2">
+        <edge from="n2" to="n0">
             <attr name="label">
                 <string>arg:0</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge from="n2" to="n1">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
             <attr name="label">
                 <string>parin:1</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge from="n1" to="n1">
             <attr name="label">
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge from="n0" to="n0">
             <attr name="label">
                 <string>parin:0</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge from="n0" to="n0">
             <attr name="label">
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge from="n4" to="n4">
             <attr name="label">
                 <string>rem:</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge from="n4" to="n4">
             <attr name="label">
                 <string>rem:assigns $1+$2 to $3</string>
             </attr>

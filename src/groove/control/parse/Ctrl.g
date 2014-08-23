@@ -310,6 +310,7 @@ expr_atom
 	| //@S expr: call
 	  //@B Invokes a function or rule.
 	  call
+	| assign
 	; 
 
 /** @H Rule, procedure or group call. */
@@ -322,6 +323,15 @@ call
     { helper.registerCall($rule_name.tree); }
 	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
 	;
+
+assign
+  : target (COMMA target)* BECOMES call
+    -> ^(BECOMES ^(ARGS target+ RPAR) call)
+  ;
+
+target
+  : ID -> ^(ARG OUT ID)
+  ;
 
 /** @H Qualified rule, procedure or group name. */
 rule_name
@@ -484,6 +494,7 @@ ID
   ;
 
 AMP       : '&' ;
+BECOMES   : ':=' ;
 DOT       : '.' ;
 NOT       : '!' ;
 BAR       : '|' ;
