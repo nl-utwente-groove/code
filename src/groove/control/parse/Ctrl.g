@@ -111,9 +111,13 @@ import_decl
     }
   ;
 
-/** Dot-separated sequence of identifiers, translated to a flattened identifier. */
+/** @H Dot-separated sequence of simple names. */
 qual_name[boolean any]
-  : ID ( DOT rest=qual_name[any] )?
+  : //@S (qual_name DOT)? name
+    //@B Name %2$s in namespace %1$s.
+    //@P optional namespace
+    //@P sub-name; use backward quotes for reserved words, e.g., <tt>`any`</tt> or <tt>`out`</tt>
+    ID ( DOT rest=qual_name[any] )?
                      -> { helper.toQualName($ID, $rest.tree) }
   | { any }? ( ASTERISK DOT )?
              ( ANY   -> { helper.toQualName($ASTERISK, $ANY) }
@@ -310,7 +314,7 @@ expr_atom
 
 /** @H Rule, procedure or group call. */
 call
-	: //@S name [ LPAR arg_list RPAR ]
+	: //@S rule_name [ LPAR arg_list RPAR ]
 	  //@B Invokes a rule, procedure or group %s, with optional arguments %s.
 	  //@P the rule, procedure or group name
 	  //@P optional comma-separated list of arguments
@@ -318,6 +322,22 @@ call
     { helper.registerCall($rule_name.tree); }
 	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
 	;
+
+/** @H Qualified rule, procedure or group name. */
+rule_name
+  : //@S (qual_name DOT)? name
+    //@B Explicit rule or procedure (i.e., recipe or function) call of %2$s, optionally qualified with %1$s
+    //@P optional (qualified) package name
+    //@P rule or procedure name; use backward quotes for reserved words, e.g., <tt>`any`</tt> or <tt>`out`</tt>
+    //@S (qual_name DOT)? (ASTERISK DOT)? group
+    //@B Invokes all (if %2$s is ANY) or all not explicitly invoked (if %2$s is OTHER) actions
+    //@B in %1$s (including all subpackages if %2$s is preceded by ASTERISK)
+    //@B or in the current scope if %1$s and ASTERISK are absent
+    //@P optional (qualified) package name
+    //@P ANY or OTHER
+    qual_name[true]
+    -> { helper.qualify($qual_name.tree) }
+  ;
 
 /** @H Argument list 
   * @B List of arguments for a rule, function or recipe call. 
@@ -364,22 +384,6 @@ literal
   | //@S arg: number DOT number
     //@B Real number constant.
     REAL_LIT
-  ;
-
-/** @H Qualified rule, procedure or group name. */
-rule_name
-  : //@S (package DOT)? name
-    //@B Explicit rule or procedure call of %2$s, optionally qualified with %1$s
-    //@P optional (qualified) package name
-    //@P rule or procedure name
-    //@S (package DOT)? (ASTERISK DOT)? group
-    //@B Invokes all (if %2$s is ANY) or all not explicitly invoked (if %2$s is OTHER) actions
-    //@B in %1$s (including all subpackages if %2$s is preceded by ASTERISK)
-    //@B or in the current scope if %1$s and ASTERISK are absent
-    //@P optional (qualified) package name
-    //@P ANY or OTHER
-    qual_name[true]
-    -> { helper.qualify($qual_name.tree) }
   ;
 
 /** @H Variable declaration. */
