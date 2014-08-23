@@ -361,7 +361,9 @@ public class CtrlHelper {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
         } else if (out == null) {
-            this.initVars.add(new CtrlVar(this.procName, name, type));
+            CtrlVar var = new CtrlVar(this.procName, name, type);
+            nameTree.setCtrlVar(var);
+            this.initVars.add(var);
         }
         return result;
     }
@@ -370,9 +372,12 @@ public class CtrlHelper {
     boolean declareVar(CtrlTree nameTree, CtrlTree typeTree) {
         boolean result = true;
         String name = nameTree.getText();
-        if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType())) {
+        CtrlType type = typeTree.getCtrlType();
+        if (!this.symbolTable.declareSymbol(name, type)) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
+        } else {
+            nameTree.setCtrlVar(new CtrlVar(this.procName, name, type));
         }
         return result;
     }
@@ -468,7 +473,7 @@ public class CtrlHelper {
         CtrlTree callTree = assignTree.getChild(1);
         List<CtrlPar> targets, args;
         try {
-            targets = collectArgs(assignTree.getChild(0));
+            targets = collectTargets(assignTree.getChild(0));
             args = collectCallArgs(assignTree.getChild(1));
         } catch (PreviousErrorException exc) {
             return;
@@ -496,6 +501,33 @@ public class CtrlHelper {
                 assignTree.addCall(new Call(unit, unitArgs));
             }
         }
+    }
+
+    /**
+     * Collects the target variables of a given assignment.
+     * @return the list of arguments, or {@code null} if the
+     * call tree has no arguments
+     * @throws PreviousErrorException if an error was previously detected and reported,
+     * causing the absence of one or more of the arguments
+     */
+    private List<CtrlPar> collectTargets(CtrlTree targetTree) throws PreviousErrorException {
+        List<CtrlPar> result = null;
+        if (targetTree.getType() == CtrlParser.ARGS) {
+            result = collectArgs(targetTree);
+        } else {
+            result = new ArrayList<CtrlPar>();
+            assert targetTree.getType() == CtrlParser.VAR;
+            // skip the first child: it is the declared type
+            for (int i = 1; i < targetTree.getChildCount(); i++) {
+                CtrlVar var = targetTree.getChild(i).getCtrlVar();
+                if (var == null) {
+                    throw new PreviousErrorException();
+                }
+                this.initVars.add(var);
+                result.add(new CtrlPar.Var(var, false));
+            }
+        }
+        return result;
     }
 
     /**

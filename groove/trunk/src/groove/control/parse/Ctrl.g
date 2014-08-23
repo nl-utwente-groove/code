@@ -74,7 +74,7 @@ import java.util.LinkedList;
 program
 @init { helper.clearErrors(); }
 @after { helper.declareProgram($tree); }
-  : //@S package? import* ( function | recipe | stat )*
+  : //@S [package] import* ( function | recipe | stat )*
     //@B Main program, consisting of a sequence top-level statements,
     //@B control function definitions and recipe definitions.
     //@B Java-like packages and imports are provided for modularity. 
@@ -194,7 +194,10 @@ block
 
 /** @H Atomic statement. */
 stat
-	: //@S block
+  : //@S var_decl SEMI
+    //@B A variable declaration.
+    var_decl SEMI^ // SEMI retained for token positioning
+  | //@S block
 	  block
 	| //@S ALAP stat
 	  //@B The body %s is repeated as long as it remains enabled.
@@ -245,9 +248,21 @@ stat
 	| //@S expr SEMI
 	  //@B An expression used as a statement.
 	  expr SEMI^ // SEMI retained for token positioning
-	| //@S var_decl SEMI
-	  //@B A variable declaration.
-	  var_decl SEMI^ // SEMI retained for token positioning
+  ;
+
+/** @H Variable declaration with optional initialisation. */
+var_decl
+  : //@S var_type id (COMMA id)* [ BECOMES call ]
+    //@B Declares a list of variables, all of the same %s.
+    //@B Optionally simultaneously initialises the declared variables through an assignment call.
+    var_decl_pure
+    ( -> var_decl_pure
+    | BECOMES call -> ^(BECOMES var_decl_pure call) 
+    )
+  ;
+
+var_decl_pure
+  : var_type ID (COMMA ID)* -> ^(VAR var_type ID+)
   ;
 
 /** @H Condition. */
@@ -307,24 +322,13 @@ expr_atom
 	  //@B Bracketed expression.
 	  open=LPAR expr close=RPAR
 	  -> ^(BLOCK[$open] expr TRUE[$close])
+  | //@S expr: assign
+    //@B Invokes a function or rule, assigning the output parameters to target variables 
+    assign
 	| //@S expr: call
 	  //@B Invokes a function or rule.
 	  call
-	| //@S expr: assign
-	  //@B Invokes a function or rule, assigning the output parameters to target variables 
-	  assign
 	; 
-
-/** @H Rule, procedure or group call. */
-call
-	: //@S rule_name [ LPAR arg_list RPAR ]
-	  //@B Invokes a rule, procedure or group %s, with optional arguments %s.
-	  //@P the rule, procedure or group name
-	  //@P optional comma-separated list of arguments
-	  rule_name arg_list?
-    { helper.registerCall($rule_name.tree); }
-	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
-	;
 
 /** @H Call with assignment; syntactic sugar for a call with output parameters. */
 assign
@@ -342,6 +346,17 @@ assign
 target
   : ID -> ^(ARG OUT ID)
   ;
+
+/** @H Rule, procedure or group call. */
+call
+	: //@S rule_name [ LPAR arg_list RPAR ]
+	  //@B Invokes a rule, procedure or group %s, with optional arguments %s.
+	  //@P the rule, procedure or group name
+	  //@P optional comma-separated list of arguments
+	  rule_name arg_list?
+    { helper.registerCall($rule_name.tree); }
+	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
+	;
 
 /** @H Qualified rule, procedure or group name. */
 rule_name
@@ -405,13 +420,6 @@ literal
     //@B Real number constant.
     REAL_LIT
   ;
-
-/** @H Variable declaration. */
-var_decl
-	: //@S var_type id (COMMA id)*
-	  //@B Declares a list of variables, all of the same %s.
-	  var_type ID (COMMA ID)* -> ^(VAR var_type ID+)
-	;
 
 /** @H Variable type. */
 var_type
