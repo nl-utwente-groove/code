@@ -7,14 +7,14 @@ recipe fib(int x, out int result) {
 		// if x is one, output one
 		one(x); one(out result);
 	} else {
-		int y, z;
 		// decrease x if non-negative
 		decr(x, out x);
 		// y := fib(x-1)
-		y := fib(x);
+		int y := fib(x);
 		// decrease x
 		x := decr(x);
-		// z := fib(x-z)
+		// z := fib(x-2)
+		int z;
 		fib(x, out z);
 		// result := y+z
 		result := add(y, z);
