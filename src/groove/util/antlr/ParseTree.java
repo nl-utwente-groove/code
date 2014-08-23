@@ -24,8 +24,7 @@ import org.antlr.runtime.tree.TreeParser;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
-        extends CommonTree {
+abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> extends CommonTree {
     /** Empty constructor for subclassing. */
     protected ParseTree() {
         // empty
@@ -48,8 +47,8 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
         T result = null;
         try {
             result = (T) getClass().newInstance();
-            result.tokenStream = tokenStream;
-            result.info = info;
+            ((ParseTree<T,I>) result).tokenStream = tokenStream;
+            ((ParseTree<T,I>) result).info = info;
         } catch (Exception e) {
             throw toRuntime(e);
         }
@@ -100,9 +99,9 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
 
     private I info;
 
-    /** 
+    /**
      * Returns the part of the input token stream corresponding to this tree.
-     * This is determined by the token numbers of the first and last tokens. 
+     * This is determined by the token numbers of the first and last tokens.
      */
     public String toInputString() {
         Token first = findFirstToken();
@@ -114,7 +113,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
     private Token findFirstToken() {
         Token result = getToken();
         for (int i = 0; i < getChildCount(); i++) {
-            Token childFirst = getChild(i).findFirstToken();
+            Token childFirst = ((ParseTree<T,I>) getChild(i)).findFirstToken();
             result = getMin(result, childFirst);
         }
         return result;
@@ -124,7 +123,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
     private Token findLastToken() {
         Token result = getToken();
         for (int i = 0; i < getChildCount(); i++) {
-            Token childLast = getChild(i).findLastToken();
+            Token childLast = ((ParseTree<T,I>) getChild(i)).findLastToken();
             result = getMax(result, childLast);
         }
         return result;
@@ -163,12 +162,9 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
         try {
             // instantiate the parser
             ParseTreeAdaptor<T,I> adaptor = new ParseTreeAdaptor<T,I>(this);
-            Constructor<P> parserConstructor =
-                parserType.getConstructor(TreeNodeStream.class);
-            P result =
-                parserConstructor.newInstance(adaptor.createTreeNodeStream(this));
-            Method adaptorSetter =
-                parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
+            Constructor<P> parserConstructor = parserType.getConstructor(TreeNodeStream.class);
+            P result = parserConstructor.newInstance(adaptor.createTreeNodeStream(this));
+            Method adaptorSetter = parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
             adaptorSetter.invoke(result, adaptor);
             callInitialise(result, info);
             return result;
@@ -178,27 +174,21 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
     }
 
     /** Creates a parser for a given term, generating trees of this kind. */
-    public <P extends Parser> P createParser(Class<P> parserType, I info,
-            String term) {
+    public <P extends Parser> P createParser(Class<P> parserType, I info, String term) {
         try {
             // find the lexer type
             String parserName = parserType.getName();
             String lexerName =
-                parserName.substring(0, parserName.indexOf("Parser")).concat(
-                    "Lexer");
+                parserName.substring(0, parserName.indexOf("Parser")).concat("Lexer");
             @SuppressWarnings("unchecked")
-            Class<? extends Lexer> lexerType =
-                (Class<? extends Lexer>) Class.forName(lexerName);
+            Class<? extends Lexer> lexerType = (Class<? extends Lexer>) Class.forName(lexerName);
             Lexer lexer = createLexer(lexerType, info, term);
             // instantiate the parser
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            Constructor<P> parserConstructor =
-                parserType.getConstructor(TokenStream.class);
+            Constructor<P> parserConstructor = parserType.getConstructor(TokenStream.class);
             P result = parserConstructor.newInstance(tokenStream);
-            Method adaptorSetter =
-                parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
-            adaptorSetter.invoke(result, new ParseTreeAdaptor<T,I>(this, info,
-                tokenStream));
+            Method adaptorSetter = parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
+            adaptorSetter.invoke(result, new ParseTreeAdaptor<T,I>(this, info, tokenStream));
             callInitialise(result, info);
             return result;
         } catch (Exception e) {
@@ -207,8 +197,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
     }
 
     /** Factory method for a lexer generating this kind of tree. */
-    public Lexer createLexer(Class<? extends Lexer> lexerType, I info,
-            String term) {
+    public Lexer createLexer(Class<? extends Lexer> lexerType, I info, String term) {
         try {
             // instantiate the lexer
             ANTLRStringStream input = new ANTLRStringStream(term);
@@ -228,8 +217,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
      */
     private void callInitialise(BaseRecognizer recognizer, I info) {
         try {
-            Method initialise =
-                recognizer.getClass().getMethod("initialise", ParseInfo.class);
+            Method initialise = recognizer.getClass().getMethod("initialise", ParseInfo.class);
             initialise.invoke(recognizer, info);
         } catch (NoSuchMethodException e) {
             // the method does not exist; do nothing
