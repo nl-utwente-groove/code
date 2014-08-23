@@ -148,6 +148,7 @@ public abstract class CtrlPar {
          * otherwise it is output-only
          */
         public Var(CtrlVar var, boolean inOnly) {
+            assert var != null;
             this.var = var;
             this.inOnly = inOnly;
             this.outOnly = !inOnly;

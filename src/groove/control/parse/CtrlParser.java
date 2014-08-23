@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-08-24 00:38:30
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-08-24 01:37:49
 
 package groove.control.parse;
 import groove.control.*;
@@ -1660,7 +1660,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "stat"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:196:1: stat : ( block | ALAP ^ stat |open= LANGLE ( stat )* close= RANGLE -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) ) | WHILE ^ LPAR ! cond RPAR ! stat | UNTIL ^ LPAR ! cond RPAR ! stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )? | TRY ^ stat ( ( ELSE )=> ELSE ! stat )? | CHOICE ^ stat ( ( OR )=> OR ! stat )+ | expr SEMI ^| var_decl SEMI ^);
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:196:1: stat : ( var_decl SEMI ^| block | ALAP ^ stat |open= LANGLE ( stat )* close= RANGLE -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) ) | WHILE ^ LPAR ! cond RPAR ! stat | UNTIL ^ LPAR ! cond RPAR ! stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )? | TRY ^ stat ( ( ELSE )=> ELSE ! stat )? | CHOICE ^ stat ( ( OR )=> OR ! stat )+ | expr SEMI ^);
     public final CtrlParser.stat_return stat() throws RecognitionException {
         CtrlParser.stat_return retval = new CtrlParser.stat_return();
         retval.start = input.LT(1);
@@ -1670,53 +1670,53 @@ public TreeAdaptor getTreeAdaptor() {
 
         Token open=null;
         Token close=null;
-        Token ALAP39=null;
-        Token WHILE42=null;
-        Token LPAR43=null;
-        Token RPAR45=null;
-        Token UNTIL47=null;
-        Token LPAR48=null;
-        Token RPAR50=null;
-        Token DO52=null;
-        Token WHILE54=null;
-        Token LPAR55=null;
-        Token RPAR57=null;
-        Token UNTIL58=null;
-        Token LPAR59=null;
-        Token RPAR61=null;
-        Token IF62=null;
-        Token LPAR63=null;
-        Token RPAR65=null;
-        Token ELSE67=null;
-        Token TRY69=null;
-        Token ELSE71=null;
-        Token CHOICE73=null;
-        Token OR75=null;
-        Token SEMI78=null;
+        Token SEMI39=null;
+        Token ALAP41=null;
+        Token WHILE44=null;
+        Token LPAR45=null;
+        Token RPAR47=null;
+        Token UNTIL49=null;
+        Token LPAR50=null;
+        Token RPAR52=null;
+        Token DO54=null;
+        Token WHILE56=null;
+        Token LPAR57=null;
+        Token RPAR59=null;
+        Token UNTIL60=null;
+        Token LPAR61=null;
+        Token RPAR63=null;
+        Token IF64=null;
+        Token LPAR65=null;
+        Token RPAR67=null;
+        Token ELSE69=null;
+        Token TRY71=null;
+        Token ELSE73=null;
+        Token CHOICE75=null;
+        Token OR77=null;
         Token SEMI80=null;
-        CtrlParser.block_return block38 =null;
+        CtrlParser.var_decl_return var_decl38 =null;
 
-        CtrlParser.stat_return stat40 =null;
+        CtrlParser.block_return block40 =null;
 
-        CtrlParser.stat_return stat41 =null;
+        CtrlParser.stat_return stat42 =null;
 
-        CtrlParser.cond_return cond44 =null;
+        CtrlParser.stat_return stat43 =null;
 
-        CtrlParser.stat_return stat46 =null;
+        CtrlParser.cond_return cond46 =null;
 
-        CtrlParser.cond_return cond49 =null;
+        CtrlParser.stat_return stat48 =null;
 
-        CtrlParser.stat_return stat51 =null;
+        CtrlParser.cond_return cond51 =null;
 
         CtrlParser.stat_return stat53 =null;
 
-        CtrlParser.cond_return cond56 =null;
+        CtrlParser.stat_return stat55 =null;
 
-        CtrlParser.cond_return cond60 =null;
+        CtrlParser.cond_return cond58 =null;
 
-        CtrlParser.cond_return cond64 =null;
+        CtrlParser.cond_return cond62 =null;
 
-        CtrlParser.stat_return stat66 =null;
+        CtrlParser.cond_return cond66 =null;
 
         CtrlParser.stat_return stat68 =null;
 
@@ -1728,36 +1728,36 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlParser.stat_return stat76 =null;
 
-        CtrlParser.expr_return expr77 =null;
+        CtrlParser.stat_return stat78 =null;
 
-        CtrlParser.var_decl_return var_decl79 =null;
+        CtrlParser.expr_return expr79 =null;
 
 
         CtrlTree open_tree=null;
         CtrlTree close_tree=null;
-        CtrlTree ALAP39_tree=null;
-        CtrlTree WHILE42_tree=null;
-        CtrlTree LPAR43_tree=null;
-        CtrlTree RPAR45_tree=null;
-        CtrlTree UNTIL47_tree=null;
-        CtrlTree LPAR48_tree=null;
-        CtrlTree RPAR50_tree=null;
-        CtrlTree DO52_tree=null;
-        CtrlTree WHILE54_tree=null;
-        CtrlTree LPAR55_tree=null;
-        CtrlTree RPAR57_tree=null;
-        CtrlTree UNTIL58_tree=null;
-        CtrlTree LPAR59_tree=null;
-        CtrlTree RPAR61_tree=null;
-        CtrlTree IF62_tree=null;
-        CtrlTree LPAR63_tree=null;
-        CtrlTree RPAR65_tree=null;
-        CtrlTree ELSE67_tree=null;
-        CtrlTree TRY69_tree=null;
-        CtrlTree ELSE71_tree=null;
-        CtrlTree CHOICE73_tree=null;
-        CtrlTree OR75_tree=null;
-        CtrlTree SEMI78_tree=null;
+        CtrlTree SEMI39_tree=null;
+        CtrlTree ALAP41_tree=null;
+        CtrlTree WHILE44_tree=null;
+        CtrlTree LPAR45_tree=null;
+        CtrlTree RPAR47_tree=null;
+        CtrlTree UNTIL49_tree=null;
+        CtrlTree LPAR50_tree=null;
+        CtrlTree RPAR52_tree=null;
+        CtrlTree DO54_tree=null;
+        CtrlTree WHILE56_tree=null;
+        CtrlTree LPAR57_tree=null;
+        CtrlTree RPAR59_tree=null;
+        CtrlTree UNTIL60_tree=null;
+        CtrlTree LPAR61_tree=null;
+        CtrlTree RPAR63_tree=null;
+        CtrlTree IF64_tree=null;
+        CtrlTree LPAR65_tree=null;
+        CtrlTree RPAR67_tree=null;
+        CtrlTree ELSE69_tree=null;
+        CtrlTree TRY71_tree=null;
+        CtrlTree ELSE73_tree=null;
+        CtrlTree CHOICE75_tree=null;
+        CtrlTree OR77_tree=null;
         CtrlTree SEMI80_tree=null;
         RewriteRuleTokenStream stream_DO=new RewriteRuleTokenStream(adaptor,"token DO");
         RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
@@ -1769,52 +1769,61 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleSubtreeStream stream_cond=new RewriteRuleSubtreeStream(adaptor,"rule cond");
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:197:2: ( block | ALAP ^ stat |open= LANGLE ( stat )* close= RANGLE -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) ) | WHILE ^ LPAR ! cond RPAR ! stat | UNTIL ^ LPAR ! cond RPAR ! stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )? | TRY ^ stat ( ( ELSE )=> ELSE ! stat )? | CHOICE ^ stat ( ( OR )=> OR ! stat )+ | expr SEMI ^| var_decl SEMI ^)
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:197:3: ( var_decl SEMI ^| block | ALAP ^ stat |open= LANGLE ( stat )* close= RANGLE -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) ) | WHILE ^ LPAR ! cond RPAR ! stat | UNTIL ^ LPAR ! cond RPAR ! stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )? | TRY ^ stat ( ( ELSE )=> ELSE ! stat )? | CHOICE ^ stat ( ( OR )=> OR ! stat )+ | expr SEMI ^)
             int alt18=11;
             switch ( input.LA(1) ) {
-            case LCURLY:
+            case BOOL:
+            case INT:
+            case NODE:
+            case REAL:
+            case STRING:
                 {
                 alt18=1;
                 }
                 break;
-            case ALAP:
+            case LCURLY:
                 {
                 alt18=2;
                 }
                 break;
-            case LANGLE:
+            case ALAP:
                 {
                 alt18=3;
                 }
                 break;
-            case WHILE:
+            case LANGLE:
                 {
                 alt18=4;
                 }
                 break;
-            case UNTIL:
+            case WHILE:
                 {
                 alt18=5;
                 }
                 break;
-            case DO:
+            case UNTIL:
                 {
                 alt18=6;
                 }
                 break;
-            case IF:
+            case DO:
                 {
                 alt18=7;
                 }
                 break;
-            case TRY:
+            case IF:
                 {
                 alt18=8;
                 }
                 break;
-            case CHOICE:
+            case TRY:
                 {
                 alt18=9;
+                }
+                break;
+            case CHOICE:
+                {
+                alt18=10;
                 }
                 break;
             case ANY:
@@ -1823,15 +1832,6 @@ public TreeAdaptor getTreeAdaptor() {
             case LPAR:
             case OTHER:
             case SHARP:
-                {
-                alt18=10;
-                }
-                break;
-            case BOOL:
-            case INT:
-            case NODE:
-            case REAL:
-            case STRING:
                 {
                 alt18=11;
                 }
@@ -1847,51 +1847,74 @@ public TreeAdaptor getTreeAdaptor() {
 
             switch (alt18) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:198:4: block
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:199:5: var_decl SEMI ^
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_block_in_stat904);
-                    block38=block();
+                    pushFollow(FOLLOW_var_decl_in_stat911);
+                    var_decl38=var_decl();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, block38.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, var_decl38.getTree());
+
+                    SEMI39=(Token)match(input,SEMI,FOLLOW_SEMI_in_stat913); if (state.failed) return retval;
+                    if ( state.backtracking==0 ) {
+                    SEMI39_tree = 
+                    (CtrlTree)adaptor.create(SEMI39)
+                    ;
+                    root_0 = (CtrlTree)adaptor.becomeRoot(SEMI39_tree, root_0);
+                    }
 
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:202:4: ALAP ^ stat
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:201:4: block
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    ALAP39=(Token)match(input,ALAP,FOLLOW_ALAP_in_stat921); if (state.failed) return retval;
-                    if ( state.backtracking==0 ) {
-                    ALAP39_tree = 
-                    (CtrlTree)adaptor.create(ALAP39)
-                    ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(ALAP39_tree, root_0);
-                    }
-
-                    pushFollow(FOLLOW_stat_in_stat924);
-                    stat40=stat();
+                    pushFollow(FOLLOW_block_in_stat925);
+                    block40=block();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat40.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, block40.getTree());
 
                     }
                     break;
                 case 3 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:207:4: open= LANGLE ( stat )* close= RANGLE
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:205:4: ALAP ^ stat
                     {
-                    open=(Token)match(input,LANGLE,FOLLOW_LANGLE_in_stat947); if (state.failed) return retval; 
+                    root_0 = (CtrlTree)adaptor.nil();
+
+
+                    ALAP41=(Token)match(input,ALAP,FOLLOW_ALAP_in_stat942); if (state.failed) return retval;
+                    if ( state.backtracking==0 ) {
+                    ALAP41_tree = 
+                    (CtrlTree)adaptor.create(ALAP41)
+                    ;
+                    root_0 = (CtrlTree)adaptor.becomeRoot(ALAP41_tree, root_0);
+                    }
+
+                    pushFollow(FOLLOW_stat_in_stat945);
+                    stat42=stat();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat42.getTree());
+
+                    }
+                    break;
+                case 4 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:210:4: open= LANGLE ( stat )* close= RANGLE
+                    {
+                    open=(Token)match(input,LANGLE,FOLLOW_LANGLE_in_stat968); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_LANGLE.add(open);
 
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:207:16: ( stat )*
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:210:16: ( stat )*
                     loop13:
                     do {
                         int alt13=2;
@@ -1904,14 +1927,14 @@ public TreeAdaptor getTreeAdaptor() {
 
                         switch (alt13) {
                     	case 1 :
-                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:207:16: stat
+                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:210:16: stat
                     	    {
-                    	    pushFollow(FOLLOW_stat_in_stat949);
-                    	    stat41=stat();
+                    	    pushFollow(FOLLOW_stat_in_stat970);
+                    	    stat43=stat();
 
                     	    state._fsp--;
                     	    if (state.failed) return retval;
-                    	    if ( state.backtracking==0 ) stream_stat.add(stat41.getTree());
+                    	    if ( state.backtracking==0 ) stream_stat.add(stat43.getTree());
 
                     	    }
                     	    break;
@@ -1922,7 +1945,7 @@ public TreeAdaptor getTreeAdaptor() {
                     } while (true);
 
 
-                    close=(Token)match(input,RANGLE,FOLLOW_RANGLE_in_stat954); if (state.failed) return retval; 
+                    close=(Token)match(input,RANGLE,FOLLOW_RANGLE_in_stat975); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_RANGLE.add(close);
 
 
@@ -1939,23 +1962,23 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 208:4: -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) )
+                    // 211:4: -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:208:7: ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:211:7: ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
                         (CtrlTree)adaptor.create(ATOM, open)
                         , root_1);
 
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:208:21: ^( BLOCK ( stat )* TRUE[$close] )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:211:21: ^( BLOCK ( stat )* TRUE[$close] )
                         {
                         CtrlTree root_2 = (CtrlTree)adaptor.nil();
                         root_2 = (CtrlTree)adaptor.becomeRoot(
                         (CtrlTree)adaptor.create(BLOCK, "BLOCK")
                         , root_2);
 
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:208:29: ( stat )*
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:211:29: ( stat )*
                         while ( stream_stat.hasNext() ) {
                             adaptor.addChild(root_2, stream_stat.nextTree());
 
@@ -1980,89 +2003,89 @@ public TreeAdaptor getTreeAdaptor() {
 
                     }
                     break;
-                case 4 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:213:4: WHILE ^ LPAR ! cond RPAR ! stat
-                    {
-                    root_0 = (CtrlTree)adaptor.nil();
-
-
-                    WHILE42=(Token)match(input,WHILE,FOLLOW_WHILE_in_stat995); if (state.failed) return retval;
-                    if ( state.backtracking==0 ) {
-                    WHILE42_tree = 
-                    (CtrlTree)adaptor.create(WHILE42)
-                    ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(WHILE42_tree, root_0);
-                    }
-
-                    LPAR43=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat998); if (state.failed) return retval;
-
-                    pushFollow(FOLLOW_cond_in_stat1001);
-                    cond44=cond();
-
-                    state._fsp--;
-                    if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, cond44.getTree());
-
-                    RPAR45=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1003); if (state.failed) return retval;
-
-                    pushFollow(FOLLOW_stat_in_stat1006);
-                    stat46=stat();
-
-                    state._fsp--;
-                    if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat46.getTree());
-
-                    }
-                    break;
                 case 5 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:217:5: UNTIL ^ LPAR ! cond RPAR ! stat
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:216:4: WHILE ^ LPAR ! cond RPAR ! stat
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    UNTIL47=(Token)match(input,UNTIL,FOLLOW_UNTIL_in_stat1026); if (state.failed) return retval;
+                    WHILE44=(Token)match(input,WHILE,FOLLOW_WHILE_in_stat1016); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    UNTIL47_tree = 
-                    (CtrlTree)adaptor.create(UNTIL47)
+                    WHILE44_tree = 
+                    (CtrlTree)adaptor.create(WHILE44)
                     ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(UNTIL47_tree, root_0);
+                    root_0 = (CtrlTree)adaptor.becomeRoot(WHILE44_tree, root_0);
                     }
 
-                    LPAR48=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1029); if (state.failed) return retval;
+                    LPAR45=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1019); if (state.failed) return retval;
 
-                    pushFollow(FOLLOW_cond_in_stat1032);
-                    cond49=cond();
-
-                    state._fsp--;
-                    if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, cond49.getTree());
-
-                    RPAR50=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1034); if (state.failed) return retval;
-
-                    pushFollow(FOLLOW_stat_in_stat1037);
-                    stat51=stat();
+                    pushFollow(FOLLOW_cond_in_stat1022);
+                    cond46=cond();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat51.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, cond46.getTree());
+
+                    RPAR47=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1024); if (state.failed) return retval;
+
+                    pushFollow(FOLLOW_stat_in_stat1027);
+                    stat48=stat();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat48.getTree());
 
                     }
                     break;
                 case 6 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:218:4: DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:220:5: UNTIL ^ LPAR ! cond RPAR ! stat
                     {
-                    DO52=(Token)match(input,DO,FOLLOW_DO_in_stat1042); if (state.failed) return retval; 
-                    if ( state.backtracking==0 ) stream_DO.add(DO52);
+                    root_0 = (CtrlTree)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_stat_in_stat1044);
+                    UNTIL49=(Token)match(input,UNTIL,FOLLOW_UNTIL_in_stat1047); if (state.failed) return retval;
+                    if ( state.backtracking==0 ) {
+                    UNTIL49_tree = 
+                    (CtrlTree)adaptor.create(UNTIL49)
+                    ;
+                    root_0 = (CtrlTree)adaptor.becomeRoot(UNTIL49_tree, root_0);
+                    }
+
+                    LPAR50=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1050); if (state.failed) return retval;
+
+                    pushFollow(FOLLOW_cond_in_stat1053);
+                    cond51=cond();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, cond51.getTree());
+
+                    RPAR52=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1055); if (state.failed) return retval;
+
+                    pushFollow(FOLLOW_stat_in_stat1058);
                     stat53=stat();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_stat.add(stat53.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat53.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:219:4: ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                    }
+                    break;
+                case 7 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:221:4: DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                    {
+                    DO54=(Token)match(input,DO,FOLLOW_DO_in_stat1063); if (state.failed) return retval; 
+                    if ( state.backtracking==0 ) stream_DO.add(DO54);
+
+
+                    pushFollow(FOLLOW_stat_in_stat1065);
+                    stat55=stat();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) stream_stat.add(stat55.getTree());
+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:222:4: ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
                     int alt14=2;
                     int LA14_0 = input.LA(1);
 
@@ -2082,29 +2105,29 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     switch (alt14) {
                         case 1 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:224:7: WHILE LPAR cond RPAR
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:227:7: WHILE LPAR cond RPAR
                             {
-                            WHILE54=(Token)match(input,WHILE,FOLLOW_WHILE_in_stat1087); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_WHILE.add(WHILE54);
+                            WHILE56=(Token)match(input,WHILE,FOLLOW_WHILE_in_stat1108); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_WHILE.add(WHILE56);
 
 
-                            LPAR55=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1089); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_LPAR.add(LPAR55);
+                            LPAR57=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1110); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_LPAR.add(LPAR57);
 
 
-                            pushFollow(FOLLOW_cond_in_stat1091);
-                            cond56=cond();
+                            pushFollow(FOLLOW_cond_in_stat1112);
+                            cond58=cond();
 
                             state._fsp--;
                             if (state.failed) return retval;
-                            if ( state.backtracking==0 ) stream_cond.add(cond56.getTree());
+                            if ( state.backtracking==0 ) stream_cond.add(cond58.getTree());
 
-                            RPAR57=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1093); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_RPAR.add(RPAR57);
+                            RPAR59=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1114); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_RPAR.add(RPAR59);
 
 
                             // AST REWRITE
-                            // elements: stat, stat, WHILE, cond
+                            // elements: stat, WHILE, cond, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2116,9 +2139,9 @@ public TreeAdaptor getTreeAdaptor() {
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
-                            // 224:28: -> ^( BLOCK stat ^( WHILE cond stat ) )
+                            // 227:28: -> ^( BLOCK stat ^( WHILE cond stat ) )
                             {
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:224:31: ^( BLOCK stat ^( WHILE cond stat ) )
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:227:31: ^( BLOCK stat ^( WHILE cond stat ) )
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -2127,7 +2150,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                                 adaptor.addChild(root_1, stream_stat.nextTree());
 
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:224:44: ^( WHILE cond stat )
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:227:44: ^( WHILE cond stat )
                                 {
                                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                                 root_2 = (CtrlTree)adaptor.becomeRoot(
@@ -2153,29 +2176,29 @@ public TreeAdaptor getTreeAdaptor() {
                             }
                             break;
                         case 2 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:231:5: UNTIL LPAR cond RPAR
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:234:5: UNTIL LPAR cond RPAR
                             {
-                            UNTIL58=(Token)match(input,UNTIL,FOLLOW_UNTIL_in_stat1156); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_UNTIL.add(UNTIL58);
+                            UNTIL60=(Token)match(input,UNTIL,FOLLOW_UNTIL_in_stat1177); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_UNTIL.add(UNTIL60);
 
 
-                            LPAR59=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1158); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_LPAR.add(LPAR59);
+                            LPAR61=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1179); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_LPAR.add(LPAR61);
 
 
-                            pushFollow(FOLLOW_cond_in_stat1160);
-                            cond60=cond();
+                            pushFollow(FOLLOW_cond_in_stat1181);
+                            cond62=cond();
 
                             state._fsp--;
                             if (state.failed) return retval;
-                            if ( state.backtracking==0 ) stream_cond.add(cond60.getTree());
+                            if ( state.backtracking==0 ) stream_cond.add(cond62.getTree());
 
-                            RPAR61=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1162); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_RPAR.add(RPAR61);
+                            RPAR63=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1183); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_RPAR.add(RPAR63);
 
 
                             // AST REWRITE
-                            // elements: stat, cond, stat, UNTIL
+                            // elements: stat, stat, UNTIL, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2187,9 +2210,9 @@ public TreeAdaptor getTreeAdaptor() {
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
-                            // 231:26: -> ^( BLOCK stat ^( UNTIL cond stat ) )
+                            // 234:26: -> ^( BLOCK stat ^( UNTIL cond stat ) )
                             {
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:231:29: ^( BLOCK stat ^( UNTIL cond stat ) )
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:234:29: ^( BLOCK stat ^( UNTIL cond stat ) )
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -2198,7 +2221,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                                 adaptor.addChild(root_1, stream_stat.nextTree());
 
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:231:42: ^( UNTIL cond stat )
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:234:42: ^( UNTIL cond stat )
                                 {
                                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                                 root_2 = (CtrlTree)adaptor.becomeRoot(
@@ -2229,39 +2252,39 @@ public TreeAdaptor getTreeAdaptor() {
 
                     }
                     break;
-                case 7 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:237:5: IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )?
+                case 8 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:240:5: IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )?
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    IF62=(Token)match(input,IF,FOLLOW_IF_in_stat1209); if (state.failed) return retval;
+                    IF64=(Token)match(input,IF,FOLLOW_IF_in_stat1230); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    IF62_tree = 
-                    (CtrlTree)adaptor.create(IF62)
+                    IF64_tree = 
+                    (CtrlTree)adaptor.create(IF64)
                     ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(IF62_tree, root_0);
+                    root_0 = (CtrlTree)adaptor.becomeRoot(IF64_tree, root_0);
                     }
 
-                    LPAR63=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1212); if (state.failed) return retval;
+                    LPAR65=(Token)match(input,LPAR,FOLLOW_LPAR_in_stat1233); if (state.failed) return retval;
 
-                    pushFollow(FOLLOW_cond_in_stat1215);
-                    cond64=cond();
-
-                    state._fsp--;
-                    if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, cond64.getTree());
-
-                    RPAR65=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1217); if (state.failed) return retval;
-
-                    pushFollow(FOLLOW_stat_in_stat1220);
-                    stat66=stat();
+                    pushFollow(FOLLOW_cond_in_stat1236);
+                    cond66=cond();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat66.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, cond66.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:237:31: ( ( ELSE )=> ELSE ! stat )?
+                    RPAR67=(Token)match(input,RPAR,FOLLOW_RPAR_in_stat1238); if (state.failed) return retval;
+
+                    pushFollow(FOLLOW_stat_in_stat1241);
+                    stat68=stat();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat68.getTree());
+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:240:31: ( ( ELSE )=> ELSE ! stat )?
                     int alt15=2;
                     int LA15_0 = input.LA(1);
 
@@ -2274,16 +2297,16 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     switch (alt15) {
                         case 1 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:237:33: ( ELSE )=> ELSE ! stat
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:240:33: ( ELSE )=> ELSE ! stat
                             {
-                            ELSE67=(Token)match(input,ELSE,FOLLOW_ELSE_in_stat1230); if (state.failed) return retval;
+                            ELSE69=(Token)match(input,ELSE,FOLLOW_ELSE_in_stat1251); if (state.failed) return retval;
 
-                            pushFollow(FOLLOW_stat_in_stat1233);
-                            stat68=stat();
+                            pushFollow(FOLLOW_stat_in_stat1254);
+                            stat70=stat();
 
                             state._fsp--;
                             if (state.failed) return retval;
-                            if ( state.backtracking==0 ) adaptor.addChild(root_0, stat68.getTree());
+                            if ( state.backtracking==0 ) adaptor.addChild(root_0, stat70.getTree());
 
                             }
                             break;
@@ -2293,28 +2316,28 @@ public TreeAdaptor getTreeAdaptor() {
 
                     }
                     break;
-                case 8 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:241:5: TRY ^ stat ( ( ELSE )=> ELSE ! stat )?
+                case 9 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:5: TRY ^ stat ( ( ELSE )=> ELSE ! stat )?
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    TRY69=(Token)match(input,TRY,FOLLOW_TRY_in_stat1257); if (state.failed) return retval;
+                    TRY71=(Token)match(input,TRY,FOLLOW_TRY_in_stat1278); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    TRY69_tree = 
-                    (CtrlTree)adaptor.create(TRY69)
+                    TRY71_tree = 
+                    (CtrlTree)adaptor.create(TRY71)
                     ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(TRY69_tree, root_0);
+                    root_0 = (CtrlTree)adaptor.becomeRoot(TRY71_tree, root_0);
                     }
 
-                    pushFollow(FOLLOW_stat_in_stat1260);
-                    stat70=stat();
+                    pushFollow(FOLLOW_stat_in_stat1281);
+                    stat72=stat();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat70.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat72.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:241:15: ( ( ELSE )=> ELSE ! stat )?
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:15: ( ( ELSE )=> ELSE ! stat )?
                     int alt16=2;
                     int LA16_0 = input.LA(1);
 
@@ -2327,16 +2350,16 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     switch (alt16) {
                         case 1 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:241:17: ( ELSE )=> ELSE ! stat
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:17: ( ELSE )=> ELSE ! stat
                             {
-                            ELSE71=(Token)match(input,ELSE,FOLLOW_ELSE_in_stat1270); if (state.failed) return retval;
+                            ELSE73=(Token)match(input,ELSE,FOLLOW_ELSE_in_stat1291); if (state.failed) return retval;
 
-                            pushFollow(FOLLOW_stat_in_stat1273);
-                            stat72=stat();
+                            pushFollow(FOLLOW_stat_in_stat1294);
+                            stat74=stat();
 
                             state._fsp--;
                             if (state.failed) return retval;
-                            if ( state.backtracking==0 ) adaptor.addChild(root_0, stat72.getTree());
+                            if ( state.backtracking==0 ) adaptor.addChild(root_0, stat74.getTree());
 
                             }
                             break;
@@ -2346,28 +2369,28 @@ public TreeAdaptor getTreeAdaptor() {
 
                     }
                     break;
-                case 9 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:5: CHOICE ^ stat ( ( OR )=> OR ! stat )+
+                case 10 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:247:5: CHOICE ^ stat ( ( OR )=> OR ! stat )+
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    CHOICE73=(Token)match(input,CHOICE,FOLLOW_CHOICE_in_stat1292); if (state.failed) return retval;
+                    CHOICE75=(Token)match(input,CHOICE,FOLLOW_CHOICE_in_stat1313); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    CHOICE73_tree = 
-                    (CtrlTree)adaptor.create(CHOICE73)
+                    CHOICE75_tree = 
+                    (CtrlTree)adaptor.create(CHOICE75)
                     ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(CHOICE73_tree, root_0);
+                    root_0 = (CtrlTree)adaptor.becomeRoot(CHOICE75_tree, root_0);
                     }
 
-                    pushFollow(FOLLOW_stat_in_stat1295);
-                    stat74=stat();
+                    pushFollow(FOLLOW_stat_in_stat1316);
+                    stat76=stat();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat74.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat76.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:18: ( ( OR )=> OR ! stat )+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:247:18: ( ( OR )=> OR ! stat )+
                     int cnt17=0;
                     loop17:
                     do {
@@ -2387,16 +2410,16 @@ public TreeAdaptor getTreeAdaptor() {
 
                         switch (alt17) {
                     	case 1 :
-                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:20: ( OR )=> OR ! stat
+                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:247:20: ( OR )=> OR ! stat
                     	    {
-                    	    OR75=(Token)match(input,OR,FOLLOW_OR_in_stat1305); if (state.failed) return retval;
+                    	    OR77=(Token)match(input,OR,FOLLOW_OR_in_stat1326); if (state.failed) return retval;
 
-                    	    pushFollow(FOLLOW_stat_in_stat1308);
-                    	    stat76=stat();
+                    	    pushFollow(FOLLOW_stat_in_stat1329);
+                    	    stat78=stat();
 
                     	    state._fsp--;
                     	    if (state.failed) return retval;
-                    	    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat76.getTree());
+                    	    if ( state.backtracking==0 ) adaptor.addChild(root_0, stat78.getTree());
 
                     	    }
                     	    break;
@@ -2414,43 +2437,20 @@ public TreeAdaptor getTreeAdaptor() {
 
                     }
                     break;
-                case 10 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:247:4: expr SEMI ^
-                    {
-                    root_0 = (CtrlTree)adaptor.nil();
-
-
-                    pushFollow(FOLLOW_expr_in_stat1323);
-                    expr77=expr();
-
-                    state._fsp--;
-                    if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, expr77.getTree());
-
-                    SEMI78=(Token)match(input,SEMI,FOLLOW_SEMI_in_stat1325); if (state.failed) return retval;
-                    if ( state.backtracking==0 ) {
-                    SEMI78_tree = 
-                    (CtrlTree)adaptor.create(SEMI78)
-                    ;
-                    root_0 = (CtrlTree)adaptor.becomeRoot(SEMI78_tree, root_0);
-                    }
-
-                    }
-                    break;
                 case 11 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:250:4: var_decl SEMI ^
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:250:4: expr SEMI ^
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_var_decl_in_stat1340);
-                    var_decl79=var_decl();
+                    pushFollow(FOLLOW_expr_in_stat1344);
+                    expr79=expr();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, var_decl79.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, expr79.getTree());
 
-                    SEMI80=(Token)match(input,SEMI,FOLLOW_SEMI_in_stat1342); if (state.failed) return retval;
+                    SEMI80=(Token)match(input,SEMI,FOLLOW_SEMI_in_stat1346); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
                     SEMI80_tree = 
                     (CtrlTree)adaptor.create(SEMI80)
@@ -2486,6 +2486,314 @@ public TreeAdaptor getTreeAdaptor() {
     // $ANTLR end "stat"
 
 
+    public static class var_decl_return extends ParserRuleReturnScope {
+        CtrlTree tree;
+        public Object getTree() { return tree; }
+    };
+
+
+    // $ANTLR start "var_decl"
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:254:1: var_decl : var_decl_pure ( -> var_decl_pure | BECOMES call -> ^( BECOMES var_decl_pure call ) ) ;
+    public final CtrlParser.var_decl_return var_decl() throws RecognitionException {
+        CtrlParser.var_decl_return retval = new CtrlParser.var_decl_return();
+        retval.start = input.LT(1);
+
+
+        CtrlTree root_0 = null;
+
+        Token BECOMES82=null;
+        CtrlParser.var_decl_pure_return var_decl_pure81 =null;
+
+        CtrlParser.call_return call83 =null;
+
+
+        CtrlTree BECOMES82_tree=null;
+        RewriteRuleTokenStream stream_BECOMES=new RewriteRuleTokenStream(adaptor,"token BECOMES");
+        RewriteRuleSubtreeStream stream_call=new RewriteRuleSubtreeStream(adaptor,"rule call");
+        RewriteRuleSubtreeStream stream_var_decl_pure=new RewriteRuleSubtreeStream(adaptor,"rule var_decl_pure");
+        try {
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:255:3: ( var_decl_pure ( -> var_decl_pure | BECOMES call -> ^( BECOMES var_decl_pure call ) ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:258:5: var_decl_pure ( -> var_decl_pure | BECOMES call -> ^( BECOMES var_decl_pure call ) )
+            {
+            pushFollow(FOLLOW_var_decl_pure_in_var_decl1378);
+            var_decl_pure81=var_decl_pure();
+
+            state._fsp--;
+            if (state.failed) return retval;
+            if ( state.backtracking==0 ) stream_var_decl_pure.add(var_decl_pure81.getTree());
+
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:259:5: ( -> var_decl_pure | BECOMES call -> ^( BECOMES var_decl_pure call ) )
+            int alt19=2;
+            int LA19_0 = input.LA(1);
+
+            if ( (LA19_0==SEMI) ) {
+                alt19=1;
+            }
+            else if ( (LA19_0==BECOMES) ) {
+                alt19=2;
+            }
+            else {
+                if (state.backtracking>0) {state.failed=true; return retval;}
+                NoViableAltException nvae =
+                    new NoViableAltException("", 19, 0, input);
+
+                throw nvae;
+
+            }
+            switch (alt19) {
+                case 1 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:259:7: 
+                    {
+                    // AST REWRITE
+                    // elements: var_decl_pure
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    if ( state.backtracking==0 ) {
+
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 259:7: -> var_decl_pure
+                    {
+                        adaptor.addChild(root_0, stream_var_decl_pure.nextTree());
+
+                    }
+
+
+                    retval.tree = root_0;
+                    }
+
+                    }
+                    break;
+                case 2 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:260:7: BECOMES call
+                    {
+                    BECOMES82=(Token)match(input,BECOMES,FOLLOW_BECOMES_in_var_decl1396); if (state.failed) return retval; 
+                    if ( state.backtracking==0 ) stream_BECOMES.add(BECOMES82);
+
+
+                    pushFollow(FOLLOW_call_in_var_decl1398);
+                    call83=call();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) stream_call.add(call83.getTree());
+
+                    // AST REWRITE
+                    // elements: BECOMES, call, var_decl_pure
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    if ( state.backtracking==0 ) {
+
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 260:20: -> ^( BECOMES var_decl_pure call )
+                    {
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:260:23: ^( BECOMES var_decl_pure call )
+                        {
+                        CtrlTree root_1 = (CtrlTree)adaptor.nil();
+                        root_1 = (CtrlTree)adaptor.becomeRoot(
+                        stream_BECOMES.nextNode()
+                        , root_1);
+
+                        adaptor.addChild(root_1, stream_var_decl_pure.nextTree());
+
+                        adaptor.addChild(root_1, stream_call.nextTree());
+
+                        adaptor.addChild(root_0, root_1);
+                        }
+
+                    }
+
+
+                    retval.tree = root_0;
+                    }
+
+                    }
+                    break;
+
+            }
+
+
+            }
+
+            retval.stop = input.LT(-1);
+
+
+            if ( state.backtracking==0 ) {
+
+            retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CtrlTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+
+        finally {
+        	// do for sure before leaving
+        }
+        return retval;
+    }
+    // $ANTLR end "var_decl"
+
+
+    public static class var_decl_pure_return extends ParserRuleReturnScope {
+        CtrlTree tree;
+        public Object getTree() { return tree; }
+    };
+
+
+    // $ANTLR start "var_decl_pure"
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:264:1: var_decl_pure : var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) ;
+    public final CtrlParser.var_decl_pure_return var_decl_pure() throws RecognitionException {
+        CtrlParser.var_decl_pure_return retval = new CtrlParser.var_decl_pure_return();
+        retval.start = input.LT(1);
+
+
+        CtrlTree root_0 = null;
+
+        Token ID85=null;
+        Token COMMA86=null;
+        Token ID87=null;
+        CtrlParser.var_type_return var_type84 =null;
+
+
+        CtrlTree ID85_tree=null;
+        CtrlTree COMMA86_tree=null;
+        CtrlTree ID87_tree=null;
+        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
+        RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+        RewriteRuleSubtreeStream stream_var_type=new RewriteRuleSubtreeStream(adaptor,"rule var_type");
+        try {
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:265:3: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:265:5: var_type ID ( COMMA ID )*
+            {
+            pushFollow(FOLLOW_var_type_in_var_decl_pure1428);
+            var_type84=var_type();
+
+            state._fsp--;
+            if (state.failed) return retval;
+            if ( state.backtracking==0 ) stream_var_type.add(var_type84.getTree());
+
+            ID85=(Token)match(input,ID,FOLLOW_ID_in_var_decl_pure1430); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_ID.add(ID85);
+
+
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:265:17: ( COMMA ID )*
+            loop20:
+            do {
+                int alt20=2;
+                int LA20_0 = input.LA(1);
+
+                if ( (LA20_0==COMMA) ) {
+                    alt20=1;
+                }
+
+
+                switch (alt20) {
+            	case 1 :
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:265:18: COMMA ID
+            	    {
+            	    COMMA86=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_decl_pure1433); if (state.failed) return retval; 
+            	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA86);
+
+
+            	    ID87=(Token)match(input,ID,FOLLOW_ID_in_var_decl_pure1435); if (state.failed) return retval; 
+            	    if ( state.backtracking==0 ) stream_ID.add(ID87);
+
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop20;
+                }
+            } while (true);
+
+
+            // AST REWRITE
+            // elements: ID, var_type
+            // token labels: 
+            // rule labels: retval
+            // token list labels: 
+            // rule list labels: 
+            // wildcard labels: 
+            if ( state.backtracking==0 ) {
+
+            retval.tree = root_0;
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+            root_0 = (CtrlTree)adaptor.nil();
+            // 265:29: -> ^( VAR var_type ( ID )+ )
+            {
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:265:32: ^( VAR var_type ( ID )+ )
+                {
+                CtrlTree root_1 = (CtrlTree)adaptor.nil();
+                root_1 = (CtrlTree)adaptor.becomeRoot(
+                (CtrlTree)adaptor.create(VAR, "VAR")
+                , root_1);
+
+                adaptor.addChild(root_1, stream_var_type.nextTree());
+
+                if ( !(stream_ID.hasNext()) ) {
+                    throw new RewriteEarlyExitException();
+                }
+                while ( stream_ID.hasNext() ) {
+                    adaptor.addChild(root_1, 
+                    stream_ID.nextNode()
+                    );
+
+                }
+                stream_ID.reset();
+
+                adaptor.addChild(root_0, root_1);
+                }
+
+            }
+
+
+            retval.tree = root_0;
+            }
+
+            }
+
+            retval.stop = input.LT(-1);
+
+
+            if ( state.backtracking==0 ) {
+
+            retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CtrlTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+
+        finally {
+        	// do for sure before leaving
+        }
+        return retval;
+    }
+    // $ANTLR end "var_decl_pure"
+
+
     public static class cond_return extends ParserRuleReturnScope {
         CtrlTree tree;
         public Object getTree() { return tree; }
@@ -2493,7 +2801,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "cond"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:254:1: cond : cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) ;
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:269:1: cond : cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) ;
     public final CtrlParser.cond_return cond() throws RecognitionException {
         CtrlParser.cond_return retval = new CtrlParser.cond_return();
         retval.start = input.LT(1);
@@ -2501,86 +2809,86 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token BAR82=null;
-        CtrlParser.cond_atom_return cond_atom81 =null;
+        Token BAR89=null;
+        CtrlParser.cond_atom_return cond_atom88 =null;
 
-        CtrlParser.cond_atom_return cond_atom83 =null;
+        CtrlParser.cond_atom_return cond_atom90 =null;
 
 
-        CtrlTree BAR82_tree=null;
+        CtrlTree BAR89_tree=null;
         RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
         RewriteRuleSubtreeStream stream_cond_atom=new RewriteRuleSubtreeStream(adaptor,"rule cond_atom");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:255:2: ( cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:257:4: cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:270:2: ( cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:272:4: cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
             {
-            pushFollow(FOLLOW_cond_atom_in_cond1367);
-            cond_atom81=cond_atom();
+            pushFollow(FOLLOW_cond_atom_in_cond1471);
+            cond_atom88=cond_atom();
 
             state._fsp--;
             if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_cond_atom.add(cond_atom81.getTree());
+            if ( state.backtracking==0 ) stream_cond_atom.add(cond_atom88.getTree());
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:258:4: ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
-            int alt20=2;
-            int LA20_0 = input.LA(1);
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:273:4: ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
+            int alt22=2;
+            int LA22_0 = input.LA(1);
 
-            if ( (LA20_0==BAR) ) {
-                alt20=1;
+            if ( (LA22_0==BAR) ) {
+                alt22=1;
             }
-            else if ( (LA20_0==RPAR) ) {
-                alt20=2;
+            else if ( (LA22_0==RPAR) ) {
+                alt22=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return retval;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 20, 0, input);
+                    new NoViableAltException("", 22, 0, input);
 
                 throw nvae;
 
             }
-            switch (alt20) {
+            switch (alt22) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:258:6: ( BAR cond_atom )+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:273:6: ( BAR cond_atom )+
                     {
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:258:6: ( BAR cond_atom )+
-                    int cnt19=0;
-                    loop19:
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:273:6: ( BAR cond_atom )+
+                    int cnt21=0;
+                    loop21:
                     do {
-                        int alt19=2;
-                        int LA19_0 = input.LA(1);
+                        int alt21=2;
+                        int LA21_0 = input.LA(1);
 
-                        if ( (LA19_0==BAR) ) {
-                            alt19=1;
+                        if ( (LA21_0==BAR) ) {
+                            alt21=1;
                         }
 
 
-                        switch (alt19) {
+                        switch (alt21) {
                     	case 1 :
-                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:258:7: BAR cond_atom
+                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:273:7: BAR cond_atom
                     	    {
-                    	    BAR82=(Token)match(input,BAR,FOLLOW_BAR_in_cond1376); if (state.failed) return retval; 
-                    	    if ( state.backtracking==0 ) stream_BAR.add(BAR82);
+                    	    BAR89=(Token)match(input,BAR,FOLLOW_BAR_in_cond1480); if (state.failed) return retval; 
+                    	    if ( state.backtracking==0 ) stream_BAR.add(BAR89);
 
 
-                    	    pushFollow(FOLLOW_cond_atom_in_cond1378);
-                    	    cond_atom83=cond_atom();
+                    	    pushFollow(FOLLOW_cond_atom_in_cond1482);
+                    	    cond_atom90=cond_atom();
 
                     	    state._fsp--;
                     	    if (state.failed) return retval;
-                    	    if ( state.backtracking==0 ) stream_cond_atom.add(cond_atom83.getTree());
+                    	    if ( state.backtracking==0 ) stream_cond_atom.add(cond_atom90.getTree());
 
                     	    }
                     	    break;
 
                     	default :
-                    	    if ( cnt19 >= 1 ) break loop19;
+                    	    if ( cnt21 >= 1 ) break loop21;
                     	    if (state.backtracking>0) {state.failed=true; return retval;}
                                 EarlyExitException eee =
-                                    new EarlyExitException(19, input);
+                                    new EarlyExitException(21, input);
                                 throw eee;
                         }
-                        cnt19++;
+                        cnt21++;
                     } while (true);
 
 
@@ -2597,9 +2905,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 258:23: -> ^( CHOICE cond_atom ( cond_atom )+ )
+                    // 273:23: -> ^( CHOICE cond_atom ( cond_atom )+ )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:258:26: ^( CHOICE cond_atom ( cond_atom )+ )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:273:26: ^( CHOICE cond_atom ( cond_atom )+ )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -2629,7 +2937,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:259:6: 
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:274:6: 
                     {
                     // AST REWRITE
                     // elements: cond_atom
@@ -2644,7 +2952,7 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 259:6: -> cond_atom
+                    // 274:6: -> cond_atom
                     {
                         adaptor.addChild(root_0, stream_cond_atom.nextTree());
 
@@ -2693,7 +3001,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "cond_atom"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:263:1: cond_atom : ( TRUE | call );
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:278:1: cond_atom : ( TRUE | call );
     public final CtrlParser.cond_atom_return cond_atom() throws RecognitionException {
         CtrlParser.cond_atom_return retval = new CtrlParser.cond_atom_return();
         retval.start = input.LT(1);
@@ -2701,60 +3009,60 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token TRUE84=null;
-        CtrlParser.call_return call85 =null;
+        Token TRUE91=null;
+        CtrlParser.call_return call92 =null;
 
 
-        CtrlTree TRUE84_tree=null;
+        CtrlTree TRUE91_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:264:2: ( TRUE | call )
-            int alt21=2;
-            int LA21_0 = input.LA(1);
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:279:2: ( TRUE | call )
+            int alt23=2;
+            int LA23_0 = input.LA(1);
 
-            if ( (LA21_0==TRUE) ) {
-                alt21=1;
+            if ( (LA23_0==TRUE) ) {
+                alt23=1;
             }
-            else if ( (LA21_0==ANY||LA21_0==ASTERISK||LA21_0==ID||LA21_0==OTHER) ) {
-                alt21=2;
+            else if ( (LA23_0==ANY||LA23_0==ASTERISK||LA23_0==ID||LA23_0==OTHER) ) {
+                alt23=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return retval;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 21, 0, input);
+                    new NoViableAltException("", 23, 0, input);
 
                 throw nvae;
 
             }
-            switch (alt21) {
+            switch (alt23) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:266:4: TRUE
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:281:4: TRUE
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    TRUE84=(Token)match(input,TRUE,FOLLOW_TRUE_in_cond_atom1424); if (state.failed) return retval;
+                    TRUE91=(Token)match(input,TRUE,FOLLOW_TRUE_in_cond_atom1528); if (state.failed) return retval;
                     if ( state.backtracking==0 ) {
-                    TRUE84_tree = 
-                    (CtrlTree)adaptor.create(TRUE84)
+                    TRUE91_tree = 
+                    (CtrlTree)adaptor.create(TRUE91)
                     ;
-                    adaptor.addChild(root_0, TRUE84_tree);
+                    adaptor.addChild(root_0, TRUE91_tree);
                     }
 
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:270:5: call
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:285:5: call
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_call_in_cond_atom1445);
-                    call85=call();
+                    pushFollow(FOLLOW_call_in_cond_atom1549);
+                    call92=call();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, call85.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, call92.getTree());
 
                     }
                     break;
@@ -2791,7 +3099,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "expr"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:273:1: expr : expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) ;
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:288:1: expr : expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) ;
     public final CtrlParser.expr_return expr() throws RecognitionException {
         CtrlParser.expr_return retval = new CtrlParser.expr_return();
         retval.start = input.LT(1);
@@ -2799,86 +3107,86 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token BAR87=null;
-        CtrlParser.expr2_return expr286 =null;
+        Token BAR94=null;
+        CtrlParser.expr2_return expr293 =null;
 
-        CtrlParser.expr2_return expr288 =null;
+        CtrlParser.expr2_return expr295 =null;
 
 
-        CtrlTree BAR87_tree=null;
+        CtrlTree BAR94_tree=null;
         RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
         RewriteRuleSubtreeStream stream_expr2=new RewriteRuleSubtreeStream(adaptor,"rule expr2");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:274:2: ( expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:278:4: expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:289:2: ( expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:293:4: expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
             {
-            pushFollow(FOLLOW_expr2_in_expr1475);
-            expr286=expr2();
+            pushFollow(FOLLOW_expr2_in_expr1579);
+            expr293=expr2();
 
             state._fsp--;
             if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_expr2.add(expr286.getTree());
+            if ( state.backtracking==0 ) stream_expr2.add(expr293.getTree());
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:279:4: ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
-            int alt23=2;
-            int LA23_0 = input.LA(1);
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:4: ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
+            int alt25=2;
+            int LA25_0 = input.LA(1);
 
-            if ( (LA23_0==BAR) ) {
-                alt23=1;
+            if ( (LA25_0==BAR) ) {
+                alt25=1;
             }
-            else if ( ((LA23_0 >= RPAR && LA23_0 <= SEMI)) ) {
-                alt23=2;
+            else if ( ((LA25_0 >= RPAR && LA25_0 <= SEMI)) ) {
+                alt25=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return retval;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 23, 0, input);
+                    new NoViableAltException("", 25, 0, input);
 
                 throw nvae;
 
             }
-            switch (alt23) {
+            switch (alt25) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:279:6: ( BAR expr2 )+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:6: ( BAR expr2 )+
                     {
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:279:6: ( BAR expr2 )+
-                    int cnt22=0;
-                    loop22:
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:6: ( BAR expr2 )+
+                    int cnt24=0;
+                    loop24:
                     do {
-                        int alt22=2;
-                        int LA22_0 = input.LA(1);
+                        int alt24=2;
+                        int LA24_0 = input.LA(1);
 
-                        if ( (LA22_0==BAR) ) {
-                            alt22=1;
+                        if ( (LA24_0==BAR) ) {
+                            alt24=1;
                         }
 
 
-                        switch (alt22) {
+                        switch (alt24) {
                     	case 1 :
-                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:279:7: BAR expr2
+                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:7: BAR expr2
                     	    {
-                    	    BAR87=(Token)match(input,BAR,FOLLOW_BAR_in_expr1483); if (state.failed) return retval; 
-                    	    if ( state.backtracking==0 ) stream_BAR.add(BAR87);
+                    	    BAR94=(Token)match(input,BAR,FOLLOW_BAR_in_expr1587); if (state.failed) return retval; 
+                    	    if ( state.backtracking==0 ) stream_BAR.add(BAR94);
 
 
-                    	    pushFollow(FOLLOW_expr2_in_expr1485);
-                    	    expr288=expr2();
+                    	    pushFollow(FOLLOW_expr2_in_expr1589);
+                    	    expr295=expr2();
 
                     	    state._fsp--;
                     	    if (state.failed) return retval;
-                    	    if ( state.backtracking==0 ) stream_expr2.add(expr288.getTree());
+                    	    if ( state.backtracking==0 ) stream_expr2.add(expr295.getTree());
 
                     	    }
                     	    break;
 
                     	default :
-                    	    if ( cnt22 >= 1 ) break loop22;
+                    	    if ( cnt24 >= 1 ) break loop24;
                     	    if (state.backtracking>0) {state.failed=true; return retval;}
                                 EarlyExitException eee =
-                                    new EarlyExitException(22, input);
+                                    new EarlyExitException(24, input);
                                 throw eee;
                         }
-                        cnt22++;
+                        cnt24++;
                     } while (true);
 
 
@@ -2895,9 +3203,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 279:19: -> ^( CHOICE expr2 ( expr2 )+ )
+                    // 294:19: -> ^( CHOICE expr2 ( expr2 )+ )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:279:22: ^( CHOICE expr2 ( expr2 )+ )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:22: ^( CHOICE expr2 ( expr2 )+ )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -2927,7 +3235,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:280:6: 
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:295:6: 
                     {
                     // AST REWRITE
                     // elements: expr2
@@ -2942,7 +3250,7 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 280:6: -> expr2
+                    // 295:6: -> expr2
                     {
                         adaptor.addChild(root_0, stream_expr2.nextTree());
 
@@ -2991,7 +3299,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "expr2"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:284:1: expr2 : (e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e) |op= SHARP expr_atom -> ^( ALAP[$op] expr_atom ) );
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:299:1: expr2 : (e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e) |op= SHARP expr_atom -> ^( ALAP[$op] expr_atom ) );
     public final CtrlParser.expr2_return expr2() throws RecognitionException {
         CtrlParser.expr2_return retval = new CtrlParser.expr2_return();
         retval.start = input.LT(1);
@@ -3004,7 +3312,7 @@ public TreeAdaptor getTreeAdaptor() {
         Token op=null;
         CtrlParser.expr_atom_return e =null;
 
-        CtrlParser.expr_atom_return expr_atom89 =null;
+        CtrlParser.expr_atom_return expr_atom96 =null;
 
 
         CtrlTree plus_tree=null;
@@ -3015,69 +3323,69 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_ASTERISK=new RewriteRuleTokenStream(adaptor,"token ASTERISK");
         RewriteRuleSubtreeStream stream_expr_atom=new RewriteRuleSubtreeStream(adaptor,"rule expr_atom");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:285:3: (e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e) |op= SHARP expr_atom -> ^( ALAP[$op] expr_atom ) )
-            int alt25=2;
-            int LA25_0 = input.LA(1);
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:300:3: (e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e) |op= SHARP expr_atom -> ^( ALAP[$op] expr_atom ) )
+            int alt27=2;
+            int LA27_0 = input.LA(1);
 
-            if ( (LA25_0==ANY||LA25_0==ASTERISK||LA25_0==ID||LA25_0==LPAR||LA25_0==OTHER) ) {
-                alt25=1;
+            if ( (LA27_0==ANY||LA27_0==ASTERISK||LA27_0==ID||LA27_0==LPAR||LA27_0==OTHER) ) {
+                alt27=1;
             }
-            else if ( (LA25_0==SHARP) ) {
-                alt25=2;
+            else if ( (LA27_0==SHARP) ) {
+                alt27=2;
             }
             else {
                 if (state.backtracking>0) {state.failed=true; return retval;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 25, 0, input);
+                    new NoViableAltException("", 27, 0, input);
 
                 throw nvae;
 
             }
-            switch (alt25) {
+            switch (alt27) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:293:5: e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e)
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:308:5: e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e)
                     {
-                    pushFollow(FOLLOW_expr_atom_in_expr21566);
+                    pushFollow(FOLLOW_expr_atom_in_expr21670);
                     e=expr_atom();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_expr_atom.add(e.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:5: (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e)
-                    int alt24=3;
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:309:5: (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e)
+                    int alt26=3;
                     switch ( input.LA(1) ) {
                     case PLUS:
                         {
-                        alt24=1;
+                        alt26=1;
                         }
                         break;
                     case ASTERISK:
                         {
-                        alt24=2;
+                        alt26=2;
                         }
                         break;
                     case BAR:
                     case RPAR:
                     case SEMI:
                         {
-                        alt24=3;
+                        alt26=3;
                         }
                         break;
                     default:
                         if (state.backtracking>0) {state.failed=true; return retval;}
                         NoViableAltException nvae =
-                            new NoViableAltException("", 24, 0, input);
+                            new NoViableAltException("", 26, 0, input);
 
                         throw nvae;
 
                     }
 
-                    switch (alt24) {
+                    switch (alt26) {
                         case 1 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:7: plus= PLUS
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:309:7: plus= PLUS
                             {
-                            plus=(Token)match(input,PLUS,FOLLOW_PLUS_in_expr21576); if (state.failed) return retval; 
+                            plus=(Token)match(input,PLUS,FOLLOW_PLUS_in_expr21680); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_PLUS.add(plus);
 
 
@@ -3095,9 +3403,9 @@ public TreeAdaptor getTreeAdaptor() {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
-                            // 294:17: -> ^( BLOCK $e ^( STAR[$plus] $e) )
+                            // 309:17: -> ^( BLOCK $e ^( STAR[$plus] $e) )
                             {
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:20: ^( BLOCK $e ^( STAR[$plus] $e) )
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:309:20: ^( BLOCK $e ^( STAR[$plus] $e) )
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -3106,7 +3414,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                                 adaptor.addChild(root_1, stream_e.nextTree());
 
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:294:31: ^( STAR[$plus] $e)
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:309:31: ^( STAR[$plus] $e)
                                 {
                                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                                 root_2 = (CtrlTree)adaptor.becomeRoot(
@@ -3130,9 +3438,9 @@ public TreeAdaptor getTreeAdaptor() {
                             }
                             break;
                         case 2 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:295:7: ast= ASTERISK
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:310:7: ast= ASTERISK
                             {
-                            ast=(Token)match(input,ASTERISK,FOLLOW_ASTERISK_in_expr21603); if (state.failed) return retval; 
+                            ast=(Token)match(input,ASTERISK,FOLLOW_ASTERISK_in_expr21707); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_ASTERISK.add(ast);
 
 
@@ -3150,9 +3458,9 @@ public TreeAdaptor getTreeAdaptor() {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
-                            // 295:20: -> ^( STAR[$ast] $e)
+                            // 310:20: -> ^( STAR[$ast] $e)
                             {
-                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:295:23: ^( STAR[$ast] $e)
+                                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:310:23: ^( STAR[$ast] $e)
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -3173,7 +3481,7 @@ public TreeAdaptor getTreeAdaptor() {
                             }
                             break;
                         case 3 :
-                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:296:7: 
+                            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:311:7: 
                             {
                             // AST REWRITE
                             // elements: e
@@ -3189,7 +3497,7 @@ public TreeAdaptor getTreeAdaptor() {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
-                            // 296:7: -> $e
+                            // 311:7: -> $e
                             {
                                 adaptor.addChild(root_0, stream_e.nextTree());
 
@@ -3208,18 +3516,18 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:302:5: op= SHARP expr_atom
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:317:5: op= SHARP expr_atom
                     {
-                    op=(Token)match(input,SHARP,FOLLOW_SHARP_in_expr21658); if (state.failed) return retval; 
+                    op=(Token)match(input,SHARP,FOLLOW_SHARP_in_expr21762); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_SHARP.add(op);
 
 
-                    pushFollow(FOLLOW_expr_atom_in_expr21660);
-                    expr_atom89=expr_atom();
+                    pushFollow(FOLLOW_expr_atom_in_expr21764);
+                    expr_atom96=expr_atom();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_expr_atom.add(expr_atom89.getTree());
+                    if ( state.backtracking==0 ) stream_expr_atom.add(expr_atom96.getTree());
 
                     // AST REWRITE
                     // elements: expr_atom
@@ -3234,9 +3542,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 302:24: -> ^( ALAP[$op] expr_atom )
+                    // 317:24: -> ^( ALAP[$op] expr_atom )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:302:27: ^( ALAP[$op] expr_atom )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:317:27: ^( ALAP[$op] expr_atom )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -3289,7 +3597,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "expr_atom"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:305:1: expr_atom : (open= LPAR expr close= RPAR -> ^( BLOCK[$open] expr TRUE[$close] ) | call | assign );
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:320:1: expr_atom : (open= LPAR expr close= RPAR -> ^( BLOCK[$open] expr TRUE[$close] ) | assign | call );
     public final CtrlParser.expr_atom_return expr_atom() throws RecognitionException {
         CtrlParser.expr_atom_return retval = new CtrlParser.expr_atom_return();
         retval.start = input.LT(1);
@@ -3299,11 +3607,11 @@ public TreeAdaptor getTreeAdaptor() {
 
         Token open=null;
         Token close=null;
-        CtrlParser.expr_return expr90 =null;
+        CtrlParser.expr_return expr97 =null;
 
-        CtrlParser.call_return call91 =null;
+        CtrlParser.assign_return assign98 =null;
 
-        CtrlParser.assign_return assign92 =null;
+        CtrlParser.call_return call99 =null;
 
 
         CtrlTree open_tree=null;
@@ -3312,28 +3620,28 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
         RewriteRuleSubtreeStream stream_expr=new RewriteRuleSubtreeStream(adaptor,"rule expr");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:306:2: (open= LPAR expr close= RPAR -> ^( BLOCK[$open] expr TRUE[$close] ) | call | assign )
-            int alt26=3;
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:321:2: (open= LPAR expr close= RPAR -> ^( BLOCK[$open] expr TRUE[$close] ) | assign | call )
+            int alt28=3;
             switch ( input.LA(1) ) {
             case LPAR:
                 {
-                alt26=1;
+                alt28=1;
                 }
                 break;
             case ID:
                 {
-                int LA26_2 = input.LA(2);
+                int LA28_2 = input.LA(2);
 
-                if ( (LA26_2==ASTERISK||LA26_2==BAR||LA26_2==DOT||LA26_2==LPAR||LA26_2==PLUS||(LA26_2 >= RPAR && LA26_2 <= SEMI)) ) {
-                    alt26=2;
+                if ( (LA28_2==BECOMES||LA28_2==COMMA) ) {
+                    alt28=2;
                 }
-                else if ( (LA26_2==BECOMES||LA26_2==COMMA) ) {
-                    alt26=3;
+                else if ( (LA28_2==ASTERISK||LA28_2==BAR||LA28_2==DOT||LA28_2==LPAR||LA28_2==PLUS||(LA28_2 >= RPAR && LA28_2 <= SEMI)) ) {
+                    alt28=3;
                 }
                 else {
                     if (state.backtracking>0) {state.failed=true; return retval;}
                     NoViableAltException nvae =
-                        new NoViableAltException("", 26, 2, input);
+                        new NoViableAltException("", 28, 2, input);
 
                     throw nvae;
 
@@ -3344,34 +3652,34 @@ public TreeAdaptor getTreeAdaptor() {
             case ASTERISK:
             case OTHER:
                 {
-                alt26=2;
+                alt28=3;
                 }
                 break;
             default:
                 if (state.backtracking>0) {state.failed=true; return retval;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 26, 0, input);
+                    new NoViableAltException("", 28, 0, input);
 
                 throw nvae;
 
             }
 
-            switch (alt26) {
+            switch (alt28) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:308:4: open= LPAR expr close= RPAR
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:323:4: open= LPAR expr close= RPAR
                     {
-                    open=(Token)match(input,LPAR,FOLLOW_LPAR_in_expr_atom1691); if (state.failed) return retval; 
+                    open=(Token)match(input,LPAR,FOLLOW_LPAR_in_expr_atom1795); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_LPAR.add(open);
 
 
-                    pushFollow(FOLLOW_expr_in_expr_atom1693);
-                    expr90=expr();
+                    pushFollow(FOLLOW_expr_in_expr_atom1797);
+                    expr97=expr();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_expr.add(expr90.getTree());
+                    if ( state.backtracking==0 ) stream_expr.add(expr97.getTree());
 
-                    close=(Token)match(input,RPAR,FOLLOW_RPAR_in_expr_atom1697); if (state.failed) return retval; 
+                    close=(Token)match(input,RPAR,FOLLOW_RPAR_in_expr_atom1801); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_RPAR.add(close);
 
 
@@ -3388,9 +3696,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 309:4: -> ^( BLOCK[$open] expr TRUE[$close] )
+                    // 324:4: -> ^( BLOCK[$open] expr TRUE[$close] )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:309:7: ^( BLOCK[$open] expr TRUE[$close] )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:324:7: ^( BLOCK[$open] expr TRUE[$close] )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -3415,32 +3723,32 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:312:4: call
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:327:5: assign
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_call_in_expr_atom1725);
-                    call91=call();
+                    pushFollow(FOLLOW_assign_in_expr_atom1832);
+                    assign98=assign();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, call91.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, assign98.getTree());
 
                     }
                     break;
                 case 3 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:315:4: assign
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:330:4: call
                     {
                     root_0 = (CtrlTree)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_assign_in_expr_atom1738);
-                    assign92=assign();
+                    pushFollow(FOLLOW_call_in_expr_atom1845);
+                    call99=call();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) adaptor.addChild(root_0, assign92.getTree());
+                    if ( state.backtracking==0 ) adaptor.addChild(root_0, call99.getTree());
 
                     }
                     break;
@@ -3470,131 +3778,6 @@ public TreeAdaptor getTreeAdaptor() {
     // $ANTLR end "expr_atom"
 
 
-    public static class call_return extends ParserRuleReturnScope {
-        CtrlTree tree;
-        public Object getTree() { return tree; }
-    };
-
-
-    // $ANTLR start "call"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:319:1: call : rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) ;
-    public final CtrlParser.call_return call() throws RecognitionException {
-        CtrlParser.call_return retval = new CtrlParser.call_return();
-        retval.start = input.LT(1);
-
-
-        CtrlTree root_0 = null;
-
-        CtrlParser.rule_name_return rule_name93 =null;
-
-        CtrlParser.arg_list_return arg_list94 =null;
-
-
-        RewriteRuleSubtreeStream stream_arg_list=new RewriteRuleSubtreeStream(adaptor,"rule arg_list");
-        RewriteRuleSubtreeStream stream_rule_name=new RewriteRuleSubtreeStream(adaptor,"rule rule_name");
-        try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:320:2: ( rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:324:4: rule_name ( arg_list )?
-            {
-            pushFollow(FOLLOW_rule_name_in_call1768);
-            rule_name93=rule_name();
-
-            state._fsp--;
-            if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_rule_name.add(rule_name93.getTree());
-
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:324:14: ( arg_list )?
-            int alt27=2;
-            int LA27_0 = input.LA(1);
-
-            if ( (LA27_0==LPAR) ) {
-                alt27=1;
-            }
-            switch (alt27) {
-                case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:324:14: arg_list
-                    {
-                    pushFollow(FOLLOW_arg_list_in_call1770);
-                    arg_list94=arg_list();
-
-                    state._fsp--;
-                    if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_arg_list.add(arg_list94.getTree());
-
-                    }
-                    break;
-
-            }
-
-
-            if ( state.backtracking==0 ) { helper.registerCall((rule_name93!=null?((CtrlTree)rule_name93.tree):null)); }
-
-            // AST REWRITE
-            // elements: arg_list, rule_name
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            if ( state.backtracking==0 ) {
-
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CtrlTree)adaptor.nil();
-            // 326:4: -> ^( CALL[$rule_name.start] rule_name ( arg_list )? )
-            {
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:326:7: ^( CALL[$rule_name.start] rule_name ( arg_list )? )
-                {
-                CtrlTree root_1 = (CtrlTree)adaptor.nil();
-                root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(CALL, (rule_name93!=null?((Token)rule_name93.start):null))
-                , root_1);
-
-                adaptor.addChild(root_1, stream_rule_name.nextTree());
-
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:326:42: ( arg_list )?
-                if ( stream_arg_list.hasNext() ) {
-                    adaptor.addChild(root_1, stream_arg_list.nextTree());
-
-                }
-                stream_arg_list.reset();
-
-                adaptor.addChild(root_0, root_1);
-                }
-
-            }
-
-
-            retval.tree = root_0;
-            }
-
-            }
-
-            retval.stop = input.LT(-1);
-
-
-            if ( state.backtracking==0 ) {
-
-            retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-            }
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CtrlTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-
-        finally {
-        	// do for sure before leaving
-        }
-        return retval;
-    }
-    // $ANTLR end "call"
-
-
     public static class assign_return extends ParserRuleReturnScope {
         CtrlTree tree;
         public Object getTree() { return tree; }
@@ -3602,7 +3785,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "assign"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:330:1: assign : target ( COMMA target )* BECOMES call -> ^( BECOMES ^( ARGS ( target )+ RPAR ) call ) ;
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:334:1: assign : target ( COMMA target )* BECOMES call -> ^( BECOMES ^( ARGS ( target )+ RPAR ) call ) ;
     public final CtrlParser.assign_return assign() throws RecognitionException {
         CtrlParser.assign_return retval = new CtrlParser.assign_return();
         retval.start = input.LT(1);
@@ -3610,80 +3793,80 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token COMMA96=null;
-        Token BECOMES98=null;
-        CtrlParser.target_return target95 =null;
+        Token COMMA101=null;
+        Token BECOMES103=null;
+        CtrlParser.target_return target100 =null;
 
-        CtrlParser.target_return target97 =null;
+        CtrlParser.target_return target102 =null;
 
-        CtrlParser.call_return call99 =null;
+        CtrlParser.call_return call104 =null;
 
 
-        CtrlTree COMMA96_tree=null;
-        CtrlTree BECOMES98_tree=null;
+        CtrlTree COMMA101_tree=null;
+        CtrlTree BECOMES103_tree=null;
         RewriteRuleTokenStream stream_BECOMES=new RewriteRuleTokenStream(adaptor,"token BECOMES");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleSubtreeStream stream_call=new RewriteRuleSubtreeStream(adaptor,"rule call");
         RewriteRuleSubtreeStream stream_target=new RewriteRuleSubtreeStream(adaptor,"rule target");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:331:3: ( target ( COMMA target )* BECOMES call -> ^( BECOMES ^( ARGS ( target )+ RPAR ) call ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:338:5: target ( COMMA target )* BECOMES call
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:335:3: ( target ( COMMA target )* BECOMES call -> ^( BECOMES ^( ARGS ( target )+ RPAR ) call ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:342:5: target ( COMMA target )* BECOMES call
             {
-            pushFollow(FOLLOW_target_in_assign1841);
-            target95=target();
+            pushFollow(FOLLOW_target_in_assign1895);
+            target100=target();
 
             state._fsp--;
             if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_target.add(target95.getTree());
+            if ( state.backtracking==0 ) stream_target.add(target100.getTree());
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:338:12: ( COMMA target )*
-            loop28:
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:342:12: ( COMMA target )*
+            loop29:
             do {
-                int alt28=2;
-                int LA28_0 = input.LA(1);
+                int alt29=2;
+                int LA29_0 = input.LA(1);
 
-                if ( (LA28_0==COMMA) ) {
-                    alt28=1;
+                if ( (LA29_0==COMMA) ) {
+                    alt29=1;
                 }
 
 
-                switch (alt28) {
+                switch (alt29) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:338:13: COMMA target
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:342:13: COMMA target
             	    {
-            	    COMMA96=(Token)match(input,COMMA,FOLLOW_COMMA_in_assign1844); if (state.failed) return retval; 
-            	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA96);
+            	    COMMA101=(Token)match(input,COMMA,FOLLOW_COMMA_in_assign1898); if (state.failed) return retval; 
+            	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA101);
 
 
-            	    pushFollow(FOLLOW_target_in_assign1846);
-            	    target97=target();
+            	    pushFollow(FOLLOW_target_in_assign1900);
+            	    target102=target();
 
             	    state._fsp--;
             	    if (state.failed) return retval;
-            	    if ( state.backtracking==0 ) stream_target.add(target97.getTree());
+            	    if ( state.backtracking==0 ) stream_target.add(target102.getTree());
 
             	    }
             	    break;
 
             	default :
-            	    break loop28;
+            	    break loop29;
                 }
             } while (true);
 
 
-            BECOMES98=(Token)match(input,BECOMES,FOLLOW_BECOMES_in_assign1850); if (state.failed) return retval; 
-            if ( state.backtracking==0 ) stream_BECOMES.add(BECOMES98);
+            BECOMES103=(Token)match(input,BECOMES,FOLLOW_BECOMES_in_assign1904); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_BECOMES.add(BECOMES103);
 
 
-            pushFollow(FOLLOW_call_in_assign1852);
-            call99=call();
+            pushFollow(FOLLOW_call_in_assign1906);
+            call104=call();
 
             state._fsp--;
             if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_call.add(call99.getTree());
+            if ( state.backtracking==0 ) stream_call.add(call104.getTree());
 
             // AST REWRITE
-            // elements: target, BECOMES, call
+            // elements: target, call, BECOMES
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3695,16 +3878,16 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CtrlTree)adaptor.nil();
-            // 339:5: -> ^( BECOMES ^( ARGS ( target )+ RPAR ) call )
+            // 343:5: -> ^( BECOMES ^( ARGS ( target )+ RPAR ) call )
             {
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:339:8: ^( BECOMES ^( ARGS ( target )+ RPAR ) call )
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:8: ^( BECOMES ^( ARGS ( target )+ RPAR ) call )
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
                 stream_BECOMES.nextNode()
                 , root_1);
 
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:339:18: ^( ARGS ( target )+ RPAR )
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:18: ^( ARGS ( target )+ RPAR )
                 {
                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                 root_2 = (CtrlTree)adaptor.becomeRoot(
@@ -3771,7 +3954,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "target"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:342:1: target : ID -> ^( ARG OUT ID ) ;
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:346:1: target : ID -> ^( ARG OUT ID ) ;
     public final CtrlParser.target_return target() throws RecognitionException {
         CtrlParser.target_return retval = new CtrlParser.target_return();
         retval.start = input.LT(1);
@@ -3779,17 +3962,17 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token ID100=null;
+        Token ID105=null;
 
-        CtrlTree ID100_tree=null;
+        CtrlTree ID105_tree=null;
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:3: ( ID -> ^( ARG OUT ID ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:5: ID
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:3: ( ID -> ^( ARG OUT ID ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:5: ID
             {
-            ID100=(Token)match(input,ID,FOLLOW_ID_in_target1886); if (state.failed) return retval; 
-            if ( state.backtracking==0 ) stream_ID.add(ID100);
+            ID105=(Token)match(input,ID,FOLLOW_ID_in_target1940); if (state.failed) return retval; 
+            if ( state.backtracking==0 ) stream_ID.add(ID105);
 
 
             // AST REWRITE
@@ -3805,9 +3988,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CtrlTree)adaptor.nil();
-            // 343:8: -> ^( ARG OUT ID )
+            // 347:8: -> ^( ARG OUT ID )
             {
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:11: ^( ARG OUT ID )
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:11: ^( ARG OUT ID )
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -3857,6 +4040,131 @@ public TreeAdaptor getTreeAdaptor() {
     // $ANTLR end "target"
 
 
+    public static class call_return extends ParserRuleReturnScope {
+        CtrlTree tree;
+        public Object getTree() { return tree; }
+    };
+
+
+    // $ANTLR start "call"
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:351:1: call : rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) ;
+    public final CtrlParser.call_return call() throws RecognitionException {
+        CtrlParser.call_return retval = new CtrlParser.call_return();
+        retval.start = input.LT(1);
+
+
+        CtrlTree root_0 = null;
+
+        CtrlParser.rule_name_return rule_name106 =null;
+
+        CtrlParser.arg_list_return arg_list107 =null;
+
+
+        RewriteRuleSubtreeStream stream_arg_list=new RewriteRuleSubtreeStream(adaptor,"rule arg_list");
+        RewriteRuleSubtreeStream stream_rule_name=new RewriteRuleSubtreeStream(adaptor,"rule rule_name");
+        try {
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:352:2: ( rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:356:4: rule_name ( arg_list )?
+            {
+            pushFollow(FOLLOW_rule_name_in_call1980);
+            rule_name106=rule_name();
+
+            state._fsp--;
+            if (state.failed) return retval;
+            if ( state.backtracking==0 ) stream_rule_name.add(rule_name106.getTree());
+
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:356:14: ( arg_list )?
+            int alt30=2;
+            int LA30_0 = input.LA(1);
+
+            if ( (LA30_0==LPAR) ) {
+                alt30=1;
+            }
+            switch (alt30) {
+                case 1 :
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:356:14: arg_list
+                    {
+                    pushFollow(FOLLOW_arg_list_in_call1982);
+                    arg_list107=arg_list();
+
+                    state._fsp--;
+                    if (state.failed) return retval;
+                    if ( state.backtracking==0 ) stream_arg_list.add(arg_list107.getTree());
+
+                    }
+                    break;
+
+            }
+
+
+            if ( state.backtracking==0 ) { helper.registerCall((rule_name106!=null?((CtrlTree)rule_name106.tree):null)); }
+
+            // AST REWRITE
+            // elements: arg_list, rule_name
+            // token labels: 
+            // rule labels: retval
+            // token list labels: 
+            // rule list labels: 
+            // wildcard labels: 
+            if ( state.backtracking==0 ) {
+
+            retval.tree = root_0;
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+            root_0 = (CtrlTree)adaptor.nil();
+            // 358:4: -> ^( CALL[$rule_name.start] rule_name ( arg_list )? )
+            {
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:7: ^( CALL[$rule_name.start] rule_name ( arg_list )? )
+                {
+                CtrlTree root_1 = (CtrlTree)adaptor.nil();
+                root_1 = (CtrlTree)adaptor.becomeRoot(
+                (CtrlTree)adaptor.create(CALL, (rule_name106!=null?((Token)rule_name106.start):null))
+                , root_1);
+
+                adaptor.addChild(root_1, stream_rule_name.nextTree());
+
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:42: ( arg_list )?
+                if ( stream_arg_list.hasNext() ) {
+                    adaptor.addChild(root_1, stream_arg_list.nextTree());
+
+                }
+                stream_arg_list.reset();
+
+                adaptor.addChild(root_0, root_1);
+                }
+
+            }
+
+
+            retval.tree = root_0;
+            }
+
+            }
+
+            retval.stop = input.LT(-1);
+
+
+            if ( state.backtracking==0 ) {
+
+            retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CtrlTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+
+        finally {
+        	// do for sure before leaving
+        }
+        return retval;
+    }
+    // $ANTLR end "call"
+
+
     public static class rule_name_return extends ParserRuleReturnScope {
         CtrlTree tree;
         public Object getTree() { return tree; }
@@ -3864,7 +4172,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "rule_name"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:1: rule_name : qual_name[true] ->;
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:362:1: rule_name : qual_name[true] ->;
     public final CtrlParser.rule_name_return rule_name() throws RecognitionException {
         CtrlParser.rule_name_return retval = new CtrlParser.rule_name_return();
         retval.start = input.LT(1);
@@ -3872,20 +4180,20 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        CtrlParser.qual_name_return qual_name101 =null;
+        CtrlParser.qual_name_return qual_name108 =null;
 
 
         RewriteRuleSubtreeStream stream_qual_name=new RewriteRuleSubtreeStream(adaptor,"rule qual_name");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:348:3: ( qual_name[true] ->)
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:5: qual_name[true]
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:363:3: ( qual_name[true] ->)
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:373:5: qual_name[true]
             {
-            pushFollow(FOLLOW_qual_name_in_rule_name1961);
-            qual_name101=qual_name(true);
+            pushFollow(FOLLOW_qual_name_in_rule_name2068);
+            qual_name108=qual_name(true);
 
             state._fsp--;
             if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_qual_name.add(qual_name101.getTree());
+            if ( state.backtracking==0 ) stream_qual_name.add(qual_name108.getTree());
 
             // AST REWRITE
             // elements: 
@@ -3900,9 +4208,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CtrlTree)adaptor.nil();
-            // 359:5: ->
+            // 374:5: ->
             {
-                adaptor.addChild(root_0,  helper.qualify((qual_name101!=null?((CtrlTree)qual_name101.tree):null)) );
+                adaptor.addChild(root_0,  helper.qualify((qual_name108!=null?((CtrlTree)qual_name108.tree):null)) );
 
             }
 
@@ -3943,7 +4251,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "arg_list"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:365:1: arg_list : open= LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( ARGS[$open] ( arg )* RPAR[$close] ) ;
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:1: arg_list : open= LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( ARGS[$open] ( arg )* RPAR[$close] ) ;
     public final CtrlParser.arg_list_return arg_list() throws RecognitionException {
         CtrlParser.arg_list_return retval = new CtrlParser.arg_list_return();
         retval.start = input.LT(1);
@@ -3953,76 +4261,76 @@ public TreeAdaptor getTreeAdaptor() {
 
         Token open=null;
         Token close=null;
-        Token COMMA103=null;
-        CtrlParser.arg_return arg102 =null;
+        Token COMMA110=null;
+        CtrlParser.arg_return arg109 =null;
 
-        CtrlParser.arg_return arg104 =null;
+        CtrlParser.arg_return arg111 =null;
 
 
         CtrlTree open_tree=null;
         CtrlTree close_tree=null;
-        CtrlTree COMMA103_tree=null;
+        CtrlTree COMMA110_tree=null;
         RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
         RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleSubtreeStream stream_arg=new RewriteRuleSubtreeStream(adaptor,"rule arg");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:366:3: (open= LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( ARGS[$open] ( arg )* RPAR[$close] ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:368:5: open= LPAR ( arg ( COMMA arg )* )? close= RPAR
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:381:3: (open= LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( ARGS[$open] ( arg )* RPAR[$close] ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:5: open= LPAR ( arg ( COMMA arg )* )? close= RPAR
             {
-            open=(Token)match(input,LPAR,FOLLOW_LPAR_in_arg_list1997); if (state.failed) return retval; 
+            open=(Token)match(input,LPAR,FOLLOW_LPAR_in_arg_list2104); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_LPAR.add(open);
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:368:15: ( arg ( COMMA arg )* )?
-            int alt30=2;
-            int LA30_0 = input.LA(1);
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:15: ( arg ( COMMA arg )* )?
+            int alt32=2;
+            int LA32_0 = input.LA(1);
 
-            if ( (LA30_0==DONT_CARE||LA30_0==FALSE||LA30_0==ID||LA30_0==INT_LIT||LA30_0==OUT||LA30_0==REAL_LIT||(LA30_0 >= STRING_LIT && LA30_0 <= TRUE)) ) {
-                alt30=1;
+            if ( (LA32_0==DONT_CARE||LA32_0==FALSE||LA32_0==ID||LA32_0==INT_LIT||LA32_0==OUT||LA32_0==REAL_LIT||(LA32_0 >= STRING_LIT && LA32_0 <= TRUE)) ) {
+                alt32=1;
             }
-            switch (alt30) {
+            switch (alt32) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:368:16: arg ( COMMA arg )*
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:16: arg ( COMMA arg )*
                     {
-                    pushFollow(FOLLOW_arg_in_arg_list2000);
-                    arg102=arg();
+                    pushFollow(FOLLOW_arg_in_arg_list2107);
+                    arg109=arg();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_arg.add(arg102.getTree());
+                    if ( state.backtracking==0 ) stream_arg.add(arg109.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:368:20: ( COMMA arg )*
-                    loop29:
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:20: ( COMMA arg )*
+                    loop31:
                     do {
-                        int alt29=2;
-                        int LA29_0 = input.LA(1);
+                        int alt31=2;
+                        int LA31_0 = input.LA(1);
 
-                        if ( (LA29_0==COMMA) ) {
-                            alt29=1;
+                        if ( (LA31_0==COMMA) ) {
+                            alt31=1;
                         }
 
 
-                        switch (alt29) {
+                        switch (alt31) {
                     	case 1 :
-                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:368:21: COMMA arg
+                    	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:21: COMMA arg
                     	    {
-                    	    COMMA103=(Token)match(input,COMMA,FOLLOW_COMMA_in_arg_list2003); if (state.failed) return retval; 
-                    	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA103);
+                    	    COMMA110=(Token)match(input,COMMA,FOLLOW_COMMA_in_arg_list2110); if (state.failed) return retval; 
+                    	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA110);
 
 
-                    	    pushFollow(FOLLOW_arg_in_arg_list2005);
-                    	    arg104=arg();
+                    	    pushFollow(FOLLOW_arg_in_arg_list2112);
+                    	    arg111=arg();
 
                     	    state._fsp--;
                     	    if (state.failed) return retval;
-                    	    if ( state.backtracking==0 ) stream_arg.add(arg104.getTree());
+                    	    if ( state.backtracking==0 ) stream_arg.add(arg111.getTree());
 
                     	    }
                     	    break;
 
                     	default :
-                    	    break loop29;
+                    	    break loop31;
                         }
                     } while (true);
 
@@ -4033,7 +4341,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            close=(Token)match(input,RPAR,FOLLOW_RPAR_in_arg_list2013); if (state.failed) return retval; 
+            close=(Token)match(input,RPAR,FOLLOW_RPAR_in_arg_list2120); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_RPAR.add(close);
 
 
@@ -4050,16 +4358,16 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CtrlTree)adaptor.nil();
-            // 369:5: -> ^( ARGS[$open] ( arg )* RPAR[$close] )
+            // 384:5: -> ^( ARGS[$open] ( arg )* RPAR[$close] )
             {
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:369:8: ^( ARGS[$open] ( arg )* RPAR[$close] )
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:384:8: ^( ARGS[$open] ( arg )* RPAR[$close] )
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
                 (CtrlTree)adaptor.create(ARGS, open)
                 , root_1);
 
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:369:22: ( arg )*
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:384:22: ( arg )*
                 while ( stream_arg.hasNext() ) {
                     adaptor.addChild(root_1, stream_arg.nextTree());
 
@@ -4112,7 +4420,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "arg"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:375:1: arg : ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) );
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:390:1: arg : ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) );
     public final CtrlParser.arg_return arg() throws RecognitionException {
         CtrlParser.arg_return retval = new CtrlParser.arg_return();
         retval.start = input.LT(1);
@@ -4120,38 +4428,38 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token OUT105=null;
-        Token ID106=null;
-        Token ID107=null;
-        Token DONT_CARE108=null;
-        CtrlParser.literal_return literal109 =null;
+        Token OUT112=null;
+        Token ID113=null;
+        Token ID114=null;
+        Token DONT_CARE115=null;
+        CtrlParser.literal_return literal116 =null;
 
 
-        CtrlTree OUT105_tree=null;
-        CtrlTree ID106_tree=null;
-        CtrlTree ID107_tree=null;
-        CtrlTree DONT_CARE108_tree=null;
+        CtrlTree OUT112_tree=null;
+        CtrlTree ID113_tree=null;
+        CtrlTree ID114_tree=null;
+        CtrlTree DONT_CARE115_tree=null;
         RewriteRuleTokenStream stream_DONT_CARE=new RewriteRuleTokenStream(adaptor,"token DONT_CARE");
         RewriteRuleTokenStream stream_OUT=new RewriteRuleTokenStream(adaptor,"token OUT");
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_literal=new RewriteRuleSubtreeStream(adaptor,"rule literal");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:376:3: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
-            int alt31=4;
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:391:3: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
+            int alt33=4;
             switch ( input.LA(1) ) {
             case OUT:
                 {
-                alt31=1;
+                alt33=1;
                 }
                 break;
             case ID:
                 {
-                alt31=2;
+                alt33=2;
                 }
                 break;
             case DONT_CARE:
                 {
-                alt31=3;
+                alt33=3;
                 }
                 break;
             case FALSE:
@@ -4160,28 +4468,28 @@ public TreeAdaptor getTreeAdaptor() {
             case STRING_LIT:
             case TRUE:
                 {
-                alt31=4;
+                alt33=4;
                 }
                 break;
             default:
                 if (state.backtracking>0) {state.failed=true; return retval;}
                 NoViableAltException nvae =
-                    new NoViableAltException("", 31, 0, input);
+                    new NoViableAltException("", 33, 0, input);
 
                 throw nvae;
 
             }
 
-            switch (alt31) {
+            switch (alt33) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:379:5: OUT ID
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:394:5: OUT ID
                     {
-                    OUT105=(Token)match(input,OUT,FOLLOW_OUT_in_arg2060); if (state.failed) return retval; 
-                    if ( state.backtracking==0 ) stream_OUT.add(OUT105);
+                    OUT112=(Token)match(input,OUT,FOLLOW_OUT_in_arg2167); if (state.failed) return retval; 
+                    if ( state.backtracking==0 ) stream_OUT.add(OUT112);
 
 
-                    ID106=(Token)match(input,ID,FOLLOW_ID_in_arg2062); if (state.failed) return retval; 
-                    if ( state.backtracking==0 ) stream_ID.add(ID106);
+                    ID113=(Token)match(input,ID,FOLLOW_ID_in_arg2169); if (state.failed) return retval; 
+                    if ( state.backtracking==0 ) stream_ID.add(ID113);
 
 
                     // AST REWRITE
@@ -4197,9 +4505,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 379:12: -> ^( ARG OUT ID )
+                    // 394:12: -> ^( ARG OUT ID )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:379:15: ^( ARG OUT ID )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:394:15: ^( ARG OUT ID )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -4226,10 +4534,10 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:5: ID
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:398:5: ID
                     {
-                    ID107=(Token)match(input,ID,FOLLOW_ID_in_arg2093); if (state.failed) return retval; 
-                    if ( state.backtracking==0 ) stream_ID.add(ID107);
+                    ID114=(Token)match(input,ID,FOLLOW_ID_in_arg2200); if (state.failed) return retval; 
+                    if ( state.backtracking==0 ) stream_ID.add(ID114);
 
 
                     // AST REWRITE
@@ -4245,9 +4553,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 383:8: -> ^( ARG ID )
+                    // 398:8: -> ^( ARG ID )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:11: ^( ARG ID )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:398:11: ^( ARG ID )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -4270,10 +4578,10 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:387:5: DONT_CARE
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:402:5: DONT_CARE
                     {
-                    DONT_CARE108=(Token)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg2122); if (state.failed) return retval; 
-                    if ( state.backtracking==0 ) stream_DONT_CARE.add(DONT_CARE108);
+                    DONT_CARE115=(Token)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg2229); if (state.failed) return retval; 
+                    if ( state.backtracking==0 ) stream_DONT_CARE.add(DONT_CARE115);
 
 
                     // AST REWRITE
@@ -4289,9 +4597,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 387:15: -> ^( ARG DONT_CARE )
+                    // 402:15: -> ^( ARG DONT_CARE )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:387:18: ^( ARG DONT_CARE )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:402:18: ^( ARG DONT_CARE )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -4314,14 +4622,14 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 4 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:388:5: literal
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:403:5: literal
                     {
-                    pushFollow(FOLLOW_literal_in_arg2139);
-                    literal109=literal();
+                    pushFollow(FOLLOW_literal_in_arg2246);
+                    literal116=literal();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_literal.add(literal109.getTree());
+                    if ( state.backtracking==0 ) stream_literal.add(literal116.getTree());
 
                     // AST REWRITE
                     // elements: literal
@@ -4336,9 +4644,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CtrlTree)adaptor.nil();
-                    // 388:13: -> ^( ARG literal )
+                    // 403:13: -> ^( ARG literal )
                     {
-                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:388:16: ^( ARG literal )
+                        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:403:16: ^( ARG literal )
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
@@ -4391,7 +4699,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "literal"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:391:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:406:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
     public final CtrlParser.literal_return literal() throws RecognitionException {
         CtrlParser.literal_return retval = new CtrlParser.literal_return();
         retval.start = input.LT(1);
@@ -4399,23 +4707,23 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token set110=null;
+        Token set117=null;
 
-        CtrlTree set110_tree=null;
+        CtrlTree set117_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:392:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:407:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:
             {
             root_0 = (CtrlTree)adaptor.nil();
 
 
-            set110=(Token)input.LT(1);
+            set117=(Token)input.LT(1);
 
             if ( input.LA(1)==FALSE||input.LA(1)==INT_LIT||input.LA(1)==REAL_LIT||(input.LA(1) >= STRING_LIT && input.LA(1) <= TRUE) ) {
                 input.consume();
                 if ( state.backtracking==0 ) adaptor.addChild(root_0, 
-                (CtrlTree)adaptor.create(set110)
+                (CtrlTree)adaptor.create(set117)
                 );
                 state.errorRecovery=false;
                 state.failed=false;
@@ -4453,150 +4761,6 @@ public TreeAdaptor getTreeAdaptor() {
     // $ANTLR end "literal"
 
 
-    public static class var_decl_return extends ParserRuleReturnScope {
-        CtrlTree tree;
-        public Object getTree() { return tree; }
-    };
-
-
-    // $ANTLR start "var_decl"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:410:1: var_decl : var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) ;
-    public final CtrlParser.var_decl_return var_decl() throws RecognitionException {
-        CtrlParser.var_decl_return retval = new CtrlParser.var_decl_return();
-        retval.start = input.LT(1);
-
-
-        CtrlTree root_0 = null;
-
-        Token ID112=null;
-        Token COMMA113=null;
-        Token ID114=null;
-        CtrlParser.var_type_return var_type111 =null;
-
-
-        CtrlTree ID112_tree=null;
-        CtrlTree COMMA113_tree=null;
-        CtrlTree ID114_tree=null;
-        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
-        RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
-        RewriteRuleSubtreeStream stream_var_type=new RewriteRuleSubtreeStream(adaptor,"rule var_type");
-        try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:411:2: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:413:4: var_type ID ( COMMA ID )*
-            {
-            pushFollow(FOLLOW_var_type_in_var_decl2256);
-            var_type111=var_type();
-
-            state._fsp--;
-            if (state.failed) return retval;
-            if ( state.backtracking==0 ) stream_var_type.add(var_type111.getTree());
-
-            ID112=(Token)match(input,ID,FOLLOW_ID_in_var_decl2258); if (state.failed) return retval; 
-            if ( state.backtracking==0 ) stream_ID.add(ID112);
-
-
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:413:16: ( COMMA ID )*
-            loop32:
-            do {
-                int alt32=2;
-                int LA32_0 = input.LA(1);
-
-                if ( (LA32_0==COMMA) ) {
-                    alt32=1;
-                }
-
-
-                switch (alt32) {
-            	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:413:17: COMMA ID
-            	    {
-            	    COMMA113=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_decl2261); if (state.failed) return retval; 
-            	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA113);
-
-
-            	    ID114=(Token)match(input,ID,FOLLOW_ID_in_var_decl2263); if (state.failed) return retval; 
-            	    if ( state.backtracking==0 ) stream_ID.add(ID114);
-
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop32;
-                }
-            } while (true);
-
-
-            // AST REWRITE
-            // elements: ID, var_type
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            if ( state.backtracking==0 ) {
-
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CtrlTree)adaptor.nil();
-            // 413:28: -> ^( VAR var_type ( ID )+ )
-            {
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:413:31: ^( VAR var_type ( ID )+ )
-                {
-                CtrlTree root_1 = (CtrlTree)adaptor.nil();
-                root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(VAR, "VAR")
-                , root_1);
-
-                adaptor.addChild(root_1, stream_var_type.nextTree());
-
-                if ( !(stream_ID.hasNext()) ) {
-                    throw new RewriteEarlyExitException();
-                }
-                while ( stream_ID.hasNext() ) {
-                    adaptor.addChild(root_1, 
-                    stream_ID.nextNode()
-                    );
-
-                }
-                stream_ID.reset();
-
-                adaptor.addChild(root_0, root_1);
-                }
-
-            }
-
-
-            retval.tree = root_0;
-            }
-
-            }
-
-            retval.stop = input.LT(-1);
-
-
-            if ( state.backtracking==0 ) {
-
-            retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-            }
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CtrlTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-
-        finally {
-        	// do for sure before leaving
-        }
-        return retval;
-    }
-    // $ANTLR end "var_decl"
-
-
     public static class var_type_return extends ParserRuleReturnScope {
         CtrlTree tree;
         public Object getTree() { return tree; }
@@ -4604,7 +4768,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "var_type"
-    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:417:1: var_type : ( NODE | BOOL | STRING | INT | REAL );
+    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:425:1: var_type : ( NODE | BOOL | STRING | INT | REAL );
     public final CtrlParser.var_type_return var_type() throws RecognitionException {
         CtrlParser.var_type_return retval = new CtrlParser.var_type_return();
         retval.start = input.LT(1);
@@ -4612,23 +4776,23 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree root_0 = null;
 
-        Token set115=null;
+        Token set118=null;
 
-        CtrlTree set115_tree=null;
+        CtrlTree set118_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:418:2: ( NODE | BOOL | STRING | INT | REAL )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:426:2: ( NODE | BOOL | STRING | INT | REAL )
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:
             {
             root_0 = (CtrlTree)adaptor.nil();
 
 
-            set115=(Token)input.LT(1);
+            set118=(Token)input.LT(1);
 
             if ( input.LA(1)==BOOL||input.LA(1)==INT||input.LA(1)==NODE||input.LA(1)==REAL||input.LA(1)==STRING ) {
                 input.consume();
                 if ( state.backtracking==0 ) adaptor.addChild(root_0, 
-                (CtrlTree)adaptor.create(set115)
+                (CtrlTree)adaptor.create(set118)
                 );
                 state.errorRecovery=false;
                 state.failed=false;
@@ -4667,10 +4831,10 @@ public TreeAdaptor getTreeAdaptor() {
 
     // $ANTLR start synpred1_Ctrl
     public final void synpred1_Ctrl_fragment() throws RecognitionException {
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:237:33: ( ELSE )
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:237:34: ELSE
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:240:33: ( ELSE )
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:240:34: ELSE
         {
-        match(input,ELSE,FOLLOW_ELSE_in_synpred1_Ctrl1225); if (state.failed) return ;
+        match(input,ELSE,FOLLOW_ELSE_in_synpred1_Ctrl1246); if (state.failed) return ;
 
         }
 
@@ -4679,10 +4843,10 @@ public TreeAdaptor getTreeAdaptor() {
 
     // $ANTLR start synpred2_Ctrl
     public final void synpred2_Ctrl_fragment() throws RecognitionException {
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:241:17: ( ELSE )
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:241:18: ELSE
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:17: ( ELSE )
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:18: ELSE
         {
-        match(input,ELSE,FOLLOW_ELSE_in_synpred2_Ctrl1265); if (state.failed) return ;
+        match(input,ELSE,FOLLOW_ELSE_in_synpred2_Ctrl1286); if (state.failed) return ;
 
         }
 
@@ -4691,10 +4855,10 @@ public TreeAdaptor getTreeAdaptor() {
 
     // $ANTLR start synpred3_Ctrl
     public final void synpred3_Ctrl_fragment() throws RecognitionException {
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:20: ( OR )
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:244:21: OR
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:247:20: ( OR )
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:247:21: OR
         {
-        match(input,OR,FOLLOW_OR_in_synpred3_Ctrl1300); if (state.failed) return ;
+        match(input,OR,FOLLOW_OR_in_synpred3_Ctrl1321); if (state.failed) return ;
 
         }
 
@@ -4791,94 +4955,97 @@ public TreeAdaptor getTreeAdaptor() {
     public static final BitSet FOLLOW_LCURLY_in_block865 = new BitSet(new long[]{0x830044E4C0144250L,0x0000000000000164L});
     public static final BitSet FOLLOW_stat_in_block867 = new BitSet(new long[]{0x830044E4C0144250L,0x0000000000000164L});
     public static final BitSet FOLLOW_RCURLY_in_block872 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_block_in_stat904 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ALAP_in_stat921 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat924 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LANGLE_in_stat947 = new BitSet(new long[]{0x828044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat949 = new BitSet(new long[]{0x828044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_RANGLE_in_stat954 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_WHILE_in_stat995 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_LPAR_in_stat998 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
-    public static final BitSet FOLLOW_cond_in_stat1001 = new BitSet(new long[]{0x2000000000000000L});
-    public static final BitSet FOLLOW_RPAR_in_stat1003 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1006 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_UNTIL_in_stat1026 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_LPAR_in_stat1029 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
-    public static final BitSet FOLLOW_cond_in_stat1032 = new BitSet(new long[]{0x2000000000000000L});
-    public static final BitSet FOLLOW_RPAR_in_stat1034 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1037 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DO_in_stat1042 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1044 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000140L});
-    public static final BitSet FOLLOW_WHILE_in_stat1087 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_LPAR_in_stat1089 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
-    public static final BitSet FOLLOW_cond_in_stat1091 = new BitSet(new long[]{0x2000000000000000L});
-    public static final BitSet FOLLOW_RPAR_in_stat1093 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_UNTIL_in_stat1156 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_LPAR_in_stat1158 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
-    public static final BitSet FOLLOW_cond_in_stat1160 = new BitSet(new long[]{0x2000000000000000L});
-    public static final BitSet FOLLOW_RPAR_in_stat1162 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IF_in_stat1209 = new BitSet(new long[]{0x0000008000000000L});
-    public static final BitSet FOLLOW_LPAR_in_stat1212 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
-    public static final BitSet FOLLOW_cond_in_stat1215 = new BitSet(new long[]{0x2000000000000000L});
-    public static final BitSet FOLLOW_RPAR_in_stat1217 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1220 = new BitSet(new long[]{0x0000000002000002L});
-    public static final BitSet FOLLOW_ELSE_in_stat1230 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1233 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRY_in_stat1257 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1260 = new BitSet(new long[]{0x0000000002000002L});
-    public static final BitSet FOLLOW_ELSE_in_stat1270 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1273 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CHOICE_in_stat1292 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1295 = new BitSet(new long[]{0x0000200000000000L});
-    public static final BitSet FOLLOW_OR_in_stat1305 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
-    public static final BitSet FOLLOW_stat_in_stat1308 = new BitSet(new long[]{0x0000200000000002L});
-    public static final BitSet FOLLOW_expr_in_stat1323 = new BitSet(new long[]{0x4000000000000000L});
-    public static final BitSet FOLLOW_SEMI_in_stat1325 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_var_decl_in_stat1340 = new BitSet(new long[]{0x4000000000000000L});
-    public static final BitSet FOLLOW_SEMI_in_stat1342 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_cond_atom_in_cond1367 = new BitSet(new long[]{0x0000000000000802L});
-    public static final BitSet FOLLOW_BAR_in_cond1376 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
-    public static final BitSet FOLLOW_cond_atom_in_cond1378 = new BitSet(new long[]{0x0000000000000802L});
-    public static final BitSet FOLLOW_TRUE_in_cond_atom1424 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_call_in_cond_atom1445 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_expr2_in_expr1475 = new BitSet(new long[]{0x0000000000000802L});
-    public static final BitSet FOLLOW_BAR_in_expr1483 = new BitSet(new long[]{0x8000408040000240L});
-    public static final BitSet FOLLOW_expr2_in_expr1485 = new BitSet(new long[]{0x0000000000000802L});
-    public static final BitSet FOLLOW_expr_atom_in_expr21566 = new BitSet(new long[]{0x0008000000000202L});
-    public static final BitSet FOLLOW_PLUS_in_expr21576 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ASTERISK_in_expr21603 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SHARP_in_expr21658 = new BitSet(new long[]{0x0000408040000240L});
-    public static final BitSet FOLLOW_expr_atom_in_expr21660 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAR_in_expr_atom1691 = new BitSet(new long[]{0x8000408040000240L});
-    public static final BitSet FOLLOW_expr_in_expr_atom1693 = new BitSet(new long[]{0x2000000000000000L});
-    public static final BitSet FOLLOW_RPAR_in_expr_atom1697 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_call_in_expr_atom1725 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_assign_in_expr_atom1738 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_rule_name_in_call1768 = new BitSet(new long[]{0x0000008000000002L});
-    public static final BitSet FOLLOW_arg_list_in_call1770 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_target_in_assign1841 = new BitSet(new long[]{0x0000000000081000L});
-    public static final BitSet FOLLOW_COMMA_in_assign1844 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_target_in_assign1846 = new BitSet(new long[]{0x0000000000081000L});
-    public static final BitSet FOLLOW_BECOMES_in_assign1850 = new BitSet(new long[]{0x0000400040000240L});
-    public static final BitSet FOLLOW_call_in_assign1852 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ID_in_target1886 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_qual_name_in_rule_name1961 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAR_in_arg_list1997 = new BitSet(new long[]{0x2400800848200000L,0x0000000000000018L});
-    public static final BitSet FOLLOW_arg_in_arg_list2000 = new BitSet(new long[]{0x2000000000080000L});
-    public static final BitSet FOLLOW_COMMA_in_arg_list2003 = new BitSet(new long[]{0x0400800848200000L,0x0000000000000018L});
-    public static final BitSet FOLLOW_arg_in_arg_list2005 = new BitSet(new long[]{0x2000000000080000L});
-    public static final BitSet FOLLOW_RPAR_in_arg_list2013 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OUT_in_arg2060 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_ID_in_arg2062 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ID_in_arg2093 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DONT_CARE_in_arg2122 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_literal_in_arg2139 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_var_type_in_var_decl2256 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_ID_in_var_decl2258 = new BitSet(new long[]{0x0000000000080002L});
-    public static final BitSet FOLLOW_COMMA_in_var_decl2261 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_ID_in_var_decl2263 = new BitSet(new long[]{0x0000000000080002L});
-    public static final BitSet FOLLOW_ELSE_in_synpred1_Ctrl1225 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ELSE_in_synpred2_Ctrl1265 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_synpred3_Ctrl1300 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_var_decl_in_stat911 = new BitSet(new long[]{0x4000000000000000L});
+    public static final BitSet FOLLOW_SEMI_in_stat913 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_block_in_stat925 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ALAP_in_stat942 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat945 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LANGLE_in_stat968 = new BitSet(new long[]{0x828044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat970 = new BitSet(new long[]{0x828044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_RANGLE_in_stat975 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_WHILE_in_stat1016 = new BitSet(new long[]{0x0000008000000000L});
+    public static final BitSet FOLLOW_LPAR_in_stat1019 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
+    public static final BitSet FOLLOW_cond_in_stat1022 = new BitSet(new long[]{0x2000000000000000L});
+    public static final BitSet FOLLOW_RPAR_in_stat1024 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1027 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_UNTIL_in_stat1047 = new BitSet(new long[]{0x0000008000000000L});
+    public static final BitSet FOLLOW_LPAR_in_stat1050 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
+    public static final BitSet FOLLOW_cond_in_stat1053 = new BitSet(new long[]{0x2000000000000000L});
+    public static final BitSet FOLLOW_RPAR_in_stat1055 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1058 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DO_in_stat1063 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1065 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000140L});
+    public static final BitSet FOLLOW_WHILE_in_stat1108 = new BitSet(new long[]{0x0000008000000000L});
+    public static final BitSet FOLLOW_LPAR_in_stat1110 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
+    public static final BitSet FOLLOW_cond_in_stat1112 = new BitSet(new long[]{0x2000000000000000L});
+    public static final BitSet FOLLOW_RPAR_in_stat1114 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_UNTIL_in_stat1177 = new BitSet(new long[]{0x0000008000000000L});
+    public static final BitSet FOLLOW_LPAR_in_stat1179 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
+    public static final BitSet FOLLOW_cond_in_stat1181 = new BitSet(new long[]{0x2000000000000000L});
+    public static final BitSet FOLLOW_RPAR_in_stat1183 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IF_in_stat1230 = new BitSet(new long[]{0x0000008000000000L});
+    public static final BitSet FOLLOW_LPAR_in_stat1233 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
+    public static final BitSet FOLLOW_cond_in_stat1236 = new BitSet(new long[]{0x2000000000000000L});
+    public static final BitSet FOLLOW_RPAR_in_stat1238 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1241 = new BitSet(new long[]{0x0000000002000002L});
+    public static final BitSet FOLLOW_ELSE_in_stat1251 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1254 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRY_in_stat1278 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1281 = new BitSet(new long[]{0x0000000002000002L});
+    public static final BitSet FOLLOW_ELSE_in_stat1291 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1294 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_CHOICE_in_stat1313 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1316 = new BitSet(new long[]{0x0000200000000000L});
+    public static final BitSet FOLLOW_OR_in_stat1326 = new BitSet(new long[]{0x820044E4C0144250L,0x0000000000000164L});
+    public static final BitSet FOLLOW_stat_in_stat1329 = new BitSet(new long[]{0x0000200000000002L});
+    public static final BitSet FOLLOW_expr_in_stat1344 = new BitSet(new long[]{0x4000000000000000L});
+    public static final BitSet FOLLOW_SEMI_in_stat1346 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_var_decl_pure_in_var_decl1378 = new BitSet(new long[]{0x0000000000001002L});
+    public static final BitSet FOLLOW_BECOMES_in_var_decl1396 = new BitSet(new long[]{0x0000400040000240L});
+    public static final BitSet FOLLOW_call_in_var_decl1398 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_var_type_in_var_decl_pure1428 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_ID_in_var_decl_pure1430 = new BitSet(new long[]{0x0000000000080002L});
+    public static final BitSet FOLLOW_COMMA_in_var_decl_pure1433 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_ID_in_var_decl_pure1435 = new BitSet(new long[]{0x0000000000080002L});
+    public static final BitSet FOLLOW_cond_atom_in_cond1471 = new BitSet(new long[]{0x0000000000000802L});
+    public static final BitSet FOLLOW_BAR_in_cond1480 = new BitSet(new long[]{0x0000400040000240L,0x0000000000000010L});
+    public static final BitSet FOLLOW_cond_atom_in_cond1482 = new BitSet(new long[]{0x0000000000000802L});
+    public static final BitSet FOLLOW_TRUE_in_cond_atom1528 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_call_in_cond_atom1549 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_expr2_in_expr1579 = new BitSet(new long[]{0x0000000000000802L});
+    public static final BitSet FOLLOW_BAR_in_expr1587 = new BitSet(new long[]{0x8000408040000240L});
+    public static final BitSet FOLLOW_expr2_in_expr1589 = new BitSet(new long[]{0x0000000000000802L});
+    public static final BitSet FOLLOW_expr_atom_in_expr21670 = new BitSet(new long[]{0x0008000000000202L});
+    public static final BitSet FOLLOW_PLUS_in_expr21680 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ASTERISK_in_expr21707 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SHARP_in_expr21762 = new BitSet(new long[]{0x0000408040000240L});
+    public static final BitSet FOLLOW_expr_atom_in_expr21764 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAR_in_expr_atom1795 = new BitSet(new long[]{0x8000408040000240L});
+    public static final BitSet FOLLOW_expr_in_expr_atom1797 = new BitSet(new long[]{0x2000000000000000L});
+    public static final BitSet FOLLOW_RPAR_in_expr_atom1801 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_assign_in_expr_atom1832 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_call_in_expr_atom1845 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_target_in_assign1895 = new BitSet(new long[]{0x0000000000081000L});
+    public static final BitSet FOLLOW_COMMA_in_assign1898 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_target_in_assign1900 = new BitSet(new long[]{0x0000000000081000L});
+    public static final BitSet FOLLOW_BECOMES_in_assign1904 = new BitSet(new long[]{0x0000400040000240L});
+    public static final BitSet FOLLOW_call_in_assign1906 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ID_in_target1940 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_rule_name_in_call1980 = new BitSet(new long[]{0x0000008000000002L});
+    public static final BitSet FOLLOW_arg_list_in_call1982 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_qual_name_in_rule_name2068 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAR_in_arg_list2104 = new BitSet(new long[]{0x2400800848200000L,0x0000000000000018L});
+    public static final BitSet FOLLOW_arg_in_arg_list2107 = new BitSet(new long[]{0x2000000000080000L});
+    public static final BitSet FOLLOW_COMMA_in_arg_list2110 = new BitSet(new long[]{0x0400800848200000L,0x0000000000000018L});
+    public static final BitSet FOLLOW_arg_in_arg_list2112 = new BitSet(new long[]{0x2000000000080000L});
+    public static final BitSet FOLLOW_RPAR_in_arg_list2120 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OUT_in_arg2167 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_ID_in_arg2169 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ID_in_arg2200 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DONT_CARE_in_arg2229 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_literal_in_arg2246 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ELSE_in_synpred1_Ctrl1246 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ELSE_in_synpred2_Ctrl1286 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_synpred3_Ctrl1321 = new BitSet(new long[]{0x0000000000000002L});
 
 }

@@ -161,7 +161,7 @@ call
 
 assign
 @after{ helper.checkAssign($tree); }
-  : ^(BECOMES arg_list ^(CALL qual_id arg_list?))
+  : ^(BECOMES (var_decl | arg_list) ^(CALL qual_id arg_list?))
   ;
 
 var_decl
