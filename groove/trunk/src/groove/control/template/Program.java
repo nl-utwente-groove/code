@@ -534,6 +534,24 @@ public class Program implements Fixable {
         return result == null ? new Finality(may, will) : result;
     }
 
+    /** Class storing potential and certain finality values. */
+    private static class Finality extends Duo<Boolean> {
+        /**
+         * Constructs a pair of may/will succeed.
+         */
+        public Finality(boolean may, boolean will) {
+            super(may, will);
+        }
+
+        boolean may() {
+            return one();
+        }
+
+        boolean will() {
+            return two();
+        }
+    }
+
     /** Indicates if the given procedure will always terminate. */
     public boolean willTerminate(Procedure proc) {
         return getTerminationSet().contains(proc);
@@ -549,12 +567,13 @@ public class Program implements Fixable {
 
     private Set<Procedure> terminationSet;
 
-    /** Computes the set of procedures that will certainly terminate,
-     * through a smallest fixpoint computation.
+    /** Computes the set of procedures that will always eventually terminate ({@code GF final}),
+     * through a smallest fixpoint computation for {@code F final} followed by a
+     * largest fixpoint computation for {@code G(F final)}
      */
     private Set<Procedure> computeTerminationSet() {
         Set<Procedure> result = new HashSet<Procedure>();
-        // the set of procedures not yet known to terminate
+        // the set of procedures not yet known to satisfy F final
         Set<Procedure> remaining = new HashSet<Procedure>(getProcs().values());
         // iterate as long as procedures keep being added to the result set
         boolean modified = true;
@@ -564,9 +583,24 @@ public class Program implements Fixable {
             Iterator<Procedure> procIter = remaining.iterator();
             while (procIter.hasNext()) {
                 Procedure proc = procIter.next();
-                if (willTerminate(proc.getTerm(), result)) {
+                if (mayTerminate(proc.getTerm(), result)) {
                     // proc will certainly terminate
                     result.add(proc);
+                    procIter.remove();
+                    modified = true;
+                }
+            }
+        }
+        // iterate as long as procedures keep being removed from the result set
+        modified = true;
+        while (modified) {
+            modified = false;
+            // compute the termination of the remaining procedures
+            Iterator<Procedure> procIter = result.iterator();
+            while (procIter.hasNext()) {
+                Procedure proc = procIter.next();
+                if (!willTerminate(proc.getTerm(), result)) {
+                    // proc does not always terminate
                     procIter.remove();
                     modified = true;
                 }
@@ -575,9 +609,9 @@ public class Program implements Fixable {
         return result;
     }
 
-    /** Computes if all derivations from a given term have a reachable
-     * final term,
-     * given that a certain set of procedures is known to terminate.
+    /**
+     * Computes whether {@code GF final} holds for a given term,
+     * given the set of procedures for which it holds.
      */
     private boolean willTerminate(Term term, Set<Procedure> terminationSet) {
         // results for the arguments
@@ -606,6 +640,57 @@ public class Program implements Fixable {
             case DEAD:
                 return r[3];
             case FINAL:
+                return !term.isDead() && (args[1].isDead() || r[1]) && (args[2].isDead() || r[2]);
+            case TRIAL:
+                return r[0] && r[1] && (args[2].isDead() || r[2]) && (args[3].isDead() || r[3]);
+            default:
+                assert false;
+                return false;
+            }
+        case OR:
+            return !term.isDead() && (args[0].isDead() || r[0]) && (args[1].isDead() || r[1]);
+        case SEQ:
+            return r[0] && r[1];
+        case UNTIL:
+            return args[0].isFinal() || r[0] && r[1];
+        case WHILE:
+            return !args[0].isFinal() && r[0] && r[1];
+        default:
+            assert false;
+            return false;
+        }
+    }
+
+    /** Computes whether {@code F final} holds for a given term,
+     * given the set of procedures for which it holds.
+     */
+    private boolean mayTerminate(Term term, Set<Procedure> terminationSet) {
+        // results for the arguments
+        Term[] args = term.getArgs();
+        boolean[] r = new boolean[args.length];
+        for (int i = 0; i < args.length; i++) {
+            r[i] = mayTerminate(term.getArgs()[i], terminationSet);
+        }
+        switch (term.getOp()) {
+        case ATOM:
+        case TRANSIT:
+        case BODY:
+            return r[0];
+        case CALL:
+            Callable unit = ((CallTerm) term).getCall().getUnit();
+            return unit.getKind() == Callable.Kind.RULE || terminationSet.contains(unit);
+        case DELTA:
+            return false;
+        case ALAP:
+        case HASH:
+        case STAR:
+        case EPSILON:
+            return true;
+        case IF:
+            switch (args[0].getType()) {
+            case DEAD:
+                return r[3];
+            case FINAL:
                 return r[1] || r[2];
             case TRIAL:
                 return r[0] && r[1] || r[2] || r[3];
@@ -616,10 +701,11 @@ public class Program implements Fixable {
         case OR:
             return r[0] || r[1];
         case SEQ:
-        case UNTIL:
             return r[0] && r[1];
+        case UNTIL:
+            return !args[0].isDead();
         case WHILE:
-            return !args[0].isFinal() && r[0] && r[1];
+            return !args[0].isFinal();
         default:
             assert false;
             return false;
@@ -673,22 +759,4 @@ public class Program implements Fixable {
     }
 
     private boolean fixed;
-
-    /** Class storing potential and certain finality values. */
-    private static class Finality extends Duo<Boolean> {
-        /**
-         * Constructs a pair of may/will succeed.
-         */
-        public Finality(boolean may, boolean will) {
-            super(may, will);
-        }
-
-        boolean may() {
-            return one();
-        }
-
-        boolean will() {
-            return two();
-        }
-    }
 }

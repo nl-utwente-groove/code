@@ -125,6 +125,9 @@ public class ProgramBuildTest {
         build("terminating", "function f() { a; g; } function g() { a; (b|f); }");
         build("terminating", "recipe f() { a; g; } function g() { a; (b|f); }");
         build("alap", "recipe f() { g; alap g; } function g() { a | b; }");
+        buildWrong("alap", "recipe f() { g; alap g; } function g() { a; f; }");
+        build("alap", "recipe f() { a; alap g; } function g() { a; f; }");
+        build("alap", "recipe f() { a; alap f; }");
     }
 
     @Test
