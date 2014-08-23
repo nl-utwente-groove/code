@@ -583,6 +583,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                 getTabPane().setSelectedComponent(editor);
                 result = editor;
             }
+            setEnabled(true);
         }
         return result;
     }
