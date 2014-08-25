@@ -124,7 +124,7 @@ public class LTSLabels {
 
     /** Indicates if the {@link Flag#START} label is set. */
     public boolean showStart() {
-        return this.flagToLabelMap.containsKey(Flag.START);
+        return hasFlag(Flag.START);
     }
 
     /**
@@ -138,7 +138,7 @@ public class LTSLabels {
 
     /** Indicates if the {@link Flag#OPEN} label is set. */
     public boolean showOpen() {
-        return this.flagToLabelMap.containsKey(Flag.OPEN);
+        return hasFlag(Flag.OPEN);
     }
 
     /**
@@ -152,7 +152,7 @@ public class LTSLabels {
 
     /** Indicates if the {@link Flag#FINAL} label is set. */
     public boolean showFinal() {
-        return this.flagToLabelMap.containsKey(Flag.FINAL);
+        return hasFlag(Flag.FINAL);
     }
 
     /**
@@ -166,7 +166,7 @@ public class LTSLabels {
 
     /** Indicates if the result label is set. */
     public boolean showResult() {
-        return this.flagToLabelMap.containsKey(Flag.RESULT);
+        return hasFlag(Flag.RESULT);
     }
 
     /**
@@ -180,7 +180,7 @@ public class LTSLabels {
 
     /** Indicates if the {@link Flag#NUMBER} flag is set. */
     public boolean showNumber() {
-        return this.flagToLabelMap.containsKey(Flag.NUMBER);
+        return hasFlag(Flag.NUMBER);
     }
 
     /**
@@ -194,7 +194,7 @@ public class LTSLabels {
 
     /** Indicates if the {@link Flag#TRANSIENT} flag is set. */
     public boolean showTransience() {
-        return this.flagToLabelMap.containsKey(Flag.TRANSIENT);
+        return hasFlag(Flag.TRANSIENT);
     }
 
     /**
@@ -208,7 +208,12 @@ public class LTSLabels {
 
     /** Indicates if the {@link Flag#RECIPE} flag is set. */
     public boolean showRecipes() {
-        return this.flagToLabelMap.containsKey(Flag.RECIPE);
+        return hasFlag(Flag.RECIPE);
+    }
+
+    /** Tests whether a given flag is set. */
+    public boolean hasFlag(Flag flag) {
+        return this.flagToLabelMap.containsKey(flag);
     }
 
     /** Returns the label to be used for recipe sub-stages. */
@@ -287,10 +292,11 @@ public class LTSLabels {
     /** Flags object with all labels set to null. */
     public static final LTSLabels EMPTY = new LTSLabels();
     /** Flags object with all labels set to default. */
-    public static final LTSLabels DEFAULT = new LTSLabels(Flag.values());
+    public static final LTSLabels DEFAULT = new LTSLabels(Flag.START, Flag.OPEN, Flag.RESULT);
 
     private static final char SINGLE_QUOTE = StringHandler.SINGLE_QUOTE_CHAR;
-    private static final StringHandler FLAG_PARSER = new StringHandler(SINGLE_QUOTE, "" + SINGLE_QUOTE);
+    private static final StringHandler FLAG_PARSER = new StringHandler(SINGLE_QUOTE, ""
+        + SINGLE_QUOTE);
 
     private static final Map<Character,Flag> flagMap = new HashMap<Character,LTSLabels.Flag>();
 
