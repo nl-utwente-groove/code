@@ -57,7 +57,7 @@ public class CTLMarker {
         assert model != null;
         this.formula = formula;
         this.model = new GraphModel(model);
-        this.ltsLabels = ltsLabels;
+        this.ltsLabels = ltsLabels == null ? LTSLabels.DEFAULT : ltsLabels;
         testFormat();
         init();
     }
@@ -71,7 +71,11 @@ public class CTLMarker {
         this.formula = formula;
         this.model = new GTSModel(model);
         this.ltsLabels = null;
-        init();
+        try {
+            init();
+        } catch (FormatException exc) {
+            throw new IllegalStateException(exc);
+        }
     }
 
     /** Tests if the model is consistent with the special state markers.
@@ -90,9 +94,13 @@ public class CTLMarker {
         }
     }
 
-    /** Creates and initialises the internal data structures for marking.
+    /**
+     * Creates and initialises the internal data structures for marking.
+     * To be invoked immediately after construction.
+     * @throws FormatException if the model is a graph which does not comply
+     * with the expected structure
      */
-    private void init() {
+    private void init() throws FormatException {
         // initialise the formula numbering
         registerFormula(this.formula);
         registerFormula(START_ATOM);
@@ -163,6 +171,10 @@ public class CTLMarker {
                 backEntry[j] = backward[i].get(j);
             }
             this.backward[i] = backEntry;
+        }
+        if (!hasRoot()) {
+            throw new FormatException(
+                "The model being checked does not have an unambiguous root node. Maybe the start state was not marked?");
         }
     }
 
@@ -506,10 +518,6 @@ public class CTLMarker {
 
     /** Tests the satisfaction of a given subformula in the initial state. */
     private boolean hasValue(Formula formula, boolean value) {
-        if (!hasRoot()) {
-            throw new IllegalArgumentException(
-                "The model being checked does not have an unabiguous root node");
-        }
         assert this.formulaNr.containsKey(formula);
         return hasValue(formula, getRoot(), value);
     }
