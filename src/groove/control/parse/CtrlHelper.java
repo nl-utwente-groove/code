@@ -199,7 +199,7 @@ public class CtrlHelper {
     CommonTree qualify(CommonTree ruleNameToken) {
         CommonTree result = ruleNameToken;
         String name = ruleNameToken.getText();
-        if (QualName.parent(name).isEmpty()) {
+        if (!this.namespace.hasError() && QualName.parent(name).isEmpty()) {
             Map<String,String> importMap = getNamespace().getImportMap();
             if (importMap.containsKey(name)) {
                 name = importMap.get(name);
