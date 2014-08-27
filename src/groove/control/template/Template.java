@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -181,12 +182,16 @@ public class Template {
             }
             state.addVars(vars);
         }
+        // propagate all variables backward to the location where they are initialised
         // mapping from locations to their predecessors
         Map<Location,Set<Location>> inMap = getPredMap();
         // queue of locations to be processed
-        Queue<Location> todo = new LinkedList<Location>(getLocations());
-        while (!todo.isEmpty()) {
-            Location loc = todo.poll();
+        Set<Location> backward = new LinkedHashSet<Location>(getLocations());
+        Set<Location> forward = new LinkedHashSet<Location>();
+        while (!backward.isEmpty()) {
+            Iterator<Location> iter = backward.iterator();
+            Location loc = iter.next();
+            iter.remove();
             if (!loc.isTrial()) {
                 continue;
             }
@@ -201,7 +206,24 @@ public class Template {
             }
             if (modified) {
                 loc.setVars(sourceVars);
-                todo.addAll(inMap.get(loc));
+                backward.addAll(inMap.get(loc));
+                forward.add(loc);
+            }
+        }
+        // propagate all variables forward along verdict transitions
+        while (!forward.isEmpty()) {
+            Iterator<Location> iter = forward.iterator();
+            Location loc = iter.next();
+            iter.remove();
+            assert loc.isTrial();
+            SwitchAttempt attempt = loc.getAttempt();
+            Location onFailure = attempt.onFailure();
+            if (onFailure.isTrial() && onFailure.addVars(loc.getVars())) {
+                forward.add(onFailure);
+            }
+            Location onSuccess = attempt.onSuccess();
+            if (onSuccess.isTrial() && onSuccess.addVars(loc.getVars())) {
+                forward.add(onSuccess);
             }
         }
     }
