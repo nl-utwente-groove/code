@@ -172,13 +172,18 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     /**
      * Callback method from {@link Template#initVars()} to add variables to this location.
+     * @return {@code true} if the variable set changed as a consequence of this call
      */
-    void addVars(Collection<CtrlVar> variables) {
+    boolean addVars(Collection<CtrlVar> variables) {
+        boolean result = this.vars == null;
         CtrlVarSet newVars = new CtrlVarSet(variables);
-        if (this.vars != null) {
-            newVars.addAll(this.vars);
+        if (!result) {
+            result = newVars.addAll(this.vars) || newVars.size() > this.vars.size();
         }
-        this.vars = new ArrayList<CtrlVar>(newVars);
+        if (result) {
+            this.vars = new ArrayList<CtrlVar>(newVars);
+        }
+        return result;
     }
 
     /**

@@ -127,8 +127,9 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        if (getStep().isInternal()) {
-            result.append(getStep().getRecipe().getFullName());
+        for (int i = getStep().getSource().getSwitchStack().size(); i < getStep().getSwitchStack().size() - 1; i++) {
+            Switch sw = getStep().getSwitchStack().get(i);
+            result.append(sw.getName());
             result.append('/');
         }
         result.append(getAction().getTransitionLabel());
