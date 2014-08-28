@@ -51,8 +51,7 @@ public class ExploreWarningDialog {
      * Afterwards, {@link #getBound()} shows the next bound to which to explore.
      */
     public boolean ask(Frame owner) {
-        getMessageLabel().setText(
-            String.format("Exploration has generated %s states", getBound()));
+        getMessageLabel().setText(String.format("Exploration has generated %s states", getBound()));
         getBoundSpinnerModel().setMinimum(getBound() + 1);
         getBoundSpinnerModel().setValue(getBound() * 2);
         JDialog dialog = createDialog(owner);
@@ -62,8 +61,8 @@ public class ExploreWarningDialog {
     }
 
     private JDialog createDialog(Frame owner) {
-        JDialog result =
-            getOptionPane().createDialog(owner, "Exploration Progress");
+        JDialog result = getOptionPane().createDialog(owner, "Exploration Progress");
+        result.setAlwaysOnTop(true);
         getListener().setDialog(result);
         return result;
     }
@@ -71,8 +70,8 @@ public class ExploreWarningDialog {
     private JOptionPane getOptionPane() {
         if (this.optionPane == null) {
             this.optionPane =
-                new JOptionPane(getMessagePanel(),
-                    JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+                new JOptionPane(getMessagePanel(), JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
             this.optionPane.addPropertyChangeListener(this.listener);
         }
         return this.optionPane;
@@ -83,8 +82,7 @@ public class ExploreWarningDialog {
     private JPanel getMessagePanel() {
         if (this.messagePanel == null) {
             this.messagePanel = new JPanel();
-            this.messagePanel.setLayout(new BoxLayout(this.messagePanel,
-                BoxLayout.Y_AXIS));
+            this.messagePanel.setLayout(new BoxLayout(this.messagePanel, BoxLayout.Y_AXIS));
             this.messagePanel.add(getMessageLabel());
             this.messagePanel.add(Box.createRigidArea(new Dimension(0, 5)));
             this.messagePanel.add(getChoiceComponent());
@@ -98,8 +96,7 @@ public class ExploreWarningDialog {
     private JLabel getMessageLabel() {
         if (this.messageLabel == null) {
             this.messageLabel = new JLabel();
-            this.messageLabel.setFont(this.messageLabel.getFont().deriveFont(
-                Font.BOLD));
+            this.messageLabel.setFont(this.messageLabel.getFont().deriveFont(Font.BOLD));
             this.messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         }
         return this.messageLabel;
