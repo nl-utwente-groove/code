@@ -1,0 +1,122 @@
+<FindBugsFilter>
+    <!-- Remove test and parsing classes. -->
+    <Match classregex="groove.test.*" />
+    <Match classregex="groove.control.parse.*" />
+    <Match classregex="groove.view.parse.*" />
+
+    <!-- Remove Serialisation warnings. -->
+    <Match>
+       <Bug pattern="SE_BAD_FIELD" />
+    </Match>
+    <Match>
+       <Bug pattern="SE_BAD_FIELD_INNER_CLASS" />
+    </Match>
+
+    <!-- This one is annoying because there is no good solution (calling super is WRONG). -->
+    <Match>
+       <Bug pattern="IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD" />
+    </Match>
+
+    <!-- Remove Internationalization warnings. -->
+    <Match>
+       <Bug pattern="DM_CONVERT_CASE" />
+    </Match>
+
+    <!-- Ignore all issues in the benchmarker class. -->
+    <Match>
+       <Class name="groove.util.LTLBenchmarker" />
+    </Match>
+
+    <!-- Remove GC warnings on code that does profiling. -->
+    <Match>
+       <Class name="groove.explore.util.ExplorationStatistics" />
+       <Method name="report" />
+       <Bug pattern="DM_GC" />
+    </Match>
+
+    <!-- Remove warnings shadowing of JGraph class. -->
+    <Match>
+       <Class name="groove.gui.jgraph.JGraph" />
+       <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS" />
+    </Match>
+
+    <!-- Remove warnings for calling System.exit(). -->
+    <Match>
+       <Class name="groove.Editor$1" />
+       <Bug pattern="DM_EXIT" />
+    </Match>
+    <Match>
+       <Class name="groove.Simulator$1" />
+       <Bug pattern="DM_EXIT" />
+    </Match>
+    <Match>
+       <Class name="groove.util.CommandLineTool" />
+       <Bug pattern="DM_EXIT" />
+    </Match>
+
+    <!-- Remove Circular Dependencies warnings. -->
+    <Match>
+       <Bug pattern="CD_CIRCULAR_DEPENDENCY" />
+    </Match>
+
+    <!-- Remove serialVersionUID warnings. -->
+    <Match>
+       <Bug pattern="SE_NO_SERIALVERSIONID" />
+    </Match>
+
+    <!-- Remove control flow warnings that are intentional. -->
+    <Match>
+       <Class name="groove.graph.iso.PartitionRefiner" />
+       <Method name="computeCertificates" />
+       <Bug pattern="UCF_USELESS_CONTROL_FLOW_NEXT_LINE" />
+    </Match>
+    <Match>
+       <Class name="groove.graph.iso.PaigeTarjanMcKay" />
+       <Method name="computeCertificates" />
+       <Bug pattern="UCF_USELESS_CONTROL_FLOW_NEXT_LINE" />
+    </Match>
+
+    <!-- Remove stupid equals warning. -->
+    <Match>
+       <Class name="groove.graph.AbstractNodeEdgeMap" />
+       <Method name="equals" />
+       <Bug pattern="EQ_UNUSUAL" />
+    </Match>
+
+    <!-- Remove warning on writing to static field. -->
+    <Match>
+       <Class name="groove.util.Generator" />
+       <Method name="Generator" />
+       <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+    </Match>
+
+    <!-- Remove warning on useless method call. -->
+    <Match>
+       <Class name="groove.abstraction.Shape" />
+       <Method name="nodeSet" />
+       <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
+    </Match>
+    <Match>
+       <Class name="groove.abstraction.Shape" />
+       <Method name="edgeSet" />
+       <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
+    </Match>
+    <Match>
+       <Class name="groove.abstraction.Shape" />
+       <Method name="outEdgeSet" />
+       <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
+    </Match>
+
+    <!-- Remove warning on asymmetric equals method. -->
+    <Match>
+       <Class name="groove.abstraction.lts.ShapeTransition" />
+       <Method name="equals" />
+       <Bug pattern="EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC" />
+    </Match>
+
+    <!-- Remove anonymous class warnings. -->
+    <Match>
+       <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON" />
+    </Match>
+
+</FindBugsFilter>
