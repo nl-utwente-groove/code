@@ -61,10 +61,10 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20140823";
+    public static final String BUILD = "20140828";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "23.08.2014";
+    public static final String DATE = "28.08.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -75,7 +75,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.2.4+";
+    public static final String NUMBER = "5.3.0+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
@@ -98,7 +98,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_5;
+        return GRAMMAR_VERSION_3_6;
     }
 
     /**
@@ -240,9 +240,16 @@ public class Version {
      */
     public static final String GRAMMAR_VERSION_3_4 = "3.4";
     /**
-     * This is the grammar version introduced with Groove version 5.2.0.
+     * This is the grammar version introduced with Groove version 5.3.0.
      * Much more flexible use of any (package.any, package.*.any)
      */
     public static final String GRAMMAR_VERSION_3_5 = "3.5";
+    /**
+     * This is the grammar version introduced with Groove version 5.2.0.
+     * Assignment syntax for rule and recipe invocations, also in combination with declaration:
+     * Instead of {@code node a; rule(1, out a)} use {@code node a; a := rule(1)}
+     * or {@code node a := rule(1)}. 
+     */
+    public static final String GRAMMAR_VERSION_3_6 = "3.6";
 
 }
