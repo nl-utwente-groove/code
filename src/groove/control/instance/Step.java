@@ -146,21 +146,19 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     }
 
     /**
-     * Returns the assignments necessary to prepare for the actual action
-     * of this step. These consist of stack pops for the outstanding verdict
-     * transitions of the source frame, insofar they have caused a procedure to
-     * exit, followed by stack pushes for the procedures that are entered.
+     * Returns the stack push assignments necessary to prepare for the actual action
+     * of this step.
      */
-    public List<Assignment> getPrepareAssignments() {
-        if (this.prepares == null) {
-            this.prepares = computePrepareAssignments();
+    public List<Assignment> getEnterAssignments() {
+        if (this.enters == null) {
+            this.enters = computeEnterAssignments();
         }
-        return this.prepares;
+        return this.enters;
     }
 
-    private List<Assignment> prepares;
+    private List<Assignment> enters;
 
-    private List<Assignment> computePrepareAssignments() {
+    private List<Assignment> computeEnterAssignments() {
         List<Assignment> result = new ArrayList<Assignment>();
         // add push actions for every successive call on the
         // stack of entered calls
@@ -172,8 +170,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     /**
      * Returns the list of frame value assignments involved in applying this step.
-     * These consist of outstanding stack pops due to verdict transitions of the source frame,
-     * insofar they have caused procedures to be exited, followed by pushes due to fresh
+     * These consist pushes due to fresh
      * procedure calls, followed by the action of this step, followed by pops due to
      * procedures explicitly exited by this step.
      */
@@ -187,7 +184,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     private List<Assignment> applyAssignments;
 
     private List<Assignment> computeApplyAssignments() {
-        List<Assignment> result = computePrepareAssignments();
+        List<Assignment> result = computeEnterAssignments();
         SwitchStack stack = getSwitchStack();
         result.add(Assignment.modify(stack.peek()));
         // add pop actions for the calls that are finished
