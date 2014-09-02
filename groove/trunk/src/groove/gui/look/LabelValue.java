@@ -374,7 +374,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getStackLine(frame.getPrime().getLocation(), values));
                 hasControl = true;
             }
-            Stack<Switch> stack = frame.getSwitchStack();
+            Stack<Switch> stack = frame.getPrime().getSwitchStack();
             for (int i = stack.size() - 1; i >= 0; i--) {
                 values = Valuator.pop(values);
                 Switch sw = stack.get(i);

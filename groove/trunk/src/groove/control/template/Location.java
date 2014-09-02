@@ -175,13 +175,17 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      * @return {@code true} if the variable set changed as a consequence of this call
      */
     boolean addVars(Collection<CtrlVar> variables) {
-        boolean result = this.vars == null;
-        CtrlVarSet newVars = new CtrlVarSet(variables);
-        if (!result) {
-            result = newVars.addAll(this.vars) || newVars.size() > this.vars.size();
-        }
-        if (result) {
-            this.vars = new ArrayList<CtrlVar>(newVars);
+        boolean result = false;
+        if (!isDead()) {
+            CtrlVarSet newVars = new CtrlVarSet(variables);
+            if (this.vars == null) {
+                result = true;
+            } else {
+                result = newVars.addAll(this.vars) || newVars.size() > this.vars.size();
+            }
+            if (result) {
+                setVars(newVars);
+            }
         }
         return result;
     }
@@ -190,7 +194,9 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      * Callback method from {@link Template#initVars()} to set variables for this location.
      */
     void setVars(Collection<CtrlVar> variables) {
-        this.vars = new ArrayList<CtrlVar>(variables);
+        if (!isDead()) {
+            this.vars = new ArrayList<CtrlVar>(variables);
+        }
     }
 
     /** The collection of variables of this control location. */

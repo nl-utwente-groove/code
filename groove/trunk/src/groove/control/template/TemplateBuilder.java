@@ -171,9 +171,14 @@ public class TemplateBuilder {
         CtrlVarSet vars = new CtrlVarSet();
         Set<Term> predTerms = new HashSet<Term>();
         if (incoming == null) {
+            // this is due to a verdict transition
+            assert predKey != null;
             predTerms.addAll(predKey.two());
             predTerms.add(predKey.one());
+            // preserve the variables of the predecessor
+            vars.addAll(locMap.get(predKey).getVars());
         } else {
+            // this is due to a non-verdict transition
             assert predKey == null;
             vars.addAll(incoming.getOutVars().keySet());
         }

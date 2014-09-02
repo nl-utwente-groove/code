@@ -51,8 +51,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
         this.aut = ctrl;
         this.nr = ctrl.getFrames().size();
         List<Assignment> pops = new ArrayList<Assignment>();
-        // avoid sharing
-        stack = new SwitchStack(stack);
         this.pred = pred;
         if (pred == null) {
             this.prime = this;
@@ -61,7 +59,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             pops.addAll(pred.getPops());
         }
         this.pops = pops;
-        this.switchStack = stack;
+        // avoid sharing
+        this.switchStack = new SwitchStack(stack);
         this.location = Location.getSpecial(policy, transience);
     }
 
@@ -77,7 +76,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
         this.nr = ctrl.getFrames().size();
         List<Assignment> pops = new ArrayList<Assignment>();
         // avoid sharing
-        stack = new SwitchStack(stack);
         this.pred = pred;
         if (pred == null) {
             this.prime = this;
@@ -85,6 +83,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             this.prime = pred.getPrime();
             pops.addAll(pred.getPops());
         }
+        stack = new SwitchStack(stack);
         // pop the call stack until we have a non-final location or empty stack
         while (loc.isFinal() && !stack.isEmpty()) {
             Switch done = stack.pop();

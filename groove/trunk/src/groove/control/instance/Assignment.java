@@ -86,12 +86,39 @@ public class Assignment {
     }
 
     /**
-     * Applies this assignment to a given frame valuation.
-     * {@link Source#ANCHOR}
-     * and {@link Source#CREATOR} are ignored, meaning that the corresponding
-     * values are set to {@code null}.
+     * Applies this assignment to a given frame
+     * valuation, and returns the modified frame valuation.
+     * Only valid for {@link Kind#POP} and {@link Kind#PUSH} assignments, as
+     * the {@link Source#ANCHOR} and {@link Source#CREATOR} bindings cannot be computed
+     * outside the context of a rule application.
+     * @return the frame valuation stack obtained by applying this assignment
      */
-    public HostNode[] apply(Object[] val) {
+    public Object[] apply(Object[] val) {
+        Object[] result;
+        switch (getKind()) {
+        case POP:
+            result = Valuator.replace(Valuator.pop(val), compute(val));
+            break;
+        case PUSH:
+            result = Valuator.push(val, compute(val));
+            break;
+        default:
+            assert false;
+            result = null;
+        }
+        return result;
+    }
+
+    /**
+     * Computes the values resulting from the application of this assignment to a given frame
+     * valuation. Only valid for {@link Kind#POP} and {@link Kind#PUSH} assignments, as
+     * the {@link Source#ANCHOR} and {@link Source#CREATOR} bindings cannot be computed
+     * outside the context of a rule application.
+     * @return the array of values obtained for the individual bindings of this assignment.
+     * Note that this is <i>not</i> a value stack, but rather just one level in such a stack
+     */
+    public HostNode[] compute(Object[] val) {
+        assert getKind() != Kind.MODIFY;
         Binding[] bindings = getBindings();
         HostNode[] result = new HostNode[bindings.length];
         Object[] parentValues = Valuator.pop(val);
@@ -101,6 +128,7 @@ public class Assignment {
             switch (bind.getSource()) {
             case ANCHOR:
             case CREATOR:
+                assert false;
                 value = null;
                 break;
             case CALLER:

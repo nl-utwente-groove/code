@@ -168,26 +168,25 @@ public class Template {
      */
     void initVars() {
         // compute the map of incoming transitions
-        for (Location state : getLocations()) {
+        for (Location loc : getLocations()) {
             Set<CtrlVar> vars;
-            if (state.isFinal() && hasOwner()) {
+            if (loc.isFinal() && hasOwner()) {
                 vars = getOwner().getOutPars().keySet();
-            } else if (state.isTrial()) {
+            } else if (loc.isTrial()) {
                 vars = new HashSet<CtrlVar>();
-                for (SwitchStack s : state.getAttempt()) {
+                for (SwitchStack s : loc.getAttempt()) {
                     vars.addAll(s.getBottomCall().getInVars().keySet());
                 }
             } else {
                 vars = Collections.emptySet();
             }
-            state.addVars(vars);
+            loc.addVars(vars);
         }
         // propagate all variables backward to the location where they are initialised
         // mapping from locations to their predecessors
         Map<Location,Set<Location>> inMap = getPredMap();
         // queue of locations to be processed
         Set<Location> backward = new LinkedHashSet<Location>(getLocations());
-        Set<Location> forward = new LinkedHashSet<Location>();
         while (!backward.isEmpty()) {
             Iterator<Location> iter = backward.iterator();
             Location loc = iter.next();
@@ -207,22 +206,24 @@ public class Template {
             if (modified) {
                 loc.setVars(sourceVars);
                 backward.addAll(inMap.get(loc));
-                forward.add(loc);
             }
         }
+        Set<Location> forward = new LinkedHashSet<Location>(getLocations());
         // propagate all variables forward along verdict transitions
         while (!forward.isEmpty()) {
             Iterator<Location> iter = forward.iterator();
             Location loc = iter.next();
             iter.remove();
-            assert loc.isTrial();
+            if (!loc.isTrial()) {
+                continue;
+            }
             SwitchAttempt attempt = loc.getAttempt();
             Location onFailure = attempt.onFailure();
-            if (onFailure.isTrial() && onFailure.addVars(loc.getVars())) {
+            if (onFailure.addVars(loc.getVars())) {
                 forward.add(onFailure);
             }
             Location onSuccess = attempt.onSuccess();
-            if (onSuccess.isTrial() && onSuccess.addVars(loc.getVars())) {
+            if (onSuccess.addVars(loc.getVars())) {
                 forward.add(onSuccess);
             }
         }

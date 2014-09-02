@@ -75,13 +75,13 @@ public class MatchApplier {
                 boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
                 if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
-                        && !match.getEvent().conflicts(sourceKey.getEvent())) {
+                    && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
-                                createTransition(source, match, siblingOut.getTarget(sibling),
-                                    siblingOut.isSymmetry());
+                            createTransition(source, match, siblingOut.getTarget(sibling),
+                                siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
                 }
@@ -96,8 +96,8 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                        new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
-                            isoTarget, true);
+                    new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
+                        isoTarget, true);
             }
         }
         // add transition to gts
@@ -151,7 +151,7 @@ public class MatchApplier {
      * directly derived from the source, or modulo a symmetry.
      */
     private RuleTransition createTransition(GraphState source, MatchResult match,
-            GraphState target, boolean symmetry) {
+        GraphState target, boolean symmetry) {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
@@ -194,8 +194,9 @@ public class MatchApplier {
         return sourceEvent != matchEvent;
     }
 
+    /** Computes the value stack for the target state of a given rule transition. */
     private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
-            RuleEffect record) {
+        RuleEffect record) {
         Object[] result = source.getActualValues();
         for (Assignment assign : step.getApplyAssignments()) {
             switch (assign.getKind()) {
@@ -204,10 +205,8 @@ public class MatchApplier {
                 result = Valuator.replace(result, values);
                 break;
             case POP:
-                result = Valuator.replace(Valuator.pop(result), assign.apply(result));
-                break;
             case PUSH:
-                result = Valuator.push(result, assign.apply(result));
+                result = assign.apply(result);
                 break;
             default:
                 assert false;
@@ -218,7 +217,7 @@ public class MatchApplier {
 
     /** Computes the frame values for the target of a rule application. */
     private HostNode[] apply(Assignment assign, Object[] sourceValues, RuleEvent event,
-            RuleEffect record) {
+        RuleEffect record) {
         Binding[] bindings = assign.getBindings();
         int valueCount = bindings.length;
         HostNode[] result = new HostNode[valueCount];
