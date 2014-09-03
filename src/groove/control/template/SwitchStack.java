@@ -84,8 +84,8 @@ Comparable<SwitchStack> {
     public CallStack getCallStack() {
         if (this.callStack == null) {
             this.callStack = new CallStack();
-            for (Switch deriv : this) {
-                this.callStack.add(deriv.getCall());
+            for (Switch swit : this) {
+                this.callStack.add(swit.getCall());
             }
         }
         return this.callStack;

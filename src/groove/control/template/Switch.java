@@ -241,6 +241,6 @@ public class Switch implements Comparable<Switch> {
 
     @Override
     public String toString() {
-        return "--" + getCall() + "->" + onFinish();
+        return getSource() + "--" + getCall() + "->" + onFinish();
     }
 }
