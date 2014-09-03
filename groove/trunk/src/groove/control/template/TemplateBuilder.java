@@ -144,7 +144,7 @@ public class TemplateBuilder {
                 // add switches for the term derivations
                 for (Derivation deriv : termAttempt) {
                     // build the (possibly nested) switch
-                    switches.add(addSwitch(loc, result, deriv));
+                    switches.add(addSwitch(loc, deriv));
                 }
                 Location succTarget = addLocation(result, termAttempt.onSuccess(), next, null);
                 Location failTarget = addLocation(result, termAttempt.onFailure(), next, null);
@@ -216,46 +216,45 @@ public class TemplateBuilder {
      * Adds a switch corresponding to a given derivation to the
      * template and auxiliary data structures, if it does not yet exist.
      * @param source Source location for the new switch
-     * @param template the template to which the location should be added
      * @param deriv the derivation to be added
      * @return the fresh or pre-existing control switch
      * @throws IllegalStateException if {@code deriv} has a nested derivation
      * but the procedure does not have an initialised template
      */
-    private SwitchStack addSwitch(Location source, Template template, Derivation deriv)
-        throws IllegalStateException {
-        Map<Derivation,SwitchStack> switchMap = getSwitchMap(template);
+    private SwitchStack addSwitch(Location source, Derivation deriv) throws IllegalStateException {
+        Map<Derivation,SwitchStack> switchMap = getSwitchMap(source);
         SwitchStack result = switchMap.get(deriv);
         if (result == null) {
             result = new SwitchStack();
-            Location target = addLocation(template, deriv.onFinish(), null, deriv.getCall());
+            Location target =
+                addLocation(source.getTemplate(), deriv.onFinish(), null, deriv.getCall());
             result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
             if (deriv.hasNested()) {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
                 Template callerTemplate = getTemplate(caller);
-                SwitchStack nested =
-                    addSwitch(callerTemplate.getStart(), callerTemplate, deriv.getNested());
+                SwitchStack nested = addSwitch(callerTemplate.getStart(), deriv.getNested());
                 result.addAll(nested);
             }
             switchMap.put(deriv, result);
         }
+        assert result.getBottom().getSource() == source;
         return result;
     }
 
     /**
      * Returns the mapping from derivations to switches for a given template.
      */
-    private Map<Derivation,SwitchStack> getSwitchMap(Template template) {
-        Map<Derivation,SwitchStack> result = this.switchMapMap.get(template);
+    private Map<Derivation,SwitchStack> getSwitchMap(Location loc) {
+        Map<Derivation,SwitchStack> result = this.switchMapMap.get(loc);
         if (result == null) {
-            this.switchMapMap.put(template, result = new HashMap<Derivation,SwitchStack>());
+            this.switchMapMap.put(loc, result = new HashMap<Derivation,SwitchStack>());
         }
         return result;
     }
 
     /** For each template, a mapping from derivations to switches. */
-    private final Map<Template,Map<Derivation,SwitchStack>> switchMapMap =
-        new HashMap<Template,Map<Derivation,SwitchStack>>();
+    private final Map<Location,Map<Derivation,SwitchStack>> switchMapMap =
+        new HashMap<Location,Map<Derivation,SwitchStack>>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -424,7 +423,7 @@ public class TemplateBuilder {
         Map<Template,Template> result = new HashMap<Template,Template>();
         // set of representative source locations
         Set<Location> reprSet = new HashSet<Location>();
-        // map from all source locations to the result locations
+        // canonical location map
         Map<Location,Location> locMap = new HashMap<Location,Location>();
         for (Cell cell : partition) {
             Template source = cell.getTemplate();
@@ -445,22 +444,8 @@ public class TemplateBuilder {
                 locMap.put(loc, image);
             }
         }
-        // create canonical switch images
+        // canonical switch map
         Map<Switch,Switch> switchMap = new HashMap<Switch,Switch>();
-        for (Location repr : reprSet) {
-            if (!repr.isTrial()) {
-                continue;
-            }
-            for (SwitchStack stack : repr.getAttempt()) {
-                Switch swit = stack.getBottom();
-                Location target = locMap.get(swit.onFinish());
-                target.addVars(swit.getCall().getOutVars().keySet());
-                Location source = locMap.get(swit.getSource());
-                Switch imageSwitch =
-                    new Switch(source, swit.getCall(), swit.getTransience(), target);
-                switchMap.put(swit, imageSwitch);
-            }
-        }
         // Add attempts to the result
         for (Location repr : reprSet) {
             if (!repr.isTrial()) {
@@ -474,8 +459,10 @@ public class TemplateBuilder {
             for (SwitchStack reprStack : reprAttempt) {
                 SwitchStack imageStack = new SwitchStack();
                 for (Switch swit : reprStack) {
-                    imageStack.add(switchMap.get(swit));
+                    Switch switImage = getSwitch(locMap, switchMap, swit);
+                    imageStack.add(switImage);
                 }
+                assert imageStack.getBottom().getSource() == image;
                 imageAttempt.add(imageStack);
             }
             image.setAttempt(imageAttempt);
@@ -487,6 +474,7 @@ public class TemplateBuilder {
     private final Map<Location,Record<Location>> recordMap =
         new LinkedHashMap<Location,Record<Location>>();
 
+    /** Returns a canonical image for a given template. */
     private Template getTemplate(Map<Template,Template> map, Template key) {
         Template result = map.get(key);
         if (result == null) {
@@ -503,6 +491,19 @@ public class TemplateBuilder {
         } else {
             return new Template(name);
         }
+    }
+
+    /** Returns a canonical image for a given switch. */
+    private Switch getSwitch(Map<Location,Location> locMap, Map<Switch,Switch> switchMap, Switch key) {
+        Switch result = switchMap.get(key);
+        if (result == null) {
+            Location target = locMap.get(key.onFinish());
+            target.addVars(key.getCall().getOutVars().keySet());
+            Location source = locMap.get(key.getSource());
+            result = new Switch(source, key.getCall(), key.getTransience(), target);
+            switchMap.put(key, result);
+        }
+        return result;
     }
 
     /** Returns the an instance of this class.
