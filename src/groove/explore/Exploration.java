@@ -394,7 +394,13 @@ public class Exploration {
             throw new FormatException(SYNTAX_MESSAGE);
         }
         Serialized strategy = strategies.parseCommandline(parts[0]);
+        if (strategy == null) {
+            throw new FormatException("Can't parse strategy %s", parts[0]);
+        }
         Serialized acceptor = acceptors.parseCommandline(parts[1]);
+        if (acceptor == null) {
+            throw new FormatException("Can't parse acceptor %s", parts[1]);
+        }
         int resultCount = 0;
         if (parts.length == 3) {
             String countMessage =
