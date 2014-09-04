@@ -28,8 +28,6 @@ import groove.control.term.Term;
 import groove.grammar.Action;
 import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
-import groove.util.Duo;
-import groove.util.Pair;
 import groove.util.Quad;
 import groove.util.Triple;
 
@@ -404,7 +402,7 @@ public class TemplateBuilder {
         Cell success = part.getCell(record.getSuccess());
         Cell failure = part.getCell(record.getFailure());
         CallMap<Cell> map = new CallMap<Cell>();
-        for (Map.Entry<CallStack,Set<Stack<Location>>> e : record.getMap().entrySet()) {
+        for (Map.Entry<CallStack,Set<Stack<Location>>> e : record.getCallMap().entrySet()) {
             Set<Stack<Cell>> target = new HashSet<Stack<Cell>>();
             for (Stack<Location> locStack : e.getValue()) {
                 Stack<Cell> cellStack = new Stack<Cell>();
@@ -529,9 +527,9 @@ public class TemplateBuilder {
      * The distinction is made on the basis of template, final status,
      * transient depth and sets of control variables.
      */
-    private static class LocationKey extends Quad<Template,Boolean,Integer,CtrlVarSet> {
+    private static class LocationKey extends Quad<Template,Position.Type,Integer,CtrlVarSet> {
         LocationKey(Location loc) {
-            super(loc.getTemplate(), loc.isFinal(), loc.getTransience(), new CtrlVarSet(
+            super(loc.getTemplate(), loc.getType(), loc.getTransience(), new CtrlVarSet(
                 loc.getVars()));
         }
     }
@@ -574,43 +572,25 @@ public class TemplateBuilder {
      * of a given location.
      * @param <L> type of the targets
      */
-    private static class Record<L> extends Pair<Duo<L>,CallMap<L>> {
-        Record(L success, L failure, CallMap<L> transMap, Position.Type type) {
-            super(Duo.newDuo(success, failure), transMap);
-            this.type = type;
+    private static class Record<L> extends Quad<L,L,CallMap<L>,Position.Type> {
+        Record(L success, L failure, CallMap<L> callMap, Position.Type type) {
+            super(success, failure, callMap, type);
         }
 
         L getSuccess() {
-            return one().one();
+            return one();
         }
 
         L getFailure() {
-            return one().two();
-        }
-
-        CallMap<L> getMap() {
             return two();
         }
 
+        CallMap<L> getCallMap() {
+            return three();
+        }
+
         Type getType() {
-            return this.type;
-        }
-
-        private final Type type;
-
-        @SuppressWarnings("rawtypes")
-        @Override
-        public boolean equals(Object obj) {
-            if (!super.equals(obj)) {
-                return false;
-            }
-            return this.type == ((Record) obj).type;
-        }
-
-        @Override
-        public int hashCode() {
-            int prime = 31;
-            return prime * super.hashCode() + this.type.hashCode();
+            return four();
         }
     }
 
