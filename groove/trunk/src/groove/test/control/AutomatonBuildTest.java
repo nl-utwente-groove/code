@@ -17,6 +17,7 @@
 package groove.test.control;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.control.Binding;
@@ -32,6 +33,7 @@ import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.control.instance.StepAttempt;
 import groove.control.template.Program;
+import groove.control.template.Switch;
 import groove.control.template.SwitchStack;
 import groove.grammar.Callable;
 import groove.grammar.Grammar;
@@ -66,7 +68,7 @@ public class AutomatonBuildTest {
     public void testNesting() {
         add("f", "function f() { node arg; choice try r(1,out arg); or b; }");
         add("r",
-                "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
+            "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
         add("main", "f|a; ");
         Automaton p = build();
         p.explore();
@@ -226,8 +228,10 @@ public class AutomatonBuildTest {
         }
         SwitchStack stack = new SwitchStack();
         stack.add(this.prog.getTemplate().getStart().getAttempt().get(0).getBottom());
-        stack.add(proc("r").getTemplate().getStart().getAttempt().get(0).getBottom());
-        stack.add(proc("f").getTemplate().getStart().getAttempt().get(0).getBottom());
+        Switch r0Switch = proc("r").getTemplate().getStart().getAttempt().get(0).getBottom();
+        stack.add(r0Switch);
+        Switch f0Switch = proc("f").getTemplate().getStart().getAttempt().get(0).getBottom();
+        stack.add(f0Switch);
         Frame f0 = p.getStart();
         StepAttempt a0 = f0.getAttempt();
         assertEquals(1, a0.size());
@@ -240,15 +244,27 @@ public class AutomatonBuildTest {
         assertTrue(a1.onSuccess().isDead());
         assertEquals(1, a1.size());
         Step s1 = a1.get(0);
-        assertEquals(stack, s1.getSwitchStack());
+        Switch f1Switch = f0Switch.onFinish().getAttempt().get(0).getBottom();
+        assertDistinct(f1Switch, stack.get(2));
+        SwitchStack f1Stack = new SwitchStack(stack);
+        f1Stack.set(2, f1Switch);
+        assertEquals(f1Stack, s1.getSwitchStack());
         assertEquals(f1, s1.onFinish());
         Frame f2 = a1.onFailure();
         StepAttempt a2 = f2.getAttempt();
         Step s2 = a2.get(0);
-        assertEquals(stack, s2.getSwitchStack());
-        assertEquals(f1, s2.onFinish());
+        Switch r2Switch = r0Switch.onFinish().getAttempt().get(0).getBottom();
+        assertDistinct(r2Switch, stack.get(1));
+        SwitchStack r2Stack = new SwitchStack(stack);
+        r2Stack.set(1, r2Switch);
+        assertEquals(r2Stack, s2.getSwitchStack());
+        assertDistinct(f1, s2.onFinish());
         assertTrue(a2.onSuccess().isDead());
         assertTrue(a2.onFailure().isFinal());
+    }
+
+    static private void assertDistinct(Object o1, Object o2) {
+        assertFalse(String.format("%s and %s expected to be distinct", o1, o2), o1.equals(o2));
     }
 
     /** Builds an automaton consisting of a single non-trivial recipe. */
@@ -398,7 +414,7 @@ public class AutomatonBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-                new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
+            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
         return result;
     }
 
