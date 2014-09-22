@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/*" kind="src" path="resources"/>
-	<classpathentry excluding="**/.svn/*|com/|groove/grammar/model/OldCompositeControlModel.java|groove/grammar/model/OldControlModel.java|groove/gui/action/OldPreviewControlAction.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4_8_2.jar" sourcepath="lib/src/junit-4.8.2-src.zip"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="lib/src/jgraph-5.13.0.4-src.zip"/>
@@ -32,6 +32,5 @@
 	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jdt.annotation_1.1.0.v20140129-1625.jar"/>
-	<classpathentry kind="lib" path="lib/lombok-1_14_8.jar" sourcepath="lib/src/lombok-1_14_8-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

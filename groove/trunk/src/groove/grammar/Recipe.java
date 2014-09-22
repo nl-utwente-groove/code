@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Getter;
-
 /**
  * Class wrapping a transaction.
  * A transaction consists of a control automaton and an associated priority.
@@ -40,27 +38,26 @@ public class Recipe extends Procedure implements Action {
     }
 
     /**
-     * The set of rules called by this recipe.
+     * Returns the set of rules called by this recipe.
+     * May be {@code null} if the recipe body is not set or contains errors.
      */
-    @Getter(lazy = true)
-    private final Set<Rule> rules = computeRules();
-
-    /**
-     * Computes the set of rules called by this recipe.
-     * Used to lazily initialise {@link #rules}.
-     * @see #rules
-     */
-    private Set<Rule> computeRules() {
-        Set<Rule> result = new HashSet<Rule>();
-        if (getTemplate() != null) {
-            for (Action action : getTemplate().getActions()) {
-                if (action instanceof Rule) {
-                    result.add((Rule) action);
+    public Set<Rule> getRules() {
+        Set<Rule> result = this.rules;
+        if (result == null) {
+            result = new HashSet<Rule>();
+            if (getTemplate() != null) {
+                for (Action action : getTemplate().getActions()) {
+                    if (action instanceof Rule) {
+                        result.add((Rule) action);
+                    }
                 }
             }
+            this.rules = result;
         }
         return result;
     }
+
+    private Set<Rule> rules;
 
     @Override
     public Role getRole() {
