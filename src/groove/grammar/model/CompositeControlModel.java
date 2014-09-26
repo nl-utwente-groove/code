@@ -175,7 +175,8 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 if (entry.getKey() == null) {
                     result.add("Error in implicit control: %s", error);
                 } else {
-                    result.add("Error in control program '%s': %s", entry.getKey(), error);
+                    result.add("Error in control program '%s': %s", entry.getKey(), error,
+                        FormatError.control(entry.getKey()));
                 }
             }
         }

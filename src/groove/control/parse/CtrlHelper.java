@@ -295,13 +295,15 @@ public class CtrlHelper {
     private List<CtrlPar.Var> getPars(String procName, CtrlTree parListTree) {
         assert parListTree.getType() == CtrlChecker.PARS;
         List<CtrlPar.Var> result = new ArrayList<CtrlPar.Var>();
-        for (int i = 0; i < parListTree.getChildCount(); i++) {
-            CtrlTree parTree = parListTree.getChild(i);
-            boolean out = parTree.getChildCount() == 3;
-            CtrlTree typeTree = parTree.getChild(out ? 1 : 0);
-            CtrlType type = typeTree.getCtrlType();
-            String name = parTree.getChild(out ? 2 : 1).getText();
-            result.add(CtrlPar.var(procName, name, type, !out));
+        if (!this.namespace.hasError()) {
+            for (int i = 0; i < parListTree.getChildCount(); i++) {
+                CtrlTree parTree = parListTree.getChild(i);
+                boolean out = parTree.getChildCount() == 3;
+                CtrlTree typeTree = parTree.getChild(out ? 1 : 0);
+                CtrlType type = typeTree.getCtrlType();
+                String name = parTree.getChild(out ? 2 : 1).getText();
+                result.add(CtrlPar.var(procName, name, type, !out));
+            }
         }
         return result;
     }
