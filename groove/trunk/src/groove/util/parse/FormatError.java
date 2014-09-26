@@ -61,6 +61,12 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         }
     }
 
+    /** Sets the resource in which this error occurs. */
+    public void setResource(ResourceKind kind, String name) {
+        this.resourceKind = kind;
+        this.resourceName = name;
+    }
+
     /**
      * Attempts to set a context value ({@link #graph}, {@link #control},
      * {@link #elements}) from a given object.
@@ -73,16 +79,13 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             this.state = (GraphState) par;
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
-            this.resourceName = this.graph.getName();
-            this.resourceKind = ResourceKind.toResource(this.graph.getRole());
+            setResource(ResourceKind.toResource(this.graph.getRole()), this.graph.getName());
         } else if (par instanceof ControlModel) {
             this.control = (ControlModel) par;
-            this.resourceName = this.control.getFullName();
-            this.resourceKind = ResourceKind.CONTROL;
+            setResource(ResourceKind.CONTROL, this.control.getFullName());
         } else if (par instanceof PrologModel) {
             this.prolog = (PrologModel) par;
-            this.resourceName = this.prolog.getFullName();
-            this.resourceKind = ResourceKind.PROLOG;
+            setResource(ResourceKind.PROLOG, this.prolog.getFullName());
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
         } else if (par instanceof Integer) {
@@ -92,17 +95,13 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
                 addContext(subpar);
             }
         } else if (par instanceof Rule) {
-            this.resourceName = ((Rule) par).getFullName();
-            this.resourceKind = ResourceKind.RULE;
+            setResource(ResourceKind.RULE, ((Rule) par).getFullName());
         } else if (par instanceof Recipe) {
-            this.resourceName = ((Recipe) par).getControlName();
-            this.resourceKind = ResourceKind.CONTROL;
+            setResource(ResourceKind.CONTROL, ((Recipe) par).getControlName());
         } else if (par instanceof GrammarKey) {
-            this.resourceName = ((GrammarKey) par).getName();
-            this.resourceKind = ResourceKind.PROPERTIES;
+            setResource(ResourceKind.PROPERTIES, ((GrammarKey) par).getName());
         } else if (par instanceof Resource) {
-            this.resourceKind = ((Resource) par).one();
-            this.resourceName = ((Resource) par).two();
+            setResource(((Resource) par).one(), ((Resource) par).two());
         }
     }
 
