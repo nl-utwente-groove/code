@@ -1,6 +1,0 @@
-recipe r() {
-	a;
-	b;
-}
-
-any;
