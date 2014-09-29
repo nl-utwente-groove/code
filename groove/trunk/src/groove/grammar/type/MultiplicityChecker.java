@@ -89,16 +89,17 @@ public class MultiplicityChecker implements TypeChecker {
                 Direction dir = c.two();
                 Multiplicity mult =
                     dir == Direction.INCOMING ? type.getInMult() : type.getOutMult();
-                        int count = 0;
-                        for (HostEdge edge : dir.edges(source, node)) {
-                            if (edge.getType() == type) {
-                                count++;
-                            }
-                        }
-                        if (!mult.inRange(count)) {
-                            result.add("Node %s violates %s edge multiplicity %s for edge type %s", node,
-                                dir, mult, type, count);
-                        }
+                int count = 0;
+                for (HostEdge edge : dir.edges(source, node)) {
+                    if (edge.getType() == type) {
+                        count++;
+                    }
+                }
+                if (!mult.inRange(count)) {
+                    result.add(
+                        "Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
+                        node, dir, mult, type, count);
+                }
             }
         }
         return result;

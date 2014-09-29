@@ -20,6 +20,7 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Sort;
 import groove.algebra.syntax.Expression;
+import groove.grammar.CheckPolicy;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
@@ -220,7 +221,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     }
                 }
                 elementMap = newElementMap;
-                result.checkTypeConstraints().throwException();
+                if (getGrammar().getProperties().getTypePolicy() != CheckPolicy.OFF) {
+                    result.checkTypeConstraints().throwException();
+                }
             } catch (FormatException e) {
                 // compute inverse element map
                 Map<Element,Element> inverseMap = new HashMap<Element,Element>();
@@ -247,7 +250,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * element map.
      */
     private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
-            AspectNode modelNode) {
+        AspectNode modelNode) {
         // include the node in the model if it is not virtual
         if (!modelNode.getKind().isMeta()) {
             HostNode nodeImage = null;
@@ -272,7 +275,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * @throws FormatException if the presence of the edge signifies an error
      */
     private void processModelEdge(HostGraph result, HostModelMap elementMap, AspectEdge modelEdge)
-            throws FormatException {
+        throws FormatException {
         if (modelEdge.getKind().isMeta()) {
             return;
         }

@@ -124,7 +124,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:"
             + "<li> - <i>off</i>: the action is disabled (overrules the <b>enabled</b> property)"
             + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition"
-            + "<li> - <i>error</i>: applicability is an error"
+            + "<li> - <i>error</i> (default): applicability is an error"
             + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
             + "<p>The last three are only valid for forbidden and invariant properties",
         CheckPolicy.multiParser, ActionPolicyChecker.instance),
@@ -133,7 +133,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         "typePolicy",
         "<body>Flag controlling how dynamic type constraints (multiplicities, composites) are dealt with."
             + "<li>- <i>off</i>: dynamic type constraints are not checked"
-            + "<li>- <i>error</i>: dynamic type violations are flagged as errors"
+            + "<li>- <i>error</i> (default): dynamic type violations are flagged as errors"
             + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
         new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR, "off", null,
             "error", "remove")),
@@ -141,7 +141,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     /** Policy for dealing with deadlocks. */
     DEAD_POLICY("deadlockPolicy", "Flag controlling how deadlocked states are dealt with."
         + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
-        + "<li>- <i>off</i>: deadlocks are not checked"
+        + "<li>- <i>off</i> (default): deadlocks are not checked"
         + "<li>- <i>error</i>: deadlocks are flagged as errors",
         new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
             "error", null)),
