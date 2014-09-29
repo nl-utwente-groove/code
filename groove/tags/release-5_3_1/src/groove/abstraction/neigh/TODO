@@ -1,0 +1,216 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+= Neighbourhood Abstraction - TODO List                                       =
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+This is a list of pending points in the neighbourhood abstraction
+implementation that could be improved/created. Since it is highly unlikely that
+I will have the time to work on these items, I will try to document with as
+much detail as possible what I think should be done, in case someone else can
+tackle these problems in the future.
+
+EZ
+
+P.S.: This list has no particular ordering.
+
+-------------------------------------------------------------------------------
+
+- Symbolic node multiplicities
+  -------- ---- --------------
+
+The materialisation phase is divided in many steps, two of which are
+non-deterministic: first and third stages of equation systems. The
+non-determinism in the first stage cannot be avoided since it is inherent to
+the process of deciding which edge bundles are present in the shape or not. As
+for the third stage, the non-determinism stems from the possible choices of
+multiplicities for nodes that were split in the second stage. The need for these
+choices can be eliminated (and thus making the third stage deterministic) if we
+use symbolic node multiplicities.
+
+The idea is the following: instead of solving the equation system built during
+the third stage right away and ending up with (possibly) many shapes, we defer
+the solution to a later time, when the specific multiplicity of each split node
+is needed. This is only the case after rule application, during the
+normalisation phase. The point here is that the equation system actually serves
+as a "symbolic" representation of all solutions, and by keeping the system
+around for a longer time, we may save work. 
+
+Split nodes are never in the image of a rule match, so they are not affected by
+rule application. Afterwards, we have to normalise the transformed shape. If
+the neighbourhood of the split nodes is the same they will all be collapsed
+during normalisation. This means that we do not need the individual
+multiplicity of each split node, just the sum of all such multiplicities. This
+information is already present in the equation system and we can use this value
+without solving the system and therefore without branching the solution space.
+If, on the other hand, the split nodes end up with different neighbourhoods
+after rule application, then we have to solve the equation system as before, but
+at this moment we are sure that this step is really necessary.
+
+I would say that effort for implementing this point can be considerably high,
+since it requires big changes in the materialisation code. However, the gains
+expected are also high: the blow-up during materialisation is one of the major
+bottlenecks in the code; any idea that might reduce this blow-up is worthwhile
+to pursue.
+
+-------------------------------------------------------------------------------
+
+- Integration of abstraction in the Simulator
+  ----------- -- ----------- -- --- ---------
+
+The neighbourhood abstraction is accessible to the user via the command-line
+tool called ShapeGenerator. This is adapted from the original Generator tool
+and both share many similarities, so a user familiar with the Generator should
+have no major problems with the ShapeGenerator.
+
+The main attractiveness of Groove, however, is the possibility of playing
+around with a grammar in the Simulator. An initial step towards the
+integration of abstraction in the Simulator was taken but there is still a lot
+to be done.
+
+The part already implemented is the dedicated jGraph classes for shapes. This
+allows us to display a shape in a preview dialog, with visual elements
+representing all additional parts of a shape (multiplicities, equivalence
+classes, etc).
+
+What remains to be done is integrate the shape jGraph classes into the state
+display and include an option to allow the user to toggle between concrete and
+abstract mode in the Simulator. An interesting additional extension in abstract
+mode would be the possibility to show the materialised shapes from a certain
+pre-match (we could add an extra level on the rule tree for this). This
+certainly help a lot in debugging both the abstraction code and the grammar we
+are working on.
+
+-------------------------------------------------------------------------------
+
+- Tikz exporter for shapes
+  ---- -------- --- ------
+
+Given the constant update of graphical elements in the Simulator it seems that
+it is important to pursue the refactorings listed on the SourceForge trackers
+(#3364677 of Bug Tracker, #3297536 and #3297531 of Maintenance Tracker). This
+item could then be dealt with during the refactoring.
+
+-------------------------------------------------------------------------------
+
+- Deltas/Caches for shapes?
+  ------------- --- -------
+
+Currently, each state in the abstract GTS has a hard reference to the shape
+that is stored. At each transformation step the shape state is cloned and
+possibly stored in a new state. Of course, this wastes a lot of memory. 
+
+One possibility to decrease the memory foot-print is the use of caching. To do
+so we need the minimal amount of information to completely determine the target
+state. In a concrete setting, a target graph can be reconstructed from the
+source and the information on the rule event. In abstract mode, this is no
+longer sufficient due to the materialisation.
+
+The deterministic steps of materialisation are reproducible, but for the
+non-deterministic ones we need to store more information. From the first stage
+of equation system solving we need to record the edge bundles that were removed
+(i.e., got a multiplicity value of zero). From the third stage of equation
+system solving we need the multiplicity map for the split nodes. This map is
+already present in the materialisation object so it is just a matter of
+transferring this information to the state when a shape is stored.
+
+If we can store this extra information in the abstract states we can then use
+weak references to the shapes, since they can be reconstructed on demand.
+
+It would be nice also if we could come up with a notion of a "delta" for
+shapes, similar to what is there for graphs.
+
+UPDATE: Caches were implemented by Arend. Deltas most likely not coming...
+
+-------------------------------------------------------------------------------
+
+- Parallel execution of concrete and abstract exploration
+  -------- --------- -- -------- --- -------- -----------
+
+(This could be a nice idea for a student project.)
+
+There are three sub-items here:
+
+1) Bounded elimination of spurious abstract states.
+
+The abstract state space is an over-approximation of the concrete one.
+However, if we are interested in bug-hunting, an under-approximation is
+sufficient. The idea is to eliminate spurious abstract states (i.e., states
+that do not have a concrete counterpart) with a run in the concrete setting up
+to a certain bound. 
+
+For each state in the abstract state space, we want to determine if the state
+is spurious or not. To do so we find a trace to the start state. Now we go to
+concrete mode and try to run the same trace. If we succeed we can conclude that
+all states in the abstract trace are not spurious. If the concrete run fails,
+we can explore up to the given bound and if we still fail to find a concrete
+trace then we mark the abstract states without counterparts as spurious. This
+gives an under-approximation on the abstract level.
+
+2) Concrete exploration as a test for the abstract one.
+
+The idea is to do a concrete exploration up to a certain level and abstract all
+states of the concrete state space. We then do an abstract exploration as
+usual. The abstract state space obtained should cover all behaviour of the
+abstracted concrete states. If this is not the case we found a bug in the
+abstraction: it is not an over-approximation.
+
+3) Concrete exploration as an initialiser for the abstract one.
+
+The idea is similar to the previous one, but instead of using the abstracted
+concrete states as tests we use them as initial elements of the state space in
+the abstract exploration. This is interesting because we may end up with states
+in the abstract state space that subsume many others, and this will eliminate
+many states from the exploration pool.
+
+-------------------------------------------------------------------------------
+
+- Implement handling of regular expressions
+  --------- -------- -- ------- -----------
+
+The current abstraction implementation can handle NACs but does not support
+regular expressions. There is already a mechanism in place that allows for the
+retrieval of only the regular expression part of a rule's LHS. That has to be
+done is to check if the automaton for the expression accepts the materialised
+shape. As in with NACs, not all expressions can be properly checked (i.e., path
+expressions that go on the abstract part of the shape may actually fail to hold
+in the concrete domain). When this is the case we have to err on the safe
+side and consider the rule applicable to preserve the over-approximation.
+
+-------------------------------------------------------------------------------
+
+- Construct the reduced state space from the subsumption relation
+  --------- --- ------- ----- ----- ---- --- ----------- --------
+
+The current implementation of the subsumption relation is built upon shape
+isomorphism, but it is actually necessary to consider it a sort of subgraph
+matching in order to ensure that the minimal state space is consistent,
+regardless of exploration strategy. This poses a rather tricky problem, since we
+rely heavily on the current iso mechanism. So far, I see following solution.
+
+We reduce shapes to their "guaranteed structure", i.e., we take down all nodes
+and edges with multiplicity 0+, and check for subsumption only in the remainder
+structure. This would require, of course, a change in the shape certificate
+computation, that should use only the "guaranteed structure".
+
+In more details: given two shapes s0 and s1, we strip 0+ elements on
+both shapes and use the existing shape iso check. Let s0' and s1' be the
+stripped shapes. Then the iso check can give the following results:
+- s0' and s1' are non-iso. Then s0 and s1 are also non-iso.
+- s0' is subsumed by s1' with morphism m'. Then we try to construct morphism m
+on the original shapes by extending m' over the 0+ elements of s0. If we succeed
+then s0 is subsumed by s1, otherwise the shapes are different.
+- s1' is subsumed by s0'. This is symmetrical to the previous case.
+
+-------------------------------------------------------------------------------
+
+- On-the-fly state space reduction
+  ---------- ----- ----- ---------
+
+On the current abstract exploration we first construct the entire state space
+while recording the subsumption relation and then after exploration finishes we
+build the reduced state space by colapsing under subsumption. Since the reduced
+state space is several orders of magnitude smaller, we could greatly reduce
+memory consumption if we colapse subsumed states on-the-fly. This goes against
+the original notion of a GTS, where states are only added and not removed so
+maybe there are some hidden pitfalls around.
+
+-------------------------------------------------------------------------------
