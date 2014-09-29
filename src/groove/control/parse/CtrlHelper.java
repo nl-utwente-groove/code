@@ -545,6 +545,7 @@ public class CtrlHelper {
             return;
         }
         for (Callable unit : collectActions(callTree)) {
+            assert unit instanceof Action;
             if (checkCall(callTree, unit, args)) {
                 List<CtrlPar> unitArgs;
                 if (args == null && callTree.getChild(0).getType() != ID) {

@@ -103,12 +103,12 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     private CtrlPar par;
 
-    /** Returns the derived rule call stored in this tree node, if any. */
+    /** Returns the set of calls stored in this tree node, if any. */
     public List<Call> getCalls() {
         return this.calls;
     }
 
-    /** Stores a rule call in this tree node. */
+    /** Adds a call to this tree node. */
     public void addCall(Call call) {
         assert call != null;
         this.calls.add(call);
@@ -235,7 +235,8 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             break;
         case CtrlParser.BECOMES:
         case CtrlParser.CALL:
-            if (getChild(0).getType() == CtrlParser.ID) {
+            CtrlTree callTree = getType() == CtrlParser.CALL ? this : getChild(1);
+            if (callTree.getChild(0).getType() == CtrlParser.ID) {
                 // it's a single call
                 assert getCalls().size() == 1;
                 result = prot.call(getCalls().get(0));
