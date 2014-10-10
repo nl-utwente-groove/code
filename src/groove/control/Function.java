@@ -31,8 +31,8 @@ public class Function extends Procedure implements Fixable {
     /**
      * Constructs a function with the given parameters.
      */
-    public Function(String fullName, int priority, List<Var> signature, String controlName,
-            int startLine, GrammarProperties grammarProperties) {
+    public Function(String fullName, List<Var> signature, String controlName, int startLine,
+            GrammarProperties grammarProperties) {
         super(fullName, Kind.FUNCTION, signature, controlName, startLine, grammarProperties);
     }
 }

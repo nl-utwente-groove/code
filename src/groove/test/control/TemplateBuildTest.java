@@ -251,6 +251,17 @@ public class TemplateBuildTest extends CtrlTester {
         assertEquals(g, s3N.getCall().getUnit());
         Switch s3NN = s3.get(2);
         assertEquals(this.cCall, s3NN.getCall());
+        //
+        build("function f() { a*; } f;b;");
+        s = this.template.getStart().getAttempt();
+        assertEquals(1, s.size());
+        assertTrue(s.sameVerdict());
+        s0 = s.get(0);
+        f = (Procedure) s0.getBottomCall().getUnit();
+        assertEquals("f", f.getFullName());
+        Switch s0N = s0.get(1);
+        assertEquals(this.aCall, s0N.getCall());
+        assertEquals(f.getTemplate().getStart(), s0N.onFinish());
     }
 
     private void assertSize(int locCount) {
