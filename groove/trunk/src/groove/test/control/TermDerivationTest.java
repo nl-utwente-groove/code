@@ -19,6 +19,8 @@ package groove.test.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.control.Call;
+import groove.control.CtrlPar.Var;
+import groove.control.Function;
 import groove.control.term.Derivation;
 import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
@@ -268,9 +270,27 @@ public class TermDerivationTest {
         assertDepth(1);
     }
 
+    @Test
+    public void testFunction() {
+        Function f = function("f", this.a.star());
+        Call fCall = new Call(f);
+        Term fb = p.call(fCall).seq(this.b);
+        setSource(fb);
+        assertEdge(fCall, this.b, new Derivation(this.aCall, this.a.star()));
+        assertSuccFail(this.b, this.b);
+    }
+
     /** Predicts an outgoing transition of the current state. */
     private void assertEdge(Call call, Term target) {
+        assertEdge(call, target, null);
+    }
+
+    /** Predicts an outgoing transition of the current state. */
+    private void assertEdge(Call call, Term target, Derivation nested) {
         Derivation edge = new Derivation(call, target);
+        if (nested != null) {
+            edge = edge.newInstance(nested);
+        }
         Assert.assertTrue(String.format("%s not in %s", edge, this.edges), this.edges.remove(edge));
     }
 
@@ -319,6 +339,15 @@ public class TermDerivationTest {
     private Term call(String name) {
         Callable unit = rule(name);
         return p.call(new Call(unit));
+    }
+
+    /** Constructs a function with a given name and body, and an empty signature. */
+    private Function function(String name, Term body) {
+        Function result =
+            new Function(name, Collections.<Var>emptyList(), "control", 0, this.grammar.getProperties());
+        result.setTerm(body);
+        result.setFixed();
+        return result;
     }
 
     /** Returns the rule with a given name. */

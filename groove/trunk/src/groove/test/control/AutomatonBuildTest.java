@@ -263,10 +263,6 @@ public class AutomatonBuildTest {
         assertTrue(a2.onFailure().isFinal());
     }
 
-    static private void assertDistinct(Object o1, Object o2) {
-        assertFalse(String.format("%s and %s expected to be distinct", o1, o2), o1.equals(o2));
-    }
-
     /** Builds an automaton consisting of a single non-trivial recipe. */
     @Test
     public void testSingleRecipe() {
@@ -302,7 +298,6 @@ public class AutomatonBuildTest {
         if (DEBUG) {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
-
     }
 
     /** Loads the grammar to be used for testing. */
@@ -420,6 +415,10 @@ public class AutomatonBuildTest {
 
     /** Most recently built program. */
     private Program prog;
+
+    static private void assertDistinct(Object o1, Object o2) {
+        assertFalse(String.format("%s and %s expected to be distinct", o1, o2), o1.equals(o2));
+    }
 
     private final static boolean DEBUG = false;
     private final static boolean FULL_GRAPH = true;

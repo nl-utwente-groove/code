@@ -48,7 +48,7 @@ public abstract class Procedure implements Callable, Fixable {
      * @param grammarProperties grammar properties for this procedure
      */
     protected Procedure(String fullName, Kind kind, List<Var> signature, String controlName,
-            int startLine, GrammarProperties grammarProperties) {
+        int startLine, GrammarProperties grammarProperties) {
         this.fullName = fullName;
         this.signature = signature;
         this.controlName = controlName;
@@ -195,7 +195,7 @@ public abstract class Procedure implements Callable, Fixable {
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
             throw new IllegalStateException(String.format("The unit is %sfixed", fixed ? ""
-                    : "not "));
+                : "not "));
         }
     }
 
@@ -237,15 +237,13 @@ public abstract class Procedure implements Callable, Fixable {
      * @param grammarProperties grammar properties for the new procedure
      */
     public static Procedure newInstance(String fullName, Kind kind, int priority,
-            List<Var> signature, String controlName, int startLine,
-            GrammarProperties grammarProperties) {
+        List<Var> signature, String controlName, int startLine, GrammarProperties grammarProperties) {
         assert kind.isProcedure();
         Procedure result;
         switch (kind) {
         case FUNCTION:
-            result =
-                new Function(fullName, priority, signature, controlName, startLine,
-                    grammarProperties);
+            assert priority == 0;
+            result = new Function(fullName, signature, controlName, startLine, grammarProperties);
             break;
         case RECIPE:
             result =
