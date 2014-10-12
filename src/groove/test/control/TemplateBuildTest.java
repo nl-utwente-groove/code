@@ -76,8 +76,6 @@ public class TemplateBuildTest extends CtrlTester {
         assertTrue(getStart().isFinal());
         //
         build("{ a; b; }");
-        //        Viewer.showGraph(this.template, false);
-        //        Viewer.showGraph(this.minimal, true);
         assertSize(4);
         Location loc = getInit(this.aCall);
         assertTrue(loc.isTrial());

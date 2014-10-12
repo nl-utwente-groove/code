@@ -33,7 +33,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Location implements Position<Location,SwitchStack>, Comparable<Location> {
+public class Location implements Position<Location,SwitchStack>, Comparable<Location>, Relocatable {
     /**
      * Constructs a numbered location for a given template.
      * @param nr the location number;
@@ -219,6 +219,13 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     }
 
     private Map<CtrlVar,Integer> varIxMap;
+
+    @Override
+    public Location relocate(Relocation map) {
+        Location result = map.get(this);
+        result.setAttempt(getAttempt().relocate(map));
+        return result;
+    }
 
     @Override
     public String toString() {

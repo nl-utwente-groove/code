@@ -145,7 +145,7 @@ abstract public class CtrlTester {
     protected Term buildProcTerm(String program, String procName, boolean function) {
         try {
             CtrlTree tree =
-                    createLoader().parse("dummy", program).check().getChild(function ? 2 : 3);
+                createLoader().parse("dummy", program).check().getChild(function ? 2 : 3);
             CtrlTree body = null;
             for (int i = 0; i < tree.getChildCount(); i++) {
                 CtrlTree functionTree = tree.getChild(i);
