@@ -109,18 +109,13 @@ public class Template {
 
     /** Creates and adds a control location to this automaton. */
     public Location addLocation(int depth) {
-        Location result = new Location(this, this.maxNodeNr + 1, depth);
         this.maxNodeNr++;
+        Location result = new Location(this, this.maxNodeNr, depth);
         this.locations.add(result);
         return result;
     }
 
     private int maxNodeNr;
-
-    /** Removes a location from this template. */
-    public void removeLocation(Location loc) {
-        this.locations.remove(loc);
-    }
 
     /** Returns the set of locations of this template. */
     public Collection<Location> getLocations() {
@@ -258,9 +253,11 @@ public class Template {
         return result;
     }
 
-    /** Returns a copy of this automaton for a given enclosing procedure. */
-    public Template clone(Procedure parent) {
-        return new Template(parent);
+    /** Returns a new, initially empty template for the same procedure or
+     * main program name as this one.
+     */
+    public Template newInstance() {
+        return hasOwner() ? new Template(getOwner()) : new Template(getName());
     }
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */

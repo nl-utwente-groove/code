@@ -31,6 +31,7 @@ import groove.grammar.Rule;
 import groove.util.Quad;
 import groove.util.Triple;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,50 +64,60 @@ public class TemplateBuilder {
      * As a side effect, all procedure templates are also constructed.
      */
     public Template build(Program prog) {
+        Template result = createTemplate(prog.getName(), null, prog.getMain());
+        List<Template> templates = new ArrayList<Template>();
+        templates.add(result);
         for (Procedure proc : prog.getProcs().values()) {
-            build(proc.getTerm(), getTemplate(proc));
+            Template template = createTemplate(null, proc, proc.getTerm());
+            proc.setTemplate(template);
+            templates.add(template);
         }
-        return build(prog.getName(), prog.getMain());
+        for (Template template : templates) {
+            build(template);
+        }
+        Relocation map = new Relocation();
+        for (Template template : templates) {
+            Template newTemplate = addQuotient(map, template);
+            if (newTemplate.hasOwner()) {
+                newTemplate.getOwner().setTemplate(newTemplate);
+            } else {
+                result = newTemplate;
+            }
+        }
+        map.build();
+        clearBuildData();
+        return result;
     }
 
-    /**
-     * Constructs an automata template for a given term.
-     * As a side effect, all templates of procedures
-     * recursively called from the term are also constructed.
+    /** Creates a new template, for the main program or a procedure,
+     * and initialises it using a given term.
      */
-    public Template build(String name, Term init) throws IllegalStateException {
-        Template result = new Template(name);
-        build(init, result);
-        result = normalise(result);
-        for (Map.Entry<Procedure,Template> e : this.templateMap.entrySet()) {
-            e.getKey().setTemplate(e.getValue());
-        }
-        clearBuildData();
+    private Template createTemplate(String name, Procedure proc, Term init) {
+        assert init.getTransience() == 0 : "Can't build template from transient term";
+        Template result = name == null ? new Template(proc) : new Template(name);
+        // set the initial location
+        TermKey initKey = new TermKey(init, new HashSet<Term>(), new CtrlVarSet());
+        Location start = result.getStart();
+        getLocMap(result).put(initKey, start);
+        getFresh(result).add(initKey);
         return result;
     }
 
     /**
      * Constructs a template from a term.
      * @param result the template to be built
-     * @param init the term for which the template should be built
      * @throws IllegalStateException if {@code init} contains procedure
      * calls with uninitialised templates
      */
-    private void build(Term init, Template result) throws IllegalStateException {
-        assert init.getTransience() == 0 : "Can't build template from transient term";
+    private void build(Template result) throws IllegalStateException {
         // initialise the auxiliary data structures
         Map<TermKey,Location> locMap = getLocMap(result);
         Deque<TermKey> fresh = getFresh(result);
-        // set the initial location
-        TermKey initKey = new TermKey(init, new HashSet<Term>(), new CtrlVarSet());
-        Location start = result.getStart();
-        locMap.put(initKey, start);
-        this.termKeyMap.put(start, initKey);
-        fresh.add(initKey);
         // do the following as long as there are fresh locations
         while (!fresh.isEmpty()) {
             TermKey next = fresh.poll();
             Location loc = locMap.get(next);
+            assert loc.getType() == null;
             Term term = next.one();
             // the intended type after the optional property test
             Type locType = next.two().contains(term) ? Type.DEAD : term.getType();
@@ -187,13 +198,9 @@ public class TemplateBuilder {
             result = template.addLocation(term.getTransience());
             locMap.put(key, result);
             result.setVars(vars);
-            this.termKeyMap.put(result, key);
         }
         return result;
     }
-
-    /** Mapping from locations to the terms they represent. */
-    private final Map<Location,TermKey> termKeyMap = new HashMap<Location,TermKey>();
 
     /**
      * Returns the mapping from terms to locations for a given template.
@@ -229,7 +236,7 @@ public class TemplateBuilder {
             result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
             if (deriv.hasNested()) {
                 Procedure caller = (Procedure) deriv.getCall().getUnit();
-                Template callerTemplate = getTemplate(caller);
+                Template callerTemplate = caller.getTemplate();
                 SwitchStack nested = addSwitch(callerTemplate.getStart(), deriv.getNested());
                 result.addAll(nested);
             }
@@ -268,64 +275,45 @@ public class TemplateBuilder {
     /** Unexplored set of symbolic locations per template. */
     private final Map<Template,Deque<TermKey>> freshMap = new HashMap<Template,Deque<TermKey>>();
 
-    /** Returns the template being built for a given procedure. */
-    private Template getTemplate(Procedure proc) {
-        Template result = this.templateMap.get(proc);
-        if (result == null) {
-            this.templateMap.put(proc, result = new Template(proc));
-        }
-        return result;
-    }
-
-    /** Map from procedures to corresponding templates. */
-    private final Map<Procedure,Template> templateMap = new LinkedHashMap<Procedure,Template>();
-
     /** Clears the auxiliary data structures. */
     private void clearBuildData() {
         this.locMapMap.clear();
         this.switchMapMap.clear();
         this.freshMap.clear();
-        this.templateMap.clear();
         this.recordMap.clear();
     }
 
-    /**
-     * Computes and returns a normalised version of a given template.
-     * Normalisation implies minimisation w.r.t. bisimilarity.
+    /** Computes the quotient of a given template under bisimilarity,
+     * and adds the resulting location map to a given relocation.
      */
-    private Template normalise(Template orig) {
-        assert orig.getStart().getTransience() == 0;
-        Partition partition = computePartition(orig);
-        Map<Template,Template> result = computeQuotient(partition);
-        for (Template newTemplate : result.values()) {
-            newTemplate.initVars();
-        }
-        for (Map.Entry<Procedure,Template> e : this.templateMap.entrySet()) {
-            Template newTemplate = result.get(e.getValue());
-            e.setValue(newTemplate);
-        }
-        return result.get(orig);
-    }
-
-    /** Computes a location partition for a given template,
-     * as well as all templates in the template map. */
-    private Partition computePartition(Template template) {
-        for (Location loc : template.getLocations()) {
-            this.recordMap.put(loc, computeRecord(loc));
-        }
-        for (Template procTemplate : this.templateMap.values()) {
-            for (Location loc : procTemplate.getLocations()) {
-                this.recordMap.put(loc, computeRecord(loc));
-            }
-        }
-        Partition result = initPartition();
-        int cellCount = result.size();
+    private Template addQuotient(Relocation map, Template template) {
+        Template result = map.addTemplate(template);
+        // build the coarsest partition respecting the switch attempts
+        Partition part = initPartition(template);
+        int cellCount = part.size();
         int oldCellCount;
         do {
-            result = refinePartition(result);
+            part = refinePartition(part);
             oldCellCount = cellCount;
-            cellCount = result.size();
+            cellCount = part.size();
         } while (cellCount > oldCellCount);
+        // create map from original locations to their representatives
+        for (Cell cell : part) {
+            // representative location of the cell
+            Location repr;
+            Location image;
+            if (cell.contains(template.getStart())) {
+                repr = template.getStart();
+                image = result.getStart();
+            } else {
+                repr = cell.iterator().next();
+                image = result.addLocation(repr.getTransience());
+            }
+            image.setType(repr.getType());
+            for (Location loc : cell) {
+                map.put(loc, image);
+            }
+        }
         return result;
     }
 
@@ -334,14 +322,16 @@ public class TemplateBuilder {
      * with distinguished cells for the initial location and all locations
      * of a given transient depth.
      */
-    private Partition initPartition() {
+    private Partition initPartition(Template template) {
         Partition result = new Partition();
         Map<LocationKey,Cell> cellMap = new LinkedHashMap<LocationKey,Cell>();
-        for (Location loc : this.recordMap.keySet()) {
+        this.recordMap.clear();
+        for (Location loc : template.getLocations()) {
+            this.recordMap.put(loc, computeRecord(loc));
             LocationKey key = new LocationKey(loc);
             Cell cell = cellMap.get(key);
             if (cell == null) {
-                cellMap.put(key, cell = new Cell(loc.getTemplate()));
+                cellMap.put(key, cell = new Cell());
             }
             cell.add(loc);
         }
@@ -363,7 +353,7 @@ public class TemplateBuilder {
                 Record<Cell> rec = append(this.recordMap.get(loc), orig);
                 Cell locCell = split.get(rec);
                 if (locCell == null) {
-                    split.put(rec, locCell = new Cell(loc.getTemplate()));
+                    split.put(rec, locCell = new Cell());
                 }
                 locCell.add(loc);
             }
@@ -374,135 +364,44 @@ public class TemplateBuilder {
 
     /** Computes the record of the choice and call switches for a given location. */
     private Record<Location> computeRecord(Location loc) {
-        CallMap<Location> callMap = new CallMap<Location>();
+        CallList<Location> callList = new CallList<Location>();
         Location onSuccess = null;
         Location onFailure = null;
         if (loc.isTrial()) {
             SwitchAttempt attempt = loc.getAttempt();
             for (SwitchStack swit : attempt) {
                 CallStack call = swit.getCallStack();
-                Set<Stack<Location>> targets = callMap.get(call);
-                if (targets == null) {
-                    callMap.put(call, targets = new HashSet<Stack<Location>>());
-                }
-                Stack<Location> targetStack = new Stack<Location>();
+                Location onFinish = null;
+                Stack<Location> nested = new Stack<Location>();
                 for (Switch sub : swit) {
-                    targetStack.add(sub.onFinish());
+                    if (onFinish == null) {
+                        onFinish = sub.onFinish();
+                    } else {
+                        nested.add(sub.onFinish());
+                    }
                 }
-                targets.add(targetStack);
+                callList.add(call, onFinish, nested);
             }
             onSuccess = attempt.onSuccess();
             onFailure = attempt.onFailure();
         }
-        return new Record<Location>(onSuccess, onFailure, callMap, loc.getType());
+        return new Record<Location>(onSuccess, onFailure, callList, loc.getType());
     }
 
     /** Converts a record pointing to locations, to a record pointing to cells. */
     private Record<Cell> append(Record<Location> record, Partition part) {
         Cell success = part.getCell(record.getSuccess());
         Cell failure = part.getCell(record.getFailure());
-        CallMap<Cell> map = new CallMap<Cell>();
-        for (Map.Entry<CallStack,Set<Stack<Location>>> e : record.getCallMap().entrySet()) {
-            Set<Stack<Cell>> target = new HashSet<Stack<Cell>>();
-            for (Stack<Location> locStack : e.getValue()) {
-                Stack<Cell> cellStack = new Stack<Cell>();
-                for (Location loc : locStack) {
-                    cellStack.add(part.getCell(loc));
-                }
-                target.add(cellStack);
-            }
-            map.put(e.getKey(), target);
+        CallList<Cell> map = new CallList<Cell>();
+        for (Triple<CallStack,Location,Stack<Location>> call : record.getCallList()) {
+            map.add(call.one(), part.getCell(call.two()), call.three());
         }
         return new Record<Cell>(success, failure, map, record.getType());
-    }
-
-    /** Computes the quotient of a given template from a given partition. */
-    private Map<Template,Template> computeQuotient(Partition partition) {
-        Map<Template,Template> result = new HashMap<Template,Template>();
-        // set of representative source locations
-        Set<Location> reprSet = new HashSet<Location>();
-        // canonical location map
-        Map<Location,Location> locMap = new HashMap<Location,Location>();
-        for (Cell cell : partition) {
-            Template source = cell.getTemplate();
-            Template target = getTemplate(result, source);
-            // representative location of the cell
-            Location repr;
-            Location image;
-            if (cell.contains(source.getStart())) {
-                repr = source.getStart();
-                image = target.getStart();
-            } else {
-                repr = cell.iterator().next();
-                image = target.addLocation(repr.getTransience());
-            }
-            image.setType(repr.getType());
-            reprSet.add(repr);
-            for (Location loc : cell) {
-                locMap.put(loc, image);
-            }
-        }
-        // canonical switch map
-        Map<Switch,Switch> switchMap = new HashMap<Switch,Switch>();
-        // Add attempts to the result
-        for (Location repr : reprSet) {
-            if (!repr.isTrial()) {
-                continue;
-            }
-            SwitchAttempt reprAttempt = repr.getAttempt();
-            Location image = locMap.get(repr);
-            Location imageSucc = locMap.get(reprAttempt.onSuccess());
-            Location imageFail = locMap.get(reprAttempt.onFailure());
-            SwitchAttempt imageAttempt = new SwitchAttempt(image, imageSucc, imageFail);
-            for (SwitchStack reprStack : reprAttempt) {
-                SwitchStack imageStack = new SwitchStack();
-                for (Switch swit : reprStack) {
-                    Switch switImage = getSwitch(locMap, switchMap, swit);
-                    imageStack.add(switImage);
-                }
-                assert imageStack.getBottom().getSource() == image;
-                imageAttempt.add(imageStack);
-            }
-            image.setAttempt(imageAttempt);
-        }
-        return result;
     }
 
     /** Mapping from locations to their records, in terms of target locations. */
     private final Map<Location,Record<Location>> recordMap =
         new LinkedHashMap<Location,Record<Location>>();
-
-    /** Returns a canonical image for a given template. */
-    private Template getTemplate(Map<Template,Template> map, Template key) {
-        Template result = map.get(key);
-        if (result == null) {
-            result = createTemplate(key.getOwner(), key.getName());
-            map.put(key, result);
-        }
-        return result;
-    }
-
-    /** Callback factory method for a template. */
-    private Template createTemplate(Procedure owner, String name) {
-        if (owner != null) {
-            return new Template(owner);
-        } else {
-            return new Template(name);
-        }
-    }
-
-    /** Returns a canonical image for a given switch. */
-    private Switch getSwitch(Map<Location,Location> locMap, Map<Switch,Switch> switchMap, Switch key) {
-        Switch result = switchMap.get(key);
-        if (result == null) {
-            Location target = locMap.get(key.onFinish());
-            target.addVars(key.getCall().getOutVars().keySet());
-            Location source = locMap.get(key.getSource());
-            result = new Switch(source, key.getCall(), key.getTransience(), target);
-            switchMap.put(key, result);
-        }
-        return result;
-    }
 
     /** Returns the an instance of this class.
      * @param properties the property actions to be tested at each non-transient step
@@ -536,15 +435,7 @@ public class TemplateBuilder {
 
     /** Local type for a cell of a partition of locations. */
     private static class Cell extends TreeSet<Location> {
-        Cell(Template template) {
-            this.template = template;
-        }
-
-        Template getTemplate() {
-            return this.template;
-        }
-
-        private final Template template;
+        // empty
     }
 
     /** Local type for a partition of locations. */
@@ -572,8 +463,8 @@ public class TemplateBuilder {
      * of a given location.
      * @param <L> type of the targets
      */
-    private static class Record<L> extends Quad<L,L,CallMap<L>,Position.Type> {
-        Record(L success, L failure, CallMap<L> callMap, Position.Type type) {
+    private static class Record<L> extends Quad<L,L,CallList<L>,Position.Type> {
+        Record(L success, L failure, CallList<L> callMap, Position.Type type) {
             super(success, failure, callMap, type);
         }
 
@@ -585,7 +476,7 @@ public class TemplateBuilder {
             return two();
         }
 
-        CallMap<L> getCallMap() {
+        CallList<L> getCallList() {
             return three();
         }
 
@@ -594,8 +485,21 @@ public class TemplateBuilder {
         }
     }
 
-    /** Convenience type for the mapping of calls to sets of possible targets. */
-    private static class CallMap<L> extends LinkedHashMap<CallStack,Set<Stack<L>>> {
-        // empty
+    /** Convenience type for a call attempt element, for a given target location type. */
+    private static class CallRecord<L> extends Triple<CallStack,L,Stack<Location>> {
+        /** Constructs a record with the given parameters. */
+        public CallRecord(CallStack call, L onFinish, Stack<Location> nested) {
+            super(call, onFinish, nested);
+        }
+    }
+
+    /** Convenience type for the list of call attempts, for a given target location type. */
+    private static class CallList<L> extends ArrayList<CallRecord<L>> {
+        /** Adds a key-value-pair to the list, and returns the result. */
+        public CallRecord<L> add(CallStack call, L onFinish, Stack<Location> nested) {
+            CallRecord<L> result = new CallRecord<L>(call, onFinish, nested);
+            add(result);
+            return result;
+        }
     }
 }

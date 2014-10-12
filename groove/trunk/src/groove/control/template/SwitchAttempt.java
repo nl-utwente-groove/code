@@ -23,7 +23,7 @@ import groove.control.Attempt;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SwitchAttempt extends Attempt<Location,SwitchStack> {
+public class SwitchAttempt extends Attempt<Location,SwitchStack> implements Relocatable {
     /** Constructs a switch attempt for a given source location. */
     public SwitchAttempt(Location source, Location onSuccess, Location onFailure) {
         this.source = source;
@@ -39,4 +39,17 @@ public class SwitchAttempt extends Attempt<Location,SwitchStack> {
     }
 
     private final Location source;
+
+    @Override
+    public SwitchAttempt relocate(Relocation map) {
+        Location newSource = map.get(source());
+        Location newSuccess = map.get(onSuccess());
+        Location newFailure = map.get(onFailure());
+        SwitchAttempt result = new SwitchAttempt(newSource, newSuccess, newFailure);
+        for (int i = 0; i < size(); i++) {
+            SwitchStack newSwitch = get(i).relocate(map);
+            result.add(newSwitch);
+        }
+        return result;
+    }
 }

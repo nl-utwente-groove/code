@@ -30,7 +30,7 @@ import java.util.Stack;
  * @version $Revision $
  */
 public class SwitchStack extends Stack<Switch> implements Attempt.Stage<Location,SwitchStack>,
-Comparable<SwitchStack> {
+    Comparable<SwitchStack>, Relocatable {
     /** Constructs a copy of a given stack. */
     public SwitchStack(SwitchStack other) {
         addAll(other);
@@ -101,6 +101,16 @@ Comparable<SwitchStack> {
     /** Returns the recipe of which this is a step, if any. */
     public Recipe getRecipe() {
         return getCallStack().getRecipe();
+    }
+
+    @Override
+    public SwitchStack relocate(Relocation map) {
+        SwitchStack result = new SwitchStack();
+        for (int i = 0; i < size(); i++) {
+            Switch newSwitch = get(i).relocate(map);
+            result.add(newSwitch);
+        }
+        return result;
     }
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */

@@ -32,7 +32,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch implements Comparable<Switch> {
+public class Switch implements Comparable<Switch>, Relocatable {
     /**
      * Constructs a new switch.
      * @param source source location of the switch; non-{@code null}
@@ -171,6 +171,14 @@ public class Switch implements Comparable<Switch> {
             result.add(Pair.newPair(sig.get(i), bind));
         }
         return result;
+    }
+
+    @Override
+    public Switch relocate(Relocation map) {
+        Location newSource = map.get(getSource());
+        Location newFinish = map.get(onFinish());
+        newFinish.addVars(getCall().getOutVars().keySet());
+        return new Switch(newSource, getCall(), getTransience(), newFinish);
     }
 
     @Override
