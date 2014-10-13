@@ -175,11 +175,26 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     @Override
     public Switch relocate(Relocation map) {
+        Switch result = this.image;
+        if (map != this.map) {
+            this.map = map;
+            this.image = result = computeRelocated(map);
+        }
+        return result;
+    }
+
+    /** Computes the relocated switch under a given map. */
+    public Switch computeRelocated(Relocation map) {
         Location newSource = map.get(getSource());
         Location newFinish = map.get(onFinish());
         newFinish.addVars(getCall().getOutVars().keySet());
         return new Switch(newSource, getCall(), getTransience(), newFinish);
     }
+
+    /** The map under which {@link #image} has been computed */
+    private Relocation map;
+    /** The relocated image under {@link #map}, if any. */
+    private Switch image;
 
     @Override
     public int hashCode() {
