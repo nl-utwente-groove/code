@@ -140,7 +140,7 @@ public class Triple<T,U,V> implements Fixable {
      * {@link #two()} and {@link #three()} fields.
      */
     @Override
-    public int hashCode() {
+    final public int hashCode() {
         if (this.hashCode == 0) {
             int prime = 31;
             int result = this.one == null ? 0 : this.one.hashCode();
