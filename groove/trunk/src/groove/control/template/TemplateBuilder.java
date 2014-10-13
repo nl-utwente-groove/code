@@ -28,6 +28,7 @@ import groove.control.term.Term;
 import groove.grammar.Action;
 import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
+import groove.util.Pair;
 import groove.util.Quad;
 import groove.util.Triple;
 import groove.util.collect.NestedIterator;
@@ -43,7 +44,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 /**
  * Class for constructing control automata.
@@ -290,13 +290,9 @@ public class TemplateBuilder {
         Template result = map.addTemplate(template);
         // build the coarsest partition respecting the switch attempts
         Partition part = initPartition(template);
-        int cellCount = part.size();
-        int oldCellCount;
-        do {
-            refinePartition(part);
-            oldCellCount = cellCount;
-            cellCount = part.size();
-        } while (cellCount > oldCellCount);
+        while (!part.isSingular() && refinePartition(part)) {
+            // repeat
+        }
         // create map from original locations to their representatives
         for (Cell cell : part) {
             // representative location of the cell
@@ -348,7 +344,8 @@ public class TemplateBuilder {
      * which all locations have the same success and failure targets
      * as well as the same call targets, in terms of cells of the original partition.
      */
-    private void refinePartition(Partition orig) {
+    private boolean refinePartition(Partition orig) {
+        boolean result = false;
         for (Cell cell : orig.iterateMultiples()) {
             Map<Record<Cell>,Cell> split = new LinkedHashMap<Record<Cell>,Cell>();
             for (Location loc : cell) {
@@ -359,45 +356,37 @@ public class TemplateBuilder {
                 }
                 locCell.add(loc);
             }
+            result |= split.size() > 1;
             orig.addAll(split.values());
         }
+        return result;
     }
 
     /** Computes the record of the choice and call switches for a given location. */
     private Record<Location> computeRecord(Location loc) {
-        CallList<Location> callList = new CallList<Location>();
+        List<Location> targets = new ArrayList<Location>();
         Location onSuccess = null;
         Location onFailure = null;
         if (loc.isTrial()) {
             SwitchAttempt attempt = loc.getAttempt();
             for (SwitchStack swit : attempt) {
-                CallStack call = swit.getCallStack();
-                Location onFinish = null;
-                Stack<Location> nested = new Stack<Location>();
-                for (Switch sub : swit) {
-                    if (onFinish == null) {
-                        onFinish = sub.onFinish();
-                    } else {
-                        nested.add(sub.onFinish());
-                    }
-                }
-                callList.add(call, onFinish, nested);
+                targets.add(swit.getBottom().onFinish());
             }
             onSuccess = attempt.onSuccess();
             onFailure = attempt.onFailure();
         }
-        return new Record<Location>(onSuccess, onFailure, callList, loc.getType());
+        return new Record<Location>(onSuccess, onFailure, targets);
     }
 
     /** Converts a record pointing to locations, to a record pointing to cells. */
     private Record<Cell> append(Record<Location> record, Partition part) {
         Cell success = part.getCell(record.getSuccess());
         Cell failure = part.getCell(record.getFailure());
-        CallList<Cell> map = new CallList<Cell>();
-        for (CallRecord<Location> call : record.getCallList()) {
-            map.add(call.one(), part.getCell(call.two()), call.three());
+        List<Cell> targets = new ArrayList<Cell>();
+        for (Location targetLoc : record.getTargets()) {
+            targets.add(part.getCell(targetLoc));
         }
-        return new Record<Cell>(success, failure, map, record.getType());
+        return new Record<Cell>(success, failure, targets);
     }
 
     /** Mapping from locations to their records, in terms of target locations. */
@@ -419,24 +408,6 @@ public class TemplateBuilder {
         TermKey(Term one, Set<Term> two, CtrlVarSet three) {
             super(one, two, three);
         }
-
-        @Override
-        public int hashCode() {
-            if (this.hashcode == 0) {
-                this.hashcode = computeHashcode();
-            }
-            return this.hashcode;
-        }
-
-        private int computeHashcode() {
-            int result = super.hashCode();
-            if (result == 0) {
-                result++;
-            }
-            return result;
-        }
-
-        private int hashcode;
     }
 
     /**
@@ -444,10 +415,32 @@ public class TemplateBuilder {
      * The distinction is made on the basis of template, final status,
      * transient depth and sets of control variables.
      */
-    private static class LocationKey extends Quad<Template,Position.Type,Integer,CtrlVarSet> {
+    private static class LocationKey extends Quad<Position.Type,AttemptKey,Integer,CtrlVarSet> {
         LocationKey(Location loc) {
-            super(loc.getTemplate(), loc.getType(), loc.getTransience(), new CtrlVarSet(
-                loc.getVars()));
+            super(loc.getType(), loc.isTrial() ? new AttemptKey(loc.getAttempt()) : null,
+                loc.getTransience(), new CtrlVarSet(loc.getVars()));
+        }
+    }
+
+    /**
+     * Key for attempts in the initial partition.
+     * The distinction is made on the basis of the call stacks and nested locations
+     * of the switch stacks in the attempt.
+     */
+    private static class AttemptKey extends ArrayList<Pair<CallStack,List<Location>>> {
+        AttemptKey(SwitchAttempt attempt) {
+            super(attempt.size());
+            for (SwitchStack sw : attempt) {
+                add(Pair.newPair(sw.getCallStack(), getNested(sw)));
+            }
+        }
+
+        private List<Location> getNested(SwitchStack sw) {
+            List<Location> result = new ArrayList<Location>(sw.size() - 1);
+            for (int i = 1; i < sw.size(); i++) {
+                result.add(sw.get(i).onFinish());
+            }
+            return result;
         }
     }
 
@@ -485,9 +478,9 @@ public class TemplateBuilder {
                 this.multiples.iterator());
         }
 
-        /** Returns the total number of cells in this partition. */
-        int size() {
-            return this.singles.size() + this.multiples.size();
+        /** Indicates that there are only singular cells. */
+        boolean isSingular() {
+            return this.multiples.isEmpty();
         }
 
         /** List of single-element cells. */
@@ -515,9 +508,9 @@ public class TemplateBuilder {
      * of a given location.
      * @param <L> type of the targets
      */
-    private static class Record<L> extends Quad<L,L,CallList<L>,Position.Type> {
-        Record(L success, L failure, CallList<L> callMap, Position.Type type) {
-            super(success, failure, callMap, type);
+    private static class Record<L> extends Triple<L,L,List<L>> {
+        Record(L success, L failure, List<L> targets) {
+            super(success, failure, targets);
         }
 
         L getSuccess() {
@@ -528,48 +521,8 @@ public class TemplateBuilder {
             return two();
         }
 
-        CallList<L> getCallList() {
+        List<L> getTargets() {
             return three();
-        }
-
-        Type getType() {
-            return four();
-        }
-    }
-
-    /** Convenience type for a call attempt element, for a given target location type. */
-    private static class CallRecord<L> extends Triple<CallStack,L,Stack<Location>> {
-        /** Constructs a record with the given parameters. */
-        public CallRecord(CallStack call, L onFinish, Stack<Location> nested) {
-            super(call, onFinish, nested);
-        }
-
-        @Override
-        public int hashCode() {
-            if (this.hashcode == 0) {
-                this.hashcode = computeHashcode();
-            }
-            return this.hashcode;
-        }
-
-        private int computeHashcode() {
-            int result = super.hashCode();
-            if (result == 0) {
-                result++;
-            }
-            return result;
-        }
-
-        private int hashcode;
-    }
-
-    /** Convenience type for the list of call attempts, for a given target location type. */
-    private static class CallList<L> extends ArrayList<CallRecord<L>> {
-        /** Adds a key-value-pair to the list, and returns the result. */
-        public CallRecord<L> add(CallStack call, L onFinish, Stack<Location> nested) {
-            CallRecord<L> result = new CallRecord<L>(call, onFinish, nested);
-            add(result);
-            return result;
         }
     }
 }
