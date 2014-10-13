@@ -221,13 +221,23 @@ abstract public class Term implements Position<Term,Derivation> {
     abstract protected boolean isAtomic();
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
+        if (this.hashCode == 0) {
+            this.hashCode = computeHashCode();
+        }
+        return this.hashCode;
+    }
+
+    /** Callback mathod to store the hash code. */
+    protected int computeHashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(this.args);
         result = prime * result + this.op.hashCode();
-        return result;
+        return result == 0 ? 1 : result;
     }
+
+    private int hashCode;
 
     @Override
     public boolean equals(Object obj) {
