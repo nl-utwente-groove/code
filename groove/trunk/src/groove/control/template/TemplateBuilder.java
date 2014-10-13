@@ -30,11 +30,13 @@ import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
 import groove.util.Quad;
 import groove.util.Triple;
+import groove.util.collect.NestedIterator;
 
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -42,8 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Class for constructing control automata.
@@ -293,7 +293,7 @@ public class TemplateBuilder {
         int cellCount = part.size();
         int oldCellCount;
         do {
-            part = refinePartition(part);
+            refinePartition(part);
             oldCellCount = cellCount;
             cellCount = part.size();
         } while (cellCount > oldCellCount);
@@ -323,11 +323,14 @@ public class TemplateBuilder {
      * of a given transient depth.
      */
     private Partition initPartition(Template template) {
-        Partition result = new Partition();
+        Partition result = new Partition(template);
         Map<LocationKey,Cell> cellMap = new LinkedHashMap<LocationKey,Cell>();
         this.recordMap.clear();
         for (Location loc : template.getLocations()) {
-            this.recordMap.put(loc, computeRecord(loc));
+            for (int i = this.recordMap.size(); i <= loc.getNumber(); i++) {
+                this.recordMap.add(null);
+            }
+            this.recordMap.set(loc.getNumber(), computeRecord(loc));
             LocationKey key = new LocationKey(loc);
             Cell cell = cellMap.get(key);
             if (cell == null) {
@@ -345,21 +348,19 @@ public class TemplateBuilder {
      * which all locations have the same success and failure targets
      * as well as the same call targets, in terms of cells of the original partition.
      */
-    private Partition refinePartition(Partition orig) {
-        Partition result = new Partition();
-        for (Cell cell : orig) {
+    private void refinePartition(Partition orig) {
+        for (Cell cell : orig.iterateMultiples()) {
             Map<Record<Cell>,Cell> split = new LinkedHashMap<Record<Cell>,Cell>();
             for (Location loc : cell) {
-                Record<Cell> rec = append(this.recordMap.get(loc), orig);
+                Record<Cell> rec = append(this.recordMap.get(loc.getNumber()), orig);
                 Cell locCell = split.get(rec);
                 if (locCell == null) {
                     split.put(rec, locCell = new Cell());
                 }
                 locCell.add(loc);
             }
-            result.addAll(split.values());
+            orig.addAll(split.values());
         }
-        return result;
     }
 
     /** Computes the record of the choice and call switches for a given location. */
@@ -393,15 +394,14 @@ public class TemplateBuilder {
         Cell success = part.getCell(record.getSuccess());
         Cell failure = part.getCell(record.getFailure());
         CallList<Cell> map = new CallList<Cell>();
-        for (Triple<CallStack,Location,Stack<Location>> call : record.getCallList()) {
+        for (CallRecord<Location> call : record.getCallList()) {
             map.add(call.one(), part.getCell(call.two()), call.three());
         }
         return new Record<Cell>(success, failure, map, record.getType());
     }
 
     /** Mapping from locations to their records, in terms of target locations. */
-    private final Map<Location,Record<Location>> recordMap =
-        new LinkedHashMap<Location,Record<Location>>();
+    private final List<Record<Location>> recordMap = new ArrayList<Record<Location>>();
 
     /** Returns the an instance of this class.
      * @param properties the property actions to be tested at each non-transient step
@@ -419,6 +419,24 @@ public class TemplateBuilder {
         TermKey(Term one, Set<Term> two, CtrlVarSet three) {
             super(one, two, three);
         }
+
+        @Override
+        public int hashCode() {
+            if (this.hashcode == 0) {
+                this.hashcode = computeHashcode();
+            }
+            return this.hashcode;
+        }
+
+        private int computeHashcode() {
+            int result = super.hashCode();
+            if (result == 0) {
+                result++;
+            }
+            return result;
+        }
+
+        private int hashcode;
     }
 
     /**
@@ -434,28 +452,62 @@ public class TemplateBuilder {
     }
 
     /** Local type for a cell of a partition of locations. */
-    private static class Cell extends TreeSet<Location> {
+    private static class Cell extends ArrayList<Location> {
         // empty
     }
 
     /** Local type for a partition of locations. */
-    private static class Partition extends LinkedHashSet<Cell> {
-        @Override
-        public boolean add(Cell cell) {
-            boolean result = super.add(cell);
-            if (result) {
-                for (Location loc : cell) {
-                    this.cellMap.put(loc, cell);
-                }
+    private static class Partition implements Iterable<Cell> {
+        Partition(Template template) {
+            this.locCells = new Cell[template.size()];
+        }
+
+        void addAll(Iterable<Cell> cells) {
+            for (Cell cell : cells) {
+                add(cell);
             }
+        }
+
+        void add(Cell cell) {
+            if (cell.size() == 1) {
+                this.singles.add(cell);
+            } else {
+                this.multiples.add(cell);
+            }
+            for (Location loc : cell) {
+                this.locCells[loc.getNumber()] = cell;
+            }
+        }
+
+        @Override
+        public Iterator<Cell> iterator() {
+            return new NestedIterator<TemplateBuilder.Cell>(this.singles.iterator(),
+                this.multiples.iterator());
+        }
+
+        /** Returns the total number of cells in this partition. */
+        int size() {
+            return this.singles.size() + this.multiples.size();
+        }
+
+        /** List of single-element cells. */
+        private final List<Cell> singles = new ArrayList<Cell>();
+
+        /** Returns the current list of multiples, and reinitialises the set. */
+        List<Cell> iterateMultiples() {
+            List<Cell> result = this.multiples;
+            this.multiples = new ArrayList<Cell>(result.size());
             return result;
         }
 
+        /** List of multiple-element cells. */
+        private List<Cell> multiples = new LinkedList<Cell>();
+
         Cell getCell(Location loc) {
-            return loc == null ? null : this.cellMap.get(loc);
+            return loc == null ? null : this.locCells[loc.getNumber()];
         }
 
-        private final Map<Location,Cell> cellMap = new TreeMap<Location,TemplateBuilder.Cell>();
+        private final Cell[] locCells;
     }
 
     /**
@@ -491,6 +543,24 @@ public class TemplateBuilder {
         public CallRecord(CallStack call, L onFinish, Stack<Location> nested) {
             super(call, onFinish, nested);
         }
+
+        @Override
+        public int hashCode() {
+            if (this.hashcode == 0) {
+                this.hashcode = computeHashcode();
+            }
+            return this.hashcode;
+        }
+
+        private int computeHashcode() {
+            int result = super.hashCode();
+            if (result == 0) {
+                result++;
+            }
+            return result;
+        }
+
+        private int hashcode;
     }
 
     /** Convenience type for the list of call attempts, for a given target location type. */

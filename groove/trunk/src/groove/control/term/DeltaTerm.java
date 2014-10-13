@@ -55,14 +55,14 @@ public class DeltaTerm extends Term {
     }
 
     @Override
-    public int hashCode() {
+    protected int computeHashCode() {
         int prime = 31;
-        return prime * super.hashCode() + getTransience();
+        return prime * super.computeHashCode() + getTransience();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj) && ((DeltaTerm) obj).depth == this.depth;
+        return super.equals(obj) && ((DeltaTerm) obj).getTransience() == getTransience();
     }
 
     @Override

@@ -115,6 +115,11 @@ public class Template {
         return result;
     }
 
+    /** Returns the size of this template, as number of locations. */
+    public int size() {
+        return this.maxNodeNr + 1;
+    }
+
     private int maxNodeNr;
 
     /** Returns the set of locations of this template. */

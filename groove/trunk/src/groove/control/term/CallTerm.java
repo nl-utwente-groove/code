@@ -72,9 +72,9 @@ public class CallTerm extends Term {
     }
 
     @Override
-    public int hashCode() {
+    protected int computeHashCode() {
         int prime = 31;
-        return prime * super.hashCode() + this.call.hashCode();
+        return prime * super.computeHashCode() + this.call.hashCode();
     }
 
     @Override
