@@ -446,7 +446,16 @@ public class TemplateBuilder {
 
     /** Local type for a cell of a partition of locations. */
     private static class Cell extends ArrayList<Location> {
-        // empty
+        @Override
+        public boolean equals(Object o) {
+            return this == o;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
     }
 
     /** Local type for a partition of locations. */
