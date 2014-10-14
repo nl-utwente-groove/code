@@ -17,16 +17,17 @@
 package groove.control.template;
 
 import groove.control.CtrlVar;
-import groove.control.CtrlVarSet;
 import groove.control.Position;
 import groove.grammar.CheckPolicy;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Location in a control template.
@@ -162,12 +163,22 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     @Override
     public List<CtrlVar> getVars() {
-        if (this.vars == null) {
+        if (!isDead() && this.vars == null) {
             // this may only happen before the variables have been
             // properly initialised; use the empty list as initial value.
-            this.vars = Collections.emptyList();
+            this.vars = new ArrayList<CtrlVar>(getVarSet());
+            Collections.sort(this.vars);
         }
         return this.vars;
+    }
+
+    /** Returns the unordered set of control variables. */
+    Set<CtrlVar> getVarSet() {
+        if (!isDead() && this.varSet == null) {
+            assert this.vars == null;
+            this.varSet = new HashSet<CtrlVar>();
+        }
+        return this.varSet;
     }
 
     /**
@@ -176,29 +187,17 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      */
     boolean addVars(Collection<CtrlVar> variables) {
         boolean result = false;
-        if (!isDead()) {
-            CtrlVarSet newVars = new CtrlVarSet(variables);
-            if (this.vars == null) {
-                result = true;
-            } else {
-                result = newVars.addAll(this.vars) || newVars.size() > this.vars.size();
-            }
+        if (!isDead() && variables != null && !variables.isEmpty()) {
+            result = getVarSet().addAll(variables);
             if (result) {
-                setVars(newVars);
+                this.vars = null;
             }
         }
         return result;
     }
 
-    /**
-     * Callback method from {@link Template#initVars()} to set variables for this location.
-     */
-    void setVars(Collection<CtrlVar> variables) {
-        if (!isDead()) {
-            this.vars = new ArrayList<CtrlVar>(variables);
-        }
-    }
-
+    /** Unordered set of control variables, used during variable initialisation. */
+    private Set<CtrlVar> varSet;
     /** The collection of variables of this control location. */
     private List<CtrlVar> vars;
 

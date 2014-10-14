@@ -18,7 +18,7 @@ package groove.control.template;
 
 import groove.control.Call;
 import groove.control.CallStack;
-import groove.control.CtrlVarSet;
+import groove.control.CtrlVar;
 import groove.control.Position;
 import groove.control.Position.Type;
 import groove.control.Procedure;
@@ -30,10 +30,12 @@ import groove.grammar.CheckPolicy;
 import groove.grammar.Rule;
 import groove.util.Pair;
 import groove.util.Quad;
+import groove.util.ThreadPool;
 import groove.util.Triple;
 import groove.util.collect.NestedIterator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +45,9 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Class for constructing control automata.
@@ -75,14 +79,29 @@ public class TemplateBuilder {
         for (Template template : templates) {
             build(template);
         }
+        ThreadPool threads = ThreadPool.instance();
+        final Queue<Triple<Template,Template,Map<Location,Location>>> normQ =
+            new ConcurrentLinkedQueue<Triple<Template,Template,Map<Location,Location>>>();
+        for (final Template template : templates) {
+            threads.start(new Runnable() {
+                @Override
+                public void run() {
+                    normQ.add(computeQuotient(template));
+                }
+            });
+        }
+        threads.sync();
         Relocation map = new Relocation();
-        for (Template template : templates) {
-            Template newTemplate = addQuotient(map, template);
-            if (newTemplate.hasOwner()) {
-                newTemplate.getOwner().setTemplate(newTemplate);
+        for (Triple<Template,Template,Map<Location,Location>> norm : normQ) {
+            Template key = norm.one();
+            Template value = norm.two();
+            if (value.hasOwner()) {
+                value.getOwner().setTemplate(value);
             } else {
-                result = newTemplate;
+                result = value;
             }
+            map.addTemplate(key, value);
+            map.putAll(norm.three());
         }
         map.build();
         clearBuildData();
@@ -96,7 +115,7 @@ public class TemplateBuilder {
         assert init.getTransience() == 0 : "Can't build template from transient term";
         Template result = name == null ? new Template(proc) : new Template(name);
         // set the initial location
-        TermKey initKey = new TermKey(init, new HashSet<Term>(), new CtrlVarSet());
+        TermKey initKey = new TermKey(init, new HashSet<Term>(), Collections.<CtrlVar>emptySet());
         Location start = result.getStart();
         getLocMap(result).put(initKey, start);
         getFresh(result).add(initKey);
@@ -177,7 +196,7 @@ public class TemplateBuilder {
      */
     private Location addLocation(Template template, Term term, TermKey predKey, Call incoming) {
         Map<TermKey,Location> locMap = getLocMap(template);
-        CtrlVarSet vars = new CtrlVarSet();
+        Set<CtrlVar> vars = new HashSet<CtrlVar>();
         Set<Term> predTerms = new HashSet<Term>();
         if (incoming == null) {
             // this is due to a verdict transition
@@ -197,7 +216,7 @@ public class TemplateBuilder {
             getFresh(template).add(key);
             result = template.addLocation(term.getTransience());
             locMap.put(key, result);
-            result.setVars(vars);
+            result.addVars(vars);
         }
         return result;
     }
@@ -280,20 +299,24 @@ public class TemplateBuilder {
         this.locMapMap.clear();
         this.switchMapMap.clear();
         this.freshMap.clear();
-        this.recordMap.clear();
     }
 
     /** Computes the quotient of a given template under bisimilarity,
-     * and adds the resulting location map to a given relocation.
+     * and returns a triple consisting of the original template, the
+     * new template, and a mapping from original locations to their
+     * images in the new template.
      */
-    private Template addQuotient(Relocation map, Template template) {
-        Template result = map.addTemplate(template);
+    private Triple<Template,Template,Map<Location,Location>> computeQuotient(Template template) {
+        Template result = template.newInstance();
+        /** Mapping from locations to their records, in terms of target locations. */
+        List<Record<Location>> locRecords = new ArrayList<Record<Location>>();
         // build the coarsest partition respecting the switch attempts
-        Partition part = initPartition(template);
-        while (!part.isSingular() && refinePartition(part)) {
+        Partition part = initPartition(template, locRecords);
+        while (!part.isSingular() && refinePartition(part, locRecords)) {
             // repeat
         }
         // create map from original locations to their representatives
+        Map<Location,Location> locMap = new HashMap<Location,Location>();
         for (Cell cell : part) {
             // representative location of the cell
             Location repr;
@@ -307,26 +330,25 @@ public class TemplateBuilder {
             }
             image.setType(repr.getType());
             for (Location loc : cell) {
-                map.put(loc, image);
+                locMap.put(loc, image);
             }
         }
-        return result;
+        return Triple.newTriple(template, result, locMap);
     }
 
     /**
-     * Creates an initial partition for the locations in {@link #recordMap}
+     * Creates an initial partition for the locations in a given record list
      * with distinguished cells for the initial location and all locations
      * of a given transient depth.
      */
-    private Partition initPartition(Template template) {
+    private Partition initPartition(Template template, List<Record<Location>> locRecords) {
         Partition result = new Partition(template);
         Map<LocationKey,Cell> cellMap = new LinkedHashMap<LocationKey,Cell>();
-        this.recordMap.clear();
         for (Location loc : template.getLocations()) {
-            for (int i = this.recordMap.size(); i <= loc.getNumber(); i++) {
-                this.recordMap.add(null);
+            for (int i = locRecords.size(); i <= loc.getNumber(); i++) {
+                locRecords.add(null);
             }
-            this.recordMap.set(loc.getNumber(), computeRecord(loc));
+            locRecords.set(loc.getNumber(), computeRecord(loc));
             LocationKey key = new LocationKey(loc);
             Cell cell = cellMap.get(key);
             if (cell == null) {
@@ -344,12 +366,12 @@ public class TemplateBuilder {
      * which all locations have the same success and failure targets
      * as well as the same call targets, in terms of cells of the original partition.
      */
-    private boolean refinePartition(Partition orig) {
+    private boolean refinePartition(Partition orig, List<Record<Location>> locRecords) {
         boolean result = false;
         for (Cell cell : orig.iterateMultiples()) {
             Map<Record<Cell>,Cell> split = new LinkedHashMap<Record<Cell>,Cell>();
             for (Location loc : cell) {
-                Record<Cell> rec = append(this.recordMap.get(loc.getNumber()), orig);
+                Record<Cell> rec = append(locRecords.get(loc.getNumber()), orig);
                 Cell locCell = split.get(rec);
                 if (locCell == null) {
                     split.put(rec, locCell = new Cell());
@@ -389,9 +411,6 @@ public class TemplateBuilder {
         return new Record<Cell>(success, failure, targets);
     }
 
-    /** Mapping from locations to their records, in terms of target locations. */
-    private final List<Record<Location>> recordMap = new ArrayList<Record<Location>>();
-
     /** Returns the an instance of this class.
      * @param properties the property actions to be tested at each non-transient step
      */
@@ -404,8 +423,8 @@ public class TemplateBuilder {
      * The distinction is made on the basis of underlying term,
      * set of verdict predecessor terms, and set of control variables.
      */
-    private static class TermKey extends Triple<Term,Set<Term>,CtrlVarSet> {
-        TermKey(Term one, Set<Term> two, CtrlVarSet three) {
+    private static class TermKey extends Triple<Term,Set<Term>,Set<CtrlVar>> {
+        TermKey(Term one, Set<Term> two, Set<CtrlVar> three) {
             super(one, two, three);
         }
     }
@@ -415,10 +434,10 @@ public class TemplateBuilder {
      * The distinction is made on the basis of template, final status,
      * transient depth and sets of control variables.
      */
-    private static class LocationKey extends Quad<Position.Type,AttemptKey,Integer,CtrlVarSet> {
+    private static class LocationKey extends Quad<Position.Type,AttemptKey,Integer,List<CtrlVar>> {
         LocationKey(Location loc) {
             super(loc.getType(), loc.isTrial() ? new AttemptKey(loc.getAttempt()) : null,
-                loc.getTransience(), new CtrlVarSet(loc.getVars()));
+                loc.getTransience(), loc.getVars());
         }
     }
 

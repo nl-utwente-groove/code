@@ -174,7 +174,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
     }
 
     @Override
-    public Switch relocate(Relocation map) {
+    synchronized public Switch relocate(Relocation map) {
         Switch result = this.image;
         if (map != this.map) {
             this.map = map;
@@ -184,7 +184,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
     }
 
     /** Computes the relocated switch under a given map. */
-    public Switch computeRelocated(Relocation map) {
+    private Switch computeRelocated(Relocation map) {
         Location newSource = map.get(getSource());
         Location newFinish = map.get(onFinish());
         newFinish.addVars(getCall().getOutVars().keySet());
