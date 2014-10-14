@@ -17,7 +17,6 @@
 package groove.control.template;
 
 import groove.control.CtrlVar;
-import groove.control.CtrlVarSet;
 import groove.control.Function;
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
@@ -30,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -167,49 +167,40 @@ public class Template {
      * of the enclosing procedure, if any.
      */
     void initVars() {
+        // mapping from locations to be processed to the variable sets to be added
+        Map<Location,Set<CtrlVar>> changeMap = new LinkedHashMap<Location,Set<CtrlVar>>();
         // compute the map of incoming transitions
         for (Location loc : getLocations()) {
-            Set<CtrlVar> vars;
             if (loc.isFinal() && hasOwner()) {
-                vars = getOwner().getOutPars().keySet();
+                loc.addVars(getOwner().getOutPars().keySet());
             } else if (loc.isTrial()) {
-                vars = new HashSet<CtrlVar>();
                 for (SwitchStack s : loc.getAttempt()) {
-                    vars.addAll(s.getBottomCall().getInVars().keySet());
+                    loc.addVars(s.getBottomCall().getInVars().keySet());
                 }
-            } else {
-                vars = Collections.emptySet();
             }
-            loc.addVars(vars);
+            Set<CtrlVar> varSet = loc.getVarSet();
+            if (varSet != null && !varSet.isEmpty()) {
+                propagate(changeMap, loc, varSet);
+            }
         }
         // propagate all variables backward to the location where they are initialised
-        // mapping from locations to their predecessors
-        Map<Location,Set<Location>> inMap = getPredMap();
-        // queue of locations to be processed
-        Set<Location> backward = new LinkedHashSet<Location>(getLocations());
-        while (!backward.isEmpty()) {
-            Iterator<Location> iter = backward.iterator();
-            Location loc = iter.next();
+        while (!changeMap.isEmpty()) {
+            Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet().iterator();
+            Map.Entry<Location,Set<CtrlVar>> e = iter.next();
             iter.remove();
+            Location loc = e.getKey();
             if (!loc.isTrial()) {
                 continue;
             }
-            SwitchAttempt attempt = loc.getAttempt();
-            CtrlVarSet sourceVars = new CtrlVarSet(loc.getVars());
-            boolean modified = sourceVars.addAll(attempt.onSuccess().getVars());
-            modified |= sourceVars.addAll(attempt.onFailure().getVars());
-            for (SwitchStack swit : attempt) {
-                CtrlVarSet targetVars = new CtrlVarSet(swit.onFinish().getVars());
-                targetVars.removeAll(swit.getBottomCall().getOutVars().keySet());
-                modified |= sourceVars.addAll(targetVars);
-            }
-            if (modified) {
-                loc.setVars(sourceVars);
-                backward.addAll(inMap.get(loc));
+            Set<CtrlVar> newVars = e.getValue();
+            newVars.removeAll(loc.getVars());
+            if (!newVars.isEmpty()) {
+                loc.addVars(newVars);
+                propagate(changeMap, loc, newVars);
             }
         }
+        // propagate variables forward along verdict transitions
         Set<Location> forward = new LinkedHashSet<Location>(getLocations());
-        // propagate all variables forward along verdict transitions
         while (!forward.isEmpty()) {
             Iterator<Location> iter = forward.iterator();
             Location loc = iter.next();
@@ -219,39 +210,60 @@ public class Template {
             }
             SwitchAttempt attempt = loc.getAttempt();
             Location onFailure = attempt.onFailure();
-            if (onFailure.addVars(loc.getVars())) {
+            if (onFailure.addVars(loc.getVarSet())) {
                 forward.add(onFailure);
             }
             Location onSuccess = attempt.onSuccess();
-            if (onSuccess.addVars(loc.getVars())) {
+            if (onSuccess.addVars(loc.getVarSet())) {
                 forward.add(onSuccess);
             }
         }
     }
 
-    /** Returns a mapping from locations to sets of predecessors. */
-    public Map<Location,Set<Location>> getPredMap() {
-        if (this.predMap == null) {
-            this.predMap = computePredMap();
+    /** Propagate a change, consisting of a set of new variables added to a given
+     * location, backward to all predecessors.
+     */
+    private void propagate(Map<Location,Set<CtrlVar>> changeMap, Location loc, Set<CtrlVar> newVars) {
+        Map<Location,Set<CtrlVar>> predRecord = getBackMap().get(loc);
+        if (predRecord == null) {
+            return;
         }
-        return this.predMap;
+        for (Map.Entry<Location,Set<CtrlVar>> link : predRecord.entrySet()) {
+            Location pred = link.getKey();
+            Set<CtrlVar> newPredVars = changeMap.get(pred);
+            if (newPredVars == null) {
+                changeMap.put(pred, newPredVars = new HashSet<CtrlVar>());
+            }
+            Set<CtrlVar> outVars = link.getValue();
+            if (!outVars.isEmpty()) {
+                newVars = new HashSet<CtrlVar>(newVars);
+                newVars.removeAll(outVars);
+            }
+            newPredVars.addAll(newVars);
+        }
     }
 
-    private Map<Location,Set<Location>> predMap;
-
-    /** Computes a mapping from locations to sets of incoming edges. */
-    private Map<Location,Set<Location>> computePredMap() {
-        Map<Location,Set<Location>> result = new HashMap<Location,Set<Location>>();
-        for (Location loc : getLocations()) {
-            result.put(loc, new HashSet<Location>());
+    /** Returns the backward map of this template. */
+    private BackMap getBackMap() {
+        if (this.backMap == null) {
+            this.backMap = computeBackMap();
         }
-        for (Location state : getLocations()) {
-            if (state.isTrial()) {
-                SwitchAttempt attempt = state.getAttempt();
-                result.get(attempt.onSuccess()).add(state);
-                result.get(attempt.onFailure()).add(state);
-                for (SwitchStack swit : state.getAttempt()) {
-                    result.get(swit.onFinish()).add(state);
+        return this.backMap;
+    }
+
+    private BackMap backMap;
+
+    /** Computes the backward map of this template. */
+    private BackMap computeBackMap() {
+        BackMap result = new BackMap();
+        for (Location loc : getLocations()) {
+            if (loc.isTrial()) {
+                SwitchAttempt attempt = loc.getAttempt();
+                result.addBackLink(loc, attempt.onSuccess(), EMPTY_VAR_SET);
+                result.addBackLink(loc, attempt.onFailure(), EMPTY_VAR_SET);
+                for (SwitchStack swit : attempt) {
+                    result.addBackLink(loc, swit.onFinish(),
+                        swit.getBottomCall().getOutVars().keySet());
                 }
             }
         }
@@ -322,5 +334,39 @@ public class Template {
      */
     public ControlGraph toGraph(boolean full) {
         return ControlGraph.newGraph(this, full);
+    }
+
+    /** Constant, unmodifiable empty set of control variables. */
+    private static final Set<CtrlVar> EMPTY_VAR_SET = Collections.emptySet();
+
+    /** Mapping from precedessors (of a given target location) to
+     * the sets of output values assigned along all links from that predecessor
+     * to the given target location.
+     */
+    private static class BackRecord extends HashMap<Location,Set<CtrlVar>> {
+        // empty
+    }
+
+    /** Mapping from locations to their backward records.
+     */
+    private static class BackMap extends HashMap<Location,BackRecord> {
+        /**
+         * Adds a given link (from a source to a target location,
+         * initialising a given set of variables)
+         * to the backward map under construction.
+         */
+        private void addBackLink(Location source, Location target, Set<CtrlVar> outVars) {
+            BackRecord targetRecord = get(target);
+            if (targetRecord == null) {
+                put(target, targetRecord = new BackRecord());
+            }
+            assert targetRecord != null;
+            Set<CtrlVar> linkVars = targetRecord.get(source);
+            if (linkVars == null) {
+                targetRecord.put(source, new HashSet<CtrlVar>(outVars));
+            } else {
+                linkVars.retainAll(outVars);
+            }
+        }
     }
 }

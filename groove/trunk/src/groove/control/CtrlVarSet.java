@@ -16,22 +16,67 @@
  */
 package groove.control;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.TreeSet;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Convenience type for sorted sets of control variables.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlVarSet extends TreeSet<CtrlVar> {
-    /** Creates a fresh empty set. */
+public class CtrlVarSet {
+    /** Constructs an initially empty variable set. */
     public CtrlVarSet() {
-        super();
+        this.modified = new HashSet<CtrlVar>();
     }
 
-    /** Copies a given set of variables set. */
-    public CtrlVarSet(Collection<? extends CtrlVar> s) {
-        super(s);
+    /** Creates a collection on the basis of a given sorted list. */
+    public CtrlVarSet(List<CtrlVar> vars) {
+        this.init = vars;
     }
+
+    /** Returns the ordered list of all variables. */
+    public List<CtrlVar> getAll() {
+        List<CtrlVar> result = this.init;
+        if (result == null) {
+            result = new ArrayList<CtrlVar>(this.modified);
+            Collections.sort(result);
+        }
+        return result;
+    }
+
+    /** Adds a set of variables to this set. */
+    public boolean addAll(Collection<CtrlVar> vars) {
+        if (this.modified == null && !vars.isEmpty()) {
+            this.modified = new HashSet<CtrlVar>(this.init);
+        }
+        boolean changed = !vars.isEmpty() && this.modified.addAll(vars);
+        if (changed) {
+            this.init = null;
+        }
+        return changed;
+    }
+
+    /** Removes a set of variables from this set. */
+    public boolean removeAll(Collection<CtrlVar> vars) {
+        if (this.modified == null && !vars.isEmpty()) {
+            this.modified = new HashSet<CtrlVar>(this.init);
+        }
+        boolean changed = !vars.isEmpty() && this.modified.removeAll(vars);
+        if (changed) {
+            this.init = null;
+        }
+        return changed;
+    }
+
+    /**
+     * The list with which this set was initialised;
+     * as long as no variables are added or removed, this list is retained.
+     */
+    private List<CtrlVar> init;
+    /** A clone of #init, used to calculate a modified set. */
+    private HashSet<CtrlVar> modified;
 }

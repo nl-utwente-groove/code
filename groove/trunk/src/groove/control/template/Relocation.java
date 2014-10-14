@@ -16,6 +16,8 @@
  */
 package groove.control.template;
 
+import groove.util.ThreadPool;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,13 +27,10 @@ import java.util.Map;
  * @version $Revision $
  */
 public class Relocation extends HashMap<Location,Location> {
-    /** Adds a template to the map of relocated templates,
-     * and returns a fresh template that will eventually be the relocated copy.
+    /** Adds a template to the map of relocated templates.
      */
-    public Template addTemplate(Template key) {
-        Template result = key.newInstance();
+    public void addTemplate(Template key, Template result) {
         this.templates.put(key, result);
-        return result;
     }
 
     /** Tests if a given template is in the set of relocated templates. */
@@ -46,14 +45,23 @@ public class Relocation extends HashMap<Location,Location> {
      * setting the attempts (relocated using this map).
      */
     public void build() {
-        for (Map.Entry<Location,Location> e : entrySet()) {
-            Location target = e.getValue();
-            if (target.isTrial()) {
-                e.getValue().setAttempt(e.getKey().getAttempt().relocate(this));
-            }
+        ThreadPool threads = ThreadPool.instance();
+        for (Map.Entry<Template,Template> e : this.templates.entrySet()) {
+            final Template source = e.getKey();
+            final Template target = e.getValue();
+            threads.start(new Runnable() {
+                @Override
+                public void run() {
+                    for (Location sourceLoc : source.getLocations()) {
+                        if (sourceLoc.isTrial()) {
+                            Location targetLoc = get(sourceLoc);
+                            targetLoc.setAttempt(sourceLoc.getAttempt().relocate(Relocation.this));
+                        }
+                    }
+                    target.initVars();
+                }
+            });
         }
-        for (Template target : this.templates.values()) {
-            target.initVars();
-        }
+        threads.sync();
     }
 }

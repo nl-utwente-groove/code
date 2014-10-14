@@ -22,6 +22,7 @@ import groove.control.template.Program;
 import groove.control.template.SwitchStack;
 import groove.control.template.Template;
 import groove.grammar.host.HostFactory;
+import groove.util.ThreadPool;
 import groove.util.collect.Pool;
 
 import java.util.HashSet;
@@ -108,11 +109,18 @@ public class Automaton {
     private final Pool<Frame> framePool;
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public void initialise(HostFactory factory) {
+    public void initialise(final HostFactory factory) {
         getProgram().getTemplate().initialise(factory);
-        for (Procedure proc : getProgram().getProcs().values()) {
-            proc.getTemplate().initialise(factory);
+        ThreadPool threads = ThreadPool.instance();
+        for (final Procedure proc : getProgram().getProcs().values()) {
+            threads.start(new Runnable() {
+                @Override
+                public void run() {
+                    proc.getTemplate().initialise(factory);
+                }
+            });
         }
+        threads.sync();
     }
 
     /** Fully explores this automaton. */
