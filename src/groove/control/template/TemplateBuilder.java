@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -60,6 +61,11 @@ public class TemplateBuilder {
         this.properties = properties;
     }
 
+    /** Returns property actions to be tested at each non-internal location. */
+    private List<Action> getProperties() {
+        return this.properties;
+    }
+
     /** The property actions to be tested at each non-internal location. */
     private final List<Action> properties;
 
@@ -68,29 +74,39 @@ public class TemplateBuilder {
      * As a side effect, all procedure templates are also constructed.
      */
     public Template build(Program prog) {
-        Template result = createTemplate(prog.getName(), null, prog.getMain());
-        List<Template> templates = new ArrayList<Template>();
-        templates.add(result);
+        newBuilder(prog.getName(), null, prog.getMain());
         for (Procedure proc : prog.getProcs().values()) {
-            Template template = createTemplate(null, proc, proc.getTerm());
-            proc.setTemplate(template);
-            templates.add(template);
+            Builder builder = newBuilder(null, proc, proc.getTerm());
+            proc.setTemplate(builder.getResult());
         }
-        for (Template template : templates) {
-            build(template);
+        for (Builder builder : this.builderMap.values()) {
+            builder.buildNext();
         }
         ThreadPool threads = ThreadPool.instance();
-        final Queue<Triple<Template,Template,Map<Location,Location>>> normQ =
-            new ConcurrentLinkedQueue<Triple<Template,Template,Map<Location,Location>>>();
-        for (final Template template : templates) {
+        for (final Builder builder : this.builderMap.values()) {
             threads.start(new Runnable() {
                 @Override
                 public void run() {
-                    normQ.add(computeQuotient(template));
+                    builder.build();
                 }
             });
         }
         threads.sync();
+        //        for (final Builder builder : this.builderMap.values()) {
+        //            builder.build();
+        //        }
+        final Queue<Triple<Template,Template,Map<Location,Location>>> normQ =
+            new ConcurrentLinkedQueue<Triple<Template,Template,Map<Location,Location>>>();
+        for (final Builder template : this.builderMap.values()) {
+            threads.start(new Runnable() {
+                @Override
+                public void run() {
+                    normQ.add(computeQuotient(template.getResult()));
+                }
+            });
+        }
+        threads.sync();
+        Template result = null;
         Relocation map = new Relocation();
         for (Triple<Template,Template,Map<Location,Location>> norm : normQ) {
             Template key = norm.one();
@@ -104,38 +120,81 @@ public class TemplateBuilder {
             map.putAll(norm.three());
         }
         map.build();
-        clearBuildData();
         return result;
     }
 
-    /** Creates a new template, for the main program or a procedure,
-     * and initialises it using a given term.
-     */
-    private Template createTemplate(String name, Procedure proc, Term init) {
-        assert init.getTransience() == 0 : "Can't build template from transient term";
-        Template result = name == null ? new Template(proc) : new Template(name);
-        // set the initial location
-        TermKey initKey = new TermKey(init, new HashSet<Term>(), Collections.<CtrlVar>emptySet());
-        Location start = result.getStart();
-        getLocMap(result).put(initKey, start);
-        getFresh(result).add(initKey);
+    private Builder newBuilder(String name, Procedure proc, Term init) {
+        Builder result = new Builder(name, proc, init);
+        this.builderMap.put(result.getResult(), result);
         return result;
     }
+
+    private final Map<Template,Builder> builderMap = new HashMap<Template,Builder>();
 
     /**
-     * Constructs a template from a term.
-     * @param result the template to be built
-     * @throws IllegalStateException if {@code init} contains procedure
-     * calls with uninitialised templates
+     * Returns the switch corresponding to a given derivation,
+     * first creating it if required.
+     * @param loc source location for the new switch
+     * @param deriv the derivation to be added
+     * @return the fresh or pre-existing control switch
      */
-    private void build(Template result) throws IllegalStateException {
-        // initialise the auxiliary data structures
-        Map<TermKey,Location> locMap = getLocMap(result);
-        Deque<TermKey> fresh = getFresh(result);
-        // do the following as long as there are fresh locations
-        while (!fresh.isEmpty()) {
-            TermKey next = fresh.poll();
-            Location loc = locMap.get(next);
+    private SwitchStack getExternalSwitch(Location loc, Derivation deriv) {
+        Builder builder = this.builderMap.get(loc.getTemplate());
+        SwitchStack result = builder.getSwitch(loc, deriv);
+        assert result != null;
+        return result;
+    }
+
+    private class Builder {
+        Builder(String name, Procedure proc, Term init) {
+            assert init.getTransience() == 0 : "Can't build template from transient term";
+            this.result = name == null ? new Template(proc) : new Template(name);
+            // set the initial location
+            TermKey initKey =
+                new TermKey(init, new HashSet<Term>(), Collections.<CtrlVar>emptySet());
+            Location start = this.result.getStart();
+            Map<TermKey,Location> locMap =
+                this.locMap = new HashMap<TemplateBuilder.TermKey,Location>();
+            locMap.put(initKey, start);
+            Deque<TermKey> fresh = this.freshSwitch = new LinkedList<TermKey>();
+            fresh.add(initKey);
+            this.freshVerdict = new LinkedList<TermKey>();
+        }
+
+        Template getResult() {
+            return this.result;
+        }
+
+        private final Template result;
+
+        /**
+         * Builds the next attempt, plus all reachable verdict attempts.
+         * Directly after construction of the builder, this will build the start attempt.
+         */
+        void buildNext() {
+            buildAttempt(getFresh(false).poll());
+            Deque<TermKey> fresh = getFresh(true);
+            while (!fresh.isEmpty()) {
+                buildAttempt(fresh.poll());
+            }
+        }
+
+        /**
+         * Builds all remaining locations and attempts.
+         */
+        void build() {
+            Deque<TermKey> fresh = getFresh(false);
+            // do the following as long as there are fresh locations
+            while (!fresh.isEmpty()) {
+                buildNext();
+            }
+        }
+
+        /**
+         * Builds the attempt for a location belonging to a given term key.
+         */
+        private void buildAttempt(TermKey next) {
+            Location loc = getLocMap().get(next);
             assert loc.getType() == null;
             Term term = next.one();
             // the intended type after the optional property test
@@ -144,10 +203,11 @@ public class TemplateBuilder {
             Set<SwitchStack> switches = new LinkedHashSet<SwitchStack>();
             // see if we need a property test
             // start states of procedures are exempt
-            boolean isProcStartOrFinal = (loc.isStart() || term.isFinal()) && result.hasOwner();
+            boolean isProcStartOrFinal =
+                (loc.isStart() || term.isFinal()) && getResult().hasOwner();
             if (!isProcStartOrFinal && loc.getTransience() == 0 && next.two().isEmpty()
-                && !this.properties.isEmpty()) {
-                for (Action prop : this.properties) {
+                && !getProperties().isEmpty()) {
+                for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
                         SwitchStack sw = new SwitchStack();
@@ -157,7 +217,7 @@ public class TemplateBuilder {
                 }
                 if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
                     // we need an intermediate location to go to after the property test
-                    Location aux = result.addLocation(0);
+                    Location aux = getResult().addLocation(0);
                     SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux);
                     locAttempt.addAll(switches);
                     loc.setType(Type.TRIAL);
@@ -172,133 +232,120 @@ public class TemplateBuilder {
                 // add switches for the term derivations
                 for (Derivation deriv : termAttempt) {
                     // build the (possibly nested) switch
-                    switches.add(addSwitch(loc, deriv));
+                    switches.add(getSwitch(loc, deriv));
                 }
-                Location succTarget = addLocation(result, termAttempt.onSuccess(), next, null);
-                Location failTarget = addLocation(result, termAttempt.onFailure(), next, null);
+                Location succTarget = addLocation(termAttempt.onSuccess(), next, null);
+                Location failTarget = addLocation(termAttempt.onFailure(), next, null);
                 SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget);
                 locAttempt.addAll(switches);
                 loc.setAttempt(locAttempt);
             }
         }
-    }
 
-    /**
-     * Adds a control location corresponding to a given symbolic term to the
-     * template and auxiliary data structures, if it does not yet exist.
-     * @param template the template to which the location should be added
-     * @param term the term to be added
-     * @param predKey the predecessor location if this is due to a verdict; is {@code null}
-     * iff {@code incoming} is non-{@code null}
-     * @param incoming incoming control call leading to the location to be created;
-     * may be {@code null} if there is no incoming control call but an incoming verdict
-     * @return the fresh or pre-existing control location
-     */
-    private Location addLocation(Template template, Term term, TermKey predKey, Call incoming) {
-        Map<TermKey,Location> locMap = getLocMap(template);
-        Set<CtrlVar> vars = new HashSet<CtrlVar>();
-        Set<Term> predTerms = new HashSet<Term>();
-        if (incoming == null) {
-            // this is due to a verdict transition
-            assert predKey != null;
-            predTerms.addAll(predKey.two());
-            predTerms.add(predKey.one());
-            // preserve the variables of the predecessor
-            vars.addAll(locMap.get(predKey).getVars());
-        } else {
-            // this is due to a non-verdict transition
-            assert predKey == null;
-            vars.addAll(incoming.getOutVars().keySet());
-        }
-        TermKey key = new TermKey(term, predTerms, vars);
-        Location result = locMap.get(key);
-        if (result == null) {
-            getFresh(template).add(key);
-            result = template.addLocation(term.getTransience());
-            locMap.put(key, result);
-            result.addVars(vars);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the mapping from terms to locations for a given template.
-     */
-    private Map<TermKey,Location> getLocMap(Template template) {
-        Map<TermKey,Location> result = this.locMapMap.get(template);
-        if (result == null) {
-            this.locMapMap.put(template, result = new HashMap<TermKey,Location>());
-        }
-        return result;
-    }
-
-    /** For each template, a mapping from terms to locations. */
-    private final Map<Template,Map<TermKey,Location>> locMapMap =
-        new HashMap<Template,Map<TermKey,Location>>();
-
-    /**
-     * Adds a switch corresponding to a given derivation to the
-     * template and auxiliary data structures, if it does not yet exist.
-     * @param source Source location for the new switch
-     * @param deriv the derivation to be added
-     * @return the fresh or pre-existing control switch
-     * @throws IllegalStateException if {@code deriv} has a nested derivation
-     * but the procedure does not have an initialised template
-     */
-    private SwitchStack addSwitch(Location source, Derivation deriv) throws IllegalStateException {
-        Map<Derivation,SwitchStack> switchMap = getSwitchMap(source);
-        SwitchStack result = switchMap.get(deriv);
-        if (result == null) {
-            result = new SwitchStack();
-            Location target =
-                addLocation(source.getTemplate(), deriv.onFinish(), null, deriv.getCall());
-            result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
-            if (deriv.hasNested()) {
-                Procedure caller = (Procedure) deriv.getCall().getUnit();
-                Template callerTemplate = caller.getTemplate();
-                SwitchStack nested = addSwitch(callerTemplate.getStart(), deriv.getNested());
-                result.addAll(nested);
+        /**
+         * Adds a control location corresponding to a given symbolic term to the
+         * template and auxiliary data structures, if it does not yet exist.
+         * @param term the term to be added
+         * @param predKey the predecessor location if this is due to a verdict; is {@code null}
+         * iff {@code incoming} is non-{@code null}
+         * @param incoming incoming control call leading to the location to be created;
+         * may be {@code null} if there is no incoming control call but an incoming verdict
+         * @return the fresh or pre-existing control location
+         */
+        private Location addLocation(Term term, TermKey predKey, Call incoming) {
+            Map<TermKey,Location> locMap = getLocMap();
+            Set<CtrlVar> vars = new HashSet<CtrlVar>();
+            Set<Term> predTerms = new HashSet<Term>();
+            if (incoming == null) {
+                // this is due to a verdict transition
+                assert predKey != null;
+                predTerms.addAll(predKey.two());
+                predTerms.add(predKey.one());
+                // preserve the variables of the predecessor
+                vars.addAll(locMap.get(predKey).getVars());
+            } else {
+                // this is due to a non-verdict transition
+                assert predKey == null;
+                vars.addAll(incoming.getOutVars().keySet());
             }
-            switchMap.put(deriv, result);
+            TermKey key = new TermKey(term, predTerms, vars);
+            Location result = locMap.get(key);
+            if (result == null) {
+                getFresh(incoming == null).add(key);
+                result = getResult().addLocation(term.getTransience());
+                locMap.put(key, result);
+                result.addVars(vars);
+                //System.out.printf("Added %s to %s%n", result, getResult());
+            }
+            return result;
         }
-        assert result.getBottom().getSource() == source;
-        return result;
-    }
 
-    /**
-     * Returns the mapping from derivations to switches for a given template.
-     */
-    private Map<Derivation,SwitchStack> getSwitchMap(Location loc) {
-        Map<Derivation,SwitchStack> result = this.switchMapMap.get(loc);
-        if (result == null) {
-            this.switchMapMap.put(loc, result = new HashMap<Derivation,SwitchStack>());
+        /**
+         * Returns the mapping from terms to locations for a given template.
+         */
+        private Map<TermKey,Location> getLocMap() {
+            return this.locMap;
         }
-        return result;
-    }
 
-    /** For each template, a mapping from derivations to switches. */
-    private final Map<Location,Map<Derivation,SwitchStack>> switchMapMap =
-        new HashMap<Location,Map<Derivation,SwitchStack>>();
+        /** For each template, a mapping from terms to locations. */
+        private final Map<TermKey,Location> locMap;
 
-    /**
-     * Returns the mapping from terms to locations for a given template.
-     */
-    private Deque<TermKey> getFresh(Template template) {
-        Deque<TermKey> result = this.freshMap.get(template);
-        if (result == null) {
-            this.freshMap.put(template, result = new LinkedList<TermKey>());
+        /**
+         * Returns the switch corresponding to a given derivation,
+         * first creating it if required.
+         * @param source source location for the new switch
+         * @param deriv the derivation to be added
+         * @return the fresh or pre-existing control switch
+         */
+        SwitchStack getSwitch(Location source, Derivation deriv) {
+            Map<Derivation,SwitchStack> switchMap = getSwitchMap(source);
+            SwitchStack result = switchMap.get(deriv);
+            if (result == null) {
+                // only switches from this template or initial switches can be requested
+                assert source.getTemplate() == getResult();
+                result = new SwitchStack();
+                Location target = addLocation(deriv.onFinish(), null, deriv.getCall());
+                result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
+                if (deriv.hasNested()) {
+                    Procedure caller = (Procedure) deriv.getCall().getUnit();
+                    Template callerTemplate = caller.getTemplate();
+                    SwitchStack nested =
+                        getExternalSwitch(callerTemplate.getStart(), deriv.getNested());
+                    result.addAll(nested);
+                }
+                assert result.getBottom().getSource() == source;
+                switchMap.put(deriv, result);
+            }
+            return result;
         }
-        return result;
-    }
 
-    /** Unexplored set of symbolic locations per template. */
-    private final Map<Template,Deque<TermKey>> freshMap = new HashMap<Template,Deque<TermKey>>();
+        /**
+         * Returns the mapping from terms to locations for a given template.
+         */
+        private Deque<TermKey> getFresh(boolean verdict) {
+            return verdict ? this.freshVerdict : this.freshSwitch;
+        }
 
-    /** Clears the auxiliary data structures. */
-    private void clearBuildData() {
-        this.locMapMap.clear();
-        this.switchMapMap.clear();
-        this.freshMap.clear();
+        /** Unexplored set of symbolic locations reached by a verdict. */
+        private final Deque<TermKey> freshVerdict;
+
+        /** Unexplored set of symbolic locations reached by a switch. */
+        private final Deque<TermKey> freshSwitch;
+
+        /**
+         * Returns the mapping from derivations to switches for a given location.
+         */
+        private Map<Derivation,SwitchStack> getSwitchMap(Location loc) {
+            Map<Derivation,SwitchStack> result = this.switchMapMap.get(loc);
+            if (result == null) {
+                this.switchMapMap.put(loc, result = new HashMap<Derivation,SwitchStack>());
+            }
+            return result;
+        }
+
+        /** For each template, a mapping from derivations to switches. */
+        private final Map<Location,Map<Derivation,SwitchStack>> switchMapMap =
+            new ConcurrentHashMap<Location,Map<Derivation,SwitchStack>>();
     }
 
     /** Computes the quotient of a given template under bisimilarity,

@@ -121,7 +121,7 @@ abstract public class Term implements Position<Term,Derivation> {
     }
 
     @Override
-    public final Type getType() {
+    synchronized public final Type getType() {
         if (this.type == null) {
             this.type = computeType();
         }
@@ -158,7 +158,7 @@ abstract public class Term implements Position<Term,Derivation> {
      * @param nested if {@code true}, the nested derivation is computed,
      * otherwise only the bottom-level derivation is computed
      */
-    public final DerivationAttempt getAttempt(boolean nested) {
+    synchronized public final DerivationAttempt getAttempt(boolean nested) {
         DerivationAttempt result = nested ? this.nestedAttempt : this.flatAttempt;
         if (result == null) {
             result = computeAttempt(nested);
@@ -202,7 +202,7 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Returns the transient depth of this symbolic location. */
     @Override
-    public final int getTransience() {
+    synchronized public final int getTransience() {
         if (this.depth == null) {
             this.depth = computeDepth();
         }
