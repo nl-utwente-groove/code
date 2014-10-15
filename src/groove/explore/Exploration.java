@@ -393,11 +393,11 @@ public class Exploration {
         if (parts.length < 2 || parts.length > 3) {
             throw new FormatException(SYNTAX_MESSAGE);
         }
-        Serialized strategy = strategies.parseCommandline(parts[0]);
+        Serialized strategy = StrategyEnumerator.instance().parseCommandline(parts[0]);
         if (strategy == null) {
             throw new FormatException("Can't parse strategy %s", parts[0]);
         }
-        Serialized acceptor = acceptors.parseCommandline(parts[1]);
+        Serialized acceptor = AcceptorEnumerator.instance().parseCommandline(parts[1]);
         if (acceptor == null) {
             throw new FormatException("Can't parse acceptor %s", parts[1]);
         }
@@ -429,10 +429,6 @@ public class Exploration {
     /** Message describing the syntax of a parsable exploration strategy. */
     static public final String SYNTAX_MESSAGE =
         "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
-    /** Static instance of the strategy enumerator. */
-    static private final StrategyEnumerator strategies = StrategyEnumerator.instance();
-    /** Static instance of the acceptor enumerator. */
-    static private final AcceptorEnumerator acceptors = AcceptorEnumerator.instance();
     /** Reporter for profiling information. */
     static private final Reporter reporter = Reporter.register(Exploration.class);
     /** Handle for profiling {@link #play(GTS, GraphState)}. */

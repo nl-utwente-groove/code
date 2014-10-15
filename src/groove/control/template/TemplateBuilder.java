@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -118,6 +117,7 @@ public class TemplateBuilder {
             map.putAll(norm.three());
         }
         map.build();
+        ThreadPool.instance().shutdown();
         return result;
     }
 
@@ -328,16 +328,19 @@ public class TemplateBuilder {
          * Returns the mapping from derivations to switches for a given location.
          */
         private Map<Derivation,SwitchStack> getSwitchMap(Location loc) {
-            Map<Derivation,SwitchStack> result = this.switchMapMap.get(loc);
-            if (result == null) {
-                this.switchMapMap.put(loc, result = new HashMap<Derivation,SwitchStack>());
+            if (this.switchMaps.size() <= loc.getNumber()) {
+                synchronized (this.switchMaps) {
+                    for (int i = this.switchMaps.size(); i <= loc.getNumber(); i++) {
+                        this.switchMaps.add(new HashMap<Derivation,SwitchStack>());
+                    }
+                }
             }
-            return result;
+            return this.switchMaps.get(loc.getNumber());
         }
 
         /** For each template, a mapping from derivations to switches. */
-        private final Map<Location,Map<Derivation,SwitchStack>> switchMapMap =
-            new ConcurrentHashMap<Location,Map<Derivation,SwitchStack>>();
+        private final List<Map<Derivation,SwitchStack>> switchMaps =
+            new ArrayList<Map<Derivation,SwitchStack>>();
     }
 
     /** Computes the quotient of a given template under bisimilarity,

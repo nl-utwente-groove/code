@@ -187,7 +187,6 @@ public class Switch implements Comparable<Switch>, Relocatable {
     private Switch computeRelocated(Relocation map) {
         Location newSource = map.get(getSource());
         Location newFinish = map.get(onFinish());
-        newFinish.addVars(getCall().getOutVars().keySet());
         return new Switch(newSource, getCall(), getTransience(), newFinish);
     }
 
