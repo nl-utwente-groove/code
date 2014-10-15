@@ -27,12 +27,14 @@ import java.util.HashMap;
 public class Pool<E> extends HashMap<E,E> {
     /** Returns a canonical instance for a given element. */
     public E canonical(E elem) {
-        E result = elem;
-        E oldResult = put(result, result);
-        if (oldResult != null) {
-            // there was a canonical instance; put it back into the map
-            put(oldResult, oldResult);
-            result = oldResult;
+        E result = get(elem);
+        if (result == null) {
+            synchronized (this) {
+                result = get(elem);
+                if (result == null) {
+                    put(elem, result = elem);
+                }
+            }
         }
         return result;
     }
