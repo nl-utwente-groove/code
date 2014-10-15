@@ -116,7 +116,8 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         Derivation result;
         if (hasNested()) {
             result =
-                new Derivation(getCall(), getTransience(), onFinish(), getNested().newInstance(nested));
+                new Derivation(getCall(), getTransience(), onFinish(), getNested().newInstance(
+                    nested));
         } else {
             result = new Derivation(getCall(), getTransience(), onFinish(), nested);
         }
@@ -157,9 +158,18 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     @Override
     public int hashCode() {
+        if (this.hashCode == 0) {
+            this.hashCode = computeHashCode();
+        }
+        return this.hashCode;
+    }
+
+    private int computeHashCode() {
         int prime = 31;
         int result = super.hashCode();
         result = prime * result + (hasNested() ? getNested().hashCode() : 0);
         return result;
     }
+
+    private int hashCode;
 }

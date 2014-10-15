@@ -16,6 +16,7 @@
  */
 package groove.control.template;
 
+import groove.control.Call;
 import groove.control.CtrlVar;
 import groove.control.Function;
 import groove.control.Procedure;
@@ -175,7 +176,10 @@ public class Template {
                 loc.addVars(getOwner().getOutPars().keySet());
             } else if (loc.isTrial()) {
                 for (SwitchStack s : loc.getAttempt()) {
-                    loc.addVars(s.getBottomCall().getInVars().keySet());
+                    Switch bottom = s.get(0);
+                    Call bottomCall = bottom.getCall();
+                    loc.addVars(bottomCall.getInVars().keySet());
+                    bottom.onFinish().addVars(bottomCall.getOutVars().keySet());
                 }
             }
             Set<CtrlVar> varSet = loc.getVarSet();

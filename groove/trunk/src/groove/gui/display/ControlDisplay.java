@@ -34,7 +34,6 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 /**
@@ -76,7 +75,14 @@ final public class ControlDisplay extends ResourceDisplay {
     }
 
     private JTree createDocPane() {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        for (Map.Entry<?,? extends List<?>> docEntry : getDoc().getItemTree().entrySet()) {
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(docEntry.getKey());
+            root.add(node);
+            for (Object rule : docEntry.getValue()) {
+                node.add(new DefaultMutableTreeNode(rule));
+            }
+        }
         final JTree result = new JTree(root) {
             @Override
             public String getToolTipText(MouseEvent evt) {
@@ -88,7 +94,6 @@ final public class ControlDisplay extends ResourceDisplay {
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 return getToolTip(userObject);
             }
-
         };
         result.setRootVisible(false);
         result.setShowsRootHandles(true);
@@ -102,17 +107,6 @@ final public class ControlDisplay extends ResourceDisplay {
         result.setCellRenderer(renderer);
         ToolTipManager.sharedInstance().registerComponent(result);
         result.addMouseListener(new DismissDelayer(result));
-        CtrlDoc doc = new CtrlDoc();
-        this.toolTipMap = doc.getToolTipMap();
-        // load the tree
-        for (Map.Entry<?,? extends List<?>> docEntry : doc.getItemTree().entrySet()) {
-            DefaultMutableTreeNode node = new DefaultMutableTreeNode(docEntry.getKey());
-            for (Object rule : docEntry.getValue()) {
-                node.add(new DefaultMutableTreeNode(rule));
-            }
-            root.add(node);
-        }
-        ((DefaultTreeModel) result.getModel()).reload();
         for (int i = 0; i < root.getChildCount(); i++) {
             result.expandPath(new TreePath(((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
         }
@@ -121,12 +115,24 @@ final public class ControlDisplay extends ResourceDisplay {
     }
 
     private String getToolTip(Object value) {
-        String result = null;
-        if (this.toolTipMap != null) {
-            result = this.toolTipMap.get(value);
+        if (this.toolTipMap == null) {
+            this.toolTipMap = getDoc().getToolTipMap();
         }
-        return result;
+        return this.toolTipMap.get(value);
     }
+
+    /** Tool type map for syntax help. */
+    private Map<?,String> toolTipMap;
+
+    /** The control document object. */
+    private CtrlDoc getDoc() {
+        if (this.doc == null) {
+            this.doc = new CtrlDoc();
+        }
+        return this.doc;
+    }
+
+    private CtrlDoc doc;
 
     @Override
     protected JToolBar createListToolBar(int separation) {
@@ -147,7 +153,4 @@ final public class ControlDisplay extends ResourceDisplay {
 
     /** Documentation tree. */
     private JTree docPane;
-
-    /** Tool type map for syntax help. */
-    private Map<?,String> toolTipMap;
 }

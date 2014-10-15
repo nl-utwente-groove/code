@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 /** Global thread pool. */
 public class ThreadPool {
     private ThreadPool() {
-        int threadCount = Runtime.getRuntime().availableProcessors();
+        int threadCount = Runtime.getRuntime().availableProcessors() / 2;
         this.exec = Executors.newFixedThreadPool(threadCount);
         this.futures = new ArrayList<Future<?>>();
     }
@@ -53,8 +53,17 @@ public class ThreadPool {
 
     /** Shuts down the thread pool. */
     public void shutdown() {
-        this.exec.shutdown();
+        if (!isShutDown()) {
+            this.isShutDown = true;
+            this.exec.shutdown();
+        }
     }
+
+    private boolean isShutDown() {
+        return this.isShutDown;
+    }
+
+    private boolean isShutDown;
 
     /** The internal thread pool */
     private final ExecutorService exec;
@@ -63,8 +72,11 @@ public class ThreadPool {
 
     /** Returns the singleton instance of this thread pool. */
     public static ThreadPool instance() {
+        if (INSTANCE == null || INSTANCE.isShutDown()) {
+            INSTANCE = new ThreadPool();
+        }
         return INSTANCE;
     }
 
-    private final static ThreadPool INSTANCE = new ThreadPool();
+    private static ThreadPool INSTANCE = new ThreadPool();
 }

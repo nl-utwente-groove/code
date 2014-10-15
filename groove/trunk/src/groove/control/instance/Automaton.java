@@ -121,6 +121,7 @@ public class Automaton {
             });
         }
         threads.sync();
+        threads.shutdown();
     }
 
     /** Fully explores this automaton. */

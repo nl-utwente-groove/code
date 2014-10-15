@@ -38,11 +38,11 @@ import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
+import groove.util.Groove;
+import groove.util.Version;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-import groove.util.Groove;
-import groove.util.Version;
 
 import java.io.File;
 import java.io.IOException;
