@@ -35,10 +35,8 @@ import groove.util.Triple;
 import groove.util.collect.NestedIterator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -150,8 +148,7 @@ public class TemplateBuilder {
             assert init.getTransience() == 0 : "Can't build template from transient term";
             this.result = name == null ? new Template(proc) : new Template(name);
             // set the initial location
-            TermKey initKey =
-                new TermKey(init, new HashSet<Term>(), Collections.<CtrlVar>emptySet());
+            TermKey initKey = new TermKey(init, new ArrayList<Term>());
             Location start = this.result.getStart();
             Map<TermKey,Location> locMap =
                 this.locMap = new HashMap<TemplateBuilder.TermKey,Location>();
@@ -197,8 +194,7 @@ public class TemplateBuilder {
             Location loc = getLocMap().get(next);
             assert loc.getType() == null;
             Term term = next.one();
-            // the intended type after the optional property test
-            Type locType = next.two().contains(term) ? Type.DEAD : term.getType();
+            Type locType = term.getType();
             // property switches
             Set<SwitchStack> switches = new LinkedHashSet<SwitchStack>();
             // see if we need a property test
@@ -254,27 +250,23 @@ public class TemplateBuilder {
          */
         private Location addLocation(Term term, TermKey predKey, Call incoming) {
             Map<TermKey,Location> locMap = getLocMap();
-            Set<CtrlVar> vars = new HashSet<CtrlVar>();
-            Set<Term> predTerms = new HashSet<Term>();
+            List<Term> predTerms = new ArrayList<Term>();
             if (incoming == null) {
                 // this is due to a verdict transition
                 assert predKey != null;
                 predTerms.addAll(predKey.two());
                 predTerms.add(predKey.one());
                 // preserve the variables of the predecessor
-                vars.addAll(locMap.get(predKey).getVars());
             } else {
                 // this is due to a non-verdict transition
                 assert predKey == null;
-                vars.addAll(incoming.getOutVars().keySet());
             }
-            TermKey key = new TermKey(term, predTerms, vars);
+            TermKey key = new TermKey(term, predTerms);
             Location result = locMap.get(key);
             if (result == null) {
                 getFresh(incoming == null).add(key);
                 result = getResult().addLocation(term.getTransience());
                 locMap.put(key, result);
-                result.addVars(vars);
                 //System.out.printf("Added %s to %s%n", result, getResult());
             }
             return result;
@@ -470,9 +462,9 @@ public class TemplateBuilder {
      * The distinction is made on the basis of underlying term,
      * set of verdict predecessor terms, and set of control variables.
      */
-    private static class TermKey extends Triple<Term,Set<Term>,Set<CtrlVar>> {
-        TermKey(Term one, Set<Term> two, Set<CtrlVar> three) {
-            super(one, two, three);
+    private static class TermKey extends Pair<Term,List<Term>> {
+        TermKey(Term one, List<Term> two) {
+            super(one, two);
         }
     }
 
