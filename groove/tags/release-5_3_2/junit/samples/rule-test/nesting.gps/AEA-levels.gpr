@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="AEA-levels">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n138966">
+            <attr name="layout">
+                <string>191 252 39 21</string>
+            </attr>
+        </node>
+        <node id="n138968">
+            <attr name="layout">
+                <string>325 99 38 36</string>
+            </attr>
+        </node>
+        <node id="n138963">
+            <attr name="layout">
+                <string>282 180 17 21</string>
+            </attr>
+        </node>
+        <node id="n138964">
+            <attr name="layout">
+                <string>57 180 17 21</string>
+            </attr>
+        </node>
+        <node id="n138961">
+            <attr name="layout">
+                <string>324 36 38 36</string>
+            </attr>
+        </node>
+        <node id="n138962">
+            <attr name="layout">
+                <string>281 250 18 21</string>
+            </attr>
+        </node>
+        <node id="n138967">
+            <attr name="layout">
+                <string>166 111 39 21</string>
+            </attr>
+        </node>
+        <node id="n138965">
+            <attr name="layout">
+                <string>192 178 44 21</string>
+            </attr>
+        </node>
+        <node id="n138960">
+            <attr name="layout">
+                <string>137 180 44 21</string>
+            </attr>
+        </node>
+        <node id="n138969">
+            <attr name="layout">
+                <string>175 38 18 21</string>
+            </attr>
+        </node>
+        <edge to="n138961" from="n138961">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n138968" from="n138963">
+            <attr name="label">
+                <string>copy</string>
+            </attr>
+        </edge>
+        <edge to="n138965" from="n138968">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n138963" from="n138969">
+            <attr name="label">
+                <string>del:b</string>
+            </attr>
+        </edge>
+        <edge to="n138966" from="n138966">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge to="n138965" from="n138966">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge to="n138968" from="n138968">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n138960" from="n138960">
+            <attr name="label">
+                <string>exists:</string>
+            </attr>
+        </edge>
+        <edge to="n138960" from="n138964">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n138962" from="n138963">
+            <attr name="label">
+                <string>del:d</string>
+            </attr>
+        </edge>
+        <edge to="n138961" from="n138961">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge to="n138966" from="n138962">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n138964" from="n138964">
+            <attr name="label">
+                <string>C</string>
+            </attr>
+        </edge>
+        <edge to="n138968" from="n138961">
+            <attr name="label">
+                <string>b</string>
+            </attr>
+        </edge>
+        <edge to="n138967" from="n138960">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge to="n138969" from="n138969">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge to="n138965" from="n138963">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n138962" from="n138962">
+            <attr name="label">
+                <string>D</string>
+            </attr>
+        </edge>
+        <edge to="n138968" from="n138968">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge to="n138967" from="n138967">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge to="n138962" from="n138968">
+            <attr name="label">
+                <string>d</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 337 124 337 263 299 263 11</string>
+            </attr>
+        </edge>
+        <edge to="n138963" from="n138963">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge to="n138967" from="n138965">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge to="n138961" from="n138969">
+            <attr name="label">
+                <string>copy</string>
+            </attr>
+        </edge>
+        <edge to="n138965" from="n138965">
+            <attr name="label">
+                <string>exists:</string>
+            </attr>
+        </edge>
+        <edge to="n138964" from="n138969">
+            <attr name="label">
+                <string>del:c</string>
+            </attr>
+            <attr name="layout">
+                <string>189 -2 184 48 66 49 65 190 11</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
