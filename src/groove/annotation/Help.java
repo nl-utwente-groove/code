@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -54,9 +54,9 @@ public class Help {
         setSyntax(syntax, isFormatSyntax());
     }
 
-    /** 
+    /**
      * Sets the syntax line of the actual documentation.
-     * A flag controls if the syntax line should be parsed for 
+     * A flag controls if the syntax line should be parsed for
      * tokens and parameters.
      * @see #setSyntax(String)
      */
@@ -72,7 +72,9 @@ public class Help {
         }
     }
 
-    /** Sets a header for the tool tip. */
+    /** Sets a header for the tool tip.
+     * @param header the tool tip header: should be HTML-formatted
+     */
     public void setHeader(String header) {
         this.header = header;
     }
@@ -101,10 +103,10 @@ public class Help {
         }
     }
 
-    /** 
+    /**
      * Sets the parameter names.
      * This is only allowed if the syntax description is not parsed for
-     * parameters. 
+     * parameters.
      */
     public void setParNames(List<String> names) {
         for (String name : names) {
@@ -143,7 +145,7 @@ public class Help {
     public String getTip() {
         StringBuilder result = new StringBuilder();
         if (this.header != null) {
-            result.append(bf(toHtml(this.header)));
+            result.append(bf(this.header));
             result.append(HTML_LINEBREAK);
         }
         if (this.body.length() > 0) {
@@ -212,7 +214,7 @@ public class Help {
     }
 
     private static Help createHelp(Object source, Syntax syntax, ToolTipHeader header,
-            ToolTipBody body, ToolTipPars pars, Map<String,String> tokenMap) {
+        ToolTipBody body, ToolTipPars pars, Map<String,String> tokenMap) {
         Help result = null;
         if (syntax != null) {
             result = new Help(tokenMap);
@@ -268,25 +270,25 @@ public class Help {
     /** List of parameter documentation lines. */
     private final List<String> parDocs = new ArrayList<String>();
 
-    /** 
+    /**
      * Turns text into boldface by putting
-     * an HTML {@code strong} tag around a string builder. 
+     * an HTML {@code strong} tag around a string builder.
      * @see HTMLConverter#STRONG_TAG
      */
     public static StringBuilder bf(StringBuilder text) {
         return STRONG_TAG.on(text);
     }
 
-    /** 
+    /**
      * Turns text into boldface by putting
-     * an HTML {@code strong} tag around a string. 
+     * an HTML {@code strong} tag around a string.
      * @see HTMLConverter#STRONG_TAG
      */
     public static String bf(String text) {
         return STRONG_TAG.on(text);
     }
 
-    /** 
+    /**
      * Turns text into boldface by putting
      * an HTML {@code strong} tag around an object's string description.
      * @see HTMLConverter#STRONG_TAG
@@ -295,25 +297,25 @@ public class Help {
         return STRONG_TAG.on(text);
     }
 
-    /** 
+    /**
      * Turns text into italic by putting
-     * an HTML {@code i} tag around a string builder. 
+     * an HTML {@code i} tag around a string builder.
      * @see HTMLConverter#ITALIC_TAG
      */
     public static StringBuilder it(StringBuilder text) {
         return ITALIC_TAG.on(text);
     }
 
-    /** 
+    /**
      * Turns text into italic by putting
-     * an HTML {@code i} tag around a string. 
+     * an HTML {@code i} tag around a string.
      * @see HTMLConverter#ITALIC_TAG
      */
     public static String it(String text) {
         return ITALIC_TAG.on(text);
     }
 
-    /** 
+    /**
      * Turns text into italic by putting
      * an HTML {@code i} tag around an object's string description.
      * @see HTMLConverter#STRONG_TAG
@@ -327,9 +329,9 @@ public class Help {
         return SOURCE_TAG.on(text);
     }
 
-    /** 
+    /**
      * Finalises html text by putting
-     * an {@code html} tag around a string. 
+     * an {@code html} tag around a string.
      * @see HTMLConverter#HTML_TAG
      */
     public static String html(String text) {
@@ -362,16 +364,16 @@ public class Help {
      * list of recognised arguments in the order of their occurrence in {@code text}
      */
     static private Pair<String,List<String>> processTokensAndArgs(String text,
-            Map<String,String> tokenMap) {
+        Map<String,String> tokenMap) {
         return processTokensAndArgs(text, tokenMap, true);
     }
 
     /**
-     * Internal method unifying the functionality of 
+     * Internal method unifying the functionality of
      * {@link #processTokens(String, Map)} and {@link #processTokensAndArgs(String, Map)}.
      */
     static private Pair<String,List<String>> processTokensAndArgs(String text,
-            Map<String,String> tokenMap, boolean getArgs) {
+        Map<String,String> tokenMap, boolean getArgs) {
         StringBuilder result = new StringBuilder(text);
         List<String> args = new ArrayList<String>();
         for (int i = 0; i < result.length(); i++) {
