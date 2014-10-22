@@ -37,6 +37,7 @@ import groove.util.collect.NestedIterator;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -148,7 +149,7 @@ public class TemplateBuilder {
             assert init.getTransience() == 0 : "Can't build template from transient term";
             this.result = name == null ? new Template(proc) : new Template(name);
             // set the initial location
-            TermKey initKey = new TermKey(init, new ArrayList<Term>());
+            TermKey initKey = new TermKey(init, new ArrayList<Term>(), new HashSet<CtrlVar>());
             Location start = this.result.getStart();
             Map<TermKey,Location> locMap =
                 this.locMap = new HashMap<TemplateBuilder.TermKey,Location>();
@@ -251,21 +252,25 @@ public class TemplateBuilder {
         private Location addLocation(Term term, TermKey predKey, Call incoming) {
             Map<TermKey,Location> locMap = getLocMap();
             List<Term> predTerms = new ArrayList<Term>();
+            Set<CtrlVar> vars;
             if (incoming == null) {
                 // this is due to a verdict transition
                 assert predKey != null;
                 predTerms.addAll(predKey.two());
                 predTerms.add(predKey.one());
                 // preserve the variables of the predecessor
+                vars = predKey.three();
             } else {
                 // this is due to a non-verdict transition
                 assert predKey == null;
+                vars = incoming.getOutVars().keySet();
             }
-            TermKey key = new TermKey(term, predTerms);
+            TermKey key = new TermKey(term, predTerms, vars);
             Location result = locMap.get(key);
             if (result == null) {
                 getFresh(incoming == null).add(key);
                 result = getResult().addLocation(term.getTransience());
+                result.addVars(vars);
                 locMap.put(key, result);
                 //System.out.printf("Added %s to %s%n", result, getResult());
             }
@@ -465,9 +470,9 @@ public class TemplateBuilder {
      * The distinction is made on the basis of underlying term,
      * set of verdict predecessor terms, and set of control variables.
      */
-    private static class TermKey extends Pair<Term,List<Term>> {
-        TermKey(Term one, List<Term> two) {
-            super(one, two);
+    private static class TermKey extends Triple<Term,List<Term>,Set<CtrlVar>> {
+        TermKey(Term one, List<Term> two, Set<CtrlVar> three) {
+            super(one, two, three);
         }
     }
 
