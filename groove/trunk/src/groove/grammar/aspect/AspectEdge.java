@@ -117,6 +117,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             if (!hasErrors()) {
                 setAspectsFixed();
             }
+            setDefaultAttrAspect();
+            setDefaultLabelMode();
         }
         return result;
     }
@@ -204,12 +206,6 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             throw new FormatException("Edge aspect %s only allowed in rules", getAspect(), this);
         } else if (!hasAspect()) {
             setAspect(AspectKind.DEFAULT.getAspect());
-        }
-        if (!hasAttrAspect()) {
-            setAttrAspect(AspectKind.DEFAULT.getAspect());
-        }
-        if (!hasLabelMode()) {
-            setLabelMode(AspectKind.DEFAULT.getAspect());
         }
     }
 
@@ -728,6 +724,13 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         }
     }
 
+    /** If the attribute aspect is yet unset, set it to the default. */
+    private void setDefaultAttrAspect() {
+        if (!hasAttrAspect()) {
+            this.attr = AspectKind.DEFAULT.getAspect();
+        }
+    }
+
     @Override
     public Aspect getAttrAspect() {
         return this.attr;
@@ -822,6 +825,13 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
                 this);
             // actually this should not happen since both of these
             // aspects are specified to be the last in a label
+        }
+    }
+
+    /** If the label mode is yet unset, set it to the default. */
+    private void setDefaultLabelMode() {
+        if (!hasLabelMode()) {
+            this.labelMode = AspectKind.DEFAULT.getAspect();
         }
     }
 
