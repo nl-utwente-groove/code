@@ -77,7 +77,7 @@ public class LTSReporter extends AExplorationReporter {
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
         File outFile = new File(dir, ltsName);
-        Pair<FileType,Exporter> gtsFormat = Exporters.getAcceptingFormat(ltsGraph, outFile);
+        Pair<FileType,Exporter> gtsFormat = Exporters.getAcceptingFormat(ltsName);
         if (gtsFormat != null) {
             try {
                 gtsFormat.two().doExport(new Exportable(ltsGraph), outFile, gtsFormat.one());
