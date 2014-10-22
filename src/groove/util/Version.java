@@ -61,10 +61,10 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20141016";
+    public static final String BUILD = "20141022";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "16.10.2014";
+    public static final String DATE = "22.10.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -75,7 +75,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.3.2+";
+    public static final String NUMBER = "5.3.3+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
@@ -248,7 +248,7 @@ public class Version {
      * This is the grammar version introduced with Groove version 5.2.0.
      * Assignment syntax for rule and recipe invocations, also in combination with declaration:
      * Instead of {@code node a; rule(1, out a)} use {@code node a; a := rule(1)}
-     * or {@code node a := rule(1)}. 
+     * or {@code node a := rule(1)}.
      */
     public static final String GRAMMAR_VERSION_3_6 = "3.6";
 
