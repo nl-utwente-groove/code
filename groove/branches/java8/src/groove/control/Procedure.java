@@ -191,14 +191,6 @@ public abstract class Procedure implements Callable, Fixable {
         return this.fixed;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format("The unit is %sfixed", fixed ? ""
-                : "not "));
-        }
-    }
-
     private boolean fixed;
 
     @Override

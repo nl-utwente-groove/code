@@ -249,14 +249,6 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.fixed;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format("Aspect edge %s should %sbe fixed", this,
-                fixed ? "" : "not "));
-        }
-    }
-
     /**
      * Sets the (declared) aspects for this edge from the edge label.
      * @throws FormatException if the aspects are inconsistent

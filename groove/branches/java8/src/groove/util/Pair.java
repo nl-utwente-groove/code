@@ -16,7 +16,6 @@
  */
 package groove.util;
 
-
 /**
  * Implements a generic pair of values.
  * @author Arend Rensink
@@ -73,11 +72,6 @@ public class Pair<T,U> implements Fixable {
     public boolean isFixed() {
         // the pair is fixed as soon as the hash code is computed.
         return this.hashCode != 0;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        assert isFixed() == fixed;
     }
 
     /**

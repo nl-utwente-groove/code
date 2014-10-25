@@ -22,7 +22,6 @@ import groove.util.Dispenser;
 import groove.util.Groove;
 import groove.util.cache.AbstractCacheHolder;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +33,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
-AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
+    AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     /**
      * Constructs an abstract named graph.
      * @param name the (non-{@code null}) name of the graph.
@@ -85,11 +84,6 @@ AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     @Override
     public int size() {
         return nodeCount() + edgeCount();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return nodeCount() == 0;
     }
 
     /**
@@ -182,14 +176,6 @@ AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
         return result;
     }
 
-    @Override
-    public void testFixed(boolean fixed) throws IllegalStateException {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException(String.format("Expected graph '%s' to be %s",
-                getName(), fixed ? "fixed" : "unfixed"));
-        }
-    }
-
     /** Calls {@link #toString(Graph)}. */
     @Override
     public String toString() {
@@ -272,120 +258,20 @@ AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
 
     @Override
     public N addNode() {
-        N freshNode = getFactory().createNode(getNodeCounter());
-        assert !nodeSet().contains(freshNode) : String.format(
-            "Fresh node %s already in node set %s", freshNode, nodeSet());
-        addNode(freshNode);
-        return freshNode;
+        return addNode(getNodeCounter());
     }
 
     @Override
     public N addNode(int nr) {
-        N freshNode = getFactory().createNode(nr);
+        return addNode(Dispenser.single(nr));
+    }
+
+    private N addNode(Dispenser dispenser) {
+        N freshNode = getFactory().createNode(dispenser);
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
         return freshNode;
-    }
-
-    @Override
-    public boolean addNodeSet(Collection<? extends N> nodeSet) {
-        boolean added = false;
-        for (N node : nodeSet) {
-            added |= addNode(node);
-        }
-        return added;
-    }
-
-    /**
-     * Creates its result using {@link ElementFactory#createEdge(Node, Label, Node)}.
-     */
-    @Override
-    public E addEdge(N source, String label, N target) {
-        return addEdge(source, getFactory().createLabel(label), target);
-    }
-
-    /**
-     * Creates its result using {@link ElementFactory#createEdge(Node, Label, Node)}.
-     */
-    @Override
-    public E addEdge(N source, Label label, N target) {
-        assert containsNode(source);
-        assert containsNode(target);
-        E result = getFactory().createEdge(source, label, target);
-        addEdge(result);
-        return result;
-    }
-
-    /**
-     * This implementation calls {@link #addNode} and
-     * {@link #addEdge} for the actual addition of
-     * the edge and its incident nodes.
-     */
-    @Override
-    public boolean addEdgeContext(E edge) {
-        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
-        boolean added = !containsEdge(edge);
-        if (added) {
-            addNode(edge.source());
-            addNode(edge.target());
-            addEdge(edge);
-        }
-        return added;
-    }
-
-    @Override
-    public boolean addEdgeSetContext(Collection<? extends E> edgeSet) {
-        boolean added = false;
-        for (E edge : edgeSet) {
-            added |= addEdgeContext(edge);
-        }
-        return added;
-    }
-
-    /*
-     * This implementation calls {@link #removeEdge(Edge)} and
-     * {@link #removeNodeWithoutCheck(Node)} for the actual removal
-     * of the incident edges and the node.
-     */
-    @Override
-    public boolean removeNodeContext(N node) {
-        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
-        boolean removed = containsNode(node);
-        if (removed) {
-            for (E edge : edgeSet(node)) {
-                removeEdge(edge);
-            }
-            removeNode(node);
-        }
-        return removed;
-    }
-
-    @Override
-    public boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
-        boolean removed = false;
-        for (N node : nodeSet) {
-            removed |= removeNodeContext(node);
-        }
-        return removed;
-    }
-
-    @Override
-    public boolean removeNodeSet(Collection<? extends N> nodeSet) {
-        boolean removed = false;
-        for (N node : nodeSet) {
-            removed |= removeNode(node);
-        }
-        return removed;
-    }
-
-    @Override
-    public boolean removeEdgeSet(Collection<? extends E> edgeSet) {
-        boolean removed = false;
-        for (E edge : edgeSet) {
-            removed |= removeEdge(edge);
-        }
-        return removed;
     }
 
     /**

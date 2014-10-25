@@ -681,27 +681,6 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Tests if the condition is fixed or not. Throws an exception if the
-     * fixedness does not coincide with the given value.
-     *
-     * @param value the expected fixedness state
-     * @throws IllegalStateException if {@link #isFixed()} does not yield
-     *         <code>value</code>
-     */
-    @Override
-    public void testFixed(boolean value) throws IllegalStateException {
-        if (isFixed() != value) {
-            String message;
-            if (value) {
-                message = "Rule should be fixed";
-            } else {
-                message = "Rule should not be fixed";
-            }
-            throw new IllegalStateException(message);
-        }
-    }
-
-    /**
      * Checks this rule for compatibility with a chosen algebra.
      * Called before starting an exploration.
      */

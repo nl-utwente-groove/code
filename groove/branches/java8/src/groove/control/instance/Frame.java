@@ -549,11 +549,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return this.fixable.isFixed();
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        this.fixable.testFixed(fixed);
-    }
-
     private final DefaultFixable fixable = new DefaultFixable();
 
     private final static boolean RICH_LABELS = false;

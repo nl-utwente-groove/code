@@ -14,11 +14,11 @@ import java.util.List;
  * A class to represent equations of the system. An equation has a type:
  * upper or lower bound; a list of variables (type compatible with the
  * equation) and a constant (c).
- * 
+ *
  * The relation (inequality) used in the equation depends on its type:
  * - Lower bound equations are taken as: x_0 + x_1 + ... + x_n >= c
  * - Upper bound equations are taken as: x^0 + x^1 + ... + x^n <= c
- *   
+ *
  * An equation may have a dual, which is a counter-part with the opposite
  * type and same variables. If a dual equation is not useful for solving the
  * system (for example, a lower bound equation with constant zero is not
@@ -139,13 +139,6 @@ final class Equation implements Fixable {
         return this.hashCode != 0;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (this.isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
-    }
-
     /** Returns true if this equation has a special node reference. */
     boolean hasNode() {
         return this.node != null;
@@ -180,7 +173,7 @@ final class Equation implements Fixable {
     }
 
     /** Indicates if this is an empty equation, meaning that
-     * there are no variables. 
+     * there are no variables.
      */
     public boolean isEmpty() {
         return this.vars.isEmpty();
@@ -213,17 +206,17 @@ final class Equation implements Fixable {
     }
 
     /**
-     * Main method to computes new values for the variables in this 
+     * Main method to computes new values for the variables in this
      * equation based on the given solution. This method does not consider
      * the dual equation.
-     * 
+     *
      * Returns true if this equation can no longer contribute in solving
      * the system and should be removed from the list of equations of the
      * solution.
      * If the solution cannot be improved at the moment, the method returns
      * false, and so this equation will be considered again in future
      * iterations.
-     * 
+     *
      * We split the equation variables in two types:
      * - Fixed: variables that have a singleton interval in the given
      *          solution. Their value cannot change.

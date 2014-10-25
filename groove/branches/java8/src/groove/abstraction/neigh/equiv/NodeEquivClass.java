@@ -34,7 +34,7 @@ import java.util.Iterator;
  * @author Eduardo Zambon
  */
 public final class NodeEquivClass<T extends HostNode> extends AbstractSet<T> implements
-EquivClass<T> {
+    EquivClass<T> {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -62,13 +62,6 @@ EquivClass<T> {
     @Override
     public boolean isFixed() {
         return this.fixed;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (this.isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
     }
 
     /**

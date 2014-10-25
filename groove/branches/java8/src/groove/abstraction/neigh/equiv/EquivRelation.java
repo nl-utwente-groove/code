@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -25,11 +25,11 @@ import java.util.Map;
 
 /**
  * An equivalence relation is represented as a set of equivalence classes.
- * 
+ *
  * @author Eduardo Zambon
  */
-public class EquivRelation<T extends HostElement> extends
-        MyHashSet<EquivClass<T>> implements Fixable {
+public class EquivRelation<T extends HostElement> extends MyHashSet<EquivClass<T>> implements
+    Fixable {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -66,7 +66,7 @@ public class EquivRelation<T extends HostElement> extends
 
     /**
      * Two equivalence classes are equal if they have the same objects.
-     * This method is expensive, so hash codes should always be checked first. 
+     * This method is expensive, so hash codes should always be checked first.
      */
     @Override
     public boolean equals(Object o) {
@@ -131,13 +131,6 @@ public class EquivRelation<T extends HostElement> extends
     }
 
     @Override
-    public void testFixed(boolean fixed) {
-        if (this.isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
-    }
-
-    @Override
     public boolean add(EquivClass<T> ec) {
         assert !this.isFixed();
         ec.setFixed();
@@ -179,11 +172,11 @@ public class EquivRelation<T extends HostElement> extends
         return result * prime;
     }
 
-    /** 
+    /**
      * Returns the equivalence class to which the given element belongs.
      * May return null if the element is not in any equivalence class of the
      * equivalence relation.
-     * 
+     *
      * This method assumes that the equivalence relation is consistent, i.e.,
      * an element belongs only to a single equivalence class.
      */

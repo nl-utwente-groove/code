@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -47,7 +47,7 @@ import java.util.Set;
 
 /**
  * Pattern type graph.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
@@ -57,8 +57,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     // ------------------------------------------------------------------------
 
     /** Prototype simple graph used to create new patterns. */
-    private static final HostGraph protSimpleGraph = new DefaultHostGraph(
-        "protSGraph");
+    private static final HostGraph protSimpleGraph = new DefaultHostGraph("protSGraph");
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -94,8 +93,8 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         sb.append("Edges: " + edgeSet() + "\n");
         sb.append("\nPatterns (depth = " + depth() + "):\n");
         for (TypeNode node : nodeSet()) {
-            sb.append("  " + node.getPattern().getName() + ": "
-                + node.getPattern().toString() + "\n");
+            sb.append("  " + node.getPattern().getName() + ": " + node.getPattern().toString()
+                + "\n");
         }
         sb.append("\nMorphisms:\n");
         for (TypeEdge edge : edgeSet()) {
@@ -126,13 +125,6 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             this.fixed = true;
         }
         return result;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
     }
 
     @Override
@@ -193,15 +185,13 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     /** Creates and returns an empty simple graph morphism. */
-    private SimpleMorphism newSimpleMorphism(String name, TypeNode source,
-            TypeNode target) {
+    private SimpleMorphism newSimpleMorphism(String name, TypeNode source, TypeNode target) {
         return new SimpleMorphism(name, source, target);
     }
 
     /** Creates and returns a new edge with an empty morphism. */
     public TypeEdge addEdge(int nr, TypeNode source, TypeNode target) {
-        SimpleMorphism morph =
-            newSimpleMorphism(TypeEdge.PREFIX + nr, source, target);
+        SimpleMorphism morph = newSimpleMorphism(TypeEdge.PREFIX + nr, source, target);
         TypeEdge edge = new TypeEdge(nr, source, target, morph);
         addEdgeContext(edge);
         return edge;
@@ -218,12 +208,12 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     private PatternNode createPatternNode(PatternGraph pGraph, TypeNode type,
-            Collection<PatternNode> used) {
+        Collection<PatternNode> used) {
         return pGraph.getFactory().nodes(type).createNode(used);
     }
 
-    private PatternEdge createPatternEdge(PatternGraph pGraph,
-            PatternNode source, TypeEdge type, PatternNode target) {
+    private PatternEdge createPatternEdge(PatternGraph pGraph, PatternNode source, TypeEdge type,
+        PatternNode target) {
         return pGraph.getFactory().createEdge(source, type, target);
     }
 
@@ -249,10 +239,10 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
      *    map is non-empty the corresponding pattern nodes in the
      *    image of the map are reused when necessary.
      * @param edgeMap
-     *    a map of simple edges to pattern nodes of layer 1. The map may be null. 
+     *    a map of simple edges to pattern nodes of layer 1. The map may be null.
      */
-    private void lift(Graph graph, PatternGraph result,
-            Map<Node,PatternNode> nodeMap, Map<Edge,PatternNode> edgeMap) {
+    private void lift(Graph graph, PatternGraph result, Map<Node,PatternNode> nodeMap,
+        Map<Edge,PatternNode> edgeMap) {
         // First lift the nodes of layer 0.
         for (TypeNode tNode : getLayerNodes(0)) {
             // For each node pattern.
@@ -274,10 +264,8 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             // For each edge pattern.
             HostGraph pattern = tTgt.getPattern();
             HostEdge edge = tTgt.getSimpleEdge();
-            Set<TypeLabel> srcLabels =
-                Util.getNodeLabels(pattern, edge.source());
-            Set<TypeLabel> tgtLabels =
-                Util.getNodeLabels(pattern, edge.target());
+            Set<TypeLabel> srcLabels = Util.getNodeLabels(pattern, edge.source());
+            Set<TypeLabel> tgtLabels = Util.getNodeLabels(pattern, edge.target());
             TypeLabel edgeLabel = edge.label();
             // For each matched edge in the simple graph.
             for (Edge sEdge : match(graph, srcLabels, edgeLabel, tgtLabels)) {
@@ -286,8 +274,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 if (edgeMap != null) {
                     pTgt = edgeMap.get(sEdge);
                     if (pTgt == null) {
-                        pTgt =
-                            createPatternNode(result, tTgt, edgeMap.values());
+                        pTgt = createPatternNode(result, tTgt, edgeMap.values());
                         edgeMap.put(sEdge, pTgt);
                     }
                 } else {
@@ -297,8 +284,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 // Find source pattern node and pattern edge type.
                 PatternNode pSrc = nodeMap.get(sEdge.source());
                 TypeEdge tEdge = getCoveringEdge(tTgt, pTgt.getSource());
-                PatternEdge pEdge =
-                    createPatternEdge(result, pSrc, tEdge, pTgt);
+                PatternEdge pEdge = createPatternEdge(result, pSrc, tEdge, pTgt);
                 result.addEdgeContext(pEdge);
                 // Now repeat for the target of the simple edge.
                 if (!sEdge.source().equals(sEdge.target())) {
@@ -326,10 +312,8 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
         // ...then we properly fill the pattern rule object.
         PatternRule pRule = new PatternRule(sRule, this);
-        Map<PatternNode,RuleNode> ruleMap =
-            new MyHashMap<PatternNode,RuleNode>();
-        Map<PatternNode,RuleNode> auxMap =
-            new MyHashMap<PatternNode,RuleNode>();
+        Map<PatternNode,RuleNode> ruleMap = new MyHashMap<PatternNode,RuleNode>();
+        Map<PatternNode,RuleNode> auxMap = new MyHashMap<PatternNode,RuleNode>();
 
         // Add nodes to the rule.
         // First handle nodes from layers 0 and 1.
@@ -358,12 +342,10 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             // LHS
             for (PatternNode lhsNode : liftedLhs.getLayerNodes(layer)) {
                 RuleNode rNode;
-                Set<PatternNode> lhsAncestors =
-                    liftedLhs.getEdgeLayerAncestors(lhsNode);
+                Set<PatternNode> lhsAncestors = liftedLhs.getEdgeLayerAncestors(lhsNode);
                 boolean isEraser = true;
                 rhsLoop: for (PatternNode rhsNode : liftedRhs.getLayerNodes(layer)) {
-                    Set<PatternNode> rhsAncestors =
-                        liftedRhs.getEdgeLayerAncestors(rhsNode);
+                    Set<PatternNode> rhsAncestors = liftedRhs.getEdgeLayerAncestors(rhsNode);
                     if (rhsAncestors.containsAll(lhsAncestors)
                         && lhsAncestors.containsAll(rhsAncestors)) {
                         isEraser = false;
@@ -380,12 +362,10 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             // RHS
             for (PatternNode rhsNode : liftedRhs.getLayerNodes(layer)) {
                 RuleNode rNode;
-                Set<PatternNode> rhsAncestors =
-                    liftedRhs.getEdgeLayerAncestors(rhsNode);
+                Set<PatternNode> rhsAncestors = liftedRhs.getEdgeLayerAncestors(rhsNode);
                 boolean isCreator = true;
                 lhsLoop: for (PatternNode lhsNode : liftedLhs.getLayerNodes(layer)) {
-                    Set<PatternNode> lhsAncestors =
-                        liftedLhs.getEdgeLayerAncestors(lhsNode);
+                    Set<PatternNode> lhsAncestors = liftedLhs.getEdgeLayerAncestors(lhsNode);
                     if (lhsAncestors.containsAll(rhsAncestors)
                         && rhsAncestors.containsAll(lhsAncestors)) {
                         isCreator = false;
@@ -434,8 +414,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             for (TypeNode tNode : getLayerNodes(layer)) {
                 // Check if we can compose this new pattern type.
                 PatternRule pRule = getClosureRule(tNode);
-                Matcher matcher =
-                    MatcherFactory.instance().getMatcher(pRule, true);
+                Matcher matcher = MatcherFactory.instance().getMatcher(pRule, true);
                 for (MatchResult matchRes : matcher.findMatches(pGraph, null)) {
                     // For each match we found we add a new pattern. We don't
                     // have to recompute any matches after the transformation
@@ -473,13 +452,12 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return result;
     }
 
-    private List<Edge> match(Graph graph, Set<TypeLabel> srcLabels,
-            TypeLabel edgeLabel, Set<TypeLabel> tgtLabels) {
+    private List<Edge> match(Graph graph, Set<TypeLabel> srcLabels, TypeLabel edgeLabel,
+        Set<TypeLabel> tgtLabels) {
         List<Edge> result = new ArrayList<Edge>();
         for (Edge edge : graph.edgeSet(edgeLabel)) {
             if ((srcLabels.isEmpty() || match(graph, edge.source(), srcLabels))
-                && (tgtLabels.isEmpty() || match(graph, edge.target(),
-                    tgtLabels))) {
+                && (tgtLabels.isEmpty() || match(graph, edge.target(), tgtLabels))) {
                 result.add(edge);
             }
         }
@@ -499,8 +477,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 PatternRule pRule = new PatternRule(pattern.getName(), this);
                 RuleNode rTgt = pRule.addCreatorNode(tNode);
                 for (TypeEdge tEdge : inEdgeSet(tNode)) {
-                    RuleNode rSrc =
-                        pRule.addRhsAsReader(getClosureRule(tEdge.source()));
+                    RuleNode rSrc = pRule.addRhsAsReader(getClosureRule(tEdge.source()));
                     pRule.addCreatorEdge(rSrc, tEdge, rTgt);
                 }
                 pRule.fixCommutativity();

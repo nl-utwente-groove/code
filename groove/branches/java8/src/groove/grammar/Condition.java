@@ -111,7 +111,7 @@ public class Condition implements Fixable {
      * @param properties properties for matching the condition
      */
     public Condition(String name, Op operator, RuleGraph pattern, RuleGraph root,
-            GrammarProperties properties) {
+        GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
@@ -318,27 +318,6 @@ public class Condition implements Fixable {
     @Override
     public boolean isFixed() {
         return this.fixed;
-    }
-
-    /**
-     * Tests if the condition is fixed or not. Throws an exception if the
-     * fixedness does not coincide with the given value.
-     *
-     * @param value the expected fixedness state
-     * @throws IllegalStateException if {@link #isFixed()} does not yield
-     *         <code>value</code>
-     */
-    @Override
-    public void testFixed(boolean value) throws IllegalStateException {
-        if (isFixed() != value) {
-            String message;
-            if (value) {
-                message = "Graph condition should be fixed in this state";
-            } else {
-                message = "Graph condition should not be fixed in this state";
-            }
-            throw new IllegalStateException(message);
-        }
     }
 
     /**

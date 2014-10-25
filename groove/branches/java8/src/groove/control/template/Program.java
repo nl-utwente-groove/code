@@ -755,12 +755,5 @@ public class Program implements Fixable {
         return this.fixed;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != this.fixed) {
-            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
-        }
-    }
-
     private boolean fixed;
 }

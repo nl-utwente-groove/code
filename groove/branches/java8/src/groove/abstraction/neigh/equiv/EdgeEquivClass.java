@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -23,11 +23,10 @@ import groove.grammar.host.HostEdge;
  * An equivalence class implementation for edges (both from host graphs and
  * shapes). This class is implemented as a hash set and is used only during
  * normalisation, i.e., when computing the equivalence relation over shapes.
- * 
+ *
  * @author Eduardo Zambon
  */
-public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
-        implements EquivClass<T> {
+public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T> implements EquivClass<T> {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -56,7 +55,7 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
 
     /**
      * Two equivalence classes are equal if they have the same objects.
-     * This method is expensive, so hash codes should always be checked first. 
+     * This method is expensive, so hash codes should always be checked first.
      */
     @Override
     public boolean equals(Object o) {
@@ -93,7 +92,7 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
 
     /**
      * Specialises the return type of the super method.
-     * Shallow clone. Clones the equivalence class but not the elements. 
+     * Shallow clone. Clones the equivalence class but not the elements.
      * The clone is not fixed, even if the original is.
      */
     @Override
@@ -115,13 +114,6 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
     @Override
     public boolean isFixed() {
         return this.hashCode != 0;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (this.isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
     }
 
     /**

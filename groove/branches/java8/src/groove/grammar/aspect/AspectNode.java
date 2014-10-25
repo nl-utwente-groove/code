@@ -141,14 +141,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     @Override
-    public void testFixed(boolean fixed) {
-        if (this.allFixed != fixed) {
-            throw new IllegalStateException(String.format("Aspect node %d should%s be fixed",
-                getNumber(), fixed ? "" : " not"));
-        }
-    }
-
-    @Override
     public AspectNode clone() {
         return clone(getNumber());
     }
@@ -453,8 +445,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 for (int i = 0; i < this.argNodes.size(); i++) {
                     AspectNode argNode = this.argNodes.get(i);
                     if (argNode != null) {
-                        Sort paramType =
-                            this.operatorEdge.getOperator().getParamTypes().get(i);
+                        Sort paramType = this.operatorEdge.getOperator().getParamTypes().get(i);
                         argNode.setDataType(paramType);
                     }
                 }

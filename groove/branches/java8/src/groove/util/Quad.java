@@ -106,11 +106,6 @@ public class Quad<T,U,V,W> implements Fixable {
         return this.hashCode != 0;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        assert isFixed() == fixed;
-    }
-
     /**
      * Tests for the equality of the {@link #one()}, {@link #two()} and {@link #three()}
      * fields.

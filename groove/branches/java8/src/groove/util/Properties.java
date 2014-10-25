@@ -161,11 +161,6 @@ public abstract class Properties extends java.util.Properties implements Fixable
         return this.fixable.isFixed();
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        this.fixable.testFixed(fixed);
-    }
-
     /** Object to delegate the fixable functionality. */
     private final DefaultFixable fixable = new DefaultFixable();
 
