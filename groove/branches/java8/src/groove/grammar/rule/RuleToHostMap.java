@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.rule;
@@ -21,7 +21,6 @@ import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
-import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementBiMap;
@@ -39,7 +38,7 @@ import java.util.Map;
  * @version $Revision$
  */
 public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
-        VarMap {
+    VarMap {
     /**
      * Creates an empty map with an empty valuation.
      */
@@ -87,20 +86,8 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
         return this.valuation;
     }
 
-    @Override
-    public TypeElement getVar(LabelVar var) {
-        return this.valuation.get(var);
-    }
-
-    @Override
-    public TypeElement putVar(LabelVar var, TypeElement value) {
-        return this.valuation.put(var, value);
-    }
-
-    @Override
-    public void putAllVar(Valuation valuation) {
-        this.valuation.putAll(valuation);
-    }
+    /** The internal map from variables to labels. */
+    private final Valuation valuation;
 
     /**
      * Also copies the other's valuation, if any.
@@ -113,7 +100,7 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
         }
     }
 
-    /** 
+    /**
      * Inserts an anchor key-value pair into the map.
      * @return the old value for {@code key}
      */
@@ -157,23 +144,23 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
     @Override
     public void clear() {
         super.clear();
-        this.valuation.clear();
+        getValuation().clear();
     }
 
     @Override
     public boolean equals(Object obj) {
         return obj instanceof RuleToHostMap && super.equals(obj)
-            && this.valuation.equals(((RuleToHostMap) obj).getValuation());
+            && getValuation().equals(((RuleToHostMap) obj).getValuation());
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() + this.valuation.hashCode();
+        return super.hashCode() + getValuation().hashCode();
     }
 
     @Override
     public String toString() {
-        return super.toString() + " Valuation: " + this.valuation;
+        return super.toString() + " Valuation: " + getValuation();
     }
 
     /** Specialises the return type. */
@@ -192,14 +179,11 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
 
     @Override
     protected Map<RuleEdge,HostEdge> createEdgeMap() {
-        return new LinkedHashMap<RuleEdge,HostEdge>();
+        return new LinkedHashMap<>();
     }
 
     @Override
     protected Map<RuleNode,HostNode> createNodeMap() {
-        return new LinkedHashMap<RuleNode,HostNode>();
+        return new LinkedHashMap<>();
     }
-
-    /** The internal map from variables to labels. */
-    private final Valuation valuation;
 }

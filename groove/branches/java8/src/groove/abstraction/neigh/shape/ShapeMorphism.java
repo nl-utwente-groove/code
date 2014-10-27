@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * Morphism between shapes.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class ShapeMorphism extends HostGraphMorphism {
@@ -119,20 +119,6 @@ public final class ShapeMorphism extends HostGraphMorphism {
         return (ShapeFactory) super.getFactory();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<ShapeNode> getPreImages(Node node) {
-        assert node instanceof ShapeNode;
-        return (Set<ShapeNode>) super.getPreImages(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<ShapeEdge> getPreImages(Edge edge) {
-        assert edge instanceof ShapeEdge;
-        return (Set<ShapeEdge>) super.getPreImages(edge);
-    }
-
     /**
      * Creates and returns an identity shape morphism between the two given
      * shapes. Used during the materialisation phase.
@@ -156,7 +142,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
      * shape. Only the pre-images of the nodes in the equivalence class of the
      * signature are considered, the node in the source signature is taken to
      * be the given 'nodeS'.
-     * 
+     *
      * @param from the shape that is the pre-image of this morphism.
      * @param nodeS the node in the 'from' shape the is to used when looking
      *              for edge signatures.
@@ -165,8 +151,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
      */
     // EZ says: this method is a bit expensive so maybe it might payoff to try
     // to improve its performance.
-    public Multiplicity getPreImagesMult(Shape from, ShapeNode nodeS,
-            EdgeSignature esT) {
+    public Multiplicity getPreImagesMult(Shape from, ShapeNode nodeS, EdgeSignature esT) {
         Multiplicity result = Multiplicity.ZERO_EDGE_MULT;
         EdgeMultDir direction = esT.getDirection();
         TypeLabel label = esT.getLabel();
@@ -175,9 +160,9 @@ public final class ShapeMorphism extends HostGraphMorphism {
         // first collect equivalence classes, to eliminate overlap
         Set<EquivClass<ShapeNode>> ecSS = new HashSet<EquivClass<ShapeNode>>();
         for (ShapeNode esEcNodeT : esT.getEquivClass()) {
-            Set<ShapeNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
-            for (ShapeNode esEcNodeS : esEcNodesS) {
-                ecSS.add(fromEquivRelation.getEquivClassOf(esEcNodeS));
+            Set<HostNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
+            for (HostNode esEcNodeS : esEcNodesS) {
+                ecSS.add(fromEquivRelation.getEquivClassOf((ShapeNode) esEcNodeS));
             }
         }
         // now sum the multiplicities
@@ -195,9 +180,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
 
     /** Returns an edge signature in the given target shape. */
     public EdgeSignature getEdgeSignature(Shape to, EdgeSignature esFrom) {
-        return to.getEdgeSignature(
-            esFrom.getDirection(),
-            this.getNode(esFrom.getNode()),
+        return to.getEdgeSignature(esFrom.getDirection(), this.getNode(esFrom.getNode()),
             esFrom.getLabel(),
             to.getEquivClassOf(this.getNode(esFrom.getEquivClass().iterator().next())));
     }
@@ -205,14 +188,12 @@ public final class ShapeMorphism extends HostGraphMorphism {
     /** Returns true if all keys are in 'from' and all values in 'to'. */
     public boolean isValid(Shape from, Shape to) {
         for (Entry<HostNode,HostNode> entry : this.nodeMap().entrySet()) {
-            if (!from.containsNode(entry.getKey())
-                || !to.containsNode(entry.getValue())) {
+            if (!from.containsNode(entry.getKey()) || !to.containsNode(entry.getValue())) {
                 return false;
             }
         }
         for (Entry<HostEdge,HostEdge> entry : this.edgeMap().entrySet()) {
-            if (!from.containsEdge(entry.getKey())
-                || !to.containsEdge(entry.getValue())) {
+            if (!from.containsEdge(entry.getKey()) || !to.containsEdge(entry.getValue())) {
                 return false;
             }
         }
@@ -231,8 +212,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
             if (ecS.size() > 1) {
                 EquivClass<ShapeNode> ecT = null;
                 for (ShapeNode nodeS : ecS) {
-                    EquivClass<ShapeNode> otherEcT =
-                        to.getEquivClassOf(this.getNode(nodeS));
+                    EquivClass<ShapeNode> otherEcT = to.getEquivClassOf(this.getNode(nodeS));
                     if (ecT == null) {
                         ecT = otherEcT;
                     }
@@ -249,10 +229,10 @@ public final class ShapeMorphism extends HostGraphMorphism {
         if (complyToEquivClass) {
             for (ShapeNode nodeT : to.nodeSet()) {
                 Multiplicity nodeTMult = to.getNodeMult(nodeT);
-                Set<ShapeNode> nodesS = this.getPreImages(nodeT);
+                Set<HostNode> nodesS = this.getPreImages(nodeT);
                 Multiplicity sum = from.getNodeSetMultSum(nodesS);
                 // EZ says: we need subsumption, not equality.
-                //if (!nodeTMult.equals(sum)) { 
+                //if (!nodeTMult.equals(sum)) {
                 if (!nodeTMult.subsumes(sum)) {
                     complyToNodeMult = false;
                     break;
@@ -265,9 +245,9 @@ public final class ShapeMorphism extends HostGraphMorphism {
         if (complyToEquivClass && complyToNodeMult) {
             dirLoop: for (EdgeSignature esT : to.getEdgeSigSet()) {
                 Multiplicity esTMult = to.getEdgeSigMult(esT);
-                Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
-                for (ShapeNode nodeS : nodesS) {
-                    Multiplicity sum = this.getPreImagesMult(from, nodeS, esT);
+                Set<HostNode> nodesS = this.getPreImages(esT.getNode());
+                for (HostNode nodeS : nodesS) {
+                    Multiplicity sum = this.getPreImagesMult(from, (ShapeNode) nodeS, esT);
                     // EZ says: we need subsumption, not equality.
                     //if (!esTMult.equals(sum)) {
                     if (!esTMult.subsumes(sum)) {
@@ -289,9 +269,8 @@ public final class ShapeMorphism extends HostGraphMorphism {
             System.out.println(to);
             System.out.println("Morphism:");
             System.out.println(this);
-            System.out.println("EC test: " + complyToEquivClass
-                + ", Node mult test: " + complyToNodeMult
-                + ", Edge mult test: " + complyToEdgeMult);
+            System.out.println("EC test: " + complyToEquivClass + ", Node mult test: "
+                + complyToNodeMult + ", Edge mult test: " + complyToEdgeMult);
             if (!java.awt.GraphicsEnvironment.isHeadless()) {
                 ShapePreviewDialog.showShape(from.clone());
                 ShapePreviewDialog.showShape(to.clone());

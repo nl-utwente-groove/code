@@ -46,8 +46,8 @@ abstract public class AElementBiMap<SN extends Node,SE extends Edge,TN extends N
         boolean result = !isFixed();
         if (result) {
             // Fixing is the same as computing the inverse maps.
-            this.getInverseNodeMap();
-            this.getInverseEdgeMap();
+            getInverseNodeMap();
+            getInverseEdgeMap();
         }
         return result;
     }
@@ -60,10 +60,9 @@ abstract public class AElementBiMap<SN extends Node,SE extends Edge,TN extends N
     /** Returns the inverse mapping, from shape nodes to their
      * sets of pre-images.
      */
-    @SuppressWarnings("unchecked")
     public Map<TN,Set<SN>> getInverseNodeMap() {
         if (this.inverseNodeMap == null) {
-            this.inverseNodeMap = (Map<TN,Set<SN>>) this.computeInverse(this.nodeMap());
+            this.inverseNodeMap = this.computeInverse(this.nodeMap());
         }
         return this.inverseNodeMap;
     }
@@ -71,10 +70,9 @@ abstract public class AElementBiMap<SN extends Node,SE extends Edge,TN extends N
     /** Returns the inverse mapping, from shape nodes to their
      * sets of pre-images.
      */
-    @SuppressWarnings("unchecked")
     public Map<TE,Set<SE>> getInverseEdgeMap() {
         if (this.inverseEdgeMap == null) {
-            this.inverseEdgeMap = (Map<TE,Set<SE>>) this.computeInverse(this.edgeMap());
+            this.inverseEdgeMap = this.computeInverse(this.edgeMap());
         }
         return this.inverseEdgeMap;
     }
@@ -93,7 +91,7 @@ abstract public class AElementBiMap<SN extends Node,SE extends Edge,TN extends N
     }
 
     /** Returns the set of host nodes mapped to a given shape node. */
-    public Set<? extends SN> getPreImages(Node node) {
+    public Set<SN> getPreImages(Node node) {
         Set<SN> result = getInverseNodeMap().get(node);
         if (result == null) {
             result = Collections.emptySet();
@@ -102,7 +100,7 @@ abstract public class AElementBiMap<SN extends Node,SE extends Edge,TN extends N
     }
 
     /** Returns the set of host edges mapped to a given shape edge. */
-    public Set<? extends SE> getPreImages(Edge edge) {
+    public Set<SE> getPreImages(Edge edge) {
         Set<SE> result = getInverseEdgeMap().get(edge);
         if (result == null) {
             result = Collections.emptySet();

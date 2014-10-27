@@ -11,15 +11,14 @@ import groove.graph.Node;
 import groove.util.Fixable;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Element map from a host graph to a shape.
- * 
+ *
  * @author Eduardo Zambon
  */
-public final class HostToShapeMap extends
-        AElementBiMap<HostNode,HostEdge,HostNode,HostEdge> implements Fixable {
+public final class HostToShapeMap extends AElementBiMap<HostNode,HostEdge,HostNode,HostEdge>
+    implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -42,53 +41,45 @@ public final class HostToShapeMap extends
     // ------------------------------------------------------------------------
 
     /** Specialises the return type. */
-    @SuppressWarnings("unchecked")
     @Override
-    public Map<HostEdge,ShapeEdge> edgeMap() {
-        return (Map<HostEdge,ShapeEdge>) super.edgeMap();
+    public MyEdgeMap edgeMap() {
+        return (MyEdgeMap) super.edgeMap();
     }
 
     /** Specialises the return type. */
-    @SuppressWarnings("unchecked")
     @Override
-    public Map<HostNode,ShapeNode> nodeMap() {
-        return (Map<HostNode,ShapeNode>) super.nodeMap();
+    public MyNodeMap nodeMap() {
+        return (MyNodeMap) super.nodeMap();
+    }
+
+    @Override
+    protected MyNodeMap createNodeMap() {
+        return new MyNodeMap();
+    }
+
+    @Override
+    protected MyEdgeMap createEdgeMap() {
+        return new MyEdgeMap();
     }
 
     @Override
     public ShapeNode putNode(HostNode key, HostNode value) {
-        assert value instanceof ShapeNode;
-        return (ShapeNode) super.putNode(key, value);
+        return nodeMap().put(key, value);
     }
 
     @Override
     public ShapeEdge putEdge(HostEdge key, HostEdge value) {
-        assert value instanceof ShapeEdge;
-        return (ShapeEdge) super.putEdge(key, value);
+        return edgeMap().put(key, value);
     }
 
     @Override
     public ShapeNode getNode(Node key) {
-        return (ShapeNode) super.getNode(key);
+        return nodeMap().get(key);
     }
 
     @Override
     public ShapeEdge getEdge(Edge key) {
-        return (ShapeEdge) super.getEdge(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<HostNode> getPreImages(Node node) {
-        assert node instanceof ShapeNode;
-        return (Set<HostNode>) super.getPreImages(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<HostEdge> getPreImages(Edge edge) {
-        assert edge instanceof ShapeEdge;
-        return (Set<HostEdge>) super.getPreImages(edge);
+        return edgeMap().get(key);
     }
 
     // ------------------------------------------------------------------------
@@ -97,12 +88,11 @@ public final class HostToShapeMap extends
 
     /**
      * Returns the set of nodes that maps to values occurring in the given
-     * equivalence class. 
+     * equivalence class.
      */
     public EquivClass<HostNode> getPreImages(EquivClass<ShapeNode> ecS) {
         if (this.ecMap == null) {
-            this.ecMap =
-                new MyHashMap<EquivClass<ShapeNode>,EquivClass<HostNode>>();
+            this.ecMap = new MyHashMap<EquivClass<ShapeNode>,EquivClass<HostNode>>();
         }
         EquivClass<HostNode> nodesG = this.ecMap.get(ecS);
         if (nodesG == null) {
@@ -118,5 +108,33 @@ public final class HostToShapeMap extends
     @Override
     public ShapeFactory getFactory() {
         return (ShapeFactory) super.getFactory();
+    }
+
+    /** Specialised edge map that always returns shape edges. */
+    public class MyEdgeMap extends EdgeMap {
+        @Override
+        public ShapeEdge get(Object key) {
+            return (ShapeEdge) super.get(key);
+        }
+
+        @Override
+        public ShapeEdge put(HostEdge key, HostEdge value) {
+            assert value instanceof ShapeEdge;
+            return (ShapeEdge) super.put(key, value);
+        }
+    }
+
+    /** Specialised node map that always returns shape nodes. */
+    public class MyNodeMap extends NodeMap {
+        @Override
+        public ShapeNode get(Object key) {
+            return (ShapeNode) super.get(key);
+        }
+
+        @Override
+        public ShapeNode put(HostNode key, HostNode value) {
+            assert value instanceof ShapeNode;
+            return (ShapeNode) super.put(key, value);
+        }
     }
 }

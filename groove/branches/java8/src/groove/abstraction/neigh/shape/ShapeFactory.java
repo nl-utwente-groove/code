@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,11 +24,10 @@ import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeNode;
 import groove.graph.Label;
-import groove.graph.NodeFactory;
 
 /**
  * Factory class for shape elements.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class ShapeFactory extends HostFactory {
@@ -42,11 +41,6 @@ public final class ShapeFactory extends HostFactory {
     }
 
     @Override
-    public NodeFactory<HostNode> nodes(TypeNode type) {
-        return new ShapeNodeFactory(type);
-    }
-
-    @Override
     public ShapeNode createNode(int nr) {
         return (ShapeNode) super.createNode(nr);
     }
@@ -57,20 +51,18 @@ public final class ShapeFactory extends HostFactory {
     }
 
     @Override
-    public ShapeEdge createEdge(HostNode source, String text, HostNode target) {
-        return (ShapeEdge) super.createEdge(source, text, target);
-    }
-
-    @Override
     public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
         return (ShapeEdge) super.createEdge(source, label, target);
     }
 
     @Override
-    protected ShapeEdge newEdge(HostNode source, TypeEdge type,
-            HostNode target, int nr) {
-        return new ShapeEdge(this, (ShapeNode) source, type,
-            (ShapeNode) target, nr);
+    public ShapeNodeFactory nodes(TypeNode type) {
+        return new ShapeNodeFactory(type);
+    }
+
+    @Override
+    protected ShapeEdge newEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
+        return new ShapeEdge(this, (ShapeNode) source, type, (ShapeNode) target, nr);
     }
 
     @Override
@@ -96,13 +88,14 @@ public final class ShapeFactory extends HostFactory {
         return new ShapeFactory(typeFactory);
     }
 
-    private class ShapeNodeFactory extends DefaultHostNodeFactory {
+    /** Overrides the host node factory so as to create shape nodes. */
+    protected class ShapeNodeFactory extends DefaultHostNodeFactory {
         ShapeNodeFactory(TypeNode type) {
             super(type);
         }
 
         @Override
-        protected HostNode newNode(int nr) {
+        protected ShapeNode newNode(int nr) {
             return new ShapeNode(nr, getType());
         }
     }

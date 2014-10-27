@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -69,13 +69,13 @@ import java.util.Set;
  * familiar with the concepts of shape abstraction, in particular Sect. 6
  * (pg 27) of the Technical Report "Graph Abstraction and Abstract Graph
  * Transformation".
- * 
+ *
  * The constructors of this class are all private. This means that it is not
  * possible to freely create objects of this class. The only way to do so is
  * by calling the static method getMaterialisations().
- * 
+ *
  * WARNING: Beware of the code in this class. It's rather tricky.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class Materialisation {
@@ -135,7 +135,7 @@ public final class Materialisation {
      */
     private Set<ShapeEdge> matEdges;
     /**
-     * Set of possible new edges that should be included in the 
+     * Set of possible new edges that should be included in the
      * shape that is being materialised.
      */
     private Set<ShapeEdge> possibleEdges;
@@ -160,7 +160,7 @@ public final class Materialisation {
     /**
      * Map from nodes to their multiplicities. Nodes can disappear from the
      * shape due to garbage collection, so in case the original node is gone
-     * we still have its multiplicity stored.  
+     * we still have its multiplicity stored.
      */
     private Map<ShapeNode,Multiplicity> nodeSplitMultMap;
 
@@ -200,7 +200,7 @@ public final class Materialisation {
 
     /**
      * Copying constructor. Clones the structures of the given materialisation
-     * object that can be modified. 
+     * object that can be modified.
      */
     private Materialisation(Materialisation mat) {
         this.stage = mat.stage;
@@ -275,7 +275,7 @@ public final class Materialisation {
      * application.
      */
     public static void visitMaterialisations(Shape shape, Proof preMatch,
-            Visitor<Materialisation,?> visitor) {
+        Visitor<Materialisation,?> visitor) {
         Materialisation initialMat = new Materialisation(shape, preMatch);
         if (initialMat.isRuleModifying()) {
             initialMat.visitSolutions(visitor);
@@ -570,14 +570,14 @@ public final class Materialisation {
     static boolean hasConcreteMatch(Shape shape, RuleToShapeMap map) {
         // The match was injective so we can use the values of the node map
         // directly, no need to call nodeMapValueSet().
-        for (ShapeNode nodeS : map.nodeMap().values()) {
-            if (!shape.getNodeMult(nodeS).equals(ONE_NODE_MULT)) {
+        for (HostNode nodeS : map.nodeMap().values()) {
+            if (!shape.getNodeMult((ShapeNode) nodeS).equals(ONE_NODE_MULT)) {
                 return false;
             }
         }
-        for (ShapeEdge edgeS : map.edgeMap().values()) {
+        for (HostEdge edgeS : map.edgeMap().values()) {
             if (edgeS.getRole() == BINARY) {
-                if (!shape.isEdgeConcrete(edgeS)) {
+                if (!shape.isEdgeConcrete((ShapeEdge) edgeS)) {
                     return false;
                 }
             }
@@ -587,7 +587,7 @@ public final class Materialisation {
 
     /**
      * Checks if the match in the materialisation is concrete. See items 3, 4,
-     * and 5 of Def. 35 in pg. 21 of the technical report. 
+     * and 5 of Def. 35 in pg. 21 of the technical report.
      * @return true if all three items are satisfied; false, otherwise.
      */
     // EZ says: this method is only used in assertions, so it was not optimised.
@@ -597,7 +597,7 @@ public final class Materialisation {
         boolean complyToNodeMult = true;
         boolean complyToEquivClass = true;
         // For all nodes in the image of the LHS.
-        for (ShapeNode nodeS : this.match.nodeMapValueSet()) {
+        for (ShapeNode nodeS : this.match.nodeValues()) {
             // Item 3: check that all nodes in the image of the LHS have
             // multiplicity one.
             if (!this.shape.getNodeMult(nodeS).equals(ONE_NODE_MULT)) {
@@ -624,9 +624,9 @@ public final class Materialisation {
             // For all binary labels.
             for (TypeLabel label : Util.getBinaryLabels(this.shape)) {
                 // For all nodes v in the image of the LHS.
-                for (ShapeNode v : this.match.nodeMapValueSet()) {
+                for (ShapeNode v : this.match.nodeValues()) {
                     // For all nodes w in the image of the LHS.
-                    for (ShapeNode w : this.match.nodeMapValueSet()) {
+                    for (ShapeNode w : this.match.nodeValues()) {
                         EquivClass<ShapeNode> ecW = this.shape.getEquivClassOf(w);
                         EdgeSignature outEs =
                             this.shape.getEdgeSignature(EdgeMultDir.OUTGOING, v, label, ecW);
@@ -729,7 +729,7 @@ public final class Materialisation {
         // Search for nodes in the original match image that have to be
         // materialised.
         Map<ShapeNode,Multiplicity> originalMultMap = this.originalShape.getNodeMultMap();
-        for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
+        for (ShapeNode nodeS : this.originalMatch.nodeValues()) {
             if (originalMultMap.get(nodeS).isCollector()) {
                 // We have a rule node that was matched to a collector
                 // node. We need to materialise this collector node.
@@ -737,7 +737,7 @@ public final class Materialisation {
             }
         }
 
-        // Search for edges in the match image that have to be materialised. 
+        // Search for edges in the match image that have to be materialised.
         for (ShapeEdge edgeS : this.match.getInconsistentEdges()) {
             // This edge was affected by a node materialisation.
             // We have to materialise the edge as well.
@@ -788,10 +788,10 @@ public final class Materialisation {
             ShapeNode origNode = morph.getNode(node);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 // Look for all edges connected to the original node in the
-                // original shape.     
+                // original shape.
                 for (ShapeEdge origEdge : to.binaryEdgeSet(origNode, direction)) {
                     ShapeNode origOppNode = direction.opposite(origEdge);
-                    for (ShapeNode oppNode : morph.getPreImages(origOppNode)) {
+                    for (HostNode oppNode : morph.getPreImages(origOppNode)) {
                         ShapeEdge possibleEdge =
                             from.createEdge(node, oppNode, origEdge.label(), direction);
                         if (!from.containsEdge(possibleEdge)) {
@@ -861,8 +861,8 @@ public final class Materialisation {
      * Prepares this materialisation for second stage. This may involve
      * a rather complicated process of node splitting. After this method call
      * we can build a second equation system for resolving the edge signatures
-     * multiplicities. 
-     * 
+     * multiplicities.
+     *
      * @param nonSingBundles set of bundles that will have to be split.
      */
     void moveToSecondStage(Set<EdgeBundle> nonSingBundles) {
@@ -900,7 +900,7 @@ public final class Materialisation {
         ShapeMorphism auxMorph = ShapeMorphism.createIdentityMorphism(shape, shape);
         Map<ShapeNode,PowerSetIterator> iterMap = new MyHashMap<ShapeNode,PowerSetIterator>();
 
-        // Fill in the node split map and try to create new nodes. 
+        // Fill in the node split map and try to create new nodes.
         for (ShapeNode origNode : origNodesToSplit) {
             // For sure we'll have at least one split node, so we can
             // initialise the map already.
@@ -963,7 +963,7 @@ public final class Materialisation {
 
     /**
      * Adds new edges to the shape after node split.
-     * 
+     *
      * @param origNode the original node that was split.
      * @param origMap the map of edges that should be connected to the new node.
      *                This is the result of the power set iterator. Note that
@@ -972,7 +972,7 @@ public final class Materialisation {
      * @param newNode the new split node that will receive the new edges.
      */
     private void addNewEdges(ShapeNode origNode, Map<EdgeBundle,Set<ShapeEdge>> origMap,
-            ShapeNode newNode) {
+        ShapeNode newNode) {
         assert this.stage == 2;
         Set<ShapeEdge> newEdges = new MyHashSet<ShapeEdge>();
         for (Entry<EdgeBundle,Set<ShapeEdge>> entry : origMap.entrySet()) {
@@ -1006,7 +1006,7 @@ public final class Materialisation {
      * Routes the original edge from the original node to new node based on the
      * given direction. Node that the result is not only a single edge but a
      * set of edges. This is because maybe the opposite node was also split.
-     * 
+     *
      * @param origNode the original node that was split.
      * @param origEdge the original edge that is connected to the original node.
      * @param newNode the new node that was created during splitting.
@@ -1014,7 +1014,7 @@ public final class Materialisation {
      * @param result the set to store the newly routed edges.
      */
     private void routeNewEdges(ShapeNode origNode, ShapeEdge origEdge, ShapeNode newNode,
-            EdgeMultDir direction, Set<ShapeEdge> result) {
+        EdgeMultDir direction, Set<ShapeEdge> result) {
         assert this.stage == 2;
         TypeLabel label = origEdge.label();
         ShapeNode incident = newNode;
@@ -1055,13 +1055,14 @@ public final class Materialisation {
         for (Entry<EdgeSignature,Multiplicity> origEsEntry : origEdgeMultMap.entrySet()) {
             if (!origEsEntry.getValue().isZeroPlus()) {
                 EdgeSignature origEs = origEsEntry.getKey();
-                for (ShapeNode node : morph.getPreImages(origEs.getNode())) {
+                for (HostNode node : morph.getPreImages(origEs.getNode())) {
+                    ShapeNode shapeNode = (ShapeNode) node;
                     // We know that the original signature has edges.
                     // Check if the pre-images also do.
-                    Multiplicity mult = morph.getPreImagesMult(shape, node, origEs);
+                    Multiplicity mult = morph.getPreImagesMult(shape, shapeNode, origEs);
                     if (mult.isZero()) {
                         // The node got disconnected and therefore cannot exist.
-                        garbageNodes.add(node);
+                        garbageNodes.add(shapeNode);
                     }
                 }
             }
@@ -1100,8 +1101,8 @@ public final class Materialisation {
         return this.nodeSplitMap;
     }
 
-    /** 
-     * Returns the original (after node materialisation) multiplicity of the 
+    /**
+     * Returns the original (after node materialisation) multiplicity of the
      * given node.
      */
     Multiplicity getOrigNodeMult(ShapeNode origNode) {

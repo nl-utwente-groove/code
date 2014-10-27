@@ -1,25 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.graph;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Default implementation of a generic node-edge-map. The implementation is
@@ -28,7 +26,7 @@ import java.util.Set;
  * @version $Revision$
  */
 abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
-        implements ElementMap, Cloneable {
+    implements ElementMap, Cloneable {
     /**
      * Constructs an empty map.
      */
@@ -36,32 +34,6 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
         this.nodeMap = createNodeMap();
         this.edgeMap = createEdgeMap();
         this.factory = factory;
-    }
-
-    /**
-     * Clears the entire map.
-     */
-    public void clear() {
-        nodeMap().clear();
-        edgeMap().clear();
-    }
-
-    /**
-     * Tests if the entire map is empty.
-     * @return <code>true</code> if the entire map (both the node and the edge
-     *         part) is empty.
-     */
-    @Override
-    public boolean isEmpty() {
-        return nodeMap().isEmpty() && edgeMap().isEmpty();
-    }
-
-    /**
-     * Returns the combined number of node end edge entries in the map.
-     */
-    @Override
-    public int size() {
-        return nodeMap().size() + edgeMap().size();
     }
 
     /**
@@ -86,7 +58,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      *         there was none
      */
     public TN putNode(SN key, TN value) {
-        return this.nodeMap.put(key, value);
+        return nodeMap().put(key, value);
     }
 
     /**
@@ -95,7 +67,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      *         there was none
      */
     public TE putEdge(SE key, TE value) {
-        return this.edgeMap.put(key, value);
+        return edgeMap().put(key, value);
     }
 
     /**
@@ -103,8 +75,8 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @param other the element map to be copied
      */
     public void putAll(AElementMap<SN,SE,TN,TE> other) {
-        this.nodeMap.putAll(other.nodeMap());
-        this.edgeMap.putAll(other.edgeMap());
+        nodeMap().putAll(other.nodeMap());
+        edgeMap().putAll(other.edgeMap());
     }
 
     /**
@@ -119,15 +91,6 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      */
     public TE removeEdge(SE key) {
         return edgeMap().remove(key);
-    }
-
-    /**
-     * Tests whether all keys are mapped to different elements.
-     */
-    @Override
-    public boolean isInjective() {
-        Set<TN> nodeValues = new HashSet<TN>(nodeMap().values());
-        return nodeMap().size() == nodeValues.size();
     }
 
     /**
@@ -156,7 +119,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
         return result;
     }
 
-    /** 
+    /**
       * Returns the image of a label under this map.
       * This implementation calls {@link ElementFactory#createLabel(String)}
       * with as parameter {@link Label#toString()} called on the parameter.
@@ -215,7 +178,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * Returns the built-in node map.
      */
     @Override
-    public Map<SN,? extends TN> nodeMap() {
+    public Map<SN,TN> nodeMap() {
         return this.nodeMap;
     }
 
@@ -223,26 +186,9 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * Returns the built-in edge map.
      */
     @Override
-    public Map<SE,? extends TE> edgeMap() {
+    public Map<SE,TE> edgeMap() {
         return this.edgeMap;
     }
-
-    //
-    //    /**
-    //     * Returns a deep copy of the node and edge maps.
-    //     */
-    //    @Override
-    //    public GElementMap<SN,SE,TN,TE> clone() {
-    //        GElementMap<SN,SE,TN,TE> result = newMap();
-    //        result.putAll(this);
-    //        return result;
-    //    }
-    //
-    //    /**
-    //     * Factory method for this type of map.
-    //     * Returns a fresh map of the type of this map.
-    //     */
-    //    abstract public GElementMap<SN,SE,TN,TE> newMap();
 
     /**
      * Callback factory method to create the actual node map.
@@ -250,7 +196,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @see #nodeMap()
      */
     protected Map<SN,TN> createNodeMap() {
-        return new HashMap<SN,TN>();
+        return new NodeMap();
     }
 
     /**
@@ -259,7 +205,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @see #edgeMap()
      */
     protected Map<SE,TE> createEdgeMap() {
-        return new HashMap<SE,TE>();
+        return new EdgeMap();
     }
 
     /** Mapping from node keys to <tt>NT</tt>s. */
@@ -267,4 +213,14 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /** Mapping from edge keys to <tt>ET</tt>s. */
     private final Map<SE,TE> edgeMap;
     private final ElementFactory<TN,TE> factory;
+
+    /** Dedicated class for the node-to-node-map. */
+    protected class NodeMap extends HashMap<SN,TN> {
+        // empty
+    }
+
+    /** Dedicated class for the edge-to-edge-map. */
+    protected class EdgeMap extends HashMap<SE,TE> {
+        // empty
+    }
 }

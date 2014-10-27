@@ -28,10 +28,8 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeLabel;
-import groove.graph.Edge;
 import groove.graph.Node;
 
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -56,17 +54,25 @@ public final class RuleToShapeMap extends RuleToHostMap {
     // ------------------------------------------------------------------------
 
     /** Specialises the return type. */
-    @SuppressWarnings("unchecked")
     @Override
-    public Map<RuleEdge,ShapeEdge> edgeMap() {
-        return (Map<RuleEdge,ShapeEdge>) super.edgeMap();
+    public MyEdgeMap edgeMap() {
+        return (MyEdgeMap) super.edgeMap();
     }
 
     /** Specialises the return type. */
-    @SuppressWarnings("unchecked")
     @Override
-    public Map<RuleNode,ShapeNode> nodeMap() {
-        return (Map<RuleNode,ShapeNode>) super.nodeMap();
+    public MyNodeMap nodeMap() {
+        return (MyNodeMap) super.nodeMap();
+    }
+
+    @Override
+    protected MyEdgeMap createEdgeMap() {
+        return new MyEdgeMap();
+    }
+
+    @Override
+    protected MyNodeMap createNodeMap() {
+        return new MyNodeMap();
     }
 
     @Override
@@ -86,34 +92,34 @@ public final class RuleToShapeMap extends RuleToHostMap {
     @Override
     public ShapeNode putNode(RuleNode key, HostNode layout) {
         assert !isFixed();
-        return (ShapeNode) super.putNode(key, layout);
+        return nodeMap().put(key, layout);
     }
 
     /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeEdge putEdge(RuleEdge key, HostEdge layout) {
         assert !isFixed();
-        return (ShapeEdge) super.putEdge(key, layout);
+        return edgeMap().put(key, layout);
     }
 
     /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeNode removeNode(RuleNode key) {
         assert !isFixed();
-        return (ShapeNode) super.removeNode(key);
+        return nodeMap().remove(key);
     }
 
     /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeEdge removeEdge(RuleEdge key) {
         assert !isFixed();
-        return (ShapeEdge) super.removeEdge(key);
+        return edgeMap().remove(key);
     }
 
     /* Specialises the return type. */
     @Override
     public ShapeNode getNode(Node key) {
-        return (ShapeNode) super.getNode(key);
+        return nodeMap().get(key);
     }
 
     /* Specialises the return type. */
@@ -127,20 +133,6 @@ public final class RuleToShapeMap extends RuleToHostMap {
         RuleToShapeMap result = new RuleToShapeMap(getFactory());
         result.putAll(this);
         return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleNode> getPreImages(Node node) {
-        assert node instanceof ShapeNode;
-        return (Set<RuleNode>) super.getPreImages(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleEdge> getPreImages(Edge edge) {
-        assert edge instanceof ShapeEdge;
-        return (Set<RuleEdge>) super.getPreImages(edge);
     }
 
     // ------------------------------------------------------------------------
@@ -164,9 +156,11 @@ public final class RuleToShapeMap extends RuleToHostMap {
      * Returns a set of values for the node map. Contrary to calling
      * nodeMap().values(), the set has no repeated values.
      */
-    public Set<ShapeNode> nodeMapValueSet() {
+    public Set<ShapeNode> nodeValues() {
         Set<ShapeNode> result = new MyHashSet<ShapeNode>();
-        result.addAll(this.nodeMap().values());
+        for (HostNode node : this.nodeMap().values()) {
+            result.add((ShapeNode) node);
+        }
         return result;
     }
 
@@ -176,9 +170,9 @@ public final class RuleToShapeMap extends RuleToHostMap {
      */
     Set<ShapeEdge> getInconsistentEdges() {
         Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
-        for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,HostEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
-            ShapeEdge edgeS = entry.getValue();
+            ShapeEdge edgeS = (ShapeEdge) entry.getValue();
             if (this.isSrcInconsistent(edgeR, edgeS) || this.isTgtInconsistent(edgeR, edgeS)) {
                 result.add(edgeS);
             }
@@ -189,9 +183,9 @@ public final class RuleToShapeMap extends RuleToHostMap {
     /** Checks the consistency between node and edge maps. */
     boolean isConsistent() {
         boolean result = true;
-        for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,HostEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
-            ShapeEdge edgeS = entry.getValue();
+            ShapeEdge edgeS = (ShapeEdge) entry.getValue();
             if (this.isSrcInconsistent(edgeR, edgeS) || this.isTgtInconsistent(edgeR, edgeS)) {
                 result = false;
                 break;
@@ -224,4 +218,41 @@ public final class RuleToShapeMap extends RuleToHostMap {
         return this.isNodeInconsistent(edgeR.target(), expectedImage.target());
     }
 
+    /** Specialised edge map that always returns shape edges. */
+    public class MyEdgeMap extends EdgeMap {
+        @Override
+        public ShapeEdge get(Object key) {
+            return (ShapeEdge) super.get(key);
+        }
+
+        @Override
+        public ShapeEdge put(RuleEdge key, HostEdge value) {
+            assert value instanceof ShapeEdge;
+            return (ShapeEdge) super.put(key, value);
+        }
+
+        @Override
+        public ShapeEdge remove(Object key) {
+            return (ShapeEdge) super.remove(key);
+        }
+    }
+
+    /** Specialised node map that always returns shape nodes. */
+    public class MyNodeMap extends NodeMap {
+        @Override
+        public ShapeNode get(Object key) {
+            return (ShapeNode) super.get(key);
+        }
+
+        @Override
+        public ShapeNode put(RuleNode key, HostNode value) {
+            assert value instanceof ShapeNode;
+            return (ShapeNode) super.put(key, value);
+        }
+
+        @Override
+        public ShapeNode remove(Object key) {
+            return (ShapeNode) super.remove(key);
+        }
+    }
 }
