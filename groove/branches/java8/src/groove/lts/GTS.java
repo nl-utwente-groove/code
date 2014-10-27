@@ -237,15 +237,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public Set<GraphState> getStates() {
         if (this.realStateSet == null) {
-            this.realStateSet = new SetView<GraphState>(nodeSet()) {
-                @Override
-                public boolean approves(Object obj) {
-                    if (!(obj instanceof GraphState)) {
-                        return false;
-                    }
-                    return ((GraphState) obj).isRealState();
+            this.realStateSet = new SetView<>(nodeSet(), obj -> {
+                if (!(obj instanceof GraphState)) {
+                    return false;
                 }
-            };
+                return ((GraphState) obj).isRealState();
+            });
         }
         return this.realStateSet;
     }
@@ -450,15 +447,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public Set<GraphTransition> getTransitions() {
         if (this.realTransitionSet == null) {
-            this.realTransitionSet = new SetView<GraphTransition>(edgeSet()) {
-                @Override
-                public boolean approves(Object obj) {
-                    if (!(obj instanceof GraphTransition)) {
-                        return false;
-                    }
-                    return ((GraphTransition) obj).isRealStep();
+            this.realTransitionSet = new SetView<>(edgeSet(), obj -> {
+                if (!(obj instanceof GraphTransition)) {
+                    return false;
                 }
-            };
+                return ((GraphTransition) obj).isRealStep();
+            });
         }
         return this.realTransitionSet;
     }

@@ -82,12 +82,9 @@ public class StateCache {
         if (claz == GraphTransition.Claz.ANY) {
             return getTransitionMap();
         } else {
-            return new SetView<GraphTransition>(getTransitionMap()) {
-                @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphTransition && claz.admits((GraphTransition) obj);
-                }
-            };
+            return new SetView<GraphTransition>(getTransitionMap(), obj -> {
+                return obj instanceof GraphTransition && claz.admits((GraphTransition) obj);
+            });
         }
     }
 

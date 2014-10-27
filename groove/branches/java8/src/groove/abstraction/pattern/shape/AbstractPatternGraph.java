@@ -333,30 +333,24 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
 
     /** Returns the set of pattern edges that cover the given simple node. */
     private Set<E> getCoveringEdges(N pNode, final HostNode sNode) {
-        return new UnmodifiableSetView<E>(inEdgeSet(pNode)) {
-            @Override
-            public boolean approves(Object obj) {
-                if (!(obj instanceof AbstractPatternEdge<?>)) {
-                    return false;
-                }
-                AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) obj;
-                return pEdge.isCod(sNode);
+        return new UnmodifiableSetView<>(inEdgeSet(pNode), obj -> {
+            if (!(obj instanceof AbstractPatternEdge<?>)) {
+                return false;
             }
-        };
+            AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) obj;
+            return pEdge.isCod(sNode);
+        });
     }
 
     /** Returns the set of pattern edges that cover the given simple edge. */
     private Set<E> getCoveringEdges(N pNode, final HostEdge sNode) {
-        return new UnmodifiableSetView<E>(inEdgeSet(pNode)) {
-            @Override
-            public boolean approves(Object obj) {
-                if (!(obj instanceof AbstractPatternEdge<?>)) {
-                    return false;
-                }
-                AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) obj;
-                return pEdge.isCod(sNode);
+        return new UnmodifiableSetView<>(inEdgeSet(pNode), obj -> {
+            if (!(obj instanceof AbstractPatternEdge<?>)) {
+                return false;
             }
-        };
+            AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) obj;
+            return pEdge.isCod(sNode);
+        });
     }
 
     /** Returns the pattern edge that covers the given simple node. */

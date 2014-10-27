@@ -865,10 +865,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = nameVarMap.put(var.getName(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
-                    errors.add("Duplicate variable '%s' for %s and %s labels", var,
-                        var.getKind().getDescription(false),
-                        oldVar.getKind().getDescription(false), varEntry.getValue().toArray(),
-                        modelVarMap.get(oldVar).toArray());
+                    errors.add("Duplicate variable '%s' for %s and %s labels", var, var.getKind()
+                        .getDescription(false), oldVar.getKind().getDescription(false),
+                        varEntry.getValue().toArray(), modelVarMap.get(oldVar).toArray());
                 }
             }
             for (Level1 level : result.values()) {
@@ -1692,9 +1691,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = varNames.put(var.getKey(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
-                    errors.add("Duplicate variable '%s' for %s and %s labels", var,
-                        var.getKind().getDescription(false),
-                        oldVar.getKind().getDescription(false), varEntry.getValue().toArray());
+                    errors.add("Duplicate variable '%s' for %s and %s labels", var, var.getKind()
+                        .getDescription(false), oldVar.getKind().getDescription(false),
+                        varEntry.getValue().toArray());
                 }
             }
             allVars.keySet().removeAll(this.lhs.getBoundVars());
@@ -1872,7 +1871,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             lhsTypeMap.putAll(this.typeMap);
             this.rhs = toTypedGraph(origin.rhs, lhsTypeMap, this.typeMap);
             // check against label type restrictions in RHS
-            for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap.getVarTyping().entrySet()) {
+            for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap.getVarTyping()
+                .entrySet()) {
                 LabelVar var = entry.getKey();
                 if (!this.typeMap.getVarTyping().containsKey(var)) {
                     continue;
@@ -1880,9 +1880,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 Set<? extends TypeElement> lhsTypes = entry.getValue();
                 lhsTypes.removeAll(this.typeMap.getVarTypes(var));
                 if (!lhsTypes.isEmpty()) {
-                    this.errors.add("Invalid %s type%s %s for creator variable %s",
-                        var.getKind().getDescription(false), lhsTypes.size() == 1 ? "" : "s",
-                        Groove.toString(lhsTypes.toArray(), "", "", ", "), var);
+                    this.errors.add("Invalid %s type%s %s for creator variable %s", var.getKind()
+                        .getDescription(false), lhsTypes.size() == 1 ? "" : "s", Groove.toString(
+                        lhsTypes.toArray(), "", "", ", "), var);
                 }
             }
             this.errors.throwException();
@@ -1988,14 +1988,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         errors.add("Actual type of merged %s-node may be subtype of merge target",
                             sourceType.label().text(), edge);
                     } else if (!mergedNodes.add(source)) {
-                        errors.add("%s-node is merged with two distinct nodes",
-                            sourceType.label().text(), source);
+                        errors.add("%s-node is merged with two distinct nodes", sourceType.label()
+                            .text(), source);
                     } else if (isUniversal(target) && !haveMinType(target)) {
                         errors.add("Actual target types of %s-merger may be ambiguous",
                             sourceType.label().text(), edge);
                     } else if (!getType().isSubtype(targetType, sourceType)) {
-                        errors.add("Merged %s-node must be supertype of %s",
-                            sourceType.label().text(), targetType.label().text(), source);
+                        errors.add("Merged %s-node must be supertype of %s", sourceType.label()
+                            .text(), targetType.label().text(), source);
                     } else if (source.getType().isDataType()) {
                         errors.add("Primitive %s-node can't be merged", sourceType.label().text(),
                             source);
@@ -2003,8 +2003,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 } else {
                     TypeEdge edgeType = edge.getType();
                     if (edgeType != null && edgeType.isAbstract() && !lhs.containsEdge(edge)) {
-                        errors.add("Creation of abstract %s-edge not allowed",
-                            edgeType.label().text(), edge);
+                        errors.add("Creation of abstract %s-edge not allowed", edgeType.label()
+                            .text(), edge);
                     }
                 }
             }
@@ -2489,9 +2489,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /** Set of all rule parameter nodes */
-        private Set<RuleNode> hiddenPars;
+        private final Set<RuleNode> hiddenPars;
         /** Signature of the rule. */
-        private List<CtrlPar.Var> sig;
+        private final List<CtrlPar.Var> sig;
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */

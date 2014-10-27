@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -33,7 +33,7 @@ import java.util.Set;
 
 /**
  * Pattern graph.
- * 
+ *
  * @author Eduardo Zambon
  */
 public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> {
@@ -118,8 +118,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     public HostGraph flatten() {
         assert isCommuting();
         HostGraph result = new DefaultHostGraph(getName());
-        Map<PatternNode,HostNode> nodeMap =
-            new MyHashMap<PatternNode,HostNode>();
+        Map<PatternNode,HostNode> nodeMap = new MyHashMap<PatternNode,HostNode>();
         // Create the nodes in layer 0.
         for (PatternNode pNode : getLayerNodes(0)) {
             HostNode sNode = result.addNode();
@@ -132,10 +131,8 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         // Create the edges in layer 1.
         for (PatternNode pNode : getLayerNodes(1)) {
             HostEdge sEdge = pNode.getSimpleEdge();
-            HostNode sSrc =
-                nodeMap.get(getCoveringEdge(pNode, sEdge.source()).source());
-            HostNode sTgt =
-                nodeMap.get(getCoveringEdge(pNode, sEdge.target()).source());
+            HostNode sSrc = nodeMap.get(getCoveringEdge(pNode, sEdge.source()).source());
+            HostNode sTgt = nodeMap.get(getCoveringEdge(pNode, sEdge.target()).source());
             result.addEdge(sSrc, sEdge.label(), sTgt);
         }
         return result;
@@ -147,8 +144,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     /** Returns a fresh pattern edge. The edge is not added to the graph. */
-    public PatternEdge createEdge(PatternNode source, TypeEdge type,
-            PatternNode target) {
+    public PatternEdge createEdge(PatternNode source, TypeEdge type, PatternNode target) {
         return getFactory().createEdge(source, type, target);
     }
 
@@ -156,23 +152,19 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
      * Returns a list of pattern edges incoming into the given node, with the
      * proper given type.
      */
-    public Set<PatternEdge> getInEdgesWithType(PatternNode node,
-            final TypeEdge edgeType) {
-        return new UnmodifiableSetView<PatternEdge>(inEdgeSet(node)) {
-            @Override
-            public boolean approves(Object obj) {
-                if (!(obj instanceof PatternEdge)) {
-                    return false;
-                }
-                PatternEdge pEdge = (PatternEdge) obj;
-                return pEdge.getType() == edgeType;
+    public Set<PatternEdge> getInEdgesWithType(PatternNode node, final TypeEdge edgeType) {
+        return new UnmodifiableSetView<>(inEdgeSet(node), obj -> {
+            if (!(obj instanceof PatternEdge)) {
+                return false;
             }
-        };
+            PatternEdge pEdge = (PatternEdge) obj;
+            return pEdge.getType() == edgeType;
+        });
     }
 
     /**
-     * Returns true if there exists at least one pattern edge incoming to the 
-     * given node, with the proper given type. 
+     * Returns true if there exists at least one pattern edge incoming to the
+     * given node, with the proper given type.
      */
     public boolean hasInEdgeWithType(PatternNode node, TypeEdge edgeType) {
         return getInEdgesWithType(node, edgeType).size() > 0;
@@ -193,7 +185,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
      * morphisms. Uniqueness corresponds to the absence of distinct incoming
      * edges of the same type. While this is condition is always satisfied in
      * pattern graphs, in pattern shapes it may be falsified due to pattern
-     * collapsing.  
+     * collapsing.
      */
     public boolean isUniquelyCovered(PatternNode node) {
         // Check the type graph for the incoming types.
@@ -227,8 +219,8 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     /** Pattern addition operation for layer 1. */
-    public Pair<PatternNode,Duo<PatternEdge>> addEdgePattern(TypeEdge m1,
-            TypeEdge m2, PatternNode p1, PatternNode p2) {
+    public Pair<PatternNode,Duo<PatternEdge>> addEdgePattern(TypeEdge m1, TypeEdge m2,
+        PatternNode p1, PatternNode p2) {
         assert p1.isNodePattern() && p2.isNodePattern();
         return addPattern(m1, m2, p1, p2);
     }
@@ -239,15 +231,15 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     /** Pattern closure. */
-    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1,
-            TypeEdge m2, PatternNode p1, PatternNode p2) {
+    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1, TypeEdge m2,
+        PatternNode p1, PatternNode p2) {
         assert isUniquelyCovered(p1) && isUniquelyCovered(p2);
         return addPattern(m1, m2, p1, p2);
     }
 
     /** Common method for addition and closure operation. */
-    private Pair<PatternNode,Duo<PatternEdge>> addPattern(TypeEdge m1,
-            TypeEdge m2, PatternNode p1, PatternNode p2) {
+    private Pair<PatternNode,Duo<PatternEdge>> addPattern(TypeEdge m1, TypeEdge m2, PatternNode p1,
+        PatternNode p2) {
         assert containsNode(p1) && containsNode(p2);
         assert m1.target().equals(m2.target());
         assert m1.source().equals(p1.getType());

@@ -16,34 +16,21 @@
  */
 package groove.util.collect;
 
-
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Variation on the set view in which removal is not supported.
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class UnmodifiableSetView<T> extends SetView<T> {
-    /**
-     * Constucts a view upon a set, newly created for this purpose. Since the
-     * set itself is not available, this is only useful for creating a set whose
-     * elements are guaranteed to satisfy a certain condition (to be provided by
-     * the abstract method <tt>approves(Object)</tt>). This constructor is
-     * provided primarily to satisfy the requirements on <tt>Set</tt>
-     * implementations.
-     * @see #approves(Object)
-     */
-    public UnmodifiableSetView() {
-        super();
-    }
-
+public class UnmodifiableSetView<T> extends SetView<T> {
     /**
      * Constucts a shared set view on a given underlying set.
      */
-    public UnmodifiableSetView(Set<?> set) {
-        super(set);
+    public UnmodifiableSetView(Set<?> set, Predicate<Object> approval) {
+        super(set, approval);
     }
 
     /**
@@ -59,7 +46,7 @@ public abstract class UnmodifiableSetView<T> extends SetView<T> {
 
             @Override
             protected boolean approves(Object obj) {
-                return UnmodifiableSetView.this.approves(obj);
+                return getApproval().test(obj);
             }
         };
     }

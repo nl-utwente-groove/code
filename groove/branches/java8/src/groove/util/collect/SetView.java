@@ -16,11 +16,10 @@
  */
 package groove.util.collect;
 
-
 import java.util.AbstractSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Provides a shared view upon an underlying set, filtering those values that
@@ -30,25 +29,14 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class SetView<T> extends AbstractSet<T> {
+public class SetView<T> extends AbstractSet<T> {
     /**
-     * Constructs a view upon a set, newly created for this purpose. Since the
-     * set itself is not available, this is only useful for creating a set whose
-     * elements are guaranteed to satisfy a certain condition (to be provided by
-     * the abstract method <tt>approves(Object)</tt>). This constructor is
-     * provided primarily to satisfy the requirements on <tt>Set</tt>
-     * implementations.
-     * @see #approves(Object)
+     * Constructs a shared set view on a given underlying set,
+     * with a given filter function for the set elements.
      */
-    public SetView() {
-        this.set = new HashSet<T>();
-    }
-
-    /**
-     * Constructs a shared set view on a given underlying set.
-     */
-    public SetView(Set<?> set) {
+    public SetView(Set<?> set, Predicate<Object> approval) {
         this.set = set;
+        this.approval = approval;
     }
 
     /**
@@ -80,13 +68,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return new FilterIterator<T>(this.set.iterator()) {
-            /** Delegates the approval to the surrounding {@link SetView}. */
-            @Override
-            protected boolean approves(Object obj) {
-                return SetView.this.approves(obj);
-            }
-        };
+        return stream().filter(getApproval()).iterator();
     }
 
     /**
@@ -116,7 +98,16 @@ public abstract class SetView<T> extends AbstractSet<T> {
      * correctness, i.e., <code>approves(obj)</code> should imply
      * <code>obj instanceof T</code>
      */
-    public abstract boolean approves(Object obj);
+    final public boolean approves(Object obj) {
+        return getApproval().test(obj);
+    }
+
+    /** Returns the approval predicate of this set view. */
+    protected Predicate<Object> getApproval() {
+        return this.approval;
+    }
+
+    private final Predicate<Object> approval;
 
     /**
      * The underlying set.

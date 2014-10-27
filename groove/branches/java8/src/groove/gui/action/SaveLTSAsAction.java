@@ -57,7 +57,7 @@ public class SaveLTSAsAction extends SimulatorAction {
     }
 
     private void doSave(String dir, String ltsPattern, String statePattern,
-            StateExport exportStates, LTSLabels flags) {
+        StateExport exportStates, LTSLabels flags) {
         GTS gts = getSimulatorModel().getGts();
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);
@@ -69,12 +69,9 @@ public class SaveLTSAsAction extends SimulatorAction {
             export = gts.getStates();
             break;
         case FINAL:
-            export = new SetView<GraphState>(gts.getStates()) {
-                @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphState && ((GraphState) obj).isFinal();
-                }
-            };
+            export =
+                new SetView<GraphState>(gts.getStates(), obj -> obj instanceof GraphState
+                    && ((GraphState) obj).isFinal());
             break;
         case RESULT:
             export = gts.getResultStates();

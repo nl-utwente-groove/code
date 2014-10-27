@@ -16,20 +16,20 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlPar;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleNode;
-import groove.util.collect.CollectionOfCollections;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * In this implementation, the anchors are the minimal set of nodes and edges
@@ -54,48 +54,47 @@ public class DefaultAnchorFactory implements AnchorFactory {
     @Override
     public Anchor newAnchor(Rule rule) {
         RuleGraph lhs = rule.lhs();
-        Set<AnchorKey> result = new LinkedHashSet<AnchorKey>();
-        Set<RuleNode> colorNodes = new HashSet<RuleNode>(rule.getColorMap().keySet());
+        Set<AnchorKey> result = new LinkedHashSet<>();
+        Set<RuleNode> colorNodes = new HashSet<>(rule.getColorMap().keySet());
         colorNodes.retainAll(lhs.nodeSet());
         result.addAll(colorNodes);
         result.addAll(Arrays.asList(rule.getEraserNodes()));
         result.addAll(rule.getModifierEnds());
+        Set<AnchorKey> anchorKeys = getAnchorKeys(lhs).collect(Collectors.toSet());
         // add the root elements of modifying subrules
-        for (Rule subrule : rule.getSubRules()) {
-            if (subrule.isModifying()) {
-                Anchor subruleAnchor = new Anchor(subrule.getAnchor());
-                subruleAnchor.retainAll(getAnchorKeys(lhs));
-                result.addAll(subruleAnchor);
-            }
-        }
+        result.addAll(rule.getSubRules()
+            .stream()
+            .filter(r -> r.isModifying())
+            .flatMap(r -> r.getAnchor().stream())
+            .filter(a -> anchorKeys.contains(a))
+            .collect(Collectors.toList()));
+        // add the creator variables
         result.addAll(Arrays.asList(rule.getCreatorVars()));
-        for (RuleEdge eraserEdge : rule.getEraserEdges()) {
-            result.add(eraserEdge);
-            result.addAll(eraserEdge.getVars());
-        }
-        result.addAll(Arrays.asList(rule.getEraserEdges()));
+        // add the eraser edges and their variables
+        List<RuleEdge> eraserEdges = Arrays.asList(rule.getEraserEdges());
+        result.addAll(eraserEdges);
+        result.addAll(eraserEdges.stream()
+            .flatMap(e -> e.getVars().stream())
+            .collect(Collectors.toList()));
         // add all non-creator parameters explicitly, as they need to be in the anchors
         // to ensure they are correctly bound
         if (rule.isTop()) {
-            Set<RuleNode> hiddenPars = rule.getHiddenPars();
-            if (hiddenPars != null) {
-                result.addAll(hiddenPars);
-            }
-            List<CtrlPar.Var> ruleSig = rule.getSignature();
-            for (CtrlPar.Var rulePar : ruleSig) {
-                if (!rulePar.isCreator()) {
-                    result.add(rulePar.getRuleNode());
-                }
-            }
+            result.addAll(rule.getHiddenPars());
+            result.addAll(rule.getSignature()
+                .stream()
+                .filter(p -> !p.isCreator())
+                .map(p -> p.getRuleNode())
+                .collect(Collectors.toList()));
         }
         // remove the root elements of the rule itself
         return new Anchor(result);
     }
 
     /** Returns the collection of all potential anchor keys in a given rule graph. */
-    @SuppressWarnings("unchecked")
-    private Collection<Object> getAnchorKeys(RuleGraph graph) {
-        return new CollectionOfCollections<Object>(graph.nodeSet(), graph.edgeSet(), graph.varSet());
+    private Stream<AnchorKey> getAnchorKeys(RuleGraph graph) {
+        return Stream.of(graph.nodeSet().stream(),
+            graph.edgeSet().stream(),
+            graph.varSet().stream()).flatMap(Function.identity());
     }
 
     /**
