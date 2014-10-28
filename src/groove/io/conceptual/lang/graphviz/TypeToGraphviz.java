@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -54,24 +54,24 @@ public class TypeToGraphviz extends TypeExporter<Node> {
     private GraphvizResource m_resource;
 
     public TypeToGraphviz(GraphvizResource resource) {
-        m_resource = resource;
+        this.m_resource = resource;
     }
 
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
         int timer = Timer.start("TM to DOT");
-        Graph typeGraph = m_resource.getTypeGraph(typeModel.getName());
-        m_typeGraphs.put(typeModel, typeGraph);
-        m_packageGraphs.put(Id.ROOT, typeGraph);
+        Graph typeGraph = this.m_resource.getTypeGraph(typeModel.getName());
+        this.m_typeGraphs.put(typeModel, typeGraph);
+        this.m_packageGraphs.put(Id.ROOT, typeGraph);
 
-        m_currentTypeModel = typeModel;
+        this.m_currentTypeModel = typeModel;
         visitTypeModel(typeModel);
         Timer.stop(timer);
     }
 
     @Override
     public ExportableResource getResource() {
-        return m_resource;
+        return this.m_resource;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
     }
 
     @Override
-    public void visit(Class class1, Object param) {
+    public void visit(Class class1, String param) {
         if (hasElement(class1)) {
             return;
         }
@@ -103,7 +103,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
         classNode.setId(new com.alexmerz.graphviz.objects.Id());
         classNode.getId().setId(getNodeId());
 
-        for (Property p : m_currentTypeModel.getProperties()) {
+        for (Property p : this.m_currentTypeModel.getProperties()) {
             if (p instanceof AbstractProperty) {
                 if (((AbstractProperty) p).getAbstractClass() == class1) {
                     classNode.setAttribute("style", "dashed");
@@ -121,8 +121,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
                 fieldType = ((Container) fieldType).getType();
             }
 
-            if (fieldType instanceof Class
-                || fieldType instanceof Tuple
+            if (fieldType instanceof Class || fieldType instanceof Tuple
                 || fieldType instanceof Enum) {
                 fieldNode = getElement(fieldType);
             }
@@ -136,7 +135,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
 
                 fieldEdge.setAttribute("headlabel", f.getLowerBound() + ".." + f.getUpperBound());
 
-                for (Property p : m_currentTypeModel.getProperties()) {
+                for (Property p : this.m_currentTypeModel.getProperties()) {
                     if (p instanceof ContainmentProperty) {
                         if (((ContainmentProperty) p).getField() == f) {
                             fieldEdge.setAttribute("arrowtail", "diamond");
@@ -154,7 +153,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
             if (!edgeFields.contains(f)) {
                 label += f.getName();
 
-                for (Property p : m_currentTypeModel.getProperties()) {
+                for (Property p : this.m_currentTypeModel.getProperties()) {
                     if (p instanceof DefaultValueProperty) {
                         if (((DefaultValueProperty) p).getField() == f) {
                             label += " = " + ((DefaultValueProperty) p).getDefaultValue();
@@ -182,12 +181,12 @@ public class TypeToGraphviz extends TypeExporter<Node> {
     }
 
     @Override
-    public void visit(Container container, Object param) {
+    public void visit(Container container, String param) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void visit(Enum enum1, Object param) {
+    public void visit(Enum enum1, String param) {
         if (hasElement(enum1)) {
             return;
         }
@@ -212,7 +211,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
     }
 
     @Override
-    public void visit(Tuple tuple, Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
@@ -241,8 +240,8 @@ public class TypeToGraphviz extends TypeExporter<Node> {
     }
 
     private Graph getPackageGraph(Id namespace) {
-        if (m_packageGraphs.containsKey(namespace)) {
-            return m_packageGraphs.get(namespace);
+        if (this.m_packageGraphs.containsKey(namespace)) {
+            return this.m_packageGraphs.get(namespace);
         }
 
         Graph parent = getPackageGraph(namespace.getNamespace());
@@ -254,12 +253,12 @@ public class TypeToGraphviz extends TypeExporter<Node> {
         packageGraph.addAttribute("label", namespace.getName().toString());
         packageGraph.setId(graphId);
 
-        m_packageGraphs.put(namespace, packageGraph);
+        this.m_packageGraphs.put(namespace, packageGraph);
 
         return packageGraph;
     }
 
     private String getNodeId() {
-        return "N" + m_nodeId++;
+        return "N" + this.m_nodeId++;
     }
 }

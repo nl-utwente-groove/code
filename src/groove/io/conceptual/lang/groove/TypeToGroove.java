@@ -42,50 +42,53 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     private Set<Property> m_properties = new HashSet<Property>();
 
     public TypeToGroove(GrooveResource grooveResource) {
-        m_grooveResource = grooveResource;
-        m_cfg = m_grooveResource.getConfig();
+        this.m_grooveResource = grooveResource;
+        this.m_cfg = this.m_grooveResource.getConfig();
     }
 
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
         int timer = Timer.start("TM to GROOVE");
-        m_currentGraph = m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()), GraphRole.TYPE);
-        m_properties.clear();
-        visitTypeModel(typeModel, m_cfg);
+        this.m_currentGraph =
+            this.m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()),
+                GraphRole.TYPE);
+        this.m_properties.clear();
+        visitTypeModel(typeModel, this.m_cfg);
 
         // Prefetch? Uncomment for more accurate timings
-        m_currentGraph.getGraph().toAspectGraph(m_currentGraph.getGraphName(), m_currentGraph.getGraphRole());
+        this.m_currentGraph.getGraph().toAspectGraph(this.m_currentGraph.getGraphName(),
+            this.m_currentGraph.getGraphRole());
 
         Timer.stop(timer);
     }
 
     @Override
     public ExportableResource getResource() {
-        return m_grooveResource;
+        return this.m_grooveResource;
     }
 
     @Override
     protected void setElement(Acceptor o, AbsNode n) {
         super.setElement(o, n);
-        m_currentGraph.m_nodes.put(o, n);
+        this.m_currentGraph.m_nodes.put(o, n);
     }
 
     private void setPropertyVisited(Property o) {
-        m_properties.add(o);
+        this.m_properties.add(o);
     }
 
     private boolean propertyVisited(Property o) {
-        return m_properties.contains(o);
+        return this.m_properties.contains(o);
     }
 
     @Override
-    public void visit(Class c, java.lang.Object param) {
+    public void visit(Class c, String param) {
         if (hasElement(c)) {
             return;
         }
 
         // If not using the nullable/proper class system, don't instantiate nullable classes
-        if (m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
             if (!c.isProper()) {
                 // Simply revert to the proper instance
                 AbsNode classNode = getElement(c.getProperClass());
@@ -96,7 +99,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             }
         }
 
-        AbsNode classNode = new AbsNode(m_cfg.getName(c));
+        AbsNode classNode = new AbsNode(this.m_cfg.getName(c));
         setElement(c, classNode);
 
         // If nullable class, just make it a superclass of the proper class, and allow NIL
@@ -125,14 +128,15 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             int lowerBound = f.getLowerBound();
             if (lowerBound == 0 && f.getUpperBound() == 1 && f.getType() instanceof Class) {
                 // Nullable, but in GROOVE always Nil value (unless turned off)
-                if (m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE) {
+                if (this.m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE) {
                     lowerBound = 1;
                 }
             }
 
             // When using intermediates, ensure each intermediate is linked to one field
             //TODO: temporarily check useIntermediate container, currently out of sync due to multiplicity checks
-            if (m_cfg.useIntermediate(f) && f.getType() instanceof Container && m_cfg.useIntermediate((Container) f.getType())) {
+            if (this.m_cfg.useIntermediate(f) && f.getType() instanceof Container
+                && this.m_cfg.useIntermediate((Container) f.getType())) {
                 edgeLabel += "in=1:";
             }
 
@@ -140,23 +144,25 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             if (f.getUpperBound() != -1 || lowerBound != 0) {
                 edgeLabel += "out=";
                 if (lowerBound != f.getUpperBound()) {
-                    edgeLabel += lowerBound + ".." + ((f.getUpperBound() == -1) ? "*" : f.getUpperBound());
+                    edgeLabel +=
+                        lowerBound + ".." + ((f.getUpperBound() == -1) ? "*" : f.getUpperBound());
                 } else {
                     edgeLabel += lowerBound;
                 }
                 edgeLabel += ":";
             }
-            /*AbsEdge fieldEdge = */new AbsEdge(classNode, fieldNode, edgeLabel + f.getName().toString());
+            /*AbsEdge fieldEdge = */new AbsEdge(classNode, fieldNode, edgeLabel
+                + f.getName().toString());
         }
 
         // If all nullable classes, get node of nullable version too
-        if (m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
+        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
             getElement(c.getNullableClass());
         }
     }
 
     @Override
-    public void visit(Field field, java.lang.Object param) {
+    public void visit(Field field, String param) {
         if (hasElement(field)) {
             return;
         }
@@ -164,18 +170,18 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         AbsNode fieldNode = null;
 
         if (field.getType() instanceof Container) {
-            fieldNode = getElement(field.getType(), m_cfg.getName(field));
+            fieldNode = getElement(field.getType(), this.m_cfg.getName(field));
         } else {
             boolean isNullable = false;
-            if (m_cfg.useIntermediate(field) && field.getType() instanceof Class) {
+            if (this.m_cfg.useIntermediate(field) && field.getType() instanceof Class) {
                 isNullable = !((Class) field.getType()).isProper();
                 fieldNode = getElement(((Class) field.getType()).getProperClass());
             } else {
                 fieldNode = getElement(field.getType());
             }
-            if (m_cfg.useIntermediate(field)) {
-                String valName = m_cfg.getStrings().getValueEdge();
-                AbsNode interNode = new AbsNode(m_cfg.getName(field));
+            if (this.m_cfg.useIntermediate(field)) {
+                String valName = this.m_cfg.getStrings().getValueEdge();
+                AbsNode interNode = new AbsNode(this.m_cfg.getName(field));
                 interNode.addName("edge:\"" + field.getName() + "\"");
                 String out = isNullable ? "out=0..1:" : "out=1:";
                 /*AbsEdge valEdge = */new AbsEdge(interNode, fieldNode, out + valName);
@@ -187,40 +193,40 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DataType dt, java.lang.Object param) {
+    public void visit(DataType dt, String param) {
         if (hasElement(dt)) {
             return;
         }
 
         if (dt instanceof CustomDataType) {
-            String valueName = m_cfg.getStrings().getDataValue();
-            AbsNode dataNode = new AbsNode(m_cfg.getName(dt), "string:" + valueName);
+            String valueName = this.m_cfg.getStrings().getDataValue();
+            AbsNode dataNode = new AbsNode(this.m_cfg.getName(dt), "string:" + valueName);
             setElement(dt, dataNode);
         } else {
-            AbsNode typeNode = new AbsNode(m_cfg.getName(dt));
+            AbsNode typeNode = new AbsNode(this.m_cfg.getName(dt));
             setElement(dt, typeNode);
         }
     }
 
     @Override
-    public void visit(Enum e, java.lang.Object param) {
+    public void visit(Enum e, String param) {
         if (hasElement(e)) {
             return;
         }
 
-        if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = m_cfg.getConfig().getGlobal().getIdSeparator();
-            AbsNode enumNode = new AbsNode(m_cfg.getName(e), "abs:");
+        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
+            AbsNode enumNode = new AbsNode(this.m_cfg.getName(e), "abs:");
             setElement(e, enumNode);
 
             for (Name n : e.getLiterals()) {
                 //String litName = m_cfg.getName(e) + sep + n.toString();
-                String litName = "type:" + m_cfg.idToName(e.getId()) + sep + n.toString();
+                String litName = "type:" + this.m_cfg.idToName(e.getId()) + sep + n.toString();
                 AbsNode valNode = new AbsNode(litName);
                 /*AbsEdge valEdge = */new AbsEdge(valNode, enumNode, "sub:");
             }
         } else {
-            AbsNode enumNode = new AbsNode(m_cfg.getName(e));
+            AbsNode enumNode = new AbsNode(this.m_cfg.getName(e));
             setElement(e, enumNode);
 
             for (Name n : e.getLiterals()) {
@@ -232,46 +238,49 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Container c, java.lang.Object param) {
+    public void visit(Container c, String param) {
         if (hasElement(c)) {
             return;
         }
-
-        if (param == null || !(param instanceof String)) {
-            throw new IllegalArgumentException("Container visitor requires String argument");
-        }
-        String containerId = (String) param;
 
         AbsNode typeNode = null;
         if (!(c.getType() instanceof Container)) {
             typeNode = getElement(c.getType());
         } else {
-            typeNode = getElement(c.getType(), m_cfg.getContainerName(containerId, c));
+            assert param != null;
+            typeNode = getElement(c.getType(), this.m_cfg.getContainerName(param, c));
         }
 
-        boolean useIndex = m_cfg.useIndex(c);
-        boolean indexValue = (m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType() == OrderType.INDEX);
+        boolean useIndex = this.m_cfg.useIndex(c);
+        boolean indexValue =
+            (this.m_cfg.getConfig()
+                .getTypeModel()
+                .getFields()
+                .getContainers()
+                .getOrdering()
+                .getType() == OrderType.INDEX);
 
         AbsNode containerNode = null;
-        if (m_cfg.useIntermediate(c)) {
-            containerNode = new AbsNode(containerId + m_cfg.getContainerPostfix(c));
+        if (this.m_cfg.useIntermediate(c)) {
+            assert param != null;
+            containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
 
             // Use just the last part of the container id as the edge name
-            int lastIndex = containerId.lastIndexOf(m_cfg.getConfig().getGlobal().getIdSeparator());
-            String edgeName = containerId;
+            int lastIndex = param.lastIndexOf(this.m_cfg.getConfig().getGlobal().getIdSeparator());
+            String edgeName = param;
             if (lastIndex != -1) {
-                edgeName = containerId.substring(lastIndex + 1);
+                edgeName = param.substring(lastIndex + 1);
             }
 
             if (useIndex && indexValue) {
-                String indexName = m_cfg.getStrings().getIndexEdge();
+                String indexName = this.m_cfg.getStrings().getIndexEdge();
                 containerNode.addName("edge:\"" + edgeName + " %s\"," + indexName);
             } else {
                 containerNode.addName("edge:\"" + edgeName + "\"");
             }
 
             // If subtype is another container, allow more nodes. Otherwise, just one
-            String valName = /*"in=1:" + */m_cfg.getStrings().getValueEdge();
+            String valName = /*"in=1:" + */this.m_cfg.getStrings().getValueEdge();
             if (c.getType() instanceof Container) {
                 valName = "out=1..*:" + valName;
             } else {
@@ -284,14 +293,20 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
 
         if (useIndex) {
             if (indexValue) {
-                String indexName = m_cfg.getStrings().getIndexEdge();
+                String indexName = this.m_cfg.getStrings().getIndexEdge();
                 containerNode.addName("out=1:int:" + indexName);
             } else {
-                String nextName = m_cfg.getStrings().getNextEdge();
-                /*AbsEdge nextEdge = */new AbsEdge(containerNode, containerNode, "out=0..1:" + nextName);
+                String nextName = this.m_cfg.getStrings().getNextEdge();
+                /*AbsEdge nextEdge = */new AbsEdge(containerNode, containerNode, "out=0..1:"
+                    + nextName);
 
-                if (m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().isUsePrevEdge()) {
-                    String prevName = m_cfg.getStrings().getPrevEdge();
+                if (this.m_cfg.getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .getOrdering()
+                    .isUsePrevEdge()) {
+                    String prevName = this.m_cfg.getStrings().getPrevEdge();
                     new AbsEdge(containerNode, containerNode, "out=0..1:" + prevName);
                 }
             }
@@ -303,13 +318,13 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Tuple tuple, java.lang.Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
 
         //TODO: Nodified edge style might suit tuple better
-        AbsNode tupleNode = new AbsNode(m_cfg.getName(tuple));
+        AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tuple));
         setElement(tuple, tupleNode);
 
         int index = 1;
@@ -322,7 +337,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Object object, java.lang.Object param) {
+    public void visit(Object object, String param) {
         if (hasElement(object)) {
             return;
         }
@@ -330,19 +345,19 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             throw new IllegalArgumentException("Cannot create object node in type model");
         }
 
-        String name = m_cfg.getStrings().getNilName();
+        String name = this.m_cfg.getStrings().getNilName();
         AbsNode nilNode = new AbsNode("type:" + name);
         setElement(object, nilNode);
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, java.lang.Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         if (propertyVisited(abstractProperty)) {
             return;
         }
         setPropertyVisited(abstractProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
             return;
         }
 
@@ -351,13 +366,13 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, java.lang.Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         if (propertyVisited(containmentProperty)) {
             return;
         }
         setPropertyVisited(containmentProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
             return;
         }
 
@@ -371,8 +386,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
 
         // Add to intermediate node as well if required
-        if (m_cfg.useIntermediate(containmentProperty.getField())) {
-            edgeName = m_cfg.getStrings().getValueEdge();
+        if (this.m_cfg.useIntermediate(containmentProperty.getField())) {
+            edgeName = this.m_cfg.getStrings().getValueEdge();
             containmentNode = getElement(containmentProperty.getField());
 
             for (AbsEdge edge : containmentNode.getEdges()) {
@@ -385,7 +400,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, java.lang.Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         if (propertyVisited(identityProperty)) {
             return;
         }
@@ -395,7 +410,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, java.lang.Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         if (propertyVisited(keysetProperty)) {
             return;
         }
@@ -407,17 +422,17 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     @Override
     // Called twice for each opposite pair, opposite has a reverse
     // So only handle a single direction
-    public void visit(OppositeProperty oppositeProperty, java.lang.Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         if (propertyVisited(oppositeProperty)) {
             return;
         }
         setPropertyVisited(oppositeProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
             return;
         }
 
-        boolean useOpposites = m_cfg.getConfig().getTypeModel().getFields().isOpposites();
+        boolean useOpposites = this.m_cfg.getConfig().getTypeModel().getFields().isOpposites();
         if (!useOpposites) {
             return;
         }
@@ -429,15 +444,17 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         AbsNode field1Node = getElement(oppositeProperty.getField1());
         AbsNode field2Node = getElement(oppositeProperty.getField2());
 
-        AbsNode source = m_cfg.useIntermediate(oppositeProperty.getField1()) ? field1Node : class1Node;
-        AbsNode target = m_cfg.useIntermediate(oppositeProperty.getField2()) ? field2Node : class2Node;
+        AbsNode source =
+            this.m_cfg.useIntermediate(oppositeProperty.getField1()) ? field1Node : class1Node;
+        AbsNode target =
+            this.m_cfg.useIntermediate(oppositeProperty.getField2()) ? field2Node : class2Node;
 
-        String oppositeName = m_cfg.getStrings().getOppositeEdge();
+        String oppositeName = this.m_cfg.getStrings().getOppositeEdge();
         /*AbsEdge oppositeEdge = */new AbsEdge(source, target, "out=1:" + oppositeName);
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, java.lang.Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         if (propertyVisited(defaultValueProperty)) {
             return;
         }

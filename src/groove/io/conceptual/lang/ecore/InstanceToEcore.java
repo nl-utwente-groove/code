@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -52,8 +52,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 
-public class InstanceToEcore extends InstanceExporter<java.lang.Object>
-        implements Visitor {
+public class InstanceToEcore extends InstanceExporter<java.lang.Object> implements Visitor {
     private TypeToEcore m_typeToEcore;
 
     private EcoreResource m_ecoreResource;
@@ -67,8 +66,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
     }
 
     @Override
-    public void addInstanceModel(InstanceModel instanceModel)
-        throws PortException {
+    public void addInstanceModel(InstanceModel instanceModel) throws PortException {
         int timer = Timer.start("IM to Ecore");
         this.m_eObjects.clear();
 
@@ -91,8 +89,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         timer = Timer.cont("Ecore save");
 
         Resource typeResource =
-            this.m_ecoreResource.getInstanceResource(instanceModel.getName()
-                + "bababa");
+            this.m_ecoreResource.getInstanceResource(instanceModel.getName() + "bababa");
         EList<EObject> contents = typeResource.getContents();
 
         //contents.add(rootObject);
@@ -102,7 +99,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
     }
 
     @Override
-    public void visit(groove.io.conceptual.value.Object object, Object param) {
+    public void visit(groove.io.conceptual.value.Object object, String param) {
         if (hasElement(object)) {
             return;
         }
@@ -110,8 +107,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         Class cmClass = (Class) object.getType();
         EClass eClass = this.m_typeToEcore.getEClass(cmClass);
 
-        EObject eObject =
-            eClass.getEPackage().getEFactoryInstance().create(eClass);
+        EObject eObject = eClass.getEPackage().getEFactoryInstance().create(eClass);
         setElement(object, eObject);
         this.m_eObjects.add(eObject);
 
@@ -127,8 +123,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
                 // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
                 ContainerValue cv = (ContainerValue) fieldValue.getValue();
                 @SuppressWarnings("unchecked")
-                EList<Object> objectList =
-                    (EList<Object>) eObject.eGet(eFeature);
+                EList<Object> objectList = (EList<Object>) eObject.eGet(eFeature);
                 for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
                     assert (eSubValue != null);
@@ -142,9 +137,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
                 Object eValue = null;
                 // ContainerValue possible for 0..1 attribs
                 if (fieldValue.getValue() instanceof ContainerValue) {
-                    eValue =
-                        getElement(((ContainerValue) fieldValue.getValue()).getValue().get(
-                            0));
+                    eValue = getElement(((ContainerValue) fieldValue.getValue()).getValue().get(0));
                 } else {
                     eValue = getElement(fieldValue.getValue());
                 }
@@ -155,98 +148,95 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
     }
 
     @Override
-    public void visit(RealValue realval, Object param) {
+    public void visit(RealValue realval, String param) {
         if (hasElement(realval)) {
             return;
         }
 
-        EDataType eDataType =
-            this.m_typeToEcore.getEDataType((DataType) realval.getType());
+        EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) realval.getType());
 
         Object eDoubleVal =
-            eDataType.getEPackage().getEFactoryInstance().createFromString(
-                eDataType, realval.toString());
+            eDataType.getEPackage()
+                .getEFactoryInstance()
+                .createFromString(eDataType, realval.toString());
         setElement(realval, eDoubleVal);
     }
 
     @Override
-    public void visit(StringValue stringval, Object param) {
+    public void visit(StringValue stringval, String param) {
         if (hasElement(stringval)) {
             return;
         }
 
-        EDataType eDataType =
-            this.m_typeToEcore.getEDataType((DataType) stringval.getType());
+        EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) stringval.getType());
 
         Object eStringVal =
-            eDataType.getEPackage().getEFactoryInstance().createFromString(
-                eDataType, stringval.toString());
+            eDataType.getEPackage()
+                .getEFactoryInstance()
+                .createFromString(eDataType, stringval.toString());
         setElement(stringval, eStringVal);
     }
 
     @Override
-    public void visit(IntValue intval, Object param) {
+    public void visit(IntValue intval, String param) {
         if (hasElement(intval)) {
             return;
         }
 
-        EDataType eDataType =
-            this.m_typeToEcore.getEDataType((DataType) intval.getType());
+        EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) intval.getType());
 
         Object eIntVal =
-            eDataType.getEPackage().getEFactoryInstance().createFromString(
-                eDataType, intval.toString());
+            eDataType.getEPackage()
+                .getEFactoryInstance()
+                .createFromString(eDataType, intval.toString());
         setElement(intval, eIntVal);
     }
 
     @Override
-    public void visit(BoolValue boolval, Object param) {
+    public void visit(BoolValue boolval, String param) {
         if (hasElement(boolval)) {
             return;
         }
 
-        EDataType eDataType =
-            this.m_typeToEcore.getEDataType((DataType) boolval.getType());
+        EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) boolval.getType());
 
         Object eBoolVal =
-            eDataType.getEPackage().getEFactoryInstance().createFromString(
-                eDataType, boolval.toString());
+            eDataType.getEPackage()
+                .getEFactoryInstance()
+                .createFromString(eDataType, boolval.toString());
         setElement(boolval, eBoolVal);
     }
 
     @Override
-    public void visit(EnumValue enumval, Object param) {
+    public void visit(EnumValue enumval, String param) {
         if (hasElement(enumval)) {
             return;
         }
 
-        EEnum eEnum =
-            (EEnum) this.m_typeToEcore.getEDataType((Enum) enumval.getType());
+        EEnum eEnum = (EEnum) this.m_typeToEcore.getEDataType((Enum) enumval.getType());
 
         Object eEnumVal =
-            eEnum.getEPackage().getEFactoryInstance().createFromString(eEnum,
-                enumval.getValue().toString());
+            eEnum.getEPackage()
+                .getEFactoryInstance()
+                .createFromString(eEnum, enumval.getValue().toString());
         setElement(enumval, eEnumVal);
 
         return;
     }
 
     @Override
-    public void visit(ContainerValue containerval, Object param) {
+    public void visit(ContainerValue containerval, String param) {
         Container container = (Container) containerval.getType();
         EClass containerClass = this.m_typeToEcore.getContainerClass(container);
 
         EObject containerObject =
-            containerClass.getEPackage().getEFactoryInstance().create(
-                containerClass);
+            containerClass.getEPackage().getEFactoryInstance().create(containerClass);
         setElement(containerval, containerObject);
         this.m_eObjects.add(containerObject);
 
-        EStructuralFeature eFeature =
-            containerClass.getEStructuralFeature("value");
+        EStructuralFeature eFeature = containerClass.getEStructuralFeature("value");
         @SuppressWarnings("unchecked")
-        EList<Object> objectList =
-            (EList<Object>) containerObject.eGet(eFeature);
+        EList<Object> objectList = (EList<Object>) containerObject.eGet(eFeature);
         for (Value val : containerval.getValue()) {
             Object eSubValue = getElement(val);
             objectList.add(eSubValue);
@@ -254,7 +244,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
     }
 
     @Override
-    public void visit(TupleValue tupleval, Object param) {
+    public void visit(TupleValue tupleval, String param) {
         if (hasElement(tupleval)) {
             return;
         }
@@ -262,23 +252,19 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         Tuple tuple = (Tuple) tupleval.getType();
         EClass tupleClass = this.m_typeToEcore.getTupleClass(tuple);
 
-        EObject tupleObject =
-            tupleClass.getEPackage().getEFactoryInstance().create(tupleClass);
+        EObject tupleObject = tupleClass.getEPackage().getEFactoryInstance().create(tupleClass);
         setElement(tupleval, tupleObject);
         this.m_eObjects.add(tupleObject);
 
         for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
-            String indexName =
-                this.m_typeToEcore.getTupleElementName(tuple, entry.getKey());
-            EStructuralFeature eFeature =
-                tupleClass.getEStructuralFeature(indexName);
+            String indexName = this.m_typeToEcore.getTupleElementName(tuple, entry.getKey());
+            EStructuralFeature eFeature = tupleClass.getEStructuralFeature(indexName);
             Value tupValue = entry.getValue();
             if (eFeature.isMany()) {
                 // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
                 ContainerValue cv = (ContainerValue) tupValue;
                 @SuppressWarnings("unchecked")
-                EList<Object> objectList =
-                    (EList<Object>) tupleObject.eGet(eFeature);
+                EList<Object> objectList = (EList<Object>) tupleObject.eGet(eFeature);
                 for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
                     objectList.add(eSubValue);
@@ -292,7 +278,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
     }
 
     @Override
-    public void visit(CustomDataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, String param) {
         if (hasElement(dataval)) {
             return;
         }
@@ -301,8 +287,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         EDataType eDataType = this.m_typeToEcore.getEDataType(dataType);
 
         Object eDataValue =
-            eDataType.getEPackage().getEFactoryInstance().createFromString(
-                eDataType, dataval.getValue());
+            eDataType.getEPackage()
+                .getEFactoryInstance()
+                .createFromString(eDataType, dataval.getValue());
         setElement(dataval, eDataValue);
     }
 }

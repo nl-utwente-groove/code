@@ -92,7 +92,7 @@ public class Object extends Value {
     }
 
     @Override
-    public boolean doVisit(Visitor v, java.lang.Object param) {
+    public boolean doVisit(Visitor v, String param) {
         v.visit(this, param);
         return true;
     }
