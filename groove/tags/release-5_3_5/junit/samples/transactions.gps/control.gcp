@@ -1,0 +1,4 @@
+recipe ab() {
+  a;
+  b;
+}
