@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -59,10 +59,12 @@ public abstract class TypeExporter<E> implements Messenger, Visitor {
         this.m_messages.add(m);
     }
 
+    @Override
     public List<Message> getMessages() {
         return this.m_messages;
     }
 
+    @Override
     public void clearMessages() {
         this.m_messages.clear();
     }
@@ -87,21 +89,17 @@ public abstract class TypeExporter<E> implements Messenger, Visitor {
     }
 
     // If allowNull and element is not being set, returns null
-    protected E getElement(Acceptor acceptor, java.lang.Object param,
-            boolean allowNull) {
+    protected E getElement(Acceptor acceptor, java.lang.Object param, boolean allowNull) {
         if (!this.m_elements.containsKey(acceptor)) {
             acceptor.doVisit(this, param);
         }
 
-        if (!this.m_elements.containsKey(acceptor)) {
-            if (allowNull) {
-                return null;
-            }
-            throw new IllegalArgumentException(
-                "Cannot get element for acceptor " + acceptor.toString());
+        E result = this.m_elements.get(acceptor);
+        if (result == null && !allowNull) {
+            throw new IllegalArgumentException("Cannot get element for acceptor "
+                + acceptor.toString());
         }
-
-        return this.m_elements.get(acceptor);
+        return result;
     }
 
     protected void visitTypeModel(TypeModel typeModel, Config cfg) {

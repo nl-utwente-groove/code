@@ -41,8 +41,7 @@ public class Field implements Acceptor {
         // If type not container and
         // - Upper > 1 : create container
         // - Lower == 0 and type not class : create container
-        if (((upper > 1 || upper == -1) || !(type instanceof Class)
-            && lower == 0)
+        if (((upper > 1 || upper == -1) || !(type instanceof Class) && lower == 0)
             && !(type instanceof Container)) {
             // Unique and non-ordered container (fits best into GROOVE, intermediate not required)
             type = new Container(Kind.SET, type);
