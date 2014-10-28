@@ -134,7 +134,9 @@ public enum VisualKey {
         }
         if (error) {
             throw new IllegalArgumentException(String.format("%s value %s should be of type %s",
-                this, value, this.type));
+                this,
+                value,
+                this.type));
         }
     }
 
@@ -154,7 +156,7 @@ public enum VisualKey {
 
     /**
      * Returns an array of automatically refreshable controlled keys.
-     * The list consists of all {@link #REFRESHABLE} keys.
+     * The list consists of all {@link Nature#REFRESHABLE} keys.
      */
     public static VisualKey[] refreshables() {
         return REFRESHABLES;
@@ -162,7 +164,7 @@ public enum VisualKey {
 
     /**
      * Returns an array of derived keys.
-     * The list consists of all {@link #DERIVED} keys.
+     * The list consists of all {@link Nature#DERIVED} keys.
      */
     public static VisualKey[] deriveds() {
         return DERIVEDS;
@@ -170,7 +172,7 @@ public enum VisualKey {
 
     /**
      * Returns an array of controlled keys.
-     * The list consists of all {@link #CONTROLLED} keys.
+     * The list consists of all {@link Nature#CONTROLLED} keys.
      */
     public static VisualKey[] controlleds() {
         return CONTROLLEDS;
