@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -79,12 +79,10 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
     // Packages are mapped to subgraphs in instance models
     private Map<Id,NodeType> m_packageNodes = new HashMap<Id,NodeType>();
-    private Map<Id,NodeType> m_packageIntermediateNodes =
-        new HashMap<Id,NodeType>();
+    private Map<Id,NodeType> m_packageIntermediateNodes = new HashMap<Id,NodeType>();
     private String m_currentTypeName;
 
-    private Map<java.lang.Object,String> m_objectIDs =
-        new HashMap<java.lang.Object,String>();
+    private Map<java.lang.Object,String> m_objectIDs = new HashMap<java.lang.Object,String>();
 
     // Some tuples must be represented by classes, this map keeps track of them
     private Map<Tuple,Class> m_tupleClasses = new HashMap<Tuple,Class>();
@@ -104,8 +102,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
         // If no typegraph yet, create one, this also creates a new GraphClass node inside it. Otherwise, insert a new GraphClass node
         if (this.m_typeGraph == null) {
-            this.m_typeGraph =
-                this.m_gxlResource.getTypeGraph(typeModel.getName());
+            this.m_typeGraph = this.m_gxlResource.getTypeGraph(typeModel.getName());
         }
 
         int timer = Timer.start("TM to GXL");
@@ -120,7 +117,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(DataType t, Object param) {
+    public void visit(DataType t, String param) {
         if (hasElement(t)) {
             return;
         }
@@ -128,21 +125,13 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         NodeType typeNode = null;
 
         if (t instanceof StringType) {
-            typeNode =
-                createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#String",
-                    Id.ROOT);
+            typeNode = createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#String", Id.ROOT);
         } else if (t instanceof IntType) {
-            typeNode =
-                createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#Int",
-                    Id.ROOT);
+            typeNode = createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#Int", Id.ROOT);
         } else if (t instanceof RealType) {
-            typeNode =
-                createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#Float",
-                    Id.ROOT);
+            typeNode = createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#Float", Id.ROOT);
         } else if (t instanceof BoolType) {
-            typeNode =
-                createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#Bool",
-                    Id.ROOT);
+            typeNode = createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#Bool", Id.ROOT);
         } else if (t instanceof CustomDataType) {
             // Create it as a node with a 'value' attribute
             // Commented as this fails when using default values. The name is lost though when using as string attribute
@@ -154,15 +143,15 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
             // Create as a string, GXL has no notion of custom data types
             typeNode =
-                createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#String",
-                    t.getId().getNamespace());
+                createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#String", t.getId()
+                    .getNamespace());
         }
 
         setElement(t, typeNode);
     }
 
     @Override
-    public void visit(Class cmClass, Object param) {
+    public void visit(Class cmClass, String param) {
         if (hasElement(cmClass)) {
             return;
         }
@@ -173,12 +162,10 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         }
 
         NodeType classNode =
-            createNode(getId(cmClass),
-                GxlUtil.g_gxlTypeGraphURI + "#NodeClass",
-                cmClass.getId().getNamespace());
+            createNode(getId(cmClass), GxlUtil.g_gxlTypeGraphURI + "#NodeClass", cmClass.getId()
+                .getNamespace());
         setElement(cmClass, classNode);
-        GxlUtil.setAttribute(classNode, "name", idToName(cmClass.getId()),
-            AttrTypeEnum.STRING);
+        GxlUtil.setAttribute(classNode, "name", idToName(cmClass.getId()), AttrTypeEnum.STRING);
         GxlUtil.setAttribute(classNode, "isabstract", false, AttrTypeEnum.BOOL);
 
         for (Class superClass : cmClass.getSuperClasses()) {
@@ -195,26 +182,22 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             boolean isAttribute = isAttribute(field);
             if (isAttribute) {
                 NodeType attrNode = fieldNode;
-                createEdge(classNode, attrNode, GxlUtil.g_gxlTypeGraphURI
-                    + "#hasAttribute");
+                createEdge(classNode, attrNode, GxlUtil.g_gxlTypeGraphURI + "#hasAttribute");
             } else {
                 NodeType edgeNode = fieldNode;
 
                 EdgeType fromEdge =
-                    createEdge(edgeNode, classNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#from");
+                    createEdge(edgeNode, classNode, GxlUtil.g_gxlTypeGraphURI + "#from");
                 TupType limits = createLimit(0, -1);
-                GxlUtil.setAttribute(fromEdge, "limits", limits,
-                    AttrTypeEnum.TUP);
-                GxlUtil.setAttribute(fromEdge, "isordered", false,
-                    AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(fromEdge, "limits", limits, AttrTypeEnum.TUP);
+                GxlUtil.setAttribute(fromEdge, "isordered", false, AttrTypeEnum.BOOL);
 
             }
         }
     }
 
     @Override
-    public void visit(Field field, Object param) {
+    public void visit(Field field, String param) {
         if (hasElement(field)) {
             return;
         }
@@ -225,14 +208,12 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             NodeType typeNode = getElement(field.getType());
 
             NodeType attrNode =
-                createNode(getId(field), GxlUtil.g_gxlTypeGraphURI
-                    + "#AttributeClass",
+                createNode(getId(field),
+                    GxlUtil.g_gxlTypeGraphURI + "#AttributeClass",
                     field.getDefiningClass().getId().getNamespace());
-            GxlUtil.setAttribute(attrNode, "name", field.getName().toString(),
-                AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(attrNode, "name", field.getName().toString(), AttrTypeEnum.STRING);
 
-            createEdge(attrNode, typeNode, GxlUtil.g_gxlTypeGraphURI
-                + "#hasDomain");
+            createEdge(attrNode, typeNode, GxlUtil.g_gxlTypeGraphURI + "#hasDomain");
             //createEdge(classNode, attrNode, GxlUtil.g_gxlTypeGraphURI + "#hasAttribute");
             fieldNode = attrNode;
         } else {
@@ -241,26 +222,22 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 fieldNode = edgeNode;
             } else {
                 NodeType edgeNode =
-                    createNode(getId(field), GxlUtil.g_gxlTypeGraphURI
-                        + "#EdgeClass",
+                    createNode(getId(field),
+                        GxlUtil.g_gxlTypeGraphURI + "#EdgeClass",
                         field.getDefiningClass().getId().getNamespace());
-                GxlUtil.setAttribute(edgeNode, "name",
-                    field.getName().toString(), AttrTypeEnum.STRING);
-                GxlUtil.setAttribute(edgeNode, "isdirected", true,
-                    AttrTypeEnum.BOOL);
-                GxlUtil.setAttribute(edgeNode, "isabstract", false,
-                    AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(edgeNode,
+                    "name",
+                    field.getName().toString(),
+                    AttrTypeEnum.STRING);
+                GxlUtil.setAttribute(edgeNode, "isdirected", true, AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(edgeNode, "isabstract", false, AttrTypeEnum.BOOL);
                 boolean ordered = false;
 
                 NodeType typeNode = getElement(field.getType());
-                EdgeType toEdge =
-                    createEdge(edgeNode, typeNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#to");
-                TupType limits =
-                    createLimit(field.getLowerBound(), field.getUpperBound());
+                EdgeType toEdge = createEdge(edgeNode, typeNode, GxlUtil.g_gxlTypeGraphURI + "#to");
+                TupType limits = createLimit(field.getLowerBound(), field.getUpperBound());
                 GxlUtil.setAttribute(toEdge, "limits", limits, AttrTypeEnum.TUP);
-                GxlUtil.setAttribute(toEdge, "isordered", ordered,
-                    AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(toEdge, "isordered", ordered, AttrTypeEnum.BOOL);
                 fieldNode = edgeNode;
             }
         }
@@ -271,62 +248,46 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(Container container, Object param) {
+    public void visit(Container container, String param) {
         if (!isAttribute(container)) {
             String edgeId = getEdgeId();
             NodeType edgeNode =
-                createNode(edgeId, GxlUtil.g_gxlTypeGraphURI + "#EdgeClass",
-                    Id.ROOT);
-            GxlUtil.setAttribute(edgeNode, "name", "value_" + edgeId,
-                AttrTypeEnum.STRING);
-            GxlUtil.setAttribute(edgeNode, "isdirected", true,
-                AttrTypeEnum.BOOL);
-            GxlUtil.setAttribute(edgeNode, "isabstract", false,
-                AttrTypeEnum.BOOL);
+                createNode(edgeId, GxlUtil.g_gxlTypeGraphURI + "#EdgeClass", Id.ROOT);
+            GxlUtil.setAttribute(edgeNode, "name", "value_" + edgeId, AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(edgeNode, "isdirected", true, AttrTypeEnum.BOOL);
+            GxlUtil.setAttribute(edgeNode, "isabstract", false, AttrTypeEnum.BOOL);
             setElement(container, edgeNode);
 
             Kind ct = container.getContainerType();
-            boolean ordered =
-                (ct == Kind.ORD || ct == Kind.SEQ);
+            boolean ordered = (ct == Kind.ORD || ct == Kind.SEQ);
             NodeType typeNode = getElement(container.getType());
             // Unique is ignored and assumed to be true. Non-unique is not supported
 
             if (container.getType() instanceof Container) {
                 // typeNode points to an edge, create intermediate node and connect edge node representing this container via that node
                 NodeType containerNode =
-                    createNode(getId(container), GxlUtil.g_gxlTypeGraphURI
-                        + "#NodeClass", Id.ROOT);
-                GxlUtil.setAttribute(containerNode, "name", getId(container),
-                    AttrTypeEnum.STRING);
-                GxlUtil.setAttribute(containerNode, "isabstract", false,
-                    AttrTypeEnum.BOOL);
+                    createNode(getId(container), GxlUtil.g_gxlTypeGraphURI + "#NodeClass", Id.ROOT);
+                GxlUtil.setAttribute(containerNode, "name", getId(container), AttrTypeEnum.STRING);
+                GxlUtil.setAttribute(containerNode, "isabstract", false, AttrTypeEnum.BOOL);
 
                 EdgeType toEdge =
-                    createEdge(edgeNode, containerNode,
-                        GxlUtil.g_gxlTypeGraphURI + "#to");
+                    createEdge(edgeNode, containerNode, GxlUtil.g_gxlTypeGraphURI + "#to");
                 TupType limits = createLimit(0, -1);
                 GxlUtil.setAttribute(toEdge, "limits", limits, AttrTypeEnum.TUP);
-                GxlUtil.setAttribute(toEdge, "isordered", ordered,
-                    AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(toEdge, "isordered", ordered, AttrTypeEnum.BOOL);
 
                 EdgeType fromEdge =
-                    createEdge(typeNode, containerNode,
-                        GxlUtil.g_gxlTypeGraphURI + "#from");
+                    createEdge(typeNode, containerNode, GxlUtil.g_gxlTypeGraphURI + "#from");
                 // Container node always exactly 1 incoming edge
                 limits = createLimit(1, 1);
-                GxlUtil.setAttribute(fromEdge, "limits", limits,
-                    AttrTypeEnum.TUP);
-                GxlUtil.setAttribute(fromEdge, "isordered", false,
-                    AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(fromEdge, "limits", limits, AttrTypeEnum.TUP);
+                GxlUtil.setAttribute(fromEdge, "isordered", false, AttrTypeEnum.BOOL);
             } else {
                 //typeNode points to another node, simply connect the edge
-                EdgeType toEdge =
-                    createEdge(edgeNode, typeNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#to");
+                EdgeType toEdge = createEdge(edgeNode, typeNode, GxlUtil.g_gxlTypeGraphURI + "#to");
                 TupType limits = createLimit(0, -1);
                 GxlUtil.setAttribute(toEdge, "limits", limits, AttrTypeEnum.TUP);
-                GxlUtil.setAttribute(toEdge, "isordered", ordered,
-                    AttrTypeEnum.BOOL);
+                GxlUtil.setAttribute(toEdge, "isordered", ordered, AttrTypeEnum.BOOL);
             }
 
             return;
@@ -354,36 +315,33 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
         NodeType subTypeNode = getElement(container.getType());
 
-        createEdge(containerNode, subTypeNode, GxlUtil.g_gxlTypeGraphURI
-            + "#hasComponent");
+        createEdge(containerNode, subTypeNode, GxlUtil.g_gxlTypeGraphURI + "#hasComponent");
     }
 
     @Override
-    public void visit(Enum cmEnum, Object param) {
+    public void visit(Enum cmEnum, String param) {
         if (hasElement(cmEnum)) {
             return;
         }
 
         NodeType enumNode =
-            createNode(getId(cmEnum), GxlUtil.g_gxlTypeGraphURI + "#Enum",
-                cmEnum.getId().getNamespace());
+            createNode(getId(cmEnum), GxlUtil.g_gxlTypeGraphURI + "#Enum", cmEnum.getId()
+                .getNamespace());
         setElement(cmEnum, enumNode);
 
         for (Name literal : cmEnum.getLiterals()) {
             String literalId = getId(cmEnum) + "_" + literal;
             NodeType literalNode =
-                createNode(literalId, GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
-                    cmEnum.getId().getNamespace());
-            GxlUtil.setAttribute(literalNode, "value", literal.toString(),
-                AttrTypeEnum.STRING);
+                createNode(literalId, GxlUtil.g_gxlTypeGraphURI + "#EnumVal", cmEnum.getId()
+                    .getNamespace());
+            GxlUtil.setAttribute(literalNode, "value", literal.toString(), AttrTypeEnum.STRING);
 
-            createEdge(enumNode, literalNode, GxlUtil.g_gxlTypeGraphURI
-                + "#containsValue");
+            createEdge(enumNode, literalNode, GxlUtil.g_gxlTypeGraphURI + "#containsValue");
         }
     }
 
     @Override
-    public void visit(Tuple tuple, Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
@@ -391,8 +349,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         if (isAttribute(tuple)) {
 
             NodeType tupleNode =
-                createNode(getId(tuple), GxlUtil.g_gxlTypeGraphURI + "#Tup",
-                    Id.ROOT);
+                createNode(getId(tuple), GxlUtil.g_gxlTypeGraphURI + "#Tup", Id.ROOT);
             setElement(tuple, tupleNode);
 
             //GxlUtil.setAttribute(tupleNode, "name", getId(tuple), AttrTypeEnum.STRING);
@@ -401,8 +358,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             for (Type type : tuple.getTypes()) {
                 NodeType typeNode = getElement(type);
                 EdgeType componentEdge =
-                    createEdge(tupleNode, typeNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#hasComponent");
+                    createEdge(tupleNode, typeNode, GxlUtil.g_gxlTypeGraphURI + "#hasComponent");
                 componentEdge.setToorder(BigInteger.valueOf(index++));
             }
 
@@ -415,7 +371,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         if (hasElement(abstractProperty)) {
             return;
         }
@@ -426,7 +382,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         if (hasElement(containmentProperty)) {
             return;
         }
@@ -434,13 +390,12 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
         NodeType fieldNode = getElement(containmentProperty.getField());
 
-        GxlUtil.setElemType(fieldNode, GxlUtil.g_gxlTypeGraphURI
-            + "#CompositionClass");
+        GxlUtil.setElemType(fieldNode, GxlUtil.g_gxlTypeGraphURI + "#CompositionClass");
         GxlUtil.setAttribute(fieldNode, "aggregate", "to", AttrTypeEnum.ENUM);
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         if (hasElement(identityProperty)) {
             return;
         }
@@ -450,7 +405,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         if (hasElement(keysetProperty)) {
             return;
         }
@@ -460,7 +415,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(OppositeProperty oppositeProperty, Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         if (hasElement(oppositeProperty)) {
             return;
         }
@@ -470,7 +425,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         if (hasElement(defaultValueProperty)) {
             return;
         }
@@ -483,11 +438,9 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
         NodeType fieldNode = getElement(defaultValueProperty.getField());
 
-        NodeType valueNode =
-            getValueElement(defaultValueProperty.getDefaultValue());
+        NodeType valueNode = getValueElement(defaultValueProperty.getDefaultValue());
 
-        createEdge(fieldNode, valueNode, GxlUtil.g_gxlTypeGraphURI
-            + "#hasDefaultValue");
+        createEdge(fieldNode, valueNode, GxlUtil.g_gxlTypeGraphURI + "#hasDefaultValue");
 
         //JAXBElement<?> gxlValue = GxlUtil.valueToGxl(defaultValueProperty.getDefaultValue());
         //GxlUtil.setAttribute(fieldNode, "defaultValue", gxlValue.getValue(), AttrTypeEnum.AUTO);
@@ -565,8 +518,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 || type.equals(GxlUtil.g_gxlTypeGraphURI + "#CompositionClass")
                 || type.equals(GxlUtil.g_gxlTypeGraphURI + "#AggregationClass")
                 || type.equals(GxlUtil.g_gxlTypeGraphURI + "#RelationClass")) {
-                createEdge(graphNode, newNode, GxlUtil.g_gxlTypeGraphURI
-                    + "#contains");
+                createEdge(graphNode, newNode, GxlUtil.g_gxlTypeGraphURI + "#contains");
             }
         }
 
@@ -637,47 +589,50 @@ public class TypeToGxl extends TypeExporter<NodeType> {
 
         // This is used for defaultvalue only. These values MUST of of the string attribute type
         if (v instanceof BoolValue) {
-            valNode =
-                createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
-                    + "#BoolVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode, "value",
+            valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#BoolVal", Id.ROOT);
+            GxlUtil.setAttribute(valNode,
+                "value",
                 new Boolean(((BoolValue) v).getValue()).toString(),
                 AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof IntValue) {
-            valNode =
-                createNode(getValueId(v),
-                    GxlUtil.g_gxlTypeGraphURI + "#IntVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode, "value",
-                ((IntValue) v).getValue().toString(), AttrTypeEnum.STRING);
+            valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#IntVal", Id.ROOT);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((IntValue) v).getValue().toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof RealValue) {
-            valNode =
-                createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
-                    + "#FloatVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode, "value",
-                ((RealValue) v).getValue().toString(), AttrTypeEnum.STRING);
+            valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#FloatVal", Id.ROOT);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((RealValue) v).getValue().toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof StringValue) {
-            valNode =
-                createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
-                    + "#StringVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode, "value",
-                ((StringValue) v).getValue(), AttrTypeEnum.STRING);
+            valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#StringVal", Id.ROOT);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((StringValue) v).getValue(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof EnumValue) {
             valNode =
-                createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
-                    + "#EnumVal", ((Enum) v.getType()).getId().getNamespace());
-            GxlUtil.setAttribute(valNode, "value",
-                ((EnumValue) v).getValue().toString(), AttrTypeEnum.STRING);
+                createNode(getValueId(v),
+                    GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
+                    ((Enum) v.getType()).getId().getNamespace());
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((EnumValue) v).getValue().toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof CustomDataValue) {
             valNode =
-                createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
-                    + "#StringVal",
+                createNode(getValueId(v),
+                    GxlUtil.g_gxlTypeGraphURI + "#StringVal",
                     ((CustomDataType) v.getType()).getId().getNamespace());
-            GxlUtil.setAttribute(valNode, "value",
+            GxlUtil.setAttribute(valNode,
+                "value",
                 ((CustomDataValue) v).getValue().toString(),
                 AttrTypeEnum.STRING);
             return valNode;
@@ -713,9 +668,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         } else if (v instanceof TupleValue) {
             TupleValue tv = (TupleValue) v;
 
-            valNode =
-                createNode(getValueId(v),
-                    GxlUtil.g_gxlTypeGraphURI + "#TupVal", Id.ROOT);
+            valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#TupVal", Id.ROOT);
 
             for (Entry<Integer,Value> subEntry : tv.getValue().entrySet()) {
                 NodeType subValNode = getValueElement(subEntry.getValue());
@@ -736,13 +689,10 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     private NodeType getPackageNode(Id packageId) {
         if (!this.m_packageNodes.containsKey(packageId)) {
             NodeType graphNode = new NodeType();
-            graphNode.setId("graph_"
-                + (packageId == Id.ROOT ? this.m_currentTypeName : packageId));
-            GxlUtil.setElemType(graphNode, GxlUtil.g_gxlTypeGraphURI
-                + "#GraphClass");
-            GxlUtil.setAttribute(graphNode, "name", packageId == Id.ROOT
-                    ? this.m_currentTypeName : packageId.getName().toString(),
-                AttrTypeEnum.STRING);
+            graphNode.setId("graph_" + (packageId == Id.ROOT ? this.m_currentTypeName : packageId));
+            GxlUtil.setElemType(graphNode, GxlUtil.g_gxlTypeGraphURI + "#GraphClass");
+            GxlUtil.setAttribute(graphNode, "name", packageId == Id.ROOT ? this.m_currentTypeName
+                : packageId.getName().toString(), AttrTypeEnum.STRING);
             this.m_typeGraph.getNodeOrEdgeOrRel().add(graphNode);
             this.m_packageNodes.put(packageId, graphNode);
 
@@ -758,16 +708,14 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                         this.m_packageIntermediateNodes.get(packageId.getNamespace());
                 } else {
                     intermediateNode = new NodeType();
-                    intermediateNode.setId("graphnode_"
-                        + packageId.getNamespace());
-                    GxlUtil.setElemType(graphNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#NodeClass");
-                    createEdge(parentNode, intermediateNode,
-                        GxlUtil.g_gxlTypeGraphURI + "#contains");
+                    intermediateNode.setId("graphnode_" + packageId.getNamespace());
+                    GxlUtil.setElemType(graphNode, GxlUtil.g_gxlTypeGraphURI + "#NodeClass");
+                    createEdge(parentNode, intermediateNode, GxlUtil.g_gxlTypeGraphURI
+                        + "#contains");
                     this.m_typeGraph.getNodeOrEdgeOrRel().add(intermediateNode);
                 }
-                createEdge(intermediateNode, graphNode,
-                    GxlUtil.g_gxlTypeGraphURI + "#hasAsComponentGraph");
+                createEdge(intermediateNode, graphNode, GxlUtil.g_gxlTypeGraphURI
+                    + "#hasAsComponentGraph");
             }
 
             return graphNode;
@@ -786,8 +734,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     private Class makeClass(Tuple tuple) {
-        Class cmClass =
-            new Class(Id.getId(Id.ROOT, Name.getName(getId(tuple))));
+        Class cmClass = new Class(Id.getId(Id.ROOT, Name.getName(getId(tuple))));
 
         int index = 1;
         for (Type t : tuple.getTypes()) {

@@ -23,7 +23,7 @@ public class IdentityProperty implements Property {
     }
 
     @Override
-    public boolean doVisit(Visitor v, Object param) {
+    public boolean doVisit(Visitor v, String param) {
         v.visit(this, param);
         return true;
     }

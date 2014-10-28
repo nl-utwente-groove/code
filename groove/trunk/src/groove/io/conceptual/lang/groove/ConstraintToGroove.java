@@ -111,7 +111,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    protected AbsNode getElement(Acceptor o, java.lang.Object param, boolean allowNull) {
+    protected AbsNode getElement(Acceptor o, String param, boolean allowNull) {
         if (this.m_allowDuplicates) {
             o.doVisit(this, param);
         }
@@ -145,7 +145,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Class c, java.lang.Object param) {
+    public void visit(Class c, String param) {
         if (hasElement(c)) {
             return;
         }
@@ -164,7 +164,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Field field, java.lang.Object param) {
+    public void visit(Field field, String param) {
         if (hasElement(field)) {
             return;
         }
@@ -194,7 +194,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DataType dt, java.lang.Object param) {
+    public void visit(DataType dt, String param) {
         if (hasElement(dt)) {
             return;
         }
@@ -204,7 +204,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Enum e, java.lang.Object param) {
+    public void visit(Enum e, String param) {
         if (hasElement(e)) {
             return;
         }
@@ -218,21 +218,15 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Container c, java.lang.Object param) {
+    public void visit(Container c, String param) {
         if (hasElement(c)) {
             return;
         }
 
-        if (param != null && !(param instanceof String)) {
-            throw new IllegalArgumentException(
-                "Container visitor requires String argument but gets " + param);
-        }
-        String containerId = (String) param;
-
         AbsNode containerNode = null;
         if (this.m_cfg.useIntermediate(c)) {
-            assert containerId != null;
-            containerNode = new AbsNode(containerId + this.m_cfg.getContainerPostfix(c));
+            assert param != null;
+            containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
         }
 
         AbsNode typeNode = null;
@@ -240,8 +234,8 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             if (!(c.getType() instanceof Container)) {
                 typeNode = getElement(c.getType());
             } else {
-                assert containerId != null;
-                typeNode = getElement(c.getType(), this.m_cfg.getContainerName(containerId, c));
+                assert param != null;
+                typeNode = getElement(c.getType(), this.m_cfg.getContainerName(param, c));
             }
         }
 
@@ -259,7 +253,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Tuple tuple, java.lang.Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
@@ -279,12 +273,12 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Object object, java.lang.Object param) {
+    public void visit(Object object, String param) {
         throw new IllegalArgumentException("Cannot create object node in constraints");
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, java.lang.Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         if (propertyVisited(abstractProperty)) {
             return;
         }
@@ -293,7 +287,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, java.lang.Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         if (propertyVisited(containmentProperty)) {
             return;
         }
@@ -302,7 +296,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, java.lang.Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         if (propertyVisited(identityProperty)) {
             return;
         }
@@ -320,7 +314,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, java.lang.Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         if (propertyVisited(keysetProperty)) {
             return;
         }
@@ -532,7 +526,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     @Override
     // Called twice, opposite has a reverse
     // SO only handle a single direction
-    public void visit(OppositeProperty oppositeProperty, java.lang.Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         if (propertyVisited(oppositeProperty)) {
             return;
         }
@@ -583,7 +577,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, java.lang.Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         if (propertyVisited(defaultValueProperty)) {
             return;
         }
@@ -644,7 +638,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(RealValue realval, java.lang.Object param) {
+    public void visit(RealValue realval, String param) {
         if (hasElement(realval)) {
             return;
         }
@@ -656,7 +650,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(StringValue stringval, java.lang.Object param) {
+    public void visit(StringValue stringval, String param) {
         if (hasElement(stringval)) {
             return;
         }
@@ -668,7 +662,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(IntValue intval, java.lang.Object param) {
+    public void visit(IntValue intval, String param) {
         if (hasElement(intval)) {
             return;
         }
@@ -680,7 +674,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(BoolValue boolval, java.lang.Object param) {
+    public void visit(BoolValue boolval, String param) {
         if (hasElement(boolval)) {
             return;
         }
@@ -692,7 +686,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(EnumValue enumval, java.lang.Object param) {
+    public void visit(EnumValue enumval, String param) {
         if (hasElement(enumval)) {
             return;
         }
@@ -714,7 +708,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(CustomDataValue dataval, java.lang.Object param) {
+    public void visit(CustomDataValue dataval, String param) {
         if (hasElement(dataval)) {
             return;
         }

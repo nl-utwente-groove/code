@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -55,24 +55,24 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
     private int m_nodeId;
 
     public InstanceToGraphviz(TypeToGraphviz typeToGraphviz) {
-        m_typeToGraphviz = typeToGraphviz;
+        this.m_typeToGraphviz = typeToGraphviz;
 
-        m_resource = (GraphvizResource) m_typeToGraphviz.getResource();
+        this.m_resource = (GraphvizResource) this.m_typeToGraphviz.getResource();
     }
 
     @Override
     public void addInstanceModel(InstanceModel instanceModel) throws PortException {
         int timer = Timer.start("IM to DOT");
-        Graph instanceGraph = m_resource.getInstanceGraph(instanceModel.getName());
-        m_instanceGraphs.put(instanceModel, instanceGraph);
-        m_packageGraphs.put(Id.ROOT, instanceGraph);
+        Graph instanceGraph = this.m_resource.getInstanceGraph(instanceModel.getName());
+        this.m_instanceGraphs.put(instanceModel, instanceGraph);
+        this.m_packageGraphs.put(Id.ROOT, instanceGraph);
 
         visitInstanceModel(instanceModel);
         Timer.stop(timer);
     }
 
     @Override
-    public void visit(groove.io.conceptual.value.Object object, Object param) {
+    public void visit(groove.io.conceptual.value.Object object, String param) {
         if (hasElement(object)) {
             return;
         }
@@ -108,8 +108,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
                 }
             }
 
-            if (fieldType instanceof Class
-                || fieldType instanceof Tuple) {
+            if (fieldType instanceof Class || fieldType instanceof Tuple) {
                 // Add edge
                 if (isContainer) {
                     ContainerValue cVal = (ContainerValue) entry.getValue();
@@ -162,7 +161,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
     }
 
     @Override
-    public void visit(TupleValue tupleval, Object param) {
+    public void visit(TupleValue tupleval, String param) {
         if (hasElement(tupleval)) {
             return;
         }
@@ -222,44 +221,44 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
     }
 
     @Override
-    public void visit(CustomDataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, String param) {
         // Not directly translated
 
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         // Not in instance
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         // Not in instance
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         // Not in instance
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         // Not in instance
     }
 
     @Override
-    public void visit(OppositeProperty oppositeProperty, Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         // Not in instance
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         // Not in instance
     }
 
     private Graph getPackageGraph(Id namespace) {
-        if (m_packageGraphs.containsKey(namespace)) {
-            return m_packageGraphs.get(namespace);
+        if (this.m_packageGraphs.containsKey(namespace)) {
+            return this.m_packageGraphs.get(namespace);
         }
 
         Graph parent = getPackageGraph(namespace.getNamespace());
@@ -271,7 +270,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
         packageGraph.addAttribute("label", namespace.getName().toString());
         packageGraph.setId(graphId);
 
-        m_packageGraphs.put(namespace, packageGraph);
+        this.m_packageGraphs.put(namespace, packageGraph);
 
         return packageGraph;
     }
@@ -281,8 +280,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
             type = ((Container) type).getType();
         }
 
-        if (type instanceof Class
-            || type instanceof Tuple) {
+        if (type instanceof Class || type instanceof Tuple) {
             return true;
         }
 
@@ -290,7 +288,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
     }
 
     private String getElementId() {
-        return "N" + m_nodeId++;
+        return "N" + this.m_nodeId++;
     }
 
 }

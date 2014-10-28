@@ -82,8 +82,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         Timer.stop(timer);
 
         timer = Timer.start("Ecore save");
-        Resource typeResource =
-            this.m_ecoreResource.getTypeResource(typeModel.getName());
+        Resource typeResource = this.m_ecoreResource.getTypeResource(typeModel.getName());
         EList<EObject> contents = typeResource.getContents();
 
         for (EPackage pkg : this.m_rootPackages) {
@@ -164,7 +163,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(DataType t, Object param) {
+    public void visit(DataType t, String param) {
         if (hasElement(t)) {
             return;
         }
@@ -186,14 +185,13 @@ public class TypeToEcore extends TypeExporter<EObject> {
             // Forcing to the string class, as it always has a string representation.
             // This is a limitation of the conceptual model (doesn't store other type information)
             eDataType.setInstanceClass(String.class);
-            EPackage typePackage =
-                packageFromId(cmDataType.getId().getNamespace());
+            EPackage typePackage = packageFromId(cmDataType.getId().getNamespace());
             typePackage.getEClassifiers().add(eDataType);
         }
     }
 
     @Override
-    public void visit(Class cmClass, Object param) {
+    public void visit(Class cmClass, String param) {
         if (hasElement(cmClass)) {
             return;
         }
@@ -221,15 +219,14 @@ public class TypeToEcore extends TypeExporter<EObject> {
         }
 
         for (Field field : cmClass.getFields()) {
-            EStructuralFeature eStructFeat =
-                (EStructuralFeature) getElement(field);
+            EStructuralFeature eStructFeat = (EStructuralFeature) getElement(field);
             eClass.getEStructuralFeatures().add(eStructFeat);
         }
     }
 
     // Map fields, either as attribute or reference
     @Override
-    public void visit(Field field, Object param) {
+    public void visit(Field field, String param) {
         if (hasElement(field)) {
             return;
         }
@@ -276,8 +273,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         } else {
             eFieldFeature.setUpperBound(field.getUpperBound());
         }
-        if (field.getType() instanceof Class
-            && !((Class) field.getType()).isProper()) {
+        if (field.getType() instanceof Class && !((Class) field.getType()).isProper()) {
             eFieldFeature.setLowerBound(0);
         } else {
             eFieldFeature.setLowerBound(field.getLowerBound());
@@ -285,7 +281,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Container container, Object param) {
+    public void visit(Container container, String param) {
         if (hasElement(container)) {
             return;
         }
@@ -315,8 +311,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
 
         // Create value reference
         EStructuralFeature eContainerFeature = null;
-        if (container.getType() instanceof Class
-            || container.getType() instanceof Tuple
+        if (container.getType() instanceof Class || container.getType() instanceof Tuple
             || container.getType() instanceof Container) {
             // Create EReference
             eContainerFeature = g_EcoreFactory.createEReference();
@@ -347,7 +342,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Enum enum1, Object param) {
+    public void visit(Enum enum1, String param) {
         if (hasElement(enum1)) {
             return;
         }
@@ -371,7 +366,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Tuple tuple, Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
@@ -387,30 +382,26 @@ public class TypeToEcore extends TypeExporter<EObject> {
         int typeIndex = 1;
         for (Type type : tuple.getTypes()) {
             Field typeField =
-                new Field(
-                    Name.getName(getTupleElementName(tuple, typeIndex++)),
-                    type, 1, 1);
-            EStructuralFeature eStructFeat =
-                (EStructuralFeature) getElement(typeField);
+                new Field(Name.getName(getTupleElementName(tuple, typeIndex++)), type, 1, 1);
+            EStructuralFeature eStructFeat = (EStructuralFeature) getElement(typeField);
             eClass.getEStructuralFeatures().add(eStructFeat);
         }
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         if (hasElement(abstractProperty)) {
             return;
         }
 
-        EClass eClass =
-            (EClass) getElement(abstractProperty.getAbstractClass());
+        EClass eClass = (EClass) getElement(abstractProperty.getAbstractClass());
         eClass.setAbstract(true);
 
         setElement(abstractProperty, null);
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         if (hasElement(containmentProperty)) {
             return;
         }
@@ -432,7 +423,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         if (hasElement(identityProperty)) {
             return;
         }
@@ -455,7 +446,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         if (hasElement(keysetProperty)) {
             return;
         }
@@ -482,7 +473,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(OppositeProperty oppositeProperty, Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         if (hasElement(oppositeProperty)) {
             return;
         }
@@ -501,7 +492,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         if (hasElement(defaultValueProperty)) {
             return;
         }

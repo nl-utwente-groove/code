@@ -19,7 +19,7 @@ public class StringType extends DataType {
     }
 
     @Override
-    public boolean doVisit(groove.io.conceptual.Visitor v, Object param) {
+    public boolean doVisit(groove.io.conceptual.Visitor v, String param) {
         v.visit(this, param);
         return true;
     }

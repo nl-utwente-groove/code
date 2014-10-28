@@ -14,5 +14,5 @@ public interface Acceptor extends Serializable {
      * @param param Any type of Object that may be passed along as a parameter
      * @return true if visited successfully
      */
-    public boolean doVisit(Visitor v, Object param);
+    public boolean doVisit(Visitor v, String param);
 }

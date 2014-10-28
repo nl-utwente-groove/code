@@ -187,7 +187,7 @@ public class Class extends Type implements Identifiable {
 
     @Override
     public boolean doVisit(groove.io.conceptual.Visitor v,
-            java.lang.Object param) {
+            String param) {
         v.visit(this, param);
         return true;
     }
