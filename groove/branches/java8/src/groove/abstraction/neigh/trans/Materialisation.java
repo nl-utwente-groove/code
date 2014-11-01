@@ -57,8 +57,7 @@ import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1151,15 +1150,16 @@ public final class Materialisation {
     }*/
 
     public static void main(String args[]) {
-        Path DIRECTORY = Paths.get("junit/abstraction/temp.gps/");
+        String DIRECTORY = "junit/abstraction/temp.gps/";
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
         NeighAbsParam.getInstance().setUseThreeValues(true);
         NeighAbstraction.initialise();
 
-        Path file = DIRECTORY.resolve("error.gxl");
+        File file = new File(DIRECTORY + "error.gxl");
+        File grammarFile = new File(DIRECTORY);
         try {
-            GrammarModel view = GrammarModel.newInstance(DIRECTORY, false);
+            GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             Grammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("rule");
             Shape shape = GxlIO.instance().loadGraph(file).toShape(view.getTypeGraph());
