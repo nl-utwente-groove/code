@@ -22,12 +22,12 @@ import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.property.Property;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
@@ -55,21 +55,21 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     private boolean m_recursiveTypes;
 
     public ConstraintToGroove(GrooveResource grooveResource) {
-        m_grooveResource = grooveResource;
-        m_cfg = m_grooveResource.getConfig();
-        m_allowDuplicates = false;
-        m_recursiveTypes = true;
+        this.m_grooveResource = grooveResource;
+        this.m_cfg = this.m_grooveResource.getConfig();
+        this.m_allowDuplicates = false;
+        this.m_recursiveTypes = true;
     }
 
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
-        m_properties.clear();
-        visitTypeModel(typeModel, m_cfg);
+        this.m_properties.clear();
+        visitTypeModel(typeModel, this.m_cfg);
     }
 
     @Override
     public ExportableResource getResource() {
-        return m_grooveResource;
+        return this.m_grooveResource;
     }
 
     @Override
@@ -94,9 +94,9 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
     @Override
     protected void setElement(Acceptor o, AbsNode n) {
-        m_currentGraph.m_nodes.put(o, n);
-        if (m_allowDuplicates && super.hasElement(o)) {
-            m_elements.put(o, n);
+        this.m_currentGraph.m_nodes.put(o, n);
+        if (this.m_allowDuplicates && super.hasElement(o)) {
+            this.m_elements.put(o, n);
         } else {
             super.setElement(o, n);
         }
@@ -104,26 +104,26 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
     @Override
     protected boolean hasElement(Acceptor o) {
-        if (m_allowDuplicates) {
+        if (this.m_allowDuplicates) {
             return false;
         }
         return super.hasElement(o);
     }
 
     @Override
-    protected AbsNode getElement(Acceptor o, java.lang.Object param, boolean allowNull) {
-        if (m_allowDuplicates) {
+    protected AbsNode getElement(Acceptor o, String param, boolean allowNull) {
+        if (this.m_allowDuplicates) {
             o.doVisit(this, param);
         }
         return super.getElement(o, param, allowNull);
     }
 
     private void setPropertyVisited(Property o) {
-        m_properties.add(o);
+        this.m_properties.add(o);
     }
 
     private boolean propertyVisited(Property o) {
-        return m_properties.contains(o);
+        return this.m_properties.contains(o);
     }
 
     private GrammarGraph getUniqueGraph(String name, GraphRole role) {
@@ -131,21 +131,21 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     private GrammarGraph getUniqueGraph(String name, GraphRole role, String ns) {
-        m_elements.clear();
+        this.m_elements.clear();
 
         name = GrooveUtil.getSafeId(name);
         if (ns != null) {
             name = ns + QualName.SEPARATOR + name;
         }
         int index = 0;
-        while (m_grooveResource.hasGraph(index == 0 ? name : name + index, role)) {
+        while (this.m_grooveResource.hasGraph(index == 0 ? name : name + index, role)) {
             index++;
         }
-        return m_grooveResource.getGraph(index == 0 ? name : name + index, role);
+        return this.m_grooveResource.getGraph(index == 0 ? name : name + index, role);
     }
 
     @Override
-    public void visit(Class c, java.lang.Object param) {
+    public void visit(Class c, String param) {
         if (hasElement(c)) {
             return;
         }
@@ -156,7 +156,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             AbsNode classNode = getElement(c.getProperClass());
             setElement(c, classNode);
         } else {
-            AbsNode classNode = new AbsNode(m_cfg.getName(c));
+            AbsNode classNode = new AbsNode(this.m_cfg.getName(c));
             setElement(c, classNode);
         }
 
@@ -164,19 +164,19 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Field field, java.lang.Object param) {
+    public void visit(Field field, String param) {
         if (hasElement(field)) {
             return;
         }
 
         AbsNode fieldNode = null;
         if (field.getType() instanceof Container) {
-            fieldNode = getElement(field.getType(), m_cfg.getName(field));
+            fieldNode = getElement(field.getType(), this.m_cfg.getName(field));
         } else {
-            if (m_cfg.useIntermediate(field)) {
-                AbsNode interNode = new AbsNode(m_cfg.getName(field));
-                String valName = m_cfg.getStrings().getValueEdge();
-                if (m_recursiveTypes) {
+            if (this.m_cfg.useIntermediate(field)) {
+                AbsNode interNode = new AbsNode(this.m_cfg.getName(field));
+                String valName = this.m_cfg.getStrings().getValueEdge();
+                if (this.m_recursiveTypes) {
                     fieldNode = getElement(field.getType());
                     new AbsEdge(interNode, fieldNode, valName);
                 }
@@ -194,59 +194,56 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DataType dt, java.lang.Object param) {
+    public void visit(DataType dt, String param) {
         if (hasElement(dt)) {
             return;
         }
 
-        AbsNode typeNode = new AbsNode(m_cfg.getName(dt));
+        AbsNode typeNode = new AbsNode(this.m_cfg.getName(dt));
         setElement(dt, typeNode);
     }
 
     @Override
-    public void visit(Enum e, java.lang.Object param) {
+    public void visit(Enum e, String param) {
         if (hasElement(e)) {
             return;
         }
 
         // Ignoring values, so ignoring config
 
-        AbsNode enumNode = new AbsNode(m_cfg.getName(e));
+        AbsNode enumNode = new AbsNode(this.m_cfg.getName(e));
         setElement(e, enumNode);
 
         return;
     }
 
     @Override
-    public void visit(Container c, java.lang.Object param) {
+    public void visit(Container c, String param) {
         if (hasElement(c)) {
             return;
         }
 
-        if (param == null || !(param instanceof String)) {
-            throw new IllegalArgumentException("Container visitor requires String argument");
-        }
-        String containerId = (String) param;
-
         AbsNode containerNode = null;
-        if (m_cfg.useIntermediate(c)) {
-            containerNode = new AbsNode(containerId + m_cfg.getContainerPostfix(c));
+        if (this.m_cfg.useIntermediate(c)) {
+            assert param != null;
+            containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
         }
 
         AbsNode typeNode = null;
-        if (m_recursiveTypes || !m_cfg.useIntermediate(c)) {
+        if (this.m_recursiveTypes || !this.m_cfg.useIntermediate(c)) {
             if (!(c.getType() instanceof Container)) {
                 typeNode = getElement(c.getType());
             } else {
-                typeNode = getElement(c.getType(), m_cfg.getContainerName(containerId, c));
+                assert param != null;
+                typeNode = getElement(c.getType(), this.m_cfg.getContainerName(param, c));
             }
         }
 
-        if (m_cfg.useIntermediate(c) && m_recursiveTypes) {
-            String valName = m_cfg.getStrings().getValueEdge();
+        if (this.m_cfg.useIntermediate(c) && this.m_recursiveTypes) {
+            String valName = this.m_cfg.getStrings().getValueEdge();
             /*AbsEdge valEdge = */new AbsEdge(containerNode, typeNode, valName);
         }
-        if (!m_cfg.useIntermediate(c)) {
+        if (!this.m_cfg.useIntermediate(c)) {
             containerNode = typeNode;
         }
 
@@ -256,16 +253,16 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Tuple tuple, java.lang.Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
 
-        AbsNode tupleNode = new AbsNode(m_cfg.getName(tuple));
+        AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tuple));
         setElement(tuple, tupleNode);
 
         int index = 1;
-        if (m_recursiveTypes) {
+        if (this.m_recursiveTypes) {
             for (Type t : tuple.getTypes()) {
                 AbsNode typeNode = getElement(t);
                 /*AbsEdge elemEdge = */new AbsEdge(tupleNode, typeNode, "_" + index++);
@@ -276,12 +273,12 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Object object, java.lang.Object param) {
+    public void visit(Object object, String param) {
         throw new IllegalArgumentException("Cannot create object node in constraints");
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, java.lang.Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         if (propertyVisited(abstractProperty)) {
             return;
         }
@@ -290,7 +287,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, java.lang.Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         if (propertyVisited(containmentProperty)) {
             return;
         }
@@ -299,46 +296,54 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, java.lang.Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         if (propertyVisited(identityProperty)) {
             return;
         }
         setPropertyVisited(identityProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getConstraints().isCheckIdentifier()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckIdentifier()) {
             return;
         }
 
-        m_currentGraph = getUniqueGraph("Identity_" + identityProperty.getIdClass().getId().getName(), GraphRole.RULE, CONSTRAINT_NS);
+        this.m_currentGraph =
+            getUniqueGraph("Identity_" + identityProperty.getIdClass().getId().getName(),
+                GraphRole.RULE,
+                CONSTRAINT_NS);
         equivalencyCheck(identityProperty.getIdClass(), identityProperty.getFields(), null);
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, java.lang.Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         if (propertyVisited(keysetProperty)) {
             return;
         }
         setPropertyVisited(keysetProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getConstraints().isCheckKeyset()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckKeyset()) {
             return;
         }
 
-        m_currentGraph = getUniqueGraph("Keyset_" + keysetProperty.getRelField().getName(), GraphRole.RULE, CONSTRAINT_NS);
-        equivalencyCheck(keysetProperty.getKeyClass(), keysetProperty.getKeyFields(), keysetProperty.getRelField());
+        this.m_currentGraph =
+            getUniqueGraph("Keyset_" + keysetProperty.getRelField().getName(),
+                GraphRole.RULE,
+                CONSTRAINT_NS);
+        equivalencyCheck(keysetProperty.getKeyClass(),
+            keysetProperty.getKeyFields(),
+            keysetProperty.getRelField());
     }
 
     // Multiplicities are ignored. If upper = 1, also handled by cases for upper > 1
     // If upper == 1, treat as unordered & unique
     private void equivalencyCheck(Class fieldsClass, Field[] fields, Field containfield) {
-        String valueName = m_cfg.getStrings().getValueEdge();
-        String indexName = m_cfg.getStrings().getIndexEdge();
-        String nextName = m_cfg.getStrings().getNextEdge();
+        String valueName = this.m_cfg.getStrings().getValueEdge();
+        String indexName = this.m_cfg.getStrings().getIndexEdge();
+        String nextName = this.m_cfg.getStrings().getNextEdge();
 
         int curQuant = 1;
 
-        m_allowDuplicates = true;
-        m_recursiveTypes = false;
+        this.m_allowDuplicates = true;
+        this.m_recursiveTypes = false;
 
         AbsNode class1Node = getElement(fieldsClass);
         AbsNode class2Node = getElement(fieldsClass);
@@ -348,7 +353,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             AbsNode keyNode = getElement(containfield.getDefiningClass());
             AbsNode contain1Node = class1Node;
             AbsNode contain2Node = class2Node;
-            if (m_cfg.useIntermediate(containfield)) {
+            if (this.m_cfg.useIntermediate(containfield)) {
                 contain1Node = getElement(containfield);
                 contain2Node = getElement(containfield);
                 new AbsEdge(contain1Node, class1Node, valueName);
@@ -377,7 +382,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             new AbsEdge(field2CountForall, fieldCount, "count");
 
             // Check if intermediate is used
-            boolean useIntermediate = m_cfg.useIntermediate(field);
+            boolean useIntermediate = this.m_cfg.useIntermediate(field);
             // Check if unique and ordered. If not container, assume unique and unordered
             boolean isUnique = true;
             boolean isOrdered = false;
@@ -402,7 +407,10 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 // Create field nodes with equal value
                 AbsNode field1InterNode = getElement(field);
                 AbsNode field2InterNode = getElement(field);
-                AbsNode fieldValueNode = getElement(field.getType() instanceof Container ? ((Container) field.getType()).getType() : field.getType(), m_cfg.getName(field));
+                AbsNode fieldValueNode =
+                    getElement(field.getType() instanceof Container
+                        ? ((Container) field.getType()).getType() : field.getType(),
+                        this.m_cfg.getName(field));
                 new AbsEdge(class1Node, field1InterNode, fieldName);
                 new AbsEdge(class2Node, field2InterNode, fieldName);
                 new AbsEdge(field1InterNode, fieldValueNode, valueName);
@@ -414,13 +422,20 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 // * unordered not unique
                 // * unordered unique
                 if (isOrdered) {
-                    boolean indexValue = (m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType() == OrderType.INDEX);
+                    boolean indexValue =
+                        (this.m_cfg.getConfig()
+                            .getTypeModel()
+                            .getFields()
+                            .getContainers()
+                            .getOrdering()
+                            .getType() == OrderType.INDEX);
                     if (indexValue) {
                         //check if all index values are equal for all equal values
                         // Create index node
                         AbsNode indexNode = new AbsNode("int:");
                         new AbsEdge(field1InterNode, indexNode, "index");
-                        new AbsEdge(field2InterNode, indexNode, "use=qq" + curQuant + ":" + indexName);
+                        new AbsEdge(field2InterNode, indexNode, "use=qq" + curQuant + ":"
+                            + indexName);
 
                         // Create quantifier system
                         AbsNode forallNode = new AbsNode("forall:");
@@ -437,7 +452,10 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                         AbsNode field1Inter2Node = getElement(field);
                         AbsNode field2Inter2Node = getElement(field);
                         //AbsNode fieldValue2Node = getElement(field.getType());
-                        AbsNode fieldValue2Node = getElement(field.getType() instanceof Container ? ((Container) field.getType()).getType() : field.getType(), m_cfg.getName(field));
+                        AbsNode fieldValue2Node =
+                            getElement(field.getType() instanceof Container
+                                ? ((Container) field.getType()).getType() : field.getType(),
+                                this.m_cfg.getName(field));
                         new AbsEdge(field1Inter2Node, fieldValue2Node, valueName);
                         new AbsEdge(field2Inter2Node, fieldValue2Node, valueName);
                         // Next edge
@@ -501,40 +519,43 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             curQuant++;
         }
 
-        m_allowDuplicates = false;
-        m_recursiveTypes = true;
+        this.m_allowDuplicates = false;
+        this.m_recursiveTypes = true;
     }
 
     @Override
     // Called twice, opposite has a reverse
     // SO only handle a single direction
-    public void visit(OppositeProperty oppositeProperty, java.lang.Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         if (propertyVisited(oppositeProperty)) {
             return;
         }
         setPropertyVisited(oppositeProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getConstraints().isCheckOpposite()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckOpposite()) {
             return;
         }
 
-        String valueName = m_cfg.getStrings().getValueEdge();
+        String valueName = this.m_cfg.getStrings().getValueEdge();
 
-        m_currentGraph = getUniqueGraph("Opposite_" + oppositeProperty.getField1().getName(), GraphRole.RULE, CONSTRAINT_NS);
+        this.m_currentGraph =
+            getUniqueGraph("Opposite_" + oppositeProperty.getField1().getName(),
+                GraphRole.RULE,
+                CONSTRAINT_NS);
 
-        m_allowDuplicates = true;
-        m_recursiveTypes = false;
+        this.m_allowDuplicates = true;
+        this.m_recursiveTypes = false;
 
         AbsNode class1Node = getElement(oppositeProperty.getClass1());
         AbsNode class2Node = getElement(oppositeProperty.getClass2());
 
         AbsNode field1Node = class2Node;
-        if (m_cfg.useIntermediate(oppositeProperty.getField1())) {
+        if (this.m_cfg.useIntermediate(oppositeProperty.getField1())) {
             field1Node = getElement(oppositeProperty.getField1());
             new AbsEdge(field1Node, class2Node, valueName);
         }
         AbsNode field2Node = class1Node;
-        if (m_cfg.useIntermediate(oppositeProperty.getField2())) {
+        if (this.m_cfg.useIntermediate(oppositeProperty.getField2())) {
             field2Node = getElement(oppositeProperty.getField2());
             // NAC intermediate node
             field2Node.addName("not:");
@@ -543,30 +564,32 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
         new AbsEdge(class1Node, field1Node, oppositeProperty.getField1().getName().toString());
 
-        if (m_cfg.useIntermediate(oppositeProperty.getField2())) {
+        if (this.m_cfg.useIntermediate(oppositeProperty.getField2())) {
             new AbsEdge(class2Node, field2Node, oppositeProperty.getField2().getName().toString());
         } else {
             // NAC value edge
-            new AbsEdge(class2Node, class1Node, "not:" + oppositeProperty.getField2().getName().toString());
+            new AbsEdge(class2Node, class1Node, "not:"
+                + oppositeProperty.getField2().getName().toString());
         }
 
-        m_allowDuplicates = false;
-        m_recursiveTypes = true;
+        this.m_allowDuplicates = false;
+        this.m_recursiveTypes = true;
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, java.lang.Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         if (propertyVisited(defaultValueProperty)) {
             return;
         }
         setPropertyVisited(defaultValueProperty);
 
-        if (!m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule()) {
             // No default rule to be created
             return;
         }
 
-        if (defaultValueProperty.getField().getType() instanceof Container && defaultValueProperty.getField().getUpperBound() > 1) {
+        if (defaultValueProperty.getField().getType() instanceof Container
+            && defaultValueProperty.getField().getUpperBound() > 1) {
             // Cannot support containers, because hard to determine if container is empty, or not there
             throw new RuntimeException("Container default value not allowed");
         }
@@ -575,7 +598,8 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             throw new RuntimeException("Reference default value not allowed");
         }
 
-        m_currentGraph = getUniqueGraph("Default_" + defaultValueProperty.getField().getName(), GraphRole.RULE);
+        this.m_currentGraph =
+            getUniqueGraph("Default_" + defaultValueProperty.getField().getName(), GraphRole.RULE);
 
         AbsNode classNode = getElement(defaultValueProperty.getField().getDefiningClass());
         //AbsNode fieldNode = getElement(defaultValueProperty.getField()); //this would be the actual value, or intermediate node
@@ -585,28 +609,36 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             valueNode.addName("new:");
         }
 
-        if (m_cfg.useIntermediate(defaultValueProperty.getField())) {
-            AbsNode interNotNode = new AbsNode("not:", m_cfg.getName(defaultValueProperty.getField()));
-            AbsNode interNode = new AbsNode("new:", m_cfg.getName(defaultValueProperty.getField()));
-            String valName = m_cfg.getStrings().getValueEdge();
+        if (this.m_cfg.useIntermediate(defaultValueProperty.getField())) {
+            AbsNode interNotNode =
+                new AbsNode("not:", this.m_cfg.getName(defaultValueProperty.getField()));
+            AbsNode interNode =
+                new AbsNode("new:", this.m_cfg.getName(defaultValueProperty.getField()));
+            String valName = this.m_cfg.getStrings().getValueEdge();
 
-            new AbsEdge(classNode, interNode, "new:" + defaultValueProperty.getField().getName().toString());
-            new AbsEdge(classNode, interNotNode, defaultValueProperty.getField().getName().toString());
+            new AbsEdge(classNode, interNode, "new:"
+                + defaultValueProperty.getField().getName().toString());
+            new AbsEdge(classNode, interNotNode, defaultValueProperty.getField()
+                .getName()
+                .toString());
 
             new AbsEdge(interNode, valueNode, valName);
         } else {
-            new AbsEdge(classNode, valueNode, "new:" + defaultValueProperty.getField().getName().toString());
+            new AbsEdge(classNode, valueNode, "new:"
+                + defaultValueProperty.getField().getName().toString());
 
             AbsNode notNode = getElement(defaultValueProperty.getField().getType());
             notNode.addName("not:"); //Make NAC
-            /*AbsEdge notEdge = */new AbsEdge(classNode, notNode, defaultValueProperty.getField().getName().toString());
+            /*AbsEdge notEdge = */new AbsEdge(classNode, notNode, defaultValueProperty.getField()
+                .getName()
+                .toString());
 
         }
 
     }
 
     @Override
-    public void visit(RealValue realval, java.lang.Object param) {
+    public void visit(RealValue realval, String param) {
         if (hasElement(realval)) {
             return;
         }
@@ -618,7 +650,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(StringValue stringval, java.lang.Object param) {
+    public void visit(StringValue stringval, String param) {
         if (hasElement(stringval)) {
             return;
         }
@@ -630,7 +662,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(IntValue intval, java.lang.Object param) {
+    public void visit(IntValue intval, String param) {
         if (hasElement(intval)) {
             return;
         }
@@ -642,7 +674,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(BoolValue boolval, java.lang.Object param) {
+    public void visit(BoolValue boolval, String param) {
         if (hasElement(boolval)) {
             return;
         }
@@ -654,18 +686,20 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(EnumValue enumval, java.lang.Object param) {
+    public void visit(EnumValue enumval, String param) {
         if (hasElement(enumval)) {
             return;
         }
 
-        if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = m_cfg.getConfig().getGlobal().getIdSeparator();
-            String litName = "type:" + m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep + enumval.getValue();
+        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
+            String litName =
+                "type:" + this.m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep
+                    + enumval.getValue();
             AbsNode enumNode = new AbsNode(litName);
             setElement(enumval, enumNode);
         } else {
-            AbsNode enumNode = new AbsNode(m_cfg.getName(enumval.getType()));
+            AbsNode enumNode = new AbsNode(this.m_cfg.getName(enumval.getType()));
             enumNode.addName("flag:" + enumval.getValue().toString());
             setElement(enumval, enumNode);
         }
@@ -674,13 +708,15 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(CustomDataValue dataval, java.lang.Object param) {
+    public void visit(CustomDataValue dataval, String param) {
         if (hasElement(dataval)) {
             return;
         }
 
-        String valueName = m_cfg.getStrings().getDataValue();
-        AbsNode dataNode = new AbsNode(m_cfg.getName(dataval.getType()), "let:" + valueName + "=string:\"" + dataval.getValue() + "\"");
+        String valueName = this.m_cfg.getStrings().getDataValue();
+        AbsNode dataNode =
+            new AbsNode(this.m_cfg.getName(dataval.getType()), "let:" + valueName + "=string:\""
+                + dataval.getValue() + "\"");
         setElement(dataval, dataNode);
     }
 
@@ -689,49 +725,54 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         // Uniqueness: Create field->value type path times two, this will match same value used twice in case of intermediate
         // Class not needed, intermediate node is unique within type graph
         // If no intermediate, no problem
-        if (m_cfg.getConfig().getTypeModel().getConstraints().isCheckUniqueness()) {
-            if (m_cfg.useIntermediate(field)
+        if (this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckUniqueness()) {
+            if (this.m_cfg.useIntermediate(field)
                 && field.getType() instanceof Container
                 && (((Container) field.getType()).getContainerType() == Kind.SET || ((Container) field.getType()).getContainerType() == Kind.ORD)) {
-                GrammarGraph prevGraph = m_currentGraph;
-                m_currentGraph = getUniqueGraph("Unique_" + field.getName(), GraphRole.RULE, CONSTRAINT_NS);
+                GrammarGraph prevGraph = this.m_currentGraph;
+                this.m_currentGraph =
+                    getUniqueGraph("Unique_" + field.getName(), GraphRole.RULE, CONSTRAINT_NS);
 
-                m_allowDuplicates = true;
-                m_recursiveTypes = false;
+                this.m_allowDuplicates = true;
+                this.m_recursiveTypes = false;
 
                 AbsNode classNode = getElement(field.getDefiningClass());
                 AbsNode interNode = getElement(field);
                 AbsNode interNode2 = getElement(field);
                 AbsNode typeNode = null;
                 if (((Container) field.getType()).getType() instanceof Container) {
-                    typeNode = getElement(((Container) field.getType()).getType(), m_cfg.getContainerName(m_cfg.getName(field), (Container) field.getType()));
+                    typeNode =
+                        getElement(((Container) field.getType()).getType(),
+                            this.m_cfg.getContainerName(this.m_cfg.getName(field),
+                                (Container) field.getType()));
                 } else {
                     typeNode = getElement(((Container) field.getType()).getType());
                 }
 
-                String valName = m_cfg.getStrings().getValueEdge();
+                String valName = this.m_cfg.getStrings().getValueEdge();
                 new AbsEdge(classNode, interNode, field.getName().toString());
                 new AbsEdge(classNode, interNode2, field.getName().toString());
                 new AbsEdge(interNode, typeNode, valName);
                 new AbsEdge(interNode2, typeNode, valName);
                 new AbsEdge(interNode, interNode2, "!=");
 
-                m_allowDuplicates = false;
-                m_recursiveTypes = true;
+                this.m_allowDuplicates = false;
+                this.m_recursiveTypes = true;
 
-                m_currentGraph = prevGraph;
+                this.m_currentGraph = prevGraph;
             }
         }
 
         // Ordering, check if indices are well ordered, or next edges don't have two heads (rest is checked by multiplicities)
-        if (m_cfg.getConfig().getTypeModel().getConstraints().isCheckOrdering()) {
+        if (this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckOrdering()) {
             if (field.getType() instanceof Container
                 && (((Container) field.getType()).getContainerType() == Kind.ORD || ((Container) field.getType()).getContainerType() == Kind.SEQ)) {
-                GrammarGraph prevGraph = m_currentGraph;
-                m_currentGraph = getUniqueGraph("Ordered_" + field.getName(), GraphRole.RULE, CONSTRAINT_NS);
+                GrammarGraph prevGraph = this.m_currentGraph;
+                this.m_currentGraph =
+                    getUniqueGraph("Ordered_" + field.getName(), GraphRole.RULE, CONSTRAINT_NS);
 
-                m_allowDuplicates = true;
-                m_recursiveTypes = false;
+                this.m_allowDuplicates = true;
+                this.m_recursiveTypes = false;
 
                 AbsNode classNode = getElement(field.getDefiningClass());
                 AbsNode val1Node = getElement(field);
@@ -741,15 +782,25 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 new AbsEdge(classNode, val2Node, field.getName().toString());
                 new AbsEdge(val1Node, val2Node, "!=");
 
-                if (m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType() == OrderType.INDEX) {
+                if (this.m_cfg.getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .getOrdering()
+                    .getType() == OrderType.INDEX) {
                     // Check if two nodes exist with same index value
-                    String indexName = m_cfg.getStrings().getIndexEdge();
+                    String indexName = this.m_cfg.getStrings().getIndexEdge();
                     AbsNode indexNode = new AbsNode("int:");
                     new AbsEdge(val1Node, indexNode, indexName);
                     new AbsEdge(val2Node, indexNode, indexName);
-                } else if (m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType() == OrderType.EDGE) {
+                } else if (this.m_cfg.getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .getOrdering()
+                    .getType() == OrderType.EDGE) {
                     // Check if two nodes exist that are head
-                    String nextName = m_cfg.getStrings().getNextEdge();
+                    String nextName = this.m_cfg.getStrings().getNextEdge();
                     AbsNode val3Node = getElement(field);
                     val3Node.addName("not:");
                     AbsNode val4Node = getElement(field);
@@ -759,29 +810,30 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                     new AbsEdge(val4Node, val2Node, nextName);
                 }
 
-                m_allowDuplicates = false;
-                m_recursiveTypes = true;
+                this.m_allowDuplicates = false;
+                this.m_recursiveTypes = true;
 
-                m_currentGraph = prevGraph;
+                this.m_currentGraph = prevGraph;
             }
         }
     }
 
     private void createConstraints(Enum e) {
-        if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
             // Nothing to do, GROOVE handles it
             return;
         }
 
-        if (!m_cfg.getConfig().getTypeModel().getConstraints().isCheckEnum()) {
+        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckEnum()) {
             // No checks for enum
             return;
         }
 
         // Create rules that prohibit multiple flags
 
-        GrammarGraph prevGraph = m_currentGraph;
-        m_currentGraph = getUniqueGraph("Enum_" + e.getId().getName(), GraphRole.RULE, CONSTRAINT_NS);
+        GrammarGraph prevGraph = this.m_currentGraph;
+        this.m_currentGraph =
+            getUniqueGraph("Enum_" + e.getId().getName(), GraphRole.RULE, CONSTRAINT_NS);
 
         AbsNode enumNode = getElement(e);
         //hacky crappy double loop checking all combinations
@@ -811,7 +863,8 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
         }
 
-        m_currentGraph = getUniqueGraph("EnumNoflag_" + e.getId().getName(), GraphRole.RULE, CONSTRAINT_NS);
+        this.m_currentGraph =
+            getUniqueGraph("EnumNoflag_" + e.getId().getName(), GraphRole.RULE, CONSTRAINT_NS);
 
         enumNode = getElement(e);
 
@@ -819,6 +872,6 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             new AbsEdge(enumNode, enumNode, "not:flag:" + n.toString());
         }
 
-        m_currentGraph = prevGraph;
+        this.m_currentGraph = prevGraph;
     }
 }

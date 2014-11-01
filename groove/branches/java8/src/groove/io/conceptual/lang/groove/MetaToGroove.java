@@ -29,81 +29,93 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     private Map<MetaType,AbsNode> m_metaNodes = new HashMap<MetaType,AbsNode>();
 
     public MetaToGroove(GrooveResource grooveResource) {
-        m_grooveResource = grooveResource;
-        m_cfg = m_grooveResource.getConfig();
+        this.m_grooveResource = grooveResource;
+        this.m_cfg = this.m_grooveResource.getConfig();
     }
 
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
         // Only create meta graph if config requires it
-        if (m_cfg.getConfig().getTypeModel().isMetaSchema()) {
-            m_currentGraph = m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()) + "_meta", GraphRole.TYPE);
+        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
+            this.m_currentGraph =
+                this.m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()) + "_meta",
+                    GraphRole.TYPE);
             setupMetaModel();
-            visitTypeModel(typeModel, m_cfg);
+            visitTypeModel(typeModel, this.m_cfg);
         }
     }
 
     @Override
     public ExportableResource getResource() {
-        return m_grooveResource;
+        return this.m_grooveResource;
     }
 
     @Override
     protected void setElement(Acceptor o, AbsNode n) {
         super.setElement(o, n);
         if (n != null) {
-            m_currentGraph.m_nodes.put(o, n);
+            this.m_currentGraph.m_nodes.put(o, n);
         }
     }
 
     private enum MetaType {
-        Class, ClassNullable, Enum, Intermediate, Type, ContainerSet, ContainerBag, ContainerSeq, ContainerOrd, DataType, Tuple;
+        Class,
+        ClassNullable,
+        Enum,
+        Intermediate,
+        Type,
+        ContainerSet,
+        ContainerBag,
+        ContainerSeq,
+        ContainerOrd,
+        DataType,
+        Tuple;
     }
 
     private AbsNode getMetaNode(MetaType type) {
-        if (m_metaNodes.containsKey(type)) {
-            return m_metaNodes.get(type);
+        if (this.m_metaNodes.containsKey(type)) {
+            return this.m_metaNodes.get(type);
         }
         String name = "";
         switch (type) {
-            case Type:
-                name = m_cfg.getStrings().getMetaType();
-                break;
-            case Class:
-                name = m_cfg.getStrings().getMetaClass();
-                break;
-            case ClassNullable:
-                name = m_cfg.getStrings().getMetaClassNullable();
-                break;
-            case Enum:
-                name = m_cfg.getStrings().getMetaEnum();
-                break;
-            case DataType:
-                name = m_cfg.getStrings().getMetaDataType();
-                break;
-            case Tuple:
-                name = m_cfg.getStrings().getMetaTuple();
-                break;
-            case ContainerSet:
-                name = m_cfg.getStrings().getMetaContainerSet();
-                break;
-            case ContainerBag:
-                name = m_cfg.getStrings().getMetaContainerBag();
-                break;
-            case ContainerSeq:
-                name = m_cfg.getStrings().getMetaContainerSeq();
-                break;
-            case ContainerOrd:
-                name = m_cfg.getStrings().getMetaContainerOrd();
-                break;
-            case Intermediate:
-                name = m_cfg.getStrings().getMetaIntermediate();
-                break;
-            default:
-                throw new RuntimeException();
+        case Type:
+            name = this.m_cfg.getStrings().getMetaType();
+            break;
+        case Class:
+            name = this.m_cfg.getStrings().getMetaClass();
+            break;
+        case ClassNullable:
+            name = this.m_cfg.getStrings().getMetaClassNullable();
+            break;
+        case Enum:
+            name = this.m_cfg.getStrings().getMetaEnum();
+            break;
+        case DataType:
+            name = this.m_cfg.getStrings().getMetaDataType();
+            break;
+        case Tuple:
+            name = this.m_cfg.getStrings().getMetaTuple();
+            break;
+        case ContainerSet:
+            name = this.m_cfg.getStrings().getMetaContainerSet();
+            break;
+        case ContainerBag:
+            name = this.m_cfg.getStrings().getMetaContainerBag();
+            break;
+        case ContainerSeq:
+            name = this.m_cfg.getStrings().getMetaContainerSeq();
+            break;
+        case ContainerOrd:
+            name = this.m_cfg.getStrings().getMetaContainerOrd();
+            break;
+        case Intermediate:
+            name = this.m_cfg.getStrings().getMetaIntermediate();
+            break;
+        default:
+            throw new RuntimeException();
         }
         AbsNode metaNode = new AbsNode("type:" + name);
-        m_metaNodes.put(type, metaNode);
+        this.m_metaNodes.put(type, metaNode);
         return metaNode;
     }
 
@@ -134,13 +146,13 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Class c, java.lang.Object param) {
+    public void visit(Class c, String param) {
         if (hasElement(c)) {
             return;
         }
 
         // If not using the nullable/proper class system, don't instantiate nullable classes
-        if (m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
             if (!c.isProper()) {
                 // Simply revert to the proper instance
                 AbsNode classNode = getElement(c.getProperClass());
@@ -151,7 +163,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
             }
         }
 
-        AbsNode classNode = new AbsNode(m_cfg.getName(c));
+        AbsNode classNode = new AbsNode(this.m_cfg.getName(c));
         setElement(c, classNode);
 
         AbsNode classMetaNode = getMetaNode(c.isProper() ? MetaType.Class : MetaType.ClassNullable);
@@ -162,7 +174,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
         }
 
         if (c.isProper()) {
-            if (m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
+            if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
                 getElement(c.getNullableClass());
             }
         } else {
@@ -171,21 +183,21 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Field field, java.lang.Object param) {
+    public void visit(Field field, String param) {
         if (hasElement(field)) {
             return;
         }
 
         if (!(field.getType() instanceof DataType) || field.getType() instanceof CustomDataType) {
-            AbsNode fieldTypeNode = getElement(field.getType(), m_cfg.getName(field));
+            AbsNode fieldTypeNode = getElement(field.getType(), this.m_cfg.getName(field));
             // Can happen if type is container and not using intermediate
             if (fieldTypeNode == null) {
                 assert (field.getType() instanceof Container);
                 return;
             }
 
-            if (m_cfg.useIntermediate(field) && !(field.getType() instanceof Container)) {
-                AbsNode interNode = new AbsNode(m_cfg.getName(field));
+            if (this.m_cfg.useIntermediate(field) && !(field.getType() instanceof Container)) {
+                AbsNode interNode = new AbsNode(this.m_cfg.getName(field));
                 setElement(field, interNode);
 
                 AbsNode fieldMetaNode = getMetaNode(MetaType.Intermediate);
@@ -199,13 +211,13 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DataType dt, java.lang.Object param) {
+    public void visit(DataType dt, String param) {
         if (hasElement(dt)) {
             return;
         }
 
         if (dt instanceof CustomDataType) {
-            AbsNode dataNode = new AbsNode(m_cfg.getName(dt));
+            AbsNode dataNode = new AbsNode(this.m_cfg.getName(dt));
             setElement(dt, dataNode);
 
             AbsNode dataMetaNode = getMetaNode(MetaType.DataType);
@@ -214,12 +226,12 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Enum e, java.lang.Object param) {
+    public void visit(Enum e, String param) {
         if (hasElement(e)) {
             return;
         }
 
-        AbsNode enumNode = new AbsNode(m_cfg.getName(e), "abs:");
+        AbsNode enumNode = new AbsNode(this.m_cfg.getName(e), "abs:");
         setElement(e, enumNode);
 
         AbsNode enumMetaNode = getMetaNode(MetaType.Enum);
@@ -229,42 +241,39 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Container c, java.lang.Object param) {
+    public void visit(Container c, String param) {
         if (hasElement(c)) {
             return;
         }
 
-        if (param == null || !(param instanceof String)) {
-            throw new IllegalArgumentException("Container visitor requires String argument");
-        }
-        String containerId = (String) param;
+        assert param != null;
 
         if (c.getType() instanceof Container) {
-            getElement(c.getType(), m_cfg.getContainerName(containerId, (Container) c.getType()));
+            getElement(c.getType(), this.m_cfg.getContainerName(param, (Container) c.getType()));
         }
 
-        if (!m_cfg.useIntermediate(c)) {
+        if (!this.m_cfg.useIntermediate(c)) {
             setElement(c, null);
             return;
         }
 
-        AbsNode containerNode = new AbsNode(containerId + m_cfg.getContainerPostfix(c));
+        AbsNode containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
         setElement(c, containerNode);
 
         AbsNode orderedNode = null;
         switch (c.getContainerType()) {
-            case SET:
-                orderedNode = getMetaNode(MetaType.ContainerSet);
-                break;
-            case BAG:
-                orderedNode = getMetaNode(MetaType.ContainerBag);
-                break;
-            case SEQ:
-                orderedNode = getMetaNode(MetaType.ContainerSeq);
-                break;
-            case ORD:
-                orderedNode = getMetaNode(MetaType.ContainerOrd);
-                break;
+        case SET:
+            orderedNode = getMetaNode(MetaType.ContainerSet);
+            break;
+        case BAG:
+            orderedNode = getMetaNode(MetaType.ContainerBag);
+            break;
+        case SEQ:
+            orderedNode = getMetaNode(MetaType.ContainerSeq);
+            break;
+        case ORD:
+            orderedNode = getMetaNode(MetaType.ContainerOrd);
+            break;
         }
         new AbsEdge(containerNode, orderedNode, "sub:");
 
@@ -272,12 +281,12 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Tuple tuple, java.lang.Object param) {
+    public void visit(Tuple tuple, String param) {
         if (hasElement(tuple)) {
             return;
         }
 
-        AbsNode tupleNode = new AbsNode(m_cfg.getName(tuple));
+        AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tuple));
         setElement(tuple, tupleNode);
 
         AbsNode tupleMetaNode = getMetaNode(MetaType.Tuple);

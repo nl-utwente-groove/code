@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -44,7 +44,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /** JTree specialisation in which the nodes may have checkboxes. */
 public class CheckboxTree extends JTree {
-    /** 
+    /**
      * Constructs a tree, with cell renderer and editor set by
      * {@link #createRenderer()} and {@link #createEditor()}.
      */
@@ -180,7 +180,7 @@ public class CheckboxTree extends JTree {
      * This is used as new background the next time the tree is enabled.
      */
     private Color lastBackground;
-    /** 
+    /**
      * Flag indicating that the selection model is changing.
      * This means the listener should not be active.
      */
@@ -196,8 +196,8 @@ public class CheckboxTree extends JTree {
      * Special cell renderer for nodes with optional checkboxes.
      */
     static protected class CellRenderer extends JPanel implements TreeCellRenderer {
-        /** 
-         * Empty constructor with the correct visibility. 
+        /**
+         * Empty constructor with the correct visibility.
          * @param tree the enclosing checkbox tree
          */
         CellRenderer(CheckboxTree tree) {
@@ -219,10 +219,15 @@ public class CheckboxTree extends JTree {
 
         @Override
         public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-                boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
             this.initialising = true;
             JComponent result;
-            this.jLabel.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
+            this.jLabel.getTreeCellRendererComponent(tree,
+                value,
+                sel,
+                expanded,
+                leaf,
+                row,
                 hasFocus);
             Color background = this.tree.getColor(tree.isEnabled());
             // this.jLabel.setBackgroundNonSelectionColor(background);
@@ -248,7 +253,7 @@ public class CheckboxTree extends JTree {
             return this.labelNode;
         }
 
-        /** 
+        /**
          * Indicates if the renderer is initialising on a component.
          * This may let listeners know to ignore (checkbox) events.
          */
@@ -256,9 +261,9 @@ public class CheckboxTree extends JTree {
             return this.initialising;
         }
 
-        /** 
+        /**
          * Flag set to true during {@link #getTreeCellRendererComponent}
-         * to let listeners know to ignore (checkbox) events 
+         * to let listeners know to ignore (checkbox) events
          */
         private boolean initialising;
 
@@ -427,10 +432,15 @@ public class CheckboxTree extends JTree {
         /** Passes the request on to the renderer. */
         @Override
         public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected,
-                boolean expanded, boolean leaf, int row) {
+            boolean expanded, boolean leaf, int row) {
             Component result =
-                this.editor.getTreeCellRendererComponent(tree, value, selected, expanded, leaf,
-                    row, false);
+                this.editor.getTreeCellRendererComponent(tree,
+                    value,
+                    selected,
+                    expanded,
+                    leaf,
+                    row,
+                    false);
 
             return result;
         }
@@ -444,7 +454,7 @@ public class CheckboxTree extends JTree {
     }
 
     /**
-     * Tree node to be displayed in a {@linkCellRenderer}.
+     * Tree node to be displayed in a {@link CellRenderer}.
      */
     static public abstract class TreeNode extends DefaultMutableTreeNode {
         /** Indicates if this tree node should have an associated checkbox. */

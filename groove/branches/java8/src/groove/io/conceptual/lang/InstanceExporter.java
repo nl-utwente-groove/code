@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -49,8 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class InstanceExporter<E> implements Messenger, Visitor {
-    public abstract void addInstanceModel(InstanceModel instanceModel)
-        throws PortException;
+    public abstract void addInstanceModel(InstanceModel instanceModel) throws PortException;
 
     private List<Message> m_messages = new ArrayList<Message>();
     private Map<Acceptor,E> m_elements = new HashMap<Acceptor,E>();
@@ -59,10 +58,12 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
         this.m_messages.add(m);
     }
 
+    @Override
     public List<Message> getMessages() {
         return this.m_messages;
     }
 
+    @Override
     public void clearMessages() {
         this.m_messages.clear();
     }
@@ -80,14 +81,14 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
         return getElement(acceptor, null);
     }
 
-    protected E getElement(Acceptor acceptor, java.lang.Object param) {
+    protected E getElement(Acceptor acceptor, String param) {
         if (!this.m_elements.containsKey(acceptor)) {
             acceptor.doVisit(this, param);
         }
 
         if (!this.m_elements.containsKey(acceptor)) {
-            throw new IllegalArgumentException(
-                "Cannot get element for acceptor " + acceptor.toString());
+            throw new IllegalArgumentException("Cannot get element for acceptor "
+                + acceptor.toString());
         }
 
         return this.m_elements.get(acceptor);
@@ -109,107 +110,107 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
     }
 
     @Override
-    public void visit(DataType t, Object param) {
+    public void visit(DataType t, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(Class cmClass, Object param) {
+    public void visit(Class cmClass, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(Field field, Object param) {
+    public void visit(Field field, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(Container container, Object param) {
+    public void visit(Container container, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(Enum cmEnum, Object param) {
+    public void visit(Enum cmEnum, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(Tuple tuple, Object param) {
+    public void visit(Tuple tuple, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(groove.io.conceptual.value.Object object, Object param) {
+    public void visit(groove.io.conceptual.value.Object object, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(RealValue realval, Object param) {
+    public void visit(RealValue realval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(StringValue stringval, Object param) {
+    public void visit(StringValue stringval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(IntValue intval, Object param) {
+    public void visit(IntValue intval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(BoolValue boolval, Object param) {
+    public void visit(BoolValue boolval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(EnumValue enumval, Object param) {
+    public void visit(EnumValue enumval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(ContainerValue containerval, Object param) {
+    public void visit(ContainerValue containerval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(TupleValue tupleval, Object param) {
+    public void visit(TupleValue tupleval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(CustomDataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, Object param) {
+    public void visit(AbstractProperty abstractProperty, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, Object param) {
+    public void visit(ContainmentProperty containmentProperty, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, Object param) {
+    public void visit(IdentityProperty identityProperty, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, Object param) {
+    public void visit(KeysetProperty keysetProperty, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(OppositeProperty oppositeProperty, Object param) {
+    public void visit(OppositeProperty oppositeProperty, String param) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, Object param) {
+    public void visit(DefaultValueProperty defaultValueProperty, String param) {
         throw new UnsupportedOperationException();
     }
 }

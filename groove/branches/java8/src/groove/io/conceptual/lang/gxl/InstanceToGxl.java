@@ -84,7 +84,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(groove.io.conceptual.value.Object object, Object param) {
+    public void visit(groove.io.conceptual.value.Object object, String param) {
         if (hasElement(object)) {
             return;
         }
@@ -108,8 +108,10 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
 
             if (this.m_typeToGxl.isAttribute(fieldEntry.getKey())) {
                 JAXBElement<?> attrObject = (JAXBElement<?>) getElement(fieldValue);
-                GxlUtil.setAttribute(objectNode, fieldEntry.getKey().getName().toString(),
-                    attrObject.getValue(), AttrTypeEnum.AUTO);
+                GxlUtil.setAttribute(objectNode,
+                    fieldEntry.getKey().getName().toString(),
+                    attrObject.getValue(),
+                    AttrTypeEnum.AUTO);
             } else {
                 // Create edge or edges
                 String fieldEdgeId = "#" + this.m_typeToGxl.getId(fieldEntry.getKey());
@@ -135,7 +137,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(RealValue realval, Object param) {
+    public void visit(RealValue realval, String param) {
         if (hasElement(realval)) {
             return;
         }
@@ -146,7 +148,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(StringValue stringval, Object param) {
+    public void visit(StringValue stringval, String param) {
         if (hasElement(stringval)) {
             return;
         }
@@ -156,7 +158,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(IntValue intval, Object param) {
+    public void visit(IntValue intval, String param) {
         if (hasElement(intval)) {
             return;
         }
@@ -166,7 +168,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(BoolValue boolval, Object param) {
+    public void visit(BoolValue boolval, String param) {
         if (hasElement(boolval)) {
             return;
         }
@@ -177,7 +179,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(EnumValue enumval, Object param) {
+    public void visit(EnumValue enumval, String param) {
         if (hasElement(enumval)) {
             return;
         }
@@ -188,7 +190,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(ContainerValue containerval, Object param) {
+    public void visit(ContainerValue containerval, String param) {
         //TODO: check if for an attribute. Reference should be handled directly
         if (hasElement(containerval)) {
             return;
@@ -223,7 +225,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(TupleValue tupleval, Object param) {
+    public void visit(TupleValue tupleval, String param) {
         if (hasElement(tupleval)) {
             return;
         }
@@ -253,7 +255,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(CustomDataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, String param) {
         if (hasElement(dataval)) {
             return;
         }

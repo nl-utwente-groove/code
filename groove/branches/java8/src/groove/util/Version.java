@@ -18,7 +18,9 @@ public class Version {
      */
     public static void main(String[] args) {
         System.out.println(getAbout());
-        JOptionPane.showMessageDialog(null, getAboutHTML(), "About",
+        JOptionPane.showMessageDialog(null,
+            getAboutHTML(),
+            "About",
             JOptionPane.INFORMATION_MESSAGE);
         System.exit(0);
     }
@@ -61,10 +63,10 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "201410221607";
+    public static final String BUILD = "20141029";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "22.10.2014";
+    public static final String DATE = "29.10.2014";
 
     /**
      * Groove Version number of format x.y.z, with
@@ -75,7 +77,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.3.4+";
+    public static final String NUMBER = "5.3.5+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
