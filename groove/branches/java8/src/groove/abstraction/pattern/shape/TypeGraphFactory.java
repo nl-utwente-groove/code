@@ -24,8 +24,8 @@ import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostNode;
 import groove.util.Groove;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -216,7 +216,7 @@ public final class TypeGraphFactory {
     // ------------------------------------------------------------------------
 
     /** Loads a pattern type graph from the given file. */
-    public static TypeGraph unmarshalTypeGraph(File file) throws IOException {
+    public static TypeGraph unmarshalTypeGraph(Path file) throws IOException {
         return getInstance().toTypeGraph(
             AspectGraph.newInstance(Groove.loadGraph(file)));
     }

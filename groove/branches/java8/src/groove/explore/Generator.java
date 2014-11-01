@@ -35,6 +35,7 @@ import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +84,9 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         return new GrooveCmdLineParser(appName, this) {
             @Override
             public String getUsageLine() {
-                return String.format(
-                    "%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
-                    super.getUsageLine(), SOFT_REF_POLICY_NAME);
+                return String.format("%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
+                    super.getUsageLine(),
+                    SOFT_REF_POLICY_NAME);
             }
         };
     }
@@ -268,8 +269,8 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * The location is guaranteed to be an existing directory.
      * @return the (non-{@code null}) grammar location
      */
-    public File getGrammar() {
-        return this.grammar;
+    public Path getGrammar() {
+        return this.grammar.toPath();
     }
 
     @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,

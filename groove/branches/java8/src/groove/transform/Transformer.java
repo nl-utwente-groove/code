@@ -23,8 +23,8 @@ import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.explore.result.Result;
 import groove.grammar.Grammar;
-import groove.grammar.GrammarProperties;
 import groove.grammar.GrammarKey;
+import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
@@ -40,6 +40,7 @@ import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,7 +64,7 @@ public class Transformer {
      * Constructs a transformer based on the grammar found at a given location.
      * @throws IOException if the grammar cannot be loaded from the given location
      */
-    public Transformer(File grammarLocation) throws IOException {
+    public Transformer(Path grammarLocation) throws IOException {
         this(GrammarModel.newInstance(grammarLocation));
     }
 

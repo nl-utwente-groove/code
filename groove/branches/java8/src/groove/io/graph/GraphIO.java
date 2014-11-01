@@ -21,10 +21,10 @@ import groove.graph.GraphRole;
 import groove.io.FileType;
 import groove.util.parse.FormatException;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Class for saving and loading graphs.
@@ -32,9 +32,9 @@ import java.io.InputStream;
  * @version $Revision$
  */
 public abstract class GraphIO<G extends Graph> {
-    /** Indicates if this IO implementation can save graphs. 
-     * If {@code false}, {@link #saveGraph(Graph, File)} and {@link #doSaveGraph(Graph, File)}
-     * will throw {@link UnsupportedOperationException}s. 
+    /** Indicates if this IO implementation can save graphs.
+     * If {@code false}, {@link #saveGraph(Graph, Path)} and {@link #doSaveGraph(Graph, Path)}
+     * will throw {@link UnsupportedOperationException}s.
      */
     abstract public boolean canSave();
 
@@ -44,26 +44,25 @@ public abstract class GraphIO<G extends Graph> {
      * @param file the file to write to
      * @throws IOException if an error occurred during file output
      */
-    public void saveGraph(Graph graph, File file) throws IOException {
+    public void saveGraph(Graph graph, Path file) throws IOException {
         // create parent dirs if necessary
-        File parent = file.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
+        Path parent = file.getParent();
+        if (parent != null && Files.notExists(parent)) {
+            Files.createDirectories(parent);
         }
         doSaveGraph(graph, file);
     }
 
     /**
-     * Callback method to save a graph to a file, after all 
+     * Callback method to save a graph to a file, after all
      * necessary directories have been created.
      */
-    protected abstract void doSaveGraph(Graph graph, File file)
-        throws IOException;
+    protected abstract void doSaveGraph(Graph graph, Path file) throws IOException;
 
-    /** 
+    /**
      * Indicates if this IO implementation can load graphs.
-     * If {@code false}, {@link #loadGraph(File)} and {@link #loadGraph(InputStream)}
-     * will throw {@link UnsupportedOperationException}s. 
+     * If {@code false}, {@link #loadGraph(Path)} and {@link #loadGraph(InputStream)}
+     * will throw {@link UnsupportedOperationException}s.
      */
     public abstract boolean canLoad();
 
@@ -71,32 +70,28 @@ public abstract class GraphIO<G extends Graph> {
      * Loads an attributed graph from a file.
      * @throws IOException if an error occurred during file input
      */
-    public G loadGraph(File file) throws FormatException, IOException {
+    public G loadGraph(Path file) throws FormatException, IOException {
         setGraphName(FileType.getPureName(file));
-        return loadGraph(new FileInputStream(file));
+        try (InputStream stream = Files.newInputStream(file)) {
+            return loadGraph(stream);
+        }
     }
 
     /**
      * Loads a graph from an input stream.
      */
-    abstract public G loadGraph(InputStream in) throws FormatException,
-        IOException;
+    abstract public G loadGraph(InputStream in) throws FormatException, IOException;
 
     /** Deletes a file together with further information (such as layout info). */
-    public void deleteGraph(File file) {
-        deleteFile(file);
-    }
-
-    /**
-     * Deletes the given file.
-     */
-    protected void deleteFile(File file) {
-        if (file.exists() && file.canWrite()) {
-            file.delete();
+    public void deleteGraph(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException exc) {
+            // do nothing
         }
     }
 
-    /** 
+    /**
      * Sets the name for the next graph to be loaded.
      * This is only used for formats which do not store the graph name.
      * The default graph name is "graph".

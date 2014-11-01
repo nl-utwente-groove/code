@@ -31,7 +31,7 @@ import groove.io.external.ConceptualPorter;
 import groove.io.external.PortException;
 import groove.util.Pair;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /** Importer and exporter for the GXL format. */
 public class GxlPorter extends ConceptualPorter {
@@ -40,7 +40,7 @@ public class GxlPorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importTypeModel(File file,
+    protected Pair<TypeModel,InstanceModel> importTypeModel(Path file,
             GrammarModel grammar) throws ImportException {
         GxlToType gtt = new GxlToType(file.toString(), false);
         TypeModel tm = gtt.getTypeModel();
@@ -48,7 +48,7 @@ public class GxlPorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importInstanceModel(File file,
+    protected Pair<TypeModel,InstanceModel> importInstanceModel(Path file,
             GrammarModel grammar) throws ImportException {
         GxlToType gtt = new GxlToType(file.toString(), false);
         GxlToInstance gti = new GxlToInstance(gtt, file.toString());
@@ -59,7 +59,7 @@ public class GxlPorter extends ConceptualPorter {
     }
 
     @Override
-    protected ExportableResource getResource(File file, boolean isHost,
+    protected ExportableResource getResource(Path file, boolean isHost,
             TypeModel tm, InstanceModel im) throws PortException {
         // Use same file for both instance and type, so type gets included with instance
         GxlResource result = new GxlResource(file, file);

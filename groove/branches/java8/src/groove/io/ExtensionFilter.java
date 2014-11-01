@@ -17,6 +17,10 @@
 package groove.io;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -24,8 +28,8 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-11 15:46:59 $
  */
-public class ExtensionFilter extends javax.swing.filechooser.FileFilter
-        implements java.io.FileFilter {
+public class ExtensionFilter extends javax.swing.filechooser.FileFilter implements
+    java.io.FileFilter, DirectoryStream.Filter<Path> {
     /**
      * Constructs a new extension file filter, to be
      * associated with a given file type.
@@ -69,9 +73,13 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
         return getFileType().hasExtension(file) || file.isDirectory();
     }
 
+    @Override
+    public boolean accept(Path entry) throws IOException {
+        return getFileType().hasExtension(entry) || Files.isDirectory(entry);
+    }
+
     private String createDescription() {
-        StringBuilder result =
-            new StringBuilder(this.fileType.getDescription());
+        StringBuilder result = new StringBuilder(this.fileType.getDescription());
         result.append(" (");
         boolean first = true;
         for (String extension : getExtensions()) {

@@ -31,8 +31,9 @@ import groove.graph.plain.PlainNode;
 import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,7 +57,7 @@ public abstract class GraphTest {
     static public final int MATCH_DOM_COUNT = 4;
     static public final int ISO_GRAPH_COUNT = 4;
 
-    static private final File GraphTestDir = new File(GRAPH_TEST_DIR);
+    static private final Path GraphTestDir = Paths.get(GRAPH_TEST_DIR);
 
     /**
      * The graph upon which most tests are done. It has three nodes, one of
@@ -123,8 +124,8 @@ public abstract class GraphTest {
         this.bTarget = this.bEdge.target();
     }
 
-    protected GGraph<PlainNode,PlainEdge> loadGraph(File file) {
-        GGraph<PlainNode,PlainEdge> result = createGraph(file.getName());
+    protected GGraph<PlainNode,PlainEdge> loadGraph(Path file) {
+        GGraph<PlainNode,PlainEdge> result = createGraph(file.getFileName().toString());
         try {
             AttrGraph graph = GxlIO.instance().loadGraph(file);
             graph.copyTo(result);
@@ -134,8 +135,8 @@ public abstract class GraphTest {
         return result;
     }
 
-    private File testFile(String fileName) {
-        return new File(GraphTestDir, GXL.addExtension(fileName));
+    private Path testFile(String fileName) {
+        return GraphTestDir.resolve(GXL.addExtension(fileName));
     }
 
     @Test
@@ -230,7 +231,8 @@ public abstract class GraphTest {
         this.matchDom[0].containsEdge(newEdge);
         assertEquals(oldNodeCount, this.matchDom[0].nodeCount());
         assertEquals(oldEdgeCount + 1, this.matchDom[0].edgeCount());
-        assertTrue(this.graph.containsEdge(this.graph.addEdge(this.aTarget, this.cLabel,
+        assertTrue(this.graph.containsEdge(this.graph.addEdge(this.aTarget,
+            this.cLabel,
             this.aTarget)));
     }
 
@@ -256,7 +258,8 @@ public abstract class GraphTest {
         Collection edgeSet = this.matchDom[0].edgeSet();
         assertEquals(2, edgeSet.size());
         try {
-            edgeSet.add(this.factory.createEdge(this.factory.createNode(), "",
+            edgeSet.add(this.factory.createEdge(this.factory.createNode(),
+                "",
                 this.factory.createNode()));
             fail("Addition to node set should not have been allowed");
         } catch (UnsupportedOperationException exc) {
@@ -338,9 +341,11 @@ public abstract class GraphTest {
         assertTrue(this.graph.containsNode(this.source));
         assertTrue(this.graph.containsEdge(this.aEdge));
         assertFalse(this.graph.containsEdge(this.graph.getFactory().createEdge(this.aTarget,
-            this.cLabel, this.aTarget)));
+            this.cLabel,
+            this.aTarget)));
         assertTrue(this.graph.containsEdge(this.graph.getFactory().createEdge(this.source,
-            this.aLabel, this.aTarget)));
+            this.aLabel,
+            this.aTarget)));
     }
 
     /*
@@ -361,7 +366,8 @@ public abstract class GraphTest {
     final public void testAddEdgeEdge() {
         assertFalse(this.graph.addEdgeContext(this.aEdge));
         assertFalse(this.graph.addEdgeContext(this.graph.getFactory().createEdge(this.source,
-            this.aLabel, this.aTarget)));
+            this.aLabel,
+            this.aTarget)));
         PlainEdge newEdge =
             this.graph.getFactory().createEdge(this.aTarget, this.cLabel, this.bTarget);
         assertTrue(this.graph.addEdgeContext(newEdge));
@@ -423,7 +429,8 @@ public abstract class GraphTest {
         assertFalse(this.graph.containsEdge(this.aEdge));
         assertFalse(this.graph.removeEdge(this.aEdge));
         assertTrue(this.graph.removeEdge(this.graph.getFactory().createEdge(this.source,
-            this.bLabel, this.bTarget)));
+            this.bLabel,
+            this.bTarget)));
     }
 
     @Test

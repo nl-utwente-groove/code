@@ -44,9 +44,10 @@ import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -335,8 +336,8 @@ public class GrammarModel implements Observer {
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (startGraph.getRole() != GraphRole.HOST) {
-            throw new IllegalArgumentException(String.format(
-                "Prospective start graph '%s' is not a graph", startGraph));
+            throw new IllegalArgumentException(
+                String.format("Prospective start graph '%s' is not a graph", startGraph));
         }
         this.startGraphModel = new HostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
@@ -410,8 +411,10 @@ public class GrammarModel implements Observer {
         getPrologEnvironment();
         for (ResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
-                this.errors.add("Error in prolog program '%s': %s", prologModel.getFullName(),
-                    error, prologModel);
+                this.errors.add("Error in prolog program '%s': %s",
+                    prologModel.getFullName(),
+                    error,
+                    prologModel);
             }
         }
         // check if all resource names are valid identifiers
@@ -449,7 +452,9 @@ public class GrammarModel implements Observer {
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
-                    errors.add("Error in rule '%s': %s", ruleModel.getFullName(), error,
+                    errors.add("Error in rule '%s': %s",
+                        ruleModel.getFullName(),
+                        error,
                         ruleModel.getSource());
                 }
             }
@@ -727,7 +732,7 @@ public class GrammarModel implements Observer {
      * @param file the file to load the grammar from
      * @throws IOException if the store exists  does not contain a grammar
      */
-    static public GrammarModel newInstance(File file) throws IOException {
+    static public GrammarModel newInstance(Path file) throws IOException {
         return newInstance(file, false);
     }
 
@@ -739,7 +744,7 @@ public class GrammarModel implements Observer {
      * @throws IOException if an error occurred while creating the store, or
      * if the store exists but does not contain a grammar
      */
-    static public GrammarModel newInstance(File file, boolean create) throws IOException {
+    static public GrammarModel newInstance(Path file, boolean create) throws IOException {
         SystemStore store = SystemStoreFactory.newStore(file, create);
         store.reload();
         GrammarModel result = store.toGrammarModel();
@@ -759,9 +764,9 @@ public class GrammarModel implements Observer {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {
-            return newInstance(new File(location), false);
+            return newInstance(Paths.get(location), false);
         } catch (IOException exc) {
-            return newInstance(new File(location), false);
+            return newInstance(Paths.get(location), false);
         }
     }
 

@@ -39,7 +39,6 @@ import groove.io.external.util.TikzStylesExtractor.Style;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashSet;
@@ -68,9 +67,10 @@ public final class GraphToTikz<G extends Graph> {
     private final Graph graph;
     /** The layout map of the graph. */
     private final LayoutMap layoutMap;
-    /** The color map of the graph. */
-    /** The builder that holds the Tikz string. */
-    private final StringBuilder result;
+    /** The line that is currently being built. */
+    private StringBuilder line;
+    /** The builder that holds the final result. */
+    private final List<String> result;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -85,24 +85,20 @@ public final class GraphToTikz<G extends Graph> {
         this.model = this.jGraph.getModel();
         this.graph = this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
-        this.result = new StringBuilder();
+        this.result = new ArrayList<>();
+        this.line = new StringBuilder();
     }
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public <N extends Node,E extends Edge> void export(JGraph<?> graph, PrintWriter writer) {
-        writer.print(GraphToTikz.convert(graph));
-    }
-
     /**
      * Converts a graph to a Tikz representation.
      * @param jGraph the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static <G extends Graph> String convert(JGraph<G> jGraph) {
+    public static <G extends Graph> List<String> convert(JGraph<G> jGraph) {
         return new GraphToTikz<G>(jGraph).doConvert();
     }
 
@@ -310,17 +306,22 @@ public final class GraphToTikz<G extends Graph> {
     // ------------------------------------------------------------------------
 
     private void append(String string) {
-        this.result.append(string);
+        this.line.append(string);
     }
 
     private void append(StringBuilder sb) {
-        this.result.append(sb);
+        this.line.append(sb);
+    }
+
+    private void appendLine() {
+        this.result.add(this.line.toString());
+        this.line = new StringBuilder();
     }
 
     /**
      * Performs the entire conversion to Tikz and returns the resulting string.
      */
-    private String doConvert() {
+    private List<String> doConvert() {
         appendTikzHeader();
 
         for (Node node : this.graph.nodeSet()) {
@@ -333,7 +334,7 @@ public final class GraphToTikz<G extends Graph> {
             appendTikzNode(vertex, layout);
         }
 
-        append(ENTER);
+        appendLine();
 
         Set<JCell<G>> consumedEdges = new HashSet<JCell<G>>();
         for (Edge edge : this.graph.edgeSet()) {
@@ -350,7 +351,7 @@ public final class GraphToTikz<G extends Graph> {
 
         appendTikzFooter();
 
-        return this.result.toString();
+        return this.result;
     }
 
     /**
@@ -358,12 +359,19 @@ public final class GraphToTikz<G extends Graph> {
      * additional styles local to the figure.
      */
     private void appendTikzHeader() {
-        append(DOC);
-        append(BEGIN_TIKZ_FIG + ENTER);
+        append(DOC1);
+        appendLine();
+        append(DOC2);
+        appendLine();
+        append(DOC3);
+        appendLine();
+        append(BEGIN_TIKZ_FIG);
+        appendLine();
     }
 
     private void appendTikzFooter() {
-        append(END_TIKZ_FIG + ENTER);
+        append(END_TIKZ_FIG);
+        appendLine();
     }
 
     // -------------------------- Nodes ---------------------------------------
@@ -399,6 +407,7 @@ public final class GraphToTikz<G extends Graph> {
             append(lines.toString(TeXLineFormat.instance()));
             append(END_NODE_LAB);
         }
+        appendLine();
 
         // Add small parameter node, if needed.
         if (hasParameter(node)) {
@@ -488,7 +497,7 @@ public final class GraphToTikz<G extends Graph> {
     private void appendPoint(Point2D point) {
         double x = point.getX();
         double y = point.getY();
-        appendPoint(x, y, true, this.result);
+        appendPoint(x, y, true, this.line);
     }
 
     /** Computes and returns the centre point of a rectangle. */
@@ -601,6 +610,7 @@ public final class GraphToTikz<G extends Graph> {
         }
 
         append(END_EDGE);
+        appendLine();
     }
 
     /**
@@ -677,7 +687,7 @@ public final class GraphToTikz<G extends Graph> {
             }
             appendNode(tgtVertex, points.get(lastPoint));
         }
-        append(END_PATH);
+        appendLine();
         appendEdgeLabel(edge, layout, points);
     }
 
@@ -793,7 +803,7 @@ public final class GraphToTikz<G extends Graph> {
             appendNode(tgtVertex);
         }
 
-        append(END_PATH);
+        appendLine();
         appendEdgeLabel(edge, layout, points);
     }
 
@@ -937,19 +947,17 @@ public final class GraphToTikz<G extends Graph> {
     // Tikz output strings
     // ------------------------------------------------------------------------
 
-    private static final String ENTER = "\n";
     private static final String BEGIN_TIKZ_FIG = "\\begin{tikzpicture}[scale=\\tikzscale]";
     private static final String END_TIKZ_FIG = "\\end{tikzpicture}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
-    private static final String END_NODE_LAB = "}};" + ENTER;
+    private static final String END_NODE_LAB = "}};";
     private static final String BEGIN_EDGE_LAB = " {\\ml{";
     private static final String END_EDGE_LAB = "}}";
-    private static final String EMPTY_NODE_LAB = "{};" + ENTER;
+    private static final String EMPTY_NODE_LAB = "{};";
     private static final String BEGIN_EDGE = "\\path";
-    private static final String END_PATH = ENTER;
-    private static final String END_EDGE = ";" + ENTER;
+    private static final String END_EDGE = ";";
     private static final String NODE = "node[lab]";
     private static final String PAR_NODE_SUFFIX = "p";
     private static final String PAR_NODE_STYLE = "par_node";
@@ -963,6 +971,7 @@ public final class GraphToTikz<G extends Graph> {
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
     private static final String NORTH_WEST = ".north west";
-    private static final String DOC = "% To use this figure in your LaTeX " + "document" + ENTER
-        + "% import the package groove/resources/groove2tikz.sty" + ENTER + "%" + ENTER;
+    private static final String DOC1 = "% To use this figure in your LaTeX document";
+    private static final String DOC2 = "% import the package groove/resources/groove2tikz.sty";
+    private static final String DOC3 = "%";
 }

@@ -27,10 +27,10 @@ import groove.graph.EdgeRole;
 import groove.graph.Graph;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 
 /**
  * Reader for graphs in the DIMACS .col graph format.
@@ -53,7 +53,7 @@ public class ColIO extends GraphIO<HostGraph> {
     }
 
     @Override
-    protected void doSaveGraph(Graph graph, File file) {
+    protected void doSaveGraph(Graph graph, Path file) {
         throw new UnsupportedOperationException();
     }
 

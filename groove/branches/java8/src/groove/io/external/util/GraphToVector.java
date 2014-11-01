@@ -22,7 +22,7 @@ import groove.io.external.PortException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Simple interface between VectorFormat and GraphToPDF/EPS. Allows GROOVE to be loaded w/o PDF/EPS support
@@ -31,7 +31,7 @@ import java.io.File;
  */
 public abstract class GraphToVector {
     /** Saves a given jGraph to a file according to this vector format. */
-    public abstract void renderGraph(JGraph<?> graph, File file)
+    public abstract void renderGraph(JGraph<?> graph, Path file)
         throws PortException;
 
     /** Paints a given jGraph in a {@link Graphics} object. */

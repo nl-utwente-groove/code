@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -25,14 +25,16 @@ import groove.graph.plain.PlainNode;
 import groove.io.FileType;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,8 +51,8 @@ public class AutIO extends GraphIO<PlainGraph> {
     }
 
     @Override
-    protected void doSaveGraph(Graph graph, File file) throws IOException {
-        PrintWriter writer = new PrintWriter(file);
+    protected void doSaveGraph(Graph graph, Path file) throws IOException {
+        List<String> lines = new ArrayList<>();
         // collect the node numbers, to be able to number them consecutively
         int nodeCount = graph.nodeCount();
         // list marking which node numbers have been used
@@ -76,8 +78,7 @@ public class AutIO extends GraphIO<PlainGraph> {
             } while (nodeList.get(nextNodeNr));
             nodeNrMap.put(restNode, nextNodeNr);
         }
-        writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(),
-            graph.nodeCount());
+        lines.add(String.format("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount()));
         for (Edge edge : graph.edgeSet()) {
             String format;
             if (edge.label().text().indexOf(',') >= 0) {
@@ -85,10 +86,12 @@ public class AutIO extends GraphIO<PlainGraph> {
             } else {
                 format = "(%d,%s,%d)%n";
             }
-            writer.printf(format, nodeNrMap.get(edge.source()), edge.label(),
-                nodeNrMap.get(edge.target()));
+            lines.add(String.format(format,
+                nodeNrMap.get(edge.source()),
+                edge.label(),
+                nodeNrMap.get(edge.target())));
         }
-        writer.close();
+        Files.write(file, lines);
     }
 
     @Override
@@ -105,26 +108,22 @@ public class AutIO extends GraphIO<PlainGraph> {
             int rootStart = line.indexOf('(') + 1;
             int edgeCountStart = line.indexOf(',') + 1;
             Map<Integer,PlainNode> nodeMap = new HashMap<Integer,PlainNode>();
-            int root =
-                Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
+            int root = Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
             PlainNode rootNode = result.addNode(root);
             nodeMap.put(root, rootNode);
             if (this.rootLabel != null) {
                 result.addEdge(rootNode, this.rootLabel, rootNode);
             }
-            for (line = reader.readLine(); line != null; line =
-                reader.readLine()) {
+            for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 if (line.trim().length() > 0) {
                     int sourceStart = line.indexOf('(') + 1;
                     int labelStart = line.indexOf(',') + 1;
                     int targetStart = line.lastIndexOf(',') + 1;
                     int source =
-                        Integer.parseInt(line.substring(sourceStart,
-                            labelStart - 1).trim());
+                        Integer.parseInt(line.substring(sourceStart, labelStart - 1).trim());
                     String label = line.substring(labelStart, targetStart - 1);
                     int target =
-                        Integer.parseInt(line.substring(targetStart,
-                            line.lastIndexOf(')')).trim());
+                        Integer.parseInt(line.substring(targetStart, line.lastIndexOf(')')).trim());
                     PlainNode sourceNode = nodeMap.get(source);
                     if (sourceNode == null) {
                         sourceNode = result.addNode(source);
@@ -144,7 +143,7 @@ public class AutIO extends GraphIO<PlainGraph> {
         return result;
     }
 
-    /** 
+    /**
      * Sets the label used to distinguish the root node.
      * By default, there is no root label.
      * @param rootLabel label for the root node; if {@code null}, no label will be added.
@@ -155,7 +154,7 @@ public class AutIO extends GraphIO<PlainGraph> {
 
     private String rootLabel;
 
-    /** 
+    /**
      * Callback factory method for a plain graph with the right name and role.
      * @see #setGraphName(String)
      * @see #setGraphRole(GraphRole)

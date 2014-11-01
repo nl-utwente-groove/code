@@ -23,6 +23,7 @@ import groove.util.Groove;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 
 /**
  * Encoding of a rule name plus priority as a string
@@ -60,11 +61,20 @@ public class PriorityFileName {
             this.priority = startNumber;
             this.explicitPriority = validStartNumber;
             if (this.priority < 0) {
-                throw new NumberFormatException("Invalid rule priority "
-                    + this.priority);
+                throw new NumberFormatException("Invalid rule priority " + this.priority);
             }
         }
         this.ruleName = fullName.substring(separatorPos + 1);
+    }
+
+    /**
+     * Parses the name part of a file as <tt>priority.actualName.extension</tt>.
+     * If there is no period in the string, or the part before the period is not
+     * an integer, the priority is assumed to be 0.
+     */
+    public PriorityFileName(Path file) {
+        this(FileType.getPureName(file));
+        this.extension = file.getFileName().toString().substring(this.ruleName.length());
     }
 
     /**
@@ -88,8 +98,7 @@ public class PriorityFileName {
      * Creates a file name from a given rule name and (possibly explicit)
      * priority.
      */
-    public PriorityFileName(String ruleName, int priority,
-            boolean explicitPriority) {
+    public PriorityFileName(String ruleName, int priority, boolean explicitPriority) {
         this.ruleName = ruleName;
         this.priority = priority;
         this.explicitPriority = explicitPriority;

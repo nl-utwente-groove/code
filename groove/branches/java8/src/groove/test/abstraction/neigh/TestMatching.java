@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -31,8 +31,9 @@ import groove.io.graph.GxlIO;
 import groove.transform.Proof;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -48,16 +49,15 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestMatching {
 
-    static private final String DIRECTORY = "junit/abstraction/match-test.gps/";
+    static private final Path DIRECTORY = Paths.get("junit/abstraction/match-test.gps/");
     static private GrammarModel view;
     static private Grammar grammar;
 
     @BeforeClass
     public static void setUp() {
         NeighAbstraction.initialise();
-        File file = new File(DIRECTORY);
         try {
-            view = GrammarModel.newInstance(file, false);
+            view = GrammarModel.newInstance(DIRECTORY, false);
             grammar = view.toGrammar();
         } catch (IOException e) {
             Assert.fail(e.toString());
@@ -263,7 +263,7 @@ public class TestMatching {
 
     @Test
     public void testNAC6() {
-        File file = new File(DIRECTORY + "test-nac-5a.gxl");
+        Path file = DIRECTORY.resolve("test-nac-5a.gxl");
         Shape shape = loadShape(file);
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
@@ -278,7 +278,7 @@ public class TestMatching {
 
     @Test
     public void testNAC7() {
-        File file = new File(DIRECTORY + "test-nac-5b.gxl");
+        Path file = DIRECTORY.resolve("test-nac-5b.gxl");
         Shape shape = loadShape(file);
         Rule rule = grammar.getRule("test-nac-5");
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -292,7 +292,7 @@ public class TestMatching {
         assertEquals(0, mats.size());
     }
 
-    private Shape loadShape(File file) {
+    private Shape loadShape(Path file) {
         try {
             return GxlIO.instance().loadGraph(file).toShape(view.getTypeGraph());
         } catch (IOException e) {

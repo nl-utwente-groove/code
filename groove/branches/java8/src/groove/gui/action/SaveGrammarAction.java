@@ -9,6 +9,7 @@ import groove.io.store.SystemStore;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.swing.JFileChooser;
 
@@ -29,10 +30,9 @@ public class SaveGrammarAction extends SimulatorAction {
         if (approve == JFileChooser.APPROVE_OPTION) {
             File selectedFile = getGrammarFileChooser(false).getSelectedFile();
             try {
-                save(selectedFile, true);
+                save(selectedFile.toPath(), true);
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error while saving grammar to "
-                    + selectedFile);
+                showErrorDialog(exc, "Error while saving grammar to " + selectedFile);
             }
         }
     }
@@ -43,11 +43,11 @@ public class SaveGrammarAction extends SimulatorAction {
      * @throws IOException if the save action failed
      * @return {@code true} if the GTS was invalidated as a result of the action
      */
-    public boolean save(File grammarFile, boolean clearDir) throws IOException {
+    public boolean save(Path grammarFile, boolean clearDir) throws IOException {
         boolean result = false;
         if (getDisplaysPanel().saveAllEditors(false)) {
             SystemStore newStore =
-                getSimulatorModel().getStore().save(grammarFile, clearDir);
+                SystemStore.save(grammarFile, getSimulatorModel().getStore(), clearDir);
             GrammarModel oldGrammar = getSimulatorModel().getGrammar();
             GrammarModel newGrammar = newStore.toGrammarModel();
             if (oldGrammar.getActiveNames(HOST).isEmpty()) {
@@ -59,7 +59,7 @@ public class SaveGrammarAction extends SimulatorAction {
             }
             getSimulatorModel().setGrammar(newGrammar);
             getSimulator().setTitle();
-            getGrammarFileChooser().setSelectedFile(grammarFile);
+            getGrammarFileChooser().setSelectedFile(grammarFile.toFile());
             result = true;
         }
         return result;

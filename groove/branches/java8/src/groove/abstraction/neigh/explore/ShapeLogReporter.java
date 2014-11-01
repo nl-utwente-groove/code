@@ -32,8 +32,7 @@ public class ShapeLogReporter extends LogReporter {
     /**
      * Constructs a reporter with the given parameters.
      */
-    public ShapeLogReporter(String grammarName, String startGraphName, Verbosity verbosity,
-            boolean reachability) {
+    public ShapeLogReporter(String startGraphName, Verbosity verbosity, boolean reachability) {
         super(verbosity, null);
         this.reachability = reachability;
     }

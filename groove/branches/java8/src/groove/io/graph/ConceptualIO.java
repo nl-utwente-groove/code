@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -28,9 +28,9 @@ import groove.io.external.PortException;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Set;
 
 /**
@@ -46,8 +46,7 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
      * @param role graph role; either {@link GraphRole#TYPE} for meta-
      * models or {@link GraphRole#HOST} for models
      */
-    public ConceptualIO(ConceptualPorter porter, FileType fileType,
-            GraphRole role) {
+    public ConceptualIO(ConceptualPorter porter, FileType fileType, GraphRole role) {
         this.porter = porter;
         this.fileType = fileType;
         this.role = role;
@@ -59,7 +58,7 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
     }
 
     @Override
-    protected void doSaveGraph(Graph graph, File file) throws IOException {
+    protected void doSaveGraph(Graph graph, Path file) throws IOException {
         try {
             this.porter.doExport(new Exportable(graph), file, this.fileType);
         } catch (PortException e) {
@@ -77,17 +76,15 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
     }
 
     @Override
-    public AspectGraph loadGraph(InputStream in) throws FormatException,
-        IOException {
+    public AspectGraph loadGraph(InputStream in) throws FormatException, IOException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public AspectGraph loadGraph(File in) throws FormatException, IOException {
+    public AspectGraph loadGraph(Path in) throws FormatException, IOException {
         AspectGraph result = null;
         try {
-            Set<Resource> resources =
-                this.porter.doImport(in, this.fileType, getGrammar(in));
+            Set<Resource> resources = this.porter.doImport(in, this.fileType, getGrammar(in));
             for (Resource resource : resources) {
                 result = resource.getGraphResource();
                 if (result.getRole() == this.role) {
@@ -107,14 +104,14 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
     /**
      * Tries to find the enclosing grammar of the graph file
      */
-    private GrammarModel getGrammar(File file) throws IOException {
-        File dir = file.getCanonicalFile().getParentFile();
+    private GrammarModel getGrammar(Path file) throws IOException {
+        Path dir = file.toAbsolutePath().getParent();
         while (dir != null && !FileType.GRAMMAR.hasExtension(dir)) {
-            dir = dir.getParentFile();
+            dir = dir.getParent();
         }
         GrammarModel grammar = null;
         if (dir != null) {
-            grammar = Groove.loadGrammar(dir.getPath());
+            grammar = Groove.loadGrammar(dir.toString());
         }
         return grammar;
     }

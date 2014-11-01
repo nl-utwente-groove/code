@@ -23,9 +23,7 @@ public class NewGrammarAction extends SimulatorAction {
         if (grammarFile == null) {
             newGrammar = new File(Simulator.NEW_GRAMMAR_NAME);
         } else {
-            newGrammar =
-                new File(grammarFile.getParentFile(),
-                    Simulator.NEW_GRAMMAR_NAME);
+            newGrammar = new File(grammarFile.getParentFile(), Simulator.NEW_GRAMMAR_NAME);
         }
         JFileChooser fileChooser = getGrammarFileChooser(false);
         fileChooser.setSelectedFile(newGrammar);
@@ -36,12 +34,10 @@ public class NewGrammarAction extends SimulatorAction {
                 if (selectedFile.exists()) {
                     int response =
                         JOptionPane.showConfirmDialog(getFrame(),
-                            String.format("Load existing grammar %s?",
-                                selectedFile.getName()));
+                            String.format("Load existing grammar %s?", selectedFile.getName()));
                     if (response == JOptionPane.OK_OPTION) {
                         try {
-                            getActions().getLoadGrammarAction().load(
-                                selectedFile);
+                            getActions().getLoadGrammarAction().load(selectedFile);
                         } catch (IOException exc) {
                             showErrorDialog(exc, exc.getMessage());
                         }
@@ -49,12 +45,10 @@ public class NewGrammarAction extends SimulatorAction {
                     ok = response != JOptionPane.NO_OPTION;
                 } else if (getDisplaysPanel().saveAllEditors(true)) {
                     try {
-                        getSimulatorModel().doNewGrammar(selectedFile);
+                        getSimulatorModel().doNewGrammar(selectedFile.toPath());
                     } catch (IOException exc) {
                         showErrorDialog(exc,
-                            String.format(
-                                "Error while creating grammar at '%s'",
-                                grammarFile));
+                            String.format("Error while creating grammar at '%s'", grammarFile));
                     }
                     ok = true;
                 }

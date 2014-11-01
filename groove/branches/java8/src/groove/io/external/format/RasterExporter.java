@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -23,18 +23,20 @@ import groove.io.external.Exportable;
 import groove.io.external.PortException;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-/** 
+/**
  * Class that implements saving graphs as raster (JPEG or PNG (Portable Network Graphics)) images.
  * Loading in this format is unsupported.
- * 
- * @author Arend Rensink 
+ *
+ * @author Arend Rensink
  */
 public class RasterExporter extends AbstractExporter {
     private RasterExporter() {
@@ -48,19 +50,17 @@ public class RasterExporter extends AbstractExporter {
         this.formats.put(fileType, descr);
     }
 
-    private final Map<FileType,String> formats = new EnumMap<FileType,String>(
-        FileType.class);
+    private final Map<FileType,String> formats = new EnumMap<FileType,String>(FileType.class);
 
     @Override
-    public void doExport(Exportable exportable, File file, FileType fileType)
-        throws PortException {
+    public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
         BufferedImage image = jGraph.toImage();
         if (image == null) {
             throw new PortException("Cannot export blank image");
         }
-        try {
-            ImageIO.write(image, this.formats.get(fileType), file);
+        try (OutputStream os = Files.newOutputStream(file)) {
+            ImageIO.write(image, this.formats.get(fileType), os);
         } catch (IOException e) {
             throw new PortException(e);
         }

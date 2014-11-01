@@ -57,7 +57,8 @@ import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1120,46 +1121,16 @@ public final class Materialisation {
     }
 
     /** Used for tests. */
-    /*public static void main(String args[]) {
-        String DIRECTORY = "junit/abstraction/basic-tests.gps/";
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
-        Abstraction.initialise();
-        File file = new File(DIRECTORY);
-        try {
-            String number = "9";
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("materialisation-test-" + number).toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-" + number);
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (Proof preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    ShapePreviewDialog.showShape(mat.shape);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }*/
-
     public static void main(String args[]) {
-        String DIRECTORY = "junit/abstraction/temp.gps/";
+        Path DIRECTORY = Paths.get("junit/abstraction/temp.gps/");
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
         NeighAbsParam.getInstance().setUseThreeValues(true);
         NeighAbstraction.initialise();
 
-        File file = new File(DIRECTORY + "error.gxl");
-        File grammarFile = new File(DIRECTORY);
+        Path file = DIRECTORY.resolve("error.gxl");
         try {
-            GrammarModel view = GrammarModel.newInstance(grammarFile, false);
+            GrammarModel view = GrammarModel.newInstance(DIRECTORY, false);
             Grammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("rule");
             Shape shape = GxlIO.instance().loadGraph(file).toShape(view.getTypeGraph());

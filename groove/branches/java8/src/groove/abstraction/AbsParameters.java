@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -20,19 +20,23 @@ import static groove.abstraction.Multiplicity.MAX_BOUND;
 
 /**
  * Class that stores some parameters of abstraction.
- * 
+ *
  * @author Eduardo Zambon
  */
 public abstract class AbsParameters {
+    /** Default value of the node multiplicity bound. */
+    public final static int DEFAULT_NODE_MULT_BOUND = 1;
+    /** Default value of the edge multiplicity bound. */
+    public final static int DEFAULT_EDGE_MULT_BOUND = 1;
 
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
-    /** Node multiplicity bound (\nu). Is a natural number. Defaults to 1. */
-    private int nodeMultBound = 1;
-    /** Edge multiplicity bound (\mu). Is a natural number. Defaults to 1. */
-    private int edgeMultBound = 1;
+    /** Node multiplicity bound (\nu). Defaults to {@link #DEFAULT_NODE_MULT_BOUND}. */
+    private int nodeMultBound = DEFAULT_NODE_MULT_BOUND;
+    /** Edge multiplicity bound (\mu). Defaults to {@link #DEFAULT_EDGE_MULT_BOUND}. */
+    private int edgeMultBound = DEFAULT_EDGE_MULT_BOUND;
 
     /**
      * Flag to indicate if only three values should be used for multiplicities.
@@ -66,8 +70,9 @@ public abstract class AbsParameters {
     public void setNodeMultBound(int nodeMultBound) {
         assert nodeMultBound > 0 : "Invalid node multiplicity bound.";
         if (nodeMultBound > MAX_BOUND) {
-            throw new IllegalArgumentException(String.format(
-                "Node bound %d exceeds maximum %s", nodeMultBound, MAX_BOUND));
+            throw new IllegalArgumentException(String.format("Node bound %d exceeds maximum %s",
+                nodeMultBound,
+                MAX_BOUND));
         }
         this.nodeMultBound = nodeMultBound;
     }
@@ -76,8 +81,9 @@ public abstract class AbsParameters {
     public void setEdgeMultBound(int edgeMultBound) {
         assert edgeMultBound > 0 : "Invalid edge multiplicity bound.";
         if (edgeMultBound > MAX_BOUND) {
-            throw new IllegalArgumentException(String.format(
-                "Edge bound %d exceeds maximum %s", edgeMultBound, MAX_BOUND));
+            throw new IllegalArgumentException(String.format("Edge bound %d exceeds maximum %s",
+                edgeMultBound,
+                MAX_BOUND));
         }
         this.edgeMultBound = edgeMultBound;
     }

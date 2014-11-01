@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -29,16 +29,16 @@ import groove.graph.EdgeRole;
 import groove.graph.Node;
 import groove.util.parse.FormatException;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Exporter class to save a state graph into a simple textual representation
  * used by other verification tools developed by Marieke et al.
- * 
+ *
  * This class assumes that the graph is properly typed against a fixed type
  * graph. This type graph has basically three types:
  * - FlowNode: each of this nodes in the state graph is saved as a node in the
@@ -52,36 +52,26 @@ import java.util.Map;
  *   edge with proper source, target and label.
  * - FlowProp: this node type encode atomic propositions that hold in the
  *   FlowNodes.
- *   
+ *
  * @author Eduardo Zambon
  */
 public final class GraphToKth {
-
-    // ------------------------------------------------------------------------
-    // Public methods.
-    // ------------------------------------------------------------------------
-
-    /** Export graph in a simple .kth format to a print writer. */
-    static public void export(AspectGraph graph, PrintWriter writer) {
-        writer.print(GraphToKth.convertGraph(graph));
-    }
-
     /**
      * Converts a graph to a serialized string representation.
      * @param graph the graph to be converted, should be an
      *        <code>AspectGraph</code>.
      * @return a string with the simple encoding of the graph.
      */
-    public static String convertGraph(AspectGraph graph) {
+    public static List<String> convertGraph(AspectGraph graph) {
         GraphToKth.graph = graph;
-        result = new StringBuilder();
+        List<String> result = new ArrayList<>();
 
-        beginFile();
-        convertNodes();
-        convertEdges();
-        endFile();
+        beginFile(result);
+        convertNodes(result);
+        convertEdges(result);
+        endFile(result);
 
-        return result.toString();
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -93,28 +83,28 @@ public final class GraphToKth {
      * The current implementation does nothing.
      * Adapt as necessary if the file format changes.
      */
-    private static void beginFile() {
+    private static void beginFile(List<String> result) {
         // Does nothing by design.
     }
 
-    private static void convertNodes() {
+    private static void convertNodes(List<String> result) {
         for (AspectNode node : graph.nodeSet()) {
             if (isFlowNode(node)) {
-                appendNode(node);
+                result.add(appendNode(node));
             }
         }
     }
 
-    private static void convertEdges() {
+    private static void convertEdges(List<String> result) {
         for (AspectNode node : graph.nodeSet()) {
             if (isFlowEdge(node)) {
-                appendFlowEdge(node);
+                result.add(appendFlowEdge(node));
             }
         }
 
         for (AspectEdge edge : graph.edgeSet()) {
             if (isEmptyEdge(edge)) {
-                appendEmptyEdge(edge);
+                result.add(appendEmptyEdge(edge));
             }
         }
     }
@@ -124,7 +114,7 @@ public final class GraphToKth {
      * The current implementation does nothing.
      * Adapt as necessary if the file format changes.
      */
-    private static void endFile() {
+    private static void endFile(List<String> result) {
         // Does nothing by design.
     }
 
@@ -159,9 +149,9 @@ public final class GraphToKth {
     /**
      * @requires that parameter node is of type FlowNode.
      */
-    private static void appendNode(AspectNode node) {
+    private static String appendNode(AspectNode node) {
         assert isFlowNode(node) : "Node " + node + " has an illegal type.";
-
+        StringBuilder result = new StringBuilder();
         result.append(BEGIN_NODE);
         result.append(SPACE);
         result.append(node.getNumber());
@@ -178,14 +168,15 @@ public final class GraphToKth {
             result.append(prop);
         }
         result.append(END_NODE);
+        return result.toString();
     }
 
     /**
      * @requires that parameter node is of type FlowEdge.
      */
-    private static void appendFlowEdge(AspectNode node) {
+    private static String appendFlowEdge(AspectNode node) {
         assert isFlowEdge(node) : "Node " + node + " has an illegal type.";
-
+        StringBuilder result = new StringBuilder();
         result.append(BEGIN_EDGE);
         result.append(SPACE);
         result.append(getFlowEdgeSourceNodeNumber(node));
@@ -194,9 +185,11 @@ public final class GraphToKth {
         result.append(SPACE);
         result.append(getFlowEdgeLabel(node));
         result.append(END_EDGE);
+        return result.toString();
     }
 
-    private static void appendEmptyEdge(AspectEdge edge) {
+    private static String appendEmptyEdge(AspectEdge edge) {
+        StringBuilder result = new StringBuilder();
         result.append(BEGIN_EDGE);
         result.append(SPACE);
         result.append(edge.source().getNumber());
@@ -205,6 +198,7 @@ public final class GraphToKth {
         result.append(SPACE);
         result.append(OUT_EMPTY_EDGE_LABEL);
         result.append(END_EDGE);
+        return result.toString();
     }
 
     // ------------------------------------------------------------------------
@@ -328,8 +322,6 @@ public final class GraphToKth {
 
     /** The graph the exporter is working on. */
     private static AspectGraph graph;
-    /** The StringBuilder the exporter is working on. */
-    private static StringBuilder result;
 
     // Graph types and labels.
     private static final String TYPE = "type:";

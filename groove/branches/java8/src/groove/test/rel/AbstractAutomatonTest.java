@@ -45,8 +45,9 @@ import groove.util.Groove;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -67,9 +68,9 @@ import org.junit.Test;
 @SuppressWarnings("all")
 abstract public class AbstractAutomatonTest {
     /** Directory with test files (relative to the project) */
-    static public final String GRAPH_TEST_DIR = "junit/graphs";
+    static public final Path GRAPH_TEST_DIR = Paths.get("junit/graphs");
     /** Directory with test grammar (relative to the project) */
-    static public final String GRAMMAR = "junit/samples/regexpr";
+    static public final Path GRAMMAR = Paths.get("junit/samples/regexpr");
     /** Name of the type graph used in this test. */
     static public final String TYPE_NAME = "construction";
 
@@ -100,8 +101,8 @@ abstract public class AbstractAutomatonTest {
     public static void initStatics() {
         try {
             testGraph =
-                new DefaultHostGraph(GxlIO.instance().loadGraph(
-                    new File(GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
+                new DefaultHostGraph(GxlIO.instance()
+                    .loadGraph(GRAPH_TEST_DIR.resolve(testGraphName + ".gxl")));
         } catch (IOException e) {
             Assert.fail(e.toString());
         }

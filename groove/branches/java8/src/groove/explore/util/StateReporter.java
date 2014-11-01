@@ -26,8 +26,9 @@ import groove.lts.GraphState;
 import groove.util.Groove;
 import groove.util.Pair;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Exploration reporter that saves the result states.
@@ -47,14 +48,13 @@ public class StateReporter extends AExplorationReporter {
     public void report() throws IOException {
         Pair<FileType,Exporter> stateFormat = Exporters.getAcceptingFormat(this.statePattern);
         if (stateFormat == null) {
-            this.logger.append(
-                "Pattern %s does not specify export format: states saved in native GXL%n",
+            this.logger.append("Pattern %s does not specify export format: states saved in native GXL%n",
                 this.statePattern);
         } else {
             this.logger.append("States saved as %s%n", stateFormat.one().getDescription());
         }
         for (GraphState state : getGTS().getResultStates()) {
-            File savedFile = exportState(state, this.statePattern);
+            Path savedFile = exportState(state, this.statePattern);
             this.logger.append("State saved: %s%n", savedFile);
         }
     }
@@ -68,13 +68,14 @@ public class StateReporter extends AExplorationReporter {
      * @param pattern the filename pattern
      * @throws IOException if anything went wrong during export
      */
-    public static File exportState(GraphState state, String pattern) throws IOException {
+    public static Path exportState(GraphState state, String pattern) throws IOException {
         String stateFilename = pattern.replace(PLACEHOLDER, "" + state.getNumber());
-        File stateFile = new File(stateFilename);
+        Path stateFile = Paths.get(stateFilename);
         Pair<FileType,Exporter> stateFormat = Exporters.getAcceptingFormat(stateFilename);
         if (stateFormat != null) {
             try {
-                stateFormat.two().doExport(new Exportable(state.getGraph()), stateFile,
+                stateFormat.two().doExport(new Exportable(state.getGraph()),
+                    stateFile,
                     stateFormat.one());
             } catch (PortException e1) {
                 throw new IOException(e1);

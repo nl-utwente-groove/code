@@ -26,8 +26,10 @@ import groove.lts.GTS;
 import groove.util.Groove;
 import groove.util.Pair;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Exploration reporter that saves the LTS.
@@ -46,8 +48,8 @@ public class LTSReporter extends AExplorationReporter {
 
     @Override
     public void report() throws IOException {
-        File outFile = exportLTS(getGTS(), this.filePattern, this.labels);
-        this.logger.append("LTS saved as %s%n", outFile.getPath());
+        Path outFile = exportLTS(getGTS(), this.filePattern, this.labels);
+        this.logger.append("LTS saved as %s%n", outFile);
     }
 
     private final LogReporter logger;
@@ -63,20 +65,20 @@ public class LTSReporter extends AExplorationReporter {
      * @return the output file name
      * @throws IOException if any error occurred during export
      */
-    static public File exportLTS(GTS lts, String filePattern, LTSLabels labels) throws IOException {
+    static public Path exportLTS(GTS lts, String filePattern, LTSLabels labels) throws IOException {
         // Create the LTS view to be exported.
         MultiGraph ltsGraph = lts.toPlainGraph(labels);
         // Export GTS.
         String ltsName;
-        File dir = new File(filePattern);
-        if (dir.isDirectory()) {
+        Path dir = Paths.get(filePattern);
+        if (Files.isDirectory(dir)) {
             ltsName = PLACEHOLDER;
         } else {
-            ltsName = dir.getName();
-            dir = dir.getParentFile();
+            ltsName = dir.getFileName().toString();
+            dir = dir.getParent();
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
-        File outFile = new File(dir, ltsName);
+        Path outFile = dir.resolve(ltsName);
         Pair<FileType,Exporter> gtsFormat = Exporters.getAcceptingFormat(ltsName);
         if (gtsFormat != null) {
             try {

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -29,13 +29,13 @@ import groove.io.external.PortException;
 import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -79,11 +79,11 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
+    public Set<Resource> doImport(Path file, FileType fileType, GrammarModel grammar)
         throws PortException {
         Resource result;
         try {
-            String name = fileType.stripExtension(file.getName());
+            String name = fileType.stripExtension(file.getFileName().toString());
             ResourceKind kind = getResourceKind(fileType);
             if (kind.isGraphBased()) {
                 // read graph from file
@@ -92,7 +92,7 @@ public class NativePorter extends AbstractExporter implements Importer {
                 xmlGraph.setName(name);
                 result = new Resource(kind, name, xmlGraph.toAspectGraph());
             } else {
-                String program = groove.io.Util.readFileToString(file);
+                List<String> program = Files.readAllLines(file);
                 result = new Resource(kind, name, program);
             }
         } catch (IOException e) {
@@ -102,25 +102,7 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream, FileType fileType,
-            GrammarModel grammar) throws PortException {
-        ResourceKind kind = getResourceKind(fileType);
-        if (kind.isGraphBased()) {
-            throw new PortException("Cannot import from stream");
-        }
-
-        Resource result;
-        try {
-            String resource = groove.io.Util.readInputStreamToString(stream);
-            result = new Resource(kind, name, resource);
-        } catch (IOException e) {
-            throw new PortException(e);
-        }
-        return Collections.singleton(result);
-    }
-
-    @Override
-    public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
+    public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
         ResourceKind kind = exportable.getKind();
         if (kind.isGraphBased()) {
             AspectGraph graph = GraphConverter.toAspect(exportable.getGraph());
@@ -138,8 +120,7 @@ public class NativePorter extends AbstractExporter implements Importer {
             TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel();
             Writer writer = null;
             try {
-                writer = new FileWriter(file);
-                writer.write(textModel.getSource());
+                Files.write(file, Collections.singletonList(textModel.getSource()));
             } catch (IOException e) {
                 throw new PortException(e);
             } finally {

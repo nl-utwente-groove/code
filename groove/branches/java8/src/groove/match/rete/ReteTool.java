@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,6 +24,7 @@ import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -31,17 +32,17 @@ import org.kohsuke.args4j.Option;
 /**
  * Tool for acquiring engine information about the RETE network
  * that is not ordinarily visible to the GROOVE user.
- * 
+ *
  * This is basically meant for debugging and studying the RETE engine's
  * behavior.
- * 
+ *
  * @author Arash Jalali
  * @version $1$
  */
 public class ReteTool extends GrooveCmdLineTool<Object> {
 
     /**
-     * 
+     *
      * @param args The command-line arguments.
      */
     public ReteTool(String... args) {
@@ -53,7 +54,8 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
     protected Object run() throws Exception {
         String outFileName = doSaveReteNetwork();
         emit("RETE network shape for %s was successfully saved to %s ",
-            getGrammarDir(), outFileName);
+            getGrammarDir(),
+            outFileName);
         return null;
     }
 
@@ -61,13 +63,12 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
         GrammarModel grammar = GrammarModel.newInstance(getGrammarDir());
         String name = grammar.getName() + ".rete";
         String filePath = hasOutFileName() ? getOutFileName() : name;
-        new ReteSearchEngine(grammar.toGrammar()).getNetwork().save(filePath,
-            name);
+        new ReteSearchEngine(grammar.toGrammar()).getNetwork().save(filePath, name);
         return FileType.GXL.addExtension(filePath);
     }
 
-    private File getGrammarDir() {
-        return this.grammarDir;
+    private Path getGrammarDir() {
+        return this.grammarDir.toPath();
     }
 
     private boolean hasOutFileName() {
@@ -78,11 +79,10 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
         return this.outFileName;
     }
 
-    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
-            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
+        handler = GrammarHandler.class)
     private File grammarDir;
-    @Option(name = "-s", metaVar = "file",
-            usage = "Save the shape of the RETE network in <file>")
+    @Option(name = "-s", metaVar = "file", usage = "Save the shape of the RETE network in <file>")
     private String outFileName;
 
     /**

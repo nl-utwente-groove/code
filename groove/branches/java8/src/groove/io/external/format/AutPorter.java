@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -28,11 +28,10 @@ import groove.io.external.Exportable;
 import groove.io.external.Importer;
 import groove.io.external.PortException;
 import groove.io.graph.AutIO;
+import groove.util.parse.FormatException;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
 
@@ -47,46 +46,26 @@ public final class AutPorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType,
-            GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(Path file, FileType fileType, GrammarModel grammar)
+        throws PortException {
         Set<Resource> resources;
+        String name = FileType.getPureName(file);
         try {
-            FileInputStream stream = new FileInputStream(file);
-            resources =
-                doImport(fileType.stripExtension(file.getName()), stream,
-                    fileType, grammar);
-            stream.close();
-        } catch (IOException e) {
-            throw new PortException(e);
+            this.io.setGraphName(name);
+            this.io.setGraphRole(GraphRole.HOST);
+            PlainGraph graph = this.io.loadGraph(file);
+            AspectGraph agraph = AspectGraph.newInstance(graph);
+            resources = Collections.singleton(new Resource(ResourceKind.HOST, name, agraph));
+        } catch (IOException | FormatException e) {
+            throw new PortException(String.format("Format error while reading %s: %s",
+                name,
+                e.getMessage()));
         }
         return resources;
     }
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream,
-            FileType fileType, GrammarModel grammar) throws PortException {
-        try {
-            this.io.setGraphName(name);
-            this.io.setGraphRole(GraphRole.HOST);
-            PlainGraph graph = this.io.loadGraph(stream);
-            AspectGraph agraph = AspectGraph.newInstance(graph);
-            return Collections.singleton(new Resource(ResourceKind.HOST, name,
-                agraph));
-        } catch (Exception e) {
-            throw new PortException(String.format(
-                "Format error while reading %s: %s", name, e.getMessage()));
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                throw new PortException(e);
-            }
-        }
-    }
-
-    @Override
-    public void doExport(Exportable exportable, File file, FileType fileType)
-        throws PortException {
+    public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
         Graph graph = exportable.getGraph();
         try {
             this.io.saveGraph(graph, file);

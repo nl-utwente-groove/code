@@ -37,8 +37,8 @@ import groove.util.collect.Bag;
 import groove.util.collect.HashBag;
 import groove.util.collect.SmallCollection;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -108,8 +108,10 @@ public class IsoChecker {
             result = areIsomorphic(domCertifier, codCertifier, domValues, codValues);
             if (ISO_ASSERT) {
                 assert checkBisimulator(dom, cod, result);
-                assert result == hasIsomorphism(new Bisimulator(dom), new Bisimulator(cod),
-                    domValues, codValues);
+                assert result == hasIsomorphism(new Bisimulator(dom),
+                    new Bisimulator(cod),
+                    domValues,
+                    codValues);
             }
             if (TEST_FALSE_NEGATIVES && result) {
                 CertificateStrategy altDomCert =
@@ -118,11 +120,13 @@ public class IsoChecker {
                     this.certificateFactory.newInstance(cod, this.strong);
                 if (!areIsomorphic(altDomCert, altCodCert, domValues, codValues)) {
                     System.out.printf("Certifier '%s' gives a false negative on%n%s%n%s%n",
-                        altDomCert.getClass(), dom, cod);
+                        altDomCert.getClass(),
+                        dom,
+                        cod);
                     if (SAVE_FALSE_NEGATIVES) {
                         try {
-                            File file1 = Groove.saveGraph(dom, "graph1");
-                            File file2 = Groove.saveGraph(cod, "graph2");
+                            Path file1 = Groove.saveGraph(dom, "graph1");
+                            Path file2 = Groove.saveGraph(cod, "graph2");
                             System.out.printf("Graphs saved as '%s' and '%s'", file1, file2);
                             System.exit(0);
                         } catch (IOException exc) {
@@ -194,7 +198,8 @@ public class IsoChecker {
         if (!domCertifier.getGraphCertificate().equals(codCertifier.getGraphCertificate())) {
             if (ISO_PRINT) {
                 System.out.printf("UNEQUAL GRAPH CERTIFICATES: %s versus %s%n",
-                    domCertifier.getGraphCertificate(), codCertifier.getGraphCertificate());
+                    domCertifier.getGraphCertificate(),
+                    codCertifier.getGraphCertificate());
             }
             intCertOverlap++;
             result = false;
@@ -499,16 +504,18 @@ public class IsoChecker {
                 // first wipe out the traces of the previous match
                 if (!item.sourcePreMatched && sourceImages[i] != null) {
                     boolean removed = usedNodeImages.remove(sourceImages[i]);
-                    assert removed : String.format(
-                        "Image %s for source %s not present in used node set %s", sourceImages[i],
-                        item.key.source(), usedNodeImages);
+                    assert removed : String.format("Image %s for source %s not present in used node set %s",
+                        sourceImages[i],
+                        item.key.source(),
+                        usedNodeImages);
                     sourceImages[i] = null;
                 }
                 if (!item.targetPreMatched && targetImages[i] != null) {
                     boolean removed = usedNodeImages.remove(targetImages[i]);
-                    assert removed : String.format(
-                        "Image %s for target %s not present in used node set %s", targetImages[i],
-                        item.key.target(), usedNodeImages);
+                    assert removed : String.format("Image %s for target %s not present in used node set %s",
+                        targetImages[i],
+                        item.key.target(),
+                        usedNodeImages);
                     targetImages[i] = null;
                 }
             }
@@ -575,8 +582,8 @@ public class IsoChecker {
             if (ISO_PRINT) {
                 System.out.printf("Succeeded%n");
             }
-            assert checkIsomorphism(domCertifier.getGraph(), result) : String.format(
-                "Erronous result using plan %s", plan);
+            assert checkIsomorphism(domCertifier.getGraph(), result) : String.format("Erronous result using plan %s",
+                plan);
             // Store the variables in the state.
             if (state != null) {
                 state.plan = plan;
@@ -619,8 +626,11 @@ public class IsoChecker {
             if (images == null) {
                 return null;
             } else if (images.isSingleton()) {
-                if (!setEdge(edgeCert.getElement(), images.getSingleton(), resultMap,
-                    connectedNodes, usedNodeImages)) {
+                if (!setEdge(edgeCert.getElement(),
+                    images.getSingleton(),
+                    resultMap,
+                    connectedNodes,
+                    usedNodeImages)) {
                     return null;
                 }
             } else {
@@ -769,13 +779,19 @@ public class IsoChecker {
             Node keyTarget = key.target();
             Edge value = edgeEntry.getValue();
             if (!map.getNode(keySource).equals(value.source())) {
-                System.out.printf("Edge %s mapped to %s, but source mapped to %s%n", key, value,
-                    keySource, map.getNode(keySource));
+                System.out.printf("Edge %s mapped to %s, but source mapped to %s%n",
+                    key,
+                    value,
+                    keySource,
+                    map.getNode(keySource));
                 return false;
             }
             if (!map.getNode(keyTarget).equals(value.target())) {
-                System.out.printf("Edge %s mapped to %s, but end %s mapped to %s%n", key, value,
-                    key.target(), map.getNode(keyTarget));
+                System.out.printf("Edge %s mapped to %s, but end %s mapped to %s%n",
+                    key,
+                    value,
+                    key.target(),
+                    map.getNode(keyTarget));
                 return false;
             }
         }
@@ -783,8 +799,10 @@ public class IsoChecker {
             for (Map.Entry<Node,Node> first : map.nodeMap().entrySet()) {
                 for (Map.Entry<Node,Node> second : map.nodeMap().entrySet()) {
                     if (first != second && first.getValue() == second.getValue()) {
-                        System.out.printf("Image of %s and %s both %s%n", first.getKey(),
-                            second.getKey(), first.getValue());
+                        System.out.printf("Image of %s and %s both %s%n",
+                            first.getKey(),
+                            second.getKey(),
+                            first.getValue());
                     }
                 }
             }
@@ -808,20 +826,20 @@ public class IsoChecker {
                 new HashBag<EdgeCertificate>(Arrays.asList(codBis.getEdgeCertificates()));
             Bag<NodeCertificate> domMinCodNodes = new HashBag<NodeCertificate>(domNodes);
             domMinCodNodes.removeAll(codNodes);
-            assert domMinCodNodes.isEmpty() : String.format(
-                "Node certificates %s in dom but not cod", domMinCodNodes);
+            assert domMinCodNodes.isEmpty() : String.format("Node certificates %s in dom but not cod",
+                domMinCodNodes);
             Bag<NodeCertificate> codMinDomNodes = new HashBag<NodeCertificate>(codNodes);
             codMinDomNodes.removeAll(domNodes);
-            assert codMinDomNodes.isEmpty() : String.format(
-                "Node certificates %s in cod but not cod", codMinDomNodes);
+            assert codMinDomNodes.isEmpty() : String.format("Node certificates %s in cod but not cod",
+                codMinDomNodes);
             Bag<EdgeCertificate> domMinCodEdges = new HashBag<EdgeCertificate>(domEdges);
             domMinCodEdges.removeAll(codEdges);
-            assert domMinCodEdges.isEmpty() : String.format(
-                "Edge certificates %s in dom but not cod", domMinCodEdges);
+            assert domMinCodEdges.isEmpty() : String.format("Edge certificates %s in dom but not cod",
+                domMinCodEdges);
             Bag<EdgeCertificate> codMinDomEdges = new HashBag<EdgeCertificate>(codEdges);
             codMinDomEdges.removeAll(domEdges);
-            assert codMinDomEdges.isEmpty() : String.format(
-                "Edge certificates %s in cod but not cod", codMinDomEdges);
+            assert codMinDomEdges.isEmpty() : String.format("Edge certificates %s in cod but not cod",
+                codMinDomEdges);
         }
         return true;
     }
@@ -988,8 +1006,8 @@ public class IsoChecker {
     private static void testIso(String name) throws IOException {
         PlainGraph graph1 = Groove.loadGraph(name);
         IsoChecker checker = getInstance(true);
-        System.out.printf("Graph certificate: %s%n",
-            checker.getCertifier(graph1, true).getGraphCertificate());
+        System.out.printf("Graph certificate: %s%n", checker.getCertifier(graph1, true)
+            .getGraphCertificate());
         for (int i = 0; i < 1000; i++) {
             PlainGraph graph2 = new PlainGraph(name, GraphRole.NONE);
             PlainMorphism nodeMap = new PlainMorphism();
@@ -1146,7 +1164,10 @@ public class IsoChecker {
 
         @Override
         public String toString() {
-            return String.format("(%s,%s,%s,%s)", this.key, this.images, this.sourcePreMatched,
+            return String.format("(%s,%s,%s,%s)",
+                this.key,
+                this.images,
+                this.sourcePreMatched,
                 this.targetPreMatched);
         }
 

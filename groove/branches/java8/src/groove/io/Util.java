@@ -28,8 +28,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -141,6 +147,108 @@ public class Util {
         // Do this last, as the above has probably affected directory metadata
         if (preserveFileDate) {
             destDir.setLastModified(srcDir.lastModified());
+        }
+    }
+
+    /**
+     * Copies a whole directory to a new location.
+     * <p>
+     * This method copies the contents of the specified source directory
+     * to within the specified destination directory.
+     * <p>
+     * The destination directory is created if it does not exist.
+     * If the destination directory did exist, then this method merges
+     * the source with the destination, with the source taking precedence.
+     * <p>
+     * <strong>Note:</strong> Setting <code>preserveFileDate</code> to
+     * <code>true</code> tries to preserve the files' last modified
+     * date/times using {@link File#setLastModified(long)}, however it is
+     * not guaranteed that those operations will succeed.
+     * If the modification operation fails, no indication is provided.
+     *
+     * @param srcDir  an existing directory to copy, must not be <code>null</code>
+     * @param destDir  the new directory, must not be <code>null</code>
+     * @param preserveFileDate  true if the file date of the copy
+     *  should be the same as the original
+     *
+     * @throws NullPointerException if source or destination is <code>null</code>
+     * @throws IOException if source or destination is invalid
+     * @throws IOException if an IO error occurs during copying
+     * @since Commons IO 1.1
+     */
+    public static void copyDirectory(Path srcDir, Path destDir, boolean preserveFileDate)
+        throws IOException {
+        if (srcDir == null) {
+            throw new NullPointerException("Source must not be null");
+        }
+        if (destDir == null) {
+            throw new NullPointerException("Destination must not be null");
+        }
+        if (Files.notExists(srcDir)) {
+            throw new FileNotFoundException("Source '" + srcDir + "' does not exist");
+        }
+        if (!Files.isDirectory(srcDir)) {
+            throw new IOException("Source '" + srcDir + "' exists but is not a directory");
+        }
+        if (Files.isSameFile(srcDir, destDir)) {
+            throw new IOException("Source '" + srcDir + "' and destination '" + destDir
+                + "' are the same");
+        }
+
+        // Cater for destination being directory within the source directory (see IO-141)
+        Set<Path> exclusionList = new HashSet<>();
+        if (destDir.toAbsolutePath().startsWith(srcDir.toAbsolutePath())) {
+            try (DirectoryStream<Path> srcFiles = Files.newDirectoryStream(srcDir)) {
+                for (Path srcFile : srcFiles) {
+                    Path copiedFile = destDir.resolve(srcFile.getFileName());
+                    exclusionList.add(copiedFile.toAbsolutePath());
+                }
+            }
+        }
+        doCopyDirectory(srcDir, destDir, preserveFileDate, exclusionList);
+    }
+
+    /**
+     * Internal copy directory method.
+     *
+     * @param srcDir  the validated source directory, must not be <code>null</code>
+     * @param destDir  the validated destination directory, must not be <code>null</code>
+     * @param preserveFileDate  whether to preserve the file date
+     * @param exclusionList  List of files and directories to exclude from the copy, may be null
+     * @throws IOException if an error occurs
+     * @since Commons IO 1.1
+     */
+    private static void doCopyDirectory(Path srcDir, Path destDir, boolean preserveFileDate,
+        Set<Path> exclusionList) throws IOException {
+        if (Files.exists(destDir)) {
+            if (!Files.isDirectory(destDir)) {
+                throw new IOException("Destination '" + destDir + "' exists but is not a directory");
+            }
+        } else {
+            try {
+                Files.createDirectories(destDir);
+            } catch (IOException exc) {
+                throw new IOException("Destination '" + destDir + "' directory cannot be created");
+            }
+        }
+        if (!Files.isWritable(destDir)) {
+            throw new IOException("Destination '" + destDir + "' cannot be written to");
+        }
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(srcDir)) {
+            for (Path file : files) {
+                if (!exclusionList.contains(file.toAbsolutePath())) {
+                    Path copiedFile = destDir.resolve(file.getFileName());
+                    if (Files.isDirectory(file)) {
+                        doCopyDirectory(file, copiedFile, preserveFileDate, exclusionList);
+                    } else {
+                        Files.copy(file, copiedFile, StandardCopyOption.COPY_ATTRIBUTES);
+                    }
+                }
+            }
+        }
+        // Do this last, as the above has probably affected directory metadata
+        if (preserveFileDate) {
+            Files.setLastModifiedTime(destDir, Files.getLastModifiedTime(srcDir));
         }
     }
 

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -31,8 +31,8 @@ import groove.io.external.format.GxlPorter;
 import groove.io.external.format.NativePorter;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +70,7 @@ public class Importers {
     private static void doChosenImport(Simulator simulator, GrammarModel grammar)
         throws PortException, IOException {
         FileType fileType = getFormatChooser().getFileType();
-        File file = getFormatChooser().getSelectedFile();
+        Path file = getFormatChooser().getSelectedFile().toPath();
         Importer ri = getImporter(fileType);
         ri.setSimulator(simulator);
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
@@ -92,14 +92,20 @@ public class Importers {
                         }
                         graphs.add(graph);
                     } else {
-                        String text = resource.getTextResource();
+                        List<String> text = resource.getTextResource();
+                        StringBuilder builder = new StringBuilder();
+                        for (String line : text) {
+                            builder.append(line);
+                            builder.append("\n");
+                        }
+                        String combinedText = builder.toString();
                         Map<String,String> texts = newTexts.get(kind);
                         if (texts == null) {
                             newTexts.put(kind, texts = new HashMap<String,String>());
                         }
-                        texts.put(name, text);
+                        texts.put(name, combinedText);
                         grammar.getStore().putTexts(resource.getKind(),
-                            Collections.singletonMap(name, text));
+                            Collections.singletonMap(name, combinedText));
                     }
                 }
             }
@@ -119,7 +125,8 @@ public class Importers {
     private static boolean confirmOverwrite(Component parent, ResourceKind resource, String name) {
         int response =
             JOptionPane.showConfirmDialog(parent,
-                String.format("Replace existing %s '%s'?", resource.getDescription(), name), null,
+                String.format("Replace existing %s '%s'?", resource.getDescription(), name),
+                null,
                 JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }

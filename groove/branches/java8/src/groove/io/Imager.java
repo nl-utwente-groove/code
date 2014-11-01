@@ -55,6 +55,9 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -161,7 +164,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (!inFile.exists()) {
             throw new IOException("Input file " + inFile + " does not exist");
         }
-        File grammarFile = getGrammarFile(inFile);
+        Path grammarFile = getGrammarFile(inFile.toPath());
         if (grammarFile == null) {
             throw new IOException("Input file " + inFile + " is not part of a grammar");
         }
@@ -171,7 +174,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
         try {
             GrammarModel grammar = GrammarModel.newInstance(grammarFile, false);
-            makeImage(grammar, inFile, outFile);
+            makeImage(grammar, inFile.toPath(), outFile.toPath());
         } catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
@@ -185,26 +188,30 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @param outFile the intended output file. If {@code inFile} is a directory,
      * then {@code outFile} is guaranteed to be a directory as well.
      */
-    private void makeImage(GrammarModel grammar, File inFile, File outFile) throws IOException {
+    private void makeImage(GrammarModel grammar, Path inFile, Path outFile) throws IOException {
         // if the given input-file is a directory, call this method recursively
         // for each file it contains but ensure:
         // --> output-file exists or can be created
-        if (inFile.isDirectory()) {
-            File[] files = inFile.listFiles();
-            if (outFile.exists() || outFile.mkdir()) {
-                for (File element : files) {
+        if (Files.isDirectory(inFile)) {
+            if (Files.notExists(outFile)) {
+                try {
+                    Files.createDirectories(outFile);
+                } catch (IOException exc) {
+                    throw new IOException("Output directory " + outFile + " cannot be created");
+                }
+            }
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(inFile)) {
+                for (Path element : stream) {
                     // see if we want to process this file
-                    boolean process = element.isDirectory();
+                    boolean process = Files.isDirectory(element);
                     if (!process) {
                         Pair<ResourceKind,QualName> resource = parse(element);
                         process = resource != null && resource.one().isGraphBased();
                     }
                     if (process) {
-                        makeImage(grammar, element, new File(outFile, element.getName()));
+                        makeImage(grammar, element, outFile.resolve(element.getFileName()));
                     }
                 }
-            } else {
-                throw new IOException("Output directory " + outFile + " cannot be created");
             }
         }
         // or the input-file is an ordinary Groove-file (state or rule)
@@ -217,16 +224,21 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 throw new IOException("Input file " + inFile + " is not a graph resource");
             }
             // Determine output file folder and filename
-            String outFileName;
-            File outParent;
-            if (outFile.isDirectory()) {
+            Path outFileName;
+            Path outParent;
+            if (Files.isDirectory(outFile)) {
                 outParent = outFile;
-                outFileName = inFile.getName();
+                outFileName = inFile.getFileName();
             } else {
-                outParent = outFile.getParentFile();
-                outFileName = outFile.getName();
-                if (outParent != null && !outParent.exists() && !outParent.mkdir()) {
-                    throw new IOException("Output directory " + outParent + " cannot be created");
+                outParent = outFile.getParent();
+                outFileName = outFile.getFileName();
+                if (outParent != null && Files.notExists(outParent)) {
+                    try {
+                        Files.createDirectories(outParent);
+                    } catch (IOException exc) {
+                        throw new IOException("Output directory " + outParent
+                            + " cannot be created");
+                    }
                 }
             }
             // Determine output file format
@@ -234,7 +246,12 @@ public class Imager extends GrooveCmdLineTool<Object> {
             final FileType fileType =
                 outFileType == null ? getFormatMap().values().iterator().next() : outFileType;
             final Exporter exporter = Exporters.getExporter(fileType);
-            final File exportFile = new File(outParent, fileType.addExtension(outFileName));
+            final Path exportFile;
+            if (outParent == null) {
+                exportFile = outFileName;
+            } else {
+                exportFile = outParent.resolve(fileType.addExtension(outFileName));
+            }
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
@@ -385,9 +402,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @param file the file to be parsed
      * @return a parent file of {@code file}, or {@code null}
      */
-    private static File getGrammarFile(File file) {
+    private static Path getGrammarFile(Path file) {
         while (file != null && !GRAMMAR.hasExtension(file)) {
-            file = file.getParentFile();
+            file = file.getParent();
         }
         return file;
     }
@@ -397,7 +414,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * into a pair consisting of its resource kind and the qualified name
      * of the resource within the grammar.
      */
-    private static Pair<ResourceKind,QualName> parse(File file) {
+    private static Pair<ResourceKind,QualName> parse(Path file) {
         ResourceKind kind = null;
         // find out the resource kind
         for (ResourceKind k : ResourceKind.values()) {
@@ -412,8 +429,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
             // break the filename into fragments, up to the containing grammar
             List<String> fragments = new LinkedList<String>();
             while (file != null && !GRAMMAR.hasExtension(file)) {
-                fragments.add(0, file.getName());
-                file = file.getParentFile();
+                fragments.add(0, file.getFileName().toString());
+                file = file.getParent();
             }
             // if file == null, there was no containing grammar
             if (file != null) {
@@ -742,7 +759,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox<String> formatBox = new JComboBox<>(Imager.getFormatMap().keySet().toArray(
-            new String[0]));
+        final JComboBox<String> formatBox = new JComboBox<>(Imager.getFormatMap()
+            .keySet()
+            .toArray(new String[0]));
     }
 }

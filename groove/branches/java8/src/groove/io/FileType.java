@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -27,6 +27,7 @@ import groove.io.graph.GraphIO;
 import groove.io.graph.GxlIO;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +37,8 @@ import java.util.Set;
 
 /**
  * Enumeration of file types supported by Groove.
- * Each element of the enumeration has an associated file filter. 
- * 
+ * Each element of the enumeration has an associated file filter.
+ *
  * @author Eduardo Zambon
  */
 public enum FileType {
@@ -123,17 +124,17 @@ public enum FileType {
 
     /** Constructs a singular file type. */
     private FileType(String description, String extension) {
-        assert description != null && description.length() > 0 : String.format(
-            "Badly formatted file type description: %s", description);
-        assert extension != null && extension.length() > 1 && extension.charAt(0) == SEPARATOR : String.format(
-            "Badly formatted file type extension: %s", extension);
+        assert description != null && description.length() > 0 : String.format("Badly formatted file type description: %s",
+            description);
+        assert extension != null && extension.length() > 1 && extension.charAt(0) == SEPARATOR : String.format("Badly formatted file type extension: %s",
+            extension);
         this.extension = extension;
         this.description = description;
         this.subTypes = new ArrayList<FileType>();
     }
 
-    /** 
-     * Constructs a composed file type from a 
+    /**
+     * Constructs a composed file type from a
      * series of predefined file sub-types.
      * The first of the sub-types will be the primary file type.
      */
@@ -148,9 +149,9 @@ public enum FileType {
         return this.extension;
     }
 
-    /** 
+    /**
      * Returns the primary extension of this file type, without {@link #SEPARATOR} prefix.
-     * @see #getExtension() 
+     * @see #getExtension()
      */
     public String getExtensionName() {
         return this.extension.substring(1);
@@ -210,6 +211,15 @@ public enum FileType {
      * Strips the extension of this file type from a file, if the extension is in fact there.
      * @param file the file to be stripped
      */
+    public Path stripExtension(Path file) {
+        String childName = stripExtension(file.getFileName().toString());
+        return file.getParent().resolve(childName);
+    }
+
+    /**
+     * Strips the extension of this file type from a file, if the extension is in fact there.
+     * @param file the file to be stripped
+     */
     public File stripExtension(File file) {
         return new File(file.getParentFile(), stripExtension(file.getName()));
     }
@@ -224,6 +234,15 @@ public enum FileType {
             result = filename + getExtension();
         }
         return result;
+    }
+
+    /**
+     * Adds the (primary) extension of this file type to a given file, if there is no extension.
+     * @param file the file to be provided with an extension
+     */
+    public Path addExtension(Path file) {
+        String childName = addExtension(file.getFileName().toString());
+        return file.getParent().resolve(childName);
     }
 
     /**
@@ -265,7 +284,17 @@ public enum FileType {
         return hasExtension(file.getName());
     }
 
-    /** Indicates if this file format has an associated loader/saver for graphs. 
+    /**
+     * Tests if a given file has the extension of this file type.
+     * @param file the file to be tested
+     * @return <code>true</code> if <code>file</code> has the extension
+     *         of this filter
+     */
+    public boolean hasExtension(Path file) {
+        return hasExtension(file.getFileName().toString());
+    }
+
+    /** Indicates if this file format has an associated loader/saver for graphs.
      * @see #getGraphIO()
      */
     public boolean hasGraphIO() {
@@ -273,7 +302,7 @@ public enum FileType {
     }
 
     /** Returns the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats. 
+     * Note that this only applies to structural graph formats, not image or vector formats.
      */
     public GraphIO<?> getGraphIO() {
         if (this.io == null) {
@@ -284,7 +313,7 @@ public enum FileType {
 
     /**
      * Computes the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats. 
+     * Note that this only applies to structural graph formats, not image or vector formats.
      */
     public GraphIO<?> computeGraphIO() {
         switch (this) {
@@ -357,14 +386,21 @@ public enum FileType {
         }
     }
 
-    /** 
+    /**
      * Returns the set of possible file types of a given file, going by its filename extension.
      */
     static public Set<FileType> getType(File file) {
         return getType(file.getName());
     }
 
-    /** 
+    /**
+     * Returns the set of possible file types of a given file, going by its filename extension.
+     */
+    static public Set<FileType> getType(Path file) {
+        return getType(file.getFileName().toString());
+    }
+
+    /**
      * Returns the set of possible file types for a given file, going by its filename extension.
      */
     static public Set<FileType> getType(String filename) {
@@ -375,6 +411,17 @@ public enum FileType {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the extension part of a file name. The extension is taken to be
+     * the part from the last #SEPARATOR occurrence (inclusive).
+     * @param file the file to obtain the name from
+     * @return the extension part of <code>file.getName()</code>
+     * @see File#getName()
+     */
+    static public String getExtension(Path file) {
+        return getExtension(file.getFileName().toString());
     }
 
     /**
@@ -413,6 +460,18 @@ public enum FileType {
     /**
      * Returns the name part of a file name, without extension. The extension is
      * taken to be the part from the last #SEPARATOR occurrence (inclusive).
+     * @param file the file to obtain the name from
+     * @return the name part of <code>file.getName()</code>, without the
+     *         extension
+     * @see File#getName()
+     */
+    static public String getPureName(Path file) {
+        return getPureName(file.getFileName().toString());
+    }
+
+    /**
+     * Returns the name part of a file name, without extension. The extension is
+     * taken to be the part from the last #SEPARATOR occurrence (inclusive).
      * @param filename the filename to be stripped
      * @return the name part of <code>file.getName()</code>, without the
      *         extension
@@ -438,12 +497,22 @@ public enum FileType {
 
     /**
      * Tests if a given file has any extension.
-     * @param file the filename to be tested
+     * @param file the file to be tested
      * @return <code>true</code> if <code>file</code> has an extension
      * (not necessarily of this filter).
      */
     public static boolean hasAnyExtension(File file) {
         return file.getName().indexOf(SEPARATOR) >= 0;
+    }
+
+    /**
+     * Tests if a given file has any extension.
+     * @param file the file to be tested
+     * @return <code>true</code> if <code>file</code> has an extension
+     * (not necessarily of this filter).
+     */
+    public static boolean hasAnyExtension(Path file) {
+        return file.getFileName().toString().indexOf(SEPARATOR) >= 0;
     }
 
     /**

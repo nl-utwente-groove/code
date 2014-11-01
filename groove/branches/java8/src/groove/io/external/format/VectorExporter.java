@@ -23,7 +23,7 @@ import groove.io.external.Exportable;
 import groove.io.external.PortException;
 import groove.io.external.util.GraphToVector;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -64,7 +64,7 @@ public class VectorExporter extends AbstractExporter {
     }
 
     @Override
-    public void doExport(Exportable exportable, File file, FileType fileType)
+    public void doExport(Exportable exportable, Path file, FileType fileType)
         throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
         this.formats.get(fileType).renderGraph(jGraph, file);

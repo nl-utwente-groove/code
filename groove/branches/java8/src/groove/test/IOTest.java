@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.test;
@@ -27,9 +27,9 @@ import groove.lts.GTS;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import junit.framework.Assert;
 
@@ -41,10 +41,10 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class IOTest {
 
-    static private final String DIRECTORY = "junit/samples/control.gps";
-    static private final String JAR_FILE = "junit/samples.jar";
-    static private final String ZIP_FILE = "junit/samples.zip";
-    static private final String PATH_IN_ARCHIVE = "/samples/control.gps";
+    static private final Path DIRECTORY = Paths.get("junit/samples/control.gps");
+    static private final Path JAR_FILE = Paths.get("junit/samples.jar");
+    static private final Path ZIP_FILE = Paths.get("junit/samples.zip");
+    static private final Path PATH_IN_ARCHIVE = Paths.get("/samples/control.gps");
 
     static private final String DEF_START = "start";
     static private final String ALT_START = "start2";
@@ -60,17 +60,32 @@ public class IOTest {
             testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount, edgecount);
             testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount, edgecount);
 
-            File file = new File(DIRECTORY);
-            URL url = Groove.toURL(file);
-
-            testControl(GrammarModel.newInstance(file, false), DEF_START, DEF_CONTROL, nodecount,
+            testControl(GrammarModel.newInstance(DIRECTORY, false),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
                 edgecount);
-            testControl(GrammarModel.newInstance(file, false), DEF_START, DEF_CONTROL, nodecount,
+            testControl(GrammarModel.newInstance(DIRECTORY, false),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
                 edgecount);
 
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(DIRECTORY),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
+            testControl(GrammarModel.newInstance(DIRECTORY),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
+            testControl(GrammarModel.newInstance(DIRECTORY),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
 
         } catch (IOException e) {
             Assert.fail(e.toString());
@@ -93,8 +108,7 @@ public class IOTest {
         int nodecount = 13;
         int edgecount = 16;
         try {
-            URL dir = Groove.toURL(new File(DIRECTORY));
-            GrammarModel grammarView = GrammarModel.newInstance(dir);
+            GrammarModel grammarView = GrammarModel.newInstance(DIRECTORY);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
             Assert.fail(e.toString());
@@ -103,7 +117,7 @@ public class IOTest {
     }
 
     protected void testControl(GrammarModel view, String startName, String controlName,
-            int nodecount, int edgecount) {
+        int nodecount, int edgecount) {
         testExploration(view, "control", startName, controlName, 3, nodecount, edgecount);
     }
 
@@ -115,7 +129,7 @@ public class IOTest {
      * @return the explored GTS
      */
     protected GTS testExploration(GrammarModel view, String grammarName, String startName,
-            String controlName, int rulecount, int nodeCount, int edgeCount) {
+        String controlName, int rulecount, int nodeCount, int edgeCount) {
         try {
             // and also set the start graph directly
             view.setLocalActiveNames(ResourceKind.CONTROL, controlName);

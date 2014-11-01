@@ -43,8 +43,7 @@ import groove.io.conceptual.lang.groove.TypeToGroove;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
 
-import java.io.File;
-import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +60,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
+    public Set<Resource> doImport(Path file, FileType fileType, GrammarModel grammar)
         throws PortException {
         Set<Resource> result = Collections.emptySet();
         Pair<TypeModel,InstanceModel> models = null;
@@ -84,22 +83,15 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     }
 
     /** Reads in type and instance models for an instance model import. */
-    abstract protected Pair<TypeModel,InstanceModel> importInstanceModel(File file,
+    abstract protected Pair<TypeModel,InstanceModel> importInstanceModel(Path file,
         GrammarModel grammar) throws ImportException;
 
     /** Reads in type and instance models for a type import. */
-    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(File file, GrammarModel grammar)
+    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(Path file, GrammarModel grammar)
         throws ImportException;
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream, FileType fileType,
-        GrammarModel grammar) throws PortException {
-        //TODO: play nice with streams
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
+    public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
         String name = exportable.getName();
         String namespace = name;
         try {
@@ -153,7 +145,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     /** Callback method obtaining an exportable object in the required format.
      * @param isHost flag indicating that we want to export an instance model
      */
-    abstract protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
+    abstract protected ExportableResource getResource(Path file, boolean isHost, TypeModel tm,
         InstanceModel im) throws PortException;
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
@@ -216,7 +208,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             itg.addInstanceModel(im);
         }
 
-        for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : grooveResource.getGraphs().entrySet()) {
+        for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : grooveResource.getGraphs()
+            .entrySet()) {
             GraphRole role = entry.getKey();
             ResourceKind kind = ResourceKind.toResource(role);
             for (GrammarGraph graph : entry.getValue().values()) {

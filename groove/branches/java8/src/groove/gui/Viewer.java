@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -32,6 +32,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -57,12 +58,12 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     @Override
     protected Object run() throws Exception {
-        show(this.inFile, false);
+        show(this.inFile.toPath(), false);
         return null;
     }
 
     /** Shows a given file as a graph in an optionally modal dialog. */
-    public void show(File file, boolean modal) throws IOException, FormatException {
+    public void show(Path file, boolean modal) throws IOException, FormatException {
         GraphIO<?> io = null;
         for (FileType type : FileType.getType(file)) {
             if (type.hasGraphIO() && type.getGraphIO().canLoad()) {
@@ -113,8 +114,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     /** The location of the file to be viewer. */
     @Argument(metaVar = "input",
-            usage = "Graph file to be viewed. Its extension is used to guess its format and type",
-            required = true, handler = ExistingFileHandler.class)
+        usage = "Graph file to be viewed. Its extension is used to guess its format and type",
+        required = true, handler = ExistingFileHandler.class)
     private File inFile;
 
     /**
@@ -133,7 +134,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      * Tries to show a given file as a graph in a modeless dialog,
      * Convenience method for {@code showGraph(file,false)}.
      */
-    static public void showGraph(File file) throws IOException, FormatException {
+    static public void showGraph(Path file) throws IOException, FormatException {
         showGraph(file, false);
     }
 
@@ -147,9 +148,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     /**
      * Tries to show a given file as a graph in an optionally modal dialog,
-     * by invoking {@link #show(File,boolean)} on a fresh {@link Viewer} instance.
+     * by invoking {@link #show(Path,boolean)} on a fresh {@link Viewer} instance.
      */
-    static public void showGraph(File file, boolean modal) throws IOException, FormatException {
+    static public void showGraph(Path file, boolean modal) throws IOException, FormatException {
         new Viewer().show(file, modal);
     }
 

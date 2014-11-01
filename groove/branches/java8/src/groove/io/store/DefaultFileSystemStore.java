@@ -34,15 +34,15 @@ import groove.util.Groove;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
-import java.net.URI;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,25 +79,27 @@ public class DefaultFileSystemStore extends SystemStore {
      * @throws IllegalArgumentException if <code>file</code> is not an existing
      *         directory, or does not have the correct extension.
      */
-    public DefaultFileSystemStore(File file, boolean create) throws IOException {
-        if (!file.exists()) {
+    public DefaultFileSystemStore(Path file, boolean create) throws IOException {
+        if (Files.notExists(file)) {
             if (create) {
-                if (!file.mkdirs()) {
+                try {
+                    Files.createDirectories(file);
+                } catch (IOException e) {
                     throw new IOException(String.format("Could not create directory '%s'", file));
                 }
             } else {
                 throw new IllegalArgumentException(String.format("File '%s' does not exist", file));
             }
         }
-        if (!file.isDirectory()) {
+        if (!Files.isDirectory(file)) {
             throw new IllegalArgumentException(String.format("File '%s' is not a directory", file));
         }
         if (!GRAMMAR.hasExtension(file)) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' does not refer to a production system", file));
+            throw new IllegalArgumentException(
+                String.format("File '%s' does not refer to a production system", file));
         }
         this.file = file;
-        this.name = GRAMMAR.stripExtension(this.file.getName());
+        this.name = GRAMMAR.stripExtension(file.getFileName().toString());
         this.marshaller = GxlIO.instance();
         if (create) {
             this.createVersionProperties();
@@ -115,7 +117,7 @@ public class DefaultFileSystemStore extends SystemStore {
      *         directory, or does not have the correct extension.
      */
     public DefaultFileSystemStore(URL location) throws IOException {
-        this(toFile(location), false);
+        this(toPath(location), false);
         this.url = location;
     }
 
@@ -228,7 +230,7 @@ public class DefaultFileSystemStore extends SystemStore {
             String text = getTextMap(kind).remove(name);
             if (text != null) {
                 oldTexts.put(name, text);
-                createFile(kind, name).delete();
+                Files.deleteIfExists(createFile(kind, name));
                 activeChanged |= activeNames.remove(name);
             }
         }
@@ -249,7 +251,8 @@ public class DefaultFileSystemStore extends SystemStore {
     public void rename(ResourceKind kind, String oldName, String newName) throws IOException {
         MyEdit edit =
             kind.isGraphBased() ? doRenameGraph(kind, oldName, newName) : doRenameText(kind,
-                oldName, newName);
+                oldName,
+                newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -269,7 +272,7 @@ public class DefaultFileSystemStore extends SystemStore {
         String text = getTextMap(kind).remove(oldName);
         assert text != null;
         oldTexts.put(oldName, text);
-        createFile(kind, oldName).renameTo(createFile(kind, newName));
+        Files.move(createFile(kind, oldName), createFile(kind, newName));
         String previous = getTextMap(kind).put(newName, text);
         assert previous == null;
         newTexts.put(newName, text);
@@ -297,13 +300,13 @@ public class DefaultFileSystemStore extends SystemStore {
         testInit();
         AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
         assert oldGraph != null;
-        File oldFile = createFile(kind, oldName);
+        Path oldFile = createFile(kind, oldName);
         this.marshaller.deleteGraph(oldFile);
         AspectGraph newGraph = oldGraph.rename(newName);
         AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
         assert previous == null;
         this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, newName));
-        deleteEmptyDirectories(oldFile.getParentFile());
+        deleteEmptyDirectories(oldFile.getParent());
         // change the properties if there is a change in the enabled types
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
@@ -324,16 +327,25 @@ public class DefaultFileSystemStore extends SystemStore {
     /**
      * Recursively clean up empty directories, after a delete or a rename.
      */
-    private static void deleteEmptyDirectories(File directory) {
-        if (directory == null || !directory.isDirectory()) {
+    private static void deleteEmptyDirectories(Path directory) {
+        if (directory == null || !Files.isDirectory(directory)) {
             return;
         }
-        if (directory.listFiles().length > 0) {
-            return;
+        try {
+            if (!isDirEmpty(directory)) {
+                return;
+            }
+            Files.delete(directory);
+            deleteEmptyDirectories(directory.getParent());
+        } catch (IOException exc) {
+            // ignore the exception but stop deleting
         }
-        File parent = directory.getParentFile();
-        directory.delete();
-        deleteEmptyDirectories(parent);
+    }
+
+    private static boolean isDirEmpty(final Path directory) throws IOException {
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
+            return !dirStream.iterator().hasNext();
+        }
     }
 
     @Override
@@ -418,9 +430,9 @@ public class DefaultFileSystemStore extends SystemStore {
         for (String name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
             assert graph != null;
-            File oldFile = createFile(kind, name);
+            Path oldFile = createFile(kind, name);
             this.marshaller.deleteGraph(oldFile);
-            deleteEmptyDirectories(oldFile.getParentFile());
+            deleteEmptyDirectories(oldFile.getParent());
             deletedGraphs.add(graph);
             activeChanged |= activeNames != null && activeNames.remove(name);
         }
@@ -564,11 +576,6 @@ public class DefaultFileSystemStore extends SystemStore {
         }
     }
 
-    @Override
-    public SystemStore save(File file, boolean clearDir) throws IOException {
-        return SystemStore.save(file, this, clearDir);
-    }
-
     /** This type of system store is modifiable. */
     @Override
     public boolean isModifiable() {
@@ -603,7 +610,8 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     @Override
     public String toString() {
-        String location = this.file == null ? getLocation().toString() : this.file.getParent();
+        String location =
+            this.file == null ? getLocation().toString() : this.file.getParent().toString();
         return getName() + " - " + location;
     }
 
@@ -613,14 +621,14 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private void loadGraphs(ResourceKind kind) throws IOException {
         getGraphMap(kind).clear();
-        Map<QualName,File> files;
+        Map<QualName,Path> files;
         try {
             // read in the text files
             files = collectResources(kind, this.file, null);
         } catch (FormatException e) {
             throw new IOException(e.getMessage(), e);
         }
-        for (Entry<QualName,File> fileEntry : files.entrySet()) {
+        for (Entry<QualName,Path> fileEntry : files.entrySet()) {
             // read graph from file
             AttrGraph xmlGraph = this.marshaller.loadGraph(fileEntry.getValue());
 
@@ -631,7 +639,8 @@ public class DefaultFileSystemStore extends SystemStore {
             // store graph in corresponding map
             AspectGraph graph = xmlGraph.toAspectGraph();
             Object oldEntry = getGraphMap(kind).put(fileEntry.getKey().toString(), graph);
-            assert oldEntry == null : String.format("Duplicate %s name '%s'", kind.getGraphRole(),
+            assert oldEntry == null : String.format("Duplicate %s name '%s'",
+                kind.getGraphRole(),
                 fileEntry.getKey());
         }
     }
@@ -642,18 +651,24 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private void loadTexts(ResourceKind kind) throws IOException {
         getTextMap(kind).clear();
-        Map<QualName,File> files;
+        Map<QualName,Path> files;
         try {
             // read in the text files
             files = collectResources(kind, this.file, null);
         } catch (FormatException e) {
             throw new IOException(e.getMessage(), e);
         }
-        for (Entry<QualName,File> fileEntry : files.entrySet()) {
+        for (Entry<QualName,Path> fileEntry : files.entrySet()) {
             // read the file in as a single string
-            String program = groove.io.Util.readFileToString(fileEntry.getValue());
+            List<String> program = Files.readAllLines(fileEntry.getValue());
+            StringBuilder builder = new StringBuilder();
+            for (String line : program) {
+                builder.append(line);
+                builder.append("\n");
+            }
+            String programString = builder.toString();
             // insert the string into the resource map
-            getTextMap(kind).put(fileEntry.getKey().toString(), program);
+            getTextMap(kind).put(fileEntry.getKey().toString(), programString);
         }
     }
 
@@ -668,29 +683,27 @@ public class DefaultFileSystemStore extends SystemStore {
      * @throws IOException if an error occurs while trying to list the files
      * @throws FormatException if there is a subdirectory name with an error
      */
-    private Map<QualName,File> collectResources(ResourceKind kind, File path, QualName pathName)
+    private Map<QualName,Path> collectResources(ResourceKind kind, Path path, QualName pathName)
         throws IOException, FormatException {
-        Map<QualName,File> result = new HashMap<QualName,File>();
+        Map<QualName,Path> result = new HashMap<>();
         // find all files in the current path
-        File[] curfiles = path.listFiles(kind.getFileType().getFilter());
-        if (curfiles == null) {
-            throw new IOException(LOAD_ERROR + ": unable to get list of files " + "in path " + path);
-        }
+        Iterable<Path> curFiles = Files.newDirectoryStream(path, kind.getFileType().getFilter());
         // collect errors while loading files
         FormatErrorSet errors = new FormatErrorSet();
         // process all files one by one
-        for (File file : curfiles) {
+        for (Path file : curFiles) {
             // get qualified name of file
-            String fileName = kind.getFileType().stripExtension(file.getName());
+            String fileName = kind.getFileType().stripExtension(file.getFileName().toString());
 
             int separatorPos = fileName.indexOf(QualName.SEPARATOR);
             // File contains separator, must be renamed to use subdirectories instead
             if (separatorPos > 0) {
-                errors.add("File name %s contains separator CHARACTER '%s'", file.getPath(),
+                errors.add("File name %s contains separator CHARACTER '%s'",
+                    file.toString(),
                     QualName.SEPARATOR);
             } else if (separatorPos < 0) {
                 QualName qualFileName = QualName.extend(pathName, fileName);
-                if (file.isDirectory()) {
+                if (Files.isDirectory(file)) {
                     result.putAll(collectResources(kind, file, qualFileName));
                 } else {
                     result.put(qualFileName, file);
@@ -714,18 +727,15 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private GrammarProperties loadGrammarProperties() throws IOException {
         GrammarProperties properties = new GrammarProperties();
-        File propertiesFile = getDefaultPropertiesFile();
+        Path propertiesFile = getDefaultPropertiesFile();
         // backwards compatibility: <grammar name>.properties
-        if (!propertiesFile.exists()) {
+        if (Files.notExists(propertiesFile)) {
             propertiesFile = getOldDefaultPropertiesFile();
         }
-        if (propertiesFile.exists()) {
+        if (Files.exists(propertiesFile)) {
             Properties grammarProperties = new Properties();
-            InputStream s = new FileInputStream(propertiesFile);
-            try {
+            try (InputStream s = Files.newInputStream(propertiesFile)) {
                 grammarProperties.load(s);
-            } finally {
-                s.close();
             }
             properties.putAll(grammarProperties);
             this.hasSystemPropertiesFile = true;
@@ -736,23 +746,18 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /** Returns the file that by default holds the system properties. */
-    private File getDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME));
+    private Path getDefaultPropertiesFile() {
+        return this.file.resolve(PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME));
     }
 
     /** Returns the file that held the system properties in the distant past. */
-    private File getOldDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType().addExtension(this.name));
+    private Path getOldDefaultPropertiesFile() {
+        return this.file.resolve(PROPERTIES.getFileType().addExtension(this.name));
     }
 
     private void saveText(ResourceKind kind, String name, String program) throws IOException {
-        File file = createFile(kind, name);
-        Writer writer = new FileWriter(file);
-        try {
-            writer.write(program);
-        } finally {
-            writer.close();
-        }
+        Path file = createFile(kind, name);
+        Files.write(file, Collections.singletonList(program));
     }
 
     private void saveProperties() throws IOException {
@@ -760,18 +765,13 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     private void saveProperties(GrammarProperties properties) throws IOException {
-        File propertiesFile = getDefaultPropertiesFile();
-        Writer propertiesWriter = new FileWriter(propertiesFile);
-        try {
-            properties.store(propertiesWriter, null);
-        } finally {
-            propertiesWriter.close();
+        Path propertiesFile = getDefaultPropertiesFile();
+        try (OutputStream stream = Files.newOutputStream(propertiesFile)) {
+            properties.store(stream, null);
         }
         // delete the old-style properties file, if any
-        File oldPropertiesFile = getOldDefaultPropertiesFile();
-        if (oldPropertiesFile.exists()) {
-            oldPropertiesFile.delete();
-        }
+        Path oldPropertiesFile = getOldDefaultPropertiesFile();
+        Files.deleteIfExists(oldPropertiesFile);
     }
 
     private void testInit() throws IllegalStateException {
@@ -783,16 +783,16 @@ public class DefaultFileSystemStore extends SystemStore {
     /**
      * Creates a file name for a given resource kind.
      */
-    private File createFile(ResourceKind kind, String name) throws IOException {
+    private Path createFile(ResourceKind kind, String name) throws IOException {
         try {
-            File basis = this.file;
+            Path basis = this.file;
             QualName qualName = new QualName(name);
             for (int i = 0; i < qualName.size() - 1; i++) {
-                basis = new File(basis, qualName.get(i));
-                basis.mkdir();
+                basis = basis.resolve(qualName.get(i));
+                Files.createDirectories(basis);
             }
             String shortName = qualName.child();
-            return new File(basis, kind.getFileType().addExtension(shortName));
+            return basis.resolve(kind.getFileType().addExtension(shortName));
         } catch (FormatException e) {
             throw new IOException(e.getMessage());
         }
@@ -819,7 +819,7 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private URL url;
     /** The file obtained from <code>location</code>. */
-    private final File file;
+    private final Path file;
     /** Name of the rule system. */
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
@@ -835,22 +835,14 @@ public class DefaultFileSystemStore extends SystemStore {
      * @throws IllegalArgumentException if <code>url</code> does not conform to
      *         URI syntax or does not point to an existing file.
      */
-    private static File toFile(URL url) throws IllegalArgumentException {
+    private static Path toPath(URL url) throws IllegalArgumentException {
         try {
-            // ignore query and reference part of the URL
-            return new File(new URI(url.getProtocol(), url.getAuthority(), url.toURI().getPath(),
-                null, null));
+            return Paths.get(url.toURI());
         } catch (URISyntaxException exc) {
-            throw new IllegalArgumentException(String.format(
-                "URL '%s' is not formatted correctly: %s", url, exc.getMessage()));
-        } catch (IllegalArgumentException exc) {
-            throw new IllegalArgumentException(String.format("URL '%s' is not a valid file: %s",
-                url, exc.getMessage()));
+            throw new IllegalArgumentException(
+                String.format("URL '%s' is not formatted correctly: %s", url, exc.getMessage()));
         }
     }
-
-    /** Error message if a grammar cannot be loaded. */
-    static private final String LOAD_ERROR = "Can't load graph grammar";
 
     private class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(EditType type, ResourceKind first, ResourceKind... rest) {
@@ -1154,8 +1146,10 @@ public class DefaultFileSystemStore extends SystemStore {
     private class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG, ResourceKind.TYPE,
-                ResourceKind.HOST, ResourceKind.CONTROL)) {
+            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
+                ResourceKind.TYPE,
+                ResourceKind.HOST,
+                ResourceKind.CONTROL)) {
                 Set<String> oldNames = oldProperties.getActiveNames(kind);
                 Set<String> newNames = newProperties.getActiveNames(kind);
                 if (!oldNames.equals(newNames)) {

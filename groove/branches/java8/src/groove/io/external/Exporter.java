@@ -18,7 +18,7 @@ package groove.io.external;
 
 import groove.io.FileType;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Set;
 
 /**
@@ -43,6 +43,6 @@ public interface Exporter extends Porter {
      * @param fileType used to determine format and extension
      * @throws PortException if something went wrong during export (typically I/O-related)
      */
-    public void doExport(Exportable exportable, File file, FileType fileType)
+    public void doExport(Exportable exportable, Path file, FileType fileType)
         throws PortException;
 }

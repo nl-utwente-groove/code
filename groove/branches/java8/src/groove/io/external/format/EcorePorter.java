@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -33,6 +33,7 @@ import groove.io.external.PortException;
 import groove.util.Pair;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JFileChooser;
 
@@ -43,7 +44,7 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importTypeModel(File file, GrammarModel grammar)
+    protected Pair<TypeModel,InstanceModel> importTypeModel(Path file, GrammarModel grammar)
         throws ImportException {
         EcoreToType ett = new EcoreToType(file.toString());
         TypeModel tm = ett.getTypeModel();
@@ -51,7 +52,7 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importInstanceModel(File file, GrammarModel grammar)
+    protected Pair<TypeModel,InstanceModel> importInstanceModel(Path file, GrammarModel grammar)
         throws ImportException {
         //Request ecore type model file
         int approve = getTypeModelChooser().showDialog(null, "Import Ecore type model");
@@ -74,16 +75,16 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
-            InstanceModel im) throws PortException {
-        File typeFile = file;
-        File instanceFile = file;
+    protected ExportableResource getResource(Path file, boolean isHost, TypeModel tm,
+        InstanceModel im) throws PortException {
+        Path typeFile = file;
+        Path instanceFile = file;
         if (isHost) {
             //Request ecore type model file to specify schemaLocation
             //This is optional and may be commented out, but leave typeFile to null when doing so
             int approve = getTypeModelChooser().showDialog(null, "Pick Ecore model");
             if (approve == JFileChooser.APPROVE_OPTION) {
-                typeFile = getTypeModelChooser().getSelectedFile();
+                typeFile = getTypeModelChooser().getSelectedFile().toPath();
             } else {
                 typeFile = null;
             }

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -41,13 +41,14 @@ import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.file.Path;
 
 import org.kohsuke.args4j.Argument;
 
 /**
  * Counterpart of {@link Generator} for pattern graph state space exploration.
  * See also {@link ShapeGenerator}.
- * 
+ *
  * @author Eduardo Zambon
  */
 public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
@@ -98,8 +99,7 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
             PrintStream out = System.out;
             out.println("Grammar:\t" + getGrammarLocation());
             out.println("Start graph:\t"
-                + (this.startGraphName == null ? "default"
-                        : this.startGraphName));
+                + (this.startGraphName == null ? "default" : this.startGraphName));
             out.println("Type graph:\t" + this.typeGraphName);
             pgts.addLTSListener(new GenerateProgressMonitor());
         }
@@ -141,7 +141,7 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
         Grammar sGrammar = model.toGrammar();
         sGrammar.setFixed();
         String typeGraphName = FileType.STATE.addExtension(getTypeGraphName());
-        File typeGraphFile = new File(getGrammarLocation(), typeGraphName);
+        Path typeGraphFile = getGrammarLocation().resolve(typeGraphName);
         TypeGraph type = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
         return new PatternGraphGrammar(sGrammar, type);
     }
@@ -157,8 +157,8 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
     }
 
     /** Returns the grammar location. */
-    private File getGrammarLocation() {
-        return this.grammarLocation;
+    private Path getGrammarLocation() {
+        return this.grammarLocation.toPath();
     }
 
     /** Returns the start graph name, relative to the grammar location. */
@@ -174,16 +174,16 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
     /** The graph grammar used for the generation. */
     private PatternGraphGrammar grammar;
 
-    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
-            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
+        handler = GrammarHandler.class)
     private File grammarLocation;
 
     @Argument(index = 1, metaVar = "start", required = true,
-            usage = "Start graph name (defined in grammar, no extension)")
+        usage = "Start graph name (defined in grammar, no extension)")
     private String startGraphName;
 
     @Argument(index = 2, metaVar = "type", required = true,
-            usage = "Type graph name (defined in grammar, no extension)")
+        usage = "Type graph name (defined in grammar, no extension)")
     private String typeGraphName;
 
     // ------------------------------------------------------------------------
@@ -231,11 +231,11 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
 
     /**
      * Class that implements a visualisation of the progress of a GTS generation
-     * process. 
+     * process.
      * See {@link GenerateProgressMonitor}
      */
-    private class GenerateProgressMonitor extends
-            groove.explore.util.GenerateProgressMonitor implements PGTSListener {
+    private class GenerateProgressMonitor extends groove.explore.util.GenerateProgressMonitor
+        implements PGTSListener {
         @Override
         public void addUpdate(PGTS gts, PatternState state) {
             addState(gts.nodeCount(), gts.edgeCount(), gts.openStateCount());
@@ -243,8 +243,7 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
 
         @Override
         public void addUpdate(PGTS gts, PatternTransition transition) {
-            addTransition(gts.nodeCount(), gts.edgeCount(),
-                gts.openStateCount());
+            addTransition(gts.nodeCount(), gts.edgeCount(), gts.openStateCount());
         }
     }
 }

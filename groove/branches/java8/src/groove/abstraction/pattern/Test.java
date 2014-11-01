@@ -31,7 +31,8 @@ import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.GrammarModel;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -39,18 +40,18 @@ import java.util.List;
  */
 public class Test {
 
-    private static final String PATH = "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
+    private static final Path PATH = Paths.get("junit/pattern/");
 
     // private static final String GRAMMAR = PATH + "pattern-list.gps/";
     // private static final String GRAMMAR = PATH + "circ-list-4.gps/";
     // private static final String GRAMMAR = PATH + "trains.gps/";
     // private static final String GRAMMAR = PATH + "equiv.gps/";
     // private static final String GRAMMAR = PATH + "match-test.gps/";
-    private static final String GRAMMAR = PATH + "mat-test.gps/";
+    private static final Path GRAMMAR = PATH.resolve("mat-test.gps/");
 
     private static final int nr = 2;
 
-    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph-" + nr + ".gst";
+    private static final Path TYPE_GRAPH = GRAMMAR.resolve("ptgraph-" + nr + ".gst");
 
     private static final String RULE = "rule-" + nr;
 
@@ -62,10 +63,10 @@ public class Test {
         Rule sRule = null;
         HostGraph sGraph = null;
         try {
-            GrammarModel view = GrammarModel.newInstance(new File(GRAMMAR), false);
+            GrammarModel view = GrammarModel.newInstance(GRAMMAR, false);
             sRule = view.getRuleModel(RULE).toResource();
             sGraph = view.getHostModel(HOST).toResource();
-            pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
+            pTGraph = TypeGraphFactory.unmarshalTypeGraph(TYPE_GRAPH);
             PatternAbstraction.initialise();
             PatternAbsParam.getInstance().setNodeMultBound(1);
             PatternAbsParam.getInstance().setEdgeMultBound(1);

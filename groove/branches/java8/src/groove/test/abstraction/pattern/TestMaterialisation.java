@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -35,8 +35,9 @@ import groove.grammar.model.GrammarModel;
 import groove.io.graph.GxlIO;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
@@ -52,7 +53,7 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestMaterialisation {
 
-    private static final String DIRECTORY = "junit/pattern/mat-test.gps/";
+    private static final Path DIRECTORY = Paths.get("junit/pattern/mat-test.gps/");
     private static GrammarModel view;
     private static TypeGraph pTGraph;
     private static PatternShape pShape;
@@ -61,9 +62,8 @@ public class TestMaterialisation {
     @BeforeClass
     public static void setUp() {
         PatternAbstraction.initialise();
-        File file = new File(DIRECTORY);
         try {
-            view = GrammarModel.newInstance(file, false);
+            view = GrammarModel.newInstance(DIRECTORY, false);
         } catch (IOException e) {
             Assert.fail(e.toString());
         }
@@ -122,7 +122,7 @@ public class TestMaterialisation {
     }*/
 
     private void loadTest(int testNumber, boolean hostIsShape) {
-        final String TYPE_GRAPH = DIRECTORY + "ptgraph-" + testNumber + ".gst";
+        final Path TYPE_GRAPH = DIRECTORY.resolve("ptgraph-" + testNumber + ".gst");
         final String HOST = "host-" + testNumber + (hostIsShape ? ".gxl" : "");
         final String RULE = "rule-" + testNumber;
 
@@ -133,7 +133,7 @@ public class TestMaterialisation {
                 sHost = view.getHostModel(HOST).toResource();
             }
             sRule = view.getRuleModel(RULE).toResource();
-            pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
+            pTGraph = TypeGraphFactory.unmarshalTypeGraph(TYPE_GRAPH);
         } catch (IOException e) {
             Assert.fail(e.toString());
         } catch (FormatException e) {
@@ -146,7 +146,7 @@ public class TestMaterialisation {
             PatternGraph pHost = pTGraph.lift(sHost);
             pShape = new PatternShape(pHost).normalise();
         } else {
-            File file = new File(DIRECTORY + HOST);
+            Path file = DIRECTORY.resolve(HOST);
             try {
                 pShape = GxlIO.instance().loadGraph(file).toPattern(pTGraph);
             } catch (IOException e) {

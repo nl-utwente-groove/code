@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -39,12 +39,14 @@ import groove.io.graph.GxlIO;
 import groove.transform.Proof;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,7 +56,7 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestMaterialisation {
 
-    static private final String DIRECTORY = "junit/abstraction/basic-tests.gps/";
+    static private final Path DIRECTORY = Paths.get("junit/abstraction/basic-tests.gps/");
     static private GrammarModel view;
     static private Grammar grammar;
     static private GxlIO marshaller;
@@ -62,9 +64,8 @@ public class TestMaterialisation {
     @BeforeClass
     public static void setUp() {
         NeighAbstraction.initialise();
-        File file = new File(DIRECTORY);
         try {
-            view = GrammarModel.newInstance(file, false);
+            view = GrammarModel.newInstance(DIRECTORY, false);
             grammar = view.toGrammar();
             marshaller = GxlIO.instance();
         } catch (IOException e) {
@@ -72,6 +73,11 @@ public class TestMaterialisation {
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
+    }
+
+    @Before
+    public void setUpBefore() {
+        NeighAbsParam.reset();
     }
 
     @Test
@@ -623,7 +629,7 @@ public class TestMaterialisation {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(2);
 
-        File file = new File(DIRECTORY + "materialisation-test-13.gxl");
+        Path file = DIRECTORY.resolve("materialisation-test-13.gxl");
         Shape shape = loadShape(file);
         Rule rule = grammar.getRule("test-mat-13");
 
@@ -640,7 +646,7 @@ public class TestMaterialisation {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(2);
 
-        File file = new File(DIRECTORY + "materialisation-test-14.gxl");
+        Path file = DIRECTORY.resolve("materialisation-test-14.gxl");
         Shape shape = loadShape(file);
         Rule rule = grammar.getRule("test-mat-14");
 
@@ -685,7 +691,7 @@ public class TestMaterialisation {
         }
     }
 
-    private Shape loadShape(File file) {
+    private Shape loadShape(Path file) {
         try {
             return marshaller.loadGraph(file).toShape(view.getTypeGraph());
         } catch (IOException e) {

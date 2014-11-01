@@ -7,8 +7,8 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.graph.GxlIO;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Action to save the currently selected state.
@@ -16,7 +16,7 @@ import java.io.IOException;
  * @version $Revision $
  */
 public final class SaveStateAction extends SimulatorAction {
-    /** 
+    /**
      * Creates an instance of the action for a given simulator.
      * @param simulator the editor whose content should be saved
      * @param saveAs flag indicating that the action attempts to save to
@@ -24,7 +24,7 @@ public final class SaveStateAction extends SimulatorAction {
      */
     public SaveStateAction(Simulator simulator, boolean saveAs) {
         super(simulator, Options.getSaveStateActionName(saveAs), saveAs ? Icons.SAVE_AS_ICON
-                : Icons.SAVE_ICON, null, ResourceKind.HOST);
+            : Icons.SAVE_ICON, null, ResourceKind.HOST);
         if (!saveAs) {
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
@@ -59,12 +59,12 @@ public final class SaveStateAction extends SimulatorAction {
         return result;
     }
 
-    /** Attempts to write the graph to an external file. 
+    /** Attempts to write the graph to an external file.
      * @return {@code true} if the graph was saved within the grammar
      */
     public boolean doSaveAs(AspectGraph graph) {
         boolean result = false;
-        File selectedFile = askSaveResource(graph.getName());
+        Path selectedFile = askSaveResource(graph.getName());
         // now save, if so required
         if (selectedFile != null) {
             try {
@@ -72,7 +72,8 @@ public final class SaveStateAction extends SimulatorAction {
                 if (nameInGrammar == null) {
                     // save in external file
                     String newName =
-                        getResourceKind().getFileType().stripExtension(selectedFile.getName());
+                        getResourceKind().getFileType().stripExtension(selectedFile.getFileName()
+                            .toString());
                     GxlIO.instance().saveGraph(graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar

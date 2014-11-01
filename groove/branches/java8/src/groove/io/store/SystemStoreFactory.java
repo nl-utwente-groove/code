@@ -1,24 +1,25 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.io.store;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Factory to create a rule system store from URL or file.
@@ -36,8 +37,7 @@ public final class SystemStoreFactory {
      * @return a store created from <code>file</code>; non-null
      * @throws IOException if a store cannot be created from <code>file</code>
      */
-    static public SystemStore newStore(File file, boolean create)
-        throws IOException {
+    static public SystemStore newStore(Path file, boolean create) throws IOException {
         SystemStore store = null;
         try {
             store = new DefaultFileSystemStore(file, create);
@@ -86,7 +86,7 @@ public final class SystemStoreFactory {
         try {
             return newStore(new URL(location));
         } catch (IOException exc) {
-            return newStore(new File(location), false);
+            return newStore(Paths.get(location), false);
         }
     }
 }

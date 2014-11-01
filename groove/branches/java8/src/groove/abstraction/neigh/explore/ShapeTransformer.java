@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -29,8 +29,8 @@ import groove.lts.GTS;
 import groove.transform.Transformer;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Transformer that generates an {@link AGTS} rather than a {@link GTS}.
@@ -43,8 +43,7 @@ public class ShapeTransformer extends Transformer {
      * location.
      * A second parameter determines whether only a reachability check is performed.
      */
-    public ShapeTransformer(File grammarLocation, boolean reachability)
-        throws IOException {
+    public ShapeTransformer(Path grammarLocation, boolean reachability) throws IOException {
         super(grammarLocation);
         this.reachability = reachability;
     }
@@ -65,8 +64,7 @@ public class ShapeTransformer extends Transformer {
     }
 
     /** Tests whether a given graph grammar is suitable for shape generation. */
-    private void checkGrammarForAbstraction(Grammar grammar)
-        throws FormatException {
+    private void checkGrammarForAbstraction(Grammar grammar) throws FormatException {
         if (!grammar.getProperties().isInjective()) {
             throw new FormatException(
                 "Grammar %s is not injective! Abstraction can only work with injective rules...",
@@ -81,8 +79,7 @@ public class ShapeTransformer extends Transformer {
         }
         for (Rule rule : grammar.getAllRules()) {
             for (RuleNode node : rule.lhs().nodeSet()) {
-                if (node instanceof OperatorNode
-                    || node instanceof VariableNode) {
+                if (node instanceof OperatorNode || node instanceof VariableNode) {
                     throw new FormatException(
                         "Grammar rule %s operates on attributes! Abstraction cannot handle attributes...",
                         rule.getFullName());

@@ -25,8 +25,8 @@ import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.util.parse.FormatException;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -343,7 +343,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the create action failed
      */
-    public boolean doNewGrammar(File grammarFile) throws IOException {
+    public boolean doNewGrammar(Path grammarFile) throws IOException {
         GrammarModel grammar = GrammarModel.newInstance(grammarFile, true);
         setGrammar(grammar);
         return true;
@@ -652,8 +652,8 @@ public class SimulatorModel implements Cloneable {
             }
         }
         if (matchChanged) {
-            changeSelected(ResourceKind.RULE, match == null ? null
-                : match.getAction().getFullName());
+            changeSelected(ResourceKind.RULE, match == null ? null : match.getAction()
+                .getFullName());
         }
         return finish();
     }

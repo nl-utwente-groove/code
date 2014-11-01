@@ -34,6 +34,9 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -87,11 +90,11 @@ public class Groove {
      */
     static public PlainGraph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
-        File file = new File(filename);
-        if (GXL.hasExtension(file) || STATE.hasExtension(file)) {
-            file = new File(GXL.addExtension(filename));
-            if (!file.exists()) {
-                file = new File(STATE.addExtension(filename));
+        Path file = Paths.get(filename);
+        if (!GXL.hasExtension(file) && !STATE.hasExtension(file)) {
+            file = GXL.addExtension(file);
+            if (Files.notExists(file)) {
+                file = STATE.addExtension(file);
             }
         }
         return loadGraph(file);
@@ -105,6 +108,17 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public PlainGraph loadGraph(File file) throws IOException {
+        return loadGraph(file.toPath());
+    }
+
+    /**
+     * Attempts to load in a graph from a file.
+     * @param file file to load the graph from
+     * @return the graph contained in <code>file</code>, or <code>null</code> if
+     *         the file does not exist
+     * @throws IOException if <code>file</code> cannot be parsed as a graph
+     */
+    static public PlainGraph loadGraph(Path file) throws IOException {
         return GxlIO.instance().loadGraph(file).toPlainGraph();
     }
 
@@ -115,11 +129,11 @@ public class Groove {
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
      */
-    static public File saveGraph(Graph graph, String filename) throws IOException {
+    static public Path saveGraph(Graph graph, String filename) throws IOException {
         if (!STATE.hasExtension(filename)) {
             filename = GXL.addExtension(filename);
         }
-        File file = new File(filename);
+        Path file = Paths.get(filename);
         saveGraph(graph, file);
         return file;
     }
@@ -130,8 +144,18 @@ public class Groove {
      * @param file the intended file
      * @throws IOException if saving ran into problems
      */
-    static public void saveGraph(Graph graph, File file) throws IOException {
+    static public void saveGraph(Graph graph, Path file) throws IOException {
         GxlIO.instance().saveGraph(graph, file);
+    }
+
+    /**
+     * Attempts to save a graph to a given file.
+     * @param graph the graph to be saved
+     * @param file the intended file
+     * @throws IOException if saving ran into problems
+     */
+    static public void saveGraph(Graph graph, File file) throws IOException {
+        saveGraph(graph, file.toPath());
     }
 
     /**
@@ -154,8 +178,20 @@ public class Groove {
      *         formatted
      */
     static public GrammarModel loadGrammar(String dirname) throws IOException {
-        File dir = new File(GRAMMAR.addExtension(dirname));
+        Path dir = Paths.get(GRAMMAR.addExtension(dirname));
         return GrammarModel.newInstance(dir);
+    }
+
+    /**
+     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
+     * and returns it. Adds the <tt>.gps</tt> extension if the file has no
+     * extension.
+     * @param dir the directory to load the graph grammar from
+     * @throws IOException if <code>dir</code> does not exist or is wrongly
+     *         formatted
+     */
+    static public GrammarModel loadGrammar(Path dir) throws IOException {
+        return GrammarModel.newInstance(GRAMMAR.addExtension(dir));
     }
 
     /**
@@ -343,8 +379,8 @@ public class Groove {
         try {
             url = file.toURI().toURL();
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' cannot be converted to URL", file));
+            throw new IllegalArgumentException(
+                String.format("File '%s' cannot be converted to URL", file));
         }
         return url;
     }
@@ -434,16 +470,19 @@ public class Groove {
     // Platform dependent information.
 
     /** Detect if we are on Windows.  */
-    public static final boolean IS_PLATFORM_WINDOWS =
-        System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+    public static final boolean IS_PLATFORM_WINDOWS = System.getProperty("os.name")
+        .toLowerCase()
+        .indexOf("windows") > -1;
 
     /** Detect if we are on Mac.  */
-    public static final boolean IS_PLATFORM_MAC =
-        System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
+    public static final boolean IS_PLATFORM_MAC = System.getProperty("os.name")
+        .toLowerCase()
+        .indexOf("mac os x") > -1;
 
     /** Detect if we are on Linux.  */
-    public static final boolean IS_PLATFORM_LINUX =
-        System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
+    public static final boolean IS_PLATFORM_LINUX = System.getProperty("os.name")
+        .toLowerCase()
+        .indexOf("linux") > -1;
 
     static {
         /** Make sure default action names are all in English. */

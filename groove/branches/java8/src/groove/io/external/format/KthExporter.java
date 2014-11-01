@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -23,17 +23,16 @@ import groove.io.external.Exportable;
 import groove.io.external.PortException;
 import groove.io.external.util.GraphToKth;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-/** 
+/**
  * Class that implements saving graphs in the KTH file format,
- * used by Marieke et al. 
+ * used by Marieke et al.
  * Loading in this format is unsupported.
- * 
- * @author Eduardo Zambon 
+ *
+ * @author Eduardo Zambon
  */
 public final class KthExporter extends AbstractExporter {
     private KthExporter() {
@@ -42,13 +41,10 @@ public final class KthExporter extends AbstractExporter {
     }
 
     @Override
-    public void doExport(Exportable exportable, File file, FileType fileType)
-        throws PortException {
+    public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
         AspectGraph graph = (AspectGraph) exportable.getGraph();
         try {
-            PrintWriter writer = new PrintWriter(new FileWriter(file));
-            GraphToKth.export(graph, writer);
-            writer.close();
+            Files.write(file, GraphToKth.convertGraph(graph));
         } catch (IOException e) {
             throw new PortException(e);
         }

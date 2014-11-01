@@ -71,7 +71,7 @@ public class LoadGrammarAction extends SimulatorAction {
     public boolean load(File grammarFile) throws IOException {
         boolean result = false;
         // Load the grammar.
-        final SystemStore store = SystemStoreFactory.newStore(grammarFile, false);
+        final SystemStore store = SystemStoreFactory.newStore(grammarFile.toPath(), false);
         result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files
@@ -152,13 +152,13 @@ public class LoadGrammarAction extends SimulatorAction {
         getSimulatorModel().setGrammar(grammar);
         grammar.getProperties().setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {
-            getActions().getSaveGrammarAction().save(newGrammarFile,
+            getActions().getSaveGrammarAction().save(newGrammarFile.toPath(),
                 !newGrammarFile.equals(store.getLocation()));
         }
         return true;
     }
 
-    /** 
+    /**
      * Helper method for doLoadGrammar. Asks the user to select a new name for
      * saving the grammar after it has been loaded (and converted).
      */
@@ -281,7 +281,12 @@ public class LoadGrammarAction extends SimulatorAction {
         return JOptionPane.showOptionDialog(getFrame(),
             "Warning: the grammar contains resources with "
                 + "invalid (since grammar version 3.1) names.\n"
-                + "These will be renamed automatically.", "Warning: invalid identifiers",
-            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, "Continue") == JOptionPane.OK_OPTION;
+                + "These will be renamed automatically.",
+            "Warning: invalid identifiers",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE,
+            null,
+            options,
+            "Continue") == JOptionPane.OK_OPTION;
     }
 }
