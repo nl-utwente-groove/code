@@ -38,15 +38,10 @@ public class UnmodifiableSetView<T> extends SetView<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return new FilterIterator<T>(this.set.iterator()) {
+        return new FilterIterator<T>(this.set.iterator(), getApproval()) {
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();
-            }
-
-            @Override
-            protected boolean approves(Object obj) {
-                return getApproval().test(obj);
             }
         };
     }

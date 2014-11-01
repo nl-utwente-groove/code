@@ -20,6 +20,7 @@ import groove.util.Groove;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 /**
  * Iterator constructed by filtering elements from some existing iterator. The
@@ -27,13 +28,14 @@ import java.util.NoSuchElementException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class FilterIterator<T> implements Iterator<T> {
+public class FilterIterator<T> implements Iterator<T> {
     /**
      * Constructs a filter iterator filtering a given (inner) iterator.
      * @param inner the iterator to be used as inner iterator
      */
-    public FilterIterator(Iterator<?> inner) {
+    public FilterIterator(Iterator<?> inner, Predicate<Object> approval) {
         this.inner = inner;
+        this.approval = approval;
     }
 
     @Override
@@ -111,7 +113,16 @@ public abstract class FilterIterator<T> implements Iterator<T> {
      * @return <tt>true</tt> if <tt>obj</tt> should be passed on to
      *         {@link #next()}
      */
-    abstract protected boolean approves(Object obj);
+    final public boolean approves(Object obj) {
+        return getApproval().test(obj);
+    }
+
+    /** Returns the approval predicate of this set view. */
+    protected Predicate<Object> getApproval() {
+        return this.approval;
+    }
+
+    private final Predicate<Object> approval;
 
     /**
      * The inner iterator, that we are filtering.

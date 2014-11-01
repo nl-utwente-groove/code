@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -46,7 +46,7 @@ public class RuleEffect extends DefaultFixable {
         this(host, Fragment.ALL);
     }
 
-    /** 
+    /**
      * Creates a partial record with respect to a given source graph.
      */
     public RuleEffect(HostGraph host, Fragment fragment) {
@@ -56,7 +56,7 @@ public class RuleEffect extends DefaultFixable {
         this.nodesPredefined = false;
     }
 
-    /** 
+    /**
      * Creates a full record based on a predefined set of created nodes.
      * @param source host graph to which this effect refers.
      */
@@ -64,12 +64,11 @@ public class RuleEffect extends DefaultFixable {
         this(source, createdNodes, Fragment.ALL);
     }
 
-    /** 
+    /**
      * Creates a partial record based on a predefined set of created nodes.
      * @param source host graph to which this effect refers.
      */
-    public RuleEffect(HostGraph source, HostNode[] createdNodes,
-            Fragment fragment) {
+    public RuleEffect(HostGraph source, HostNode[] createdNodes, Fragment fragment) {
         this.source = source;
         this.fragment = fragment;
         this.nodesPredefined = true;
@@ -91,11 +90,11 @@ public class RuleEffect extends DefaultFixable {
     /** The part of the record that is generated. */
     private final Fragment fragment;
 
-    /** 
+    /**
      * Indicates that the created nodes have been predefined.
      * This implies that {@link #addCreatorNodes(RuleNode[])} rather than
-     * {@link #addCreatedNodes(RuleNode[], HostNode[])} should be used to 
-     * complete the record. 
+     * {@link #addCreatedNodes(RuleNode[], HostNode[])} should be used to
+     * complete the record.
      */
     final boolean isNodesPredefined() {
         return this.nodesPredefined;
@@ -113,7 +112,7 @@ public class RuleEffect extends DefaultFixable {
         return this.createdNodeMap;
     }
 
-    /** 
+    /**
      * Adds information about the node creators.
      * This method should be used (in preference to {@link #addCreatedNodes(RuleNode[], HostNode[])})
      * if the created nodes have been pre-initialised.
@@ -127,19 +126,17 @@ public class RuleEffect extends DefaultFixable {
         List<HostNode> createdNodes = this.createdNodeList;
         Map<RuleNode,HostNode> createdNodeMap = this.createdNodeMap;
         if (createdNodeMap == null) {
-            this.createdNodeMap =
-                createdNodeMap = new HashMap<RuleNode,HostNode>();
+            this.createdNodeMap = createdNodeMap = new HashMap<RuleNode,HostNode>();
         }
         int createdNodeStart = this.createdNodeIndex;
         int creatorCount = creatorNodes.length;
         for (int i = 0; i < creatorCount; i++) {
-            createdNodeMap.put(creatorNodes[i],
-                createdNodes.get(createdNodeStart + i));
+            createdNodeMap.put(creatorNodes[i], createdNodes.get(createdNodeStart + i));
         }
         this.createdNodeIndex = createdNodeStart + creatorCount;
     }
 
-    /** 
+    /**
      * Adds information about created nodes to that already stored in the record.
      * Should only be used if {@link #isNodesPredefined()} is {@code false}.
      * @param creatorNodes node creators
@@ -152,8 +149,7 @@ public class RuleEffect extends DefaultFixable {
         if (createdNodeCount > 0) {
             Map<RuleNode,HostNode> oldCreatedNodeMap = this.createdNodeMap;
             if (oldCreatedNodeMap == null) {
-                this.createdNodeMap =
-                    oldCreatedNodeMap = new HashMap<RuleNode,HostNode>();
+                this.createdNodeMap = oldCreatedNodeMap = new HashMap<RuleNode,HostNode>();
             }
             List<HostNode> oldCreatedNodes = this.createdNodeList;
             for (int i = 0; i < createdNodeCount; i++) {
@@ -166,14 +162,14 @@ public class RuleEffect extends DefaultFixable {
 
     /** Mapping from rule node creators to the corresponding created nodes. */
     private Map<RuleNode,HostNode> createdNodeMap;
-    /** 
+    /**
      * List of created nodes, either predefined or built up during construction
      */
     private final List<HostNode> createdNodeList;
     /** Index of the first unused element in {@link #createdNodeList}. */
     private int createdNodeIndex;
 
-    /** 
+    /**
      * Adds a collection of erased nodes to those already stored in this record.
      */
     void addErasedNodes(HostNodeSet erasedNodes) {
@@ -189,8 +185,7 @@ public class RuleEffect extends DefaultFixable {
                 } else {
                     if (this.erasedNodesAliased) {
                         newErasedNodes =
-                            new HostNodeSet(
-                                (oldErasedNodes.size() + erasedNodes.size()) * 2);
+                            new HostNodeSet((oldErasedNodes.size() + erasedNodes.size()) * 2);
                         newErasedNodes.addAll(oldErasedNodes);
                         this.erasedNodesAliased = false;
                     } else {
@@ -214,7 +209,7 @@ public class RuleEffect extends DefaultFixable {
     /** Flag indicating if {@link #erasedNodes} is currently an alias. */
     private boolean erasedNodesAliased;
 
-    /** 
+    /**
      * Adds a collection of erased edges to those already stored in this record.
      */
     void addErasedEdges(HostEdgeSet erasedEdges) {
@@ -228,9 +223,7 @@ public class RuleEffect extends DefaultFixable {
             this.erasedEdgesAliased = true;
         } else {
             if (this.erasedEdgesAliased) {
-                newErasedEdges =
-                    new HostEdgeSet(
-                        (oldErasedEdges.size() + erasedEdges.size()) * 2);
+                newErasedEdges = new HostEdgeSet((oldErasedEdges.size() + erasedEdges.size()) * 2);
                 newErasedEdges.addAll(oldErasedEdges);
                 this.erasedEdgesAliased = false;
             } else {
@@ -246,7 +239,7 @@ public class RuleEffect extends DefaultFixable {
     /** Flag indicating if {@link #erasedEdges} is currently an alias. */
     private boolean erasedEdgesAliased;
 
-    /** 
+    /**
      * Adds a collection of created edges to those already stored in this record.
      */
     void addCreatedEdges(HostEdgeSet createdEdges) {
@@ -261,8 +254,7 @@ public class RuleEffect extends DefaultFixable {
         } else {
             if (this.createdEdgesAliased) {
                 newCreatedEdges =
-                    new HostEdgeSet(
-                        (oldCreatedEdges.size() + createdEdges.size()) * 2);
+                    new HostEdgeSet((oldCreatedEdges.size() + createdEdges.size()) * 2);
                 newCreatedEdges.addAll(oldCreatedEdges);
                 this.createdEdgesAliased = false;
             } else {
@@ -299,7 +291,7 @@ public class RuleEffect extends DefaultFixable {
     /** Flag indicating if {@link #createdEdges} is currently an alias. */
     private boolean createdEdgesAliased;
 
-    /** 
+    /**
      * Adds a merge map to that already stored in this record.
      */
     void addMergeMap(MergeMap mergeMap) {
@@ -336,7 +328,7 @@ public class RuleEffect extends DefaultFixable {
     /** Flag indicating if {@link #mergeMap} is currently an alias. */
     private boolean mergeMapAliased;
 
-    /** 
+    /**
      * Returns the (possibly {@code null}) array of created nodes.
      * The elements of the array are given in the order of the rule creators.
      * Created nodes may be duplicated or {@code null} due to the
@@ -358,14 +350,14 @@ public class RuleEffect extends DefaultFixable {
     }
 
     /** Indicates if the set of removed nodes is non-empty.
-     * @see #getRemovedNodes() 
+     * @see #getRemovedNodes()
      */
     final public boolean hasRemovedNodes() {
         assert isFixed();
         return this.erasedNodes != null || hasMergeMap();
     }
 
-    /** 
+    /**
      * Returns the (possibly {@code null}) set of removed nodes.
      * This combines the explicitly erased nodes and the merged nodes.
      */
@@ -395,14 +387,14 @@ public class RuleEffect extends DefaultFixable {
     private Set<HostNode> removedNodes;
 
     /** Indicates if the set of removed edges is non-empty.
-     * @see #getRemovedEdges() 
+     * @see #getRemovedEdges()
      */
     final public boolean hasRemovedEdges() {
         assert isFixed();
         return this.erasedEdges != null || hasRemovedNodes();
     }
 
-    /** 
+    /**
      * Returns the (possibly {@code null}) set of removed edges.
      * This combines the explicitly erased edges and the incident edges
      * of the removed nodes (including the merged nodes).
@@ -438,7 +430,7 @@ public class RuleEffect extends DefaultFixable {
         return this.erasedEdges != null && this.erasedEdges.contains(edge);
     }
 
-    /** 
+    /**
      * Indicates if the set of added nodes is non-empty.
      * @see #getAddedNodes()
      */
@@ -447,7 +439,7 @@ public class RuleEffect extends DefaultFixable {
         return !this.createdNodeList.isEmpty();
     }
 
-    /** 
+    /**
      * Returns the (possibly {@code null}) iterator over the set of added nodes.
      * The nodes returned are guaranteed to be non-{@code null} and
      * without duplicates.
@@ -475,8 +467,8 @@ public class RuleEffect extends DefaultFixable {
 
     private HostNodeSet addedNodes;
 
-    /** 
-     * Indicates if there are any added edges, either through 
+    /**
+     * Indicates if there are any added edges, either through
      * explicit edge creation or through node merging.
      * Note that the {@link #getAddedEdges()} may nevertheless
      * return an empty set, if node deletion
@@ -488,7 +480,7 @@ public class RuleEffect extends DefaultFixable {
         return this.createdEdges != null || hasMergeMap();
     }
 
-    /** 
+    /**
      * Returns the (possibly {@code null}) set of created edges,
      * modified by the merge map (if any).
      * This includes the edges that are created due to merging.
@@ -511,8 +503,7 @@ public class RuleEffect extends DefaultFixable {
                         if (image == null) {
                             continue;
                         }
-                        if (!getSource().containsEdge(image)
-                            || isErasedEdge(edge)) {
+                        if (!getSource().containsEdge(image) || isErasedEdge(edge)) {
                             addedEdges.add(image);
                         }
                     }
@@ -545,16 +536,13 @@ public class RuleEffect extends DefaultFixable {
             result = new Iterable<HostEdge>() {
                 @Override
                 public Iterator<HostEdge> iterator() {
-                    return new FilterIterator<HostEdge>(
-                        RuleEffect.this.createdEdges.iterator()) {
-                        @Override
-                        protected boolean approves(Object obj) {
+                    return new FilterIterator<HostEdge>(RuleEffect.this.createdEdges.iterator(),
+                        obj -> {
                             if (!(obj instanceof HostEdge)) {
                                 return false;
                             }
                             HostEdge edge = (HostEdge) obj;
-                            if (getSource().containsEdge(edge)
-                                && !isErasedEdge(edge)) {
+                            if (getSource().containsEdge(edge) && !isErasedEdge(edge)) {
                                 return false;
                             }
                             if (removedNodes == null) {
@@ -562,8 +550,7 @@ public class RuleEffect extends DefaultFixable {
                             }
                             return !removedNodes.contains(edge.source())
                                 && !removedNodes.contains(edge.target());
-                        }
-                    };
+                        });
                 }
             };
         }
@@ -572,9 +559,9 @@ public class RuleEffect extends DefaultFixable {
 
     private HostEdgeSet addedEdges;
 
-    /** 
+    /**
      * Indicates if there are mergers.
-     * @see #getMergeMap() 
+     * @see #getMergeMap()
      */
     public final boolean hasMergeMap() {
         assert isFixed();

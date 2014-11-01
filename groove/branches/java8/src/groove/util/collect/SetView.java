@@ -68,7 +68,7 @@ public class SetView<T> extends AbstractSet<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return stream().filter(getApproval()).iterator();
+        return new FilterIterator<T>(this.set.iterator(), getApproval());
     }
 
     /**
