@@ -2,6 +2,7 @@ package groove.gui.action;
 
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
 
@@ -35,21 +36,21 @@ public class CopyAction extends SimulatorAction {
         boolean result = false;
         ResourceKind resourceKind = getResourceKind();
         if (resourceKind.isTextBased()) {
-            String text = getGrammarStore().getTexts(resourceKind).get(oldName);
-            result =
-                getActions().getSaveAction(resourceKind).doSaveText(newName,
-                    text);
+            Text oldText = getGrammarStore().getTexts(resourceKind).get(oldName);
+            Text newText = oldText.rename(newName);
+            result = getActions().getSaveAction(resourceKind).doSaveText(newText);
         } else {
-            AspectGraph host =
-                getGrammarStore().getGraphs(resourceKind).get(oldName);
+            AspectGraph host = getGrammarStore().getGraphs(resourceKind).get(oldName);
             AspectGraph newHost = host.rename(newName);
             try {
                 getSimulatorModel().doAddGraph(resourceKind, newHost, false);
                 result = true;
             } catch (IOException exc) {
-                showErrorDialog(exc, String.format(
-                    "Error while copying %s '%s' to '%s'",
-                    resourceKind.getDescription(), oldName, newName));
+                showErrorDialog(exc,
+                    String.format("Error while copying %s '%s' to '%s'",
+                        resourceKind.getDescription(),
+                        oldName,
+                        newName));
             }
         }
         return result;

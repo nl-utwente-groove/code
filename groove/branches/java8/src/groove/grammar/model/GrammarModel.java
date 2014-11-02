@@ -614,20 +614,20 @@ public class GrammarModel implements Observer {
             }
         } else {
             assert kind.isTextBased();
-            String text = getStore().getTexts(kind).get(name);
+            Text text = getStore().getTexts(kind).get(name);
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
-                    result = new ControlModel(this, name, text);
+                    result = new ControlModel(this, text);
                     break;
                 case PROLOG:
-                    result = new PrologModel(this, name, text);
+                    result = new PrologModel(this, text);
                     break;
                 case GROOVY:
-                    result = new GroovyModel(this, name, text);
+                    result = new GroovyModel(this, text);
                     break;
                 case CONFIG:
-                    result = new ConfigModel(this, name, text);
+                    result = new ConfigModel(this, text);
                     break;
                 default:
                     assert false;

@@ -23,7 +23,9 @@ import static groove.io.store.EditType.LAYOUT;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.grammar.type.TypeLabel;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
@@ -139,15 +141,14 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,String> getTexts(ResourceKind kind) {
+    public Map<String,Text> getTexts(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getTextMap(kind));
     }
 
     @Override
-    public Map<String,String> putTexts(ResourceKind kind, Map<String,String> texts)
-        throws IOException {
-        Map<String,String> result = null;
+    public Collection<Text> putTexts(ResourceKind kind, Collection<Text> texts) throws IOException {
+        Collection<Text> result = null;
         TextBasedEdit edit = doPutTexts(kind, texts);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -158,23 +159,22 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /**
-     * Implements the functionality of {@link #putTexts(ResourceKind, Map)}.
+     * Implements the functionality of {@link #putTexts(ResourceKind, Collection)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private TextBasedEdit doPutTexts(ResourceKind kind, Map<String,String> newTexts)
+    private TextBasedEdit doPutTexts(ResourceKind kind, Collection<Text> newTexts)
         throws IOException {
         testInit();
-        Map<String,String> oldTexts = new HashMap<String,String>();
+        List<Text> oldTexts = new ArrayList<>(newTexts.size());
         Set<String> newNames = new HashSet<String>();
-        for (Map.Entry<String,String> entry : newTexts.entrySet()) {
-            String name = entry.getKey();
-            String newText = entry.getValue();
-            saveText(kind, name, newText);
-            String oldText = getTextMap(kind).put(name, newText);
+        for (Text text : newTexts) {
+            String name = text.getName();
+            saveText(kind, name, text);
+            Text oldText = getTextMap(kind).put(name, text);
             if (oldText == null) {
                 newNames.add(name);
             } else {
-                oldTexts.put(name, oldText);
+                oldTexts.add(oldText);
             }
         }
         GrammarProperties oldProps = getProperties();
@@ -203,9 +203,9 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,String> deleteTexts(ResourceKind kind, Collection<String> names)
+    public Collection<Text> deleteTexts(ResourceKind kind, Collection<String> names)
         throws IOException {
-        Map<String,String> result = null;
+        Collection<Text> result = null;
         TextBasedEdit deleteEdit = doDeleteTexts(kind, names);
         if (deleteEdit != null) {
             deleteEdit.checkAndSetVersion();
@@ -222,14 +222,14 @@ public class DefaultFileSystemStore extends SystemStore {
     private TextBasedEdit doDeleteTexts(ResourceKind kind, Collection<String> names)
         throws IOException {
         testInit();
-        Map<String,String> oldTexts = new HashMap<String,String>();
+        List<Text> oldTexts = new ArrayList<>(names.size());
         boolean activeChanged = false;
         Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
         for (String name : names) {
             assert name != null;
-            String text = getTextMap(kind).remove(name);
+            Text text = getTextMap(kind).remove(name);
             if (text != null) {
-                oldTexts.put(name, text);
+                oldTexts.add(text);
                 Files.deleteIfExists(createFile(kind, name));
                 activeChanged |= activeNames.remove(name);
             }
@@ -243,8 +243,8 @@ public class DefaultFileSystemStore extends SystemStore {
             newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
-        return new TextBasedEdit(kind, EditType.DELETE, oldTexts,
-            Collections.<String,String>emptyMap(), oldProps, newProps);
+        return new TextBasedEdit(kind, EditType.DELETE, oldTexts, Collections.emptyList(),
+            oldProps, newProps);
     }
 
     @Override
@@ -267,15 +267,12 @@ public class DefaultFileSystemStore extends SystemStore {
     private TextBasedEdit doRenameText(ResourceKind kind, String oldName, String newName)
         throws IOException {
         testInit();
-        Map<String,String> oldTexts = new HashMap<String,String>();
-        Map<String,String> newTexts = new HashMap<String,String>();
-        String text = getTextMap(kind).remove(oldName);
+        Text text = getTextMap(kind).remove(oldName);
         assert text != null;
-        oldTexts.put(oldName, text);
+        Text newText = text.rename(newName);
         Files.move(createFile(kind, oldName), createFile(kind, newName));
-        String previous = getTextMap(kind).put(newName, text);
+        Text previous = getTextMap(kind).put(newName, text);
         assert previous == null;
-        newTexts.put(newName, text);
         // check if this affects the system properties
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
@@ -287,7 +284,8 @@ public class DefaultFileSystemStore extends SystemStore {
             newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
-        return new TextBasedEdit(kind, EditType.RENAME, oldTexts, newTexts, oldProps, newProps);
+        return new TextBasedEdit(kind, EditType.RENAME, Collections.singleton(text),
+            Collections.singleton(newText), oldProps, newProps);
     }
 
     /**
@@ -357,7 +355,7 @@ public class DefaultFileSystemStore extends SystemStore {
     @Override
     public Collection<AspectGraph> putGraphs(ResourceKind kind, Collection<AspectGraph> graphs,
         boolean layout) throws IOException {
-        Collection<AspectGraph> result = Collections.emptySet();
+        Collection<AspectGraph> result = Collections.emptyList();
         GraphBasedEdit edit = doPutGraphs(kind, graphs, layout);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -379,7 +377,7 @@ public class DefaultFileSystemStore extends SystemStore {
         Set<String> newNames = new HashSet<String>();
         // if we're relabelling, it may be that there are already graphs
         // under the names of the new ones
-        Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
+        List<AspectGraph> oldGraphs = new ArrayList<>(newGraphs.size());
         for (AspectGraph newGraph : newGraphs) {
             String name = newGraph.getName();
             this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, name));
@@ -659,16 +657,12 @@ public class DefaultFileSystemStore extends SystemStore {
             throw new IOException(e.getMessage(), e);
         }
         for (Entry<QualName,Path> fileEntry : files.entrySet()) {
+            String name = fileEntry.getKey().toString();
             // read the file in as a single string
-            List<String> program = Files.readAllLines(fileEntry.getValue());
-            StringBuilder builder = new StringBuilder();
-            for (String line : program) {
-                builder.append(line);
-                builder.append("\n");
-            }
-            String programString = builder.toString();
+            List<String> lines = Files.readAllLines(fileEntry.getValue());
+            Text program = new Text(name, lines);
             // insert the string into the resource map
-            getTextMap(kind).put(fileEntry.getKey().toString(), programString);
+            getTextMap(kind).put(fileEntry.getKey().toString(), program);
         }
     }
 
@@ -755,9 +749,9 @@ public class DefaultFileSystemStore extends SystemStore {
         return this.file.resolve(PROPERTIES.getFileType().addExtension(this.name));
     }
 
-    private void saveText(ResourceKind kind, String name, String program) throws IOException {
+    private void saveText(ResourceKind kind, String name, Text program) throws IOException {
         Path file = createFile(kind, name);
-        Files.write(file, Collections.singletonList(program));
+        Files.write(file, program.getLines());
     }
 
     private void saveProperties() throws IOException {
@@ -913,9 +907,9 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** Returns a fresh set consisting of the names of a given set of graphs. */
-        final protected Set<String> getNames(Collection<AspectGraph> graphs) {
+        final protected Set<String> getNames(Collection<? extends Resource> graphs) {
             Set<String> result = new HashSet<String>();
-            for (AspectGraph graph : graphs) {
+            for (Resource graph : graphs) {
                 result.add(graph.getName());
             }
             return result;
@@ -987,8 +981,8 @@ public class DefaultFileSystemStore extends SystemStore {
 
     /** Edit consisting of additions and deletions of text-based resources. */
     private class TextBasedEdit extends MyEdit {
-        public TextBasedEdit(ResourceKind kind, EditType type, Map<String,String> oldTexts,
-            Map<String,String> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
+        public TextBasedEdit(ResourceKind kind, EditType type, Collection<Text> oldTexts,
+            Collection<Text> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
             super(type, kind);
             this.oldTexts = oldTexts;
             this.newTexts = newTexts;
@@ -1015,8 +1009,8 @@ public class DefaultFileSystemStore extends SystemStore {
         public void redo() throws CannotRedoException {
             super.redo();
             try {
-                Set<String> deleted = new HashSet<String>(this.oldTexts.keySet());
-                deleted.removeAll(this.newTexts.keySet());
+                Set<String> deleted = getNames(this.oldTexts);
+                deleted.removeAll(getNames(this.newTexts));
                 doDeleteTexts(getResourceKind(), deleted);
                 if (this.newProps != null) {
                     doPutProperties(this.newProps);
@@ -1032,8 +1026,8 @@ public class DefaultFileSystemStore extends SystemStore {
         public void undo() throws CannotUndoException {
             super.undo();
             try {
-                Set<String> deleted = new HashSet<String>(this.newTexts.keySet());
-                deleted.removeAll(this.oldTexts.keySet());
+                Set<String> deleted = getNames(this.newTexts);
+                deleted.removeAll(getNames(this.oldTexts));
                 doDeleteTexts(getResourceKind(), deleted);
                 if (this.oldProps != null) {
                     doPutProperties(this.oldProps);
@@ -1046,14 +1040,14 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** Returns the deleted texts. */
-        public final Map<String,String> getOldTexts() {
+        public final Collection<Text> getOldTexts() {
             return this.oldTexts;
         }
 
         /** The deleted texts, if any. */
-        private final Map<String,String> oldTexts;
+        private final Collection<Text> oldTexts;
         /** The added texts. */
-        private final Map<String,String> newTexts;
+        private final Collection<Text> newTexts;
         /** The old system properties; possibly {@code null}. */
         private final GrammarProperties oldProps;
         /** The new system properties; possibly {@code null}. */

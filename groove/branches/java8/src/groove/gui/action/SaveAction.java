@@ -2,6 +2,7 @@ package groove.gui.action;
 
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -14,7 +15,6 @@ import groove.io.graph.GxlIO;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 
 /**
  * Action to save the resource in an editor panel.
@@ -61,13 +61,13 @@ public final class SaveAction extends SimulatorAction {
                 saved = this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph, minor);
             } else {
                 assert resourceKind.isTextBased();
-                String text;
+                Text text;
                 if (editor == null) {
                     text = getGrammarStore().getTexts(resourceKind).get(name);
                 } else {
                     text = ((TextTab) editor).getProgram();
                 }
-                saved = this.saveAs ? doSaveTextAs(name, text) : doSaveText(name, text);
+                saved = this.saveAs ? doSaveTextAs(name, text) : doSaveText(text);
             }
             if (editor != null && saved) {
                 editor.setClean();
@@ -129,20 +129,20 @@ public final class SaveAction extends SimulatorAction {
      * Saves the text under a given name in the grammar.
      * @return {@code true} if the action succeeded
      */
-    public boolean doSaveText(String name, String text) {
+    public boolean doSaveText(Text text) {
         boolean result = false;
-        if (isForPrologProgram() && endsInGarbage(text)) {
+        if (isForPrologProgram() && endsInGarbage(text.getContent())) {
             showErrorDialog(null,
-                "The last non-empty characted of a Prolog program must be a dot: '.'");
+                "The last non-empty character of a Prolog program must be a dot: '.'");
         } else {
             try {
-                getSimulatorModel().doAddText(getResourceKind(), name, text);
+                getSimulatorModel().doAddText(getResourceKind(), text);
                 result = true;
             } catch (IOException exc) {
                 showErrorDialog(exc,
                     "Error saving %s '%s'",
                     getResourceKind().getDescription(),
-                    name);
+                    text.getName());
             }
         }
         return result;
@@ -152,7 +152,7 @@ public final class SaveAction extends SimulatorAction {
      * Saves the text under a given name as a file outside the grammar.
      * @return {@code true} if the text was saved within the grammar
      */
-    public boolean doSaveTextAs(String name, String text) {
+    public boolean doSaveTextAs(String name, Text text) {
         boolean result = false;
         Path selectedFile = askSaveResource(name);
         // now save, if so required
@@ -161,10 +161,10 @@ public final class SaveAction extends SimulatorAction {
                 String nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
                     // store as external file
-                    Files.write(selectedFile, Collections.singletonList(text));
+                    Files.write(selectedFile, text.getLines());
                 } else {
                     // store in grammar
-                    result = doSaveText(nameInGrammar, text);
+                    result = doSaveText(text);
                 }
             } catch (IOException exc) {
                 showErrorDialog(exc,

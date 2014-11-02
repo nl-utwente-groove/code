@@ -5,6 +5,7 @@ import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.graph.GraphInfo;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -245,8 +246,7 @@ public class LoadGrammarAction extends SimulatorAction {
             String oldName = e.getKey();
             String newName = e.getValue();
             AspectGraph oldGraph = oldGraphMap.get(oldName);
-            AspectGraph newGraph = oldGraph.clone();
-            newGraph.setName(newName);
+            AspectGraph newGraph = oldGraph.rename(newName);
             if (kind == ResourceKind.RULE) {
                 // store old name as transition label
                 // if there was no explicit transition label
@@ -264,16 +264,17 @@ public class LoadGrammarAction extends SimulatorAction {
 
     private void replaceTexts(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
         throws IOException {
-        Map<String,String> oldTextMap = store.getTexts(kind);
-        Map<String,String> newTextMap = new HashMap<String,String>();
+        Map<String,Text> oldTextMap = store.getTexts(kind);
+        List<Text> newTexts = new ArrayList<>(renameMap.size());
         for (Map.Entry<String,String> e : renameMap.entrySet()) {
             String oldName = e.getKey();
             String newName = e.getValue();
-            String text = oldTextMap.get(oldName);
-            newTextMap.put(newName, text);
+            Text oldText = oldTextMap.get(oldName);
+            Text newText = oldText.rename(newName);
+            newTexts.add(newText);
         }
         store.deleteTexts(kind, renameMap.keySet());
-        store.putTexts(kind, newTextMap);
+        store.putTexts(kind, newTexts);
     }
 
     private boolean askReplaceNames() {

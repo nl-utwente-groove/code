@@ -68,7 +68,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             } else {
                 try {
                     treeMap.put(controlModel,
-                        getLoader().parse(controlName, controlModel.getProgram()));
+                        getLoader().parse(controlName, controlModel.getProgram().getContent()));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         addPartError(controlName, error);
@@ -175,7 +175,9 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 if (entry.getKey() == null) {
                     result.add("Error in implicit control: %s", error);
                 } else {
-                    result.add("Error in control program '%s': %s", entry.getKey(), error,
+                    result.add("Error in control program '%s': %s",
+                        entry.getKey(),
+                        error,
                         FormatError.control(entry.getKey()));
                 }
             }

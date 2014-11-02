@@ -9,6 +9,7 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
+import groove.grammar.model.Text;
 import groove.grammar.model.TextBasedModel;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
@@ -94,7 +95,7 @@ public class SimulatorModel implements Cloneable {
             getStore().rename(resource, oldName, newName);
             if (resource == ResourceKind.RULE) {
                 // rename rules in control programs
-                Map<String,String> renamedControl =
+                Collection<Text> renamedControl =
                     getGrammar().getControlModel().getLoader().rename(oldName, newName);
                 if (!renamedControl.isEmpty()) {
                     getStore().putTexts(ResourceKind.CONTROL, renamedControl);
@@ -236,19 +237,18 @@ public class SimulatorModel implements Cloneable {
 
     /**
      * Adds a text-based resource to this grammar.
-     * @param name the name of the resource
-     * @param program the resource text
+     * @param text the resource text
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddText(ResourceKind kind, String name, String program) throws IOException {
+    public boolean doAddText(ResourceKind kind, Text text) throws IOException {
         start();
         try {
             GrammarModel grammar = getGrammar();
-            boolean result = grammar.getActiveNames(kind).contains(name);
-            getStore().putTexts(kind, Collections.singletonMap(name, program));
+            boolean result = grammar.getActiveNames(kind).contains(text.getName());
+            getStore().putTexts(kind, Collections.singleton(text));
             changeGrammar(result);
-            changeSelected(kind, name);
+            changeSelected(kind, text.getName());
             changeDisplay(DisplayKind.toDisplay(kind));
             return result;
         } finally {
@@ -272,7 +272,7 @@ public class SimulatorModel implements Cloneable {
             newGraph.setFixed();
             newGraphs.add(newGraph);
         }
-        Map<String,String> newControl =
+        Collection<Text> newControl =
             getGrammar().getControlModel().getLoader().changePriority(priorityMap);
         try {
             if (!newGraphs.isEmpty()) {

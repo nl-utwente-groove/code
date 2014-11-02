@@ -27,6 +27,7 @@ import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
 import groove.algebra.syntax.Parameter;
 import groove.automaton.RegExpr;
+import groove.grammar.model.Resource;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
 import groove.graph.Edge;
@@ -73,7 +74,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
+public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> implements Resource {
     /**
      * Creates an empty graph, with a given name and graph role.
      */
@@ -162,12 +163,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             Edge edge = entry.getKey();
             AspectLabel label = entry.getValue();
             AspectEdge edgeImage =
-                result.addEdge(elementMap.getNode(edge.source()), label,
+                result.addEdge(elementMap.getNode(edge.source()),
+                    label,
                     elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
             if (!edge.source().equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
-                errors.add("%s %s must be a node label", label.getRole().getDescription(true),
-                    label, edgeImage);
+                errors.add("%s %s must be a node label",
+                    label.getRole().getDescription(true),
+                    label,
+                    edgeImage);
             }
         }
         GraphInfo.transfer(graph, result, elementMap);
@@ -398,7 +402,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 AspectNode target = edge.target();
                 // make sure we have an LHS edge or a count edge
                 if (target.getAttrKind() == fieldKind
-                    && (getRole() != RULE || edge.getKind().inLHS() || owner.getKind().isQuantifier())) {
+                    && (getRole() != RULE || edge.getKind().inLHS() || owner.getKind()
+                        .isQuantifier())) {
                     result = edge.target();
                     break;
                 }
@@ -718,6 +723,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * will be fixed as well.
      * @param name the new graph name; non-{@code null}
      */
+    @Override
     public AspectGraph rename(String name) {
         AspectGraph result = clone();
         result.setName(name);
@@ -781,12 +787,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             Edge edge = entry.getKey();
             AspectLabel label = entry.getValue();
             AspectEdge edgeImage =
-                result.addEdge(elementMap.getNode(edge.source()), label,
+                result.addEdge(elementMap.getNode(edge.source()),
+                    label,
                     elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
             if (!edge.source().equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
-                errors.add("%s %s must be a node label", label.getRole().getDescription(true),
-                    label, edgeImage);
+                errors.add("%s %s must be a node label",
+                    label.getRole().getDescription(true),
+                    label,
+                    edgeImage);
             }
         }
         GraphInfo.transfer(graph, result, elementMap);

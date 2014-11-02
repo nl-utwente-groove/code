@@ -1,17 +1,17 @@
 /*
  * Groove Prolog Interface
  * Copyright (C) 2009 Michiel Hendriks, University of Twente
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,6 +29,7 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.model.Text;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.prolog.builtin.AlgebraPredicates;
@@ -58,7 +59,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
  * Subclass of the normal GNU Prolog Environment, contains a reference to a
  * {@link GrooveState} instance which contains the reference to various Groove
  * structures.
- * 
+ *
  * @author Michiel Hendriks
  */
 public class GrooveEnvironment extends Environment {
@@ -89,7 +90,7 @@ public class GrooveEnvironment extends Environment {
     }
 
     /**
-     * Prints a list of functor names on stdout, surrounded by 
+     * Prints a list of functor names on stdout, surrounded by
      * an XML "function" tag.
      * This can be pasted in the input of the {@link RSyntaxTextArea}
      * TokenMakerMaker, to allow syntax highlighting of predefined tags.
@@ -108,26 +109,29 @@ public class GrooveEnvironment extends Environment {
         }
     }
 
-    /** 
+    /**
      * Loads all predicates defined in a given class.
-     * Returns a map from loaded predicates to tool tip texts. 
+     * Returns a map from loaded predicates to tool tip texts.
      */
     private Map<CompoundTermTag,String> ensureLoaded(Class<? extends GroovePredicates> source) {
         Map<CompoundTermTag,String> result = null;
         try {
             GroovePredicates instance = source.newInstance();
             // load the predicates
-            for (Map.Entry<CompoundTermTag,String> definition : instance.getDefinitions().entrySet()) {
+            for (Map.Entry<CompoundTermTag,String> definition : instance.getDefinitions()
+                .entrySet()) {
                 ensureLoaded(source, definition.getKey(), definition.getValue());
             }
             // retrieve the tool tip map
             result = instance.getToolTipMap();
         } catch (InstantiationException e) {
             throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
-                source.getSimpleName(), e.getMessage()));
+                source.getSimpleName(),
+                e.getMessage()));
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
-                source.getSimpleName(), e.getMessage()));
+                source.getSimpleName(),
+                e.getMessage()));
         }
         return result;
     }
@@ -136,22 +140,28 @@ public class GrooveEnvironment extends Environment {
      * Loads a single method definition, and tests the definition.
      */
     private void ensureLoaded(Class<? extends GroovePredicates> source, CompoundTermTag tag,
-            String definition) {
+        String definition) {
         DefinitionListener listener = new DefinitionListener();
         getModule().addPredicateListener(listener);
         new PrologTextLoader(getPrologTextLoaderState(), new StringReader(definition));
         getModule().removePredicateListener(listener);
         Set<CompoundTermTag> predicates = listener.getPredicates();
         if (!predicates.contains(tag)) {
-            throw new IllegalArgumentException(String.format(
-                "%s#%s_%d does not define predicate %s", source.getName(), tag.functor, tag.arity,
-                tag));
+            throw new IllegalArgumentException(
+                String.format("%s#%s_%d does not define predicate %s",
+                    source.getName(),
+                    tag.functor,
+                    tag.arity,
+                    tag));
         }
         predicates.remove(tag);
         if (!predicates.isEmpty()) {
-            throw new IllegalArgumentException(String.format(
-                "%s#%s_%d defines additional predicates %s", source.getName(), tag.functor,
-                tag.arity, predicates));
+            throw new IllegalArgumentException(
+                String.format("%s#%s_%d defines additional predicates %s",
+                    source.getName(),
+                    tag.functor,
+                    tag.arity,
+                    predicates));
         }
         // tests if the predicate relies on a non-existent or inappropriate class
         String className = getModule().getDefinedPredicate(tag).getJavaClassName();
@@ -159,25 +169,36 @@ public class GrooveEnvironment extends Environment {
             try {
                 Class<?> builtInClass = Class.forName(className);
                 if (!PrologCode.class.isAssignableFrom(builtInClass)) {
-                    throw new IllegalArgumentException(String.format(
-                        "%s#%s_%d builds in class %s that does not subtype %s", source.getName(),
-                        tag.functor, tag.arity, className, PrologCode.class.getName()));
+                    throw new IllegalArgumentException(
+                        String.format("%s#%s_%d builds in class %s that does not subtype %s",
+                            source.getName(),
+                            tag.functor,
+                            tag.arity,
+                            className,
+                            PrologCode.class.getName()));
                 }
                 if (builtInClass.getAnnotation(Deprecated.class) != null) {
-                    throw new IllegalArgumentException(String.format(
-                        "%s#%s_%d builds in deprecated class %s", source.getName(), tag.functor,
-                        tag.arity, className, PrologCode.class.getName()));
+                    throw new IllegalArgumentException(
+                        String.format("%s#%s_%d builds in deprecated class %s",
+                            source.getName(),
+                            tag.functor,
+                            tag.arity,
+                            className,
+                            PrologCode.class.getName()));
                 }
             } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException(String.format(
-                    "%s#%s_%d builds in non-existing class %s", source.getName(), tag.functor,
-                    tag.arity, className));
+                throw new IllegalArgumentException(
+                    String.format("%s#%s_%d builds in non-existing class %s",
+                        source.getName(),
+                        tag.functor,
+                        tag.arity,
+                        className));
             }
         }
     }
 
     /** Loads Prolog declarations from a program, given as a string. */
-    public void loadProgram(String program) throws FormatException {
+    public void loadProgram(Text program) throws FormatException {
         PrologTextLoaderState loaderState = new PrologTextLoaderState(this) {
             {
                 this.module = GrooveEnvironment.this.getModule();
@@ -186,7 +207,8 @@ public class GrooveEnvironment extends Environment {
         DefinitionListener listener = new DefinitionListener();
         getModule().addPredicateListener(listener);
         try {
-            new PrologTextLoader(loaderState, new StringReader(program), null);
+            new PrologTextLoader(loaderState, new StringReader(program.getContent()),
+                program.getName());
         } catch (Exception e) {
             throw new FormatException(e.getMessage());
         }
@@ -254,7 +276,7 @@ public class GrooveEnvironment extends Environment {
     private final Set<CompoundTermTag> userTags = new TagSet();
 
     /**
-     * Mapping from Groove built-in predicates to 
+     * Mapping from Groove built-in predicates to
      * corresponding tool tip text.
      */
     private final Map<CompoundTermTag,String> toolTipMap = new HashMap<CompoundTermTag,String>();
@@ -284,13 +306,13 @@ public class GrooveEnvironment extends Environment {
         AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class, RulePredicates.class,
         TransPredicates.class, TypePredicates.class};
 
-    /** 
+    /**
      * Flag that causes all Prolog functor names to be printed on stdout.
      * The result can be included in the TokenMakerMaker input for the
      * {@link RSyntaxTextArea} syntax highlighting.
      */
     private static final boolean PRINT_PROLOG_FUNCTORS = false;
-    /** 
+    /**
      * Flag that causes all Groove functor names to be printed on stdout.
      * The result can be included in the TokenMakerMaker input for the
      * {@link RSyntaxTextArea} syntax highlighting.

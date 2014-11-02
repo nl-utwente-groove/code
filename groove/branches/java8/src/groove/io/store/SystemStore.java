@@ -22,6 +22,7 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.grammar.type.TypeLabel;
 import groove.io.Util;
 
@@ -110,7 +111,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * Immutable view on the name-to-text map of a given text-based resource kind.
      * @param kind the kind of resource for which the map is requested
      */
-    abstract public Map<String,String> getTexts(ResourceKind kind);
+    abstract public Map<String,Text> getTexts(ResourceKind kind);
 
     /**
      * Adds or replaces a set of text-based resources in the store.
@@ -119,7 +120,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    abstract public Map<String,String> putTexts(ResourceKind kind, Map<String,String> texts)
+    abstract public Collection<Text> putTexts(ResourceKind kind, Collection<Text> texts)
         throws IOException;
 
     /**
@@ -129,7 +130,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    abstract public Map<String,String> deleteTexts(ResourceKind kind, Collection<String> names)
+    abstract public Collection<Text> deleteTexts(ResourceKind kind, Collection<String> names)
         throws IOException;
 
     /**
@@ -211,10 +212,10 @@ abstract public class SystemStore extends UndoableEditSupport {
     }
 
     /** Returns the resource map for a given text-based resource kind. */
-    protected final Map<String,String> getTextMap(ResourceKind kind) {
-        Map<String,String> result = this.textMap.get(kind);
+    protected final Map<String,Text> getTextMap(ResourceKind kind) {
+        Map<String,Text> result = this.textMap.get(kind);
         if (result == null) {
-            this.textMap.put(kind, result = new TreeMap<String,String>());
+            this.textMap.put(kind, result = new TreeMap<String,Text>());
         }
         return result;
     }
@@ -231,8 +232,7 @@ abstract public class SystemStore extends UndoableEditSupport {
     private final Map<ResourceKind,Map<String,AspectGraph>> graphMap =
         new EnumMap<ResourceKind,Map<String,AspectGraph>>(ResourceKind.class);
     /** The name-to-text maps of the store. */
-    private final Map<ResourceKind,Map<String,String>> textMap =
-        new EnumMap<ResourceKind,Map<String,String>>(ResourceKind.class);
+    private final Map<ResourceKind,Map<String,Text>> textMap = new EnumMap<>(ResourceKind.class);
 
     /** The grammar view associated with this store. */
     private GrammarModel model;
@@ -283,7 +283,7 @@ abstract public class SystemStore extends UndoableEditSupport {
                 if (kind == PROPERTIES) {
                     result.putProperties(store.getProperties());
                 } else if (kind.isTextBased()) {
-                    result.putTexts(kind, store.getTexts(kind));
+                    result.putTexts(kind, store.getTexts(kind).values());
                 } else {
                     result.putGraphs(kind, store.getGraphs(kind).values(), false);
                 }

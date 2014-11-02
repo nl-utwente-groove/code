@@ -34,11 +34,10 @@ public class ControlModel extends TextBasedModel<Collection<Template>> {
      * Constructs a control view from a given control program.
      * @param grammar the grammar view to which this control view belongs.
      * Must be non-{@code null} in order to compute the control automation
-     * @param name the name of the control program
      * @param program the control program; non-null
      */
-    public ControlModel(GrammarModel grammar, String name, String program) {
-        super(grammar, ResourceKind.CONTROL, name, program);
+    public ControlModel(GrammarModel grammar, Text program) {
+        super(grammar, ResourceKind.CONTROL, program);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class ControlModel extends TextBasedModel<Collection<Template>> {
                 program = model.getProgram();
             }
         } else {
-            getLoader().parse(getFullName(), getProgram()).check();
+            getLoader().parse(getFullName(), getProgram().getContent()).check();
             program = getLoader().buildProgram(Collections.singleton(getFullName()));
         }
         return program.getTemplates(getFullName());

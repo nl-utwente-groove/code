@@ -19,6 +19,7 @@ package groove.io.external;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,10 +75,8 @@ public class Importers {
         ri.setSimulator(simulator);
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
-            Map<ResourceKind,Collection<AspectGraph>> newGraphs =
-                new EnumMap<ResourceKind,Collection<AspectGraph>>(ResourceKind.class);
-            Map<ResourceKind,Map<String,String>> newTexts =
-                new EnumMap<ResourceKind,Map<String,String>>(ResourceKind.class);
+            Map<ResourceKind,Collection<AspectGraph>> newGraphs = new EnumMap<>(ResourceKind.class);
+            Map<ResourceKind,Collection<Text>> newTexts = new EnumMap<>(ResourceKind.class);
             for (Resource resource : resources) {
                 String name = resource.getName();
                 ResourceKind kind = resource.getKind();
@@ -88,31 +86,25 @@ public class Importers {
                         AspectGraph graph = resource.getGraphResource();
                         Collection<AspectGraph> graphs = newGraphs.get(kind);
                         if (graphs == null) {
-                            newGraphs.put(kind, graphs = new ArrayList<AspectGraph>());
+                            newGraphs.put(kind, graphs = new ArrayList<>());
                         }
                         graphs.add(graph);
                     } else {
-                        List<String> text = resource.getTextResource();
-                        StringBuilder builder = new StringBuilder();
-                        for (String line : text) {
-                            builder.append(line);
-                            builder.append("\n");
-                        }
-                        String combinedText = builder.toString();
-                        Map<String,String> texts = newTexts.get(kind);
+                        Text text = resource.getTextResource();
+                        Collection<Text> texts = newTexts.get(kind);
                         if (texts == null) {
-                            newTexts.put(kind, texts = new HashMap<String,String>());
+                            newTexts.put(kind, texts = new ArrayList<>());
                         }
-                        texts.put(name, combinedText);
-                        grammar.getStore().putTexts(resource.getKind(),
-                            Collections.singletonMap(name, combinedText));
+                        texts.add(text);
+                        grammar.getStore()
+                            .putTexts(resource.getKind(), Collections.singleton(text));
                     }
                 }
             }
             for (Map.Entry<ResourceKind,Collection<AspectGraph>> entry : newGraphs.entrySet()) {
                 grammar.getStore().putGraphs(entry.getKey(), entry.getValue(), true);
             }
-            for (Map.Entry<ResourceKind,Map<String,String>> entry : newTexts.entrySet()) {
+            for (Map.Entry<ResourceKind,Collection<Text>> entry : newTexts.entrySet()) {
                 grammar.getStore().putTexts(entry.getKey(), entry.getValue());
             }
         }

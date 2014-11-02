@@ -22,6 +22,7 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.RuleModel;
+import groove.grammar.model.Text;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -369,8 +370,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             result.setGraph(graph);
             return result;
         } else {
-            String program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
-            return new TextTab(this, name, program);
+            Text program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+            return new TextTab(this, name, program.getContent());
         }
     }
 

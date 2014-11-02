@@ -19,10 +19,10 @@ package groove.io.external;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.io.FileType;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -53,22 +53,22 @@ public interface Importer extends Porter {
         private final String name;
         private final ResourceKind kind;
         private final AspectGraph resourceGraph;
-        private final List<String> resourceString;
+        private final Text resourceText;
 
         /** Constructs a graph-based resource. */
         public Resource(ResourceKind kind, String name, AspectGraph resource) {
             this.kind = kind;
             this.name = name;
             this.resourceGraph = resource;
-            this.resourceString = null;
+            this.resourceText = null;
         }
 
         /** Constructs a text-based resource. */
-        public Resource(ResourceKind kind, String name, List<String> resource) {
+        public Resource(ResourceKind kind, String name, Text resource) {
             this.kind = kind;
             this.name = name;
             this.resourceGraph = null;
-            this.resourceString = resource;
+            this.resourceText = resource;
         }
 
         /** Returns the kind of this resource. */
@@ -92,8 +92,8 @@ public interface Importer extends Porter {
         }
 
         /** Returns the wrapped text-based resource, if any. */
-        public List<String> getTextResource() {
-            return this.resourceString;
+        public Text getTextResource() {
+            return this.resourceText;
         }
     }
 }

@@ -28,6 +28,7 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.Text;
 import groove.util.Groove;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
@@ -138,19 +139,19 @@ public class CtrlLoader {
      * Returns renamed versions of the stored control programs.
      * @return a mapping from program names to changed programs
      */
-    public Map<String,String> rename(String oldCallName, String newCallName) {
-        Map<String,String> result = new HashMap<String,String>();
+    public Collection<Text> rename(String oldCallName, String newCallName) {
+        Collection<Text> result = new ArrayList<>(this.treeMap.size());
         for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
             String name = entry.getKey();
             CtrlTree tree = entry.getValue();
-            TokenRewriteStream rewriter = getRewriter(tree);
+            TokenRewriteStream rewriter = computeRewriter(tree);
             boolean changed = false;
             for (CtrlTree t : tree.getRuleIdTokens(oldCallName)) {
                 rewriter.replace(t.getToken(), t.getChild(0).getToken(), newCallName);
                 changed = true;
             }
             if (changed) {
-                result.put(name, rewriter.toString());
+                result.add(new Text(name, rewriter.toString()));
             }
         }
         return result;
@@ -163,8 +164,9 @@ public class CtrlLoader {
      * the new priority values
      * @return mapping of control program names and new control programs
      */
-    public Map<String,String> changePriority(Map<String,Integer> prioMap) {
-        Map<String,String> result = new HashMap<String,String>();
+    public Collection<Text> changePriority(Map<String,Integer> prioMap) {
+        Collection<Text> result = new ArrayList<>();
+        Map<String,TokenRewriteStream> rewriterMap = new HashMap<>();
         for (Map.Entry<String,Integer> entry : prioMap.entrySet()) {
             String recipeName = entry.getKey();
             int newPriority = entry.getValue();
@@ -177,31 +179,39 @@ public class CtrlLoader {
             CtrlTree recipeTree = tree.getProcs(Kind.RECIPE).get(recipeName);
             assert recipeTree != null : String.format("Recipe declaration of %s not found",
                 recipeName);
-            TokenRewriteStream rewriter = getRewriter(tree);
-            boolean changed = false;
             if (recipeTree.getChildCount() == 3) {
                 // no explicit priority
                 if (newPriority != 0) {
-                    rewriter.insertAfter(recipeTree.getChild(1).getToken(), "priority "
-                        + newPriority);
-                    changed = true;
+                    getRewriter(rewriterMap, controlName).insertAfter(recipeTree.getChild(1)
+                        .getToken(),
+                        "priority " + newPriority);
                 }
             } else {
+                // there was already a priority token; just change its value
                 CtrlTree prioTree = recipeTree.getChild(2);
                 int oldPriority = Integer.parseInt(prioTree.getText());
                 if (oldPriority != newPriority) {
-                    rewriter.replace(prioTree.getToken(), "" + newPriority);
-                    changed = true;
+                    getRewriter(rewriterMap, controlName).replace(prioTree.getToken(),
+                        "" + newPriority);
                 }
             }
-            if (changed) {
-                result.put(controlName, rewriter.toString());
-            }
+        }
+        for (Map.Entry<String,TokenRewriteStream> e : rewriterMap.entrySet()) {
+            result.add(new Text(e.getKey(), e.getValue().toString()));
         }
         return result;
     }
 
-    private TokenRewriteStream getRewriter(CtrlTree tree) {
+    /** Retrieves a rewriter from a map, creating it first if necessary. */
+    private TokenRewriteStream getRewriter(Map<String,TokenRewriteStream> map, String name) {
+        TokenRewriteStream result = map.get(name);
+        if (result == null) {
+            map.put(name, result = computeRewriter(this.treeMap.get(name)));
+        }
+        return result;
+    }
+
+    private TokenRewriteStream computeRewriter(CtrlTree tree) {
         CtrlLexer lexer = new CtrlLexer(null);
         lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
         TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
@@ -226,7 +236,8 @@ public class CtrlLoader {
             Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String programName = CONTROL.stripExtension(args[1]);
-                System.out.printf("Control automaton for %s:%n%s", programName,
+                System.out.printf("Control automaton for %s:%n%s",
+                    programName,
                     run(grammar, programName, new File(grammarName)));
             }
         } catch (Exception e) {

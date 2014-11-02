@@ -26,11 +26,10 @@ public abstract class TextBasedModel<M> extends ResourceModel<M> {
      * Constructs a new text-based resource model, of a given kind.
      * @param grammar the grammar model to which this resource belongs
      * @param kind the kind of resource.
-     * @param name the name of the resource
      * @param text the text of the resource
      */
-    public TextBasedModel(GrammarModel grammar, ResourceKind kind, String name, String text) {
-        super(grammar, kind, name);
+    public TextBasedModel(GrammarModel grammar, ResourceKind kind, Text text) {
+        super(grammar, kind, text.getName());
         this.text = text;
     }
 
@@ -39,15 +38,15 @@ public abstract class TextBasedModel<M> extends ResourceModel<M> {
      * @see #getProgram()
      */
     @Override
-    public String getSource() {
+    public Text getSource() {
         return getProgram();
     }
 
     /** Returns the text of the resource. */
-    public String getProgram() {
+    public Text getProgram() {
         return this.text;
     }
 
     /** The text of the resource. */
-    private final String text;
+    private final Text text;
 }

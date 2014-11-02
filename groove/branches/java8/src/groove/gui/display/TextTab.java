@@ -2,6 +2,7 @@ package groove.gui.display;
 
 import groove.control.parse.CtrlTokenMaker;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Text;
 import groove.grammar.model.TextBasedModel;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -60,7 +61,7 @@ final public class TextTab extends ResourceTab {
         setName(name);
         setBorder(null);
         setLayout(new BorderLayout());
-        this.textArea.setProgram(program);
+        this.textArea.setText(program);
         updateErrors();
         start();
     }
@@ -126,13 +127,13 @@ final public class TextTab extends ResourceTab {
 
     @Override
     public boolean setResource(String name) {
-        String program = null;
+        Text program = null;
         if (name != null) {
             program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
         }
         if (program != null) {
             setName(name);
-            this.textArea.setProgram(program);
+            this.textArea.setProgramText(program);
             updateErrors();
         }
         return program != null;
@@ -143,7 +144,7 @@ final public class TextTab extends ResourceTab {
         boolean result = name.equals(getName());
         if (result) {
             setName(null);
-            this.textArea.setProgram(null);
+            this.textArea.setProgramText(null);
             updateErrors();
         }
         return result;
@@ -154,12 +155,12 @@ final public class TextTab extends ResourceTab {
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
         TextBasedModel<?> textModel =
-                getName() == null ? null : (TextBasedModel<?>) grammar.getResource(getResourceKind(),
+            getName() == null ? null : (TextBasedModel<?>) grammar.getResource(getResourceKind(),
                 getName());
         if (textModel == null) {
             dispose();
         } else if (!isDirty()) {
-            this.textArea.setProgram(textModel.getProgram());
+            this.textArea.setProgramText(textModel.getProgram());
             updateErrors();
         }
     }
@@ -178,8 +179,8 @@ final public class TextTab extends ResourceTab {
     }
 
     /** Returns the current program. */
-    public final String getProgram() {
-        return this.textArea.getText();
+    public final Text getProgram() {
+        return new Text(getName(), this.textArea.getText());
     }
 
     @Override
@@ -208,7 +209,7 @@ final public class TextTab extends ResourceTab {
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSaveText(getName(), getProgram());
+        getSaveAction().doSaveText(getProgram());
     }
 
     /** Creates a token maker for the text area of this tab. */
@@ -217,13 +218,13 @@ final public class TextTab extends ResourceTab {
         case PROLOG:
             return new PrologTokenMaker();
         case GROOVY:
-            return TokenMakerFactory.getDefaultInstance().getTokenMaker(
-                SyntaxConstants.SYNTAX_STYLE_GROOVY);
+            return TokenMakerFactory.getDefaultInstance()
+                .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_GROOVY);
         case CONTROL:
             return new CtrlTokenMaker();
         default:
-            return TokenMakerFactory.getDefaultInstance().getTokenMaker(
-                SyntaxConstants.SYNTAX_STYLE_NONE);
+            return TokenMakerFactory.getDefaultInstance()
+                .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_NONE);
         }
     }
 
@@ -300,8 +301,8 @@ final public class TextTab extends ResourceTab {
          * @param program the new program; if {@code null}, the text area will
          * be disabled
          */
-        public void setProgram(String program) {
-            setText(program == null ? "" : program);
+        public void setProgramText(Text program) {
+            setText(program == null ? "" : program.getContent());
             setEnabled(program != null);
             discardAllEdits();
         }

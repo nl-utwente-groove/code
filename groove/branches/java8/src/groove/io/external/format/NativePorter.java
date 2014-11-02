@@ -20,6 +20,7 @@ import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.grammar.model.TextBasedModel;
 import groove.io.FileType;
 import groove.io.external.AbstractExporter;
@@ -93,7 +94,7 @@ public class NativePorter extends AbstractExporter implements Importer {
                 result = new Resource(kind, name, xmlGraph.toAspectGraph());
             } else {
                 List<String> program = Files.readAllLines(file);
-                result = new Resource(kind, name, program);
+                result = new Resource(kind, name, new Text(name, program));
             }
         } catch (IOException e) {
             throw new PortException(e);
@@ -120,7 +121,7 @@ public class NativePorter extends AbstractExporter implements Importer {
             TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel();
             Writer writer = null;
             try {
-                Files.write(file, Collections.singletonList(textModel.getSource()));
+                Files.write(file, textModel.getSource().getLines());
             } catch (IOException e) {
                 throw new PortException(e);
             } finally {

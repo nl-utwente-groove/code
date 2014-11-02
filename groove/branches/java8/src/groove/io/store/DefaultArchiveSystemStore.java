@@ -27,6 +27,7 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
 import groove.io.FileType;
@@ -36,20 +37,24 @@ import groove.io.graph.LayoutIO;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
@@ -175,19 +180,18 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public Map<String,String> getTexts(ResourceKind kind) {
+    public Map<String,Text> getTexts(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getTextMap(kind));
     }
 
     @Override
-    public Map<String,String> putTexts(ResourceKind kind, Map<String,String> texts)
-        throws IOException {
+    public Collection<Text> putTexts(ResourceKind kind, Collection<Text> texts) throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Map<String,String> deleteTexts(ResourceKind kind, Collection<String> names)
+    public Collection<Text> deleteTexts(ResourceKind kind, Collection<String> names)
         throws IOException {
         throw createImmutable();
     }
@@ -343,9 +347,15 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         getTextMap(kind).clear();
         for (Map.Entry<String,ZipEntry> textEntry : texts.entrySet()) {
             String controlName = kind.getFileType().stripExtension(textEntry.getKey());
+            List<String> lines = new ArrayList<>();
             InputStream in = file.getInputStream(textEntry.getValue());
-            String program = groove.io.Util.readInputStreamToString(in);
-            getTextMap(kind).put(controlName, program);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            String nextLine = reader.readLine();
+            while (nextLine != null) {
+                lines.add(nextLine);
+                nextLine = reader.readLine();
+            }
+            getTextMap(kind).put(controlName, new Text(controlName, lines));
         }
     }
 
