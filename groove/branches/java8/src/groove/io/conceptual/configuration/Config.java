@@ -1,5 +1,6 @@
 package groove.io.conceptual.configuration;
 
+import groove.grammar.model.ConfigModel;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.io.conceptual.Field;
@@ -26,7 +27,6 @@ import groove.io.conceptual.type.Type;
 import groove.util.parse.FormatException;
 
 import java.io.StringReader;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,13 +37,17 @@ import javax.xml.bind.Unmarshaller;
 
 import org.xml.sax.InputSource;
 
+/**
+ * Im-/export configuration.
+ * Consists of am xml-bound {@link Configuration} object
+ * with helper methods.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
 public class Config {
     private String m_xmlPath;
 
     private Configuration m_xmlConfig;
-
-    private JAXBContext jaxbContext = null;
-    private Unmarshaller unmarshaller = null;
 
     /** Location of the XSD for configurations. */
     public static final String CONFIG_SCHEMA =
@@ -58,40 +62,25 @@ public class Config {
     // and whatever else requires the type model to be known
     private TypeModel m_activeTypeModel;
 
+    /** Creates a configuration from a given XML string, for a given grammar model. */
     public Config(GrammarModel grammar, String xml) {
         this.m_xmlPath = xml;
 
         try {
-            this.jaxbContext = JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
-            this.unmarshaller = this.jaxbContext.createUnmarshaller();
+            JAXBContext jaxbContext =
+                JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
             String xmlString =
-                (String) grammar.getResource(ResourceKind.CONFIG, this.m_xmlPath).toResource();
-            Object obj = this.unmarshaller.unmarshal(new InputSource(new StringReader(xmlString)));
+                ((ConfigModel) grammar.getResource(ResourceKind.CONFIG, this.m_xmlPath)).toResource();
+            Object obj = unmarshaller.unmarshal(new InputSource(new StringReader(xmlString)));
 
-            Configuration xmlCfg = (Configuration) obj;
-            this.m_xmlConfig = xmlCfg;
+            this.m_xmlConfig = (Configuration) obj;
 
         } catch (JAXBException e) {
             throw new RuntimeException("Unable to parse configuration " + this.m_xmlPath, e);
         } catch (FormatException e) {
             // ConfigModel doesn't throw this exception, should be safe to ignore
-        }
-
-        loadIdInfo();
-    }
-
-    public Config(String xml) {
-        this.m_xmlPath = xml;
-
-        try {
-            Object obj = this.unmarshaller.unmarshal(new InputSource(new StringReader(xml)));
-
-            Configuration xmlCfg = (Configuration) obj;
-            this.m_xmlConfig = xmlCfg;
-
-        } catch (JAXBException e) {
-            throw new RuntimeException("Unable to parse configuration " + this.m_xmlPath, e);
         }
 
         loadIdInfo();
@@ -129,7 +118,9 @@ public class Config {
                 this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getProperPostfix());
             }
             if (!this.m_xmlConfig.getGlobal().getStrings().getNullablePostfix().isEmpty()) {
-                this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getNullablePostfix());
+                this.m_suffixList.add(this.m_xmlConfig.getGlobal()
+                    .getStrings()
+                    .getNullablePostfix());
             }
             if (!this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix().isEmpty()) {
                 this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix());
@@ -395,9 +386,5 @@ public class Config {
 
     public StringsType getStrings() {
         return this.m_xmlConfig.getGlobal().getStrings();
-    }
-
-    public Collection<String> getSuffixes() {
-        return this.m_suffixList;
     }
 }

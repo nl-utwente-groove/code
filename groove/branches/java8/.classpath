@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/*" kind="src" path="resources"/>
+	<classpathentry kind="src" path="xsd">
+		<attributes>
+			<attribute name="ignore_optional_problems" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4_8_2.jar" sourcepath="lib/src/junit-4.8.2-src.zip"/>
@@ -25,7 +30,7 @@
 	<classpathentry kind="lib" path="lib/xerces-2_11_0/resolver.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2_11_0/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/args4j-2.0.26.jar" sourcepath="lib/src/args4j-2.0.26-sources.jar"/>
-	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlr-3.4-src.zip"/>
+	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
 	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
 	<classpathentry kind="lib" path="lib/emf-2_10_1/org.eclipse.emf.common_2.10.1.v20140901-1043.jar"/>
 	<classpathentry kind="lib" path="lib/emf-2_10_1/org.eclipse.emf.ecore_2.10.1.v20140901-1043.jar"/>

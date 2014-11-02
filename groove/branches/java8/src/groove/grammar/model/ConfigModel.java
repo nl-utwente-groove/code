@@ -16,7 +16,6 @@
  */
 package groove.grammar.model;
 
-import groove.util.parse.FormatException;
 
 /**
  * Model for Groovy programs, which are just strings
@@ -44,7 +43,7 @@ public class ConfigModel extends TextBasedModel<String> {
     }
 
     @Override
-    String compute() throws FormatException {
+    String compute() {
         return getProgram().getContent();
     }
 }
