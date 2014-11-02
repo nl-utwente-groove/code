@@ -14,8 +14,8 @@ import javax.swing.SwingUtilities;
 public class EditStateAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public EditStateAction(Simulator simulator) {
-        super(simulator, Options.EDIT_STATE_ACTION_NAME, Icons.EDIT_STATE_ICON,
-            null, ResourceKind.HOST);
+        super(simulator, Options.EDIT_STATE_ACTION_NAME, Icons.EDIT_STATE_ICON, null,
+            ResourceKind.HOST);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
     }
 
@@ -26,8 +26,7 @@ public class EditStateAction extends SimulatorAction {
         if (newGraphName != null) {
             final AspectGraph newGraph = graph.rename(newGraphName);
             try {
-                getSimulatorModel().doAddGraph(getResourceKind(), newGraph,
-                    false);
+                getSimulatorModel().doAdd(newGraph, false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

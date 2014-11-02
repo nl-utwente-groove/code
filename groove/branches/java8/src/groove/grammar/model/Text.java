@@ -33,7 +33,8 @@ public class Text implements Resource {
     /**
      * Creates an empty resource of a given name and type.
      */
-    public Text(String name, List<String> lines) {
+    public Text(ResourceKind kind, String name, List<String> lines) {
+        this.kind = kind;
         this.name = name;
         this.lines = new ArrayList<>(lines);
     }
@@ -42,18 +43,25 @@ public class Text implements Resource {
      * Constructs a text from a given single-string content.
      * The content will be split into lines at line breaks.
      */
-    public Text(String name, String content) {
+    public Text(ResourceKind kind, String name, String content) {
+        this.kind = kind;
         this.name = name;
         this.content = content;
     }
 
-    /** Returns the (full) name of this text resource. */
     @Override
     public String getName() {
         return this.name;
     }
 
     private final String name;
+
+    @Override
+    public ResourceKind getKind() {
+        return this.kind;
+    }
+
+    private final ResourceKind kind;
 
     /** Returns the content of this text, as a single string. */
     public String getContent() {
@@ -113,9 +121,9 @@ public class Text implements Resource {
         if (newName.equals(getName())) {
             result = this;
         } else if (this.content == null) {
-            result = new Text(newName, this.lines);
+            result = new Text(getKind(), newName, this.lines);
         } else {
-            result = new Text(newName, this.content);
+            result = new Text(getKind(), newName, this.content);
             // Copy over the lines,  for the sake of efficiency
             result.lines = this.lines;
         }

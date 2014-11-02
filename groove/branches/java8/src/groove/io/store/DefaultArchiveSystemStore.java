@@ -26,6 +26,7 @@ import static groove.io.FileType.ZIP;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.Text;
 import groove.grammar.type.TypeLabel;
@@ -49,7 +50,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -162,36 +162,13 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
-        testInit();
-        return Collections.unmodifiableMap(getGraphMap(kind));
-    }
-
-    @Override
-    public Collection<AspectGraph> putGraphs(ResourceKind kind, Collection<AspectGraph> graphs,
-        boolean layout) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<String> names)
+    public Collection<Resource> put(ResourceKind kind, Collection<Resource> graphs, boolean layout)
         throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Map<String,Text> getTexts(ResourceKind kind) {
-        testInit();
-        return Collections.unmodifiableMap(getTextMap(kind));
-    }
-
-    @Override
-    public Collection<Text> putTexts(ResourceKind kind, Collection<Text> texts) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public Collection<Text> deleteTexts(ResourceKind kind, Collection<String> names)
+    public Collection<Resource> delete(ResourceKind kind, Collection<String> names)
         throws IOException {
         throw createImmutable();
     }
@@ -226,6 +203,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     @Override
     public void reload() throws IOException {
+        super.reload();
         ZipFile zipFile;
         if (this.file == null) {
             zipFile = ((JarURLConnection) this.url.openConnection()).getJarFile();
@@ -289,7 +267,6 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         }
         zipFile.close();
         notify(EnumSet.allOf(ResourceKind.class));
-        this.initialised = true;
     }
 
     /**
@@ -339,14 +316,15 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     /**
-     * Loads the named control programs from a zip file, using the prepared map
-     * from program names to zip entries.
+     * Loads the named textual resources from a zip file, using the prepared map
+     * from resource names to zip entries.
      */
     private void loadTexts(ResourceKind kind, ZipFile file, Map<String,ZipEntry> texts)
         throws IOException {
-        getTextMap(kind).clear();
+        Map<String,Resource> resourceMap = getResourceMap(kind);
+        resourceMap.clear();
         for (Map.Entry<String,ZipEntry> textEntry : texts.entrySet()) {
-            String controlName = kind.getFileType().stripExtension(textEntry.getKey());
+            String name = kind.getFileType().stripExtension(textEntry.getKey());
             List<String> lines = new ArrayList<>();
             InputStream in = file.getInputStream(textEntry.getValue());
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -355,7 +333,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                 lines.add(nextLine);
                 nextLine = reader.readLine();
             }
-            getTextMap(kind).put(controlName, new Text(controlName, lines));
+            resourceMap.put(name, new Text(kind, name, lines));
         }
     }
 
@@ -365,11 +343,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      */
     private void loadGraphs(ResourceKind kind, ZipFile file, Map<String,ZipEntry> graphs)
         throws IOException {
-        Map<String,AspectGraph> graphMap = getGraphMap(kind);
-        graphMap.clear();
+        Map<String,Resource> resourceMap = getResourceMap(kind);
+        resourceMap.clear();
         for (Map.Entry<String,AspectGraph> entry : loadObjects(kind, file, graphs).entrySet()) {
             String name = createQualName(entry.getKey()).toString();
-            graphMap.put(name, entry.getValue());
+            resourceMap.put(name, entry.getValue());
         }
         // set the type graphs themselves to active, if for those graphs whose name
         // is in the active type list of the grammar properties
@@ -377,7 +355,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             // enable the active types listed in the system properties
             Set<String> enabledTypes = this.properties.getActiveNames(kind);
             for (String enabledType : enabledTypes) {
-                GraphInfo.setEnabled(graphMap.get(enabledType), true);
+                GraphInfo.setEnabled((AspectGraph) resourceMap.get(enabledType), true);
             }
         }
     }
@@ -477,12 +455,6 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         this.observable.notifyObservers(new MyEdit(property));
     }
 
-    private void testInit() throws IllegalStateException {
-        if (!this.initialised) {
-            throw new IllegalStateException("Operation should only be called after initialisation");
-        }
-    }
-
     @Override
     protected boolean hasSystemProperties() {
         return this.hasSystemPropertiesFile;
@@ -507,8 +479,6 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     private final String entryName;
     /** Name of the rule system. */
     private final String grammarName;
-    /** Flag indicating whether the store has been loaded. */
-    private boolean initialised;
     /** The observable object associated with this system store. */
     private final Observable observable = new Observable();
     /** Flag whether this store contains a 'system.properties' file. */

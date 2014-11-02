@@ -21,6 +21,7 @@ import static groove.io.FileType.GRAMMAR;
 import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.Text;
 import groove.grammar.type.TypeLabel;
@@ -32,11 +33,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
@@ -67,10 +68,8 @@ abstract public class SystemStore extends UndoableEditSupport {
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind == PROPERTIES) {
                 result = !this.hasSystemProperties();
-            } else if (kind.isTextBased()) {
-                result = getTextMap(kind).isEmpty();
             } else {
-                result = getGraphMap(kind).isEmpty();
+                result = getResourceMap(kind).isEmpty();
             }
             if (!result) {
                 break;
@@ -79,68 +78,91 @@ abstract public class SystemStore extends UndoableEditSupport {
         return result;
     }
 
-    /**
-     * Immutable view on the name-to-aspect graph map of a given graph-based resource kind.
-     * @param kind the kind of resource for which the map is requested
+    /** Returns the resource corresponding to a given resource kind
+     * and resource name.
+     * @param kind the resource kind
+     * @param name the name of the requested resource
+     * @return the requested resource, or {@code null} if there is none
      */
-    abstract public Map<String,AspectGraph> getGraphs(ResourceKind kind);
+    final public Resource get(ResourceKind kind, String name) {
+        testInit();
+        return getResourceMap(kind).get(name);
+    }
+
+    /** Returns the graph resource corresponding to a given (graph-based) resource kind
+     * and resource name.
+     * @param kind the resource kind; should be graph-based
+     * @param name the name of the requested resource
+     * @return the requested graph, or {@code null} if there is none
+     */
+    final public AspectGraph getGraph(ResourceKind kind, String name) {
+        assert kind.isGraphBased() : String.format("Resource kind %s is not graph-based", kind);
+        return (AspectGraph) get(kind, name);
+    }
+
+    /** Returns the graph resource corresponding to a given (text-based) resource kind
+     * and resource name.
+     * @param kind the resource kind; should be text-based
+     * @param name the name of the requested resource
+     * @return the requested text, or {@code null} if there is none
+     */
+    final public Text getText(ResourceKind kind, String name) {
+        assert kind.isTextBased() : String.format("Resource kind %s is not text-based", kind);
+        return (Text) get(kind, name);
+    }
 
     /**
-     * Adds or replaces a set of graph-based resources in the store.
+     * Returns an unmodifiable name-to-resource map of a given resource kind.
+     * @param kind the kind of resource for which the map is requested
+     */
+    final public Map<String,Resource> get(ResourceKind kind) {
+        testInit();
+        return getResourceMap(kind);
+    }
+
+    /**
+     * Adds or replaces a set of resources in the store.
      * @param kind the kind of resource affected
-     * @param graphs the resources to be added or replaced
+     * @param resources the resources to be added or replaced
+     * @return old (replaced) resources
+     * @throws IOException if an error occurred while storing the rule
+     */
+    final public Collection<Resource> put(ResourceKind kind, Collection<Resource> resources)
+        throws IOException {
+        return put(kind, resources, false);
+    }
+
+    /**
+     * Adds or replaces a set of resources in the store, with a flag
+     * indicating that this is a minor (layout) change with respect to the existing resources.
+     * @param kind the kind of resource affected
+     * @param resources the resources to be added or replaced
      * @param layout flag indicating that this is a layout change only,
      * which should be propagated as {@link EditType#LAYOUT}.
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    abstract public Collection<AspectGraph> putGraphs(ResourceKind kind,
-        Collection<AspectGraph> graphs, boolean layout) throws IOException;
+    abstract public Collection<Resource> put(ResourceKind kind, Collection<Resource> resources,
+        boolean layout) throws IOException;
 
     /**
-     * Deletes a set of graph-based resources from the store.
+     * Deletes a set of resources from the store.
      * @param kind the resource kind; must be graph-based
      * @param names names of the resources to be deleted (non-null)
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    abstract public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<String> names)
+    abstract public Collection<Resource> delete(ResourceKind kind, Collection<String> names)
         throws IOException;
 
     /**
-     * Immutable view on the name-to-text map of a given text-based resource kind.
-     * @param kind the kind of resource for which the map is requested
-     */
-    abstract public Map<String,Text> getTexts(ResourceKind kind);
-
-    /**
-     * Adds or replaces a set of text-based resources in the store.
-     * @param kind the kind of resource affected
-     * @param texts the resources to be added or replaced
-     * @return old (replaced) resources
-     * @throws IOException if an error occurred while storing the rule
-     */
-    abstract public Collection<Text> putTexts(ResourceKind kind, Collection<Text> texts)
-        throws IOException;
-
-    /**
-     * Deletes a set of text-based resources from the store.
-     * @param kind the resource kind; must be text-based
-     * @param names names of the resources to be deleted (non-null)
-     * @return the named resources, insofar they existed
-     * @throws IOException if the store is immutable
-     */
-    abstract public Collection<Text> deleteTexts(ResourceKind kind, Collection<String> names)
-        throws IOException;
-
-    /**
-     * Renames a text-based resource in the store.
-     * It is an error if no resource with the old name exists, or if a rule
+     * Renames a resource in the store.
+     * It is an error if no resource with the old name exists, or if a resource
      * with the new name exists.
      * @param kind the resource kind; must be text-based
-     * @param oldName the name of the rule to be renamed (non-null)
-     * @param newName the intended new name of the rule (non-null)
-     * @throws IOException if an error occurred while storing the renamed rule
+     * @param oldName the name of the resource to be renamed (non-null)
+     * @param newName the intended new name of the resource (non-null)
+     * @throws IOException if an error occurred while storing the renamed resource
      */
     abstract public void rename(ResourceKind kind, String oldName, String newName)
         throws IOException;
@@ -164,8 +186,12 @@ abstract public class SystemStore extends UndoableEditSupport {
     /**
      * Reloads all data from the persistent storage into this store. Should be
      * called once immediately after construction of the store.
+     * To be overwritten by subclasses
+     * @throws IOException if an I/O error occurred during reloading
      */
-    abstract public void reload() throws IOException;
+    public void reload() throws IOException {
+        this.initialised = true;
+    }
 
     /** Returns a grammar model backed up by this store. */
     public GrammarModel toGrammarModel() {
@@ -202,20 +228,11 @@ abstract public class SystemStore extends UndoableEditSupport {
         this.undoSuspended = undoSuspended;
     }
 
-    /** Returns the resource map for a given graph-based resource kind. */
-    protected final Map<String,AspectGraph> getGraphMap(ResourceKind kind) {
-        Map<String,AspectGraph> result = this.graphMap.get(kind);
+    /** Returns the (modifiable) map from names to resources of a given kind. */
+    protected final Map<String,Resource> getResourceMap(ResourceKind kind) {
+        Map<String,Resource> result = this.resourceMap.get(kind);
         if (result == null) {
-            this.graphMap.put(kind, result = new TreeMap<String,AspectGraph>());
-        }
-        return result;
-    }
-
-    /** Returns the resource map for a given text-based resource kind. */
-    protected final Map<String,Text> getTextMap(ResourceKind kind) {
-        Map<String,Text> result = this.textMap.get(kind);
-        if (result == null) {
-            this.textMap.put(kind, result = new TreeMap<String,Text>());
+            this.resourceMap.put(kind, result = new HashMap<>());
         }
         return result;
     }
@@ -229,10 +246,8 @@ abstract public class SystemStore extends UndoableEditSupport {
     }
 
     /** The name-to-graph maps of the store. */
-    private final Map<ResourceKind,Map<String,AspectGraph>> graphMap =
-        new EnumMap<ResourceKind,Map<String,AspectGraph>>(ResourceKind.class);
-    /** The name-to-text maps of the store. */
-    private final Map<ResourceKind,Map<String,Text>> textMap = new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,Map<String,Resource>> resourceMap = new EnumMap<>(
+        ResourceKind.class);
 
     /** The grammar view associated with this store. */
     private GrammarModel model;
@@ -247,6 +262,20 @@ abstract public class SystemStore extends UndoableEditSupport {
             super.notifyObservers(arg);
         }
     };
+
+    /** Indicates if the store has been initialised. */
+    final protected boolean isInit() {
+        return this.initialised;
+    }
+
+    /** Tests if the store has been initialised by a call of {@link #reload()}. */
+    final protected void testInit() throws IllegalStateException {
+        if (!this.initialised) {
+            throw new IllegalStateException("Operation should only be called after initialisation");
+        }
+    }
+
+    private boolean initialised;
 
     /** Saves the content of a given system store to file. */
     static public SystemStore save(Path file, SystemStore store, boolean clearDir)
@@ -282,10 +311,8 @@ abstract public class SystemStore extends UndoableEditSupport {
             for (ResourceKind kind : ResourceKind.values()) {
                 if (kind == PROPERTIES) {
                     result.putProperties(store.getProperties());
-                } else if (kind.isTextBased()) {
-                    result.putTexts(kind, store.getTexts(kind).values());
                 } else {
-                    result.putGraphs(kind, store.getGraphs(kind).values(), false);
+                    result.put(kind, store.get(kind).values());
                 }
             }
             if (newFile != null) {

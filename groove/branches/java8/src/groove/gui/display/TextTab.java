@@ -2,6 +2,7 @@ package groove.gui.display;
 
 import groove.control.parse.CtrlTokenMaker;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.Text;
 import groove.grammar.model.TextBasedModel;
 import groove.gui.Icons;
@@ -129,7 +130,7 @@ final public class TextTab extends ResourceTab {
     public boolean setResource(String name) {
         Text program = null;
         if (name != null) {
-            program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+            program = getSimulatorModel().getStore().getText(getResourceKind(), name);
         }
         if (program != null) {
             setName(name);
@@ -178,9 +179,19 @@ final public class TextTab extends ResourceTab {
         updateErrors();
     }
 
+    @Override
+    public boolean isDirtMinor() {
+        return false;
+    }
+
     /** Returns the current program. */
     public final Text getProgram() {
-        return new Text(getName(), this.textArea.getText());
+        return new Text(getResourceKind(), getName(), this.textArea.getText());
+    }
+
+    @Override
+    public Resource getResource() {
+        return getProgram();
     }
 
     @Override
@@ -209,7 +220,7 @@ final public class TextTab extends ResourceTab {
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSaveText(getProgram());
+        getSaveAction().doSave(getProgram(), false);
     }
 
     /** Creates a token maker for the text area of this tab. */

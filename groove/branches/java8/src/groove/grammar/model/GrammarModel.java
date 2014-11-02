@@ -38,6 +38,7 @@ import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
+import groove.util.Exceptions;
 import groove.util.Groove;
 import groove.util.Version;
 import groove.util.parse.FormatError;
@@ -135,10 +136,8 @@ public class GrammarModel implements Observer {
     public Set<String> getNames(ResourceKind kind) {
         if (kind == ResourceKind.PROPERTIES) {
             return null;
-        } else if (kind.isTextBased()) {
-            return getStore().getTexts(kind).keySet();
         } else {
-            return getStore().getGraphs(kind).keySet();
+            return getStore().get(kind).keySet();
         }
     }
 
@@ -316,7 +315,7 @@ public class GrammarModel implements Observer {
         if (this.startGraphModel == null) {
             TreeMap<String,AspectGraph> graphMap = new TreeMap<String,AspectGraph>();
             for (String name : getActiveNames(HOST)) {
-                graphMap.put(name, getStore().getGraphs(HOST).get(name));
+                graphMap.put(name, getStore().getGraph(HOST, name));
             }
             AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
             if (startGraph != null) {
@@ -569,12 +568,7 @@ public class GrammarModel implements Observer {
         }
         // update the set of resource models
         Map<String,ResourceModel<?>> modelMap = this.resourceMap.get(kind);
-        Map<String,? extends Object> sourceMap;
-        if (kind.isGraphBased()) {
-            sourceMap = getStore().getGraphs(kind);
-        } else {
-            sourceMap = getStore().getTexts(kind);
-        }
+        Map<String,? extends Resource> sourceMap = getStore().get(kind);
         // restrict the resources to those whose names are in the store
         modelMap.keySet().retainAll(sourceMap.keySet());
         // collect the new active names
@@ -608,31 +602,40 @@ public class GrammarModel implements Observer {
     private ResourceModel<?> createModel(ResourceKind kind, String name) {
         ResourceModel<?> result = null;
         if (kind.isGraphBased()) {
-            AspectGraph graph = getStore().getGraphs(kind).get(name);
+            AspectGraph graph = getStore().getGraph(kind, name);
             if (graph != null) {
                 result = createGraphModel(graph);
             }
         } else {
             assert kind.isTextBased();
-            Text text = getStore().getTexts(kind).get(name);
+            Text text = getStore().getText(kind, name);
             if (text != null) {
-                switch (kind) {
-                case CONTROL:
-                    result = new ControlModel(this, text);
-                    break;
-                case PROLOG:
-                    result = new PrologModel(this, text);
-                    break;
-                case GROOVY:
-                    result = new GroovyModel(this, text);
-                    break;
-                case CONFIG:
-                    result = new ConfigModel(this, text);
-                    break;
-                default:
-                    assert false;
-                }
+                result = createTextModel(text);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a text-based model for a given text.
+     */
+    private TextBasedModel<?> createTextModel(Text text) {
+        TextBasedModel<?> result;
+        switch (text.getKind()) {
+        case CONTROL:
+            result = new ControlModel(this, text);
+            break;
+        case PROLOG:
+            result = new PrologModel(this, text);
+            break;
+        case GROOVY:
+            result = new GroovyModel(this, text);
+            break;
+        case CONFIG:
+            result = new ConfigModel(this, text);
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
         return result;
     }
@@ -641,7 +644,7 @@ public class GrammarModel implements Observer {
      * Creates a graph-based resource model for a given graph.
      */
     public GraphBasedModel<?> createGraphModel(AspectGraph graph) {
-        GraphBasedModel<?> result = null;
+        GraphBasedModel<?> result;
         switch (graph.getRole()) {
         case HOST:
             result = new HostModel(this, graph);
@@ -653,7 +656,7 @@ public class GrammarModel implements Observer {
             result = new TypeModel(this, graph);
             break;
         default:
-            assert false;
+            throw Exceptions.UNREACHABLE;
         }
         return result;
     }

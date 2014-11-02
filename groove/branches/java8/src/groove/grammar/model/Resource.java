@@ -29,4 +29,9 @@ public interface Resource {
      * Returns this object if the new name equals the old.
      */
     Resource rename(String newName);
+
+    /**
+     * Returns the resource kind of this resource.
+     */
+    ResourceKind getKind();
 }

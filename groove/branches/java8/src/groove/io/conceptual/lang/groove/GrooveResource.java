@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -75,8 +75,8 @@ public class GrooveResource extends ExportableResource {
                     || graph.getGraphName().startsWith("Default")) {
                     constraintCount++;
                 } else {
-                    System.out.println("Graph " + graph.getGraphName()
-                        + ", nodes: " + nodes + ", edges: " + edges);
+                    System.out.println("Graph " + graph.getGraphName() + ", nodes: " + nodes
+                        + ", edges: " + edges);
                 }
             }
         }
@@ -94,32 +94,16 @@ public class GrooveResource extends ExportableResource {
             for (GrammarGraph graph : this.m_graphs.get(role).values()) {
                 AbsGraph absGraph = graph.getGraph();
                 String safeName =
-                    GrooveUtil.getSafeResource(this.m_namespace
-                        + QualName.SEPARATOR + graph.getGraphName());
-                AspectGraph aspectGraph =
-                    absGraph.toAspectGraph(safeName, graph.getGraphRole());
+                    GrooveUtil.getSafeResource(this.m_namespace + QualName.SEPARATOR
+                        + graph.getGraphName());
+                AspectGraph aspectGraph = absGraph.toAspectGraph(safeName, graph.getGraphRole());
 
                 try {
-                    switch (graph.getGraphRole()) {
-                    case TYPE:
-                        //m_simModel.doAddGraph(ResourceKind.TYPE, aspectGraph, false);
-                        this.m_simModel.getGrammar().getStore().putGraphs(
-                            ResourceKind.TYPE,
-                            Collections.singleton(aspectGraph), false);
-                        break;
-                    case HOST:
-                        //m_simModel.doAddGraph(ResourceKind.HOST, aspectGraph, false);
-                        this.m_simModel.getGrammar().getStore().putGraphs(
-                            ResourceKind.HOST,
-                            Collections.singleton(aspectGraph), false);
-                        break;
-                    case RULE:
-                        //m_simModel.doAddGraph(ResourceKind.RULE, aspectGraph, false);
-                        this.m_simModel.getGrammar().getStore().putGraphs(
-                            ResourceKind.RULE,
-                            Collections.singleton(aspectGraph), false);
-                        break;
-                    }
+                    this.m_simModel.getGrammar()
+                        .getStore()
+                        .put(aspectGraph.getKind(),
+                            Collections.singleton(aspectGraph),
+                            false);
 
                     //Timer.stop(timer);
                     this.m_simModel.doRefreshGrammar();
@@ -127,8 +111,7 @@ public class GrooveResource extends ExportableResource {
 
                     if (this.m_layouter != null) {
                         AspectJGraph jGraph =
-                            new AspectJGraph(this.m_sim,
-                                groove.gui.display.DisplayKind.TYPE, false);
+                            new AspectJGraph(this.m_sim, groove.gui.display.DisplayKind.TYPE, false);
                         AspectJModel model = jGraph.newModel();
                         model.loadGraph(aspectGraph);
                         try {
@@ -156,21 +139,18 @@ public class GrooveResource extends ExportableResource {
         for (GraphRole role : this.m_graphs.keySet()) {
             for (GrammarGraph graph : this.m_graphs.get(role).values()) {
                 String safeName =
-                    GrooveUtil.getSafeResource(this.m_namespace
-                        + QualName.SEPARATOR + graph.getGraphName());
+                    GrooveUtil.getSafeResource(this.m_namespace + QualName.SEPARATOR
+                        + graph.getGraphName());
                 try {
                     switch (graph.getGraphRole()) {
                     case TYPE:
-                        this.m_simModel.doDelete(ResourceKind.TYPE,
-                            Collections.singleton(safeName));
+                        this.m_simModel.doDelete(ResourceKind.TYPE, Collections.singleton(safeName));
                         break;
                     case HOST:
-                        this.m_simModel.doDelete(ResourceKind.HOST,
-                            Collections.singleton(safeName));
+                        this.m_simModel.doDelete(ResourceKind.HOST, Collections.singleton(safeName));
                         break;
                     case RULE:
-                        this.m_simModel.doDelete(ResourceKind.RULE,
-                            Collections.singleton(safeName));
+                        this.m_simModel.doDelete(ResourceKind.RULE, Collections.singleton(safeName));
                         break;
                     }
                 } catch (IOException e) {

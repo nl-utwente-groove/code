@@ -141,46 +141,48 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,Text> getTexts(ResourceKind kind) {
-        testInit();
-        return Collections.unmodifiableMap(getTextMap(kind));
-    }
-
-    @Override
-    public Collection<Text> putTexts(ResourceKind kind, Collection<Text> texts) throws IOException {
-        Collection<Text> result = null;
-        TextBasedEdit edit = doPutTexts(kind, texts);
+    public Collection<Resource> put(ResourceKind kind, Collection<Resource> ress, boolean layout)
+        throws IOException {
+        Collection<Resource> result = Collections.emptyList();
+        ResourceEdit edit = doPut(kind, ress, layout);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldTexts();
+            result = edit.getOldRess();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of {@link #putTexts(ResourceKind, Collection)}.
+     * Implements the functionality of {@link #put(ResourceKind, Collection, boolean)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private TextBasedEdit doPutTexts(ResourceKind kind, Collection<Text> newTexts)
+    private ResourceEdit doPut(ResourceKind kind, Collection<Resource> newRess, boolean layout)
         throws IOException {
         testInit();
-        List<Text> oldTexts = new ArrayList<>(newTexts.size());
+        List<Resource> oldRess = new ArrayList<>(newRess.size());
         Set<String> newNames = new HashSet<String>();
-        for (Text text : newTexts) {
-            String name = text.getName();
-            saveText(kind, name, text);
-            Text oldText = getTextMap(kind).put(name, text);
-            if (oldText == null) {
+        for (Resource newRes : newRess) {
+            String name = newRes.getName();
+            saveResource(newRes);
+            Resource oldRes = getResourceMap(kind).put(name, newRes);
+            if (oldRes == null) {
                 newNames.add(name);
             } else {
-                oldTexts.add(oldText);
+                oldRess.add(oldRes);
             }
         }
         GrammarProperties oldProps = getProperties();
         GrammarProperties newProps = doEnableDefaultName(kind, newNames);
-        return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE : EditType.MODIFY,
-            oldTexts, newTexts, oldProps, newProps);
+        EditType type;
+        if (oldRess.isEmpty()) {
+            type = EditType.CREATE;
+        } else if (layout) {
+            type = EditType.LAYOUT;
+        } else {
+            type = EditType.MODIFY;
+        }
+        return new ResourceEdit(kind, type, oldRess, newRess, oldProps, newProps);
     }
 
     /**
@@ -203,35 +205,35 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Collection<Text> deleteTexts(ResourceKind kind, Collection<String> names)
+    public Collection<Resource> delete(ResourceKind kind, Collection<String> name)
         throws IOException {
-        Collection<Text> result = null;
-        TextBasedEdit deleteEdit = doDeleteTexts(kind, names);
-        if (deleteEdit != null) {
-            deleteEdit.checkAndSetVersion();
-            postEdit(deleteEdit);
-            result = deleteEdit.getOldTexts();
+        Collection<Resource> result = Collections.emptySet();
+        ResourceEdit edit = doDelete(kind, name);
+        if (edit != null) {
+            edit.checkAndSetVersion();
+            postEdit(edit);
+            result = edit.getOldRess();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of the {@link #deleteTexts(ResourceKind, Collection)}
+     * Implements the functionality of the {@link #delete(ResourceKind, Collection)}
      * method. Returns a corresponding undoable edit.
      */
-    private TextBasedEdit doDeleteTexts(ResourceKind kind, Collection<String> names)
-        throws IOException {
+    private ResourceEdit doDelete(ResourceKind kind, Collection<String> names) throws IOException {
         testInit();
-        List<Text> oldTexts = new ArrayList<>(names.size());
+        List<Resource> oldRess = new ArrayList<>(names.size());
         boolean activeChanged = false;
-        Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
+        Set<String> activeNames =
+            kind == RULE ? null : new TreeSet<String>(getProperties().getActiveNames(kind));
         for (String name : names) {
             assert name != null;
-            Text text = getTextMap(kind).remove(name);
-            if (text != null) {
-                oldTexts.add(text);
-                Files.deleteIfExists(createFile(kind, name));
-                activeChanged |= activeNames.remove(name);
+            Resource res = getResourceMap(kind).remove(name);
+            if (res != null) {
+                oldRess.add(res);
+                deleteResource(res);
+                activeChanged |= activeNames != null && activeNames.remove(name);
             }
         }
         // change the control-related system properties, if necessary
@@ -243,16 +245,13 @@ public class DefaultFileSystemStore extends SystemStore {
             newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
-        return new TextBasedEdit(kind, EditType.DELETE, oldTexts, Collections.emptyList(),
-            oldProps, newProps);
+        return new ResourceEdit(kind, EditType.DELETE, oldRess, Collections.emptyList(), oldProps,
+            newProps);
     }
 
     @Override
     public void rename(ResourceKind kind, String oldName, String newName) throws IOException {
-        MyEdit edit =
-            kind.isGraphBased() ? doRenameGraph(kind, oldName, newName) : doRenameText(kind,
-                oldName,
-                newName);
+        MyEdit edit = doRename(kind, oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -264,62 +263,30 @@ public class DefaultFileSystemStore extends SystemStore {
      * for text-based resources.
      * Returns an undoable edit wrapping this functionality.
      */
-    private TextBasedEdit doRenameText(ResourceKind kind, String oldName, String newName)
+    private ResourceEdit doRename(ResourceKind kind, String oldName, String newName)
         throws IOException {
         testInit();
-        Text text = getTextMap(kind).remove(oldName);
-        assert text != null;
-        Text newText = text.rename(newName);
-        Files.move(createFile(kind, oldName), createFile(kind, newName));
-        Text previous = getTextMap(kind).put(newName, text);
+        Resource oldRes = getResourceMap(kind).remove(oldName);
+        assert oldRes != null;
+        Resource newRes = oldRes.rename(newName);
+        replaceResource(oldRes, newRes);
+        Resource previous = getResourceMap(kind).put(newName, newRes);
         assert previous == null;
         // check if this affects the system properties
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
-        Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
-        if (activeNames.remove(oldName)) {
-            oldProps = getProperties();
-            newProps = getProperties().clone();
-            activeNames.add(newName);
-            newProps.setActiveNames(kind, activeNames);
-            doPutProperties(newProps);
-        }
-        return new TextBasedEdit(kind, EditType.RENAME, Collections.singleton(text),
-            Collections.singleton(newText), oldProps, newProps);
-    }
-
-    /**
-     * Implements the functionality of {@link #rename(ResourceKind, String, String)}
-     * for graph-based resources.
-     * Returns an undoable edit wrapping this functionality.
-     */
-    private GraphBasedEdit doRenameGraph(ResourceKind kind, String oldName, String newName)
-        throws IOException {
-        testInit();
-        AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
-        assert oldGraph != null;
-        Path oldFile = createFile(kind, oldName);
-        this.marshaller.deleteGraph(oldFile);
-        AspectGraph newGraph = oldGraph.rename(newName);
-        AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
-        assert previous == null;
-        this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, newName));
-        deleteEmptyDirectories(oldFile.getParent());
-        // change the properties if there is a change in the enabled types
-        GrammarProperties oldProps = null;
-        GrammarProperties newProps = null;
         if (kind != RULE) {
-            Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
+            Set<String> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
             if (activeNames.remove(oldName)) {
                 oldProps = getProperties();
-                newProps = oldProps.clone();
+                newProps = getProperties().clone();
                 activeNames.add(newName);
                 newProps.setActiveNames(kind, activeNames);
                 doPutProperties(newProps);
             }
         }
-        return new GraphBasedEdit(kind, EditType.RENAME, Collections.singleton(oldGraph),
-            Collections.singleton(newGraph), oldProps, newProps);
+        return new ResourceEdit(kind, EditType.RENAME, Collections.singleton(oldRes),
+            Collections.singleton(newRes), oldProps, newProps);
     }
 
     /**
@@ -347,109 +314,9 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
-        testInit();
-        return Collections.unmodifiableMap(getGraphMap(kind));
-    }
-
-    @Override
-    public Collection<AspectGraph> putGraphs(ResourceKind kind, Collection<AspectGraph> graphs,
-        boolean layout) throws IOException {
-        Collection<AspectGraph> result = Collections.emptyList();
-        GraphBasedEdit edit = doPutGraphs(kind, graphs, layout);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldGraphs();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #putGraphs(ResourceKind, Collection, boolean)}. Returns
-     * an undoable edit wrapping this functionality.
-     * @param layout flag indicating that this is a layout change only,
-     * which should be propagated as {@link EditType#LAYOUT}.
-     */
-    private GraphBasedEdit doPutGraphs(ResourceKind kind, Collection<AspectGraph> newGraphs,
-        boolean layout) throws IOException {
-        testInit();
-        Set<String> newNames = new HashSet<String>();
-        // if we're relabelling, it may be that there are already graphs
-        // under the names of the new ones
-        List<AspectGraph> oldGraphs = new ArrayList<>(newGraphs.size());
-        for (AspectGraph newGraph : newGraphs) {
-            String name = newGraph.getName();
-            this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, name));
-            AspectGraph oldGraph = getGraphMap(kind).put(name, newGraph);
-            if (oldGraph == null) {
-                newNames.add(name);
-            } else {
-                oldGraphs.add(oldGraph);
-            }
-        }
-        GrammarProperties oldProps = getProperties();
-        GrammarProperties newProps = doEnableDefaultName(kind, newNames);
-        EditType type;
-        if (oldGraphs.isEmpty()) {
-            type = EditType.CREATE;
-        } else if (layout) {
-            type = EditType.LAYOUT;
-        } else {
-            type = EditType.MODIFY;
-        }
-        return new GraphBasedEdit(kind, type, oldGraphs, newGraphs, oldProps, newProps);
-    }
-
-    @Override
-    public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<String> name)
-        throws IOException {
-        Collection<AspectGraph> result = Collections.emptySet();
-        GraphBasedEdit edit = doDeleteGraphs(kind, name);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldGraphs();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of the {@link #deleteGraphs(ResourceKind, Collection)} method.
-     * Returns a corresponding undoable edit.
-     */
-    private GraphBasedEdit doDeleteGraphs(ResourceKind kind, Collection<String> names)
-        throws IOException {
-        testInit();
-        List<AspectGraph> deletedGraphs = new ArrayList<AspectGraph>(names.size());
-        Set<String> activeNames =
-            kind == RULE ? null : new TreeSet<String>(getProperties().getActiveNames(kind));
-        boolean activeChanged = false;
-        for (String name : names) {
-            AspectGraph graph = getGraphMap(kind).remove(name);
-            assert graph != null;
-            Path oldFile = createFile(kind, name);
-            this.marshaller.deleteGraph(oldFile);
-            deleteEmptyDirectories(oldFile.getParent());
-            deletedGraphs.add(graph);
-            activeChanged |= activeNames != null && activeNames.remove(name);
-        }
-        GrammarProperties oldProps = null;
-        GrammarProperties newProps = null;
-        if (activeChanged) {
-            oldProps = getProperties();
-            newProps = getProperties().clone();
-            newProps.setActiveNames(kind, activeNames);
-            doPutProperties(newProps);
-        }
-        return new GraphBasedEdit(kind, EditType.DELETE, deletedGraphs,
-            Collections.<AspectGraph>emptySet(), oldProps, newProps);
-    }
-
-    @Override
     public GrammarProperties getProperties() {
         GrammarProperties properties = null;
-        if (!this.initialised) {
+        if (!isInit()) {
             try {
                 properties = this.loadGrammarProperties();
             } catch (IOException e) {
@@ -498,14 +365,14 @@ public class DefaultFileSystemStore extends SystemStore {
         MyCompoundEdit result = new MyCompoundEdit(Options.REPLACE_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
-                List<AspectGraph> newGraphs = new ArrayList<AspectGraph>(getGraphs(kind).size());
-                for (AspectGraph graph : getGraphs(kind).values()) {
-                    AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
+                List<Resource> newGraphs = new ArrayList<>(get(kind).size());
+                for (Resource graph : get(kind).values()) {
+                    AspectGraph newGraph = ((AspectGraph) graph).relabel(oldLabel, newLabel);
                     if (newGraph != graph) {
                         newGraphs.add(newGraph);
                     }
                 }
-                result.addEdit(doPutGraphs(kind, newGraphs, false));
+                result.addEdit(doPut(kind, newGraphs, false));
             }
         }
         GrammarProperties newProperties = this.properties.relabel(oldLabel, newLabel);
@@ -536,14 +403,14 @@ public class DefaultFileSystemStore extends SystemStore {
         MyCompoundEdit result = new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
-                List<AspectGraph> newGraphs = new ArrayList<AspectGraph>(getGraphs(kind).size());
-                for (AspectGraph graph : getGraphs(kind).values()) {
-                    AspectGraph newGraph = graph.renumber();
+                List<Resource> newGraphs = new ArrayList<>(get(kind).size());
+                for (Resource graph : get(kind).values()) {
+                    AspectGraph newGraph = ((AspectGraph) graph).renumber();
                     if (newGraph != graph) {
                         newGraphs.add(newGraph);
                     }
                 }
-                result.addEdit(doPutGraphs(kind, newGraphs, false));
+                result.addEdit(doPut(kind, newGraphs, false));
             }
         }
         result.end();
@@ -552,6 +419,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
     @Override
     public void reload() throws IOException {
+        super.reload();
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind == PROPERTIES) {
                 loadProperties();
@@ -562,7 +430,6 @@ public class DefaultFileSystemStore extends SystemStore {
             }
         }
         notifyObservers(new MyEdit(EditType.CREATE, EnumSet.allOf(ResourceKind.class)));
-        this.initialised = true;
     }
 
     @Override
@@ -618,7 +485,8 @@ public class DefaultFileSystemStore extends SystemStore {
      * extension, and a given role.
      */
     private void loadGraphs(ResourceKind kind) throws IOException {
-        getGraphMap(kind).clear();
+        Map<String,Resource> resourceMap = getResourceMap(kind);
+        resourceMap.clear();
         Map<QualName,Path> files;
         try {
             // read in the text files
@@ -636,7 +504,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
             // store graph in corresponding map
             AspectGraph graph = xmlGraph.toAspectGraph();
-            Object oldEntry = getGraphMap(kind).put(fileEntry.getKey().toString(), graph);
+            Object oldEntry = resourceMap.put(fileEntry.getKey().toString(), graph);
             assert oldEntry == null : String.format("Duplicate %s name '%s'",
                 kind.getGraphRole(),
                 fileEntry.getKey());
@@ -648,7 +516,8 @@ public class DefaultFileSystemStore extends SystemStore {
      * extension, and a given kind.
      */
     private void loadTexts(ResourceKind kind) throws IOException {
-        getTextMap(kind).clear();
+        Map<String,Resource> resourceMap = getResourceMap(kind);
+        resourceMap.clear();
         Map<QualName,Path> files;
         try {
             // read in the text files
@@ -660,9 +529,9 @@ public class DefaultFileSystemStore extends SystemStore {
             String name = fileEntry.getKey().toString();
             // read the file in as a single string
             List<String> lines = Files.readAllLines(fileEntry.getValue());
-            Text program = new Text(name, lines);
+            Text program = new Text(kind, name, lines);
             // insert the string into the resource map
-            getTextMap(kind).put(fileEntry.getKey().toString(), program);
+            resourceMap.put(fileEntry.getKey().toString(), program);
         }
     }
 
@@ -749,9 +618,41 @@ public class DefaultFileSystemStore extends SystemStore {
         return this.file.resolve(PROPERTIES.getFileType().addExtension(this.name));
     }
 
-    private void saveText(ResourceKind kind, String name, Text program) throws IOException {
-        Path file = createFile(kind, name);
-        Files.write(file, program.getLines());
+    /**
+     * Deletes a file with a given name and resource kind.
+     */
+    private void deleteResource(Resource resource) throws IOException {
+        Path oldFile = createFile(resource);
+        if (resource instanceof Text) {
+            Files.deleteIfExists(oldFile);
+        } else {
+            this.marshaller.deleteGraph(oldFile);
+        }
+        deleteEmptyDirectories(oldFile.getParent());
+    }
+
+    /**
+     * Replaces the file containing an old resource by a file containing a new resource
+     */
+    private void replaceResource(Resource oldRes, Resource newRes) throws IOException {
+        Path oldFile = createFile(oldRes);
+        Path newFile = createFile(newRes);
+        if (oldRes instanceof Text) {
+            Files.move(oldFile, newFile);
+        } else {
+            this.marshaller.deleteGraph(oldFile);
+            this.marshaller.saveGraph(((AspectGraph) newRes).toPlainGraph(), newFile);
+        }
+        deleteEmptyDirectories(oldFile.getParent());
+    }
+
+    private void saveResource(Resource resource) throws IOException {
+        Path file = createFile(resource);
+        if (resource instanceof Text) {
+            Files.write(file, ((Text) resource).getLines());
+        } else {
+            this.marshaller.saveGraph(((AspectGraph) resource).toPlainGraph(), file);
+        }
     }
 
     private void saveProperties() throws IOException {
@@ -768,16 +669,12 @@ public class DefaultFileSystemStore extends SystemStore {
         Files.deleteIfExists(oldPropertiesFile);
     }
 
-    private void testInit() throws IllegalStateException {
-        if (!this.initialised) {
-            throw new IllegalStateException("Operation should only be called after initialisation");
-        }
-    }
-
     /**
      * Creates a file name for a given resource kind.
      */
-    private Path createFile(ResourceKind kind, String name) throws IOException {
+    private Path createFile(Resource resource) throws IOException {
+        ResourceKind kind = resource.getKind();
+        String name = resource.getName();
         try {
             Path basis = this.file;
             QualName qualName = new QualName(name);
@@ -818,8 +715,6 @@ public class DefaultFileSystemStore extends SystemStore {
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
     private final GxlIO marshaller;
-    /** Flag indicating whether the store has been loaded. */
-    private boolean initialised;
     /** Flag whether this store contains a 'system.properties' file. */
     private boolean hasSystemPropertiesFile = false;
 
@@ -980,12 +875,12 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /** Edit consisting of additions and deletions of text-based resources. */
-    private class TextBasedEdit extends MyEdit {
-        public TextBasedEdit(ResourceKind kind, EditType type, Collection<Text> oldTexts,
-            Collection<Text> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
+    private class ResourceEdit extends MyEdit {
+        public ResourceEdit(ResourceKind kind, EditType type, Collection<Resource> oldRess,
+            Collection<Resource> newRess, GrammarProperties oldProps, GrammarProperties newProps) {
             super(type, kind);
-            this.oldTexts = oldTexts;
-            this.newTexts = newTexts;
+            this.oldRess = oldRess;
+            this.newRess = newRess;
             this.newProps = newProps;
             // properties only changed if newProps is non-null
             if (newProps == null) {
@@ -999,7 +894,7 @@ public class DefaultFileSystemStore extends SystemStore {
         @Override
         public String getPresentationName() {
             String result = Options.getEditActionName(getType(), getResourceKind(), false);
-            if (this.newTexts.size() > 1 || this.oldTexts.size() > 1) {
+            if (this.newRess.size() > 1 || this.oldRess.size() > 1) {
                 result += "s";
             }
             return result;
@@ -1009,13 +904,14 @@ public class DefaultFileSystemStore extends SystemStore {
         public void redo() throws CannotRedoException {
             super.redo();
             try {
-                Set<String> deleted = getNames(this.oldTexts);
-                deleted.removeAll(getNames(this.newTexts));
-                doDeleteTexts(getResourceKind(), deleted);
+                boolean layout = getType() == LAYOUT;
+                Set<String> deleted = getNames(this.oldRess);
+                deleted.removeAll(getNames(this.newRess));
+                doDelete(getResourceKind(), deleted);
                 if (this.newProps != null) {
                     doPutProperties(this.newProps);
                 }
-                doPutTexts(getResourceKind(), this.newTexts);
+                doPut(getResourceKind(), this.newRess, layout);
             } catch (IOException exc) {
                 throw new CannotRedoException();
             }
@@ -1026,13 +922,14 @@ public class DefaultFileSystemStore extends SystemStore {
         public void undo() throws CannotUndoException {
             super.undo();
             try {
-                Set<String> deleted = getNames(this.newTexts);
-                deleted.removeAll(getNames(this.oldTexts));
-                doDeleteTexts(getResourceKind(), deleted);
+                boolean layout = getType() == LAYOUT;
+                Set<String> deleted = getNames(this.newRess);
+                deleted.removeAll(getNames(this.oldRess));
+                doDelete(getResourceKind(), deleted);
                 if (this.oldProps != null) {
                     doPutProperties(this.oldProps);
                 }
-                doPutTexts(getResourceKind(), this.oldTexts);
+                doPut(getResourceKind(), this.oldRess, layout);
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
@@ -1040,96 +937,14 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** Returns the deleted texts. */
-        public final Collection<Text> getOldTexts() {
-            return this.oldTexts;
+        public final Collection<Resource> getOldRess() {
+            return this.oldRess;
         }
 
         /** The deleted texts, if any. */
-        private final Collection<Text> oldTexts;
+        private final Collection<Resource> oldRess;
         /** The added texts. */
-        private final Collection<Text> newTexts;
-        /** The old system properties; possibly {@code null}. */
-        private final GrammarProperties oldProps;
-        /** The new system properties; possibly {@code null}. */
-        private final GrammarProperties newProps;
-    }
-
-    /** Edit consisting of additions and deletions of graph-based resources. */
-    private class GraphBasedEdit extends MyEdit {
-        public GraphBasedEdit(ResourceKind kind, EditType type, Collection<AspectGraph> oldGraphs,
-            Collection<AspectGraph> newGraphs, GrammarProperties oldProps,
-            GrammarProperties newProps) {
-            super(type, kind);
-            this.oldGraphs = oldGraphs;
-            this.newGraphs = newGraphs;
-            this.newProps = newProps;
-            // properties only changed if newProps is non-null
-            if (newProps == null) {
-                this.oldProps = null;
-            } else {
-                this.oldProps = oldProps;
-                addChange(PROPERTIES);
-            }
-        }
-
-        @Override
-        public String getPresentationName() {
-            String result = Options.getEditActionName(getType(), getResourceKind(), false);
-            if (this.newGraphs.size() > 1 || this.oldGraphs.size() > 1) {
-                result += "s";
-            }
-            return result;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                boolean layout = getType() == LAYOUT;
-                if (!layout) {
-                    Set<String> deleted = getNames(this.oldGraphs);
-                    deleted.removeAll(getNames(this.newGraphs));
-                    doDeleteGraphs(getResourceKind(), deleted);
-                    if (this.newProps != null) {
-                        doPutProperties(this.newProps);
-                    }
-                }
-                doPutGraphs(getResourceKind(), this.newGraphs, layout);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                boolean layout = getType() == LAYOUT;
-                if (!layout) {
-                    Set<String> deleted = getNames(this.newGraphs);
-                    deleted.removeAll(getNames(this.oldGraphs));
-                    doDeleteGraphs(getResourceKind(), deleted);
-                    if (this.oldProps != null) {
-                        doPutProperties(this.oldProps);
-                    }
-                }
-                doPutGraphs(getResourceKind(), this.oldGraphs, layout);
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted graphs. */
-        public final Collection<AspectGraph> getOldGraphs() {
-            return this.oldGraphs;
-        }
-
-        /** The deleted graph, if any. */
-        private final Collection<AspectGraph> oldGraphs;
-        /** The added graph. */
-        private final Collection<AspectGraph> newGraphs;
+        private final Collection<Resource> newRess;
         /** The old system properties; possibly {@code null}. */
         private final GrammarProperties oldProps;
         /** The new system properties; possibly {@code null}. */

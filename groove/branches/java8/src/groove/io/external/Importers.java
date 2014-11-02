@@ -16,14 +16,12 @@
  */
 package groove.io.external;
 
-import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
-import groove.grammar.model.Text;
 import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
-import groove.io.external.Importer.Resource;
 import groove.io.external.format.AutPorter;
 import groove.io.external.format.ColImporter;
 import groove.io.external.format.DotPorter;
@@ -75,37 +73,21 @@ public class Importers {
         ri.setSimulator(simulator);
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
-            Map<ResourceKind,Collection<AspectGraph>> newGraphs = new EnumMap<>(ResourceKind.class);
-            Map<ResourceKind,Collection<Text>> newTexts = new EnumMap<>(ResourceKind.class);
+            Map<ResourceKind,Collection<Resource>> newRess = new EnumMap<>(ResourceKind.class);
             for (Resource resource : resources) {
                 String name = resource.getName();
                 ResourceKind kind = resource.getKind();
                 if (grammar.getResource(kind, name) == null
                     || confirmOverwrite(simulator.getFrame(), kind, name)) {
-                    if (resource.isGraph()) {
-                        AspectGraph graph = resource.getGraphResource();
-                        Collection<AspectGraph> graphs = newGraphs.get(kind);
-                        if (graphs == null) {
-                            newGraphs.put(kind, graphs = new ArrayList<>());
-                        }
-                        graphs.add(graph);
-                    } else {
-                        Text text = resource.getTextResource();
-                        Collection<Text> texts = newTexts.get(kind);
-                        if (texts == null) {
-                            newTexts.put(kind, texts = new ArrayList<>());
-                        }
-                        texts.add(text);
-                        grammar.getStore()
-                            .putTexts(resource.getKind(), Collections.singleton(text));
+                    Collection<groove.grammar.model.Resource> ress = newRess.get(kind);
+                    if (ress == null) {
+                        newRess.put(kind, ress = new ArrayList<>());
                     }
+                    ress.add(resource);
                 }
             }
-            for (Map.Entry<ResourceKind,Collection<AspectGraph>> entry : newGraphs.entrySet()) {
-                grammar.getStore().putGraphs(entry.getKey(), entry.getValue(), true);
-            }
-            for (Map.Entry<ResourceKind,Collection<Text>> entry : newTexts.entrySet()) {
-                grammar.getStore().putTexts(entry.getKey(), entry.getValue());
+            for (Map.Entry<ResourceKind,Collection<groove.grammar.model.Resource>> e : newRess.entrySet()) {
+                grammar.getStore().put(e.getKey(), e.getValue());
             }
         }
     }

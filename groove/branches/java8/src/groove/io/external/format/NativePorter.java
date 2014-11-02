@@ -19,6 +19,7 @@ package groove.io.external.format;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.Text;
 import groove.grammar.model.TextBasedModel;
@@ -91,10 +92,10 @@ public class NativePorter extends AbstractExporter implements Importer {
                 AttrGraph xmlGraph = GxlIO.instance().loadGraph(file);
                 xmlGraph.setRole(kind.getGraphRole());
                 xmlGraph.setName(name);
-                result = new Resource(kind, name, xmlGraph.toAspectGraph());
+                result = xmlGraph.toAspectGraph();
             } else {
                 List<String> program = Files.readAllLines(file);
-                result = new Resource(kind, name, new Text(name, program));
+                result = new Text(kind, name, program);
             }
         } catch (IOException e) {
             throw new PortException(e);

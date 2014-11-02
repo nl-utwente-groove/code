@@ -2,6 +2,7 @@ package groove.gui.display;
 
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.graph.GraphProperties;
 import groove.gui.Icons;
@@ -196,11 +197,20 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private TypeTree labelTree;
 
     @Override
+    public Resource getResource() {
+        return getJModel().getGraph();
+    }
+
+    @Override
+    public boolean isDirtMinor() {
+        return true;
+    }
+
+    @Override
     public boolean setResource(String name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
-            AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
+            AspectGraph graph = getSimulatorModel().getStore().getGraph(getResourceKind(), name);
             if (graph != null) {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
@@ -264,7 +274,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 // we need to clone the graph to properly freeze the next layout change
                 AspectGraph graphClone = graph.clone();
                 graphClone.setFixed();
-                getSimulatorModel().doAddGraph(getResourceKind(), graphClone, true);
+                getSimulatorModel().doAdd(graphClone, true);
                 getPropertiesPanel().setProperties(getJModel().getProperties());
             } catch (IOException e1) {
                 // do nothing

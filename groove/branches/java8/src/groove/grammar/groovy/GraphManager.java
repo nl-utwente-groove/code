@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.groovy;
@@ -39,7 +39,7 @@ public class GraphManager {
 
     /**
      * Create GraphManager useful for handling graphs in the simulator
-     * 
+     *
      * @param simulatorModel SimulatorModel to use for managing graphs
      */
     public GraphManager(SimulatorModel simulatorModel) {
@@ -49,7 +49,7 @@ public class GraphManager {
 
     /**
      * Create a new graph with specified name and role. Will not be inserted into the model until doneGraph is called on the result.
-     * 
+     *
      * @param name Name of then ew graph
      * @param role GraphRole of the graph (HOST, RULE or TYPE only)
      * @return The created graph.
@@ -75,7 +75,7 @@ public class GraphManager {
 
     /**
      * Load an (unfixed) copy of the graph with specified name and role.
-     * 
+     *
      * @param name Name of graph to load
      * @param role Role of the graph
      * @return A copy of the graph that can be modified, will overwrite existing graph upon calling doneGraph.
@@ -86,16 +86,14 @@ public class GraphManager {
         case HOST:
         case RULE:
         case TYPE:
-            result =
-                this.simulatorModel.getStore().getGraphs(
-                    ResourceKind.toResource(role)).get(name);
+            result = this.simulatorModel.getStore().getGraph(ResourceKind.toResource(role), name);
         }
         return result == null ? null : result.clone();
     }
 
     /**
      * Finalise a graph from either createGraph or loadGraph. Do not attempt to call on other graphs.
-     * 
+     *
      * @param graph Graph to finalise and insert into the model.
      * @return true on success, false otherwise
      */
@@ -116,8 +114,7 @@ public class GraphManager {
             case HOST:
             case RULE:
             case TYPE:
-                this.simulatorModel.doAddGraph(
-                    ResourceKind.toResource(graph.getRole()), graph, false);
+                this.simulatorModel.doAdd(graph, false);
                 return true;
             default:
                 return false;
@@ -129,7 +126,7 @@ public class GraphManager {
 
     /**
      * Create new node inside graph, without position.
-     * 
+     *
      * @param graph Graph to add node to
      * @param label Label of node. Separate multiple labels with a single newline
      * @return The new node.
@@ -143,8 +140,7 @@ public class GraphManager {
         AspectNode newNode = new AspectNode(graph.nodeCount(), graph.getRole());
 
         for (String sublabel : labels) {
-            AspectLabel alabel =
-                AspectParser.getInstance().parse(sublabel, graph.getRole());
+            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             // add self edge
             if (alabel.isEdgeOnly()) {
                 AspectEdge newEdge = new AspectEdge(newNode, alabel, newNode);
@@ -160,14 +156,13 @@ public class GraphManager {
 
     /**
      * Create new node inside graph, with position.
-     * 
+     *
      * @param graph Graph to add node to
      * @param label Label of node. Separate multiple labels with a single newline
      * @param location The location to put the new node.
      * @return The new node.
      */
-    public AspectNode createNode(AspectGraph graph, String label,
-            Point2D location) {
+    public AspectNode createNode(AspectGraph graph, String label, Point2D location) {
         if (graph == null) {
             return null;
         }
@@ -175,8 +170,8 @@ public class GraphManager {
         AspectNode newNode = createNode(graph, label);
 
         JVertexLayout layout =
-            new JVertexLayout(new java.awt.Rectangle((int) location.getX(),
-                (int) location.getY(), 60, 20));
+            new JVertexLayout(new java.awt.Rectangle((int) location.getX(), (int) location.getY(),
+                60, 20));
         LayoutMap layoutMap = this.layouts.get(graph);
         if (layoutMap == null) {
             layoutMap = GraphInfo.getLayoutMap(graph);
@@ -189,15 +184,15 @@ public class GraphManager {
 
     /**
      * Create a new edge between two nodes in the given graph.
-     * 
+     *
      * @param graph Graph to add edge to
      * @param nodeSource Source node of edge
      * @param nodeTarget Target node of edge
      * @param label Label of edge. Separate multiple labels with a single newline, this will create multiple edges.
      * @return The created edge. If multiple edges are created, only the first created edge is returned.
      */
-    public AspectEdge createEdge(AspectGraph graph, AspectNode nodeSource,
-            AspectNode nodeTarget, String label) {
+    public AspectEdge createEdge(AspectGraph graph, AspectNode nodeSource, AspectNode nodeTarget,
+        String label) {
         if (graph == null) {
             return null;
         }
@@ -206,11 +201,9 @@ public class GraphManager {
 
         String[] labels = label.split("\n");
         for (String sublabel : labels) {
-            AspectLabel alabel =
-                AspectParser.getInstance().parse(sublabel, graph.getRole());
+            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge =
-                    new AspectEdge(nodeSource, alabel, nodeTarget);
+                AspectEdge newEdge = new AspectEdge(nodeSource, alabel, nodeTarget);
                 graph.addEdgeContext(newEdge);
                 if (resultEdge == null) {
                     resultEdge = newEdge;
@@ -225,7 +218,7 @@ public class GraphManager {
 
     /**
      * Return the node with the specified internal id.
-     * 
+     *
      * @param graph Graph to find node in
      * @param id Id of node to find
      * @return The Node with the given id, null if it could not be found

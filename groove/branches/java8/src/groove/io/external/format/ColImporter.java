@@ -20,7 +20,7 @@ import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Resource;
 import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.external.Importer;
@@ -77,8 +77,7 @@ public class ColImporter implements Importer {
             this.io.setGraphName(name);
             HostGraph graph = this.io.loadGraph(stream);
             AspectGraph aGraph = GraphConverter.toAspect(graph);
-            Resource res = new Resource(ResourceKind.HOST, name, aGraph);
-            resources = Collections.singleton(res);
+            resources = Collections.singleton(aGraph);
         } catch (IOException e) {
             throw new PortException(e);
         }

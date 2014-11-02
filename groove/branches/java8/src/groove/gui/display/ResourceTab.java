@@ -18,6 +18,7 @@ package groove.gui.display;
 
 import groove.grammar.QualName;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.gui.Icons;
@@ -192,6 +193,9 @@ abstract public class ResourceTab extends JPanel {
         return text;
     }
 
+    /** Returns the resource displayed in this tab. */
+    abstract public Resource getResource();
+
     /** Returns the resource kind of this editor tab. */
     final public ResourceKind getResourceKind() {
         return this.resourceKind;
@@ -242,6 +246,9 @@ abstract public class ResourceTab extends JPanel {
     /** Indicates if the editor has unsaved changes. */
     abstract public boolean isDirty();
 
+    /** Indicates if there is only minor (i.e., layout) dirt in the editor. */
+    abstract public boolean isDirtMinor();
+
     /** Sets the status of the editor to clean. */
     abstract public void setClean();
 
@@ -271,9 +278,12 @@ abstract public class ResourceTab extends JPanel {
         boolean result = true;
         if (isDirty()) {
             int answer =
-                JOptionPane.showConfirmDialog(getDisplay(), String.format(
-                    "%s '%s' has been modified. Save changes?", getResourceKind().getName(),
-                    getName()), null, JOptionPane.YES_NO_CANCEL_OPTION);
+                JOptionPane.showConfirmDialog(getDisplay(),
+                    String.format("%s '%s' has been modified. Save changes?",
+                        getResourceKind().getName(),
+                        getName()),
+                    null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 saveResource();
             }
@@ -314,7 +324,7 @@ abstract public class ResourceTab extends JPanel {
      * Returns the resource model displayed on this tab,
      * or {@code null} if nothing is displayed.
      */
-    protected ResourceModel<?> getResource() {
+    protected ResourceModel<?> getResourceModel() {
         String name = getName();
         if (name == null) {
             return null;
@@ -340,11 +350,11 @@ abstract public class ResourceTab extends JPanel {
 
     /** Returns the errors of the displayed resource. */
     protected Collection<FormatError> getErrors() {
-        ResourceModel<?> resource = getResource();
+        ResourceModel<?> resource = getResourceModel();
         if (resource == null) {
             return Collections.emptyList();
         } else {
-            return getResource().getErrors();
+            return getResourceModel().getErrors();
         }
     }
 

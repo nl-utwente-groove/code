@@ -28,6 +28,7 @@ import groove.algebra.syntax.FieldExpr;
 import groove.algebra.syntax.Parameter;
 import groove.automaton.RegExpr;
 import groove.grammar.model.Resource;
+import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
 import groove.graph.Edge;
@@ -643,6 +644,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> impl
     @Override
     public final GraphRole getRole() {
         return this.role;
+    }
+
+    @Override
+    public ResourceKind getKind() {
+        return ResourceKind.toResource(getRole());
     }
 
     @Override

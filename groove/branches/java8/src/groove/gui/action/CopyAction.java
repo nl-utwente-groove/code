@@ -36,14 +36,14 @@ public class CopyAction extends SimulatorAction {
         boolean result = false;
         ResourceKind resourceKind = getResourceKind();
         if (resourceKind.isTextBased()) {
-            Text oldText = getGrammarStore().getTexts(resourceKind).get(oldName);
+            Text oldText = getGrammarStore().getText(resourceKind, oldName);
             Text newText = oldText.rename(newName);
-            result = getActions().getSaveAction(resourceKind).doSaveText(newText);
+            result = getActions().getSaveAction(resourceKind).doSave(newText, false);
         } else {
-            AspectGraph host = getGrammarStore().getGraphs(resourceKind).get(oldName);
-            AspectGraph newHost = host.rename(newName);
+            AspectGraph oldGraph = getGrammarStore().getGraph(resourceKind, oldName);
+            AspectGraph newGraph = oldGraph.rename(newName);
             try {
-                getSimulatorModel().doAddGraph(resourceKind, newHost, false);
+                getSimulatorModel().doAdd(newGraph, false);
                 result = true;
             } catch (IOException exc) {
                 showErrorDialog(exc,

@@ -19,6 +19,7 @@ package groove.io.external;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.graph.GraphRole;
@@ -211,13 +212,11 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : grooveResource.getGraphs()
             .entrySet()) {
             GraphRole role = entry.getKey();
-            ResourceKind kind = ResourceKind.toResource(role);
             for (GrammarGraph graph : entry.getValue().values()) {
                 AbsGraph absGraph = graph.getGraph();
                 String name = GrooveUtil.getSafeResource(graph.getGraphName());
                 AspectGraph aspectGraph = absGraph.toAspectGraph(name, role);
-                Resource resource = new Resource(kind, name, aspectGraph);
-                result.add(resource);
+                result.add(aspectGraph);
             }
         }
 

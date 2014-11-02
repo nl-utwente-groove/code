@@ -18,7 +18,7 @@ package groove.io.external.format;
 
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Resource;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.plain.PlainGraph;
@@ -55,7 +55,7 @@ public final class AutPorter extends AbstractExporter implements Importer {
             this.io.setGraphRole(GraphRole.HOST);
             PlainGraph graph = this.io.loadGraph(file);
             AspectGraph agraph = AspectGraph.newInstance(graph);
-            resources = Collections.singleton(new Resource(ResourceKind.HOST, name, agraph));
+            resources = Collections.singleton(agraph);
         } catch (IOException | FormatException e) {
             throw new PortException(String.format("Format error while reading %s: %s",
                 name,

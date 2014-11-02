@@ -257,15 +257,15 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
             // change the selected tab in the appropriate lists panel
             Optional<JTabbedPane> listsTabPane = getListsPanel(newDisplayKind);
-            ListPanel newListPanel = getDisplay(newDisplayKind).getListPanel().get();
+            Optional<ListPanel> newListPanel = getDisplay(newDisplayKind).getListPanel();
             boolean changeList = listsTabPane.isPresent();
             if (changeList) {
-                assert listsTabPane.isPresent() && newListPanel != null : "Presence implied by changeList";
+                assert listsTabPane.isPresent() && newListPanel.isPresent() : "Presence implied by changeList";
                 DisplayKind oldListDisplayKind =
                     ((ListPanel) listsTabPane.get().getSelectedComponent()).getDisplayKind();
                 changeList =
                     oldListDisplayKind != newDisplayKind
-                        && listsTabPane.get().indexOfComponent(newListPanel) >= 0;
+                        && listsTabPane.get().indexOfComponent(newListPanel.get()) >= 0;
                 // do not automatically switch lists panel between state and rule mode
                 switch (oldListDisplayKind) {
                 case RULE:
@@ -277,8 +277,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 }
             }
             if (changeList) {
-                assert listsTabPane.isPresent() && newListPanel != null : "Presence implied by changeList";
-                listsTabPane.get().setSelectedComponent(newListPanel);
+                assert listsTabPane.isPresent() && newListPanel.isPresent() : "Presence implied by changeList";
+                listsTabPane.get().setSelectedComponent(newListPanel.get());
             }
             // change the info panel
             ((CardLayout) getInfoPanel().getLayout()).show(getInfoPanel(),
@@ -359,7 +359,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                         break;
                     }
                 }
-                listsPanel.insertTab(null, myKind.getTabIcon(), listPanel.get(), myKind.getTip(),
+                listsPanel.insertTab(null,
+                    myKind.getTabIcon(),
+                    listPanel.get(),
+                    myKind.getTip(),
                     index);
             }
         }

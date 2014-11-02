@@ -2,7 +2,6 @@ package groove.io.conceptual.configuration;
 
 import static groove.grammar.model.ResourceKind.CONFIG;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
 import groove.grammar.model.Text;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -279,14 +278,12 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 }
 
                 try {
-                    getStore().deleteTexts(ResourceKind.CONFIG,
-                        Collections.singletonList(this.m_activeModel));
+                    getStore().delete(CONFIG, Collections.singletonList(this.m_activeModel));
 
                     if (!hasModels()) {
                         this.m_activeModel = null;
                     } else {
-                        this.m_activeModel =
-                            getGrammar().getNames(ResourceKind.CONFIG).iterator().next();
+                        this.m_activeModel = getGrammar().getNames(CONFIG).iterator().next();
                     }
                 } catch (IOException e) {
                     new ErrorDialog(getFrame(), "Error deleting configuration", e).setVisible(true);
@@ -299,7 +296,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                     return;
                 }
                 try {
-                    getStore().rename(ResourceKind.CONFIG, this.m_activeModel, modelName);
+                    getStore().rename(CONFIG, this.m_activeModel, modelName);
                     this.m_activeModel = modelName;
                 } catch (IOException e) {
                     new ErrorDialog(getFrame(), "Error renaming configuration", e).setVisible(true);
@@ -312,9 +309,9 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                     return;
                 }
                 try {
-                    Text source = getStore().getTexts(ResourceKind.CONFIG).get(this.m_activeModel);
+                    Text source = getStore().getText(CONFIG, this.m_activeModel);
                     Text target = source.rename(modelName);
-                    getStore().putTexts(ResourceKind.CONFIG, Collections.singleton(target));
+                    getStore().put(CONFIG, Collections.singleton(target));
                     this.m_activeModel = modelName;
                 } catch (IOException e) {
                     new ErrorDialog(getFrame(), "Error copying configuration", e).setVisible(true);
@@ -373,8 +370,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            getStore().putTexts(ResourceKind.CONFIG,
-                Collections.singleton(new Text(this.m_activeModel, xmlString)));
+            getStore().put(CONFIG,
+                Collections.singleton(new Text(CONFIG, this.m_activeModel, xmlString)));
         } catch (TransformerConfigurationException e) {
             exc = e;
         } catch (IOException e) {

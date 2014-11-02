@@ -4,8 +4,8 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
-import groove.grammar.model.Text;
 import groove.graph.GraphInfo;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -198,12 +198,7 @@ public class LoadGrammarAction extends SimulatorAction {
         outer: for (ResourceKind kind : ResourceKind.all(false)) {
             Set<String> newNames = new HashSet<String>();
             // collect all resource names of this kind
-            Set<String> oldNames;
-            if (kind.isGraphBased()) {
-                oldNames = store.getGraphs(kind).keySet();
-            } else {
-                oldNames = store.getTexts(kind).keySet();
-            }
+            Set<String> oldNames = store.get(kind).keySet();
             // loop over all collected names
             Map<String,String> renameMap = new HashMap<String,String>();
             for (String name : oldNames) {
@@ -227,54 +222,41 @@ public class LoadGrammarAction extends SimulatorAction {
                 }
             }
             if (!renameMap.isEmpty()) {
-                if (kind.isGraphBased()) {
-                    replaceGraphs(store, kind, renameMap);
-                } else {
-                    replaceTexts(store, kind, renameMap);
-                }
+                replaceResources(store, kind, renameMap);
             }
         }
         store.setUndoSuspended(false);
         return result;
     }
 
-    private void replaceGraphs(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
+    private void replaceResources(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
         throws IOException {
-        Map<String,AspectGraph> oldGraphMap = store.getGraphs(kind);
-        List<AspectGraph> newGraphs = new ArrayList<AspectGraph>();
+        Map<String,? extends Resource> oldResMap = store.get(kind);
+        List<Resource> newResList = new ArrayList<>();
         for (Map.Entry<String,String> e : renameMap.entrySet()) {
             String oldName = e.getKey();
             String newName = e.getValue();
-            AspectGraph oldGraph = oldGraphMap.get(oldName);
-            AspectGraph newGraph = oldGraph.rename(newName);
+            Resource newRes;
             if (kind == ResourceKind.RULE) {
+                AspectGraph oldGraph = (AspectGraph) oldResMap.get(oldName);
+                // don't use Resource#rename because the result is fixed straight away
+                AspectGraph newGraph = oldGraph.clone();
+                newGraph.setName(newName);
                 // store old name as transition label
                 // if there was no explicit transition label
                 // so the name change does not affect the LTS
                 if (GraphInfo.getTransitionLabel(newGraph) == null) {
                     GraphInfo.setTransitionLabel(newGraph, oldName);
                 }
+                newGraph.setFixed();
+                newRes = newGraph;
+            } else {
+                newRes = oldResMap.get(oldName).rename(newName);
             }
-            newGraph.setFixed();
-            newGraphs.add(newGraph);
+            newResList.add(newRes);
         }
-        store.deleteGraphs(kind, renameMap.keySet());
-        store.putGraphs(kind, newGraphs, false);
-    }
-
-    private void replaceTexts(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
-        throws IOException {
-        Map<String,Text> oldTextMap = store.getTexts(kind);
-        List<Text> newTexts = new ArrayList<>(renameMap.size());
-        for (Map.Entry<String,String> e : renameMap.entrySet()) {
-            String oldName = e.getKey();
-            String newName = e.getValue();
-            Text oldText = oldTextMap.get(oldName);
-            Text newText = oldText.rename(newName);
-            newTexts.add(newText);
-        }
-        store.deleteTexts(kind, renameMap.keySet());
-        store.putTexts(kind, newTexts);
+        store.delete(kind, renameMap.keySet());
+        store.put(kind, newResList);
     }
 
     private boolean askReplaceNames() {

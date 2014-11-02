@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.Text;
 import groove.gui.Options;
@@ -20,17 +21,17 @@ public class NewAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        ResourceKind resource = getResourceKind();
-        final String newName = askNewName(Options.getNewResourceName(resource), true);
+        ResourceKind resourceKind = getResourceKind();
+        final String newName = askNewName(Options.getNewResourceName(resourceKind), true);
         if (newName != null) {
             try {
-                if (resource.isGraphBased()) {
-                    final AspectGraph newGraph =
-                        AspectGraph.emptyGraph(newName, resource.getGraphRole());
-                    getSimulatorModel().doAddGraph(resource, newGraph, false);
+                Resource resource;
+                if (resourceKind.isGraphBased()) {
+                    resource = AspectGraph.emptyGraph(newName, resourceKind.getGraphRole());
                 } else {
-                    getSimulatorModel().doAddText(resource, new Text(newName, ""));
+                    resource = new Text(resourceKind, newName, "");
                 }
+                getSimulatorModel().doAdd(resource, false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -38,7 +39,10 @@ public class NewAction extends SimulatorAction {
                     }
                 });
             } catch (IOException e) {
-                showErrorDialog(e, "Error creating new %s '%s'", resource.getDescription(), newName);
+                showErrorDialog(e,
+                    "Error creating new %s '%s'",
+                    resourceKind.getDescription(),
+                    newName);
             }
         }
     }

@@ -79,7 +79,7 @@ final public class GroovyDisplay extends ResourceDisplay {
      */
     public void executeGroovy(String name) {
         String program =
-            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name).getContent();
+            getSimulatorModel().getStore().getText(getResourceKind(), name).getContent();
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 

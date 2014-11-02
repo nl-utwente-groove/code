@@ -18,12 +18,13 @@ package groove.io.graph;
 
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.Resource;
+import groove.grammar.model.ResourceKind;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.io.FileType;
 import groove.io.external.ConceptualPorter;
 import groove.io.external.Exportable;
-import groove.io.external.Importer.Resource;
 import groove.io.external.PortException;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
@@ -49,7 +50,7 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
     public ConceptualIO(ConceptualPorter porter, FileType fileType, GraphRole role) {
         this.porter = porter;
         this.fileType = fileType;
-        this.role = role;
+        this.kind = ResourceKind.toResource(role);
     }
 
     @Override
@@ -86,8 +87,8 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
         try {
             Set<Resource> resources = this.porter.doImport(in, this.fileType, getGrammar(in));
             for (Resource resource : resources) {
-                result = resource.getGraphResource();
-                if (result.getRole() == this.role) {
+                if (resource.getKind() == this.kind) {
+                    result = (AspectGraph) resource;
                     break;
                 }
             }
@@ -118,5 +119,5 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
 
     private final ConceptualPorter porter;
     private final FileType fileType;
-    private final GraphRole role;
+    private final ResourceKind kind;
 }

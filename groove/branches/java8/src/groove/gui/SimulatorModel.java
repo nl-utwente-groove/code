@@ -7,9 +7,9 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
-import groove.grammar.model.Text;
 import groove.grammar.model.TextBasedModel;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
@@ -55,23 +55,9 @@ public class SimulatorModel implements Cloneable {
     public void doDelete(ResourceKind resource, Set<String> names) throws IOException {
         start();
         try {
-            boolean change =
-                new HashSet<String>(names).removeAll(getGrammar().getActiveNames(resource));
-            switch (resource) {
-            case CONTROL:
-            case PROLOG:
-            case GROOVY:
-                getStore().deleteTexts(resource, names);
-                break;
-            case HOST:
-            case RULE:
-            case TYPE:
-                getStore().deleteGraphs(resource, names);
-                break;
-            case PROPERTIES:
-            default:
-                assert false;
-            }
+            boolean change = new HashSet<>(names).removeAll(getGrammar().getActiveNames(resource));
+            assert resource != ResourceKind.PROPERTIES;
+            getStore().delete(resource, names);
             changeGrammar(change);
         } finally {
             finish();
@@ -95,10 +81,10 @@ public class SimulatorModel implements Cloneable {
             getStore().rename(resource, oldName, newName);
             if (resource == ResourceKind.RULE) {
                 // rename rules in control programs
-                Collection<Text> renamedControl =
+                Collection<Resource> renamedControl =
                     getGrammar().getControlModel().getLoader().rename(oldName, newName);
                 if (!renamedControl.isEmpty()) {
-                    getStore().putTexts(ResourceKind.CONTROL, renamedControl);
+                    getStore().put(ResourceKind.CONTROL, renamedControl);
                 }
             }
             changeSelected(resource, newName);
@@ -134,15 +120,15 @@ public class SimulatorModel implements Cloneable {
     private void setEnabled(ResourceKind kind, Set<String> names) throws IOException {
         switch (kind) {
         case RULE:
-            Collection<AspectGraph> newRules = new ArrayList<AspectGraph>(names.size());
+            Collection<Resource> newRules = new ArrayList<>(names.size());
             for (String ruleName : names) {
-                AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE).get(ruleName);
+                AspectGraph oldRule = getStore().getGraph(ResourceKind.RULE, ruleName);
                 AspectGraph newRule = oldRule.clone();
                 GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
                 newRule.setFixed();
                 newRules.add(newRule);
             }
-            getStore().putGraphs(ResourceKind.RULE, newRules, false);
+            getStore().put(ResourceKind.RULE, newRules);
             break;
         case HOST:
         case TYPE:
@@ -200,56 +186,31 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /**
-     * Adds a given graph-based resource to this grammar
-     * @param newGraph the new resource
-     * @param layout flag indicating that this is a layout change only,
-     * which should not result in a complete refresh
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
-     */
-    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph, boolean layout)
-        throws IOException {
-        assert newGraph.isFixed();
-        start();
-        try {
-            String name = newGraph.getName();
-            boolean oldEnabled = isEnabled(kind, name);
-            getStore().putGraphs(kind, Collections.singleton(newGraph), layout);
-            if (layout) {
-                return false;
-            } else {
-                boolean result = isEnabled(kind, name) || oldEnabled;
-                changeGrammar(result);
-                changeSelected(kind, name);
-                changeDisplay(DisplayKind.toDisplay(kind));
-                return result;
-            }
-        } finally {
-            finish();
-        }
-    }
-
     /** Tests if a given aspect graph corresponds to an enabled resource. */
     private boolean isEnabled(ResourceKind kind, String name) {
         return getGrammar().getActiveNames(kind).contains(name);
     }
 
     /**
-     * Adds a text-based resource to this grammar.
-     * @param text the resource text
+     * Adds a resource to this grammar.
+     * @param resource the resource to be added
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddText(ResourceKind kind, Text text) throws IOException {
+    public boolean doAdd(Resource resource, boolean layout) throws IOException {
         start();
         try {
-            GrammarModel grammar = getGrammar();
-            boolean result = grammar.getActiveNames(kind).contains(text.getName());
-            getStore().putTexts(kind, Collections.singleton(text));
-            changeGrammar(result);
-            changeSelected(kind, text.getName());
-            changeDisplay(DisplayKind.toDisplay(kind));
+            ResourceKind kind = resource.getKind();
+            String name = resource.getName();
+            boolean oldEnabled = isEnabled(kind, name);
+            getStore().put(kind, Collections.singleton(resource), layout);
+            boolean result = !layout;
+            if (result) {
+                result = isEnabled(kind, name) || oldEnabled;
+                changeGrammar(result);
+                changeSelected(kind, name);
+                changeDisplay(DisplayKind.toDisplay(kind));
+            }
             return result;
         } finally {
             finish();
@@ -264,22 +225,22 @@ public class SimulatorModel implements Cloneable {
      */
     public boolean doSetPriority(Map<String,Integer> priorityMap) throws IOException {
         start();
-        Set<AspectGraph> newGraphs = new HashSet<AspectGraph>();
+        Set<Resource> newGraphs = new HashSet<>();
         for (Map.Entry<String,Integer> entry : priorityMap.entrySet()) {
-            AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
+            AspectGraph oldGraph = getStore().getGraph(ResourceKind.RULE, entry.getKey());
             AspectGraph newGraph = oldGraph.clone();
             GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();
             newGraphs.add(newGraph);
         }
-        Collection<Text> newControl =
+        Collection<Resource> newControl =
             getGrammar().getControlModel().getLoader().changePriority(priorityMap);
         try {
             if (!newGraphs.isEmpty()) {
-                getStore().putGraphs(ResourceKind.RULE, newGraphs, false);
+                getStore().put(ResourceKind.RULE, newGraphs);
             }
             if (!newControl.isEmpty()) {
-                getStore().putTexts(ResourceKind.CONTROL, newControl);
+                getStore().put(ResourceKind.CONTROL, newControl);
             }
             changeGrammar(true);
             return true;

@@ -25,6 +25,7 @@ import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.Resource;
 import groove.grammar.model.ResourceModel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphInfo;
@@ -264,7 +265,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         return this.dirtCount != 0;
     }
 
-    /** Indicates if there is only minor (i.e., layout) dirt in the editor. */
+    @Override
     public boolean isDirtMinor() {
         return this.dirtMinor;
     }
@@ -314,6 +315,11 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     @Override
+    public Resource getResource() {
+        return getGraph();
+    }
+
+    @Override
     public boolean setResource(String name) {
         throw new UnsupportedOperationException();
     }
@@ -324,13 +330,13 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     @Override
-    protected ResourceModel<?> getResource() {
+    protected ResourceModel<?> getResourceModel() {
         return getJModel().getResourceModel();
     }
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSaveGraph(getGraph(), isDirtMinor());
+        getSaveAction().doSave(getGraph(), isDirtMinor());
         setClean();
     }
 
@@ -535,15 +541,23 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         initSyntax();
         final JTabbedPane tabbedPane = new JTabbedPane();
         final int nodeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Nodes", null, createSyntaxList(this.nodeKeys),
+        tabbedPane.addTab("Nodes",
+            null,
+            createSyntaxList(this.nodeKeys),
             "Label prefixes that are allowed on nodes");
         final int edgeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Edges", null, createSyntaxList(this.edgeKeys),
+        tabbedPane.addTab("Edges",
+            null,
+            createSyntaxList(this.edgeKeys),
             "Label prefixes that are allowed on edges");
         if (this.role == GraphRole.RULE) {
-            tabbedPane.addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
+            tabbedPane.addTab("RegExpr",
+                null,
+                createSyntaxList(RegExpr.getDocMap().keySet()),
                 "Syntax for regular expressions over labels");
-            tabbedPane.addTab("Expr", null, createSyntaxList(Algebras.getDocMap().keySet()),
+            tabbedPane.addTab("Expr",
+                null,
+                createSyntaxList(Algebras.getDocMap().keySet()),
                 "Available attribute operators");
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
@@ -623,8 +637,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
                     extra = EdgeRole.createHelp();
                     extra.setSyntax("regexpr");
                     extra.setHeader("Regular expression path");
-                    extra.setBody(
-                        "An unadorned edge label in a rule by default denotes a regular expression.",
+                    extra.setBody("An unadorned edge label in a rule by default denotes a regular expression.",
                         "This means that labels with non-standard characters need to be quoted, or preceded with 'COLON'.");
                     this.edgeKeys.add(extra.getItem());
                 } else {

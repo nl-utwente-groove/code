@@ -50,7 +50,7 @@ public final class SaveStateAction extends SimulatorAction {
         String newName = askNewName(graph.getName(), true);
         if (newName != null) {
             try {
-                getSimulatorModel().doAddGraph(getResourceKind(), graph.rename(newName), false);
+                getSimulatorModel().doAdd(graph.rename(newName), false);
                 result = true;
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while saving state '%s'", graph.getName());

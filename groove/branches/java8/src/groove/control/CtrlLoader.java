@@ -28,6 +28,8 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.Resource;
+import groove.grammar.model.ResourceKind;
 import groove.grammar.model.Text;
 import groove.util.Groove;
 import groove.util.parse.FormatError;
@@ -139,8 +141,8 @@ public class CtrlLoader {
      * Returns renamed versions of the stored control programs.
      * @return a mapping from program names to changed programs
      */
-    public Collection<Text> rename(String oldCallName, String newCallName) {
-        Collection<Text> result = new ArrayList<>(this.treeMap.size());
+    public Collection<Resource> rename(String oldCallName, String newCallName) {
+        Collection<Resource> result = new ArrayList<>(this.treeMap.size());
         for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
             String name = entry.getKey();
             CtrlTree tree = entry.getValue();
@@ -151,7 +153,7 @@ public class CtrlLoader {
                 changed = true;
             }
             if (changed) {
-                result.add(new Text(name, rewriter.toString()));
+                result.add(new Text(ResourceKind.CONTROL, name, rewriter.toString()));
             }
         }
         return result;
@@ -164,8 +166,8 @@ public class CtrlLoader {
      * the new priority values
      * @return mapping of control program names and new control programs
      */
-    public Collection<Text> changePriority(Map<String,Integer> prioMap) {
-        Collection<Text> result = new ArrayList<>();
+    public Collection<Resource> changePriority(Map<String,Integer> prioMap) {
+        Collection<Resource> result = new ArrayList<>();
         Map<String,TokenRewriteStream> rewriterMap = new HashMap<>();
         for (Map.Entry<String,Integer> entry : prioMap.entrySet()) {
             String recipeName = entry.getKey();
@@ -197,7 +199,7 @@ public class CtrlLoader {
             }
         }
         for (Map.Entry<String,TokenRewriteStream> e : rewriterMap.entrySet()) {
-            result.add(new Text(e.getKey(), e.getValue().toString()));
+            result.add(new Text(ResourceKind.CONTROL, e.getKey(), e.getValue().toString()));
         }
         return result;
     }
