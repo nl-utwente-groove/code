@@ -37,8 +37,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.org.apache.bcel.internal.generic.PUSH;
-
 /**
  * Action to be taken as part of a {@link Step}.
  * @author Arend Rensink
@@ -132,8 +130,8 @@ public class Assignment {
                 value = null;
                 break;
             case CALLER:
-                assert parentValues != null : String.format(
-                    "Can't apply %s: valuation %s does not have parent level", this,
+                assert parentValues != null : String.format("Can't apply %s: valuation %s does not have parent level",
+                    this,
                     Valuator.toString(val));
                 value = Valuator.get(parentValues, bind.getIndex());
                 break;
@@ -292,7 +290,7 @@ public class Assignment {
         return result;
     }
 
-    /** Creates a new {@link PUSH} action with a given assignment. */
+    /** Creates a new {@link Kind#PUSH} action with a given assignment. */
     public static Assignment push(List<Binding> bindings) {
         return new Assignment(Kind.PUSH, bindings);
     }

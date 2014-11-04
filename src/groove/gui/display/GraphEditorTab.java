@@ -243,7 +243,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     /**
      * Sets the modified status of the currently edited graph. Also updates the
      * frame title to reflect the new modified status.
-     * @boolean minor {@code true} if this was a minor edit, not necessitating
+     * @param minor {@code true} if this was a minor edit, not necessitating
      * a refresh of all resources
      * @see #isDirty()
      */
@@ -535,15 +535,23 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         initSyntax();
         final JTabbedPane tabbedPane = new JTabbedPane();
         final int nodeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Nodes", null, createSyntaxList(this.nodeKeys),
+        tabbedPane.addTab("Nodes",
+            null,
+            createSyntaxList(this.nodeKeys),
             "Label prefixes that are allowed on nodes");
         final int edgeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Edges", null, createSyntaxList(this.edgeKeys),
+        tabbedPane.addTab("Edges",
+            null,
+            createSyntaxList(this.edgeKeys),
             "Label prefixes that are allowed on edges");
         if (this.role == GraphRole.RULE) {
-            tabbedPane.addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
+            tabbedPane.addTab("RegExpr",
+                null,
+                createSyntaxList(RegExpr.getDocMap().keySet()),
                 "Syntax for regular expressions over labels");
-            tabbedPane.addTab("Expr", null, createSyntaxList(Algebras.getDocMap().keySet()),
+            tabbedPane.addTab("Expr",
+                null,
+                createSyntaxList(Algebras.getDocMap().keySet()),
                 "Available attribute operators");
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
@@ -623,8 +631,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
                     extra = EdgeRole.createHelp();
                     extra.setSyntax("regexpr");
                     extra.setHeader("Regular expression path");
-                    extra.setBody(
-                        "An unadorned edge label in a rule by default denotes a regular expression.",
+                    extra.setBody("An unadorned edge label in a rule by default denotes a regular expression.",
                         "This means that labels with non-standard characters need to be quoted, or preceded with 'COLON'.");
                     this.edgeKeys.add(extra.getItem());
                 } else {

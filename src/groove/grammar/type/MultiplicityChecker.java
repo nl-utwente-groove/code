@@ -32,7 +32,7 @@ import java.util.Map;
  * The {@link MultiplicityChecker} class provides functionality for
  * verifying edge multiplicities in a {@link HostGraph}.
  *
- * @Author Arend Rensink
+ * @author Arend Rensink
  */
 public class MultiplicityChecker implements TypeChecker {
     /**
@@ -96,9 +96,12 @@ public class MultiplicityChecker implements TypeChecker {
                     }
                 }
                 if (!mult.inRange(count)) {
-                    result.add(
-                        "Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
-                        node, dir, mult, type, count);
+                    result.add("Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
+                        node,
+                        dir,
+                        mult,
+                        type,
+                        count);
                 }
             }
         }
