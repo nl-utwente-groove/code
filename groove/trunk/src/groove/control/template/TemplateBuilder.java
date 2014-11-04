@@ -277,7 +277,6 @@ public class TemplateBuilder {
                 result = getResult().addLocation(term.getTransience());
                 result.addVars(vars);
                 locMap.put(key, result);
-                //System.out.printf("Added %s to %s%n", result, getResult());
             }
             return result;
         }
