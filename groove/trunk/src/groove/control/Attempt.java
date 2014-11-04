@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * @version $Revision $
  */
 public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,A>> extends
-        ArrayList<A> {
+    ArrayList<A> {
     /** Sets the success alternate. */
     final public void setSuccess(P onSuccess) {
         this.onSuccess = onSuccess;
@@ -57,13 +57,48 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
         return onFailure() == onSuccess();
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + this.onFailure.hashCode();
+        result = prime * result + this.onSuccess.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "/" + onSuccess() + "/" + onFailure();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!(obj instanceof Attempt)) {
+            return false;
+        }
+        Attempt<?,?> other = (Attempt<?,?>) obj;
+        if (!this.onFailure.equals(other.onFailure)) {
+            return false;
+        }
+        if (!this.onSuccess.equals(other.onSuccess)) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Element of a {@link Attempt}.
      * @author Arend Rensink
      * @version $Revision $
      */
     public interface Stage<P extends Position<P,A>,A extends Stage<P,A>> {
-        /** 
+        /**
          * The rule called in this stage.
          * This is the top element of the call stack.
          * @see #getCallStack()
