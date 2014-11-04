@@ -165,6 +165,23 @@ public class TemplateBuildTest extends CtrlTester {
         assertFalse(onSuccess(loc).isFinal());
     }
 
+    public void testUntil() {
+        build("until (a) { }");
+        assertSize(2);
+        assertTrue(getNext(getStart(), this.aCall).isFinal());
+        assertTrue(onFailure(getStart()).isDead());
+        assertTrue(onSuccess(getStart()).isDead());
+        //
+        build("until (a) { try b; }");
+        assertSize(3);
+        assertTrue(getNext(getStart(), this.aCall).isFinal());
+        assertTrue(onSuccess(getStart()).isDead());
+        Location loc = onFailure(getStart());
+        assertEquals(getStart(), getNext(loc, this.bCall));
+        assertTrue(onSuccess(loc).isDead());
+        assertTrue(onFailure(loc).isDead());
+    }
+
     @Test
     public void testNormalise() {
         build("if (a) { b;choice {} or {} } else b;");
