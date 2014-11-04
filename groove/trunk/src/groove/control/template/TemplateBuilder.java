@@ -149,7 +149,7 @@ public class TemplateBuilder {
             assert init.getTransience() == 0 : "Can't build template from transient term";
             this.result = name == null ? new Template(proc) : new Template(name);
             // set the initial location
-            TermKey initKey = new TermKey(init, new ArrayList<Term>(), new HashSet<CtrlVar>());
+            TermKey initKey = new TermKey(init, new HashSet<Term>(), new HashSet<CtrlVar>());
             Location start = this.result.getStart();
             Map<TermKey,Location> locMap =
                 this.locMap = new HashMap<TemplateBuilder.TermKey,Location>();
@@ -251,13 +251,18 @@ public class TemplateBuilder {
          */
         private Location addLocation(Term term, TermKey predKey, Call incoming) {
             Map<TermKey,Location> locMap = getLocMap();
-            List<Term> predTerms = new ArrayList<Term>();
+            Set<Term> predTerms = new HashSet<Term>();
             Set<CtrlVar> vars;
             if (incoming == null) {
                 // this is due to a verdict transition
                 assert predKey != null;
                 predTerms.addAll(predKey.two());
                 predTerms.add(predKey.one());
+                if (predTerms.contains(term)) {
+                    // there is a verdict loop from this term to itself
+                    // this cannot give rise to new transitions, so deadlock
+                    term = term.delta(term.getTransience());
+                }
                 // preserve the variables of the predecessor
                 vars = predKey.three();
             } else {
@@ -470,8 +475,8 @@ public class TemplateBuilder {
      * The distinction is made on the basis of underlying term,
      * set of verdict predecessor terms, and set of control variables.
      */
-    private static class TermKey extends Triple<Term,List<Term>,Set<CtrlVar>> {
-        TermKey(Term one, List<Term> two, Set<CtrlVar> three) {
+    private static class TermKey extends Triple<Term,Set<Term>,Set<CtrlVar>> {
+        TermKey(Term one, Set<Term> two, Set<CtrlVar> three) {
             super(one, two, three);
         }
     }
