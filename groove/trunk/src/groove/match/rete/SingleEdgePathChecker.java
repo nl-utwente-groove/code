@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,17 +24,15 @@ import groove.util.collect.TreeHashSet;
 
 import java.util.List;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * The abstract class for all path checkers that match against one host edge.
  * The criterion for matching depends on the concrete implementation.
- * 
+ *
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SingleEdgePathChecker extends AbstractPathChecker
-        implements ReteStateSubscriber {
+public abstract class SingleEdgePathChecker extends AbstractPathChecker implements
+    ReteStateSubscriber {
 
     /**
      * edge path-checkers have memories to store their single-edge
@@ -42,24 +40,22 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
      * picked up and deleted in a domino way without having to pass down
      * the edges themselves.
      */
-    private TreeHashSet<RetePathMatch> memory =
-        new TreeHashSet<RetePathMatch>();
+    private TreeHashSet<RetePathMatch> memory = new TreeHashSet<RetePathMatch>();
 
     /**
-     * 
+     *
      * @param network The RETE network to which this will belong
      * @param expression The regular expression that should be either
      * an atom or a wild-card.
      */
-    public SingleEdgePathChecker(ReteNetwork network, RegExpr expression,
-            boolean isLoop) {
+    public SingleEdgePathChecker(ReteNetwork network, RegExpr expression, boolean isLoop) {
         super(network, expression, isLoop);
         this.getOwner().getState().subscribe(this);
         assert (expression instanceof Atom) || (expression instanceof Wildcard);
     }
 
     /**
-     * @param source The n-node that has sent down an edge for processing 
+     * @param source The n-node that has sent down an edge for processing
      * @param gEdge the edge to be processed
      * @param action indicates whether the edge has been added or removed.
      */
@@ -113,10 +109,9 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
     }
 
     @Override
-    public void receive(ReteNetworkNode source, int repeatedIndex,
-            RetePathMatch newMatch) {
+    public void receive(ReteNetworkNode source, int repeatedIndex, RetePathMatch newMatch) {
         //This method will not be called for this type of n-node
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

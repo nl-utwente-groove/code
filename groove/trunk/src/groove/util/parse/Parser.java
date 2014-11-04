@@ -89,7 +89,7 @@ abstract public interface Parser<T> {
      * If the empty and {@code null} string are accepted, then they parse to this value.
      * Only valid if the parser has a default value according to {@link #hasDefault()}.
      * @return the default value if {@link #hasDefault()} holds; may be {@code null},
-     * so use {@link #isDefault(Object)} rather than {@link #equals(Object)} to test equality!
+     * so use {@link #isDefault(Object)} rather than {@link Object#equals(Object)} to test equality!
      * @throws UnsupportedOperationException if the parser has no default value
      * @see #hasDefault()
      */
