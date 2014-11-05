@@ -103,7 +103,7 @@ public class GrooveToType extends TypeImporter {
         }
 
         // Check nodes by postfix, if not using metamodel
-        if (!this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
             for (Iterator<? extends TypeNode> it = unvisitedNodes.iterator(); it.hasNext();) {
                 TypeNode n = it.next();
                 String nameStr = n.label().text();
@@ -216,7 +216,7 @@ public class GrooveToType extends TypeImporter {
                 Class c = this.m_typeModel.getClass(id, true).getProperClass();
                 setNodeType(n, c);
                 if (n.isAbstract()) {
-                    if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
+                    if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseAbstract()) {
                         this.m_typeModel.addProperty(new AbstractProperty(c));
                     }
                 }
@@ -230,7 +230,7 @@ public class GrooveToType extends TypeImporter {
                 Enum e = this.m_typeModel.getEnum(id, true);
                 setNodeType(n, e);
                 enumIds.put(id, e);
-                if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.FLAG) {
+                if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.FLAG) {
                     // Flags can only be determiend at this point
                     populateEnumFlags(n, e);
                 }
@@ -339,7 +339,7 @@ public class GrooveToType extends TypeImporter {
 
                 // Check if field edge is containment
                 if (e.isComposite()) {
-                    if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
+                    if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseContainment()) {
                         this.m_typeModel.addProperty(new ContainmentProperty(cmClass, fieldName));
                     }
                 }
@@ -354,7 +354,7 @@ public class GrooveToType extends TypeImporter {
 
                 // If no intermediate node but is container type, try to resolve value node as container type
                 // Is container if upper > 1, or 0..1 but not nullable class
-                if ((upper > 1 || (lower == 0 && (targetType instanceof Class) && this.m_cfg.getConfig()
+                if ((upper > 1 || (lower == 0 && (targetType instanceof Class) && this.m_cfg.getXMLConfig()
                     .getGlobal()
                     .getNullable() != NullableType.NONE))
                     && !(targetModelType == ModelType.TypeIntermediate
@@ -362,14 +362,14 @@ public class GrooveToType extends TypeImporter {
                         || targetModelType == ModelType.TypeContainerBag
                         || targetModelType == ModelType.TypeContainerOrd || targetModelType == ModelType.TypeContainerSeq)) {
                     OrderType orderType =
-                        this.m_cfg.getConfig()
+                        this.m_cfg.getXMLConfig()
                             .getTypeModel()
                             .getFields()
                             .getContainers()
                             .getOrdering()
                             .getType();
                     boolean isOrdered = false;
-                    if (this.m_cfg.getConfig()
+                    if (this.m_cfg.getXMLConfig()
                         .getTypeModel()
                         .getFields()
                         .getContainers()
@@ -474,7 +474,7 @@ public class GrooveToType extends TypeImporter {
         }
 
         // No luxury of metamodel, maybe postfixes were used
-        if (this.m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
             Kind ct = getPostfixType(interNode);
             if (ct != null) {
                 Container c = new Container(ct, t);
@@ -492,7 +492,7 @@ public class GrooveToType extends TypeImporter {
         boolean isOrdered = false;
         boolean isUnique = false;
         OrderType orderType =
-            this.m_cfg.getConfig()
+            this.m_cfg.getXMLConfig()
                 .getTypeModel()
                 .getFields()
                 .getContainers()

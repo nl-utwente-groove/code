@@ -88,7 +88,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
 
         // If not using the nullable/proper class system, don't instantiate nullable classes
-        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+        if (this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE) {
             if (!c.isProper()) {
                 // Simply revert to the proper instance
                 AbsNode classNode = getElement(c.getProperClass());
@@ -128,7 +128,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             int lowerBound = f.getLowerBound();
             if (lowerBound == 0 && f.getUpperBound() == 1 && f.getType() instanceof Class) {
                 // Nullable, but in GROOVE always Nil value (unless turned off)
-                if (this.m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE) {
+                if (this.m_cfg.getXMLConfig().getGlobal().getNullable() != NullableType.NONE) {
                     lowerBound = 1;
                 }
             }
@@ -156,7 +156,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
 
         // If all nullable classes, get node of nullable version too
-        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
+        if (this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.ALL) {
             getElement(c.getNullableClass());
         }
     }
@@ -214,8 +214,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             return;
         }
 
-        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
+        if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getXMLConfig().getGlobal().getIdSeparator();
             AbsNode enumNode = new AbsNode(this.m_cfg.getName(e), "abs:");
             setElement(e, enumNode);
 
@@ -253,7 +253,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
 
         boolean useIndex = this.m_cfg.useIndex(c);
         boolean indexValue =
-            (this.m_cfg.getConfig()
+            (this.m_cfg.getXMLConfig()
                 .getTypeModel()
                 .getFields()
                 .getContainers()
@@ -266,7 +266,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
 
             // Use just the last part of the container id as the edge name
-            int lastIndex = param.lastIndexOf(this.m_cfg.getConfig().getGlobal().getIdSeparator());
+            int lastIndex = param.lastIndexOf(this.m_cfg.getXMLConfig().getGlobal().getIdSeparator());
             String edgeName = param;
             if (lastIndex != -1) {
                 edgeName = param.substring(lastIndex + 1);
@@ -300,7 +300,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
                 /*AbsEdge nextEdge = */new AbsEdge(containerNode, containerNode, "out=0..1:"
                     + nextName);
 
-                if (this.m_cfg.getConfig()
+                if (this.m_cfg.getXMLConfig()
                     .getTypeModel()
                     .getFields()
                     .getContainers()
@@ -357,7 +357,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(abstractProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseAbstract()) {
             return;
         }
 
@@ -372,7 +372,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(containmentProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseContainment()) {
             return;
         }
 
@@ -428,11 +428,11 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(oppositeProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseOpposite()) {
             return;
         }
 
-        boolean useOpposites = this.m_cfg.getConfig().getTypeModel().getFields().isOpposites();
+        boolean useOpposites = this.m_cfg.getXMLConfig().getTypeModel().getFields().isOpposites();
         if (!useOpposites) {
             return;
         }

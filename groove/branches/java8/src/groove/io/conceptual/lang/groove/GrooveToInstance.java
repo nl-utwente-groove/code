@@ -162,7 +162,7 @@ public class GrooveToInstance extends InstanceImporter {
     }
 
     private String getNodeName(AspectNode node) {
-        if (this.m_cfg.getConfig().getInstanceModel().getObjects().isUseIdentifier()
+        if (this.m_cfg.getXMLConfig().getInstanceModel().getObjects().isUseIdentifier()
             && node.getId() != null) {
             return node.getId().getContentString();
         } else {
@@ -175,7 +175,7 @@ public class GrooveToInstance extends InstanceImporter {
     // Integer.MIN_VALUE on error
     private int getNodeIndex(HostNode node) {
         OrderType orderType =
-            this.m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType();
+            this.m_cfg.getXMLConfig().getTypeModel().getFields().getContainers().getOrdering().getType();
         if (orderType == OrderType.INDEX) {
             String indexName = this.m_cfg.getStrings().getIndexEdge();
             HostNode indexNode = getEdgeNode(node, indexName);
@@ -222,7 +222,7 @@ public class GrooveToInstance extends InstanceImporter {
         // Enum type
         else if (nodeType instanceof Enum) {
             Enum e = (Enum) nodeType;
-            if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
                 Id id = this.m_cfg.nameToId(node.getType().label().text());
                 EnumValue ev = new EnumValue(e, id.getName());
                 resultValue = ev;

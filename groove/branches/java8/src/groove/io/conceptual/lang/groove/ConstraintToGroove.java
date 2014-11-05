@@ -302,7 +302,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(identityProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckIdentifier()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getConstraints().isCheckIdentifier()) {
             return;
         }
 
@@ -320,7 +320,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(keysetProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckKeyset()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getConstraints().isCheckKeyset()) {
             return;
         }
 
@@ -423,7 +423,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 // * unordered unique
                 if (isOrdered) {
                     boolean indexValue =
-                        (this.m_cfg.getConfig()
+                        (this.m_cfg.getXMLConfig()
                             .getTypeModel()
                             .getFields()
                             .getContainers()
@@ -532,7 +532,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(oppositeProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckOpposite()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getConstraints().isCheckOpposite()) {
             return;
         }
 
@@ -583,7 +583,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(defaultValueProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isUseRule()) {
             // No default rule to be created
             return;
         }
@@ -691,8 +691,8 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             return;
         }
 
-        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
+        if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getXMLConfig().getGlobal().getIdSeparator();
             String litName =
                 "type:" + this.m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep
                     + enumval.getValue();
@@ -725,7 +725,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         // Uniqueness: Create field->value type path times two, this will match same value used twice in case of intermediate
         // Class not needed, intermediate node is unique within type graph
         // If no intermediate, no problem
-        if (this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckUniqueness()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().getConstraints().isCheckUniqueness()) {
             if (this.m_cfg.useIntermediate(field)
                 && field.getType() instanceof Container
                 && (((Container) field.getType()).getContainerType() == Kind.SET || ((Container) field.getType()).getContainerType() == Kind.ORD)) {
@@ -764,7 +764,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         }
 
         // Ordering, check if indices are well ordered, or next edges don't have two heads (rest is checked by multiplicities)
-        if (this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckOrdering()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().getConstraints().isCheckOrdering()) {
             if (field.getType() instanceof Container
                 && (((Container) field.getType()).getContainerType() == Kind.ORD || ((Container) field.getType()).getContainerType() == Kind.SEQ)) {
                 GrammarGraph prevGraph = this.m_currentGraph;
@@ -782,7 +782,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 new AbsEdge(classNode, val2Node, field.getName().toString());
                 new AbsEdge(val1Node, val2Node, "!=");
 
-                if (this.m_cfg.getConfig()
+                if (this.m_cfg.getXMLConfig()
                     .getTypeModel()
                     .getFields()
                     .getContainers()
@@ -793,7 +793,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                     AbsNode indexNode = new AbsNode("int:");
                     new AbsEdge(val1Node, indexNode, indexName);
                     new AbsEdge(val2Node, indexNode, indexName);
-                } else if (this.m_cfg.getConfig()
+                } else if (this.m_cfg.getXMLConfig()
                     .getTypeModel()
                     .getFields()
                     .getContainers()
@@ -819,12 +819,12 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     private void createConstraints(Enum e) {
-        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
             // Nothing to do, GROOVE handles it
             return;
         }
 
-        if (!this.m_cfg.getConfig().getTypeModel().getConstraints().isCheckEnum()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getConstraints().isCheckEnum()) {
             // No checks for enum
             return;
         }

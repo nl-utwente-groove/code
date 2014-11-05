@@ -73,14 +73,14 @@ public class GrooveToConstraint {
     }
 
     private void parseRules() {
-        Constraints constraints = this.m_cfg.getConfig().getTypeModel().getConstraints();
+        Constraints constraints = this.m_cfg.getXMLConfig().getTypeModel().getConstraints();
         for (RuleModel model : this.m_ruleModels) {
             if (!model.isEnabled() || model.hasErrors()) {
                 continue;
             }
             String name = model.getFullName();
             if (constraints.isCheckUniqueness() && name.contains("Unique")) {
-                if (!this.m_cfg.getConfig()
+                if (!this.m_cfg.getXMLConfig()
                     .getTypeModel()
                     .getFields()
                     .getContainers()
@@ -88,7 +88,7 @@ public class GrooveToConstraint {
                     parseUniqueRule(model);
                 }
             } else if (constraints.isCheckOrdering() && name.contains("Ordered")) {
-                if (!this.m_cfg.getConfig()
+                if (!this.m_cfg.getXMLConfig()
                     .getTypeModel()
                     .getFields()
                     .getContainers()
@@ -96,21 +96,21 @@ public class GrooveToConstraint {
                     parseOrderedRule(model);
                 }
             } else if (constraints.isCheckIdentifier() && name.contains("Identity")) {
-                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseIdentity()) {
+                if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseIdentity()) {
                     parseIdentityRule(model);
                 }
             } else if (constraints.isCheckKeyset() && name.contains("Keyset")) {
-                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseKeyset()) {
+                if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseKeyset()) {
 
                     parseKeysetRule(model);
                 }
             } else if (constraints.isCheckOpposite() && name.contains("Opposite")) {
-                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
+                if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseOpposite()) {
                     parseOppositeRule(model);
                 }
-            } else if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule()
+            } else if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isUseRule()
                 && name.contains("Default")) {
-                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseDefaultValue()) {
+                if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseDefaultValue()) {
                     parseDefaultRule(model);
                 }
             }
@@ -449,7 +449,7 @@ public class GrooveToConstraint {
         // Enum type
         if (nodeType instanceof Enum) {
             Enum e = (Enum) nodeType;
-            if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
                 Id id = this.m_cfg.nameToId(getType(node));
                 EnumValue ev = new EnumValue(e, id.getName());
                 resultValue = ev;

@@ -41,7 +41,7 @@ public class GrammarVisitor {
         this.m_namespace = namespace;
 
         this.m_types = new GraphNodeTypes();
-        this.useMeta = this.m_cfg.getConfig().getTypeModel().isMetaSchema();
+        this.useMeta = this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema();
     }
 
     public void setFixedType(String fixedType) {
@@ -70,7 +70,7 @@ public class GrammarVisitor {
 
     /** Tests if there is enough type information present to convert the graphs. */
     private boolean isParseable() {
-        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
             return this.m_typeMap.size() == 1 || this.m_metaMap.size() == 1;
         } else {
             return this.m_typeMap.size() == 1;
@@ -97,7 +97,7 @@ public class GrammarVisitor {
             return false;
         }
 
-        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
             if (dlg.getMetaModel() != null && !dlg.getMetaModel().equals("")) {
                 filterMap(this.m_metaMap, dlg.getTypeModel());
             } else {
@@ -163,7 +163,7 @@ public class GrammarVisitor {
         int timer = Timer.start("Load GROOVE grammar");
 
         // Parse meta graph
-        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
             try {
                 TypeGraph metaGraph = this.m_metaMap.values().iterator().next().toResource();
 

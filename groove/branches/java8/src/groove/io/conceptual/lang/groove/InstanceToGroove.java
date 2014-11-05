@@ -119,7 +119,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         }
 
         if (object == Object.NIL) {
-            if (this.m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE) {
+            if (this.m_cfg.getXMLConfig().getGlobal().getNullable() != NullableType.NONE) {
                 String name = this.m_cfg.getStrings().getNilName();
                 AbsNode nilNode = new AbsNode("type:" + name);
                 setElement(object, nilNode);
@@ -130,7 +130,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         }
 
         AbsNode objectNode = new AbsNode(this.m_cfg.getName(object.getType()));
-        if (this.m_cfg.getConfig().getInstanceModel().getObjects().isUseIdentifier()
+        if (this.m_cfg.getXMLConfig().getInstanceModel().getObjects().isUseIdentifier()
             && object.getName() != null) {
             String name = object.getName();
             name = name.replaceAll("[^A-Za-z0-9_]", "_");
@@ -143,7 +143,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
 
         // Set default values for those fields not set in the object
         Set<Field> defaultFields = new HashSet<Field>();
-        if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
             for (Property p : this.m_currentTypeModel.getProperties()) {
                 if (p instanceof DefaultValueProperty) {
                     DefaultValueProperty dp = (DefaultValueProperty) p;
@@ -164,7 +164,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             assert (v != null);
 
             if (v == Object.NIL
-                && this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+                && this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE) {
                 continue;
             }
 
@@ -198,7 +198,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             }
         }
         // Clear previously set default values so model is not changed by import
-        if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
+        if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
             for (Field f : defaultFields) {
                 object.getValue().remove(f);
             }
@@ -209,7 +209,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
 
     // Generates opposite edges
     private void addOpposites() {
-        if (!this.m_cfg.getConfig().getTypeModel().getFields().isOpposites()) {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getFields().isOpposites()) {
             return;
         }
 
@@ -292,8 +292,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
+        if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getXMLConfig().getGlobal().getIdSeparator();
             String litName =
                 "type:" + this.m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep
                     + enumval.getValue();
@@ -340,7 +340,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
 
         boolean useIndex = this.m_cfg.useIndex(containerType);
         boolean useEdge =
-            this.m_cfg.getConfig()
+            this.m_cfg.getXMLConfig()
                 .getTypeModel()
                 .getFields()
                 .getContainers()
@@ -354,7 +354,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         for (Value subValue : containerVal.getValue()) {
             // No not include Nil if not used (shouldn't have to happen anyway, Nil in container is bad
             if (subValue == Object.NIL
-                && this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+                && this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE) {
                 continue;
             }
             AbsNode valueNode = null;
@@ -387,7 +387,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                     if (prevValNode != null) {
                         String nextName = this.m_cfg.getStrings().getNextEdge();
                         /*AbsEdge nextEdge = */new AbsEdge(prevValNode, valueNode, nextName);
-                        if (this.m_cfg.getConfig()
+                        if (this.m_cfg.getXMLConfig()
                             .getTypeModel()
                             .getFields()
                             .getContainers()

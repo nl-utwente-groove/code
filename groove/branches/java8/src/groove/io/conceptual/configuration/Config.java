@@ -6,6 +6,7 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.schema.Configuration;
+import groove.io.conceptual.configuration.schema.Global;
 import groove.io.conceptual.configuration.schema.Global.IdOverrides;
 import groove.io.conceptual.configuration.schema.IdModeType;
 import groove.io.conceptual.configuration.schema.NullableType;
@@ -46,15 +47,6 @@ public class Config {
     public static final String CONFIG_SCHEMA =
         "groove/io/conceptual/configuration/ConfigSchema.xsd";
 
-    private HashMap<Id,String> m_mappedIds = new HashMap<Id,String>();
-    private HashMap<String,Id> m_mappedNames = new HashMap<String,Id>();
-
-    private Set<String> m_suffixList = new HashSet<String>();
-
-    // Current TypeModel to consider for shorter Ids and opposite edges
-    // and whatever else requires the type model to be known
-    private TypeModel m_activeTypeModel;
-
     /** Instantiates a given named configuration. */
     public Config(GrammarModel grammar, String xml) {
         try {
@@ -70,12 +62,41 @@ public class Config {
             throw new IllegalArgumentException("Unable to parse configuration " + xml, e);
         }
 
-        loadIdInfo();
+        for (IdOverrides idOvr : getXMLGlobal().getIdOverrides()) {
+            String name = idOvr.getName();
+            String idStr[] = idOvr.getId().split("\\.");
+            Id id = Id.ROOT;
+            for (String idName : idStr) {
+                id = Id.getId(id, Name.getName(idName));
+            }
+            this.m_mappedIds.put(id, name);
+            this.m_mappedNames.put(name, id);
+        }
     }
 
-    //private final String m_xmlPath;
+    /** Returns the wrapped XML-bound configuration object. */
+    final public Configuration getXMLConfig() {
+        return this.m_xmlConfig;
+    }
 
+    /** Convenience method to return the global settings part
+     * of the XML-bound configuration object. */
+    final public Global getXMLGlobal() {
+        return getXMLConfig().getGlobal();
+    }
+
+    /** Convenience method to returns the globally defined strings
+     * from the XML-bound configuration object. */
+    final public StringsType getStrings() {
+        return getXMLGlobal().getStrings();
+    }
+
+    /** The XML-bound configuration object. */
     private final Configuration m_xmlConfig;
+    /** Configuration-induced mapping from simple names to identifiers. */
+    private final HashMap<String,Id> m_mappedNames = new HashMap<String,Id>();
+    /** Configuration-induced mapping from identifiers to simple names. */
+    private final HashMap<Id,String> m_mappedIds = new HashMap<Id,String>();
 
     /**
      * Set the current type model used to check various constraints
@@ -90,78 +111,71 @@ public class Config {
         return this.m_activeTypeModel;
     }
 
-    private void loadIdInfo() {
-        for (IdOverrides idOvr : this.m_xmlConfig.getGlobal().getIdOverrides()) {
-            String name = idOvr.getName();
-            String idStr[] = idOvr.getId().split("\\.");
-            Id id = Id.ROOT;
-            for (String idName : idStr) {
-                id = Id.getId(id, Name.getName(idName));
+    // Current TypeModel to consider for shorter Ids and opposite edges
+    // and whatever else requires the type model to be known
+    private TypeModel m_activeTypeModel;
 
+    /**
+     * Returns the list of name suffixes.
+     */
+    private Set<String> getSuffixSet() {
+        if (this.m_suffixSet == null && !this.m_xmlConfig.getTypeModel().isMetaSchema()) {
+            this.m_suffixSet = new HashSet<>();
+            if (!getStrings().getProperPostfix().isEmpty()) {
+                this.m_suffixSet.add(getStrings().getProperPostfix());
             }
-            this.m_mappedIds.put(id, name);
-            this.m_mappedNames.put(name, id);
-        }
-
-        if (!this.m_xmlConfig.getTypeModel().isMetaSchema()) {
-            if (!this.m_xmlConfig.getGlobal().getStrings().getProperPostfix().isEmpty()) {
-                this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getProperPostfix());
+            if (!getStrings().getNullablePostfix().isEmpty()) {
+                this.m_suffixSet.add(getStrings().getNullablePostfix());
             }
-            if (!this.m_xmlConfig.getGlobal().getStrings().getNullablePostfix().isEmpty()) {
-                this.m_suffixList.add(this.m_xmlConfig.getGlobal()
-                    .getStrings()
-                    .getNullablePostfix());
+            if (!getStrings().getEnumPostfix().isEmpty()) {
+                this.m_suffixSet.add(getStrings().getEnumPostfix());
             }
-            if (!this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix().isEmpty()) {
-                this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix());
+            if (!getStrings().getDataPostfix().isEmpty()) {
+                this.m_suffixSet.add(getStrings().getDataPostfix());
             }
-            if (!this.m_xmlConfig.getGlobal().getStrings().getDataPostfix().isEmpty()) {
-                this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getDataPostfix());
-            }
-            if (!this.m_xmlConfig.getGlobal().getStrings().getTuplePostfix().isEmpty()) {
-                this.m_suffixList.add(this.m_xmlConfig.getGlobal().getStrings().getTuplePostfix());
+            if (!getStrings().getTuplePostfix().isEmpty()) {
+                this.m_suffixSet.add(getStrings().getTuplePostfix());
             }
         }
+        return this.m_suffixSet;
     }
 
-    public Configuration getConfig() {
-        return this.m_xmlConfig;
-    }
+    private Set<String> m_suffixSet;
 
+    /** Converts an identifier to a flat name, according to the rules of the configuration. */
     public String idToName(Id id) {
-        if (this.m_mappedIds.containsKey(id)) {
-            return this.m_mappedIds.get(id);
-        }
-
-        id = GrooveUtil.getSafeId(id);
-
-        String name = id.getName().toString();
-
-        IdModeType mode = this.m_xmlConfig.getGlobal().getIdMode();
-        if (mode.equals(IdModeType.FLAT)) {
-            return id.getName().toString();
-        }
-
-        if (mode.equals(IdModeType.DISAMBIGUATE) && this.m_activeTypeModel != null) {
-            id = this.m_activeTypeModel.getShortId(id);
-        }
-
-        String sep = this.m_xmlConfig.getGlobal().getIdSeparator();
-        while (id.getNamespace() != Id.ROOT) {
-            // Override short circuits namespace id lookups
-            if (this.m_mappedIds.containsKey(id.getNamespace())) {
-                name = this.m_mappedIds.get(id) + sep + name;
-                return name;
+        String name = this.m_mappedIds.get(id);
+        if (name == null) {
+            id = GrooveUtil.getSafeId(id);
+            IdModeType mode = getXMLGlobal().getIdMode();
+            if (mode.equals(IdModeType.FLAT)) {
+                name = id.getName().toString();
+            } else {
+                if (mode.equals(IdModeType.DISAMBIGUATE) && this.m_activeTypeModel != null) {
+                    id = this.m_activeTypeModel.getShortId(id);
+                }
+                String sep = getXMLGlobal().getIdSeparator();
+                // Flatten the identifier into separated strings
+                name = id.getName().toString();
+                Id namespace = id.getNamespace();
+                while (namespace != Id.ROOT) {
+                    // Override short circuits namespace id lookups
+                    if (this.m_mappedIds.containsKey(namespace)) {
+                        name = this.m_mappedIds.get(namespace) + sep + name;
+                        break;
+                    }
+                    name = namespace.getName().toString() + sep + name;
+                    namespace = namespace.getNamespace();
+                }
             }
-            name = id.getNamespace().getName().toString() + sep + name;
-            id = id.getNamespace();
         }
         return name;
     }
 
+    /** Converts a flag name into an identifier, according to the rules of this configuration. */
     public Id nameToId(String name) {
         // Remove suffix if any
-        for (String suffix : this.m_suffixList) {
+        for (String suffix : getSuffixSet()) {
             if (name.endsWith(suffix)) {
                 int end = name.length() - suffix.length() + 1;
                 name = name.substring(0, end);
@@ -172,7 +186,7 @@ public class Config {
 
         //TODO: should find longest matching substring, starting from the beginning, in m_mappedNames
         //But for now, just split at the separator and check the first element
-        String sep = this.m_xmlConfig.getGlobal().getIdSeparator();
+        String sep = getXMLGlobal().getIdSeparator();
         String names[] = name.split("\\Q" + sep + "\\E");
 
         Id result = Id.ROOT;
@@ -187,53 +201,10 @@ public class Config {
         return result;
     }
 
-    // Unfortunately enough, these checks have a dependency on the type model itself
-    // so it should more or less be complete before it can be used
-    public boolean useIntermediate(Field f) {
-        return useIntermediate(f, true);
-    }
-
-    public boolean useIntermediate(Field f, boolean recursive) {
-        switch (this.m_xmlConfig.getTypeModel().getFields().getIntermediates().getWhen()) {
-        case ALWAYS:
-            return true;
-        case CONTAINER:
-            if (f.getType() instanceof Container) {
-                return true;
-            }
-            //$FALL-THROUGH$
-        case REQUIRED:
-            // Intermediate required when opposite is used
-            // Opposite always in  && m_activeTypeModel != nulleld2
-            if (this.m_xmlConfig.getTypeModel().getFields().isOpposites()
-                && this.m_activeTypeModel != null) {
-                for (Property p : this.m_activeTypeModel.getProperties()) {
-                    if (p instanceof OppositeProperty) {
-                        if (((OppositeProperty) p).getField1() == f) {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            if (getConfig().getGlobal().getNullable() == NullableType.NONE
-                && (f.getType() instanceof Container)
-                && ((Container) f.getType()).getType() instanceof Class) {
-                if (f.getLowerBound() == 0 && f.getUpperBound() == 1) {
-                    //If 0..1 container, then intermediate always required as otherwise nullable class cannot be detected
-                    return true;
-                }
-            }
-
-            if (recursive && f.getType() instanceof Container) {
-                return useIntermediate((Container) f.getType());
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-
+    /**
+     * Tests whether intermediate nodes are required to represent the elements
+     * of a given container.
+     */
     public boolean useIntermediate(Container c) {
         switch (this.m_xmlConfig.getTypeModel().getFields().getIntermediates().getWhen()) {
         case ALWAYS:
@@ -242,7 +213,8 @@ public class Config {
             return true;
         case REQUIRED:
             // The somewhat more difficult case. Some factors include:
-            // If indexing is required on an intermediate, then the intermediate is required (affects ORD, SEQ), but if preferValue then only if the value is shared
+            // If indexing is required on an intermediate, then the intermediate is required
+            //(affects ORD, SEQ), but if preferValue then only if the value is shared
             // Otherwise, if non-unique, then required (BAG)
             // Otherwise, not required
             boolean useIndex = useIndex(c);
@@ -282,6 +254,59 @@ public class Config {
         return false;
     }
 
+    /**
+     * Tests if intermediate nodes are required to represent the values
+     * of a given field.
+     */
+    public boolean useIntermediate(Field f) {
+        // Unfortunately enough, these checks have a dependency on the type model itself
+        // so it should more or less be complete before it can be used
+        return useIntermediate(f, true);
+    }
+
+    private boolean useIntermediate(Field f, boolean recursive) {
+        switch (this.m_xmlConfig.getTypeModel().getFields().getIntermediates().getWhen()) {
+        case ALWAYS:
+            return true;
+        case CONTAINER:
+            if (f.getType() instanceof Container) {
+                return true;
+            }
+            //$FALL-THROUGH$
+        case REQUIRED:
+            // Intermediate required when opposite is used
+            // Opposite always in  && m_activeTypeModel != nulleld2
+            if (this.m_xmlConfig.getTypeModel().getFields().isOpposites()
+                && this.m_activeTypeModel != null) {
+                for (Property p : this.m_activeTypeModel.getProperties()) {
+                    if (p instanceof OppositeProperty) {
+                        if (((OppositeProperty) p).getField1() == f) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (getXMLGlobal().getNullable() == NullableType.NONE
+                && (f.getType() instanceof Container)
+                && ((Container) f.getType()).getType() instanceof Class) {
+                if (f.getLowerBound() == 0 && f.getUpperBound() == 1) {
+                    //If 0..1 container, then intermediate always required
+                    // as otherwise nullable class cannot be detected
+                    return true;
+                }
+            }
+
+            if (recursive && f.getType() instanceof Container) {
+                return useIntermediate((Container) f.getType());
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Indicates if an index should be used to number the elements of a given container. */
     public boolean useIndex(Container c) {
         boolean useIndex =
             this.m_xmlConfig.getTypeModel().getFields().getContainers().getOrdering().getType() != OrderType.NONE;
@@ -290,13 +315,9 @@ public class Config {
         return useIndex;
     }
 
+    /** Constructs the flag name to be used for a given design type. */
     public String getName(Type type) {
-        boolean usePostfix = true;
-        // When a meta schema is used, postfixes aren't needed
-        if (this.m_xmlConfig.getTypeModel().isMetaSchema()) {
-            usePostfix = false;
-        }
-
+        boolean usePostfix = !this.m_xmlConfig.getTypeModel().isMetaSchema();
         String name = "type:";
 
         if (type instanceof Class) {
@@ -304,22 +325,22 @@ public class Config {
             name += idToName(cmClass.getId());
             if (cmClass.isProper()) {
                 if (usePostfix) {
-                    name += this.m_xmlConfig.getGlobal().getStrings().getProperPostfix();
+                    name += getStrings().getProperPostfix();
                 }
             } else {
                 // For nullable classes, the postfix is always required (they share the same name with the proper variant)
                 // So ignore usePostfix
-                name += this.m_xmlConfig.getGlobal().getStrings().getNullablePostfix();
+                name += getStrings().getNullablePostfix();
             }
         } else if (type instanceof Enum) {
             name += idToName(((Enum) type).getId());
             if (usePostfix) {
-                name += this.m_xmlConfig.getGlobal().getStrings().getEnumPostfix();
+                name += getStrings().getEnumPostfix();
             }
         } else if (type instanceof CustomDataType) {
             name += idToName(((CustomDataType) type).getId());
             if (usePostfix) {
-                name += this.m_xmlConfig.getGlobal().getStrings().getDataPostfix();
+                name += getStrings().getDataPostfix();
             }
         } else if (type instanceof Tuple) {
             //TODO: tuples have no ID, how to name?
@@ -330,7 +351,7 @@ public class Config {
                 name += "tup";
             }
             if (usePostfix) {
-                name += this.m_xmlConfig.getGlobal().getStrings().getTuplePostfix();
+                name += getStrings().getTuplePostfix();
             }
         } else if (type instanceof DataType) {
             name += ((DataType) type).typeString();
@@ -341,40 +362,39 @@ public class Config {
         return name;
     }
 
+    /** Returns the flat type name for a given field, if represented by an intermediate node. */
     public String getName(Field field) {
         String classId = idToName(field.getDefiningClass().getId());
         return "type:" + classId + this.m_xmlConfig.getGlobal().getIdSeparator() + field.getName();
     }
 
+    /** Returns the flat type name for a given container, if represented by an intermediate node. */
     public String getContainerName(String base, Container c) {
         return base + this.m_xmlConfig.getGlobal().getIdSeparator()
             + getStrings().getIntermediateName();
     }
 
+    /** Returns the suffix to be used for container names. */
     public String getContainerPostfix(Container c) {
-        String postfix = "";
-        if (!getConfig().getTypeModel().isMetaSchema()
-            && getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
-            postfix = "_";
+        String result = "";
+        if (!getXMLConfig().getTypeModel().isMetaSchema()
+            && getXMLConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+            result = "_";
             switch (c.getContainerType()) {
             case SET:
-                postfix += getStrings().getMetaContainerSet();
+                result += getStrings().getMetaContainerSet();
                 break;
             case BAG:
-                postfix += getStrings().getMetaContainerBag();
+                result += getStrings().getMetaContainerBag();
                 break;
             case ORD:
-                postfix += getStrings().getMetaContainerOrd();
+                result += getStrings().getMetaContainerOrd();
                 break;
             case SEQ:
-                postfix += getStrings().getMetaContainerSeq();
+                result += getStrings().getMetaContainerSeq();
                 break;
             }
         }
-        return postfix;
-    }
-
-    public StringsType getStrings() {
-        return this.m_xmlConfig.getGlobal().getStrings();
+        return result;
     }
 }
