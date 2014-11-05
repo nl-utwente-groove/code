@@ -16,7 +16,6 @@
  */
 package groove.grammar.model;
 
-
 /**
  * Model for Groovy programs, which are just strings
  *
@@ -45,5 +44,10 @@ public class ConfigModel extends TextBasedModel<String> {
     @Override
     String compute() {
         return getProgram().getContent();
+    }
+
+    /** Returns the (XML string) configuration. */
+    public String toConfig() {
+        return compute();
     }
 }

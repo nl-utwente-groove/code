@@ -12,19 +12,7 @@ import java.util.Stack;
  * @version $Revision $
  */
 public class Id implements Serializable {
-    /** The ROOT namespace Id. All Ids have ROOT as the first namespace. */
-    public static final Id ROOT = new Id();
-    static {
-        ROOT.m_namespace = ROOT;
-    }
-
-    private Id m_namespace;
-    private Name m_name;
-    private Map<Name,Id> m_subIds = new HashMap<Name,Id>();
-
-    private int m_depth;
-
-    // Create new id
+    /** Constructs a nested ID. */
     private Id(Id namespace, Name name) {
         this.m_namespace = namespace;
         this.m_name = name;
@@ -32,56 +20,15 @@ public class Id implements Serializable {
         this.m_depth = namespace.m_depth + 1;
     }
 
-    // Create root id
+    /** Constructs the root ID. */
     private Id() {
         this.m_name = null;
-        this.m_namespace = null;
+        this.m_namespace = this;
         this.m_depth = 0;
     }
 
-    /**
-     * Return the Id with the given name and namespace.
-     * @param namespace The namespace of the resulting Id
-     * @param name The name of the resulting Id
-     * @return The Id namespace.name
-     */
-    public static Id getId(Id namespace, Name name) {
-        if (namespace == null || name == null) {
-            return null;
-        }
-
-        if (namespace.m_subIds.containsKey(name)) {
-            return namespace.m_subIds.get(name);
-        }
-
-        Id newId = new Id(namespace, name);
-        namespace.m_subIds.put(name, newId);
-        return newId;
-    }
-
-    @Override
-    public String toString() {
-        if (this == ROOT) {
-            return "";
-        }
-        return (this.m_namespace == ROOT ? "" : this.m_namespace.toString()
-            + ".")
-            + this.m_name.toString();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || !(o instanceof Id)) {
-            return false;
-        }
-        // Compare ROOT _instance_ (short circuit member checks)
-        if (this == ROOT || o == ROOT) {
-            return this == o;
-        }
-        Id other = (Id) o;
-        return other.m_name.equals(this.m_name)
-            && other.m_namespace.equals(this.m_namespace);
-    }
+    private final int m_depth;
+    private final Map<Name,Id> m_subIds = new HashMap<Name,Id>();
 
     /**
      * Returns the name of the identifier.
@@ -91,6 +38,8 @@ public class Id implements Serializable {
         return this.m_name;
     }
 
+    private final Name m_name;
+
     /**
      * Returns the namespace of the identifier.
      * @return The namespace
@@ -98,6 +47,8 @@ public class Id implements Serializable {
     public Id getNamespace() {
         return this.m_namespace;
     }
+
+    private final Id m_namespace;
 
     /**
      * Returns the part of the namespace that both Ids share
@@ -158,7 +109,14 @@ public class Id implements Serializable {
         return newId;
     }
 
-    private int m_hashCode = 0;
+    @Override
+    public String toString() {
+        if (this == ROOT) {
+            return "";
+        }
+        return (this.m_namespace == ROOT ? "" : this.m_namespace.toString() + ".")
+            + this.m_name.toString();
+    }
 
     @Override
     public int hashCode() {
@@ -166,6 +124,42 @@ public class Id implements Serializable {
             this.m_hashCode = toString().hashCode();
         }
         return this.m_hashCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof Id)) {
+            return false;
+        }
+        // Compare ROOT _instance_ (short circuit member checks)
+        if (this == ROOT || o == ROOT) {
+            return this == o;
+        }
+        Id other = (Id) o;
+        return other.m_name.equals(this.m_name) && other.m_namespace.equals(this.m_namespace);
+    }
+
+    private int m_hashCode = 0;
+
+    /** The ROOT namespace Id. All Ids have ROOT as the first namespace. */
+    public static final Id ROOT = new Id();
+
+    /**
+     * Return the Id with the given name and namespace.
+     * @param namespace The namespace of the resulting Id
+     * @param name The name of the resulting Id
+     * @return The Id namespace.name
+     */
+    public static Id getId(Id namespace, Name name) {
+        Id result = null;
+        if (namespace != null && name != null) {
+            result = namespace.m_subIds.get(name);
+            if (result == null) {
+                result = new Id(namespace, name);
+                namespace.m_subIds.put(name, result);
+            }
+        }
+        return result;
     }
 
     /**

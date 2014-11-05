@@ -104,7 +104,8 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
 
     @Override
     public EdgeRole getRole() {
-        return isLoop() && getCallStack().getRule().isProperty() ? EdgeRole.FLAG : EdgeRole.BINARY;
+        return isLoop() && (isVerdict() || getCallStack().getRule().isProperty()) ? EdgeRole.FLAG
+            : EdgeRole.BINARY;
     }
 
     @Override

@@ -28,7 +28,7 @@ import groove.io.FileType;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
-import groove.io.conceptual.configuration.JaxFrontDialog;
+import groove.io.conceptual.configuration.ConfigDialog;
 import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.ExportException;
 import groove.io.conceptual.lang.ExportableResource;
@@ -151,7 +151,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
     private Config loadConfig(GrammarModel grammar) {
-        JaxFrontDialog dlg = new JaxFrontDialog(getSimulator());
+        ConfigDialog dlg = new ConfigDialog(getSimulator());
         String cfg = dlg.getConfig();
         if (cfg != null) {
             return new Config(grammar, cfg);

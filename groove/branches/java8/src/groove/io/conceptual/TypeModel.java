@@ -16,25 +16,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class responsible for identifiables, don't create self.
- * 
+ *
  * @author Harold Bruijntjes
  * @version $Revision $
  */
 public class TypeModel implements Serializable {
-    private String m_name;
-
-    private Map<Id,Class> m_classes = new HashMap<Id,Class>();
-    private Map<Id,Enum> m_enums = new HashMap<Id,Enum>();
-    private Map<Id,CustomDataType> m_datatypes =
-        new HashMap<Id,CustomDataType>();
-    private List<Property> m_properties = new ArrayList<Property>();
-    /** Map of tuple to unique name of tuple in type model. This is to help exporting. */
-    private Map<Tuple,String> m_tupleNames = new HashMap<Tuple,String>();
-
-    private Set<Id> m_usedIds = new HashSet<Id>();
-    private Id m_commonPrefix;
-
     /** Constructs a new, named type model. */
     public TypeModel(String name) {
         this.m_name = name;
@@ -45,6 +31,8 @@ public class TypeModel implements Serializable {
     public String getName() {
         return this.m_name;
     }
+
+    private final String m_name;
 
     /**
      * Resolve all properties. Must be called when the TypeModel is complete and before it is used by an InstanceModel
@@ -71,6 +59,74 @@ public class TypeModel implements Serializable {
         }
         this.m_usedIds.add(id);
         this.m_commonPrefix = this.m_commonPrefix.getCommonPart(id);
+    }
+
+    /**
+     * Get the set of all Ids used in this TypeModel
+     * @return Set of used Ids
+     */
+    public Set<Id> getUsedIds() {
+        return this.m_usedIds;
+    }
+
+    /** The set of IDs used in this type. */
+    private final Set<Id> m_usedIds = new HashSet<Id>();
+
+    /**
+     * Returns a shortened version of id such that getShortIds().get(id) equals the result fo this function
+     * @param id Id to shorten
+     * @return Shortened Id
+     */
+    public Id getShortId(Id id) {
+        return id.removePrefix(getCommonPrefix());
+    }
+
+    /**
+     * Returns a map from each Id to a possibly shorter Id,
+     * such that the map specifies an injective function.
+     */
+    public Map<Id,Id> getShortIds() {
+        HashMap<Id,Id> result = new HashMap<>();
+        // Go through all Ids, and remove from the prefix the trailing part that is different
+        for (Id id : this.m_usedIds) {
+            // Check if the prefix doesn't actually match the Id, otherwise it would be Id.ROOT which is invalid
+            if (id != getCommonPrefix()) {
+                result.put(id, getShortId(id));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * The the Id that is the namespace of all Ids in the TypeModel.
+     * @return Commonly shared namespace
+     */
+    public Id getCommonPrefix() {
+        return this.m_commonPrefix;
+    }
+
+    /** The parent namespace that all IDs used in this type have in common. */
+    private Id m_commonPrefix;
+
+    /** Returns an auxiliary name for a given tuple. */
+    public String getTupleName(Tuple tup) {
+        String result = this.m_tupleNames.get(tup);
+        if (result == null) {
+            this.m_tupleNames.put(tup, result = "tup" + (this.m_tupleNames.size() + 1));
+        }
+        return result;
+    }
+
+    /** Map of tuple to unique name of tuple in type model. This is to help exporting. */
+    private final Map<Tuple,String> m_tupleNames = new HashMap<Tuple,String>();
+
+    /**
+     * Check if Id is used by a class
+     * @param id id to check
+     * @return true if a class exists with given Id
+     */
+    public boolean hasClass(Id id) {
+        return this.m_classes.containsKey(id);
     }
 
     /**
@@ -107,12 +163,23 @@ public class TypeModel implements Serializable {
     }
 
     /**
-     * Check if Id is used by a class
-     * @param id id to check
-     * @return true if a class exists with given Id
+     * Get all the classes in the TypeModel
+     * @return Classes in the TypeModel
      */
-    public boolean hasClass(Id id) {
-        return this.m_classes.containsKey(id);
+    public Collection<Class> getClasses() {
+        return this.m_classes.values();
+    }
+
+    /** Mapping from IDs to class types. */
+    private final Map<Id,Class> m_classes = new HashMap<Id,Class>();
+
+    /**
+     * Check if Id is used by an enum
+     * @param id id to check
+     * @return true if an enum exists with given Id
+     */
+    public boolean hasEnum(Id id) {
+        return this.m_enums.containsKey(id);
     }
 
     /**
@@ -149,13 +216,15 @@ public class TypeModel implements Serializable {
     }
 
     /**
-     * Check if Id is used by an enum
-     * @param id id to check
-     * @return true if an enum exists with given Id
+     * Get all the enums in the TypeModel
+     * @return Enums in the TypeModel
      */
-    public boolean hasEnum(Id id) {
-        return this.m_enums.containsKey(id);
+    public Collection<Enum> getEnums() {
+        return this.m_enums.values();
     }
+
+    /** Mapping from IDs to enum types. */
+    private final Map<Id,Enum> m_enums = new HashMap<Id,Enum>();
 
     /** Returns the datatype with a given identifier, or {@code null} if none such exists. */
     public CustomDataType getDatatype(Id id) {
@@ -163,8 +232,9 @@ public class TypeModel implements Serializable {
     }
 
     /**
-     * Return CustomDataType with given Id. If not found, return null or create new instance depending on create. Returns null if conflicts with Id of other
-     * element in metamodel, even if create is true.
+     * Returns {@link CustomDataType} with given Id. If not found, returns {@code null} or creates
+     * new instance depending on create. Returns {@code null} if conflicts with Id of another
+     * element in the metamodel, even if create is true.
      * @param id Id of CustomDataType to find or create
      * @param create If true, create CustomDataType instance if not found, returns null otherwise
      * @return The Datatype with the given Id, or null if not found
@@ -197,35 +267,20 @@ public class TypeModel implements Serializable {
     }
 
     /**
-     * Add the given proeprty to the TypeModel
-     * @param p Proeprty to add. Does nothing if p has already been added.
-     */
-    public void addProperty(Property p) {
-        this.m_properties.add(p);
-    }
-
-    /**
-     * Get all the classes in the TypeModel
-     * @return Classes in the TypeModel
-     */
-    public Collection<Class> getClasses() {
-        return this.m_classes.values();
-    }
-
-    /**
-     * Get all the enums in the TypeModel
-     * @return Enums in the TypeModel
-     */
-    public Collection<Enum> getEnums() {
-        return this.m_enums.values();
-    }
-
-    /**
-     * Get all the datatypes in the TypeModel
-     * @return Datatypes in the TypeModel
+     * Get all the user-defined data types in the TypeModel
      */
     public Collection<CustomDataType> getDatatypes() {
         return this.m_datatypes.values();
+    }
+
+    /** Mapping from IDs to user-defined data types. */
+    private final Map<Id,CustomDataType> m_datatypes = new HashMap<Id,CustomDataType>();
+
+    /**
+     * Add the given property to the TypeModel
+     */
+    public void addProperty(Property p) {
+        this.m_properties.add(p);
     }
 
     /**
@@ -236,59 +291,6 @@ public class TypeModel implements Serializable {
         return this.m_properties;
     }
 
-    /**
-     * Get the set of all Ids used in this TypeModel
-     * @return Set of used Ids
-     */
-    public Set<Id> getUsedIds() {
-        return this.m_usedIds;
-    }
-
-    /**
-     * Returns a shortened version of id such that getShortIds().get(id) equals the result fo this function
-     * @param id Id to shorten
-     * @return Shortened Id
-     */
-    public Id getShortId(Id id) {
-        return id.removePrefix(this.m_commonPrefix);
-    }
-
-    /**
-     * Returns a map from each Id to a possible shorter Id, such that the map specifies an injective function
-     * @return See description
-     */
-    public Map<Id,Id> getShortIds() {
-        HashMap<Id,Id> mappedIds = new HashMap<Id,Id>();
-
-        if (this.m_usedIds.size() == 0) {
-            return mappedIds;
-        }
-
-        // Go through all Ids, and remove from the prefix the trailing part that is different
-        for (Id id : this.m_usedIds) {
-            // Check if the prefix doesn't actually match the Id, otherwise it would be Id.ROOT which is invalid
-            if (id != this.m_commonPrefix) {
-                mappedIds.put(id, id.removePrefix(this.m_commonPrefix));
-            }
-        }
-
-        return mappedIds;
-    }
-
-    /**
-     * The the Id that is the namespace of all Ids in the TypeModel.
-     * @return Commonly shared namespace
-     */
-    public Id getCommonPrefix() {
-        return this.m_commonPrefix;
-    }
-
-    /** Returns an auxiliary name for a given tuple. */
-    public String getTupleName(Tuple tup) {
-        if (!this.m_tupleNames.containsKey(tup)) {
-            this.m_tupleNames.put(tup, "tup" + this.m_tupleNames.size() + 1);
-        }
-
-        return this.m_tupleNames.get(tup);
-    }
+    /** Relevant constraints for this type model. */
+    private final List<Property> m_properties = new ArrayList<Property>();
 }

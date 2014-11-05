@@ -18,13 +18,8 @@ package groove.io.conceptual.lang.groove;
 
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.ResourceKind;
 import groove.graph.GraphRole;
-import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
-import groove.gui.layout.Layouter;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.graph.AbsGraph;
@@ -36,22 +31,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Resource ready to be exported to GROOVE native format, in the form
+ * of a set of graphs (possibly including type graph, host graph and constraints).
+ */
 public class GrooveResource extends ExportableResource {
-    protected Config m_cfg;
-    protected SimulatorModel m_simModel;
-
-    protected Simulator m_sim;
-    protected Layouter m_layouter;
-
-    protected String m_namespace;
-
-    protected Map<GraphRole,HashMap<String,GrammarGraph>> m_graphs =
-        new HashMap<GraphRole,HashMap<String,GrammarGraph>>();
-
+    /**
+     * Constructs a new, initially empty resource, for a given configuration and name space.
+     * @param cfg export configuration
+     * @param simModel optional simulator model, if the export is GUI-based
+     * @param namespace name space for the exported resource (prepended to all graph names)
+     */
     public GrooveResource(Config cfg, SimulatorModel simModel, String namespace) {
         this.m_cfg = cfg;
         this.m_simModel = simModel;
-
         this.m_namespace = namespace;
 
         for (GraphRole role : GraphRole.values()) {
@@ -59,33 +51,26 @@ public class GrooveResource extends ExportableResource {
         }
     }
 
-    public void setLayouter(Simulator sim, Layouter layouter) {
-        this.m_sim = sim;
-        this.m_layouter = layouter;
+    /** Export configuration for this resource. */
+    private final Config m_cfg;
+
+    /** Returns the optional simulator model to which this resource is to be exported. */
+    public SimulatorModel getSimulatorModel() {
+        return this.m_simModel;
     }
 
-    public void count() {
-        int constraintCount = 0;
-        for (GraphRole role : this.m_graphs.keySet()) {
-            for (GrammarGraph graph : this.m_graphs.get(role).values()) {
-                AbsGraph absGraph = graph.getGraph();
-                int nodes = absGraph.getNodes().size();
-                int edges = absGraph.getEdges().size();
-                if (graph.getGraphName().startsWith("constraint")
-                    || graph.getGraphName().startsWith("Default")) {
-                    constraintCount++;
-                } else {
-                    System.out.println("Graph " + graph.getGraphName() + ", nodes: " + nodes
-                        + ", edges: " + edges);
-                }
-            }
-        }
-        System.out.println("#constraintCount: " + constraintCount);
+    /** Optional simulator model to which the generated sources should be added. */
+    private final SimulatorModel m_simModel;
+
+    /** Returns the name space of this resource.
+     * The name space is prepended to all names of graphs in this resource.
+     */
+    public String getNamespace() {
+        return this.m_namespace;
     }
 
-    public Map<GraphRole,HashMap<String,GrammarGraph>> getGraphs() {
-        return this.m_graphs;
-    }
+    /** Name space of this resource. */
+    private final String m_namespace;
 
     @Override
     public boolean export() throws ExportException {
@@ -101,30 +86,8 @@ public class GrooveResource extends ExportableResource {
                 try {
                     this.m_simModel.getGrammar()
                         .getStore()
-                        .put(aspectGraph.getKind(),
-                            Collections.singleton(aspectGraph),
-                            false);
-
-                    //Timer.stop(timer);
+                        .put(aspectGraph.getKind(), Collections.singleton(aspectGraph), false);
                     this.m_simModel.doRefreshGrammar();
-                    //Timer.cont(timer);
-
-                    if (this.m_layouter != null) {
-                        AspectJGraph jGraph =
-                            new AspectJGraph(this.m_sim, groove.gui.display.DisplayKind.TYPE, false);
-                        AspectJModel model = jGraph.newModel();
-                        model.loadGraph(aspectGraph);
-                        try {
-                            jGraph.setModel(model);
-                            this.m_layouter.newInstance(jGraph).start();
-                            //m_simModel.synchronize();
-                        } catch (Exception e) {
-                            // For some reason NullPointerException when filtering and some label keys are null
-                            // TODO: figure out what goes wrong here
-                            // If crash occurs here simulator seems to chug along just fine
-                        }
-                    }
-
                 } catch (IOException e) {
                     throw new ExportException(e);
                 }
@@ -134,53 +97,43 @@ public class GrooveResource extends ExportableResource {
         return true;
     }
 
-    // Silly helper function to delete resources that would have been generated by export
-    public void delete() throws ExportException {
-        for (GraphRole role : this.m_graphs.keySet()) {
-            for (GrammarGraph graph : this.m_graphs.get(role).values()) {
-                String safeName =
-                    GrooveUtil.getSafeResource(this.m_namespace + QualName.SEPARATOR
-                        + graph.getGraphName());
-                try {
-                    switch (graph.getGraphRole()) {
-                    case TYPE:
-                        this.m_simModel.doDelete(ResourceKind.TYPE, Collections.singleton(safeName));
-                        break;
-                    case HOST:
-                        this.m_simModel.doDelete(ResourceKind.HOST, Collections.singleton(safeName));
-                        break;
-                    case RULE:
-                        this.m_simModel.doDelete(ResourceKind.RULE, Collections.singleton(safeName));
-                        break;
-                    }
-                } catch (IOException e) {
-                    throw new ExportException(e);
-                }
-            }
-        }
-
-    }
-
+    /** Returns the configuration for this resource. */
     public Config getConfig() {
         return this.m_cfg;
     }
 
+    /** Tests if a graph with a given name and role is in this resource. */
     public boolean hasGraph(String name, GraphRole graphRole) {
         return this.m_graphs.get(graphRole).containsKey(name);
     }
 
+    /**
+     * Returns a graph container for a given name and role,
+     * creating it first if it does not yet exist.
+     * @param name name of the desired graph
+     * @param graphRole role of the desired graph
+     * @return previously or freshly generated graph with these characteristics
+     */
     public GrammarGraph getGraph(String name, GraphRole graphRole) {
-        if (this.m_graphs.containsKey(name)) {
-            GrammarGraph resultGraph = this.m_graphs.get(graphRole).get(name);
-            if (resultGraph.getGraphRole() != graphRole) {
-                return null;
-            }
-            return resultGraph;
+        GrammarGraph result = this.m_graphs.get(graphRole).get(name);
+        if (result == null) {
+            result = new GrammarGraph(name, graphRole);
+            this.m_graphs.get(graphRole).put(name, result);
         }
-
-        GrammarGraph newGraph = new GrammarGraph(name, graphRole);
-        this.m_graphs.get(graphRole).put(name, newGraph);
-
-        return newGraph;
+        assert result.getGraphRole() == graphRole;
+        //            if (resultGraph.getGraphRole() != graphRole) {
+        //                return null;
+        //            }
+        return result;
     }
+
+    /** Returns a mapping from graph roles to a name-graph map of graphs with that role. */
+    public Map<GraphRole,HashMap<String,GrammarGraph>> getGraphs() {
+        return this.m_graphs;
+    }
+
+    /** Set of graphs of which this resource consists. */
+    private final Map<GraphRole,HashMap<String,GrammarGraph>> m_graphs =
+        new HashMap<GraphRole,HashMap<String,GrammarGraph>>();
+
 }

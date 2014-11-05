@@ -79,7 +79,7 @@ public class Morphism<N extends Node,E extends Edge> extends AElementBiMap<N,E,N
      * may fail to exist if the inverted morphism is non-injective on elements
      * on which the concatenated morphism is injective.
      * @param other second argument of the concatenation
-     * @returns the result of the concatenation, or {@code null} if
+     * @return the result of the concatenation, or {@code null} if
      * this does not exist.
      */
     public Morphism<N,E> inverseThen(Morphism<N,E> other) {

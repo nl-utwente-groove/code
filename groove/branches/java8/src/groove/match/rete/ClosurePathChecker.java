@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.automaton.RegExpr;
+import groove.automaton.RegExpr.Plus;
 import groove.automaton.RegExpr.Star;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
@@ -29,16 +30,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.org.apache.xpath.internal.operations.Plus;
-
 /**
  * A Path-checker that finds a (kleene or transitive) sequence closure of
  * a certain path expression.
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ClosurePathChecker extends AbstractPathChecker implements
-        ReteStateSubscriber {
+public class ClosurePathChecker extends AbstractPathChecker implements ReteStateSubscriber {
 
     private EmptyPathMatch emptyMatch = new EmptyPathMatch(this);
 
@@ -59,12 +57,10 @@ public class ClosurePathChecker extends AbstractPathChecker implements
      * @param expression The regular path expression, the operator of
      * which should be either {@link Plus} or {@link Star}.
      */
-    public ClosurePathChecker(ReteNetwork network, RegExpr expression,
-            boolean isLoop) {
+    public ClosurePathChecker(ReteNetwork network, RegExpr expression, boolean isLoop) {
         super(network, expression, isLoop);
 
-        assert (expression.getPlusOperand() != null)
-            || (expression.getStarOperand() != null);
+        assert (expression.getPlusOperand() != null) || (expression.getStarOperand() != null);
         if (expression.isStar()) {
             this.getOwner().getState().subscribe(this);
         }
@@ -73,10 +69,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     }
 
     @Override
-    public void receive(ReteNetworkNode source, int repeatIndex,
-            RetePathMatch newMatch) {
-        if (this.loop && !newMatch.isEmpty()
-            && !newMatch.start().equals(newMatch.end())) {
+    public void receive(ReteNetworkNode source, int repeatIndex, RetePathMatch newMatch) {
+        if (this.loop && !newMatch.isEmpty() && !newMatch.start().equals(newMatch.end())) {
             return;
         }
         receiveNewIncomingMatch(source, newMatch);
@@ -108,10 +102,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         }
     }*/
 
-    private void receiveLoopBackMatches(
-            Collection<RetePathMatch> loopBackMatches, int recursionCounter) {
-        List<RetePathMatch> resultingNewMatches =
-            new LinkedList<RetePathMatch>();
+    private void receiveLoopBackMatches(Collection<RetePathMatch> loopBackMatches,
+        int recursionCounter) {
+        List<RetePathMatch> resultingNewMatches = new LinkedList<RetePathMatch>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
             this.rightMemory.add(loopBackMatch);
             loopBackMatch.addContainerCollection(this.rightMemory);
@@ -128,14 +121,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         if (resultingNewMatches.size() > 0) {
             passDownMatches(resultingNewMatches);
             if (recursionCounter > 0) {
-                receiveLoopBackMatches(resultingNewMatches,
-                    recursionCounter - 1);
+                receiveLoopBackMatches(resultingNewMatches, recursionCounter - 1);
             }
         }
     }
 
-    private void receiveNewIncomingMatch(ReteNetworkNode source,
-            RetePathMatch newMatch) {
+    private void receiveNewIncomingMatch(ReteNetworkNode source, RetePathMatch newMatch) {
         List<RetePathMatch> resultingMatches = new LinkedList<RetePathMatch>();
         RetePathMatch m = new RetePathMatch(this, newMatch);
         m.setClosureInfo(new ClosureInfo(m));
@@ -155,8 +146,10 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             }
             passDownMatches(resultingMatches);
             if (!this.loop) {
-                receiveLoopBackMatches(resultingMatches,
-                    this.getOwner().getState().getHostGraph().nodeCount());
+                receiveLoopBackMatches(resultingMatches, this.getOwner()
+                    .getState()
+                    .getHostGraph()
+                    .nodeCount());
                 //                altReceiveLoopBackMatches(resultingMatches);
             }
         }
@@ -171,28 +164,26 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     }
 
     /**
-     * 
+     *
      * @return <code>true</code> if the two given patch matches
      * can be combined through the regular expression operator
-     * of this node's associated expression. This method is only 
+     * of this node's associated expression. This method is only
      * called when this operator is binary.
-     *  
+     *
      */
     protected boolean test(RetePathMatch left, RetePathMatch right) {
-        return left.isEmpty() || right.isEmpty()
-            || left.end().equals(right.start());
+        return left.isEmpty() || right.isEmpty() || left.end().equals(right.start());
     }
 
     /**
-     * @return combines the left and right matches according the 
+     * @return combines the left and right matches according the
      * rules of the associated operator.
      */
     protected RetePathMatch construct(RetePathMatch left, RetePathMatch right) {
         assert !right.isEmpty();
         RetePathMatch result = null;
         if (!left.isEmpty()) {
-            assert (right.getOrigin() == this)
-                && (right.getClosureInfo() != null);
+            assert (right.getOrigin() == this) && (right.getClosureInfo() != null);
             ClosureInfo ci2 = right.getClosureInfo();
             ClosureInfo combinedInfo = ci2.getExtension(left);
             if (combinedInfo != null) {
@@ -233,24 +224,24 @@ public class ClosurePathChecker extends AbstractPathChecker implements
 
     @Override
     public void updateBegin() {
-        // Do nothing        
+        // Do nothing
     }
 
     @Override
     public void updateEnd() {
-        // Do nothing        
+        // Do nothing
     }
 
     /**
-     * Contains information about the number of 
+     * Contains information about the number of
      * closures and the set of relevant nodes modulo
      * the base of the closure that participate in a path.
-     * 
+     *
      * This is used by the ClosurePathChecker to decide
      * if a path is required to be among the sets of
      * paths covered by this checker or not, to make sure
      * the closure computation terminates.
-     * 
+     *
      * @author Arash Jalali
      * @version $Revision $
      */
@@ -272,7 +263,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         }
 
         /**
-         * Creates info for the base of a closure 
+         * Creates info for the base of a closure
          */
         public ClosureInfo(RetePathMatch closureBaseMatch) {
             this.origin = closureBaseMatch.getOrigin();
@@ -305,8 +296,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements
                 // the extending match is not a match of this path checker
                 // but of its left antecedent
                 HostNode newNode = left.start();
-                if (newNode != this.end
-                    && !this.relevantNodes.contains(newNode)) {
+                if (newNode != this.end && !this.relevantNodes.contains(newNode)) {
                     result = new ClosureInfo(this);
                     result.relevantNodes.add(left.start());
                 }

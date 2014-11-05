@@ -9,27 +9,27 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Thin layer between AspectGraph and the conceptual model. Keeps track of edges and nodes by means of references.
+ * Thin layer between {@link AspectGraph} and the conceptual model.
+ * Keeps track of edges and nodes by means of references.
  * @author Harold Bruijntjes
- * 
+ *
  */
 public class AbsGraph {
     private Set<AbsNode> m_nodes = new HashSet<AbsNode>();
     private Set<AbsEdge> m_edges = new HashSet<AbsEdge>();
     private AspectGraph m_aGraph = null;
 
-    public AbsGraph() {
-
-    }
-
+    /** Returns the set of nodes in this graph. */
     public Set<AbsNode> getNodes() {
         return this.m_nodes;
     }
 
+    /** Returns the set of edges in this graph. */
     public Set<AbsEdge> getEdges() {
         return this.m_edges;
     }
 
+    /** Adds a given node to this graph. */
     public void addNode(AbsNode node) {
         if (node.getParent() != null && node.getParent() != this) {
             throw new IllegalArgumentException("Node already added to graph!");
@@ -51,22 +51,21 @@ public class AbsGraph {
         }
     }
 
+    /** Adds a given edge to this graph. */
     public void addEdge(AbsEdge edge) {
         if (!this.m_edges.contains(edge)) {
             this.m_edges.add(edge);
         }
     }
 
+    /** Clears the nodes and edges of this graph. */
     public void clear() {
         this.m_nodes.clear();
         this.m_edges.clear();
         this.m_aGraph = null;
     }
 
-    public void buildFromNode(AbsNode node) {
-        addNode(node);
-    }
-
+    /** Returns an aspect graph constructed from this graph. */
     public AspectGraph toAspectGraph(String name, GraphRole role) {
         if (this.m_aGraph != null) {
             return this.m_aGraph;

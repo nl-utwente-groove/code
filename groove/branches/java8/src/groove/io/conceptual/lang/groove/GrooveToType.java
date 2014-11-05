@@ -16,14 +16,15 @@ import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
-import groove.io.conceptual.lang.TypeImporter;
 import groove.io.conceptual.lang.Message.MessageType;
+import groove.io.conceptual.lang.TypeImporter;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
 import groove.io.conceptual.property.AbstractProperty;
 import groove.io.conceptual.property.ContainmentProperty;
 import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.IntType;
@@ -31,7 +32,6 @@ import groove.io.conceptual.type.RealType;
 import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.Kind;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,17 +60,18 @@ public class GrooveToType extends TypeImporter {
 
     private Map<TypeNode,Type> m_intermediateFields = new HashMap<TypeNode,Type>();
 
-    public GrooveToType(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg) throws ImportException {
-        m_types = types;
-        m_cfg = cfg;
+    public GrooveToType(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg)
+        throws ImportException {
+        this.m_types = types;
+        this.m_cfg = cfg;
 
         int timer = Timer.start("GROOVE to TM");
         buildTypeModel(grooveTypeGraph);
         Timer.stop(timer);
     }
 
-    private void buildTypeModel(TypeGraph grooveTypeGraph) throws ImportException {
-        m_typeModel = new TypeModel(grooveTypeGraph.getName());
+    private void buildTypeModel(TypeGraph grooveTypeGraph) {
+        this.m_typeModel = new TypeModel(grooveTypeGraph.getName());
 
         // Set of Nodes that need to be classified (inverse of m_nodeTypes)
         Set<? extends TypeNode> unvisitedNodes = new HashSet<TypeNode>(grooveTypeGraph.nodeSet());
@@ -81,18 +82,18 @@ public class GrooveToType extends TypeImporter {
 
         // Map nodes to edges
         for (TypeNode n : grooveTypeGraph.nodeSet()) {
-            m_nodeEdges.put(n, new HashSet<TypeEdge>());
+            this.m_nodeEdges.put(n, new HashSet<TypeEdge>());
         }
         for (TypeEdge e : edges) {
-            m_nodeEdges.get(e.source()).add(e);
+            this.m_nodeEdges.get(e.source()).add(e);
         }
 
         // Remove already known nodes from list (from the meta schema)
         for (Iterator<? extends TypeNode> it = unvisitedNodes.iterator(); it.hasNext();) {
             TypeNode node = it.next();
-            if (m_types.hasModelType(node.label().text())) {
-                if (m_types.getModelType(node.label().text()) != ModelType.TypeNone) {
-                    if (m_types.getModelType(node.label().text()) == ModelType.TypeEnum) {
+            if (this.m_types.hasModelType(node.label().text())) {
+                if (this.m_types.getModelType(node.label().text()) != ModelType.TypeNone) {
+                    if (this.m_types.getModelType(node.label().text()) == ModelType.TypeEnum) {
                         enumIds.put(getNodeId(node), null);
                     }
 
@@ -102,34 +103,44 @@ public class GrooveToType extends TypeImporter {
         }
 
         // Check nodes by postfix, if not using metamodel
-        if (!m_cfg.getConfig().getTypeModel().isMetaSchema()) {
+        if (!this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
             for (Iterator<? extends TypeNode> it = unvisitedNodes.iterator(); it.hasNext();) {
                 TypeNode n = it.next();
                 String nameStr = n.label().text();
                 Id id = getNodeId(n);
 
                 // Enums end with EnumPostfix
-                if (m_cfg.getStrings().getEnumPostfix().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getEnumPostfix())) {
+                if (this.m_cfg.getStrings().getEnumPostfix().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getEnumPostfix())) {
                     enumIds.put(id, null);
-                    m_types.addModelType(getLabel(n), ModelType.TypeEnum);
-                } else if (m_cfg.getStrings().getProperPostfix().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getProperPostfix())) {
-                    m_types.addModelType(getLabel(n), ModelType.TypeClass);
-                } else if (m_cfg.getStrings().getNullablePostfix().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getNullablePostfix())) {
-                    m_types.addModelType(getLabel(n), ModelType.TypeClassNullable);
-                } else if (m_cfg.getStrings().getDataPostfix().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getDataPostfix())) {
-                    m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
-                } else if (m_cfg.getStrings().getIntermediatePostfix().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getIntermediatePostfix())) { //Non-container intermediates
-                    m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (m_cfg.getStrings().getMetaContainerSet().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getMetaContainerSet())) { //Container intermediates when postfix enabled
-                    m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (m_cfg.getStrings().getMetaContainerBag().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getMetaContainerBag())) { //Container intermediates when postfix enabled
-                    m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (m_cfg.getStrings().getMetaContainerOrd().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getMetaContainerOrd())) { //Container intermediates when postfix enabled
-                    m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (m_cfg.getStrings().getMetaContainerSeq().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getMetaContainerSeq())) { //Container intermediates when postfix enabled
-                    m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (m_cfg.getStrings().getTuplePostfix().length() > 0 && nameStr.endsWith(m_cfg.getStrings().getTuplePostfix())) {
-                    m_types.addModelType(getLabel(n), ModelType.TypeTuple);
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeEnum);
+                } else if (this.m_cfg.getStrings().getProperPostfix().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getProperPostfix())) {
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeClass);
+                } else if (this.m_cfg.getStrings().getNullablePostfix().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getNullablePostfix())) {
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeClassNullable);
+                } else if (this.m_cfg.getStrings().getDataPostfix().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getDataPostfix())) {
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
+                } else if (this.m_cfg.getStrings().getIntermediatePostfix().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getIntermediatePostfix())) { //Non-container intermediates
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
+                } else if (this.m_cfg.getStrings().getMetaContainerSet().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getMetaContainerSet())) { //Container intermediates when postfix enabled
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
+                } else if (this.m_cfg.getStrings().getMetaContainerBag().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getMetaContainerBag())) { //Container intermediates when postfix enabled
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
+                } else if (this.m_cfg.getStrings().getMetaContainerOrd().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getMetaContainerOrd())) { //Container intermediates when postfix enabled
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
+                } else if (this.m_cfg.getStrings().getMetaContainerSeq().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getMetaContainerSeq())) { //Container intermediates when postfix enabled
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
+                } else if (this.m_cfg.getStrings().getTuplePostfix().length() > 0
+                    && nameStr.endsWith(this.m_cfg.getStrings().getTuplePostfix())) {
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeTuple);
                 } else {
                     // If no actual postfix, try other options later on
                     continue;
@@ -157,7 +168,7 @@ public class GrooveToType extends TypeImporter {
 
             //Intermediate nodes should ALWAYS have a namespace and a name, even in Id FLAT mode
             if (targetId.getNamespace() == sourceId) {
-                m_types.addModelType(getLabel(e.target()), ModelType.TypeIntermediate);
+                this.m_types.addModelType(getLabel(e.target()), ModelType.TypeIntermediate);
                 unvisitedNodes.remove(e.target());
             }
         }
@@ -169,26 +180,25 @@ public class GrooveToType extends TypeImporter {
 
             if (n.isDataType()) {
                 // Simple data types
-                m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
-                it.remove();
+                this.m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
             } else if (enumIds.keySet().contains(id.getNamespace())) {
                 // Enum values
-                m_types.addModelType(getLabel(n), ModelType.TypeEnumValue);
-                it.remove();
+                this.m_types.addModelType(getLabel(n), ModelType.TypeEnumValue);
             } else {
                 // mark everything else as a class
-                if (getLabel(n).equals(m_cfg.getStrings().getNilName())) {
-                    m_types.addModelType(getLabel(n), ModelType.TypeNone);
+                if (getLabel(n).equals(this.m_cfg.getStrings().getNilName())) {
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeNone);
                 } else {
-                    m_types.addModelType(getLabel(n), ModelType.TypeClass);
+                    this.m_types.addModelType(getLabel(n), ModelType.TypeClass);
                 }
-                it.remove();
             }
+            it.remove();
         }
 
         // Ought not to happen (unless misconfigured)
         for (TypeNode n : unvisitedNodes) {
-            addMessage(new Message("TypeNode unvisited: " + n + ": " + n.label().text(), MessageType.WARNING));
+            addMessage(new Message("TypeNode unvisited: " + n + ": " + n.label().text(),
+                MessageType.WARNING));
         }
 
         // Now all the node types are known, create conceptual model types from these nodes, also in multiple passes
@@ -201,63 +211,63 @@ public class GrooveToType extends TypeImporter {
         for (TypeNode n : grooveTypeGraph.nodeSet()) {
             Id id = getNodeId(n);
 
-            switch (m_types.getModelType(getLabel(n))) {
-                case TypeClass:
-                    Class c = m_typeModel.getClass(id, true).getProperClass();
-                    setNodeType(n, c);
-                    if (n.isAbstract()) {
-                        if (m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
-                            m_typeModel.addProperty(new AbstractProperty(c));
-                        }
+            switch (this.m_types.getModelType(getLabel(n))) {
+            case TypeClass:
+                Class c = this.m_typeModel.getClass(id, true).getProperClass();
+                setNodeType(n, c);
+                if (n.isAbstract()) {
+                    if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
+                        this.m_typeModel.addProperty(new AbstractProperty(c));
                     }
-                    // Superclass added in next pass (when all classes are known)
-                    break;
-                case TypeClassNullable:
-                    Class cNull = m_typeModel.getClass(id, true).getNullableClass();
-                    setNodeType(n, cNull);
-                    break;
-                case TypeEnum:
-                    Enum e = m_typeModel.getEnum(id, true);
-                    setNodeType(n, e);
-                    enumIds.put(id, e);
-                    if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.FLAG) {
-                        // Flags can only be determiend at this point
-                        populateEnumFlags(n, e);
-                    }
-                    break;
-                case TypeDatatype:
-                    if (n.isDataType()) {
-                        // Actually just copies g_primitiveIds
-                        // TODO: prefill this?
-                        setNodeType(n, g_primitiveIds.get(id));
-                    } else {
-                        CustomDataType d = m_typeModel.getDatatype(id, true);
-                        setNodeType(n, d);
-                    }
-                    break;
-                case TypeEnumValue:
-                    // Handled in next pass
-                    break;
-                case TypeIntermediate:
-                case TypeContainerSet:
-                case TypeContainerBag:
-                case TypeContainerSeq:
-                case TypeContainerOrd:
-                    // Handled by intermediate
-                    interNodes.add(n);
-                    break;
-                case TypeTuple:
-                    // Actual types filled in after next pass
-                    Tuple t = new Tuple();
-                    setNodeType(n, t);
+                }
+                // Superclass added in next pass (when all classes are known)
+                break;
+            case TypeClassNullable:
+                Class cNull = this.m_typeModel.getClass(id, true).getNullableClass();
+                setNodeType(n, cNull);
+                break;
+            case TypeEnum:
+                Enum e = this.m_typeModel.getEnum(id, true);
+                setNodeType(n, e);
+                enumIds.put(id, e);
+                if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.FLAG) {
+                    // Flags can only be determiend at this point
+                    populateEnumFlags(n, e);
+                }
+                break;
+            case TypeDatatype:
+                if (n.isDataType()) {
+                    // Actually just copies g_primitiveIds
+                    // TODO: prefill this?
+                    setNodeType(n, g_primitiveIds.get(id));
+                } else {
+                    CustomDataType d = this.m_typeModel.getDatatype(id, true);
+                    setNodeType(n, d);
+                }
+                break;
+            case TypeEnumValue:
+                // Handled in next pass
+                break;
+            case TypeIntermediate:
+            case TypeContainerSet:
+            case TypeContainerBag:
+            case TypeContainerSeq:
+            case TypeContainerOrd:
+                // Handled by intermediate
+                interNodes.add(n);
+                break;
+            case TypeTuple:
+                // Actual types filled in after next pass
+                Tuple t = new Tuple();
+                setNodeType(n, t);
 
-                    tupleNodes.add(n);
-                    break;
-                case TypeNone:
-                    break;
-                default:
-                    System.err.println("No valid type for node " + n);
-                    break;
+                tupleNodes.add(n);
+                break;
+            case TypeNone:
+                break;
+            default:
+                System.err.println("No valid type for node " + n);
+                break;
             }
         }
 
@@ -265,37 +275,37 @@ public class GrooveToType extends TypeImporter {
         for (TypeNode n : grooveTypeGraph.nodeSet()) {
             Id id = getNodeId(n);
 
-            switch (m_types.getModelType(getLabel(n))) {
-                case TypeClass:
-                    // Find and map super classes
-                    Class c = (Class) getNodeType(n);
-                    Set<TypeNode> superTypes = n.getGraph().getDirectSupertypeMap().get(n);
-                    for (TypeNode superType : superTypes) {
-                        Class superClass = (Class) getNodeType(superType);
-                        if (superClass.isProper()) {
-                            c.addSuperClass(superClass);
-                        }
+            switch (this.m_types.getModelType(getLabel(n))) {
+            case TypeClass:
+                // Find and map super classes
+                Class c = (Class) getNodeType(n);
+                Set<TypeNode> superTypes = n.getGraph().getDirectSupertypeMap().get(n);
+                for (TypeNode superType : superTypes) {
+                    Class superClass = (Class) getNodeType(superType);
+                    if (superClass.isProper()) {
+                        c.addSuperClass(superClass);
                     }
-                    break;
-                case TypeEnumValue:
-                    // Namespace were turned off, find enum by superType node
-                    Enum e = null;
-                    if (id.getNamespace() == Id.ROOT) {
-                        Set<TypeNode> superEnumTypes = n.getGraph().getDirectSupertypeMap().get(n);
-                        e = (Enum) getNodeType(superEnumTypes.iterator().next());
-                    } else {
-                        e = enumIds.get(id.getNamespace());
-                    }
-                    e.addLiteral(id.getName());
-                    setNodeType(n, e);
-                    break;
-                default:
-                    // Nothing to do for other types
-                    break;
+                }
+                break;
+            case TypeEnumValue:
+                // Namespace were turned off, find enum by superType node
+                Enum e = null;
+                if (id.getNamespace() == Id.ROOT) {
+                    Set<TypeNode> superEnumTypes = n.getGraph().getDirectSupertypeMap().get(n);
+                    e = (Enum) getNodeType(superEnumTypes.iterator().next());
+                } else {
+                    e = enumIds.get(id.getNamespace());
+                }
+                e.addLiteral(id.getName());
+                setNodeType(n, e);
+                break;
+            default:
+                // Nothing to do for other types
+                break;
             }
         }
 
-        // Now solve types of intermediate nodes. This is a recursive process 
+        // Now solve types of intermediate nodes. This is a recursive process
         // since intermediate nodes may 'contain' other intermediate nodes
         for (TypeNode interNode : interNodes) {
             resolveIntermediateType(interNode);
@@ -304,11 +314,11 @@ public class GrooveToType extends TypeImporter {
         // Run through the edges again, now solving fields
         for (TypeEdge e : edges) {
             // Source of edge is class, target must be field (ref or attr)
-            if (m_types.getModelType(getLabel(e.source())) == ModelType.TypeClass) {
+            if (this.m_types.getModelType(getLabel(e.source())) == ModelType.TypeClass) {
                 Class cmClass = (Class) getNodeType(e.source());
                 Type targetType = null;
-                if (m_intermediateFields.containsKey(e.target())) {
-                    targetType = m_intermediateFields.get(e.target());
+                if (this.m_intermediateFields.containsKey(e.target())) {
+                    targetType = this.m_intermediateFields.get(e.target());
                 } else {
                     targetType = getNodeType(e.target());
                 }
@@ -329,33 +339,49 @@ public class GrooveToType extends TypeImporter {
 
                 // Check if field edge is containment
                 if (e.isComposite()) {
-                    if (m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
-                        m_typeModel.addProperty(new ContainmentProperty(cmClass, fieldName));
+                    if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
+                        this.m_typeModel.addProperty(new ContainmentProperty(cmClass, fieldName));
                     }
                 }
 
-                ModelType targetModelType = m_types.getModelType(getLabel(e.target()));
+                ModelType targetModelType = this.m_types.getModelType(getLabel(e.target()));
 
                 // Intermediate for field. Clear the node type, it was set by resolveIntermediate but no longer required
-                if (targetModelType == ModelType.TypeIntermediate && !(targetType instanceof Container)) {
+                if (targetModelType == ModelType.TypeIntermediate
+                    && !(targetType instanceof Container)) {
                     setNodeType(e.target(), null);
                 }
 
                 // If no intermediate node but is container type, try to resolve value node as container type
                 // Is container if upper > 1, or 0..1 but not nullable class
-                if ((upper > 1 || (lower == 0 && (targetType instanceof Class) && m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE)) &&
-                    !(targetModelType == ModelType.TypeIntermediate || targetModelType == ModelType.TypeContainerSet ||
-                        targetModelType == ModelType.TypeContainerBag || targetModelType == ModelType.TypeContainerOrd || targetModelType == ModelType.TypeContainerSeq)) {
-                    OrderType orderType = m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType();
+                if ((upper > 1 || (lower == 0 && (targetType instanceof Class) && this.m_cfg.getConfig()
+                    .getGlobal()
+                    .getNullable() != NullableType.NONE))
+                    && !(targetModelType == ModelType.TypeIntermediate
+                        || targetModelType == ModelType.TypeContainerSet
+                        || targetModelType == ModelType.TypeContainerBag
+                        || targetModelType == ModelType.TypeContainerOrd || targetModelType == ModelType.TypeContainerSeq)) {
+                    OrderType orderType =
+                        this.m_cfg.getConfig()
+                            .getTypeModel()
+                            .getFields()
+                            .getContainers()
+                            .getOrdering()
+                            .getType();
                     boolean isOrdered = false;
-                    if (m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getMode() == ModeType.PREFER_VALUE) {
+                    if (this.m_cfg.getConfig()
+                        .getTypeModel()
+                        .getFields()
+                        .getContainers()
+                        .getOrdering()
+                        .getMode() == ModeType.PREFER_VALUE) {
                         if (orderType == OrderType.INDEX) {
-                            String indexName = m_cfg.getStrings().getIndexEdge();
+                            String indexName = this.m_cfg.getStrings().getIndexEdge();
                             if (hasEdge(e.target(), indexName)) {
                                 isOrdered = true;
                             }
                         } else if (orderType == OrderType.EDGE) {
-                            String nextName = m_cfg.getStrings().getNextEdge();
+                            String nextName = this.m_cfg.getStrings().getNextEdge();
                             if (hasEdge(e.target(), nextName)) {
                                 isOrdered = true;
                             }
@@ -376,7 +402,7 @@ public class GrooveToType extends TypeImporter {
         // Finally, fixate types of tuples
         for (TypeNode tupleNode : tupleNodes) {
             Tuple t = (Tuple) getNodeType(tupleNode);
-            Set<TypeEdge> tupleEdges = m_nodeEdges.get(tupleNode);
+            Set<TypeEdge> tupleEdges = this.m_nodeEdges.get(tupleNode);
             Type[] subTypes = new Type[tupleEdges.size()];
             int index = 0;
             for (TypeEdge e : tupleEdges) {
@@ -386,30 +412,25 @@ public class GrooveToType extends TypeImporter {
         }
 
         // And we're done
-        m_typeModel.resolve();
-        m_typeModels.put(m_typeModel.getName(), m_typeModel);
+        this.m_typeModel.resolve();
+        putTypeModel(this.m_typeModel.getName(), this.m_typeModel);
     }
 
     private void populateEnumFlags(TypeNode n, Enum e) {
-        for (TypeEdge edge : m_nodeEdges.get(n)) {
+        for (TypeEdge edge : this.m_nodeEdges.get(n)) {
             if (edge.getRole() == EdgeRole.FLAG) {
                 e.addLiteral(Name.getName(edge.label().text()));
             }
         }
     }
 
-    @Override
-    public TypeModel getTypeModel(String modelName) throws ImportException {
-        return m_typeModels.get(modelName);
-    }
-
     private Id getNodeId(TypeNode n) {
-        if (m_typeIds.containsKey(n)) {
-            return m_typeIds.get(n);
+        if (this.m_typeIds.containsKey(n)) {
+            return this.m_typeIds.get(n);
         }
 
-        Id id = m_cfg.nameToId(n.label().text());
-        m_typeIds.put(n, id);
+        Id id = this.m_cfg.nameToId(n.label().text());
+        this.m_typeIds.put(n, id);
         return id;
     }
 
@@ -425,7 +446,7 @@ public class GrooveToType extends TypeImporter {
             return getNodeType(interNode);
         }
 
-        String valueEdge = m_cfg.getStrings().getValueEdge();
+        String valueEdge = this.m_cfg.getStrings().getValueEdge();
         TypeNode valueNode = getEdgeNode(interNode, valueEdge);
         //m_nodeEdges.get(interNode).iterator().next();
 
@@ -433,27 +454,27 @@ public class GrooveToType extends TypeImporter {
         Type t = resolveIntermediateType(valueNode);
 
         // If known container type (meta model), use this information
-        switch (m_types.getModelType(getLabel(interNode))) {
-            case TypeContainerSet:
-                Container cSet = new Container(Kind.SET, t);
-                setNodeType(interNode, cSet);
-                return cSet;
-            case TypeContainerBag:
-                Container cBag = new Container(Kind.BAG, t);
-                setNodeType(interNode, cBag);
-                return cBag;
-            case TypeContainerOrd:
-                Container cOrd = new Container(Kind.ORD, t);
-                setNodeType(interNode, cOrd);
-                return cOrd;
-            case TypeContainerSeq:
-                Container cSeq = new Container(Kind.SEQ, t);
-                setNodeType(interNode, cSeq);
-                return cSeq;
+        switch (this.m_types.getModelType(getLabel(interNode))) {
+        case TypeContainerSet:
+            Container cSet = new Container(Kind.SET, t);
+            setNodeType(interNode, cSet);
+            return cSet;
+        case TypeContainerBag:
+            Container cBag = new Container(Kind.BAG, t);
+            setNodeType(interNode, cBag);
+            return cBag;
+        case TypeContainerOrd:
+            Container cOrd = new Container(Kind.ORD, t);
+            setNodeType(interNode, cOrd);
+            return cOrd;
+        case TypeContainerSeq:
+            Container cSeq = new Container(Kind.SEQ, t);
+            setNodeType(interNode, cSeq);
+            return cSeq;
         }
 
         // No luxury of metamodel, maybe postfixes were used
-        if (m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+        if (this.m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
             Kind ct = getPostfixType(interNode);
             if (ct != null) {
                 Container c = new Container(ct, t);
@@ -462,7 +483,7 @@ public class GrooveToType extends TypeImporter {
                 return c;
             } else {
                 // No postfix, must be regular field
-                m_intermediateFields.put(interNode, t);
+                this.m_intermediateFields.put(interNode, t);
                 return t;
             }
         }
@@ -470,9 +491,15 @@ public class GrooveToType extends TypeImporter {
         // Try to derive information from type graph
         boolean isOrdered = false;
         boolean isUnique = false;
-        OrderType orderType = m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType();
+        OrderType orderType =
+            this.m_cfg.getConfig()
+                .getTypeModel()
+                .getFields()
+                .getContainers()
+                .getOrdering()
+                .getType();
         if (orderType == OrderType.INDEX) {
-            String indexName = m_cfg.getStrings().getIndexEdge();
+            String indexName = this.m_cfg.getStrings().getIndexEdge();
             if (hasEdge(interNode, indexName)) {
                 isOrdered = true;
             }
@@ -483,7 +510,7 @@ public class GrooveToType extends TypeImporter {
                 }
             }
         } else if (orderType == OrderType.EDGE) {
-            String nextName = m_cfg.getStrings().getNextEdge();
+            String nextName = this.m_cfg.getStrings().getNextEdge();
             if (hasEdge(interNode, nextName)) {
                 isOrdered = true;
             }
@@ -496,9 +523,8 @@ public class GrooveToType extends TypeImporter {
         }
 
         // TODO: uniqueness constraint?
-        Kind type = isUnique ?
-                (isOrdered ? Kind.ORD : Kind.SET) : // Unique
-                (isOrdered ? Kind.SEQ : Kind.BAG); // Non-unique
+        Kind type = isUnique ? (isOrdered ? Kind.ORD : Kind.SET) : // Unique
+            (isOrdered ? Kind.SEQ : Kind.BAG); // Non-unique
         Container c = new Container(type, t);
         setNodeType(interNode, c);
 
@@ -508,7 +534,7 @@ public class GrooveToType extends TypeImporter {
     }
 
     private TypeNode getEdgeNode(TypeNode node, String edge) {
-        Set<TypeEdge> nodeEdges = m_nodeEdges.get(node);
+        Set<TypeEdge> nodeEdges = this.m_nodeEdges.get(node);
         for (TypeEdge e : nodeEdges) {
             if (e.label().text().equals(edge)) {
                 return e.target();
@@ -522,22 +548,26 @@ public class GrooveToType extends TypeImporter {
     }
 
     private void setNodeType(TypeNode node, Type type) {
-        m_types.addType(node.label().text(), type);
+        this.m_types.addType(node.label().text(), type);
     }
 
     private Type getNodeType(TypeNode node) {
-        return m_types.getType(node.label().text());
+        return this.m_types.getType(node.label().text());
     }
 
     private Kind getPostfixType(TypeNode node) {
         String typeName = node.label().text();
-        if (m_cfg.getStrings().getMetaContainerSet().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerSet())) { //Container intermediates when postfix enabled
+        if (this.m_cfg.getStrings().getMetaContainerSet().length() > 0
+            && typeName.endsWith(this.m_cfg.getStrings().getMetaContainerSet())) { //Container intermediates when postfix enabled
             return Kind.SET;
-        } else if (m_cfg.getStrings().getMetaContainerBag().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerBag())) { //Container intermediates when postfix enabled
+        } else if (this.m_cfg.getStrings().getMetaContainerBag().length() > 0
+            && typeName.endsWith(this.m_cfg.getStrings().getMetaContainerBag())) { //Container intermediates when postfix enabled
             return Kind.BAG;
-        } else if (m_cfg.getStrings().getMetaContainerOrd().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerOrd())) { //Container intermediates when postfix enabled
+        } else if (this.m_cfg.getStrings().getMetaContainerOrd().length() > 0
+            && typeName.endsWith(this.m_cfg.getStrings().getMetaContainerOrd())) { //Container intermediates when postfix enabled
             return Kind.ORD;
-        } else if (m_cfg.getStrings().getMetaContainerSeq().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerSeq())) { //Container intermediates when postfix enabled
+        } else if (this.m_cfg.getStrings().getMetaContainerSeq().length() > 0
+            && typeName.endsWith(this.m_cfg.getStrings().getMetaContainerSeq())) { //Container intermediates when postfix enabled
             return Kind.SEQ;
         }
 

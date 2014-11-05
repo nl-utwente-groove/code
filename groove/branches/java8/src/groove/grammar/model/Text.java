@@ -16,9 +16,8 @@
  */
 package groove.grammar.model;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
+import groove.util.Groove;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,28 +87,12 @@ public class Text implements Resource {
     /** Returns the lines of this text. */
     public List<String> getLines() {
         if (this.lines == null) {
-            this.lines = computeLines();
+            this.lines = Groove.splitLines(this.content);
         }
         return this.lines;
     }
 
     private List<String> lines;
-
-    /** Computes the lines from the string content. */
-    private List<String> computeLines() {
-        assert this.content != null;
-        List<String> result = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new StringReader(this.content))) {
-            String line = reader.readLine();
-            while (line != null) {
-                result.add(line);
-                line = reader.readLine();
-            }
-        } catch (IOException exc) {
-            assert false : "Shouldn't happen for a StringReader";
-        }
-        return result;
-    }
 
     /**
      * Returns a renamed version of this text.

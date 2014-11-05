@@ -49,17 +49,18 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+/** Class wrapping the functionality to convert an ECore model to a design type. */
 public class EcoreToType extends TypeImporter {
-    // Resource containing Ecore type model
-    private Resource r = null;
-    private ResourceSet rs = null;
-
-    // Name of TypeModel, simply "ecore"
+    /** Resource containing ECore type model. */
+    private final Resource r;
+    /** Name of TypeModel, simply "ecore". */
     private String m_typeName = "ecore";
 
-    // Map to keep track of Java class names for custom data types. Used when importing instance models
-    // Strictly speaking this should be linked to a single TypeModel, but since only one Ecore type model exists per instance of this class, this should be fine.
-    private Map<String,Id> m_customDatatypeInstances = new HashMap<String,Id>();
+    /** Map to keep track of Java class names for custom data types, used when importing instance models.
+     * Strictly speaking this should be linked to a single TypeModel,
+     * but since only one ECore type model exists per instance of this class, this should be fine.
+     */
+    private final Map<String,Id> m_customDatatypeInstances = new HashMap<String,Id>();
 
     /**
      * Handler for Ecore type models to be converted to the conceptual model
@@ -68,8 +69,9 @@ public class EcoreToType extends TypeImporter {
     public EcoreToType(String typeModel) throws ImportException {
         // Create new ResourceSet and register an XMI model loader (for all filetypes)
         this.rs = new ResourceSetImpl();
-        this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*",
-            new XMIResourceFactoryImpl());
+        this.rs.getResourceFactoryRegistry()
+            .getExtensionToFactoryMap()
+            .put("*", new XMIResourceFactoryImpl());
 
         // Load the XMI model containing Ecore type model
         try {
@@ -88,20 +90,7 @@ public class EcoreToType extends TypeImporter {
         } catch (IOException e) {
             throw new ImportException(e);
         }
-
-        /*
-        Iterator<EObject> it = this.r.getAllContents();
-        EObject topObject = null;
-        if (!it.hasNext() || !(topObject = it.next()).eClass().getName().equals("EPackage")) {
-            throw new ImportException("Ecore type model has no root package");
-        }
-
-        m_typeName = ((EPackage) topObject).getName();
-        */
-
-        int timer = Timer.start("Ecore to TM");
         buildTypeModel();
-        Timer.stop(timer);
     }
 
     /**
@@ -112,39 +101,27 @@ public class EcoreToType extends TypeImporter {
         return this.rs;
     }
 
-    @Override
-    public TypeModel getTypeModel(String modelName) {
-        return this.m_typeModels.get(modelName);
-    }
+    private final ResourceSet rs;
 
     private void buildTypeModel() {
         TypeModel tm = new TypeModel(this.m_typeName);
-        int count = 0;
-
         Iterator<EObject> it = this.r.getAllContents();
         // It can happen that the same entry is visit multiple times when browsing the tree of dependent elements
         // The TypeModel ought to keep track of all elements and return the proper reference if this happens
         while (it.hasNext()) {
             EObject obj = it.next();
             if (obj.eClass().getName().equals("EClass")) {
-                count++;
                 visitClass(tm, (EClass) obj);
             } else if (obj.eClass().getName().equals("EEnum")) {
-                count++;
                 visitEnum(tm, (EEnum) obj);
             } else if (obj.eClass().getName().equals("EPackage")) {
                 visitPackage((EPackage) obj);
             } else if (obj.eClass().getName().equals("EDataType")) {
-                count++;
                 visitDataType(tm, (EDataType) obj);
             }
         }
-
-        //System.out.println("Ecore elements: " + count);
-
         tm.resolve();
-
-        this.m_typeModels.put(this.m_typeName, tm);
+        putTypeModel(this.m_typeName, tm);
     }
 
     private Class visitClass(TypeModel mm, EClass eClass) {
@@ -345,14 +322,14 @@ public class EcoreToType extends TypeImporter {
         }
 
         // register all packages we find in the ResourceSet
-        this.rs.getPackageRegistry().put(ePackage.getNsURI(), ePackage);
+        getResourceSet().getPackageRegistry().put(ePackage.getNsURI(), ePackage);
     }
 
     /**
-     * Converts an Object from an ecore model (type or instance) to a Value if its either a value for an EEnum or EDataType.
-     * @param type The type of the value to convert to
-     * @param ecoreValue The value to translate
-     * @return The translated Value, or null on error
+     * Converts an Object from an ecore model (type or instance) to a Value if it is either a value for an EEnum or EDataType.
+     * @param type the type of the value to convert to
+     * @param ecoreValue the value to translate
+     * @return the translated value
      * @throws InvalidTypeException When the conversion fails due to a type mismatch, or invalid value
      */
     public Value objectToDataType(TypeModel tm, Type type, Object ecoreValue)
@@ -361,10 +338,10 @@ public class EcoreToType extends TypeImporter {
             throw new InvalidTypeException(
                 "Cannot convert Ecore object to non-datatype in type model");
         }
-        Value value = null;
+        Value result;
         if (ecoreValue instanceof EEnumLiteral) {
             if (type instanceof Enum) {
-                value =
+                result =
                     new EnumValue((Enum) type, Name.getName(((EEnumLiteral) ecoreValue).getName()));
             } else {
                 throw new InvalidTypeException("Type error in ecore type model");
@@ -382,7 +359,7 @@ public class EcoreToType extends TypeImporter {
                     if (dt == null || !(dt.equals(type))) {
                         throw new InvalidTypeException("Unknown type class: " + className);
                     } else {
-                        value = dt.valueFromString(ecoreValue.toString());
+                        result = dt.valueFromString(ecoreValue.toString());
                     }
                 } else {
                     throw new InvalidTypeException("Unknown custom type: " + type);
@@ -392,7 +369,7 @@ public class EcoreToType extends TypeImporter {
                     String typeString = EcoreUtil.g_knownInstanceTypes.get(className);
                     Type knownType = EcoreUtil.g_knownTypes.get(typeString);
                     if (type.equals(knownType)) {
-                        value = (((DataType) type).valueFromString(ecoreValue.toString()));
+                        result = (((DataType) type).valueFromString(ecoreValue.toString()));
                     } else {
                         throw new InvalidTypeException("Type error in ecore type model");
                     }
@@ -401,6 +378,6 @@ public class EcoreToType extends TypeImporter {
                 }
             }
         }
-        return value;
+        return result;
     }
 }

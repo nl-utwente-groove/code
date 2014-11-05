@@ -78,7 +78,7 @@ public class LTSReporter extends AExplorationReporter {
             dir = dir.getParent();
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
-        Path outFile = dir.resolve(ltsName);
+        Path outFile = dir == null ? Paths.get(ltsName) : dir.resolve(ltsName);
         Pair<FileType,Exporter> gtsFormat = Exporters.getAcceptingFormat(ltsName);
         if (gtsFormat != null) {
             try {

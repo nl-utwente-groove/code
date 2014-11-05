@@ -34,7 +34,7 @@ import java.util.Stack;
  * The {@link ContainmentChecker} class provides functionality for
  * verifying containment in a {@link HostGraph}.
  *
- * @Author Arend Rensink
+ * @author Arend Rensink
  */
 public class ContainmentChecker implements TypeChecker {
     /**

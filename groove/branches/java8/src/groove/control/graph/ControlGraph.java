@@ -45,25 +45,21 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
         super(name);
     }
 
-    /** Use only {@link #addNode(ControlNode)}. */
     @Override
     public ControlNode addNode() {
         throw new UnsupportedOperationException();
     }
 
-    /** Use only {@link #addNode(ControlNode)}. */
     @Override
     public ControlNode addNode(int nr) {
         throw new UnsupportedOperationException();
     }
 
-    /** Use only {@link #addEdge(ControlEdge)}. */
     @Override
     public ControlEdge addEdge(ControlNode source, String label, ControlNode target) {
         throw new UnsupportedOperationException();
     }
 
-    /** Use only {@link #addEdge(ControlEdge)}. */
     @Override
     public ControlEdge addEdge(ControlNode source, Label label, ControlNode target) {
         throw new UnsupportedOperationException();

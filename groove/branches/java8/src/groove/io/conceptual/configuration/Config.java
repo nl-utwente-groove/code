@@ -1,8 +1,6 @@
 package groove.io.conceptual.configuration;
 
-import groove.grammar.model.ConfigModel;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
@@ -24,7 +22,6 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
-import groove.util.parse.FormatException;
 
 import java.io.StringReader;
 import java.util.HashMap;
@@ -45,10 +42,6 @@ import org.xml.sax.InputSource;
  * @version $Revision $
  */
 public class Config {
-    private String m_xmlPath;
-
-    private Configuration m_xmlConfig;
-
     /** Location of the XSD for configurations. */
     public static final String CONFIG_SCHEMA =
         "groove/io/conceptual/configuration/ConfigSchema.xsd";
@@ -62,40 +55,37 @@ public class Config {
     // and whatever else requires the type model to be known
     private TypeModel m_activeTypeModel;
 
-    /** Creates a configuration from a given XML string, for a given grammar model. */
+    /** Instantiates a given named configuration. */
     public Config(GrammarModel grammar, String xml) {
-        this.m_xmlPath = xml;
-
         try {
             JAXBContext jaxbContext =
                 JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-            String xmlString =
-                ((ConfigModel) grammar.getResource(ResourceKind.CONFIG, this.m_xmlPath)).toResource();
+            String xmlString = grammar.getConfigModel(xml).toConfig();
             Object obj = unmarshaller.unmarshal(new InputSource(new StringReader(xmlString)));
 
             this.m_xmlConfig = (Configuration) obj;
-
         } catch (JAXBException e) {
-            throw new RuntimeException("Unable to parse configuration " + this.m_xmlPath, e);
-        } catch (FormatException e) {
-            // ConfigModel doesn't throw this exception, should be safe to ignore
+            throw new IllegalArgumentException("Unable to parse configuration " + xml, e);
         }
 
         loadIdInfo();
     }
 
+    //private final String m_xmlPath;
+
+    private final Configuration m_xmlConfig;
+
     /**
      * Set the current type model used to check various constraints
      * @param typeModel TypeModel to set as current type model
      */
-    // This is somewhat of a hack, but otherwise the type model has to
-    // be passed as an argument all the time
     public void setTypeModel(TypeModel typeModel) {
         this.m_activeTypeModel = typeModel;
     }
 
+    /** Returns the current glossary. */
     public TypeModel getTypeModel() {
         return this.m_activeTypeModel;
     }

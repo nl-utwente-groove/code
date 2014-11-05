@@ -244,7 +244,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     /**
      * Sets the modified status of the currently edited graph. Also updates the
      * frame title to reflect the new modified status.
-     * @boolean minor {@code true} if this was a minor edit, not necessitating
+     * @param minor {@code true} if this was a minor edit, not necessitating
      * a refresh of all resources
      * @see #isDirty()
      */

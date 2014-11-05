@@ -31,8 +31,6 @@ import groove.io.conceptual.configuration.schema.TypeModel.Constraints;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.graph.AbsNode;
-import groove.io.conceptual.lang.Message;
-import groove.io.conceptual.lang.Messenger;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
 import groove.io.conceptual.property.DefaultValueProperty;
 import groove.io.conceptual.property.IdentityProperty;
@@ -48,21 +46,20 @@ import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class GrooveToConstraint implements Messenger {
+/**
+ * Class wrapping the functionality to fill a TypeModel with constraints
+ * derived from a given set of rules.
+ */
+public class GrooveToConstraint {
     private Collection<RuleModel> m_ruleModels;
     private Config m_cfg;
     private TypeModel m_typeModel;
-
-    List<Message> m_messages = new ArrayList<Message>();
-
     private GraphNodeTypes m_types;
 
     public GrooveToConstraint(Collection<RuleModel> ruleModels, GraphNodeTypes types, Config cfg,
@@ -83,11 +80,19 @@ public class GrooveToConstraint implements Messenger {
             }
             String name = model.getFullName();
             if (constraints.isCheckUniqueness() && name.contains("Unique")) {
-                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+                if (!this.m_cfg.getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .isUseTypeName()) {
                     parseUniqueRule(model);
                 }
             } else if (constraints.isCheckOrdering() && name.contains("Ordered")) {
-                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+                if (!this.m_cfg.getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .isUseTypeName()) {
                     parseOrderedRule(model);
                 }
             } else if (constraints.isCheckIdentifier() && name.contains("Identity")) {
@@ -110,16 +115,6 @@ public class GrooveToConstraint implements Messenger {
                 }
             }
         }
-    }
-
-    @Override
-    public List<Message> getMessages() {
-        return this.m_messages;
-    }
-
-    @Override
-    public void clearMessages() {
-        this.m_messages.clear();
     }
 
     // Determines subject of rule and sets container type to be unique
@@ -319,7 +314,8 @@ public class GrooveToConstraint implements Messenger {
             if (type == null) {
                 continue;
             }
-            if (this.m_types.getModelType(type) == ModelType.TypeClass) {//Other option is data type, ignore that as it is the actual value
+            if (this.m_types.getModelType(type) == ModelType.TypeClass) {
+                //Other option is data type, ignore that as it is the actual value
                 Class cmClass = (Class) this.m_types.getType(type);
 
                 for (AbsEdge edge : node.getEdges()) {

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -41,16 +41,13 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 public class GrammarDialog extends JDialog {
-    private Frame m_parent;
-    private JComboBox m_typeList;
-    private JComboBox m_metaList;
-    private JComboBox m_instanceList;
-
-    private boolean m_dialogResult;
+    private JComboBox<String> m_typeList;
+    private JComboBox<String> m_metaList;
+    private JComboBox<String> m_instanceList;
 
     public GrammarDialog(Frame parent) {
         super(parent, "Select graphs to export", true);
-        m_parent = parent;
+        this.m_parent = parent;
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -60,34 +57,41 @@ public class GrammarDialog extends JDialog {
             }
         });
         ActionListener actionListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 setVisible(false);
             }
         };
         KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        this.getRootPane().registerKeyboardAction(actionListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        this.getRootPane().registerKeyboardAction(actionListener,
+            stroke,
+            JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         buildGUI();
     }
 
+    private final Frame m_parent;
+
     public boolean doDialog() {
-        m_dialogResult = false;
-        setLocationRelativeTo(m_parent);
+        this.m_dialogResult = false;
+        setLocationRelativeTo(this.m_parent);
         setVisible(true);
-        return m_dialogResult;
+        return this.m_dialogResult;
     }
 
+    private boolean m_dialogResult;
+
     private void buildGUI() {
-        m_typeList = new JComboBox();
-        m_metaList = new JComboBox();
-        m_instanceList = new JComboBox();
+        this.m_typeList = new JComboBox<String>();
+        this.m_metaList = new JComboBox<String>();
+        this.m_instanceList = new JComboBox<String>();
 
         JLabel typeLabel = new JLabel("Select type graph:", JLabel.TRAILING);
-        typeLabel.setLabelFor(m_typeList);
+        typeLabel.setLabelFor(this.m_typeList);
         JLabel metaLabel = new JLabel("Select meta graph:", JLabel.TRAILING);
-        metaLabel.setLabelFor(m_metaList);
+        metaLabel.setLabelFor(this.m_metaList);
         JLabel instanceLabel = new JLabel("Select instance graph:", JLabel.TRAILING);
-        instanceLabel.setLabelFor(m_instanceList);
+        instanceLabel.setLabelFor(this.m_instanceList);
 
         JPanel form = new JPanel(new GridBagLayout());
 
@@ -103,20 +107,20 @@ public class GrammarDialog extends JDialog {
         c.weightx = 1;
         c.gridx = 1;
         c.gridy = 0;
-        form.add(m_typeList, c);
+        form.add(this.m_typeList, c);
         c.weightx = 0;
         c.gridx = 0;
         c.gridy = 1;
         form.add(metaLabel, c);
         c.gridx = 1;
         c.gridy = 1;
-        form.add(m_metaList, c);
+        form.add(this.m_metaList, c);
         c.gridx = 0;
         c.gridy = 2;
         form.add(instanceLabel, c);
         c.gridx = 1;
         c.gridy = 2;
-        form.add(m_instanceList, c);
+        form.add(this.m_instanceList, c);
 
         //SpringUtilities.makeCompactGrid(form, 3, 2, 6, 6, 6, 6);
 
@@ -125,8 +129,9 @@ public class GrammarDialog extends JDialog {
 
         JButton okBtn = new JButton("OK");
         okBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                m_dialogResult = true;
+                GrammarDialog.this.m_dialogResult = true;
                 GrammarDialog.this.dispose();
             }
         });
@@ -134,10 +139,11 @@ public class GrammarDialog extends JDialog {
 
         JButton cancelBtn = new JButton("Cancel");
         cancelBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                m_typeList.removeAllItems();
-                m_metaList.removeAllItems();
-                m_instanceList.removeAllItems();
+                GrammarDialog.this.m_typeList.removeAllItems();
+                GrammarDialog.this.m_metaList.removeAllItems();
+                GrammarDialog.this.m_instanceList.removeAllItems();
                 GrammarDialog.this.dispose();
             }
         });
@@ -157,49 +163,49 @@ public class GrammarDialog extends JDialog {
     }
 
     public void setTypeModels(Set<String> typeModelNames) {
-        m_typeList.removeAllItems();
+        this.m_typeList.removeAllItems();
 
         for (String type : typeModelNames) {
-            m_typeList.addItem(type);
+            this.m_typeList.addItem(type);
         }
     }
 
     public void setMetaModels(Set<String> metaModelNames) {
-        m_metaList.removeAllItems();
-        m_metaList.addItem("");
+        this.m_metaList.removeAllItems();
+        this.m_metaList.addItem("");
 
         for (String type : metaModelNames) {
-            m_metaList.addItem(type);
+            this.m_metaList.addItem(type);
         }
         if (metaModelNames.size() > 0) {
-            m_metaList.setSelectedIndex(1);
+            this.m_metaList.setSelectedIndex(1);
         }
     }
 
     public void setInstanceModels(Set<String> instanceModelNames, boolean force) {
-        m_instanceList.removeAllItems();
+        this.m_instanceList.removeAllItems();
         if (!force) {
-            m_instanceList.addItem("");
+            this.m_instanceList.addItem("");
         }
 
         for (String type : instanceModelNames) {
-            m_instanceList.addItem(type);
+            this.m_instanceList.addItem(type);
         }
         if (!force && instanceModelNames.size() > 0) {
-            m_instanceList.setSelectedIndex(1);
+            this.m_instanceList.setSelectedIndex(1);
         }
     }
 
     public String getTypeModel() {
-        return (String) m_typeList.getSelectedItem();
+        return (String) this.m_typeList.getSelectedItem();
     }
 
     public String getMetaModel() {
-        return (String) m_metaList.getSelectedItem();
+        return (String) this.m_metaList.getSelectedItem();
     }
 
     public String getInstanceModel() {
-        return (String) m_instanceList.getSelectedItem();
+        return (String) this.m_instanceList.getSelectedItem();
     }
 
     private void close() {

@@ -28,6 +28,7 @@ import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -213,7 +214,8 @@ public enum FileType {
      */
     public Path stripExtension(Path file) {
         String childName = stripExtension(file.getFileName().toString());
-        return file.getParent().resolve(childName);
+        Path parent = file.getParent();
+        return parent == null ? Paths.get(childName) : parent.resolve(childName);
     }
 
     /**
@@ -242,7 +244,8 @@ public enum FileType {
      */
     public Path addExtension(Path file) {
         String childName = addExtension(file.getFileName().toString());
-        return file.getParent().resolve(childName);
+        Path parent = file.getParent();
+        return parent == null ? Paths.get(childName) : parent.resolve(childName);
     }
 
     /**

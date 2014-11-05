@@ -27,9 +27,11 @@ import groove.io.graph.GxlIO;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -37,7 +39,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -292,6 +296,21 @@ public class Groove {
         } catch (NumberFormatException exc) {
             return null;
         }
+    }
+
+    /** Efficient method to split a given string into newline-separated substrings. */
+    public static List<String> splitLines(String input) {
+        List<String> result = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new StringReader(input))) {
+            String line = reader.readLine();
+            while (line != null) {
+                result.add(line);
+                line = reader.readLine();
+            }
+        } catch (IOException exc) {
+            assert false : "Shouldn't happen for a StringReader";
+        }
+        return result;
     }
 
     /**

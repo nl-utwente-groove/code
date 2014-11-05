@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -290,8 +291,9 @@ abstract public class SystemStore extends UndoableEditSupport {
         if (Files.exists(file)) {
             newFile = file;
             do {
-                newFile =
-                    newFile.getParent().resolve("Copy of " + newFile.getFileName().toString());
+                Path parent = newFile.getParent();
+                String copyName = "Copy of " + newFile.getFileName().toString();
+                newFile = parent == null ? Paths.get(copyName) : parent.resolve(copyName);
             } while (Files.exists(newFile));
             if (clearDir) {
                 try {

@@ -269,6 +269,15 @@ public class GrammarModel implements Observer {
     }
 
     /**
+     * Returns the configuration model for a given rule name.
+     * @return the configuration model for configuration <code>name</code>, or <code>null</code> if
+     *         there is no such configuration.
+     */
+    public ConfigModel getConfigModel(String name) {
+        return (ConfigModel) getResourceMap(ResourceKind.CONFIG).get(name);
+    }
+
+    /**
      * Returns the type graph model for a given graph name.
      * @return the type graph model for type <code>name</code>, or
      *         <code>null</code> if there is no such graph.

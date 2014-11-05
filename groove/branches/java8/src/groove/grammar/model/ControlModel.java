@@ -41,7 +41,7 @@ public class ControlModel extends TextBasedModel<Collection<Template>> {
     }
 
     @Override
-    public Collection<Template> compute() throws FormatException {
+    protected Collection<Template> compute() throws FormatException {
         Program program;
         if (isEnabled()) {
             CompositeControlModel model = getGrammar().getControlModel();

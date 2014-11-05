@@ -165,7 +165,7 @@ public enum AspectKind {
 
     /**
      * Returns the prefix of this aspect kind.
-     * The prefix is the text (including {@link #SEPARATOR}) by which a plain text
+     * The prefix is the text (including {@link AspectParser#SEPARATOR}) by which a plain text
      * label is recognised to have this aspect.
      */
     public String getPrefix() {
@@ -910,8 +910,7 @@ public enum AspectKind {
     /** Mapping from kind value names to symbols. */
     private static final Map<String,String> tokenMap = new HashMap<String,String>();
     /** Mapping from signature names to aspect kinds. */
-    private static final Map<Sort,AspectKind> sigKindMap =
-        new EnumMap<Sort,AspectKind>(Sort.class);
+    private static final Map<Sort,AspectKind> sigKindMap = new EnumMap<Sort,AspectKind>(Sort.class);
 
     static {
         // initialise the aspect kind map
@@ -941,7 +940,11 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static final Set<AspectKind> roles = EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO,
+    public static final Set<AspectKind> roles = EnumSet.of(ERASER,
+        ADDER,
+        CREATOR,
+        READER,
+        EMBARGO,
         CONNECT);
     /** Set of role aspects appearing (only) in NACs. */
     public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
@@ -950,8 +953,13 @@ public enum AspectKind {
     /** Set of role aspects appearing in RHSs. */
     public static final Set<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
-        NESTED, REMARK, CONNECT);
+    public static final Set<AspectKind> meta = EnumSet.of(FORALL,
+        FORALL_POS,
+        EXISTS,
+        EXISTS_OPT,
+        NESTED,
+        REMARK,
+        CONNECT);
     /** Set of parameter aspects. */
     public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT);
     /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
@@ -959,8 +967,13 @@ public enum AspectKind {
     /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL, FORALL_POS);
     /** Set of attribute-related aspects. */
-    public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT, ARGUMENT, STRING, INT,
-        BOOL, REAL, TEST);
+    public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
+        ARGUMENT,
+        STRING,
+        INT,
+        BOOL,
+        REAL,
+        TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
@@ -979,21 +992,72 @@ public enum AspectKind {
                 break;
             case RULE:
                 nodeKinds =
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
-                        STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, ID, COLOR);
+                    EnumSet.of(REMARK,
+                        READER,
+                        ERASER,
+                        CREATOR,
+                        ADDER,
+                        EMBARGO,
+                        BOOL,
+                        INT,
+                        REAL,
+                        STRING,
+                        PRODUCT,
+                        PARAM_BI,
+                        PARAM_IN,
+                        PARAM_OUT,
+                        FORALL,
+                        FORALL_POS,
+                        EXISTS,
+                        EXISTS_OPT,
+                        ID,
+                        COLOR);
                 edgeKinds =
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT,
-                        REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, NESTED, LET, TEST);
+                    EnumSet.of(REMARK,
+                        READER,
+                        ERASER,
+                        CREATOR,
+                        ADDER,
+                        EMBARGO,
+                        CONNECT,
+                        BOOL,
+                        INT,
+                        REAL,
+                        STRING,
+                        ARGUMENT,
+                        PATH,
+                        LITERAL,
+                        FORALL,
+                        FORALL_POS,
+                        EXISTS,
+                        EXISTS_OPT,
+                        NESTED,
+                        LET,
+                        TEST);
                 break;
             case TYPE:
                 nodeKinds =
-                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR,
+                    EnumSet.of(DEFAULT,
+                        REMARK,
+                        INT,
+                        BOOL,
+                        REAL,
+                        STRING,
+                        ABSTRACT,
+                        IMPORT,
+                        COLOR,
                         EDGE);
                 edgeKinds =
-                    EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
-                        MULT_OUT, COMPOSITE);
+                    EnumSet.of(REMARK,
+                        INT,
+                        BOOL,
+                        REAL,
+                        STRING,
+                        ABSTRACT,
+                        SUBTYPE,
+                        MULT_IN,
+                        MULT_OUT,
+                        COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
