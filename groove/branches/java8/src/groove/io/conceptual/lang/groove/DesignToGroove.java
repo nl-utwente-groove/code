@@ -40,10 +40,15 @@ import java.util.Set;
 
 //separate different graphs for various elements where applicable.
 //TODO: add translate messages here as well?
+/**
+ * Bridge from design to GROOVE export.
+ * @author rensink
+ * @version $Revision $
+ */
 public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.Object> {
     /** Creates bridge for a given design to a given GROOVE export object. */
-    public DesignToGroove(GrooveExport export, Design design) {
-        super(export, design);
+    public DesignToGroove(Design design, GrooveExport export) {
+        super(design, export);
         this.m_cfg = export.getConfig();
         this.m_currentGraph = export.getGraph(design.getName(), GraphRole.HOST);
     }

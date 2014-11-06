@@ -71,9 +71,11 @@ import de.gupro.gxl.gxl_1_0.TupType;
 //Type graphs are referred to by the ID (often coinciding with the name) of the GraphClass node. The actual ID
 // of the graph in which this node is contained is ignored. This also means one type graph graph can be used
 //in one GXL document , but multiple GraphClass nodes are allowed (each resulting in a TypeModel)
+/** Bridge from glossary to GXL export. */
 public class GlossaryToGxl extends GlossaryExportBuilder<GxlExport,NodeType> {
+    /** Constructs an instance for a given glossary and export object. */
     public GlossaryToGxl(GxlExport export, Glossary glos) {
-        super(export, glos);
+        super(glos, export);
     }
 
     // Keep track of graph to add nodes to

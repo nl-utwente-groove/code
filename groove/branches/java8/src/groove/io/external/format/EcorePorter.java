@@ -93,11 +93,11 @@ public class EcorePorter extends ConceptualPorter {
         }
 
         EcoreExport result = new EcoreExport(typeFile, instanceFile);
-        GlossaryToEcore g2e = new GlossaryToEcore(result, tm);
+        GlossaryToEcore g2e = new GlossaryToEcore(tm, result);
         g2e.build();
 
         if (isHost) {
-            new DesignToEcore(g2e, im).build();
+            new DesignToEcore(im, g2e).build();
         }
         return result;
     }

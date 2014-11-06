@@ -58,8 +58,8 @@ import org.eclipse.emf.ecore.resource.Resource;
  */
 public class DesignToEcore extends DesignExportBuilder<EcoreExport,java.lang.Object> {
     /** Constructs a design-to-ecore exporter for a given type-level exporter and design. */
-    public DesignToEcore(GlossaryToEcore glossToEcore, Design design) {
-        super(glossToEcore.getExport(), design);
+    public DesignToEcore(Design design, GlossaryToEcore glossToEcore) {
+        super(design, glossToEcore.getExport());
         this.m_glossToEcore = glossToEcore;
     }
 

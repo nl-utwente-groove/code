@@ -67,7 +67,7 @@ public class GxlPorter extends ConceptualPorter {
         ttg.build();
 
         if (isHost) {
-            new DesignToGxl(ttg, im).build();
+            new DesignToGxl(im, ttg).build();
         }
         return result;
     }

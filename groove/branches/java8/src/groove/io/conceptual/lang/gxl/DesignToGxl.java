@@ -51,6 +51,7 @@ import de.gupro.gxl.gxl_1_0.SeqType;
 import de.gupro.gxl.gxl_1_0.SetType;
 import de.gupro.gxl.gxl_1_0.TupType;
 
+/** Bridge from design to GXL export. */
 public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
     // Keep track of node and edge Ids
     //private int m_nextEdge = 1;
@@ -60,8 +61,8 @@ public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
      * Constructs a converter from a given design to a GXL instance graph,
      * given an existing glossary-to-type converter.
      */
-    public DesignToGxl(GlossaryToGxl glossToGxl, Design design) {
-        super(glossToGxl.getExport(), design);
+    public DesignToGxl(Design design, GlossaryToGxl glossToGxl) {
+        super(design, glossToGxl.getExport());
         this.m_glossToGxl = glossToGxl;
         this.m_instanceGraph =
             glossToGxl.getExport().getInstanceGraph("graph_" + design.getGlossary().getName(),

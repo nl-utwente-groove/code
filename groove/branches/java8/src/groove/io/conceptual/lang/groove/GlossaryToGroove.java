@@ -33,10 +33,11 @@ import groove.io.external.PortException;
 import java.util.HashSet;
 import java.util.Set;
 
-//separate different graphs for various elements where applicable.
+/** Bridge from glossary to GROOVE export. */
 public class GlossaryToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
-    public GlossaryToGroove(GrooveExport export, Glossary glos) {
-        super(export, glos);
+    /** Constructs an instance for a given glossary and export object. */
+    public GlossaryToGroove(Glossary glos, GrooveExport export) {
+        super(glos, export);
         this.m_cfg = export.getConfig();
         this.m_currentGraph = export.getGraph(GrooveUtil.getSafeId(glos.getName()), GraphRole.TYPE);
         this.m_properties = new HashSet<>();

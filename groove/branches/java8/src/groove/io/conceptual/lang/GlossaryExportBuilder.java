@@ -35,7 +35,8 @@ import org.eclipse.jdt.annotation.Nullable;
 /** Abstract superclass for all glossary exporters.
  */
 public abstract class GlossaryExportBuilder<X,E> implements Messenger, ExportBuilder<X> {
-    protected GlossaryExportBuilder(X export, Glossary glos) {
+    /** Constructs a bridge from a given glossary to a given export. */
+    protected GlossaryExportBuilder(Glossary glos, X export) {
         this.export = export;
         this.glos = glos;
     }

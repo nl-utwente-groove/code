@@ -49,6 +49,7 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 
+/** Bridge from glossary to ECore export. */
 public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> {
     private static final EcoreFactory g_EcoreFactory = EcoreFactory.eINSTANCE;
     private static final EcorePackage g_EcorePackage = EcorePackage.eINSTANCE;
@@ -62,8 +63,8 @@ public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> 
 
     private int nrContainer = 0;
 
-    public GlossaryToEcore(EcoreExport export, Glossary glos) {
-        super(export, glos);
+    public GlossaryToEcore(Glossary glos, EcoreExport export) {
+        super(glos, export);
     }
 
     @Override

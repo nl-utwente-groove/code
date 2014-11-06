@@ -6,6 +6,7 @@ import groove.io.conceptual.Field;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.NullableType;
+import groove.io.conceptual.configuration.schema.StringsType;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsNode;
 import groove.io.conceptual.lang.GlossaryExportBuilder;
@@ -16,40 +17,48 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.external.PortException;
+import groove.util.Exceptions;
 
 import java.util.HashMap;
 import java.util.Map;
 
 // Generates meta schema for type graph
+/** Bridge from meta-type graph to GROOVE export. */
 public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
-    private GrooveExport m_grooveResource;
-    private Config m_cfg;
-    private GrammarGraph m_currentGraph;
-    private Map<MetaType,AbsNode> m_metaNodes = new HashMap<MetaType,AbsNode>();
-
-    public MetaToGroove(GrooveExport grooveResource, Glossary glos) {
-        super(grooveResource, glos);
-        this.m_cfg = grooveResource.getConfig();
+    /** Constructs an instance for a given glossary and export object. */
+    public MetaToGroove(Glossary glos, GrooveExport export) {
+        super(glos, export);
+        this.m_cfg = export.getConfig();
     }
+
+    private final Config m_cfg;
 
     @Override
     public void build() throws PortException {
         // Only create meta graph if config requires it
         if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
-            this.m_currentGraph =
-                this.m_grooveResource.getGraph(GrooveUtil.getSafeId(getGlossary().getName())
-                    + "_meta", GraphRole.TYPE);
             setupMetaModel();
             this.m_cfg.setGlossary(getGlossary());
             super.build();
         }
     }
 
+    private GrammarGraph getGrammarGraph() {
+        if (this.m_currentGraph == null) {
+            this.m_currentGraph =
+                getExport().getGraph(GrooveUtil.getSafeId(getGlossary().getName()) + "_meta",
+                    GraphRole.TYPE);
+        }
+        return this.m_currentGraph;
+    }
+
+    private GrammarGraph m_currentGraph;
+
     @Override
     protected void setElement(Acceptor o, AbsNode n) {
         super.setElement(o, n);
         if (n != null) {
-            this.m_currentGraph.m_nodes.put(o, n);
+            getGrammarGraph().m_nodes.put(o, n);
         }
     }
 
@@ -65,53 +74,6 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
         ContainerOrd,
         DataType,
         Tuple;
-    }
-
-    private AbsNode getMetaNode(MetaType type) {
-        if (this.m_metaNodes.containsKey(type)) {
-            return this.m_metaNodes.get(type);
-        }
-        String name = "";
-        switch (type) {
-        case Type:
-            name = this.m_cfg.getStrings().getMetaType();
-            break;
-        case Class:
-            name = this.m_cfg.getStrings().getMetaClass();
-            break;
-        case ClassNullable:
-            name = this.m_cfg.getStrings().getMetaClassNullable();
-            break;
-        case Enum:
-            name = this.m_cfg.getStrings().getMetaEnum();
-            break;
-        case DataType:
-            name = this.m_cfg.getStrings().getMetaDataType();
-            break;
-        case Tuple:
-            name = this.m_cfg.getStrings().getMetaTuple();
-            break;
-        case ContainerSet:
-            name = this.m_cfg.getStrings().getMetaContainerSet();
-            break;
-        case ContainerBag:
-            name = this.m_cfg.getStrings().getMetaContainerBag();
-            break;
-        case ContainerSeq:
-            name = this.m_cfg.getStrings().getMetaContainerSeq();
-            break;
-        case ContainerOrd:
-            name = this.m_cfg.getStrings().getMetaContainerOrd();
-            break;
-        case Intermediate:
-            name = this.m_cfg.getStrings().getMetaIntermediate();
-            break;
-        default:
-            throw new RuntimeException();
-        }
-        AbsNode metaNode = new AbsNode("type:" + name);
-        this.m_metaNodes.put(type, metaNode);
-        return metaNode;
     }
 
     private void setupMetaModel() {
@@ -138,6 +100,59 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
         new AbsEdge(containerNodeBag, intermediateNode, "sub:");
         new AbsEdge(containerNodeSeq, intermediateNode, "sub:");
         new AbsEdge(containerNodeOrd, intermediateNode, "sub:");
+    }
+
+    private AbsNode getMetaNode(MetaType type) {
+        AbsNode result = this.m_metaNodes.get(type);
+        if (result == null) {
+            this.m_metaNodes.put(type, result = computeMetaNode(type));
+        }
+        return result;
+    }
+
+    private final Map<MetaType,AbsNode> m_metaNodes = new HashMap<MetaType,AbsNode>();
+
+    private AbsNode computeMetaNode(MetaType type) {
+        StringsType strings = this.m_cfg.getStrings();
+        String name;
+        switch (type) {
+        case Type:
+            name = strings.getMetaType();
+            break;
+        case Class:
+            name = strings.getMetaClass();
+            break;
+        case ClassNullable:
+            name = strings.getMetaClassNullable();
+            break;
+        case Enum:
+            name = strings.getMetaEnum();
+            break;
+        case DataType:
+            name = strings.getMetaDataType();
+            break;
+        case Tuple:
+            name = strings.getMetaTuple();
+            break;
+        case ContainerSet:
+            name = strings.getMetaContainerSet();
+            break;
+        case ContainerBag:
+            name = strings.getMetaContainerBag();
+            break;
+        case ContainerSeq:
+            name = strings.getMetaContainerSeq();
+            break;
+        case ContainerOrd:
+            name = strings.getMetaContainerOrd();
+            break;
+        case Intermediate:
+            name = strings.getMetaIntermediate();
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
+        return new AbsNode("type:" + name);
     }
 
     @Override

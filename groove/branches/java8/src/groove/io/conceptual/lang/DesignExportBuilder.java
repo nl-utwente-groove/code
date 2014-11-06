@@ -32,7 +32,8 @@ import java.util.Map;
  * @param <Elem> type of the target format elements
  */
 public abstract class DesignExportBuilder<X,Elem> implements Messenger, ExportBuilder<X> {
-    protected DesignExportBuilder(X export, Design design) {
+    /** Constructs an bridge from a given design to a given export. */
+    protected DesignExportBuilder(Design design, X export) {
         this.export = export;
         this.design = design;
     }

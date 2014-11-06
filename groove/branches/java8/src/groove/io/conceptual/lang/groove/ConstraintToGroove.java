@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 //separate different graphs for various elements where applicable.
+/** Bridge from glossary constraints to GROOVE rules. */
 public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
     private static final String CONSTRAINT_NS = "constraint";
 
@@ -48,8 +49,8 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
     private boolean m_allowDuplicates;
     private boolean m_recursiveTypes;
 
-    public ConstraintToGroove(GrooveExport export, Glossary glos) {
-        super(export, glos);
+    public ConstraintToGroove(Glossary glos, GrooveExport export) {
+        super(glos, export);
         this.m_cfg = export.getConfig();
         this.m_allowDuplicates = false;
         this.m_recursiveTypes = true;

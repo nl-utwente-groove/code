@@ -195,13 +195,13 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         SimulatorModel simulatorModel = getSimulator() == null ? null : getSimulator().getModel();
         GrooveExport export = new GrooveExport(cfg, simulatorModel, "");
         if (glos != null) {
-            new GlossaryToGroove(export, glos).build();
-            new ConstraintToGroove(export, glos).build();
-            new MetaToGroove(export, glos).build();
+            new GlossaryToGroove(glos, export).build();
+            new ConstraintToGroove(glos, export).build();
+            new MetaToGroove(glos, export).build();
         }
 
         if (design != null) {
-            new DesignToGroove(export, design).build();
+            new DesignToGroove(design, export).build();
         }
 
         for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : export.getGraphs()
