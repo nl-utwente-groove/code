@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -30,8 +30,9 @@ import java.util.Map;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EPackage;
 
+/** Class with some static utilities for ECore handling. */
 public class EcoreUtil {
-    // Static table of 'known' types in Ecore that can be mapped to the conceptual model
+    /** Static table of 'known' types in Ecore that can be mapped to the conceptual model. */
     public static final Map<String,Type> g_knownTypes = new HashMap<String,Type>();
     static {
         g_knownTypes.put("EBoolean", BoolType.instance());
@@ -55,9 +56,9 @@ public class EcoreUtil {
         g_knownTypes.put("EFloatObject", RealType.instance());
     }
 
-    // Static table of 'known' instance types in Ecore that can be mapped to Ecore DataTypes
-    // which can be mapped to the conceptual model (see EcoreType class)
-    // Also used for default values
+    /** Static table of 'known' instance types in Ecore that can be mapped to Ecore DataTypes
+     * which can be mapped to the conceptual model (see EcoreType class)
+     * Also used for default values. */
     public static final Map<String,String> g_knownInstanceTypes = new HashMap<String,String>();
     static {
         g_knownInstanceTypes.put("java.lang.Boolean", "EBoolean");

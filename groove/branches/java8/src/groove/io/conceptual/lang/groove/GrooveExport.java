@@ -23,8 +23,8 @@ import groove.gui.SimulatorModel;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.graph.AbsGraph;
+import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ExportException;
-import groove.io.conceptual.lang.ExportableResource;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -34,14 +34,14 @@ import java.util.Map;
 /** Resource ready to be exported to GROOVE native format, in the form
  * of a set of graphs (possibly including type graph, host graph and constraints).
  */
-public class GrooveResource extends ExportableResource {
+public class GrooveExport extends Export {
     /**
-     * Constructs a new, initially empty resource, for a given configuration and name space.
+     * Constructs a new, initially empty export, for a given configuration and name space.
      * @param cfg export configuration
      * @param simModel optional simulator model, if the export is GUI-based
      * @param namespace name space for the exported resource (prepended to all graph names)
      */
-    public GrooveResource(Config cfg, SimulatorModel simModel, String namespace) {
+    public GrooveExport(Config cfg, SimulatorModel simModel, String namespace) {
         this.m_cfg = cfg;
         this.m_simModel = simModel;
         this.m_namespace = namespace;
@@ -121,9 +121,6 @@ public class GrooveResource extends ExportableResource {
             this.m_graphs.get(graphRole).put(name, result);
         }
         assert result.getGraphRole() == graphRole;
-        //            if (resultGraph.getGraphRole() != graphRole) {
-        //                return null;
-        //            }
         return result;
     }
 

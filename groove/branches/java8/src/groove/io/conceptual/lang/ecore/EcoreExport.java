@@ -17,6 +17,7 @@
 package groove.io.conceptual.lang.ecore;
 
 import groove.io.conceptual.Timer;
+import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ExportException;
 
 import java.io.IOException;
@@ -34,18 +35,18 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
-public class EcoreResource extends groove.io.conceptual.lang.ExportableResource {
-    private ResourceSet m_resourceSet;
-    private Map<String,Resource> m_typeResources = new HashMap<String,Resource>();
-    private Map<String,Resource> m_instanceResources = new HashMap<String,Resource>();
+public class EcoreExport extends Export {
+    private final ResourceSet m_resourceSet;
+    private final Map<String,Resource> m_typeResources = new HashMap<String,Resource>();
+    private final Map<String,Resource> m_instanceResources = new HashMap<String,Resource>();
 
-    private Path m_typeFile;
-    private Path m_instanceFile;
+    private final Path m_typeFile;
+    private final Path m_instanceFile;
 
-    private String relPath;
+    private final String relPath;
 
     //files allowed null if instance or type not required
-    public EcoreResource(Path typeTarget, Path instanceTarget) {
+    public EcoreExport(Path typeTarget, Path instanceTarget) {
         this.m_resourceSet = new ResourceSetImpl();
         this.m_resourceSet.getResourceFactoryRegistry()
             .getExtensionToFactoryMap()
@@ -73,29 +74,30 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
         return this.relPath;
     }
 
-    public Resource getTypeResource(String resourceName) {
+    /** Returns the ECore metamodel of a given name.
+     * The name is either the pre-initialised meta-model name, if non-{@code null},
+     * or the parameter name otherwise.
+     */
+    public Resource getTypeResource(String name) {
         if (this.m_typeFile != null) {
-            resourceName = this.m_typeFile.toString();
+            name = this.m_typeFile.toString();
         }
-        if (this.m_typeResources.containsKey(resourceName)) {
-            this.m_typeResources.get(resourceName);
+        Resource result = this.m_typeResources.get(name);
+        if (result == null) {
+            result = this.m_resourceSet.createResource(URI.createURI(name));
+            this.m_typeResources.put(name, result);
         }
-
-        Resource newResource = this.m_resourceSet.createResource(URI.createURI(resourceName));
-        this.m_typeResources.put(resourceName, newResource);
-
-        return newResource;
+        return result;
     }
 
-    public Resource getInstanceResource(String resourceName) {
-        if (this.m_instanceResources.containsKey(resourceName)) {
-            this.m_instanceResources.get(resourceName);
+    /** Returns the ECore instance model of a given name. */
+    public Resource getInstanceResource(String name) {
+        Resource result = this.m_instanceResources.get(name);
+        if (result == null) {
+            result = this.m_resourceSet.createResource(URI.createURI(name));
+            this.m_instanceResources.put(name, result);
         }
-
-        Resource newResource = this.m_resourceSet.createResource(URI.createURI(resourceName));
-        this.m_instanceResources.put(resourceName, newResource);
-
-        return newResource;
+        return result;
     }
 
     @Override

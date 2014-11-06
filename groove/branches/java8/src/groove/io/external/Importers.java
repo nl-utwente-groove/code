@@ -24,7 +24,6 @@ import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.external.format.AutPorter;
 import groove.io.external.format.ColImporter;
-import groove.io.external.format.DotPorter;
 import groove.io.external.format.EcorePorter;
 import groove.io.external.format.GxlPorter;
 import groove.io.external.format.NativePorter;
@@ -120,7 +119,6 @@ public class Importers {
         result.add(ColImporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(GxlPorter.instance());
-        result.add(DotPorter.instance());
         return Collections.unmodifiableList(result);
     }
 

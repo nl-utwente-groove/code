@@ -1,8 +1,8 @@
 package groove.io.conceptual.value;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.Container.Kind;
@@ -14,7 +14,7 @@ import java.util.Map;
  * Object in the conceptual model.
  * No two object references are equal if they are not the same underlying Java Object.
  * @author s0141844
- * 
+ *
  */
 public class Object extends Value {
     /** The name of this object. */
@@ -53,8 +53,7 @@ public class Object extends Value {
         if (field.getType() instanceof Container
             && ((Container) field.getType()).getContainerType() == Kind.SET) {
             if (!(fieldValue instanceof ContainerValue)) {
-                ContainerValue cv =
-                    new ContainerValue((Container) field.getType());
+                ContainerValue cv = new ContainerValue((Container) field.getType());
                 cv.addValue(fieldValue);
                 fieldValue = cv;
             }
@@ -92,8 +91,8 @@ public class Object extends Value {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addObject(this);
         return true;
     }
 

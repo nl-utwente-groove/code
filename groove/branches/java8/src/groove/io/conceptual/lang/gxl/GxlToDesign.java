@@ -18,10 +18,10 @@ package groove.io.conceptual.lang.gxl;
 
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
-import groove.io.conceptual.InstanceModel;
+import groove.io.conceptual.Design;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InstanceImporter;
 import groove.io.conceptual.lang.gxl.GxlUtil.EdgeWrapper;
@@ -49,24 +49,24 @@ import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
 
-public class GxlToInstance extends InstanceImporter {
+public class GxlToDesign extends InstanceImporter {
     private Map<String,GraphType> m_instanceGraphs =
         new HashMap<String,GraphType>();
 
-    private GxlToType m_gxlToType;
+    private GxlToGlossary m_gxlToType;
 
     // Map to keep track of nodes and their objects
     private Map<NodeType,Object> m_nodeValues = new HashMap<NodeType,Object>();
     // Also for complex edges
     private Map<EdgeType,Object> m_edgeValues = new HashMap<EdgeType,Object>();
 
-    public GxlToInstance(GxlToType gxlToType, String instanceModel)
+    public GxlToDesign(GxlToGlossary gxlToGlos, String designName)
         throws ImportException {
-        this.m_gxlToType = gxlToType;
+        this.m_gxlToType = gxlToGlos;
 
         // Load the GXL
         try {
-            FileInputStream in = new FileInputStream(instanceModel);
+            FileInputStream in = new FileInputStream(designName);
             try {
                 int timer = Timer.cont("Load GXL");
                 @SuppressWarnings("unchecked")
@@ -100,8 +100,8 @@ public class GxlToInstance extends InstanceImporter {
     }
 
     @Override
-    public InstanceModel getInstanceModel(String modelName) {
-        InstanceModel result = super.getInstanceModel(modelName);
+    public Design getInstanceModel(String modelName) {
+        Design result = super.getInstanceModel(modelName);
         if (result != null) {
             return result;
         }
@@ -109,12 +109,12 @@ public class GxlToInstance extends InstanceImporter {
             // Find the type of the graph
             String type =
                 GxlUtil.getElemType(this.m_instanceGraphs.get(modelName));
-            TypeModel mm = this.m_gxlToType.getTypeModel(type);
+            Glossary mm = this.m_gxlToType.getGlossary(type);
             if (mm == null) {
                 return null;
             }
 
-            InstanceModel m = new InstanceModel(mm, modelName);
+            Design m = new Design(mm, modelName);
 
             visitGraph(m, this.m_instanceGraphs.get(modelName));
             addInstanceModel(m);
@@ -125,7 +125,7 @@ public class GxlToInstance extends InstanceImporter {
         return null;
     }
 
-    private void visitGraph(InstanceModel m, GraphType graph) {
+    private void visitGraph(Design m, GraphType graph) {
         Map<NodeType,NodeWrapper> nodes = GxlUtil.wrapGraph(graph);
         String type = GxlUtil.getElemType(graph);
         Id graphId = this.m_gxlToType.getGraphId(type);//Id.getId(Id.ROOT, Name.getName(type));
@@ -145,7 +145,7 @@ public class GxlToInstance extends InstanceImporter {
         }
     }
 
-    private Object visitObject(InstanceModel m, NodeWrapper nodeWrapper,
+    private Object visitObject(Design m, NodeWrapper nodeWrapper,
             Id graphId) {
         NodeType node = nodeWrapper.getNode();
 
@@ -221,7 +221,7 @@ public class GxlToInstance extends InstanceImporter {
         return o;
     }
 
-    private Object visitEdge(InstanceModel m, EdgeWrapper edgeWrapper,
+    private Object visitEdge(Design m, EdgeWrapper edgeWrapper,
             Id graphId) {
         EdgeType edge = edgeWrapper.getEdge();
 

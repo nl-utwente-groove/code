@@ -31,20 +31,20 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
 /**
- * Just like GrooveResource, but with a half-baked attempt to get some progress dialog showing.
+ * Just like {@link GrooveExport}, but with a half-baked attempt to get some progress dialog showing.
  * It's slow and not very safe, but if the lack of feedback annoys too much this class may be
  * an alternative to the silent GrooveResource.
  * Class instance can only be used once.
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class GrooveResourceThreaded extends GrooveResource {
+public class GrooveExportThreaded extends GrooveExport {
     // Keep track of progress so far.
     private int progress = 0;
     private final Simulator m_sim;
 
     /** Constructs an instance of this class, for a given simulator. */
-    public GrooveResourceThreaded(Config cfg, Simulator sim, String namespace) {
+    public GrooveExportThreaded(Config cfg, Simulator sim, String namespace) {
         super(cfg, sim.getModel(), namespace);
         this.m_sim = sim;
     }
@@ -105,21 +105,20 @@ public class GrooveResourceThreaded extends GrooveResource {
                     // Do the actual work here in GUI thread for a bit more safety
                     importGraph(chunk);
 
-                    GrooveResourceThreaded.this.progress++;
+                    GrooveExportThreaded.this.progress++;
 
-                    int percent =
-                        GrooveResourceThreaded.this.progress * 100 / this.dlg.getMaximum();
+                    int percent = GrooveExportThreaded.this.progress * 100 / this.dlg.getMaximum();
 
                     String message =
                         String.format("Graph %d of %d (%d%%).\n",
-                            GrooveResourceThreaded.this.progress,
+                            GrooveExportThreaded.this.progress,
                             this.dlg.getMaximum(),
                             percent);
                     this.dlg.setNote(message);
-                    this.dlg.setProgress(GrooveResourceThreaded.this.progress);
+                    this.dlg.setProgress(GrooveExportThreaded.this.progress);
 
-                    GrooveResourceThreaded.this.m_sim.getFrame().validate();
-                    GrooveResourceThreaded.this.m_sim.getFrame().repaint();
+                    GrooveExportThreaded.this.m_sim.getFrame().validate();
+                    GrooveExportThreaded.this.m_sim.getFrame().repaint();
                 }
             }
 

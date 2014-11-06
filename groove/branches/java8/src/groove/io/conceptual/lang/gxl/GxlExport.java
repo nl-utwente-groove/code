@@ -17,11 +17,10 @@
 package groove.io.conceptual.lang.gxl;
 
 import groove.io.conceptual.Timer;
+import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ExportException;
-import groove.io.conceptual.lang.ExportableResource;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -34,88 +33,79 @@ import java.util.Map;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import de.gupro.gxl.gxl_1_0.EdgemodeType;
 import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
 
-public class GxlResource extends ExportableResource {
+/** Export for GXL format. */
+public class GxlExport extends Export {
     // For exported resource
-    private GxlType m_gxlTypeType;
-    private GxlType m_gxlTypeInstance;
+    private final GxlType m_gxlTypeType;
+    private final GxlType m_gxlTypeInstance;
     // For temp resource (type for instance that does not export type as well)
-    private GxlType m_gxlTypeTemp;
-    private Map<String,GraphType> m_graphs = new HashMap<String,GraphType>();
+    private final GxlType m_gxlTypeTemp;
+    private final Map<String,GraphType> m_graphs = new HashMap<String,GraphType>();
 
-    private Path m_typeFile;
-    private Path m_instanceFile;
+    private final @Nullable Path m_typeFile;
+    private final @Nullable Path m_instanceFile;
+    /** Relative path of instance with respect to type file. */
+    private final String relPath;
 
-    private String relPath;
-
-    public GxlResource(Path typeTarget, Path instanceTarget) {
-        if (typeTarget != null) {
-            this.m_typeFile = typeTarget;
-        }
-        if (instanceTarget != null) {
-            if (instanceTarget.equals(typeTarget)) {
-                this.m_instanceFile = this.m_typeFile;
-            } else {
-                this.m_instanceFile = instanceTarget;
-            }
-        }
-
-        if (this.m_typeFile == this.m_instanceFile || this.m_typeFile == null) {
-            this.relPath = "";
-        } else {
-            this.relPath = this.m_instanceFile.relativize(this.m_typeFile).toString();
-        }
-
+    /**
+     * Constructs an export object for a given type and instance file.
+     * Both files may new {@code null}.
+     */
+    public GxlExport(@Nullable Path typeFile, @Nullable Path instanceFile) {
+        this.m_typeFile = typeFile;
+        this.m_instanceFile = instanceFile;
+        boolean typeInstanceEqual =
+            typeFile == null ? instanceFile == null : typeFile.equals(instanceFile);
+        this.relPath = typeInstanceEqual ? "" : instanceFile.relativize(typeFile).toString();
         this.m_gxlTypeType = new GxlType();
         this.m_gxlTypeTemp = new GxlType();
-        if (this.m_typeFile == this.m_instanceFile) {
-            this.m_gxlTypeInstance = this.m_gxlTypeType;
-        } else {
-            this.m_gxlTypeInstance = new GxlType();
-        }
+        this.m_gxlTypeInstance = typeInstanceEqual ? this.m_gxlTypeType : new GxlType();
     }
 
+    /** Returns an (initially empty) type graph for a given name. */
     public GraphType getTypeGraph(String graphId) {
-        if (this.m_graphs.containsKey(graphId)) {
-            return this.m_graphs.get(graphId);
+        GraphType result = this.m_graphs.get(graphId);
+        if (result == null) {
+            result = new GraphType();
+            result.setId(graphId);
+            result.setEdgeids(true);
+            GxlUtil.setElemType(result, GxlUtil.g_gxlTypeGraphURI + "#gxl-1.0");
+
+            if (this.m_typeFile != null) {
+                this.m_gxlTypeType.getGraph().add(result);
+            } else {
+                this.m_gxlTypeTemp.getGraph().add(result);
+            }
+
+            this.m_graphs.put(graphId, result);
         }
-        GraphType graph = new GraphType();
-        graph.setId(graphId);
-        graph.setEdgeids(true);
-        GxlUtil.setElemType(graph, GxlUtil.g_gxlTypeGraphURI + "#gxl-1.0");
-
-        if (this.m_typeFile != null) {
-            this.m_gxlTypeType.getGraph().add(graph);
-        } else {
-            this.m_gxlTypeTemp.getGraph().add(graph);
-        }
-
-        this.m_graphs.put(graphId, graph);
-
-        return graph;
+        return result;
     }
 
+    /** Returns a GXL instance graph with a given name and type name. */
     public GraphType getInstanceGraph(String typeId, String name) {
-        if (this.m_graphs.containsKey(name)) {
-            return this.m_graphs.get(name);
+        GraphType result = this.m_graphs.get(name);
+        if (result == null) {
+            // a graph with this name does not yet exit; create and add it
+            result = new GraphType();
+            result.setId(name);
+            GxlUtil.setElemType(result, getTypePath() + "#" + typeId);
+            // No edge IDs in instance graphs
+            result.setEdgeids(false);
+            result.setEdgemode(EdgemodeType.DEFAULTDIRECTED);
+            this.m_gxlTypeInstance.getGraph().add(result);
+            this.m_graphs.put(name, result);
         }
-        GraphType graph = new GraphType();
-        graph.setId(name);
-        GxlUtil.setElemType(graph, getTypePath() + "#" + typeId);
-        // No edge IDs in instance graphs
-        graph.setEdgeids(false);
-        graph.setEdgemode(EdgemodeType.DEFAULTDIRECTED);
-
-        this.m_gxlTypeInstance.getGraph().add(graph);
-
-        this.m_graphs.put(name, graph);
-
-        return graph;
+        return result;
     }
 
+    /** Returns the relative path from instance to type file, if both are set. */
     public String getTypePath() {
         return this.relPath;
     }
@@ -125,7 +115,8 @@ public class GxlResource extends ExportableResource {
         return export(false);
     }
 
-    public boolean export(boolean oldStyle) throws ExportException {
+    /** Helper method containing some leftover code to use old-style export. */
+    private boolean export(boolean oldStyle) throws ExportException {
         // m_gxlType contains all graphs
         int timer = Timer.start("Save GXL");
         JAXBElement<GxlType> mainElement = GxlUtil.g_objectFactory.createGxl(this.m_gxlTypeType);
@@ -159,13 +150,7 @@ public class GxlResource extends ExportableResource {
                     Files.write(this.m_typeFile, Collections.singletonList(xmlString));
                 }
             }
-        } catch (FileNotFoundException e) {
-            throw new ExportException(e);
-        } catch (JAXBException e) {
-            throw new ExportException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new ExportException(e);
-        } catch (IOException e) {
+        } catch (JAXBException | IOException e) {
             throw new ExportException(e);
         }
 

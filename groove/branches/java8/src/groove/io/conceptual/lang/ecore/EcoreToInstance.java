@@ -3,10 +3,10 @@ package groove.io.conceptual.lang.ecore;
 import groove.io.FileType;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
-import groove.io.conceptual.InstanceModel;
+import groove.io.conceptual.Design;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InstanceImporter;
 import groove.io.conceptual.lang.InvalidTypeException;
@@ -42,10 +42,10 @@ public class EcoreToInstance extends InstanceImporter {
     // References to the Ecore type model information, retrieved from EcoreToType
     private final EcoreToType m_ecoreType;
     private final Resource m_resource;
-    private final TypeModel m_typeModel;
+    private final Glossary m_typeModel;
 
     /** Instance model that is generated. */
-    private InstanceModel m_instanceModel;
+    private Design m_instanceModel;
     /** Name of the instance model. */
     private final String m_instanceName;
 
@@ -63,7 +63,7 @@ public class EcoreToInstance extends InstanceImporter {
         this.m_ecoreType = typeModel;
 
         // "ecore" is the hardcoded string for an ecore type model
-        this.m_typeModel = this.m_ecoreType.getTypeModel("ecore");
+        this.m_typeModel = this.m_ecoreType.getGlossary("ecore");
         if (this.m_typeModel == null) {
             throw new ImportException(
                 "Cannot load type model from given EcoreToType");
@@ -96,7 +96,7 @@ public class EcoreToInstance extends InstanceImporter {
     }
 
     @Override
-    public InstanceModel getInstanceModel(String modelName) {
+    public Design getInstanceModel(String modelName) {
         if (!this.m_instanceName.equals(modelName)) {
             return null;
         }
@@ -107,7 +107,7 @@ public class EcoreToInstance extends InstanceImporter {
         //int count = 0;
 
         // Create the Model based on TypeModel of ecoreType
-        InstanceModel m = new InstanceModel(this.m_typeModel, modelName);
+        Design m = new Design(this.m_typeModel, modelName);
 
         // Iterate over all objects in the Ecore instance and create Model Object where applicable
         Iterator<EObject> it = this.m_resource.getAllContents();
@@ -134,7 +134,7 @@ public class EcoreToInstance extends InstanceImporter {
      * @param eObject EOBject to translate
      * @return The translated Object, or null on error
      */
-    private Object visitObject(InstanceModel m, EObject eObject) {
+    private Object visitObject(Design m, EObject eObject) {
         if (this.m_objects.containsKey(eObject)) {
             return this.m_objects.get(eObject);
         }
@@ -175,7 +175,7 @@ public class EcoreToInstance extends InstanceImporter {
      * @return The Value if translated, null on error
      */
     @SuppressWarnings("unchecked")
-    private Value visitReference(InstanceModel m, Object cmObject,
+    private Value visitReference(Design m, Object cmObject,
             EReference eReference, java.lang.Object value) {
         // Happens if no value is assigned.
         if (value == null) {
@@ -222,7 +222,7 @@ public class EcoreToInstance extends InstanceImporter {
      * @return The Value if translated, null on error
      */
     @SuppressWarnings("unchecked")
-    private Value visitAttribute(InstanceModel m, Object cmObject,
+    private Value visitAttribute(Design m, Object cmObject,
             EAttribute eAttribute, java.lang.Object value) {
         // Happens if no value is assigned.
         if (value == null) {

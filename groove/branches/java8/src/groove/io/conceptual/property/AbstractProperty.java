@@ -1,6 +1,6 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.Visitor;
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.Class;
 
 /** Property expressing that a given class type is abstract. */
@@ -11,8 +11,8 @@ public class AbstractProperty implements Property {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addAbstractProp(this);
         return true;
     }
 

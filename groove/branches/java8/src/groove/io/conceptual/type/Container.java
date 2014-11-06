@@ -1,5 +1,6 @@
 package groove.io.conceptual.type;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 
 /** Container type. */
@@ -109,7 +110,7 @@ public class Container extends Type {
             + this.m_ctype
             + ">("
             + (this.m_contentType.isComplex() ? this.m_contentType.typeString()
-                    : this.m_contentType.toString()) + ")";
+                : this.m_contentType.toString()) + ")";
     }
 
     /** Returns the kind of this container. */
@@ -133,8 +134,8 @@ public class Container extends Type {
     }
 
     @Override
-    public boolean doVisit(groove.io.conceptual.Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addContainer(this, param);
         return true;
     }
 
@@ -144,7 +145,6 @@ public class Container extends Type {
             return false;
         }
         Container c = (Container) o;
-        return c.getContainerType() == getContainerType()
-            && c.getType().equals(getType());
+        return c.getContainerType() == getContainerType() && c.getType().equals(getType());
     }
 }

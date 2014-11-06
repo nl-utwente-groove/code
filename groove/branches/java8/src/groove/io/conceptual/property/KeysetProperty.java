@@ -1,8 +1,8 @@
 package groove.io.conceptual.property;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
 /**
@@ -22,8 +22,7 @@ public class KeysetProperty implements Property {
     private Field[] m_keyFields;
 
     /** Constructs a property for a given container and set of field names. */
-    public KeysetProperty(Class relClass, Name rel, Class keyClass,
-            Name... keyFields) {
+    public KeysetProperty(Class relClass, Name rel, Class keyClass, Name... keyFields) {
         this.m_relClass = relClass;
         this.m_relName = rel;
         this.m_keyClass = keyClass;
@@ -31,8 +30,8 @@ public class KeysetProperty implements Property {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addKeysetProp(this);
         return true;
     }
 
@@ -46,7 +45,7 @@ public class KeysetProperty implements Property {
         return this.m_relName;
     }
 
-    /** 
+    /**
      * Returns the container field.
      * Only initialised after a call to {@link #resolveFields()}.
      */
@@ -64,8 +63,8 @@ public class KeysetProperty implements Property {
         return this.m_keyNames;
     }
 
-    /** 
-     * Returns the fields constituting the key for the contained values. 
+    /**
+     * Returns the fields constituting the key for the contained values.
      * Only initialised after a call to {@link #resolveFields()}.
      */
     public Field[] getKeyFields() {

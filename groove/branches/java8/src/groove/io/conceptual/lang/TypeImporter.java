@@ -1,6 +1,6 @@
 package groove.io.conceptual.lang;
 
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,55 +12,45 @@ import java.util.Map;
 public abstract class TypeImporter implements Messenger {
     /**
      * Returns a collection of strings representing each loaded type model.
-     * Use {@link TypeImporter#getTypeModel(String)} to retrieve the actual associated type
+     * Use {@link TypeImporter#getGlossary(String)} to retrieve the actual associated type
      * model.
      * @return A collection of strings representing each type model
      */
-    public Collection<String> getTypeModelNames() {
-        return this.m_typeModels.keySet();
+    public Collection<String> getGlossaryNames() {
+        return this.m_glossaries.keySet();
     }
 
     /** Inserts a named type model into this importer. */
-    public void putTypeModel(String name, TypeModel typeModel) {
-        this.m_typeModels.put(name, typeModel);
+    public void putGlossary(String name, Glossary typeModel) {
+        this.m_glossaries.put(name, typeModel);
     }
 
     /**
      * Returns the type model associated with the given name.
-     * @param modelName The name of the type model to retrieve.
-     * @return The type model, or null if the model could not be found.
+     * @param name The name of the type model to retrieve.
+     * @return The glossary, or null if it could not be found.
      */
-    public TypeModel getTypeModel(String modelName) {
-        return this.m_typeModels.get(modelName);
+    public Glossary getGlossary(String name) {
+        return this.m_glossaries.get(name);
     }
 
-    private final Map<String,TypeModel> m_typeModels = new HashMap<String,TypeModel>();
+    private final Map<String,Glossary> m_glossaries = new HashMap<>();
 
     /**
-     * Returns the first type model found.
-     * @return The type model, or null if the model could not be found.
-     * @throws ImportException When the conversion fails, an ImportException may be thrown.
+     * Returns the first glossary found.
+     * @return The glossary, or null if none not be found.
      */
-    public TypeModel getTypeModel() throws ImportException {
-        Collection<String> names = getTypeModelNames();
+    public Glossary getGlossary() {
+        Collection<String> names = getGlossaryNames();
         if (names.size() > 0) {
-            return getTypeModel(names.iterator().next());
+            return getGlossary(names.iterator().next());
         }
         return null;
-    }
-
-    protected void addMessage(Message m) {
-        this.m_messages.add(m);
     }
 
     @Override
     public List<Message> getMessages() {
         return this.m_messages;
-    }
-
-    @Override
-    public void clearMessages() {
-        this.m_messages.clear();
     }
 
     private List<Message> m_messages = new ArrayList<Message>();

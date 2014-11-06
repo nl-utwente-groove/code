@@ -1,6 +1,6 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.Visitor;
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.BoolType;
 
 /** Boolean values. */
@@ -17,8 +17,8 @@ public class BoolValue extends LiteralValue {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addBoolValue(this);
         return true;
     }
 
@@ -29,7 +29,7 @@ public class BoolValue extends LiteralValue {
 
     private final boolean m_value;
 
-    /** 
+    /**
      * Returns the fixed representation of a given boolean value.
      * @param value the value to be represented
      * @return either {@link #TRUE} or {@link #FALSE}, depending on {@code value}

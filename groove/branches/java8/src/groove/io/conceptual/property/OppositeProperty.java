@@ -1,8 +1,8 @@
 package groove.io.conceptual.property;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
 /**
@@ -32,8 +32,8 @@ public class OppositeProperty implements Property {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addOppositeProp(this);
         return true;
     }
 
@@ -57,7 +57,7 @@ public class OppositeProperty implements Property {
         return this.m_fieldName2;
     }
 
-    /** 
+    /**
      * Returns the first opposite field.
      * Only initialised after a call to {@link #resolveFields()}.
      */
@@ -65,7 +65,7 @@ public class OppositeProperty implements Property {
         return this.m_field1;
     }
 
-    /** 
+    /**
      * Returns the second opposite field.
      * Only initialised after a call to {@link #resolveFields()}.
      */

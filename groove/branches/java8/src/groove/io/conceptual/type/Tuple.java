@@ -1,5 +1,7 @@
 package groove.io.conceptual.type;
 
+import groove.io.conceptual.ExportBuilder;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,8 +54,8 @@ public class Tuple extends Type {
     }
 
     @Override
-    public boolean doVisit(groove.io.conceptual.Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addTuple(this);
         return true;
     }
 

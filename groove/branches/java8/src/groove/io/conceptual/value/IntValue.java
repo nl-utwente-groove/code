@@ -1,6 +1,6 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.Visitor;
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.IntType;
 
 import java.math.BigInteger;
@@ -19,8 +19,8 @@ public class IntValue extends LiteralValue {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addIntValue(this);
         return true;
     }
 

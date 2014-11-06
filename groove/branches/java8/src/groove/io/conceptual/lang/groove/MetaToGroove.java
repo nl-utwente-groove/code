@@ -3,13 +3,12 @@ package groove.io.conceptual.lang.groove;
 import groove.graph.GraphRole;
 import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsNode;
-import groove.io.conceptual.lang.ExportableResource;
-import groove.io.conceptual.lang.TypeExporter;
+import groove.io.conceptual.lang.GlossaryExportBuilder;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.CustomDataType;
@@ -22,32 +21,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 // Generates meta schema for type graph
-public class MetaToGroove extends TypeExporter<AbsNode> {
-    private GrooveResource m_grooveResource;
+public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
+    private GrooveExport m_grooveResource;
     private Config m_cfg;
     private GrammarGraph m_currentGraph;
     private Map<MetaType,AbsNode> m_metaNodes = new HashMap<MetaType,AbsNode>();
 
-    public MetaToGroove(GrooveResource grooveResource) {
-        this.m_grooveResource = grooveResource;
-        this.m_cfg = this.m_grooveResource.getConfig();
+    public MetaToGroove(GrooveExport grooveResource, Glossary glos) {
+        super(grooveResource, glos);
+        this.m_cfg = grooveResource.getConfig();
     }
 
     @Override
-    public void addTypeModel(TypeModel typeModel) throws PortException {
+    public void build() throws PortException {
         // Only create meta graph if config requires it
         if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
             this.m_currentGraph =
-                this.m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()) + "_meta",
-                    GraphRole.TYPE);
+                this.m_grooveResource.getGraph(GrooveUtil.getSafeId(getGlossary().getName())
+                    + "_meta", GraphRole.TYPE);
             setupMetaModel();
-            visitTypeModel(typeModel, this.m_cfg);
+            this.m_cfg.setGlossary(getGlossary());
+            super.build();
         }
-    }
-
-    @Override
-    public ExportableResource getResource() {
-        return this.m_grooveResource;
     }
 
     @Override
@@ -146,7 +141,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Class c, String param) {
+    public void addClass(Class c) {
         if (hasElement(c)) {
             return;
         }
@@ -183,7 +178,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Field field, String param) {
+    public void addField(Field field) {
         if (hasElement(field)) {
             return;
         }
@@ -211,7 +206,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DataType dt, String param) {
+    public void addDataType(DataType dt) {
         if (hasElement(dt)) {
             return;
         }
@@ -226,7 +221,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Enum e, String param) {
+    public void addEnum(Enum e) {
         if (hasElement(e)) {
             return;
         }
@@ -241,15 +236,15 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Container c, String param) {
+    public void addContainer(Container c, String base) {
         if (hasElement(c)) {
             return;
         }
 
-        assert param != null;
+        assert base != null;
 
         if (c.getType() instanceof Container) {
-            getElement(c.getType(), this.m_cfg.getContainerName(param, (Container) c.getType()));
+            getElement(c.getType(), this.m_cfg.getContainerName(base, (Container) c.getType()));
         }
 
         if (!this.m_cfg.useIntermediate(c)) {
@@ -257,7 +252,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
             return;
         }
 
-        AbsNode containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
+        AbsNode containerNode = new AbsNode(base + this.m_cfg.getContainerPostfix(c));
         setElement(c, containerNode);
 
         AbsNode orderedNode = null;
@@ -281,7 +276,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(Tuple tuple, String param) {
+    public void addTuple(Tuple tuple) {
         if (hasElement(tuple)) {
             return;
         }

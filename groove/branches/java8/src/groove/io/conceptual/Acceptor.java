@@ -9,10 +9,10 @@ import java.io.Serializable;
  */
 public interface Acceptor extends Serializable {
     /**
-     * Callback the visitor with the given parameter
-     * @param v The visitor to visit
+     * Adds this element to a given export builder.
+     * @param v export builder to add to
      * @param param string that may be passed along as a parameter
      * @return true if visited successfully
      */
-    public boolean doVisit(Visitor v, String param);
+    public boolean doBuild(ExportBuilder<?> v, String param);
 }

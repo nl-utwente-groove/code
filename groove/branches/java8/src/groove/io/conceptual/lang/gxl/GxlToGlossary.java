@@ -4,7 +4,7 @@ import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
@@ -59,7 +59,7 @@ import de.gupro.gxl.gxl_1_0.TupType;
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class GxlToType extends TypeImporter {
+public class GxlToGlossary extends TypeImporter {
     /** GXL type graph to use to use (select the first one from the document). */
     private final List<GraphType> m_gxlTypeGraphs = new ArrayList<GraphType>();
 
@@ -99,7 +99,7 @@ public class GxlToType extends TypeImporter {
         g_edgeTypes.add("CompositionClass");
     }
 
-    public GxlToType(String typeModel, boolean useComplex) throws ImportException {
+    public GxlToGlossary(String typeModel, boolean useComplex) throws ImportException {
         this.m_useComplex = useComplex;
         // Load the GXL
         try {
@@ -142,7 +142,7 @@ public class GxlToType extends TypeImporter {
         for (GraphType graph : this.m_gxlTypeGraphs) {
             Map<NodeType,NodeWrapper> nodes = GxlUtil.wrapGraph(graph);
 
-            TypeModel typeModel = new TypeModel(graph.getId());
+            Glossary typeModel = new Glossary(graph.getId());
 
             // Maps all graph elements in graph to a specific GraphClass node
             Map<NodeType,Set<NodeWrapper>> graphElements = new HashMap<NodeType,Set<NodeWrapper>>();
@@ -215,7 +215,7 @@ public class GxlToType extends TypeImporter {
                 typeModel.resolve();
 
                 // Store typegraph under ID of corresponding GraphClass node.
-                putTypeModel(graphNode.getId(), typeModel);
+                putGlossary(graphNode.getId(), typeModel);
 
                 //System.out.println("GXL elem " + count + " (" + graphNode.getId() + ")");
             }
@@ -304,7 +304,7 @@ public class GxlToType extends TypeImporter {
      * --<node id="name"> attribute
      * ?--<node id="hasAsComponentGraph"> subgraph as element, only supported by graphs partially as package
      */
-    private Class visitClass(TypeModel mm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Class visitClass(Glossary mm, NodeWrapper nodeWrapper, Id graphNamespace) {
         //assert ("NodeClass".equals(nodeWrapper.getType()));
         if (g_edgeTypes.contains(nodeWrapper.getType())) {
             return (Class) visitEdge(mm, nodeWrapper, graphNamespace);
@@ -361,7 +361,7 @@ public class GxlToType extends TypeImporter {
      */
     // Class argument to apply default value property
     //TODO: return value used by assign, or assigned in visitor itself?
-    private Field visitAttribute(TypeModel tm, Class c, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Field visitAttribute(Glossary tm, Class c, NodeWrapper nodeWrapper, Id graphNamespace) {
         assert ("AttributeClass".equals(nodeWrapper.getType()));
 
         NodeType node = nodeWrapper.getNode();
@@ -422,7 +422,7 @@ public class GxlToType extends TypeImporter {
      * --<node id="isordered"> edge attr
      * --<node id="isdirected"> edge attr
      */
-    private Object visitEdge(TypeModel tm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Object visitEdge(Glossary tm, NodeWrapper nodeWrapper, Id graphNamespace) {
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
@@ -592,7 +592,7 @@ public class GxlToType extends TypeImporter {
      * @param nodeWrapper Node representing the type
      * @return The generated type, or null on error
      */
-    private Type visitType(TypeModel tm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Type visitType(Glossary tm, NodeWrapper nodeWrapper, Id graphNamespace) {
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
@@ -657,7 +657,7 @@ public class GxlToType extends TypeImporter {
      * @param nodeWrapper NodeWrapper representing the node in the GXL type model for the enum. Should be of type "Enum"
      * @return The created Enum, or null on error
      */
-    private Enum visitEnum(TypeModel tm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Enum visitEnum(Glossary tm, NodeWrapper nodeWrapper, Id graphNamespace) {
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
@@ -696,7 +696,7 @@ public class GxlToType extends TypeImporter {
         return cmEnum;
     }
 
-    private Value visitValue(TypeModel tm, NodeWrapper nodeWrapper, Type type, Id graphNamespace) {
+    private Value visitValue(Glossary tm, NodeWrapper nodeWrapper, Type type, Id graphNamespace) {
         String nodeType = nodeWrapper.getType();
         NodeType valueNode = nodeWrapper.getNode();
 

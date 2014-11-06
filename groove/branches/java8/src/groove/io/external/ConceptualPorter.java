@@ -25,22 +25,22 @@ import groove.grammar.model.ResourceModel;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel;
 import groove.io.FileType;
-import groove.io.conceptual.InstanceModel;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Design;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.ConfigDialog;
 import groove.io.conceptual.graph.AbsGraph;
+import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ExportException;
-import groove.io.conceptual.lang.ExportableResource;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.groove.ConstraintToGroove;
+import groove.io.conceptual.lang.groove.DesignToGroove;
+import groove.io.conceptual.lang.groove.GlossaryToGroove;
 import groove.io.conceptual.lang.groove.GrammarGraph;
 import groove.io.conceptual.lang.groove.GrammarVisitor;
-import groove.io.conceptual.lang.groove.GrooveResource;
+import groove.io.conceptual.lang.groove.GrooveExport;
 import groove.io.conceptual.lang.groove.GrooveUtil;
-import groove.io.conceptual.lang.groove.InstanceToGroove;
 import groove.io.conceptual.lang.groove.MetaToGroove;
-import groove.io.conceptual.lang.groove.TypeToGroove;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
 
@@ -64,12 +64,12 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     public Set<Resource> doImport(Path file, FileType fileType, GrammarModel grammar)
         throws PortException {
         Set<Resource> result = Collections.emptySet();
-        Pair<TypeModel,InstanceModel> models = null;
+        Pair<Glossary,Design> models = null;
         try {
             if (fileType == getFileType(ResourceKind.HOST)) {
-                models = importInstanceModel(file, grammar);
+                models = importDesign(file, grammar);
             } else if (fileType == getFileType(ResourceKind.TYPE)) {
-                models = importTypeModel(file, grammar);
+                models = importGlossary(file, grammar);
             }
         } catch (ImportException e) {
             throw new PortException(e);
@@ -84,11 +84,11 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     }
 
     /** Reads in type and instance models for an instance model import. */
-    abstract protected Pair<TypeModel,InstanceModel> importInstanceModel(Path file,
-        GrammarModel grammar) throws ImportException;
+    abstract protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
+        throws ImportException;
 
     /** Reads in type and instance models for a type import. */
-    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(Path file, GrammarModel grammar)
+    abstract protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
         throws ImportException;
 
     @Override
@@ -109,7 +109,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         }
 
         ResourceKind kind = model.getKind();
-        Pair<TypeModel,InstanceModel> outcome = null;
+        Pair<Glossary,Design> outcome = null;
         switch (kind) {
         case HOST:
             assert fileType == getFileType(ResourceKind.HOST);
@@ -127,8 +127,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         if (outcome == null) {
             return;
         }
-        TypeModel tm = outcome.one();
-        InstanceModel im = outcome.two();
+        Glossary tm = outcome.one();
+        Design im = outcome.two();
         if (tm == null) {
             throw new PortException("Unable to load type model");
         }
@@ -146,8 +146,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     /** Callback method obtaining an exportable object in the required format.
      * @param isHost flag indicating that we want to export an instance model
      */
-    abstract protected ExportableResource getResource(Path file, boolean isHost, TypeModel tm,
-        InstanceModel im) throws PortException;
+    abstract protected Export getResource(Path file, boolean isHost, Glossary tm, Design im)
+        throws PortException;
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
     private Config loadConfig(GrammarModel grammar) {
@@ -167,7 +167,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @param typeModel name of the type model to be extracted; may be {@code null}
      * @param instanceModel name of the instance model to be extracted; may be {@code null}
      */
-    private Pair<TypeModel,InstanceModel> constructModels(Config cfg, GrammarModel grammar,
+    private Pair<Glossary,Design> constructModels(Config cfg, GrammarModel grammar,
         String namespace, String typeModel, String instanceModel) throws PortException {
         GrammarVisitor visitor = new GrammarVisitor(cfg, namespace);
         visitor.setFixedType(typeModel);
@@ -185,31 +185,26 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     /**
      * Generates graphs for grammar.
      * @param cfg Configuration to use to generate graphs
-     * @param tm TypeModel to insert. May be null
-     * @param im InstanceModel to insert, may be null
+     * @param glos TypeModel to insert. May be null
+     * @param design InstanceModel to insert, may be null
      * @return Graphs to insert in grammar
      * @throws PortException if an error occurred during loading
      */
-    private Set<Resource> loadModel(Config cfg, TypeModel tm, InstanceModel im)
-        throws PortException {
+    private Set<Resource> loadModel(Config cfg, Glossary glos, Design design) throws PortException {
         Set<Resource> result = new HashSet<Resource>();
         SimulatorModel simulatorModel = getSimulator() == null ? null : getSimulator().getModel();
-        GrooveResource grooveResource = new GrooveResource(cfg, simulatorModel, "");
-        if (tm != null) {
-            TypeToGroove ttg = new TypeToGroove(grooveResource);
-            ttg.addTypeModel(tm);
-            ConstraintToGroove ctg = new ConstraintToGroove(grooveResource);
-            ctg.addTypeModel(tm);
-            MetaToGroove mtg = new MetaToGroove(grooveResource);
-            mtg.addTypeModel(tm);
+        GrooveExport export = new GrooveExport(cfg, simulatorModel, "");
+        if (glos != null) {
+            new GlossaryToGroove(export, glos).build();
+            new ConstraintToGroove(export, glos).build();
+            new MetaToGroove(export, glos).build();
         }
 
-        if (im != null) {
-            InstanceToGroove itg = new InstanceToGroove(grooveResource);
-            itg.addInstanceModel(im);
+        if (design != null) {
+            new DesignToGroove(export, design).build();
         }
 
-        for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : grooveResource.getGraphs()
+        for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : export.getGraphs()
             .entrySet()) {
             GraphRole role = entry.getKey();
             for (GrammarGraph graph : entry.getValue().values()) {

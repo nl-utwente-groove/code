@@ -4,7 +4,7 @@ import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InvalidTypeException;
 import groove.io.conceptual.lang.Message;
@@ -104,7 +104,7 @@ public class EcoreToType extends TypeImporter {
     private final ResourceSet rs;
 
     private void buildTypeModel() {
-        TypeModel tm = new TypeModel(this.m_typeName);
+        Glossary tm = new Glossary(this.m_typeName);
         Iterator<EObject> it = this.r.getAllContents();
         // It can happen that the same entry is visit multiple times when browsing the tree of dependent elements
         // The TypeModel ought to keep track of all elements and return the proper reference if this happens
@@ -121,10 +121,10 @@ public class EcoreToType extends TypeImporter {
             }
         }
         tm.resolve();
-        putTypeModel(this.m_typeName, tm);
+        putGlossary(this.m_typeName, tm);
     }
 
-    private Class visitClass(TypeModel mm, EClass eClass) {
+    private Class visitClass(Glossary mm, EClass eClass) {
         if (eClass.eIsProxy()) {
             return mm.getClass(Id.getId(Id.ROOT, Name.getName("Proxy")), true);
         }
@@ -165,7 +165,7 @@ public class EcoreToType extends TypeImporter {
         return cmClass;
     }
 
-    private Type visitDataType(TypeModel mm, EDataType eDataType) {
+    private Type visitDataType(Glossary mm, EDataType eDataType) {
         // Enums have special visitor
         if (eDataType instanceof EEnum) {
             return visitEnum(mm, (EEnum) eDataType);
@@ -188,7 +188,7 @@ public class EcoreToType extends TypeImporter {
         return cmDatatype;
     }
 
-    private Enum visitEnum(TypeModel mm, EEnum eEnum) {
+    private Enum visitEnum(Glossary mm, EEnum eEnum) {
         Id enumID = EcoreUtil.idFromClassifier(eEnum);
 
         if (mm.hasEnum(enumID)) {
@@ -205,7 +205,7 @@ public class EcoreToType extends TypeImporter {
         return cmEnum;
     }
 
-    private void visitAttribute(TypeModel mm, Class cmClass, EAttribute eAttribute) {
+    private void visitAttribute(Glossary mm, Class cmClass, EAttribute eAttribute) {
         Name attrName = Name.getName(eAttribute.getName());
 
         // Get the correct type
@@ -254,7 +254,7 @@ public class EcoreToType extends TypeImporter {
             eAttribute.getLowerBound(), eAttribute.getUpperBound()));
     }
 
-    private void visitReference(TypeModel mm, Class cmClass, EReference eReference) {
+    private void visitReference(Glossary mm, Class cmClass, EReference eReference) {
         Name refName = Name.getName(eReference.getName());
 
         // Get the correct type
@@ -332,7 +332,7 @@ public class EcoreToType extends TypeImporter {
      * @return the translated value
      * @throws InvalidTypeException When the conversion fails due to a type mismatch, or invalid value
      */
-    public Value objectToDataType(TypeModel tm, Type type, Object ecoreValue)
+    public Value objectToDataType(Glossary tm, Type type, Object ecoreValue)
         throws InvalidTypeException {
         if (!(type instanceof DataType)) {
             throw new InvalidTypeException(

@@ -1,5 +1,6 @@
 package groove.io.conceptual.type;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Identifiable;
@@ -19,7 +20,7 @@ import java.util.Set;
  * This type is based on a 'Class' identifier.
  * The public constructor creates a nullable and proper version of the same class,
  * with the proper class referring to the nullable class as a supertype.
- * 
+ *
  * @author Me
  */
 public class Class extends Type implements Identifiable {
@@ -186,9 +187,8 @@ public class Class extends Type implements Identifiable {
     }
 
     @Override
-    public boolean doVisit(groove.io.conceptual.Visitor v,
-            String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addClass(this);
         return true;
     }
 

@@ -6,17 +6,11 @@ import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.Type;
 
 /**
- * Represents Fields in the TypeModel
- * @author s0141844
+ * Represents a field type in a glossary.
+ * @author Harold Bruijntjes
  * @version $Revision $
  */
 public class Field implements Acceptor {
-    private Name m_name;
-    private Type m_type;
-    private int m_lowerBound;
-    private int m_upperBound;
-    private Class m_class;
-
     /**
      * Create a new Field. The Field is not immediately part of a class, use setDefiningClass for that.
      * If the type is a class, then nullable is used for bound 0..1, and proper for bound 1..1
@@ -65,6 +59,9 @@ public class Field implements Acceptor {
         return this.m_name;
     }
 
+    /** Field name. */
+    private final Name m_name;
+
     /**
      * Returns the upper bound of the field multiplicity.
      * @return The upper bound
@@ -72,6 +69,9 @@ public class Field implements Acceptor {
     public int getUpperBound() {
         return this.m_upperBound;
     }
+
+    /** Upper bound cardinality of the field. */
+    private final int m_upperBound;
 
     /**
      * Returns the lower bound of the field multiplicity.
@@ -81,6 +81,9 @@ public class Field implements Acceptor {
         return this.m_lowerBound;
     }
 
+    /** Lower bound cardinality of the field. */
+    private final int m_lowerBound;
+
     /**
      * Returns the type of the field.
      * @return The type
@@ -88,6 +91,9 @@ public class Field implements Acceptor {
     public Type getType() {
         return this.m_type;
     }
+
+    /** Type of the field values. */
+    private final Type m_type;
 
     /**
      * Set the class that defines this Field. A Field can only be part of one class.
@@ -105,9 +111,12 @@ public class Field implements Acceptor {
         return this.m_class;
     }
 
+    /** Type of the field values. */
+    private Class m_class;
+
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addField(this);
         return true;
     }
 

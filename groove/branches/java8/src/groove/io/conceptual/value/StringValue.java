@@ -1,6 +1,6 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.Visitor;
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.StringType;
 
 import java.util.regex.Matcher;
@@ -19,8 +19,8 @@ public class StringValue extends LiteralValue {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addStringValue(this);
         return true;
     }
 
@@ -34,8 +34,8 @@ public class StringValue extends LiteralValue {
      * been escaped.
      */
     public String toEscapedString() {
-        return this.m_value.replaceAll(Matcher.quoteReplacement("\\"),
-            "\\\\\\\\").replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
+        return this.m_value.replaceAll(Matcher.quoteReplacement("\\"), "\\\\\\\\")
+            .replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
     }
 
     /** The wrapped string value. */

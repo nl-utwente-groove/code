@@ -1,6 +1,6 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.Visitor;
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.Container;
 
 import java.util.ArrayList;
@@ -23,8 +23,8 @@ public class ContainerValue extends Value {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addContainerValue(this, param);
         return true;
     }
 

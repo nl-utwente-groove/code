@@ -17,13 +17,12 @@
 package groove.io.conceptual.lang.gxl;
 
 import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Identifiable;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
-import groove.io.conceptual.lang.ExportableResource;
-import groove.io.conceptual.lang.TypeExporter;
+import groove.io.conceptual.lang.GlossaryExportBuilder;
 import groove.io.conceptual.lang.gxl.GxlUtil.AttrTypeEnum;
 import groove.io.conceptual.property.AbstractProperty;
 import groove.io.conceptual.property.ContainmentProperty;
@@ -72,9 +71,10 @@ import de.gupro.gxl.gxl_1_0.TupType;
 //Type graphs are referred to by the ID (often coinciding with the name) of the GraphClass node. The actual ID
 // of the graph in which this node is contained is ignored. This also means one type graph graph can be used
 //in one GXL document , but multiple GraphClass nodes are allowed (each resulting in a TypeModel)
-public class TypeToGxl extends TypeExporter<NodeType> {
-
-    private GxlResource m_gxlResource;
+public class GlossaryToGxl extends GlossaryExportBuilder<GxlExport,NodeType> {
+    public GlossaryToGxl(GxlExport export, Glossary glos) {
+        super(export, glos);
+    }
 
     // Keep track of graph to add nodes to
     private GraphType m_typeGraph;
@@ -94,32 +94,22 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     private int m_nextEdge = 1;
     private int m_nextValue = 1;
 
-    public TypeToGxl(GxlResource gxlResource) {
-        this.m_gxlResource = gxlResource;
-    }
-
     @Override
-    public void addTypeModel(TypeModel typeModel) throws PortException {
-        //m_idMap = typeModel.getShortIds();
-
-        // If no typegraph yet, create one, this also creates a new GraphClass node inside it. Otherwise, insert a new GraphClass node
+    public void build() throws PortException {
+        // If no typegraph yet, create one, this also creates a new GraphClass node inside it.
+        // Otherwise, insert a new GraphClass node
         if (this.m_typeGraph == null) {
-            this.m_typeGraph = this.m_gxlResource.getTypeGraph(typeModel.getName());
+            this.m_typeGraph = getExport().getTypeGraph(getGlossary().getName());
         }
 
         int timer = Timer.start("TM to GXL");
-        this.m_currentTypeName = typeModel.getName();
-        visitTypeModel(typeModel);
+        this.m_currentTypeName = getGlossary().getName();
+        super.build();
         Timer.stop(timer);
     }
 
     @Override
-    public ExportableResource getResource() {
-        return this.m_gxlResource;
-    }
-
-    @Override
-    public void visit(DataType t, String param) {
+    public void addDataType(DataType t) {
         if (hasElement(t)) {
             return;
         }
@@ -153,7 +143,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(Class cmClass, String param) {
+    public void addClass(Class cmClass) {
         if (hasElement(cmClass)) {
             return;
         }
@@ -164,8 +154,8 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         }
 
         NodeType classNode =
-            createNode(getId(cmClass), GxlUtil.g_gxlTypeGraphURI + "#NodeClass",
-                cmClass.getId().getNamespace());
+            createNode(getId(cmClass), GxlUtil.g_gxlTypeGraphURI + "#NodeClass", cmClass.getId()
+                .getNamespace());
         setElement(cmClass, classNode);
         GxlUtil.setAttribute(classNode, "name", idToName(cmClass.getId()), AttrTypeEnum.STRING);
         GxlUtil.setAttribute(classNode, "isabstract", false, AttrTypeEnum.BOOL);
@@ -199,7 +189,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(Field field, String param) {
+    public void addField(Field field) {
         if (hasElement(field)) {
             return;
         }
@@ -250,7 +240,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(Container container, String param) {
+    public void addContainer(Container container, String base) {
         if (!isAttribute(container)) {
             String edgeId = getEdgeId();
             NodeType edgeNode =
@@ -321,7 +311,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(Enum cmEnum, String param) {
+    public void addEnum(Enum cmEnum) {
         if (hasElement(cmEnum)) {
             return;
         }
@@ -334,8 +324,8 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         for (Name literal : cmEnum.getLiterals()) {
             String literalId = getId(cmEnum) + "_" + literal;
             NodeType literalNode =
-                createNode(literalId, GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
-                    cmEnum.getId().getNamespace());
+                createNode(literalId, GxlUtil.g_gxlTypeGraphURI + "#EnumVal", cmEnum.getId()
+                    .getNamespace());
             GxlUtil.setAttribute(literalNode, "value", literal.toString(), AttrTypeEnum.STRING);
 
             createEdge(enumNode, literalNode, GxlUtil.g_gxlTypeGraphURI + "#containsValue");
@@ -343,7 +333,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(Tuple tuple, String param) {
+    public void addTuple(Tuple tuple) {
         if (hasElement(tuple)) {
             return;
         }
@@ -373,74 +363,74 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, String param) {
-        if (hasElement(abstractProperty)) {
+    public void addAbstractProp(AbstractProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
-        setElement(abstractProperty, null);
+        setElement(prop, null);
 
-        NodeType classNode = getElement(abstractProperty.getAbstractClass());
+        NodeType classNode = getElement(prop.getAbstractClass());
         GxlUtil.setAttribute(classNode, "isabstract", true, AttrTypeEnum.BOOL);
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, String param) {
-        if (hasElement(containmentProperty)) {
+    public void addContainmentProp(ContainmentProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
-        setElement(containmentProperty, null);
+        setElement(prop, null);
 
-        NodeType fieldNode = getElement(containmentProperty.getField());
+        NodeType fieldNode = getElement(prop.getField());
 
         GxlUtil.setElemType(fieldNode, GxlUtil.g_gxlTypeGraphURI + "#CompositionClass");
         GxlUtil.setAttribute(fieldNode, "aggregate", "to", AttrTypeEnum.ENUM);
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, String param) {
-        if (hasElement(identityProperty)) {
+    public void addIdentityProp(IdentityProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
-        setElement(identityProperty, null);
+        setElement(prop, null);
 
         // Cannot be used in GXL
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, String param) {
-        if (hasElement(keysetProperty)) {
+    public void addKeysetProp(KeysetProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
-        setElement(keysetProperty, null);
+        setElement(prop, null);
 
         // Cannot be used in GXL
     }
 
     @Override
-    public void visit(OppositeProperty oppositeProperty, String param) {
-        if (hasElement(oppositeProperty)) {
+    public void addOppositeProp(OppositeProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
-        setElement(oppositeProperty, null);
+        setElement(prop, null);
 
         // Cannot be used in GXL
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, String param) {
-        if (hasElement(defaultValueProperty)) {
+    public void addDefaultValueProp(DefaultValueProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
-        setElement(defaultValueProperty, null);
+        setElement(prop, null);
 
-        if (!isAttribute(defaultValueProperty.getField())) {
+        if (!isAttribute(prop.getField())) {
             throw new IllegalArgumentException(
                 "Field must be an attribute for use with default value");
         }
 
-        NodeType fieldNode = getElement(defaultValueProperty.getField());
+        NodeType fieldNode = getElement(prop.getField());
 
-        NodeType valueNode = getValueElement(defaultValueProperty.getDefaultValue());
+        NodeType valueNode = getValueElement(prop.getDefaultValue());
 
         createEdge(fieldNode, valueNode, GxlUtil.g_gxlTypeGraphURI + "#hasDefaultValue");
 
@@ -592,7 +582,8 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#BoolVal", Id.ROOT);
             GxlUtil.setAttribute(valNode,
                 "value",
-                new Boolean(((BoolValue) v).getValue()).toString(), AttrTypeEnum.STRING);
+                new Boolean(((BoolValue) v).getValue()).toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof IntValue) {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#IntVal", Id.ROOT);

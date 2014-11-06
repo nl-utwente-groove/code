@@ -1,5 +1,6 @@
 package groove.io.conceptual.type;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.EnumValue;
@@ -39,8 +40,8 @@ public class Enum extends DataType {
     }
 
     @Override
-    public boolean doVisit(groove.io.conceptual.Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addEnum(this);
         return true;
     }
 

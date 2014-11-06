@@ -24,7 +24,7 @@ import groove.grammar.model.RuleModel;
 import groove.graph.GraphRole;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.TypeModel.Constraints;
@@ -59,11 +59,11 @@ import java.util.Set;
 public class GrooveToConstraint {
     private Collection<RuleModel> m_ruleModels;
     private Config m_cfg;
-    private TypeModel m_typeModel;
+    private Glossary m_typeModel;
     private GraphNodeTypes m_types;
 
     public GrooveToConstraint(Collection<RuleModel> ruleModels, GraphNodeTypes types, Config cfg,
-        TypeModel typeModel) {
+        Glossary typeModel) {
         this.m_ruleModels = ruleModels;
         this.m_types = types;
         this.m_cfg = cfg;

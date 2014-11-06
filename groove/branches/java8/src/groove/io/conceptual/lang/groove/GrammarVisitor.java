@@ -8,9 +8,9 @@ import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.RuleModel;
 import groove.grammar.type.TypeGraph;
-import groove.io.conceptual.InstanceModel;
+import groove.io.conceptual.Design;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.lang.ImportException;
 import groove.util.Pair;
@@ -249,28 +249,28 @@ public class GrammarVisitor {
 
     private void setTypeGraph(TypeGraph typeGraph) throws ImportException {
         GrooveToType gtt = new GrooveToType(typeGraph, this.m_types, this.m_cfg);
-        this.m_typeModel = gtt.getTypeModel();
+        this.m_typeModel = gtt.getGlossary();
     }
 
     /** Returns the type model constructed by this visitor. */
-    public TypeModel getTypeModel() {
+    public Glossary getTypeModel() {
         return this.m_typeModel;
     }
 
-    private TypeModel m_typeModel;
+    private Glossary m_typeModel;
 
     private void setInstanceGraph(HostGraph hostGraph) throws ImportException {
         GrooveToInstance gti =
             new GrooveToInstance(hostGraph, this.m_types, this.m_cfg, this.m_typeModel);
-        this.m_instanceModel = gti.getInstanceModel();
+        this.m_instanceModel = gti.getDesign();
     }
 
     /** Returns the instance model constructed by this visitor. */
-    public InstanceModel getInstanceModel() {
+    public Design getInstanceModel() {
         return this.m_instanceModel;
     }
 
-    private InstanceModel m_instanceModel;
+    private Design m_instanceModel;
 
     private Pair<TypeGraph,HostGraph> computeCompositeGraphs(GrammarModel grammar,
         Set<String> typeModels, Set<String> hostModels) throws ImportException {

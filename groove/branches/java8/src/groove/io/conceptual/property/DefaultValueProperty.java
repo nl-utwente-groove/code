@@ -1,8 +1,8 @@
 package groove.io.conceptual.property;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.DataType;
@@ -40,8 +40,8 @@ public class DefaultValueProperty implements Property {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addDefaultValueProp(this);
         return true;
     }
 

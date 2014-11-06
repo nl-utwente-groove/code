@@ -19,15 +19,15 @@ package groove.io.external.format;
 import groove.grammar.model.GrammarModel;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
-import groove.io.conceptual.InstanceModel;
-import groove.io.conceptual.TypeModel;
-import groove.io.conceptual.lang.ExportableResource;
+import groove.io.conceptual.Design;
+import groove.io.conceptual.Glossary;
+import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ImportException;
-import groove.io.conceptual.lang.ecore.EcoreResource;
+import groove.io.conceptual.lang.ecore.DesignToEcore;
+import groove.io.conceptual.lang.ecore.EcoreExport;
 import groove.io.conceptual.lang.ecore.EcoreToInstance;
 import groove.io.conceptual.lang.ecore.EcoreToType;
-import groove.io.conceptual.lang.ecore.InstanceToEcore;
-import groove.io.conceptual.lang.ecore.TypeToEcore;
+import groove.io.conceptual.lang.ecore.GlossaryToEcore;
 import groove.io.external.ConceptualPorter;
 import groove.io.external.PortException;
 import groove.util.Pair;
@@ -44,15 +44,15 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importTypeModel(Path file, GrammarModel grammar)
+    protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
         throws ImportException {
         EcoreToType ett = new EcoreToType(file.toString());
-        TypeModel tm = ett.getTypeModel();
+        Glossary tm = ett.getGlossary();
         return Pair.newPair(tm, null);
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importInstanceModel(Path file, GrammarModel grammar)
+    protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
         throws ImportException {
         //Request ecore type model file
         int approve = getTypeModelChooser().showDialog(null, "Import Ecore type model");
@@ -64,8 +64,8 @@ public class EcorePorter extends ConceptualPorter {
         EcoreToType ett = new EcoreToType(typeFile.toString());
         EcoreToInstance eti = new EcoreToInstance(ett, file.toString());
 
-        TypeModel tm = ett.getTypeModel();
-        InstanceModel im = eti.getInstanceModel();
+        Glossary tm = ett.getGlossary();
+        Design im = eti.getDesign();
         return Pair.newPair(tm, im);
     }
 
@@ -75,8 +75,8 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected ExportableResource getResource(Path file, boolean isHost, TypeModel tm,
-        InstanceModel im) throws PortException {
+    protected Export getResource(Path file, boolean isHost, Glossary tm, Design im)
+        throws PortException {
         Path typeFile = file;
         Path instanceFile = file;
         if (isHost) {
@@ -92,13 +92,12 @@ public class EcorePorter extends ConceptualPorter {
             instanceFile = null;
         }
 
-        EcoreResource result = new EcoreResource(typeFile, instanceFile);
-        TypeToEcore tte = new TypeToEcore(result);
-        tte.addTypeModel(tm);
+        EcoreExport result = new EcoreExport(typeFile, instanceFile);
+        GlossaryToEcore g2e = new GlossaryToEcore(result, tm);
+        g2e.build();
 
         if (isHost) {
-            InstanceToEcore ite = new InstanceToEcore(tte);
-            ite.addInstanceModel(im);
+            new DesignToEcore(g2e, im).build();
         }
         return result;
     }

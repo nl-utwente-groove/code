@@ -17,7 +17,6 @@
 package groove.io;
 
 import groove.graph.GraphRole;
-import groove.io.external.format.DotPorter;
 import groove.io.external.format.EcorePorter;
 import groove.io.external.format.GxlPorter;
 import groove.io.graph.AutIO;
@@ -82,10 +81,6 @@ public enum FileType {
     COL("DIMACS graph format", ".col"),
     /** Comma-separated value files. */
     CSV("Comma-separated values", ".csv"),
-    /** GraphViz .dot type graph files. */
-    DOT_META("GraphViz type graphs", ".viz"),
-    /** GraphViz .dot instance graph files. */
-    DOT_MODEL("GraphViz instance graphs", ".viz"),
     /** ECore meta-models. */
     ECORE_META("ECore meta-models", ".ecore"),
     /** ECore instance models. */
@@ -332,10 +327,6 @@ public enum FileType {
             return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.TYPE);
         case ECORE_MODEL:
             return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.HOST);
-        case DOT_META:
-            return new ConceptualIO(DotPorter.instance(), GXL_META, GraphRole.TYPE);
-        case DOT_MODEL:
-            return new ConceptualIO(DotPorter.instance(), GXL_META, GraphRole.HOST);
         case GXL:
         case RULE:
         case TYPE:

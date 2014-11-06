@@ -1,6 +1,6 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.Visitor;
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.Tuple;
 
 import java.util.HashMap;
@@ -29,8 +29,8 @@ public class TupleValue extends Value {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addTupleValue(this);
         return true;
     }
 

@@ -8,7 +8,7 @@ import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.ModeType;
@@ -40,9 +40,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class GrooveToType extends TypeImporter {
-    private TypeModel m_typeModel;
-    private GraphNodeTypes m_types;
-    private Config m_cfg;
+    private Glossary m_typeModel;
+    private final GraphNodeTypes m_types;
+    private final Config m_cfg;
 
     private static Map<Id,Type> g_primitiveIds = new HashMap<Id,Type>();
     static {
@@ -52,11 +52,11 @@ public class GrooveToType extends TypeImporter {
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("string")), StringType.instance());
     }
 
-    // Map TypeNode to Id (each typenode in graph should have one)
-    private Map<TypeNode,Id> m_typeIds = new HashMap<TypeNode,Id>();
+    /** Map from {@link TypeNode}s to {@link Id}s (each node in type graph should have one). */
+    private final Map<TypeNode,Id> m_typeIds = new HashMap<>();
 
-    // Map graph nodes to edges
-    private Map<TypeNode,Set<TypeEdge>> m_nodeEdges = new HashMap<TypeNode,Set<TypeEdge>>();
+    /** Helper map from type nodes to sets of outgoing type edges. */
+    private final Map<TypeNode,Set<TypeEdge>> m_nodeEdges = new HashMap<TypeNode,Set<TypeEdge>>();
 
     private Map<TypeNode,Type> m_intermediateFields = new HashMap<TypeNode,Type>();
 
@@ -71,7 +71,7 @@ public class GrooveToType extends TypeImporter {
     }
 
     private void buildTypeModel(TypeGraph grooveTypeGraph) {
-        this.m_typeModel = new TypeModel(grooveTypeGraph.getName());
+        this.m_typeModel = new Glossary(grooveTypeGraph.getName());
 
         // Set of Nodes that need to be classified (inverse of m_nodeTypes)
         Set<? extends TypeNode> unvisitedNodes = new HashSet<TypeNode>(grooveTypeGraph.nodeSet());
@@ -413,7 +413,7 @@ public class GrooveToType extends TypeImporter {
 
         // And we're done
         this.m_typeModel.resolve();
-        putTypeModel(this.m_typeModel.getName(), this.m_typeModel);
+        putGlossary(this.m_typeModel.getName(), this.m_typeModel);
     }
 
     private void populateEnumFlags(TypeNode n, Enum e) {

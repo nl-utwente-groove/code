@@ -2,9 +2,9 @@ package groove.io.conceptual.configuration;
 
 import groove.grammar.model.GrammarModel;
 import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.schema.Configuration;
 import groove.io.conceptual.configuration.schema.Global;
 import groove.io.conceptual.configuration.schema.Global.IdOverrides;
@@ -99,21 +99,20 @@ public class Config {
     private final HashMap<Id,String> m_mappedIds = new HashMap<Id,String>();
 
     /**
-     * Set the current type model used to check various constraints
-     * @param typeModel TypeModel to set as current type model
+     * Sets the current glossary used to check various constraints
      */
-    public void setTypeModel(TypeModel typeModel) {
-        this.m_activeTypeModel = typeModel;
+    public void setGlossary(Glossary glos) {
+        this.m_activeGlossary = glos;
     }
 
     /** Returns the current glossary. */
-    public TypeModel getTypeModel() {
-        return this.m_activeTypeModel;
+    public Glossary getGlossary() {
+        return this.m_activeGlossary;
     }
 
     // Current TypeModel to consider for shorter Ids and opposite edges
     // and whatever else requires the type model to be known
-    private TypeModel m_activeTypeModel;
+    private Glossary m_activeGlossary;
 
     /**
      * Returns the list of name suffixes.
@@ -151,8 +150,8 @@ public class Config {
             if (mode.equals(IdModeType.FLAT)) {
                 name = id.getName().toString();
             } else {
-                if (mode.equals(IdModeType.DISAMBIGUATE) && this.m_activeTypeModel != null) {
-                    id = this.m_activeTypeModel.getShortId(id);
+                if (mode.equals(IdModeType.DISAMBIGUATE) && this.m_activeGlossary != null) {
+                    id = this.m_activeGlossary.getShortId(id);
                 }
                 String sep = getXMLGlobal().getIdSeparator();
                 // Flatten the identifier into separated strings
@@ -277,8 +276,8 @@ public class Config {
             // Intermediate required when opposite is used
             // Opposite always in  && m_activeTypeModel != nulleld2
             if (this.m_xmlConfig.getTypeModel().getFields().isOpposites()
-                && this.m_activeTypeModel != null) {
-                for (Property p : this.m_activeTypeModel.getProperties()) {
+                && this.m_activeGlossary != null) {
+                for (Property p : this.m_activeGlossary.getProperties()) {
                     if (p instanceof OppositeProperty) {
                         if (((OppositeProperty) p).getField1() == f) {
                             return true;
@@ -345,8 +344,8 @@ public class Config {
         } else if (type instanceof Tuple) {
             //TODO: tuples have no ID, how to name?
             //name += ((Tuple) type).toString();
-            if (this.m_activeTypeModel != null) {
-                name += this.m_activeTypeModel.getTupleName((Tuple) type);
+            if (this.m_activeGlossary != null) {
+                name += this.m_activeGlossary.getTupleName((Tuple) type);
             } else {
                 name += "tup";
             }

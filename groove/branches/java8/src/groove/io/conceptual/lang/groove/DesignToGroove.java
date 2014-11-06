@@ -2,18 +2,17 @@ package groove.io.conceptual.lang.groove;
 
 import groove.graph.GraphRole;
 import groove.io.conceptual.Acceptor;
+import groove.io.conceptual.Design;
 import groove.io.conceptual.Field;
-import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.Triple;
-import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsNode;
-import groove.io.conceptual.lang.InstanceExporter;
+import groove.io.conceptual.lang.DesignExportBuilder;
 import groove.io.conceptual.property.DefaultValueProperty;
 import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.property.Property;
@@ -33,7 +32,6 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,53 +40,60 @@ import java.util.Set;
 
 //separate different graphs for various elements where applicable.
 //TODO: add translate messages here as well?
-public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
-    private GrammarGraph m_currentGraph;
-    private GrooveResource m_grooveResource;
-    private Config m_cfg;
-    private TypeModel m_currentTypeModel;
-
-    // Used to find all opposite properties
-    private Collection<Property> m_properties;
-    // This is used to generate opposite edges
-    private Map<Triple<Object,Field,Object>,AbsNode> m_objectNodes =
-        new HashMap<Triple<Object,Field,Object>,AbsNode>();
-
-    public InstanceToGroove(GrooveResource grooveResource) {
-        this.m_grooveResource = grooveResource;
-        this.m_cfg = this.m_grooveResource.getConfig();
+public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.Object> {
+    /** Creates bridge for a given design to a given GROOVE export object. */
+    public DesignToGroove(GrooveExport export, Design design) {
+        super(export, design);
+        this.m_cfg = export.getConfig();
+        this.m_currentGraph = export.getGraph(design.getName(), GraphRole.HOST);
     }
 
+    private final GrammarGraph m_currentGraph;
+    private final Config m_cfg;
+
+    // This is used to generate opposite edges
+    private final Map<Triple<Object,Field,Object>,AbsNode> m_objectNodes =
+        new HashMap<Triple<Object,Field,Object>,AbsNode>();
+
     @Override
-    public void addInstanceModel(InstanceModel instanceModel) throws PortException {
+    public void build() throws PortException {
         int timer = Timer.start("IM to GROOVE");
-        this.m_properties = instanceModel.getTypeModel().getProperties();
-        this.m_currentGraph =
-            this.m_grooveResource.getGraph(instanceModel.getName(), GraphRole.HOST);
-
-        this.m_currentTypeModel = instanceModel.getTypeModel();
-        visitInstanceModel(instanceModel, this.m_cfg);
-
-        // Prefetch? Uncomment for more accurate timings
-        this.m_currentGraph.getGraph().toAspectGraph(this.m_currentGraph.getGraphName(),
-            this.m_currentGraph.getGraphRole());
-
+        this.m_cfg.setGlossary(getGlossary());
+        super.build();
+        addOpposites();
         Timer.stop(timer);
     }
 
-    @Override
-    //Override for opposites
-    protected void visitInstanceModel(InstanceModel instanceModel) {
-        // Cache all nodes
-        for (Object o : instanceModel.getObjects()) {
-            getElement(o);
+    // Generates opposite edges
+    private void addOpposites() {
+        if (!this.m_cfg.getXMLConfig().getTypeModel().getFields().isOpposites()) {
+            return;
         }
 
-        addOpposites();
-    }
+        String oppositeName = this.m_cfg.getStrings().getOppositeEdge();
 
-    // Do not actually override super methods directly,
-    // because of difference between multiple and one element
+        for (Entry<Triple<Object,Field,Object>,AbsNode> tripleEntry : this.m_objectNodes.entrySet()) {
+            Triple<Object,Field,Object> triple = tripleEntry.getKey();
+            Field f = triple.getMiddle();
+            for (Property p : getGlossary().getProperties()) {
+                if (p instanceof OppositeProperty) {
+                    OppositeProperty op = (OppositeProperty) p;
+                    if (op.getField1() == f) {
+
+                        Triple<Object,Field,Object> opTriple =
+                            new Triple<Object,Field,Object>(triple.getRight(), op.getField2(),
+                                triple.getLeft());
+                        if (!this.m_objectNodes.containsKey(opTriple)) {
+                            continue;
+                        }
+
+                        new AbsEdge(tripleEntry.getValue(), this.m_objectNodes.get(opTriple),
+                            oppositeName);
+                    }
+                }
+            }
+        }
+    }
 
     private void setElement(Acceptor o, AbsNode n) {
         this.m_currentGraph.m_nodes.put(o, n);
@@ -113,7 +118,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(Object object, String param) {
+    public void addObject(Object object) {
         if (hasElement(object)) {
             return;
         }
@@ -144,7 +149,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         // Set default values for those fields not set in the object
         Set<Field> defaultFields = new HashSet<Field>();
         if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
-            for (Property p : this.m_currentTypeModel.getProperties()) {
+            for (Property p : getGlossary().getProperties()) {
                 if (p instanceof DefaultValueProperty) {
                     DefaultValueProperty dp = (DefaultValueProperty) p;
                     if (((Class) object.getType()).getAllSuperClasses().contains(dp.getField()
@@ -207,39 +212,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         return;
     }
 
-    // Generates opposite edges
-    private void addOpposites() {
-        if (!this.m_cfg.getXMLConfig().getTypeModel().getFields().isOpposites()) {
-            return;
-        }
-
-        String oppositeName = this.m_cfg.getStrings().getOppositeEdge();
-
-        for (Entry<Triple<Object,Field,Object>,AbsNode> tripleEntry : this.m_objectNodes.entrySet()) {
-            Triple<Object,Field,Object> triple = tripleEntry.getKey();
-            Field f = triple.getMiddle();
-            for (Property p : this.m_properties) {
-                if (p instanceof OppositeProperty) {
-                    OppositeProperty op = (OppositeProperty) p;
-                    if (op.getField1() == f) {
-
-                        Triple<Object,Field,Object> opTriple =
-                            new Triple<Object,Field,Object>(triple.getRight(), op.getField2(),
-                                triple.getLeft());
-                        if (!this.m_objectNodes.containsKey(opTriple)) {
-                            continue;
-                        }
-
-                        new AbsEdge(tripleEntry.getValue(), this.m_objectNodes.get(opTriple),
-                            oppositeName);
-                    }
-                }
-            }
-        }
-    }
-
     @Override
-    public void visit(RealValue realval, String param) {
+    public void addRealValue(RealValue realval) {
         if (hasElement(realval)) {
             return;
         }
@@ -251,7 +225,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(StringValue stringval, String param) {
+    public void addStringValue(StringValue stringval) {
         if (hasElement(stringval)) {
             return;
         }
@@ -263,7 +237,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(IntValue intval, String param) {
+    public void addIntValue(IntValue intval) {
         if (hasElement(intval)) {
             return;
         }
@@ -275,7 +249,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(BoolValue boolval, String param) {
+    public void addBoolValue(BoolValue boolval) {
         if (hasElement(boolval)) {
             return;
         }
@@ -287,51 +261,46 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(EnumValue enumval, String param) {
-        if (hasElement(enumval)) {
+    public void addEnumValue(EnumValue val) {
+        if (hasElement(val)) {
             return;
         }
 
         if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
             String sep = this.m_cfg.getXMLConfig().getGlobal().getIdSeparator();
             String litName =
-                "type:" + this.m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep
-                    + enumval.getValue();
+                "type:" + this.m_cfg.idToName(((Enum) val.getType()).getId()) + sep
+                    + val.getValue();
             AbsNode enumNode = new AbsNode(litName);
-            setElement(enumval, enumNode);
+            setElement(val, enumNode);
         } else {
-            AbsNode enumNode = new AbsNode(this.m_cfg.getName(enumval.getType()));
-            enumNode.addName("flag:" + enumval.getValue().toString());
-            setElement(enumval, enumNode);
+            AbsNode enumNode = new AbsNode(this.m_cfg.getName(val.getType()));
+            enumNode.addName("flag:" + val.getValue().toString());
+            setElement(val, enumNode);
         }
 
         return;
     }
 
     @Override
-    public void visit(CustomDataValue dataval, String param) {
-        if (hasElement(dataval)) {
+    public void addCustomDataValue(CustomDataValue val) {
+        if (hasElement(val)) {
             return;
         }
 
         String valueName = this.m_cfg.getStrings().getDataValue();
         AbsNode dataNode =
-            new AbsNode(this.m_cfg.getName(dataval.getType()), "let:" + valueName + "=string:\""
-                + dataval.getValue() + "\"");
-        setElement(dataval, dataNode);
+            new AbsNode(this.m_cfg.getName(val.getType()), "let:" + valueName + "=string:\""
+                + val.getValue() + "\"");
+        setElement(val, dataNode);
 
     }
 
     @Override
-    public void visit(ContainerValue containerVal, String param) {
+    public void addContainerValue(ContainerValue containerVal, String base) {
         if (hasElement(containerVal)) {
             return;
         }
-
-        if (param == null || !(param instanceof String)) {
-            throw new IllegalArgumentException("Container value visitor requires String argument");
-        }
-        String containerId = param;
 
         Container containerType = (Container) containerVal.getType();
 
@@ -365,12 +334,12 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                 valueNode = subNode;
             } else {
                 AbsNode intermediateNode =
-                    new AbsNode(containerId + this.m_cfg.getContainerPostfix(containerType));
+                    new AbsNode(base + this.m_cfg.getContainerPostfix(containerType));
                 if (subContainer) {
                     ContainerValue cVal = (ContainerValue) subValue;
                     AbsNode subNodes[] =
                         getNodes(cVal,
-                            this.m_cfg.getContainerName(containerId, (Container) cVal.getType()));
+                            this.m_cfg.getContainerName(base, (Container) cVal.getType()));
                     for (AbsNode subNode : subNodes) {
                         /*AbsEdge intermediateEdge = */new AbsEdge(intermediateNode, subNode,
                             valName);
@@ -416,17 +385,17 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(TupleValue tupleval, String param) {
-        if (hasElement(tupleval)) {
+    public void addTupleValue(TupleValue val) {
+        if (hasElement(val)) {
             return;
         }
 
-        Tuple tup = (Tuple) tupleval.getType();
+        Tuple tup = (Tuple) val.getType();
         AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tup));
-        setElement(tupleval, tupleNode);
+        setElement(val, tupleNode);
 
-        for (Integer i : tupleval.getValue().keySet()) {
-            Value v = tupleval.getValue().get(i);
+        for (Integer i : val.getValue().keySet()) {
+            Value v = val.getValue().get(i);
             AbsNode valNode = getNode(v);
             if (valNode == null) {
                 // Happens if Nil value and not using nullable classes

@@ -23,7 +23,6 @@ import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.external.Porter.Kind;
 import groove.io.external.format.AutPorter;
-import groove.io.external.format.DotPorter;
 import groove.io.external.format.EcorePorter;
 import groove.io.external.format.FsmExporter;
 import groove.io.external.format.GxlPorter;
@@ -139,7 +138,6 @@ public class Exporters {
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(GxlPorter.instance());
-        result.add(DotPorter.instance());
         return result;
     }
 

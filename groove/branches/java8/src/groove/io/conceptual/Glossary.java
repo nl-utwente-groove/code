@@ -16,13 +16,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
+ * A glossary (previously called "type model") represents the type level of a {@link Design}.
+ * It defines the concepts that are instantiated in a design.
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class TypeModel implements Serializable {
+public class Glossary implements Serializable {
     /** Constructs a new, named type model. */
-    public TypeModel(String name) {
+    public Glossary(String name) {
         this.m_name = name;
         this.m_commonPrefix = Id.ROOT;
     }
@@ -35,7 +36,8 @@ public class TypeModel implements Serializable {
     private final String m_name;
 
     /**
-     * Resolve all properties. Must be called when the TypeModel is complete and before it is used by an InstanceModel
+     * Resolve all properties. Must be called when the
+     * {@link Glossary} is complete and before it is used in a {@link Design}
      */
     public void resolve() {
         for (Property p : this.m_properties) {

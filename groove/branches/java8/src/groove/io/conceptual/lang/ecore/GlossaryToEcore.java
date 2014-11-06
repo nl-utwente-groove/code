@@ -1,13 +1,13 @@
 package groove.io.conceptual.lang.ecore;
 
 import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.lang.GlossaryExportBuilder;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
-import groove.io.conceptual.lang.TypeExporter;
 import groove.io.conceptual.property.AbstractProperty;
 import groove.io.conceptual.property.ContainmentProperty;
 import groove.io.conceptual.property.DefaultValueProperty;
@@ -49,40 +49,31 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 
-public class TypeToEcore extends TypeExporter<EObject> {
+public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> {
     private static final EcoreFactory g_EcoreFactory = EcoreFactory.eINSTANCE;
     private static final EcorePackage g_EcorePackage = EcorePackage.eINSTANCE;
 
-    // Resource containing Ecore type model
-    private EcoreResource m_ecoreResource;
-
     // Mainly to get tuple names
-    private TypeModel m_currentTypeModel;
+    private Glossary m_currentTypeModel;
 
     // To keep track of generated packages
-    private Map<Id,EPackage> m_packages = new HashMap<Id,EPackage>();
-    private Set<EPackage> m_rootPackages = new HashSet<EPackage>();
+    private final Map<Id,EPackage> m_packages = new HashMap<Id,EPackage>();
+    private final Set<EPackage> m_rootPackages = new HashSet<EPackage>();
 
     private int nrContainer = 0;
 
-    public TypeToEcore(EcoreResource resource) {
-        this.m_ecoreResource = resource;
+    public GlossaryToEcore(EcoreExport export, Glossary glos) {
+        super(export, glos);
     }
 
     @Override
-    public groove.io.conceptual.lang.ExportableResource getResource() {
-        return this.m_ecoreResource;
-    }
-
-    @Override
-    public void addTypeModel(TypeModel typeModel) throws PortException {
+    public void build() throws PortException {
         int timer = Timer.start("TM to Ecore");
-        this.m_currentTypeModel = typeModel;
-        visitTypeModel(typeModel);
+        super.build();
         Timer.stop(timer);
 
         timer = Timer.start("Ecore save");
-        Resource typeResource = this.m_ecoreResource.getTypeResource(typeModel.getName());
+        Resource typeResource = getExport().getTypeResource(getGlossary().getName());
         EList<EObject> contents = typeResource.getContents();
 
         for (EPackage pkg : this.m_rootPackages) {
@@ -163,7 +154,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(DataType t, String param) {
+    public void addDataType(DataType t) {
         if (hasElement(t)) {
             return;
         }
@@ -191,7 +182,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Class cmClass, String param) {
+    public void addClass(Class cmClass) {
         if (hasElement(cmClass)) {
             return;
         }
@@ -226,7 +217,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
 
     // Map fields, either as attribute or reference
     @Override
-    public void visit(Field field, String param) {
+    public void addField(Field field) {
         if (hasElement(field)) {
             return;
         }
@@ -281,7 +272,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Container container, String param) {
+    public void addContainer(Container container, String base) {
         if (hasElement(container)) {
             return;
         }
@@ -342,21 +333,21 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Enum enum1, String param) {
-        if (hasElement(enum1)) {
+    public void addEnum(Enum envm) {
+        if (hasElement(envm)) {
             return;
         }
 
         EEnum eEnum = g_EcoreFactory.createEEnum();
-        setElement(enum1, eEnum);
+        setElement(envm, eEnum);
 
-        eEnum.setName(enum1.getId().getName().toString());
+        eEnum.setName(envm.getId().getName().toString());
 
-        EPackage enumPackage = packageFromId(enum1.getId().getNamespace());
+        EPackage enumPackage = packageFromId(envm.getId().getNamespace());
         enumPackage.getEClassifiers().add(eEnum);
 
         List<EEnumLiteral> eLiterals = eEnum.getELiterals();
-        for (Name litName : enum1.getLiterals()) {
+        for (Name litName : envm.getLiterals()) {
             EEnumLiteral eEnumLit = g_EcoreFactory.createEEnumLiteral();
             eEnumLit.setName(litName.toString());
             //eEnumLit.setLiteral(litName.toString());
@@ -366,7 +357,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(Tuple tuple, String param) {
+    public void addTuple(Tuple tuple) {
         if (hasElement(tuple)) {
             return;
         }
@@ -389,24 +380,24 @@ public class TypeToEcore extends TypeExporter<EObject> {
     }
 
     @Override
-    public void visit(AbstractProperty abstractProperty, String param) {
-        if (hasElement(abstractProperty)) {
+    public void addAbstractProp(AbstractProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
 
-        EClass eClass = (EClass) getElement(abstractProperty.getAbstractClass());
+        EClass eClass = (EClass) getElement(prop.getAbstractClass());
         eClass.setAbstract(true);
 
-        setElement(abstractProperty, null);
+        setElement(prop, null);
     }
 
     @Override
-    public void visit(ContainmentProperty containmentProperty, String param) {
-        if (hasElement(containmentProperty)) {
+    public void addContainmentProp(ContainmentProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
 
-        EObject obj = getElement(containmentProperty.getField());
+        EObject obj = getElement(prop.getField());
         if (!(obj instanceof EReference)) {
             //TODO
             return;
@@ -419,16 +410,16 @@ public class TypeToEcore extends TypeExporter<EObject> {
         // but GROOVE should forbid this anyway when implemented
         eRef.setUnique(true);
 
-        setElement(containmentProperty, null);
+        setElement(prop, null);
     }
 
     @Override
-    public void visit(IdentityProperty identityProperty, String param) {
-        if (hasElement(identityProperty)) {
+    public void addIdentityProp(IdentityProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
 
-        for (Field field : identityProperty.getFields()) {
+        for (Field field : prop.getFields()) {
             EObject obj = getElement(field);
             if (!(obj instanceof EAttribute)) {
                 //TODO
@@ -442,16 +433,16 @@ public class TypeToEcore extends TypeExporter<EObject> {
             break;
         }
 
-        setElement(identityProperty, null);
+        setElement(prop, null);
     }
 
     @Override
-    public void visit(KeysetProperty keysetProperty, String param) {
-        if (hasElement(keysetProperty)) {
+    public void addKeysetProp(KeysetProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
 
-        EObject objRef = getElement(keysetProperty.getRelField());
+        EObject objRef = getElement(prop.getRelField());
         if (!(objRef instanceof EReference)) {
             //TODO
         }
@@ -459,7 +450,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EReference eRef = (EReference) objRef;
         List<EAttribute> keyAttribs = eRef.getEKeys();
 
-        for (Field field : keysetProperty.getKeyFields()) {
+        for (Field field : prop.getKeyFields()) {
             EObject obj = getElement(field);
             if (!(obj instanceof EAttribute)) {
                 //TODO
@@ -469,17 +460,17 @@ public class TypeToEcore extends TypeExporter<EObject> {
             keyAttribs.add(eAttr);
         }
 
-        setElement(keysetProperty, null);
+        setElement(prop, null);
     }
 
     @Override
-    public void visit(OppositeProperty oppositeProperty, String param) {
-        if (hasElement(oppositeProperty)) {
+    public void addOppositeProp(OppositeProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
 
-        EObject obj1 = getElement(oppositeProperty.getField1());
-        EObject obj2 = getElement(oppositeProperty.getField2());
+        EObject obj1 = getElement(prop.getField1());
+        EObject obj2 = getElement(prop.getField2());
         if (!(obj1 instanceof EReference) || !(obj2 instanceof EReference)) {
             //TODO
         }
@@ -488,24 +479,24 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EReference eRef2 = (EReference) obj2;
         eRef1.setEOpposite(eRef2);
 
-        setElement(oppositeProperty, null);
+        setElement(prop, null);
     }
 
     @Override
-    public void visit(DefaultValueProperty defaultValueProperty, String param) {
-        if (hasElement(defaultValueProperty)) {
+    public void addDefaultValueProp(DefaultValueProperty prop) {
+        if (hasElement(prop)) {
             return;
         }
 
-        EObject obj = getElement(defaultValueProperty.getField());
+        EObject obj = getElement(prop.getField());
         if (!(obj instanceof EAttribute)) {
             //TODO
             return;
         }
 
         EAttribute eAttr = (EAttribute) obj;
-        eAttr.setDefaultValueLiteral(defaultValueProperty.getDefaultValue().toString());
+        eAttr.setDefaultValueLiteral(prop.getDefaultValue().toString());
 
-        setElement(defaultValueProperty, null);
+        setElement(prop, null);
     }
 }

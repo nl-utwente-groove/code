@@ -1,8 +1,8 @@
 package groove.io.conceptual.property;
 
+import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
 /**
@@ -23,8 +23,8 @@ public class IdentityProperty implements Property {
     }
 
     @Override
-    public boolean doVisit(Visitor v, String param) {
-        v.visit(this, param);
+    public boolean doBuild(ExportBuilder<?> v, String param) {
+        v.addIdentityProp(this);
         return true;
     }
 
@@ -38,7 +38,7 @@ public class IdentityProperty implements Property {
         return this.m_fieldNames;
     }
 
-    /** 
+    /**
      * Returns the fields that identify the object.
      * Only initialised after a call to {@link #resolveFields()}.
      */

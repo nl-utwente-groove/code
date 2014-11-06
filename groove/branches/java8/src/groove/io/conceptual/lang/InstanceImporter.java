@@ -1,6 +1,6 @@
 package groove.io.conceptual.lang;
 
-import groove.io.conceptual.InstanceModel;
+import groove.io.conceptual.Design;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,12 +10,11 @@ import java.util.Map;
 
 /** Abstract superclass for importers from an external format to the conceptual instance model. */
 public abstract class InstanceImporter implements Messenger {
-    private final Map<String,InstanceModel> m_instanceModels =
-        new HashMap<String,InstanceModel>();
+    private final Map<String,Design> m_instanceModels = new HashMap<String,Design>();
     private final List<Message> m_messages = new ArrayList<Message>();
 
     /** Adds an instance model to the set of imported models. */
-    protected void addInstanceModel(InstanceModel model) {
+    protected void addInstanceModel(Design model) {
         this.m_instanceModels.put(model.getName(), model);
     }
 
@@ -25,7 +24,7 @@ public abstract class InstanceImporter implements Messenger {
      * @return The instance model, or null if the model could not be found.
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public InstanceModel getInstanceModel(String modelName) {
+    public Design getInstanceModel(String modelName) {
         return this.m_instanceModels.get(modelName);
     }
 
@@ -34,25 +33,16 @@ public abstract class InstanceImporter implements Messenger {
      * @return The instance model, or null if the model could not be found.
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public InstanceModel getInstanceModel() throws ImportException {
-        Iterator<InstanceModel> iter =
-            this.m_instanceModels.values().iterator();
+    public Design getDesign() throws ImportException {
+        Iterator<Design> iter = this.m_instanceModels.values().iterator();
         if (iter.hasNext()) {
             return iter.next();
         }
         return null;
     }
 
-    /** Adds an error message to the imported model. */
-    protected void addMessage(Message m) {
-        this.m_messages.add(m);
-    }
-
+    @Override
     public List<Message> getMessages() {
         return this.m_messages;
-    }
-
-    public void clearMessages() {
-        this.m_messages.clear();
     }
 }

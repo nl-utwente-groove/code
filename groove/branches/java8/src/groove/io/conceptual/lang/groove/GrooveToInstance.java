@@ -13,10 +13,10 @@ import groove.grammar.host.ValueNode;
 import groove.graph.EdgeRole;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
-import groove.io.conceptual.InstanceModel;
+import groove.io.conceptual.Design;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.OrderType;
@@ -61,7 +61,7 @@ public class GrooveToInstance extends InstanceImporter {
     private GraphNodeTypes m_types;
     private Config m_cfg;
 
-    private TypeModel m_typeModel;
+    private Glossary m_typeModel;
 
     private Map<HostNode,Object> m_objectNodes = new HashMap<HostNode,Object>();
     private Map<HostNode,Value> m_nodeValues = new HashMap<HostNode,Value>();
@@ -76,7 +76,7 @@ public class GrooveToInstance extends InstanceImporter {
      * @param typeModel TypeModel for the generated InstanceModel
      */
     public GrooveToInstance(HostGraph hostGraph, GraphNodeTypes types,
-            Config cfg, TypeModel typeModel) {
+            Config cfg, Glossary typeModel) {
         this.m_types = types;
         this.m_cfg = cfg;
 
@@ -88,9 +88,9 @@ public class GrooveToInstance extends InstanceImporter {
     }
 
     private void buildInstanceModel(HostGraph hostGraph) {
-        InstanceModel instanceModel =
-            new InstanceModel(this.m_typeModel, hostGraph.getName());
-        this.m_cfg.setTypeModel(this.m_typeModel);
+        Design instanceModel =
+            new Design(this.m_typeModel, hostGraph.getName());
+        this.m_cfg.setGlossary(this.m_typeModel);
 
         // Map nodes to edges
         for (HostNode n : hostGraph.nodeSet()) {
