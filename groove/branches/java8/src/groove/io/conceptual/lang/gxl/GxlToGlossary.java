@@ -1,10 +1,10 @@
 package groove.io.conceptual.lang.gxl;
 
 import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
@@ -99,11 +99,15 @@ public class GxlToGlossary extends TypeImporter {
         g_edgeTypes.add("CompositionClass");
     }
 
-    public GxlToGlossary(String typeModel, boolean useComplex) throws ImportException {
+    /**
+     * Constructs an instance from a given document location.
+     * A further parameter determines if complex types may be used.
+     */
+    public GxlToGlossary(String location, boolean useComplex) throws ImportException {
         this.m_useComplex = useComplex;
         // Load the GXL
         try {
-            FileInputStream in = new FileInputStream(typeModel);
+            FileInputStream in = new FileInputStream(location);
             try {
                 int timer = Timer.start("Load GXL");
                 @SuppressWarnings("unchecked")

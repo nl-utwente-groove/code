@@ -16,7 +16,6 @@
  */
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.Value;
@@ -25,13 +24,7 @@ import groove.io.conceptual.value.Value;
 public class CustomDataType extends DataType {
     /** Constructs a custom data type with a given identifier. */
     public CustomDataType(Id id) {
-        super(id);
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addDataType(this);
-        return true;
+        super(Kind.CUSTOM_TYPE, id);
     }
 
     @Override

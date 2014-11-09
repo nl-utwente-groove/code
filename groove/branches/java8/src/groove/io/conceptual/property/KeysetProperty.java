@@ -1,6 +1,5 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Class;
@@ -12,7 +11,7 @@ import groove.io.conceptual.type.Class;
  * @author s0141844
  * @version $Revision $
  */
-public class KeysetProperty implements Property {
+public class KeysetProperty extends Property {
     private final Class m_relClass;
     private final Name m_relName;
     private Field m_relField;
@@ -27,12 +26,6 @@ public class KeysetProperty implements Property {
         this.m_relName = rel;
         this.m_keyClass = keyClass;
         this.m_keyNames = keyFields;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addKeysetProp(this);
-        return true;
     }
 
     /** Returns the source class of the container. */

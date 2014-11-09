@@ -1,7 +1,8 @@
 package groove.io.conceptual.lang.groove;
 
+import static groove.io.conceptual.value.Object.NIL;
 import groove.graph.GraphRole;
-import groove.io.conceptual.Acceptor;
+import groove.io.conceptual.Concept;
 import groove.io.conceptual.Design;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Timer;
@@ -12,6 +13,8 @@ import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsNode;
+import groove.io.conceptual.graph.AbsNodeIter;
+import groove.io.conceptual.graph.AbsNodeList;
 import groove.io.conceptual.lang.DesignExportBuilder;
 import groove.io.conceptual.property.DefaultValueProperty;
 import groove.io.conceptual.property.OppositeProperty;
@@ -25,7 +28,6 @@ import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
-import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.RealValue;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
@@ -45,7 +47,7 @@ import java.util.Set;
  * @author rensink
  * @version $Revision $
  */
-public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.Object> {
+public class DesignToGroove extends DesignExportBuilder<GrooveExport,AbsNodeIter> {
     /** Creates bridge for a given design to a given GROOVE export object. */
     public DesignToGroove(Design design, GrooveExport export) {
         super(design, export);
@@ -100,46 +102,33 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
         }
     }
 
-    private void setElement(Acceptor o, AbsNode n) {
-        this.m_currentGraph.m_nodes.put(o, n);
-        super.setElement(o, n);
+    @Override
+    protected void put(Concept o, AbsNodeIter e) {
+        this.m_currentGraph.addNodes(e);
+        super.put(o, e);
     }
 
-    private void setElements(Acceptor o, AbsNode[] n) {
-        this.m_currentGraph.m_multiNodes.put(o, n);
-        super.setElement(o, n);
+    private AbsNode getNode(Concept o) {
+        return (AbsNode) add(o);
     }
 
-    private AbsNode getNode(Acceptor o) {
-        return getNode(o, null);
-    }
-
-    private AbsNode getNode(Acceptor o, String param) {
-        return (AbsNode) super.getElement(o, param);
-    }
-
-    private AbsNode[] getNodes(Acceptor o, String param) {
-        return (AbsNode[]) super.getElement(o, param);
+    private AbsNodeList getNodes(Concept o, String param) {
+        return (AbsNodeList) add(o, param);
     }
 
     @Override
-    public void addObject(Object object) {
-        if (hasElement(object)) {
-            return;
-        }
-
-        if (object == Object.NIL) {
+    protected AbsNodeIter addObject(groove.io.conceptual.value.Object object) {
+        if (object == NIL) {
+            AbsNode result = null;
             if (this.m_cfg.getXMLConfig().getGlobal().getNullable() != NullableType.NONE) {
                 String name = this.m_cfg.getStrings().getNilName();
-                AbsNode nilNode = new AbsNode("type:" + name);
-                setElement(object, nilNode);
-            } else {
-                setElement(object, null);
+                result = new AbsNode("type:" + name);
             }
-            return;
+            put(object, result);
+            return result;
         }
 
-        AbsNode objectNode = new AbsNode(this.m_cfg.getName(object.getType()));
+        AbsNode result = new AbsNode(this.m_cfg.getName(object.getType()));
         if (this.m_cfg.getXMLConfig().getInstanceModel().getObjects().isUseIdentifier()
             && object.getName() != null) {
             String name = object.getName();
@@ -147,9 +136,9 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
             if (name.matches("[0-9].*")) {
                 name = "_" + name;
             }
-            objectNode.addName("id:" + GrooveUtil.getSafeId(name));
+            result.addName("id:" + GrooveUtil.getSafeId(name));
         }
-        setElement(object, objectNode);
+        put(object, result);
 
         // Set default values for those fields not set in the object
         Set<Field> defaultFields = new HashSet<Field>();
@@ -173,20 +162,20 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
             Value v = fieldEntry.getValue();
             assert (v != null);
 
-            if (v == Object.NIL
+            if (v == NIL
                 && this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE) {
                 continue;
             }
 
             if (f.getType() instanceof Container) {
-                AbsNode valNodes[] = getNodes(v, this.m_cfg.getName(f));
+                AbsNodeList valNodes = getNodes(v, this.m_cfg.getName(f));
                 ContainerValue cv = (ContainerValue) v;
                 int i = 0;
                 for (AbsNode valNode : valNodes) {
-                    /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName().toString());
-                    if (cv.getValue().get(i) instanceof Object) {
+                    /*AbsEdge valEdge = */new AbsEdge(result, valNode, f.getName().toString());
+                    if (cv.getValue().get(i) instanceof groove.io.conceptual.value.Object) {
                         this.m_objectNodes.put(new Triple<Object,Field,Object>(object, f,
-                            (Object) cv.getValue().get(i)), valNode);
+                            cv.getValue().get(i)), valNode);
                     }
                     i++;
                 }
@@ -195,16 +184,14 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
                 if (this.m_cfg.useIntermediate(f)) {
                     String valName = this.m_cfg.getStrings().getValueEdge();
                     AbsNode interNode = new AbsNode(this.m_cfg.getName(f));
-                    /*AbsEdge valEdge = */new AbsEdge(interNode, valNode, valName);
+                    new AbsEdge(interNode, valNode, valName);
                     valNode = interNode;
                 }
 
-                if (v instanceof Object) {
-                    this.m_objectNodes.put(new Triple<Object,Field,Object>(object, f, (Object) v),
-                        valNode);
+                if (v instanceof groove.io.conceptual.value.Object) {
+                    this.m_objectNodes.put(new Triple<Object,Field,Object>(object, f, v), valNode);
                 }
-
-                /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName().toString());
+                new AbsEdge(result, valNode, f.getName().toString());
             }
         }
         // Clear previously set default values so model is not changed by import
@@ -214,100 +201,67 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
             }
         }
 
-        return;
+        return result;
     }
 
     @Override
-    public void addRealValue(RealValue realval) {
-        if (hasElement(realval)) {
-            return;
-        }
-
-        AbsNode realNode = new AbsNode("real:" + realval.getValue());
-        setElement(realval, realNode);
-
-        return;
+    protected AbsNodeIter addRealValue(RealValue realval) {
+        AbsNode result = new AbsNode("real:" + realval.getValue());
+        put(realval, result);
+        return result;
     }
 
     @Override
-    public void addStringValue(StringValue stringval) {
-        if (hasElement(stringval)) {
-            return;
-        }
-
-        AbsNode stringNode = new AbsNode("string:\"" + stringval.toEscapedString() + "\"");
-        setElement(stringval, stringNode);
-
-        return;
+    protected AbsNodeIter addStringValue(StringValue stringval) {
+        AbsNode result = new AbsNode("string:\"" + stringval.toEscapedString() + "\"");
+        put(stringval, result);
+        return result;
     }
 
     @Override
-    public void addIntValue(IntValue intval) {
-        if (hasElement(intval)) {
-            return;
-        }
-
-        AbsNode intNode = new AbsNode("int:" + intval.getValue());
-        setElement(intval, intNode);
-
-        return;
+    protected AbsNodeIter addIntValue(IntValue val) {
+        AbsNode intNode = new AbsNode("int:" + val.getValue());
+        put(val, intNode);
+        return intNode;
     }
 
     @Override
-    public void addBoolValue(BoolValue boolval) {
-        if (hasElement(boolval)) {
-            return;
-        }
-
-        AbsNode boolNode = new AbsNode("bool:" + boolval.getValue());
-        setElement(boolval, boolNode);
-
-        return;
+    protected AbsNodeIter addBoolValue(BoolValue val) {
+        AbsNode result = new AbsNode("bool:" + val.getValue());
+        put(val, result);
+        return result;
     }
 
     @Override
-    public void addEnumValue(EnumValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
+    protected AbsNodeIter addEnumValue(EnumValue val) {
+        AbsNode result;
         if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
             String sep = this.m_cfg.getXMLConfig().getGlobal().getIdSeparator();
             String litName =
                 "type:" + this.m_cfg.idToName(((Enum) val.getType()).getId()) + sep
                     + val.getValue();
-            AbsNode enumNode = new AbsNode(litName);
-            setElement(val, enumNode);
+            result = new AbsNode(litName);
         } else {
-            AbsNode enumNode = new AbsNode(this.m_cfg.getName(val.getType()));
-            enumNode.addName("flag:" + val.getValue().toString());
-            setElement(val, enumNode);
+            result = new AbsNode(this.m_cfg.getName(val.getType()));
+            result.addName("flag:" + val.getValue().toString());
         }
-
-        return;
+        put(val, result);
+        return result;
     }
 
     @Override
-    public void addCustomDataValue(CustomDataValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
+    protected AbsNodeIter addCustomDataValue(CustomDataValue val) {
         String valueName = this.m_cfg.getStrings().getDataValue();
-        AbsNode dataNode =
+        AbsNode result =
             new AbsNode(this.m_cfg.getName(val.getType()), "let:" + valueName + "=string:\""
                 + val.getValue() + "\"");
-        setElement(val, dataNode);
-
+        put(val, result);
+        return result;
     }
 
     @Override
-    public void addContainerValue(ContainerValue containerVal, String base) {
-        if (hasElement(containerVal)) {
-            return;
-        }
-
-        Container containerType = (Container) containerVal.getType();
+    protected AbsNodeIter addContainerValue(ContainerValue val, String base) {
+        Container containerType = (Container) val.getType();
 
         boolean useIntermediate = this.m_cfg.useIntermediate(containerType);
         boolean subContainer = containerType.getType() instanceof Container;
@@ -321,13 +275,15 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
                 .getOrdering()
                 .getType() == OrderType.EDGE;
 
-        AbsNode[] containerNodes = new AbsNode[containerVal.getValue().size()]; //actual nodes to represent this container
-        int i = 0;
+        AbsNodeList result = new AbsNodeList(); //actual nodes to represent this container
+        // Set the intermediate nodes as the node values
+        put(val, result);
+
         int index = 1;
         AbsNode prevValNode = null;
-        for (Value subValue : containerVal.getValue()) {
+        for (Value subValue : val.getValue()) {
             // No not include Nil if not used (shouldn't have to happen anyway, Nil in container is bad
-            if (subValue == Object.NIL
+            if (subValue == NIL
                 && this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE) {
                 continue;
             }
@@ -335,23 +291,21 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
             String valName = this.m_cfg.getStrings().getValueEdge();
             if (!useIntermediate) {
                 // subContainer ought to be false too
-                AbsNode subNode = getNode(subValue);
-                valueNode = subNode;
+                valueNode = getNode(subValue);
             } else {
                 AbsNode intermediateNode =
                     new AbsNode(base + this.m_cfg.getContainerPostfix(containerType));
                 if (subContainer) {
                     ContainerValue cVal = (ContainerValue) subValue;
-                    AbsNode subNodes[] =
+                    AbsNodeList subNodes =
                         getNodes(cVal,
                             this.m_cfg.getContainerName(base, (Container) cVal.getType()));
                     for (AbsNode subNode : subNodes) {
-                        /*AbsEdge intermediateEdge = */new AbsEdge(intermediateNode, subNode,
-                            valName);
+                        new AbsEdge(intermediateNode, subNode, valName);
                     }
                 } else {
                     AbsNode subNode = getNode(subValue);
-                    /*AbsEdge intermediateEdge = */new AbsEdge(intermediateNode, subNode, valName);
+                    new AbsEdge(intermediateNode, subNode, valName);
                 }
                 valueNode = intermediateNode;
             }
@@ -379,25 +333,17 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
                 }
             }
 
-            containerNodes[i] = valueNode;
-            i++;
+            result.add(valueNode);
         }
 
-        // Set the intermediate nodes as the node values
-        setElements(containerVal, containerNodes);
-
-        return;
+        return result;
     }
 
     @Override
-    public void addTupleValue(TupleValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
+    protected AbsNodeIter addTupleValue(TupleValue val) {
         Tuple tup = (Tuple) val.getType();
         AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tup));
-        setElement(val, tupleNode);
+        put(val, tupleNode);
 
         for (Integer i : val.getValue().keySet()) {
             Value v = val.getValue().get(i);
@@ -409,6 +355,6 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,java.lang.O
             /*AbsEdge valEdge = */new AbsEdge(tupleNode, valNode, "_" + i);
         }
 
-        return;
+        return tupleNode;
     }
 }

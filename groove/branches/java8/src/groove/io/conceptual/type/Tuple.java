@@ -1,7 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,12 +49,6 @@ public class Tuple extends Type {
     /** Sets the sequence of types expected for values of this tuple type. */
     public void setTypes(Type... types) {
         this.m_types = types;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addTuple(this);
-        return true;
     }
 
     @Override

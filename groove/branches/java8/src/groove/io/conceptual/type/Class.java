@@ -1,6 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Identifiable;
@@ -184,12 +183,6 @@ public class Class extends Type implements Identifiable {
     @Override
     public Id getId() {
         return this.m_id;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addClass(this);
-        return true;
     }
 
     /** Returns the propert version of this class type. */

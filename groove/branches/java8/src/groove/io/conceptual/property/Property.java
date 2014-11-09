@@ -1,6 +1,6 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.Acceptor;
+import groove.io.conceptual.Concept;
 import groove.io.conceptual.Field;
 
 /**
@@ -9,10 +9,10 @@ import groove.io.conceptual.Field;
  * @author Harold Bruintjes
  *
  */
-public interface Property extends Acceptor {
+public abstract class Property extends Concept {
     /**
      * Sets any named field in the property to their actual {@link Field}s
      * according to the glossary.
      */
-    public void resolveFields();
+    abstract public void resolveFields();
 }

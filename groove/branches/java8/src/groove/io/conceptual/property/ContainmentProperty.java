@@ -1,6 +1,5 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Class;
@@ -9,7 +8,7 @@ import groove.io.conceptual.type.Class;
  * TODO: This needs to be able to detect cycles, so should communicate with other containment properties in the metamodel.
  * @author Harold Bruintjes
  */
-public class ContainmentProperty implements Property {
+public class ContainmentProperty extends Property {
     private final Class m_class;
     private final Name m_fieldName;
     private Field m_field;
@@ -18,12 +17,6 @@ public class ContainmentProperty implements Property {
     public ContainmentProperty(Class c, Name field) {
         this.m_class = c;
         this.m_fieldName = field;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addContainmentProp(this);
-        return true;
     }
 
     /** Returns the source type of the containment. */

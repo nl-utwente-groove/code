@@ -247,9 +247,10 @@ public class GrooveFileChooser extends JFileChooser {
         /** Creates a preference object from a string. */
         Preference(String prefString) {
             String[] prefs = prefString.split(SPLIT_CHAR);
-            assert prefs.length == 2 : "Error in preference string " + prefString;
-            setOne(prefs[0]);
-            setTwo(prefs[1]);
+            if (prefs.length >= 2) {
+                setOne(prefs[0]);
+                setTwo(prefs[1]);
+            }
         }
 
         /** Creates a preference object from a given file chooser. */

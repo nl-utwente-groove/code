@@ -16,7 +16,6 @@
  */
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.CustomDataType;
 
 import java.util.regex.Matcher;
@@ -31,12 +30,6 @@ public class CustomDataValue extends Value {
     public CustomDataValue(CustomDataType type, String value) {
         super(type);
         this.m_value = value;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addCustomDataValue(this);
-        return true;
     }
 
     @Override

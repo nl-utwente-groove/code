@@ -1,10 +1,9 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.RealType;
 
 /** Representation of real values. */
-public class RealValue extends LiteralValue {
+public class RealValue extends Value {
     /** Constructs a value wrapping a given java double. */
     public RealValue(double value) {
         super(RealType.instance());
@@ -14,12 +13,6 @@ public class RealValue extends LiteralValue {
     @Override
     public Double getValue() {
         return this.m_value;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addRealValue(this);
-        return true;
     }
 
     @Override

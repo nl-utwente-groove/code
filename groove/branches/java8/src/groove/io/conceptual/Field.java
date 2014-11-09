@@ -2,7 +2,6 @@ package groove.io.conceptual;
 
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.Type;
 
 /**
@@ -10,7 +9,7 @@ import groove.io.conceptual.type.Type;
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class Field implements Acceptor {
+public class Field extends Concept {
     /**
      * Create a new Field. The Field is not immediately part of a class, use setDefiningClass for that.
      * If the type is a class, then nullable is used for bound 0..1, and proper for bound 1..1
@@ -21,6 +20,7 @@ public class Field implements Acceptor {
      * @param upper Upper bound of field values. Should be >=lower, or -1 for unbounded
      */
     public Field(Name name, Type type, int lower, int upper) {
+        super();
         this.m_name = name;
 
         // Force class to nullable or proper depending on bounds
@@ -38,7 +38,7 @@ public class Field implements Acceptor {
         if (((upper > 1 || upper == -1) || !(type instanceof Class) && lower == 0)
             && !(type instanceof Container)) {
             // Unique and non-ordered container (fits best into GROOVE, intermediate not required)
-            type = new Container(Kind.SET, type);
+            type = new Container(Container.Kind.SET, type);
         }
 
         if (type instanceof Container) {
@@ -113,12 +113,6 @@ public class Field implements Acceptor {
 
     /** Type of the field values. */
     private Class m_class;
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addField(this);
-        return true;
-    }
 
     @Override
     public String toString() {

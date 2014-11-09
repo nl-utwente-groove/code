@@ -55,11 +55,11 @@ public class EcorePorter extends ConceptualPorter {
     protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
         throws ImportException {
         //Request ecore type model file
-        int approve = getTypeModelChooser().showDialog(null, "Import Ecore type model");
+        int approve = getECoreChooser().showDialog(null, "Import Ecore type model");
         if (approve != JFileChooser.APPROVE_OPTION) {
             return null;
         }
-        File typeFile = getTypeModelChooser().getSelectedFile();
+        File typeFile = getECoreChooser().getSelectedFile();
 
         EcoreToType ett = new EcoreToType(typeFile.toString());
         EcoreToInstance eti = new EcoreToInstance(ett, file.toString());
@@ -69,22 +69,22 @@ public class EcorePorter extends ConceptualPorter {
         return Pair.newPair(tm, im);
     }
 
-    private GrooveFileChooser getTypeModelChooser() {
-        GrooveFileChooser typeModelChooser = GrooveFileChooser.getInstance(FileType.ECORE_META);
-        return typeModelChooser;
+    /** Returns the file chooser for the ECore meta-model. */
+    public GrooveFileChooser getECoreChooser() {
+        return GrooveFileChooser.getInstance(FileType.ECORE_META);
     }
 
     @Override
-    protected Export getResource(Path file, boolean isHost, Glossary tm, Design im)
+    protected Export getExport(Path file, boolean isHost, Glossary tm, Design im)
         throws PortException {
         Path typeFile = file;
         Path instanceFile = file;
         if (isHost) {
             //Request ecore type model file to specify schemaLocation
             //This is optional and may be commented out, but leave typeFile to null when doing so
-            int approve = getTypeModelChooser().showDialog(null, "Pick Ecore model");
+            int approve = getECoreChooser().showDialog(null, "Pick ECore metamodel");
             if (approve == JFileChooser.APPROVE_OPTION) {
-                typeFile = getTypeModelChooser().getSelectedFile().toPath();
+                typeFile = getECoreChooser().getSelectedFile().toPath();
             } else {
                 typeFile = null;
             }

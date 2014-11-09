@@ -1,10 +1,9 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.BoolType;
 
 /** Boolean values. */
-public class BoolValue extends LiteralValue {
+public class BoolValue extends Value {
     /** Constructs a value of the boolean type. */
     private BoolValue(boolean value) {
         super(BoolType.instance());
@@ -14,12 +13,6 @@ public class BoolValue extends LiteralValue {
     @Override
     public Boolean getValue() {
         return this.m_value;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addBoolValue(this);
-        return true;
     }
 
     @Override

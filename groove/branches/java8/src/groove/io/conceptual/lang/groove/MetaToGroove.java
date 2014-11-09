@@ -1,7 +1,7 @@
 package groove.io.conceptual.lang.groove;
 
 import groove.graph.GraphRole;
-import groove.io.conceptual.Acceptor;
+import groove.io.conceptual.Concept;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
@@ -17,7 +17,6 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.external.PortException;
-import groove.util.Exceptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +35,18 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
     @Override
     public void build() throws PortException {
         // Only create meta graph if config requires it
-        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_cfg.getTypeModel().isMetaSchema()) {
             setupMetaModel();
             this.m_cfg.setGlossary(getGlossary());
             super.build();
+        }
+    }
+
+    @Override
+    protected void put(Concept c, AbsNode n) {
+        super.put(c, n);
+        if (n != null) {
+            getGrammarGraph().addNodes(n);
         }
     }
 
@@ -53,28 +60,6 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
     }
 
     private GrammarGraph m_currentGraph;
-
-    @Override
-    protected void setElement(Acceptor o, AbsNode n) {
-        super.setElement(o, n);
-        if (n != null) {
-            getGrammarGraph().m_nodes.put(o, n);
-        }
-    }
-
-    private enum MetaType {
-        Class,
-        ClassNullable,
-        Enum,
-        Intermediate,
-        Type,
-        ContainerSet,
-        ContainerBag,
-        ContainerSeq,
-        ContainerOrd,
-        DataType,
-        Tuple;
-    }
 
     private void setupMetaModel() {
         AbsNode typeNode = getMetaNode(MetaType.Type);
@@ -102,6 +87,121 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
         new AbsEdge(containerNodeOrd, intermediateNode, "sub:");
     }
 
+    @Override
+    protected AbsNode addClass(Class c) {
+        AbsNode result;
+        // If not using the nullable/proper class system, don't instantiate nullable classes
+        if (this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE
+            && !c.isProper()) {
+            // Simply revert to the proper instance
+            result = add(c.getProperClass());
+            put(c, result);
+        } else {
+            result = new AbsNode(this.m_cfg.getName(c));
+            put(c, result);
+
+            AbsNode classMetaNode =
+                getMetaNode(c.isProper() ? MetaType.Class : MetaType.ClassNullable);
+            new AbsEdge(result, classMetaNode, "sub:");
+
+            for (Field f : c.getFields()) {
+                add(f);
+            }
+            if (c.isProper()) {
+                if (this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.ALL) {
+                    add(c.getNullableClass());
+                }
+            } else {
+                add(c.getProperClass());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected AbsNode addField(Field field) {
+        AbsNode result = null;
+        if (!(field.getType() instanceof DataType) || field.getType() instanceof CustomDataType) {
+            result = add(field.getType(), this.m_cfg.getName(field));
+            put(field, result);
+            // Can happen if type is container and not using intermediate
+            if (result == null) {
+                assert (field.getType() instanceof Container);
+            } else if (this.m_cfg.useIntermediate(field) && !(field.getType() instanceof Container)) {
+                result = new AbsNode(this.m_cfg.getName(field));
+                AbsNode fieldMetaNode = getMetaNode(MetaType.Intermediate);
+                new AbsEdge(result, fieldMetaNode, "sub:");
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected AbsNode addDataType(DataType dt) {
+        AbsNode result = null;
+        if (dt instanceof CustomDataType) {
+            result = new AbsNode(this.m_cfg.getName(dt));
+            AbsNode dataMetaNode = getMetaNode(MetaType.DataType);
+            new AbsEdge(result, dataMetaNode, "sub:");
+        }
+        put(dt, result);
+        return result;
+    }
+
+    @Override
+    protected AbsNode addEnum(Enum e) {
+        AbsNode result = new AbsNode(this.m_cfg.getName(e), "abs:");
+        put(e, result);
+        AbsNode enumMetaNode = getMetaNode(MetaType.Enum);
+        new AbsEdge(result, enumMetaNode, "sub:");
+
+        return result;
+    }
+
+    @Override
+    protected AbsNode addContainer(Container c, String base) {
+        assert base != null;
+        AbsNode result;
+        if (c.getType() instanceof Container) {
+            add(c.getType(), this.m_cfg.getContainerName(base, (Container) c.getType()));
+        }
+        if (this.m_cfg.useIntermediate(c)) {
+            result = new AbsNode(base + this.m_cfg.getContainerPostfix(c));
+            put(c, result);
+
+            AbsNode orderedNode = null;
+            switch (c.getContainerType()) {
+            case SET:
+                orderedNode = getMetaNode(MetaType.ContainerSet);
+                break;
+            case BAG:
+                orderedNode = getMetaNode(MetaType.ContainerBag);
+                break;
+            case SEQ:
+                orderedNode = getMetaNode(MetaType.ContainerSeq);
+                break;
+            case ORD:
+                orderedNode = getMetaNode(MetaType.ContainerOrd);
+                break;
+            }
+            new AbsEdge(result, orderedNode, "sub:");
+        } else {
+            put(c, result = null);
+        }
+        return result;
+    }
+
+    @Override
+    protected AbsNode addTuple(Tuple tuple) {
+        AbsNode result = new AbsNode(this.m_cfg.getName(tuple));
+        put(tuple, result);
+
+        AbsNode tupleMetaNode = getMetaNode(MetaType.Tuple);
+        new AbsEdge(result, tupleMetaNode, "sub:");
+
+        return result;
+    }
+
     private AbsNode getMetaNode(MetaType type) {
         AbsNode result = this.m_metaNodes.get(type);
         if (result == null) {
@@ -114,194 +214,7 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
 
     private AbsNode computeMetaNode(MetaType type) {
         StringsType strings = this.m_cfg.getStrings();
-        String name;
-        switch (type) {
-        case Type:
-            name = strings.getMetaType();
-            break;
-        case Class:
-            name = strings.getMetaClass();
-            break;
-        case ClassNullable:
-            name = strings.getMetaClassNullable();
-            break;
-        case Enum:
-            name = strings.getMetaEnum();
-            break;
-        case DataType:
-            name = strings.getMetaDataType();
-            break;
-        case Tuple:
-            name = strings.getMetaTuple();
-            break;
-        case ContainerSet:
-            name = strings.getMetaContainerSet();
-            break;
-        case ContainerBag:
-            name = strings.getMetaContainerBag();
-            break;
-        case ContainerSeq:
-            name = strings.getMetaContainerSeq();
-            break;
-        case ContainerOrd:
-            name = strings.getMetaContainerOrd();
-            break;
-        case Intermediate:
-            name = strings.getMetaIntermediate();
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
+        String name = type.getName(strings);
         return new AbsNode("type:" + name);
-    }
-
-    @Override
-    public void addClass(Class c) {
-        if (hasElement(c)) {
-            return;
-        }
-
-        // If not using the nullable/proper class system, don't instantiate nullable classes
-        if (this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.NONE) {
-            if (!c.isProper()) {
-                // Simply revert to the proper instance
-                AbsNode classNode = getElement(c.getProperClass());
-                if (!hasElement(c)) {
-                    setElement(c, classNode);
-                }
-                return;
-            }
-        }
-
-        AbsNode classNode = new AbsNode(this.m_cfg.getName(c));
-        setElement(c, classNode);
-
-        AbsNode classMetaNode = getMetaNode(c.isProper() ? MetaType.Class : MetaType.ClassNullable);
-        new AbsEdge(classNode, classMetaNode, "sub:");
-
-        for (Field f : c.getFields()) {
-            getElement(f, null, true);
-        }
-
-        if (c.isProper()) {
-            if (this.m_cfg.getXMLConfig().getGlobal().getNullable() == NullableType.ALL) {
-                getElement(c.getNullableClass());
-            }
-        } else {
-            getElement(c.getProperClass());
-        }
-    }
-
-    @Override
-    public void addField(Field field) {
-        if (hasElement(field)) {
-            return;
-        }
-
-        if (!(field.getType() instanceof DataType) || field.getType() instanceof CustomDataType) {
-            AbsNode fieldTypeNode = getElement(field.getType(), this.m_cfg.getName(field));
-            // Can happen if type is container and not using intermediate
-            if (fieldTypeNode == null) {
-                assert (field.getType() instanceof Container);
-                return;
-            }
-
-            if (this.m_cfg.useIntermediate(field) && !(field.getType() instanceof Container)) {
-                AbsNode interNode = new AbsNode(this.m_cfg.getName(field));
-                setElement(field, interNode);
-
-                AbsNode fieldMetaNode = getMetaNode(MetaType.Intermediate);
-                new AbsEdge(interNode, fieldMetaNode, "sub:");
-            } else {
-                setElement(field, fieldTypeNode);
-            }
-        } else {
-            //setElement(field, null);
-        }
-    }
-
-    @Override
-    public void addDataType(DataType dt) {
-        if (hasElement(dt)) {
-            return;
-        }
-
-        if (dt instanceof CustomDataType) {
-            AbsNode dataNode = new AbsNode(this.m_cfg.getName(dt));
-            setElement(dt, dataNode);
-
-            AbsNode dataMetaNode = getMetaNode(MetaType.DataType);
-            new AbsEdge(dataNode, dataMetaNode, "sub:");
-        }
-    }
-
-    @Override
-    public void addEnum(Enum e) {
-        if (hasElement(e)) {
-            return;
-        }
-
-        AbsNode enumNode = new AbsNode(this.m_cfg.getName(e), "abs:");
-        setElement(e, enumNode);
-
-        AbsNode enumMetaNode = getMetaNode(MetaType.Enum);
-        new AbsEdge(enumNode, enumMetaNode, "sub:");
-
-        return;
-    }
-
-    @Override
-    public void addContainer(Container c, String base) {
-        if (hasElement(c)) {
-            return;
-        }
-
-        assert base != null;
-
-        if (c.getType() instanceof Container) {
-            getElement(c.getType(), this.m_cfg.getContainerName(base, (Container) c.getType()));
-        }
-
-        if (!this.m_cfg.useIntermediate(c)) {
-            setElement(c, null);
-            return;
-        }
-
-        AbsNode containerNode = new AbsNode(base + this.m_cfg.getContainerPostfix(c));
-        setElement(c, containerNode);
-
-        AbsNode orderedNode = null;
-        switch (c.getContainerType()) {
-        case SET:
-            orderedNode = getMetaNode(MetaType.ContainerSet);
-            break;
-        case BAG:
-            orderedNode = getMetaNode(MetaType.ContainerBag);
-            break;
-        case SEQ:
-            orderedNode = getMetaNode(MetaType.ContainerSeq);
-            break;
-        case ORD:
-            orderedNode = getMetaNode(MetaType.ContainerOrd);
-            break;
-        }
-        new AbsEdge(containerNode, orderedNode, "sub:");
-
-        return;
-    }
-
-    @Override
-    public void addTuple(Tuple tuple) {
-        if (hasElement(tuple)) {
-            return;
-        }
-
-        AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tuple));
-        setElement(tuple, tupleNode);
-
-        AbsNode tupleMetaNode = getMetaNode(MetaType.Tuple);
-        new AbsEdge(tupleNode, tupleMetaNode, "sub:");
-
-        return;
     }
 }

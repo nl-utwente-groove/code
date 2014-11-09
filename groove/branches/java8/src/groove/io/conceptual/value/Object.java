@@ -1,11 +1,9 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.Kind;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +49,7 @@ public class Object extends Value {
     public void setFieldValue(Field field, Value fieldValue) {
         // SET container is often automatic, so just create container value if required
         if (field.getType() instanceof Container
-            && ((Container) field.getType()).getContainerType() == Kind.SET) {
+            && ((Container) field.getType()).getContainerType() == Container.Kind.SET) {
             if (!(fieldValue instanceof ContainerValue)) {
                 ContainerValue cv = new ContainerValue((Container) field.getType());
                 cv.addValue(fieldValue);
@@ -88,12 +86,6 @@ public class Object extends Value {
     /** Returns a short string representation of this object value. */
     public String toShortString() {
         return getName() + "(" + getType() + ")";
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addObject(this);
-        return true;
     }
 
     @Override

@@ -17,54 +17,50 @@
 package groove.io.conceptual.lang.groove;
 
 import groove.graph.GraphRole;
-import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.graph.AbsNode;
+import groove.io.conceptual.graph.AbsNodeIter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
+/** Extension of an {@link AbsGraph} with graph name and role. */
 public class GrammarGraph {
-    public AbsGraph m_graph;
-    public String m_graphName;
-    public GraphRole m_graphRole;
-
-    public Map<Acceptor,AbsNode> m_nodes = new HashMap<Acceptor,AbsNode>();
-    // Node array map. Used by instance models for container values
-    public Map<Acceptor,AbsNode[]> m_multiNodes = new HashMap<Acceptor,AbsNode[]>();
-
+    /** Constructs an initially empty graph with a given name and role. */
     public GrammarGraph(String graphName, GraphRole graphRole) {
-        this.m_graph = new AbsGraph();
         this.m_graphName = graphName;
         this.m_graphRole = graphRole;
     }
 
-    public GrammarGraph(AbsGraph graph, String graphName, GraphRole graphRole) {
-        this.m_graph = graph;
-        this.m_graphName = graphName;
-        this.m_graphRole = graphRole;
-    }
-
+    /** Converts this pre-graph into an {@link AbsGraph}. */
     public AbsGraph getGraph() {
-        // Reset the graph and rebuild it from the nodes that were added to the node map
-        this.m_graph.clear();
-        for (AbsNode node : this.m_nodes.values()) {
-            this.m_graph.addNode(node);
-        }
-        // Also for node arrays
-        for (AbsNode[] nodes : this.m_multiNodes.values()) {
-            for (AbsNode node : nodes) {
-                this.m_graph.addNode(node);
+        AbsGraph result = new AbsGraph();
+        for (AbsNodeIter iter : this.m_nodes) {
+            for (AbsNode node : iter) {
+                result.addNode(node);
             }
         }
-        return this.m_graph;
+        return result;
     }
 
+    /** Adds a set of nodes to this pre-graph. */
+    public void addNodes(AbsNodeIter iter) {
+        this.m_nodes.add(iter);
+    }
+
+    private final List<AbsNodeIter> m_nodes = new LinkedList<>();
+
+    /** Returns the name of this pre-graph. */
     public String getGraphName() {
         return this.m_graphName;
     }
 
+    private final String m_graphName;
+
+    /** Returns the role of this pre-graph. */
     public GraphRole getGraphRole() {
         return this.m_graphRole;
     }
+
+    private final GraphRole m_graphRole;
 }

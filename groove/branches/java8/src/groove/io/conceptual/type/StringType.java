@@ -1,6 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.StringValue;
@@ -11,18 +10,12 @@ import groove.util.parse.StringHandler;
 /** Data type for strings. */
 public class StringType extends DataType {
     private StringType() {
-        super(Id.getId(Id.ROOT, Name.getName(NAME)));
+        super(Kind.STRING_TYPE, Id.getId(Id.ROOT, Name.getName(NAME)));
     }
 
     @Override
     public String typeString() {
         return NAME;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addDataType(this);
-        return true;
     }
 
     @Override

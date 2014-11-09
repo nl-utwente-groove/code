@@ -1,12 +1,11 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.IntType;
 
 import java.math.BigInteger;
 
 /** Representation of integer values. */
-public class IntValue extends LiteralValue {
+public class IntValue extends Value {
     /** Constructs an integer value. */
     public IntValue(int value) {
         super(IntType.instance());
@@ -16,12 +15,6 @@ public class IntValue extends LiteralValue {
     @Override
     public BigInteger getValue() {
         return BigInteger.valueOf(this.m_value);
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addIntValue(this);
-        return true;
     }
 
     @Override

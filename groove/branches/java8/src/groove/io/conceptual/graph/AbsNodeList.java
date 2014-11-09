@@ -14,21 +14,15 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.io.conceptual.graph;
+
+import java.util.ArrayList;
 
 /**
- * Class defining a number of standard exceptions.
+ * Collection of {@link AbsNode}s.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Exceptions {
-    /** Fixed exception to be thrown at unreachable program locations,
-     * e.g., default clauses of switches where all cases have been dealt with.
-     */
-    public static final RuntimeException UNREACHABLE = new RuntimeException("Unreachable location");
-
-    /** COnstructs an IllegalA for a given message and set of message parameters. */
-    public static final IllegalArgumentException illegalArg(String message, Object... args) {
-        return new IllegalArgumentException(String.format(message, args));
-    }
+public class AbsNodeList extends ArrayList<AbsNode> implements AbsNodeIter {
+    // empty
 }

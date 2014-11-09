@@ -1,6 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.BoolValue;
@@ -9,18 +8,12 @@ import groove.io.conceptual.value.Value;
 /** Singleton class for the boolean type. */
 public class BoolType extends DataType {
     private BoolType() {
-        super(Id.getId(Id.ROOT, Name.getName(NAME)));
+        super(Kind.BOOL_TYPE, Id.getId(Id.ROOT, Name.getName(NAME)));
     }
 
     @Override
     public String typeString() {
         return NAME;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addDataType(this);
-        return true;
     }
 
     @Override

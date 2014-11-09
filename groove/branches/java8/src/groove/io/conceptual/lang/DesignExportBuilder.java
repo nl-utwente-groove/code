@@ -16,22 +16,19 @@
  */
 package groove.io.conceptual.lang;
 
-import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Design;
 import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Glossary;
 import groove.io.external.PortException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** Abstract superclass for all design exporters.
  * @param <X> type of the export object
- * @param <Elem> type of the target format elements
+ * @param <E> type of the target format elements
  */
-public abstract class DesignExportBuilder<X,Elem> implements Messenger, ExportBuilder<X> {
+public abstract class DesignExportBuilder<X,E> extends ExportBuilder<X,E> implements Messenger {
     /** Constructs an bridge from a given design to a given export. */
     protected DesignExportBuilder(Design design, X export) {
         this.export = export;
@@ -63,38 +60,11 @@ public abstract class DesignExportBuilder<X,Elem> implements Messenger, ExportBu
     }
 
     private List<Message> m_messages = new ArrayList<Message>();
-    private Map<Acceptor,Elem> m_elements = new HashMap<Acceptor,Elem>();
 
     @Override
     public void build() throws PortException {
         for (groove.io.conceptual.value.Object obj : getDesign().getObjects()) {
-            getElement(obj);
+            add(obj);
         }
-    }
-
-    protected void setElement(Acceptor acceptor, Elem element) {
-        assert !(this.m_elements.containsKey(acceptor));
-        this.m_elements.put(acceptor, element);
-    }
-
-    protected boolean hasElement(Acceptor acceptor) {
-        return this.m_elements.containsKey(acceptor);
-    }
-
-    protected Elem getElement(Acceptor acceptor) {
-        return getElement(acceptor, null);
-    }
-
-    protected Elem getElement(Acceptor acceptor, String param) {
-        if (!this.m_elements.containsKey(acceptor)) {
-            acceptor.doBuild(this, param);
-        }
-
-        if (!this.m_elements.containsKey(acceptor)) {
-            throw new IllegalArgumentException("Cannot create export element for "
-                + acceptor.toString());
-        }
-
-        return this.m_elements.get(acceptor);
     }
 }

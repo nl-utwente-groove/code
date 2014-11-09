@@ -7,10 +7,11 @@ import groove.grammar.model.HostModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.RuleModel;
+import groove.grammar.model.TypeModel;
 import groove.grammar.type.TypeGraph;
 import groove.io.conceptual.Design;
-import groove.io.conceptual.Timer;
 import groove.io.conceptual.Glossary;
+import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.lang.ImportException;
 import groove.util.Pair;
@@ -135,15 +136,15 @@ public class GrammarVisitor {
 
     public boolean doVisit(Frame parent, GrammarModel grammar) throws ImportException {
         this.m_typeMap =
-            new HashMap<String,groove.grammar.model.TypeModel>(
-                (Map<String,groove.grammar.model.TypeModel>) grammar.getResourceMap(ResourceKind.TYPE));
+            new HashMap<String,TypeModel>(
+                (Map<String,TypeModel>) grammar.getResourceMap(ResourceKind.TYPE));
         this.m_hostMap =
             new HashMap<String,HostModel>(
                 (Map<String,HostModel>) grammar.getResourceMap(ResourceKind.HOST));
         this.m_ruleMap =
             new HashMap<String,RuleModel>(
                 (Map<String,RuleModel>) grammar.getResourceMap(ResourceKind.RULE));
-        this.m_metaMap = new HashMap<String,groove.grammar.model.TypeModel>();
+        this.m_metaMap = new HashMap<String,TypeModel>();
 
         browseGraphs(this.m_namespace);
 
@@ -186,7 +187,7 @@ public class GrammarVisitor {
         Timer.stop(timer);
         setTypeGraph(graphs.one());
         setRuleGraphs(this.m_ruleMap.values());
-        this.m_typeModel.resolve();
+        this.m_glos.resolve();
         Timer.cont(timer);
 
         if (!hostGraphSet.isEmpty()) {
@@ -239,38 +240,38 @@ public class GrammarVisitor {
     }
 
     private void setRuleGraphs(Collection<groove.grammar.model.RuleModel> ruleModels) {
-        new GrooveToConstraint(ruleModels, this.m_types, this.m_cfg, this.m_typeModel);
+        new GrooveToConstraint(ruleModels, this.m_types, this.m_cfg, this.m_glos);
     }
 
-    private void setMetaGraph(TypeGraph typeGraph) throws ImportException {
+    private void setMetaGraph(TypeGraph typeGraph) {
         // Adds meta model information to m_types
         new GrooveToMeta(typeGraph, this.m_types, this.m_cfg);
     }
 
     private void setTypeGraph(TypeGraph typeGraph) throws ImportException {
-        GrooveToType gtt = new GrooveToType(typeGraph, this.m_types, this.m_cfg);
-        this.m_typeModel = gtt.getGlossary();
+        GrooveToType gtt = new GrooveToType(this.m_types, this.m_cfg);
+        this.m_glos = gtt.buildGlossary(typeGraph);
     }
 
     /** Returns the type model constructed by this visitor. */
-    public Glossary getTypeModel() {
-        return this.m_typeModel;
+    public Glossary getGlossary() {
+        return this.m_glos;
     }
 
-    private Glossary m_typeModel;
+    private Glossary m_glos;
 
     private void setInstanceGraph(HostGraph hostGraph) throws ImportException {
         GrooveToInstance gti =
-            new GrooveToInstance(hostGraph, this.m_types, this.m_cfg, this.m_typeModel);
-        this.m_instanceModel = gti.getDesign();
+            new GrooveToInstance(hostGraph, this.m_types, this.m_cfg, this.m_glos);
+        this.m_design = gti.getDesign();
     }
 
     /** Returns the instance model constructed by this visitor. */
     public Design getInstanceModel() {
-        return this.m_instanceModel;
+        return this.m_design;
     }
 
-    private Design m_instanceModel;
+    private Design m_design;
 
     private Pair<TypeGraph,HostGraph> computeCompositeGraphs(GrammarModel grammar,
         Set<String> typeModels, Set<String> hostModels) throws ImportException {

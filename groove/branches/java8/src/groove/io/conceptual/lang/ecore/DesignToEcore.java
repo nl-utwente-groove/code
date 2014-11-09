@@ -22,7 +22,6 @@ import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.DesignExportBuilder;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
@@ -56,7 +55,7 @@ import org.eclipse.emf.ecore.resource.Resource;
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class DesignToEcore extends DesignExportBuilder<EcoreExport,java.lang.Object> {
+public class DesignToEcore extends DesignExportBuilder<EcoreExport,Object> {
     /** Constructs a design-to-ecore exporter for a given type-level exporter and design. */
     public DesignToEcore(Design design, GlossaryToEcore glossToEcore) {
         super(design, glossToEcore.getExport());
@@ -97,153 +96,122 @@ public class DesignToEcore extends DesignExportBuilder<EcoreExport,java.lang.Obj
     }
 
     @Override
-    public void addObject(groove.io.conceptual.value.Object object) {
-        if (!hasElement(object)) {
-            Class cmClass = (Class) object.getType();
-            EClass eClass = this.m_glossToEcore.getEClass(cmClass);
+    protected Object addObject(groove.io.conceptual.value.Object object) {
+        Class cmClass = (Class) object.getType();
+        EClass eClass = this.m_glossToEcore.addClassType(cmClass);
 
-            EObject eObject = eClass.getEPackage().getEFactoryInstance().create(eClass);
-            setElement(object, eObject);
-            this.m_eObjects.add(eObject);
+        EObject result = eClass.getEPackage().getEFactoryInstance().create(eClass);
+        this.m_eObjects.add(result);
+        put(object, result);
 
-            for (Entry<Field,Value> fieldValue : object.getValue().entrySet()) {
-                EStructuralFeature eFeature =
-                    this.m_glossToEcore.getEStructuralFeature(fieldValue.getKey());
-                // if unset value, dont set it in the Ecore model either
-                if (fieldValue.getValue() == null
-                    || fieldValue.getValue() == groove.io.conceptual.value.Object.NIL) {
-                    continue;
-                }
-                if (eFeature.isMany()) {
-                    // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
-                    ContainerValue cv = (ContainerValue) fieldValue.getValue();
-                    @SuppressWarnings("unchecked")
-                    EList<Object> objectList = (EList<Object>) eObject.eGet(eFeature);
-                    for (Value subValue : cv.getValue()) {
-                        Object eSubValue = getElement(subValue);
-                        assert (eSubValue != null);
-                        // It is very well possible that this evaluated to true, due to recursion and opposite edges
-                        if (!objectList.contains(eSubValue)) {
-                            objectList.add(eSubValue);
-                        }
+        for (Entry<Field,Value> fieldValue : object.getValue().entrySet()) {
+            EStructuralFeature eFeature =
+                this.m_glossToEcore.addEStructuralFeature(fieldValue.getKey());
+            // if unset value, dont set it in the Ecore model either
+            if (fieldValue.getValue() == null
+                || fieldValue.getValue() == groove.io.conceptual.value.Object.NIL) {
+                continue;
+            }
+            if (eFeature.isMany()) {
+                // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
+                ContainerValue cv = (ContainerValue) fieldValue.getValue();
+                @SuppressWarnings("unchecked")
+                EList<Object> objectList = (EList<Object>) result.eGet(eFeature);
+                for (Value subValue : cv.getValue()) {
+                    Object eSubValue = add(subValue);
+                    assert (eSubValue != null);
+                    // It is very well possible that this evaluated to true, due to recursion and opposite edges
+                    if (!objectList.contains(eSubValue)) {
+                        objectList.add(eSubValue);
                     }
+                }
+            } else {
+                // Just insert the value directly
+                Object eValue = null;
+                // ContainerValue possible for 0..1 attribs
+                if (fieldValue.getValue() instanceof ContainerValue) {
+                    eValue = add(((ContainerValue) fieldValue.getValue()).getValue().get(0));
                 } else {
-                    // Just insert the value directly
-                    Object eValue = null;
-                    // ContainerValue possible for 0..1 attribs
-                    if (fieldValue.getValue() instanceof ContainerValue) {
-                        eValue =
-                            getElement(((ContainerValue) fieldValue.getValue()).getValue().get(0));
-                    } else {
-                        eValue = getElement(fieldValue.getValue());
-                    }
-
-                    eObject.eSet(eFeature, eValue);
+                    eValue = add(fieldValue.getValue());
                 }
+
+                result.eSet(eFeature, eValue);
             }
         }
+        return result;
     }
 
     @Override
-    public void addRealValue(RealValue realval) {
-        if (!hasElement(realval)) {
-            EDataType realType = this.m_glossToEcore.getEDataType((DataType) realval.getType());
-
-            Object eDoubleVal =
-                realType.getEPackage()
-                    .getEFactoryInstance()
-                    .createFromString(realType, realval.toString());
-            setElement(realval, eDoubleVal);
-        }
+    protected Object addRealValue(RealValue val) {
+        return addValue(val);
     }
 
     @Override
-    public void addStringValue(StringValue stringval) {
-        if (hasElement(stringval)) {
-            return;
-        }
+    protected Object addStringValue(StringValue val) {
+        return addValue(val);
+    }
 
-        EDataType eDataType = this.m_glossToEcore.getEDataType((DataType) stringval.getType());
+    @Override
+    protected Object addIntValue(IntValue val) {
+        return addValue(val);
+    }
 
-        Object eStringVal =
-            eDataType.getEPackage()
+    @Override
+    protected Object addBoolValue(BoolValue val) {
+        return addValue(val);
+    }
+
+    @Override
+    protected Object addCustomDataValue(CustomDataValue val) {
+        return addValue(val);
+    }
+
+    private Object addValue(Value val) {
+        EDataType type = this.m_glossToEcore.getEDataType((DataType) val.getType());
+
+        Object result =
+            type.getEPackage().getEFactoryInstance().createFromString(type, val.toString());
+        put(val, result);
+        return result;
+    }
+
+    @Override
+    protected Object addEnumValue(EnumValue val) {
+        EEnum eEnum = (EEnum) this.m_glossToEcore.getEDataType((Enum) val.getType());
+
+        Object result =
+            eEnum.getEPackage()
                 .getEFactoryInstance()
-                .createFromString(eDataType, stringval.toString());
-        setElement(stringval, eStringVal);
+                .createFromString(eEnum, val.getValue().toString());
+        return result;
     }
 
     @Override
-    public void addIntValue(IntValue intval) {
-        if (hasElement(intval)) {
-            return;
-        }
+    protected Object addContainerValue(ContainerValue val, String base) {
+        Container container = (Container) val.getType();
+        EClass containerClass = this.m_glossToEcore.addClassType(container);
 
-        EDataType eDataType = this.m_glossToEcore.getEDataType((DataType) intval.getType());
-
-        Object eIntVal =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, intval.toString());
-        setElement(intval, eIntVal);
-    }
-
-    @Override
-    public void addBoolValue(BoolValue val) {
-        if (!hasElement(val)) {
-            EDataType boolType = this.m_glossToEcore.getEDataType((DataType) val.getType());
-
-            Object eBoolVal =
-                boolType.getEPackage()
-                    .getEFactoryInstance()
-                    .createFromString(boolType, val.toString());
-            setElement(val, eBoolVal);
-        }
-    }
-
-    @Override
-    public void addEnumValue(EnumValue val) {
-        if (!hasElement(val)) {
-            EEnum eEnum = (EEnum) this.m_glossToEcore.getEDataType((Enum) val.getType());
-
-            Object eEnumVal =
-                eEnum.getEPackage()
-                    .getEFactoryInstance()
-                    .createFromString(eEnum, val.getValue().toString());
-            setElement(val, eEnumVal);
-        }
-    }
-
-    @Override
-    public void addContainerValue(ContainerValue containerVal, String base) {
-        Container container = (Container) containerVal.getType();
-        EClass containerClass = this.m_glossToEcore.getContainerClass(container);
-
-        EObject containerObject =
-            containerClass.getEPackage().getEFactoryInstance().create(containerClass);
-        setElement(containerVal, containerObject);
-        this.m_eObjects.add(containerObject);
+        EObject result = containerClass.getEPackage().getEFactoryInstance().create(containerClass);
+        this.m_eObjects.add(result);
+        put(val, result);
 
         EStructuralFeature eFeature = containerClass.getEStructuralFeature("value");
         @SuppressWarnings("unchecked")
-        EList<Object> objectList = (EList<Object>) containerObject.eGet(eFeature);
-        for (Value val : containerVal.getValue()) {
-            Object eSubValue = getElement(val);
-            objectList.add(eSubValue);
+        EList<Object> objectList = (EList<Object>) result.eGet(eFeature);
+        for (Value subVal : val.getValue()) {
+            objectList.add(add(subVal));
         }
+        return result;
     }
 
     @Override
-    public void addTupleValue(TupleValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
+    protected Object addTupleValue(TupleValue val) {
         Tuple tuple = (Tuple) val.getType();
-        EClass tupleClass = this.m_glossToEcore.getTupleClass(tuple);
+        EClass tupleClass = this.m_glossToEcore.addClassType(tuple);
 
-        EObject tupleObject = tupleClass.getEPackage().getEFactoryInstance().create(tupleClass);
-        setElement(val, tupleObject);
-        this.m_eObjects.add(tupleObject);
+        EObject result = tupleClass.getEPackage().getEFactoryInstance().create(tupleClass);
+        this.m_eObjects.add(result);
+        put(val, result);
 
         for (Entry<Integer,Value> entry : val.getValue().entrySet()) {
             String indexName = this.m_glossToEcore.getTupleElementName(tuple, entry.getKey());
@@ -253,32 +221,17 @@ public class DesignToEcore extends DesignExportBuilder<EcoreExport,java.lang.Obj
                 // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
                 ContainerValue cv = (ContainerValue) tupValue;
                 @SuppressWarnings("unchecked")
-                EList<Object> objectList = (EList<Object>) tupleObject.eGet(eFeature);
+                EList<Object> objectList = (EList<Object>) result.eGet(eFeature);
                 for (Value subValue : cv.getValue()) {
-                    Object eSubValue = getElement(subValue);
+                    Object eSubValue = add(subValue);
                     objectList.add(eSubValue);
                 }
             } else {
                 // Just insert the value directly
-                Object eValue = getElement(tupValue);
-                tupleObject.eSet(eFeature, eValue);
+                Object eValue = add(tupValue);
+                result.eSet(eFeature, eValue);
             }
         }
-    }
-
-    @Override
-    public void addCustomDataValue(CustomDataValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
-        CustomDataType dataType = (CustomDataType) val.getType();
-        EDataType eDataType = this.m_glossToEcore.getEDataType(dataType);
-
-        Object eDataValue =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, val.getValue());
-        setElement(val, eDataValue);
+        return result;
     }
 }

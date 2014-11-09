@@ -69,6 +69,7 @@ import de.gupro.gxl.gxl_1_0.TupType;
 import de.gupro.gxl.gxl_1_0.TypeType;
 import de.gupro.gxl.gxl_1_0.TypedElementType;
 
+/** Utilities for handling GXL files. */
 public class GxlUtil {
     public static class GraphWrapper {
         private GraphType m_graph;
@@ -243,14 +244,16 @@ public class GxlUtil {
         }
     }
 
+    /** URI of the GXL schema. */
     public static String g_gxlTypeGraphURI = "http://www.gupro.de/GXL/gxl-1.0.gxl";
 
-    public static final JAXBContext g_context;
+    /** Marshaller for the GXL documents. */
     public static final Marshaller g_marshaller;
+    /** Unmarshaller for the GXL documents. */
     public static final Unmarshaller g_unmarshaller;
     static {
         try {
-            g_context = JAXBContext.newInstance(GxlType.class.getPackage().getName());
+            JAXBContext g_context = JAXBContext.newInstance(GxlType.class.getPackage().getName());
             g_marshaller = g_context.createMarshaller();
             g_marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             g_unmarshaller = g_context.createUnmarshaller();

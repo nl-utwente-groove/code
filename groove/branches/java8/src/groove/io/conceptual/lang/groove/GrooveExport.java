@@ -47,7 +47,7 @@ public class GrooveExport extends Export {
         this.m_namespace = namespace;
 
         for (GraphRole role : GraphRole.values()) {
-            this.m_graphs.put(role, new HashMap<String,GrammarGraph>());
+            this.m_graphs.put(role, new HashMap<>());
         }
     }
 

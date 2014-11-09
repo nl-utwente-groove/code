@@ -5,10 +5,10 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.ModeType;
@@ -40,10 +40,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class GrooveToType extends TypeImporter {
-    private Glossary m_typeModel;
-    private final GraphNodeTypes m_types;
-    private final Config m_cfg;
-
     private static Map<Id,Type> g_primitiveIds = new HashMap<Id,Type>();
     static {
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("bool")), BoolType.instance());
@@ -51,6 +47,14 @@ public class GrooveToType extends TypeImporter {
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("real")), RealType.instance());
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("string")), StringType.instance());
     }
+
+    public GrooveToType(GraphNodeTypes types, Config cfg) throws ImportException {
+        this.m_types = types;
+        this.m_cfg = cfg;
+    }
+
+    private final GraphNodeTypes m_types;
+    private final Config m_cfg;
 
     /** Map from {@link TypeNode}s to {@link Id}s (each node in type graph should have one). */
     private final Map<TypeNode,Id> m_typeIds = new HashMap<>();
@@ -60,18 +64,10 @@ public class GrooveToType extends TypeImporter {
 
     private Map<TypeNode,Type> m_intermediateFields = new HashMap<TypeNode,Type>();
 
-    public GrooveToType(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg)
-        throws ImportException {
-        this.m_types = types;
-        this.m_cfg = cfg;
-
+    /** Constructs a glossary from a given type graph and adds it to this importer. */
+    public Glossary buildGlossary(TypeGraph grooveTypeGraph) {
         int timer = Timer.start("GROOVE to TM");
-        buildTypeModel(grooveTypeGraph);
-        Timer.stop(timer);
-    }
-
-    private void buildTypeModel(TypeGraph grooveTypeGraph) {
-        this.m_typeModel = new Glossary(grooveTypeGraph.getName());
+        Glossary result = new Glossary(grooveTypeGraph.getName());
 
         // Set of Nodes that need to be classified (inverse of m_nodeTypes)
         Set<? extends TypeNode> unvisitedNodes = new HashSet<TypeNode>(grooveTypeGraph.nodeSet());
@@ -213,21 +209,21 @@ public class GrooveToType extends TypeImporter {
 
             switch (this.m_types.getModelType(getLabel(n))) {
             case TypeClass:
-                Class c = this.m_typeModel.getClass(id, true).getProperClass();
+                Class c = result.getClass(id, true).getProperClass();
                 setNodeType(n, c);
                 if (n.isAbstract()) {
                     if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseAbstract()) {
-                        this.m_typeModel.addProperty(new AbstractProperty(c));
+                        result.addProperty(new AbstractProperty(c));
                     }
                 }
                 // Superclass added in next pass (when all classes are known)
                 break;
             case TypeClassNullable:
-                Class cNull = this.m_typeModel.getClass(id, true).getNullableClass();
+                Class cNull = result.getClass(id, true).getNullableClass();
                 setNodeType(n, cNull);
                 break;
             case TypeEnum:
-                Enum e = this.m_typeModel.getEnum(id, true);
+                Enum e = result.getEnum(id, true);
                 setNodeType(n, e);
                 enumIds.put(id, e);
                 if (this.m_cfg.getXMLConfig().getTypeModel().getEnumMode() == EnumModeType.FLAG) {
@@ -241,7 +237,7 @@ public class GrooveToType extends TypeImporter {
                     // TODO: prefill this?
                     setNodeType(n, g_primitiveIds.get(id));
                 } else {
-                    CustomDataType d = this.m_typeModel.getDatatype(id, true);
+                    CustomDataType d = result.getDatatype(id, true);
                     setNodeType(n, d);
                 }
                 break;
@@ -340,7 +336,7 @@ public class GrooveToType extends TypeImporter {
                 // Check if field edge is containment
                 if (e.isComposite()) {
                     if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseContainment()) {
-                        this.m_typeModel.addProperty(new ContainmentProperty(cmClass, fieldName));
+                        result.addProperty(new ContainmentProperty(cmClass, fieldName));
                     }
                 }
 
@@ -412,8 +408,10 @@ public class GrooveToType extends TypeImporter {
         }
 
         // And we're done
-        this.m_typeModel.resolve();
-        putGlossary(this.m_typeModel.getName(), this.m_typeModel);
+        Timer.stop(timer);
+        result.resolve();
+        putGlossary(result.getName(), result);
+        return result;
     }
 
     private void populateEnumFlags(TypeNode n, Enum e) {

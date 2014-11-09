@@ -12,6 +12,7 @@ import groove.io.conceptual.configuration.schema.IdModeType;
 import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.configuration.schema.StringsType;
+import groove.io.conceptual.configuration.schema.TypeModel;
 import groove.io.conceptual.lang.groove.GrooveUtil;
 import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.property.Property;
@@ -89,6 +90,12 @@ public class Config {
      * from the XML-bound configuration object. */
     final public StringsType getStrings() {
         return getXMLGlobal().getStrings();
+    }
+
+    /** Convenience method to return the type model
+     * of the XML-bound configuration object. */
+    final public TypeModel getTypeModel() {
+        return getXMLConfig().getTypeModel();
     }
 
     /** The XML-bound configuration object. */
@@ -314,7 +321,7 @@ public class Config {
         return useIndex;
     }
 
-    /** Constructs the flag name to be used for a given design type. */
+    /** Constructs the GROOVE type label to be used for a given design type. */
     public String getName(Type type) {
         boolean usePostfix = !this.m_xmlConfig.getTypeModel().isMetaSchema();
         String name = "type:";
@@ -369,7 +376,7 @@ public class Config {
 
     /** Returns the flat type name for a given container, if represented by an intermediate node. */
     public String getContainerName(String base, Container c) {
-        return base + this.m_xmlConfig.getGlobal().getIdSeparator()
+        return base == null ? null : base + this.m_xmlConfig.getGlobal().getIdSeparator()
             + getStrings().getIntermediateName();
     }
 

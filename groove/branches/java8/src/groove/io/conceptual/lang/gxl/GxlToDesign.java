@@ -1,27 +1,27 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.conceptual.lang.gxl;
 
-import groove.io.conceptual.Field;
-import groove.io.conceptual.Id;
 import groove.io.conceptual.Design;
+import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
+import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InstanceImporter;
 import groove.io.conceptual.lang.gxl.GxlUtil.EdgeWrapper;
@@ -50,8 +50,7 @@ import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
 
 public class GxlToDesign extends InstanceImporter {
-    private Map<String,GraphType> m_instanceGraphs =
-        new HashMap<String,GraphType>();
+    private Map<String,GraphType> m_instanceGraphs = new HashMap<String,GraphType>();
 
     private GxlToGlossary m_gxlToType;
 
@@ -60,8 +59,8 @@ public class GxlToDesign extends InstanceImporter {
     // Also for complex edges
     private Map<EdgeType,Object> m_edgeValues = new HashMap<EdgeType,Object>();
 
-    public GxlToDesign(GxlToGlossary gxlToGlos, String designName)
-        throws ImportException {
+    /** Constructs an instance for a given glossary and design file name. */
+    public GxlToDesign(GxlToGlossary gxlToGlos, String designName) throws ImportException {
         this.m_gxlToType = gxlToGlos;
 
         // Load the GXL
@@ -107,8 +106,7 @@ public class GxlToDesign extends InstanceImporter {
         }
         if (this.m_instanceGraphs.containsKey(modelName)) {
             // Find the type of the graph
-            String type =
-                GxlUtil.getElemType(this.m_instanceGraphs.get(modelName));
+            String type = GxlUtil.getElemType(this.m_instanceGraphs.get(modelName));
             Glossary mm = this.m_gxlToType.getGlossary(type);
             if (mm == null) {
                 return null;
@@ -145,8 +143,7 @@ public class GxlToDesign extends InstanceImporter {
         }
     }
 
-    private Object visitObject(Design m, NodeWrapper nodeWrapper,
-            Id graphId) {
+    private Object visitObject(Design m, NodeWrapper nodeWrapper, Id graphId) {
         NodeType node = nodeWrapper.getNode();
 
         if (this.m_nodeValues.containsKey(node)) {
@@ -221,8 +218,7 @@ public class GxlToDesign extends InstanceImporter {
         return o;
     }
 
-    private Object visitEdge(Design m, EdgeWrapper edgeWrapper,
-            Id graphId) {
+    private Object visitEdge(Design m, EdgeWrapper edgeWrapper, Id graphId) {
         EdgeType edge = edgeWrapper.getEdge();
 
         if (this.m_edgeValues.containsKey(edge)) {
@@ -252,16 +248,14 @@ public class GxlToDesign extends InstanceImporter {
         assert (fieldFrom != null && fieldTo != null);
 
         if (fieldFrom.getType() instanceof Container) {
-            ContainerValue cv =
-                new ContainerValue((Container) fieldFrom.getType());
+            ContainerValue cv = new ContainerValue((Container) fieldFrom.getType());
             o.setFieldValue(fieldFrom, cv);
             cv.addValue(oSource);
         } else {
             o.setFieldValue(fieldFrom, oSource);
         }
         if (fieldTo.getType() instanceof Container) {
-            ContainerValue cv =
-                new ContainerValue((Container) fieldTo.getType());
+            ContainerValue cv = new ContainerValue((Container) fieldTo.getType());
             o.setFieldValue(fieldTo, cv);
             cv.addValue(oTarget);
         } else {

@@ -1,6 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.RealValue;
@@ -9,18 +8,12 @@ import groove.io.conceptual.value.Value;
 /** Data type for reals (represented as Java doubles). */
 public class RealType extends DataType {
     private RealType() {
-        super(Id.getId(Id.ROOT, Name.getName(NAME)));
+        super(Kind.REAL_TYPE, Id.getId(Id.ROOT, Name.getName(NAME)));
     }
 
     @Override
     public String typeString() {
         return NAME;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addDataType(this);
-        return true;
     }
 
     @Override

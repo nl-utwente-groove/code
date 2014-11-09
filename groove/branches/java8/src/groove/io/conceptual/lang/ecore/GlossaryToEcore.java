@@ -14,19 +14,16 @@ import groove.io.conceptual.property.DefaultValueProperty;
 import groove.io.conceptual.property.IdentityProperty;
 import groove.io.conceptual.property.KeysetProperty;
 import groove.io.conceptual.property.OppositeProperty;
-import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
-import groove.io.conceptual.type.IntType;
-import groove.io.conceptual.type.RealType;
-import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.io.external.PortException;
+import groove.util.Exceptions;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,18 +48,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 /** Bridge from glossary to ECore export. */
 public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> {
-    private static final EcoreFactory g_EcoreFactory = EcoreFactory.eINSTANCE;
-    private static final EcorePackage g_EcorePackage = EcorePackage.eINSTANCE;
-
-    // Mainly to get tuple names
-    private Glossary m_currentTypeModel;
-
-    // To keep track of generated packages
-    private final Map<Id,EPackage> m_packages = new HashMap<Id,EPackage>();
-    private final Set<EPackage> m_rootPackages = new HashSet<EPackage>();
-
-    private int nrContainer = 0;
-
+    /** Constructs a new bridge for a given glossary and export object. */
     public GlossaryToEcore(Glossary glos, EcoreExport export) {
         super(glos, export);
     }
@@ -76,153 +62,147 @@ public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> 
         timer = Timer.start("Ecore save");
         Resource typeResource = getExport().getTypeResource(getGlossary().getName());
         EList<EObject> contents = typeResource.getContents();
-
         for (EPackage pkg : this.m_rootPackages) {
-            //pkg.setNsPrefix(pkg.getName().toLowerCase());
-            //pkg.setNsURI("file://./" + typeModel.getName() + ".ecore#" + pkg.getName().toLowerCase());
             contents.add(pkg);
         }
         Timer.stop(timer);
     }
 
+    /** Generates a name for a given tuple type. */
     public String getTupleName(Tuple tuple) {
-        return this.m_currentTypeModel.getTupleName(tuple);
+        return getGlossary().getTupleName(tuple);
     }
 
+    /** Generates a name for a tuple type at a given index. */
     public String getTupleElementName(Tuple tuple, int index) {
         return "_" + index;
     }
 
-    // Mainly for InstanceToEcore
-    public EClass getTupleClass(Tuple tuple) {
-        return (EClass) getElement(tuple);
+    /** Convenience method to add a type concept and cast the result to an {@link EClass}. */
+    public EClass addClassType(Type type) {
+        return (EClass) add(type);
     }
 
-    // Mainly for InstanceToEcore
-    public EClass getContainerClass(Container container) {
-        return (EClass) getElement(container);
-    }
-
-    // Mainly for InstanceToEcore
+    /** Convenience method to add a data type concept and cast the result to an {@link EDataType}. */
     public EDataType getEDataType(DataType dataType) {
-        return (EDataType) getElement(dataType);
+        return (EDataType) add(dataType);
     }
 
-    // Mainly for InstanceToEcore
-    public EClass getEClass(Class cmClass) {
-        return (EClass) getElement(cmClass);
+    /** Convenience method to add a field and cast the result to an {@link EStructuralFeature}. */
+    public EStructuralFeature addEStructuralFeature(Field field) {
+        return (EStructuralFeature) add(field);
     }
 
-    // Mainly for InstanceToEcore
-    public EStructuralFeature getEStructuralFeature(Field field) {
-        EStructuralFeature eFeature = (EStructuralFeature) getElement(field);
-        return eFeature;
-    }
-
-    //Does as the name says
+    /** Generates an {@link EPackage} from a given ID. */
     private EPackage packageFromId(Id id) {
-        if (this.m_packages.containsKey(id)) {
-            return this.m_packages.get(id);
+        EPackage result = this.m_packages.get(id);
+        if (result == null) {
+            if (id == Id.ROOT) {
+                // This is actually an error in the metamodel
+                result = g_EcoreFactory.createEPackage();
+                result.setName("ROOT");
+                addMessage(new Message(
+                    "A package (ROOT) was generated for the root namespace, please check your identifiers",
+                    MessageType.WARNING));
+                this.m_rootPackages.add(result);
+            } else {
+                // No package yet. If not toplevel Id, recursively get that package
+                result = g_EcoreFactory.createEPackage();
+                result.setName(id.getName().toString());
+                result.setNsPrefix(id.getName().toString());
+                result.setNsURI(id.getName().toString());
+                if (id.getNamespace() != Id.ROOT) {
+                    EPackage topLevel = packageFromId(id.getNamespace());
+                    topLevel.getESubpackages().add(result);
+                } else {
+                    this.m_rootPackages.add(result);
+                }
+            }
+            this.m_packages.put(id, result);
         }
-
-        if (id == Id.ROOT) {
-            // This is actually an error in the metamodel
-            EPackage idPackage = g_EcoreFactory.createEPackage();
-            idPackage.setName("ROOT");
-            this.m_packages.put(id, idPackage);
-            addMessage(new Message(
-                "A package (ROOT) was generated for the root namespace, please check your identifiers",
-                MessageType.WARNING));
-            this.m_rootPackages.add(idPackage);
-            return idPackage;
-        }
-
-        // No package yet. If not toplevel Id, recursively get that package
-        EPackage idPackage = g_EcoreFactory.createEPackage();
-        idPackage.setName(id.getName().toString());
-        idPackage.setNsPrefix(id.getName().toString());
-        idPackage.setNsURI(id.getName().toString());
-        this.m_packages.put(id, idPackage);
-
-        if (id.getNamespace() != Id.ROOT) {
-            EPackage topLevel = packageFromId(id.getNamespace());
-            topLevel.getESubpackages().add(idPackage);
-        } else {
-            this.m_rootPackages.add(idPackage);
-        }
-
-        return idPackage;
+        return result;
     }
+
+    private final Map<Id,EPackage> m_packages = new HashMap<Id,EPackage>();
+
+    // To keep track of generated packages
+    private final Set<EPackage> m_rootPackages = new HashSet<EPackage>();
+
+    /** Generates a fresh container name. */
+    private String createContainerName() {
+        this.nrContainer++;
+        return "ContainerClass_" + this.nrContainer;
+    }
+
+    private int nrContainer = 0;
 
     @Override
-    public void addDataType(DataType t) {
-        if (hasElement(t)) {
-            return;
-        }
-
-        if (t instanceof StringType) {
-            setElement(t, g_EcorePackage.getEString());
-        } else if (t instanceof BoolType) {
-            setElement(t, g_EcorePackage.getEBoolean());
-        } else if (t instanceof IntType) {
-            setElement(t, g_EcorePackage.getEInt());
-        } else if (t instanceof RealType) {
-            setElement(t, g_EcorePackage.getEFloat());
-        } else if (t instanceof CustomDataType) {
-            EDataType eDataType = g_EcoreFactory.createEDataType();
-            setElement(t, eDataType);
+    protected EObject addDataType(DataType t) {
+        EDataType result;
+        switch (t.getKind()) {
+        case STRING_TYPE:
+            put(t, result = g_EcorePackage.getEString());
+            break;
+        case BOOL_TYPE:
+            put(t, result = g_EcorePackage.getEBoolean());
+            break;
+        case INT_TYPE:
+            put(t, result = g_EcorePackage.getEInt());
+            break;
+        case REAL_TYPE:
+            put(t, result = g_EcorePackage.getEFloat());
+            break;
+        case CUSTOM_TYPE:
+            result = g_EcoreFactory.createEDataType();
+            put(t, result);
 
             CustomDataType cmDataType = (CustomDataType) t;
-            eDataType.setName(cmDataType.getId().getName().toString());
+            result.setName(cmDataType.getId().getName().toString());
             // Forcing to the string class, as it always has a string representation.
             // This is a limitation of the conceptual model (doesn't store other type information)
-            eDataType.setInstanceClass(String.class);
+            result.setInstanceClass(String.class);
             EPackage typePackage = packageFromId(cmDataType.getId().getNamespace());
-            typePackage.getEClassifiers().add(eDataType);
+            typePackage.getEClassifiers().add(result);
+            break;
+        default:
+            throw Exceptions.illegalArg("Parameter kind %s should be data type", t.getKind());
         }
+        return result;
     }
 
     @Override
-    public void addClass(Class cmClass) {
-        if (hasElement(cmClass)) {
-            return;
-        }
+    protected EObject addClass(Class cmClass) {
+        EObject result;
+        if (cmClass.isProper()) {
+            EClass eClass = g_EcoreFactory.createEClass();
+            put(cmClass, eClass);
 
-        if (!cmClass.isProper()) {
-            EObject propElem = getElement(cmClass.getProperClass());
-            if (!hasElement(cmClass)) {
-                setElement(cmClass, propElem);
+            eClass.setName(cmClass.getId().getName().toString());
+
+            EPackage classPackage = packageFromId(cmClass.getId().getNamespace());
+            classPackage.getEClassifiers().add(eClass);
+
+            // Map supertypes to ecore supertypes
+            for (Class superClass : cmClass.getSuperClasses()) {
+                EObject eObj = add(superClass);
+                eClass.getESuperTypes().add((EClass) eObj);
             }
-            return;
+
+            for (Field field : cmClass.getFields()) {
+                EStructuralFeature eStructFeat = (EStructuralFeature) add(field);
+                eClass.getEStructuralFeatures().add(eStructFeat);
+            }
+            result = eClass;
+        } else {
+            result = add(cmClass.getProperClass());
+            put(cmClass, result);
         }
-
-        EClass eClass = g_EcoreFactory.createEClass();
-        setElement(cmClass, eClass);
-
-        eClass.setName(cmClass.getId().getName().toString());
-
-        EPackage classPackage = packageFromId(cmClass.getId().getNamespace());
-        classPackage.getEClassifiers().add(eClass);
-
-        // Map supertypes to ecore supertypes
-        for (Class superClass : cmClass.getSuperClasses()) {
-            EObject eObj = getElement(superClass);
-            eClass.getESuperTypes().add((EClass) eObj);
-        }
-
-        for (Field field : cmClass.getFields()) {
-            EStructuralFeature eStructFeat = (EStructuralFeature) getElement(field);
-            eClass.getEStructuralFeatures().add(eStructFeat);
-        }
+        return result;
     }
 
-    // Map fields, either as attribute or reference
     @Override
-    public void addField(Field field) {
-        if (hasElement(field)) {
-            return;
-        }
-
+    protected EObject addField(Field field) {
+        // Map fields, either as attribute or reference
         Type fieldType = field.getType();
         // Ecore defaults, only changed if an container
         boolean ordered = true;
@@ -230,60 +210,49 @@ public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> 
         if (fieldType instanceof Container) {
             Container cmContainer = (Container) fieldType;
             fieldType = cmContainer.getType();
-
-            if (cmContainer.getContainerType() == Kind.SET
-                || cmContainer.getContainerType() == Kind.BAG) {
-                ordered = false;
-            }
-            if (cmContainer.getContainerType() == Kind.BAG
-                || cmContainer.getContainerType() == Kind.SEQ) {
-                unique = false;
-            }
+            ordered = cmContainer.getContainerType().isOrdered();
+            unique = cmContainer.getContainerType().isUnique();
         }
 
-        EStructuralFeature eFieldFeature = null;
+        EStructuralFeature result = null;
         // Tuples/Containers are represented by classes, so would be a reference
         if (fieldType instanceof Class || fieldType instanceof Tuple
             || fieldType instanceof Container) {
             // Create EReference
-            eFieldFeature = g_EcoreFactory.createEReference();
+            result = g_EcoreFactory.createEReference();
         } else {
             // Create EAttribute
-            eFieldFeature = g_EcoreFactory.createEAttribute();
+            result = g_EcoreFactory.createEAttribute();
         }
-        setElement(field, eFieldFeature);
+        put(field, result);
 
-        eFieldFeature.setName(field.getName().toString());
-        eFieldFeature.setOrdered(ordered);
-        eFieldFeature.setUnique(unique);
+        result.setName(field.getName().toString());
+        result.setOrdered(ordered);
+        result.setUnique(unique);
 
-        EObject eType = getElement(fieldType);
-        eFieldFeature.setEType((EClassifier) eType);
+        EObject eType = add(fieldType);
+        result.setEType((EClassifier) eType);
 
         if (field.getUpperBound() == -1) {
-            eFieldFeature.setUpperBound(EStructuralFeature.UNBOUNDED_MULTIPLICITY);
+            result.setUpperBound(EStructuralFeature.UNBOUNDED_MULTIPLICITY);
         } else {
-            eFieldFeature.setUpperBound(field.getUpperBound());
+            result.setUpperBound(field.getUpperBound());
         }
         if (field.getType() instanceof Class && !((Class) field.getType()).isProper()) {
-            eFieldFeature.setLowerBound(0);
+            result.setLowerBound(0);
         } else {
-            eFieldFeature.setLowerBound(field.getLowerBound());
+            result.setLowerBound(field.getLowerBound());
         }
+        return result;
     }
 
     @Override
-    public void addContainer(Container container, String base) {
-        if (hasElement(container)) {
-            return;
-        }
-
+    protected EObject addContainer(Container container, String base) {
         // Create class for container
-        EClass eContainerClass = g_EcoreFactory.createEClass();
-        setElement(container, eContainerClass);
+        EClass result = g_EcoreFactory.createEClass();
+        put(container, result);
 
-        this.nrContainer++;
-        eContainerClass.setName("ContainerClass_" + this.nrContainer);
+        result.setName(createContainerName());
 
         // Find matching field and package
         EPackage containerPackage = null;
@@ -294,12 +263,12 @@ public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> 
         if (topContainer.getField() != null) {
             Field f = topContainer.getField();
             Class c = f.getDefiningClass();
-            EClass eClass = (EClass) getElement(c);
+            EClass eClass = (EClass) add(c);
             containerPackage = eClass.getEPackage();
         } else {
             containerPackage = packageFromId(Id.ROOT);
         }
-        containerPackage.getEClassifiers().add(eContainerClass);
+        containerPackage.getEClassifiers().add(result);
 
         // Create value reference
         EStructuralFeature eContainerFeature = null;
@@ -324,26 +293,22 @@ public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> 
             eContainerFeature.setUnique(true);
         }
 
-        EObject eType = getElement(container.getType());
+        EObject eType = add(container.getType());
         eContainerFeature.setEType((EClassifier) eType);
 
         eContainerFeature.setUpperBound(EStructuralFeature.UNBOUNDED_MULTIPLICITY);
         eContainerFeature.setLowerBound(0);
 
-        eContainerClass.getEStructuralFeatures().add(eContainerFeature);
+        result.getEStructuralFeatures().add(eContainerFeature);
+        return result;
     }
 
     @Override
-    public void addEnum(Enum envm) {
-        if (hasElement(envm)) {
-            return;
-        }
-
+    protected EObject addEnum(Enum envm) {
         EEnum eEnum = g_EcoreFactory.createEEnum();
-        setElement(envm, eEnum);
+        put(envm, eEnum);
 
         eEnum.setName(envm.getId().getName().toString());
-
         EPackage enumPackage = packageFromId(envm.getId().getNamespace());
         enumPackage.getEClassifiers().add(eEnum);
 
@@ -355,149 +320,120 @@ public class GlossaryToEcore extends GlossaryExportBuilder<EcoreExport,EObject> 
 
             eLiterals.add(eEnumLit);
         }
+        return eEnum;
     }
 
     @Override
-    public void addTuple(Tuple tuple) {
-        if (hasElement(tuple)) {
-            return;
-        }
-
+    protected EObject addTuple(Tuple tuple) {
         EPackage firstRoot = this.m_rootPackages.iterator().next();
-        EClass eClass = g_EcoreFactory.createEClass();
-        setElement(tuple, eClass);
+        EClass result = g_EcoreFactory.createEClass();
+        put(tuple, result);
+        result.setName(getGlossary().getTupleName(tuple));
 
-        eClass.setName(getTupleName(tuple));
-
-        firstRoot.getEClassifiers().add(eClass);
+        firstRoot.getEClassifiers().add(result);
 
         int typeIndex = 1;
         for (Type type : tuple.getTypes()) {
             Field typeField =
                 new Field(Name.getName(getTupleElementName(tuple, typeIndex++)), type, 1, 1);
-            EStructuralFeature eStructFeat = (EStructuralFeature) getElement(typeField);
-            eClass.getEStructuralFeatures().add(eStructFeat);
+            EStructuralFeature eStructFeat = (EStructuralFeature) add(typeField);
+            result.getEStructuralFeatures().add(eStructFeat);
         }
+        return result;
     }
 
     @Override
-    public void addAbstractProp(AbstractProperty prop) {
-        if (hasElement(prop)) {
-            return;
-        }
-
-        EClass eClass = (EClass) getElement(prop.getAbstractClass());
+    protected EObject addAbstractProp(AbstractProperty prop) {
+        put(prop, null);
+        EClass eClass = (EClass) add(prop.getAbstractClass());
         eClass.setAbstract(true);
-
-        setElement(prop, null);
+        return null;
     }
 
     @Override
-    public void addContainmentProp(ContainmentProperty prop) {
-        if (hasElement(prop)) {
-            return;
+    protected EObject addContainmentProp(ContainmentProperty prop) {
+        put(prop, null);
+        EObject obj = add(prop.getField());
+        if (obj instanceof EReference) {
+            EReference eRef = (EReference) obj;
+            eRef.setContainment(true);
+            // Force containment to be unique. This may cause issues down the road for instances,
+            // but GROOVE should forbid this anyway when implemented
+            eRef.setUnique(true);
+        } else {
+            // TODO
         }
-
-        EObject obj = getElement(prop.getField());
-        if (!(obj instanceof EReference)) {
-            //TODO
-            return;
-        }
-
-        EReference eRef = (EReference) obj;
-        eRef.setContainment(true);
-
-        // Force containment to be unique. This may cause issues down the road for instances,
-        // but GROOVE should forbid this anyway when implemented
-        eRef.setUnique(true);
-
-        setElement(prop, null);
+        return null;
     }
 
     @Override
-    public void addIdentityProp(IdentityProperty prop) {
-        if (hasElement(prop)) {
-            return;
-        }
-
+    protected EObject addIdentityProp(IdentityProperty prop) {
+        put(prop, null);
         for (Field field : prop.getFields()) {
-            EObject obj = getElement(field);
-            if (!(obj instanceof EAttribute)) {
-                //TODO
-                continue;
+            EObject obj = add(field);
+            if (obj instanceof EAttribute) {
+                EAttribute eAttr = (EAttribute) obj;
+                eAttr.setID(true);
+                // Only set one field as ID, Ecore doesn't support multiple IDs
+                break;
+            } else {
+                // TODO
             }
-
-            EAttribute eAttr = (EAttribute) obj;
-            eAttr.setID(true);
-
-            // Only set one field as ID, Ecore doesn't support multiple IDs
-            break;
         }
-
-        setElement(prop, null);
+        return null;
     }
 
     @Override
-    public void addKeysetProp(KeysetProperty prop) {
-        if (hasElement(prop)) {
-            return;
-        }
+    protected EObject addKeysetProp(KeysetProperty prop) {
+        put(prop, null);
+        EObject objRef = add(prop.getRelField());
+        if (objRef instanceof EReference) {
+            EReference eRef = (EReference) objRef;
+            List<EAttribute> keyAttribs = eRef.getEKeys();
 
-        EObject objRef = getElement(prop.getRelField());
-        if (!(objRef instanceof EReference)) {
-            //TODO
-        }
-
-        EReference eRef = (EReference) objRef;
-        List<EAttribute> keyAttribs = eRef.getEKeys();
-
-        for (Field field : prop.getKeyFields()) {
-            EObject obj = getElement(field);
-            if (!(obj instanceof EAttribute)) {
-                //TODO
+            for (Field field : prop.getKeyFields()) {
+                EObject obj = add(field);
+                if (obj instanceof EAttribute) {
+                    EAttribute eAttr = (EAttribute) obj;
+                    keyAttribs.add(eAttr);
+                } else {
+                    // TODO
+                }
             }
+        } else {
+            // TODO
+        }
+        return null;
+    }
 
+    @Override
+    protected EObject addOppositeProp(OppositeProperty prop) {
+        put(prop, null);
+        EObject obj1 = add(prop.getField1());
+        EObject obj2 = add(prop.getField2());
+        if (obj1 instanceof EReference && obj2 instanceof EReference) {
+            EReference eRef1 = (EReference) obj1;
+            EReference eRef2 = (EReference) obj2;
+            eRef1.setEOpposite(eRef2);
+        } else {
+            // TODO
+        }
+        return null;
+    }
+
+    @Override
+    protected EObject addDefaultValueProp(DefaultValueProperty prop) {
+        add(prop, null);
+        EObject obj = add(prop.getField());
+        if (obj instanceof EAttribute) {
             EAttribute eAttr = (EAttribute) obj;
-            keyAttribs.add(eAttr);
+            eAttr.setDefaultValueLiteral(prop.getDefaultValue().toString());
+        } else {
+            // TODO
         }
-
-        setElement(prop, null);
+        return null;
     }
 
-    @Override
-    public void addOppositeProp(OppositeProperty prop) {
-        if (hasElement(prop)) {
-            return;
-        }
-
-        EObject obj1 = getElement(prop.getField1());
-        EObject obj2 = getElement(prop.getField2());
-        if (!(obj1 instanceof EReference) || !(obj2 instanceof EReference)) {
-            //TODO
-        }
-
-        EReference eRef1 = (EReference) obj1;
-        EReference eRef2 = (EReference) obj2;
-        eRef1.setEOpposite(eRef2);
-
-        setElement(prop, null);
-    }
-
-    @Override
-    public void addDefaultValueProp(DefaultValueProperty prop) {
-        if (hasElement(prop)) {
-            return;
-        }
-
-        EObject obj = getElement(prop.getField());
-        if (!(obj instanceof EAttribute)) {
-            //TODO
-            return;
-        }
-
-        EAttribute eAttr = (EAttribute) obj;
-        eAttr.setDefaultValueLiteral(prop.getDefaultValue().toString());
-
-        setElement(prop, null);
-    }
+    private static final EcoreFactory g_EcoreFactory = EcoreFactory.eINSTANCE;
+    private static final EcorePackage g_EcorePackage = EcorePackage.eINSTANCE;
 }

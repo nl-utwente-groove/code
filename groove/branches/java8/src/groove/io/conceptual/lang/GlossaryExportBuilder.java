@@ -16,7 +16,6 @@
  */
 package groove.io.conceptual.lang;
 
-import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.property.Property;
@@ -26,15 +25,11 @@ import groove.io.conceptual.type.Enum;
 import groove.io.external.PortException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.eclipse.jdt.annotation.Nullable;
 
 /** Abstract superclass for all glossary exporters.
  */
-public abstract class GlossaryExportBuilder<X,E> implements Messenger, ExportBuilder<X> {
+public abstract class GlossaryExportBuilder<X,E> extends ExportBuilder<X,E> implements Messenger {
     /** Constructs a bridge from a given glossary to a given export. */
     protected GlossaryExportBuilder(Glossary glos, X export) {
         this.export = export;
@@ -65,52 +60,16 @@ public abstract class GlossaryExportBuilder<X,E> implements Messenger, ExportBui
     @Override
     public void build() throws PortException {
         for (Class cmClass : getGlossary().getClasses()) {
-            getElement(cmClass);
+            add(cmClass);
         }
         for (Enum cmEnum : getGlossary().getEnums()) {
-            getElement(cmEnum);
+            add(cmEnum);
         }
         for (CustomDataType cmData : getGlossary().getDatatypes()) {
-            getElement(cmData);
+            add(cmData);
         }
         for (Property prop : getGlossary().getProperties()) {
-            prop.doBuild(this, null);
+            add(prop, null);
         }
-    }
-
-    protected Map<Acceptor,E> m_elements = new HashMap<Acceptor,E>();
-
-    protected void setElement(Acceptor acceptor, E element) {
-        assert !(this.m_elements.containsKey(acceptor));
-        this.m_elements.put(acceptor, element);
-    }
-
-    protected boolean hasElement(Acceptor acceptor) {
-        return this.m_elements.containsKey(acceptor);
-    }
-
-    protected @Nullable E getElement(Acceptor acceptor) {
-        return getElement(acceptor, null, false);
-    }
-
-    protected E getElement(Acceptor acceptor, String param) {
-        return getElement(acceptor, param, false);
-    }
-
-    // If allowNull and element is not being set, returns null
-    protected E getElement(Acceptor acceptor, String param, boolean allowNull) {
-        if (!this.m_elements.containsKey(acceptor)) {
-            acceptor.doBuild(this, param);
-        }
-
-        if (!this.m_elements.containsKey(acceptor)) {
-            if (allowNull) {
-                return null;
-            }
-            throw new IllegalArgumentException("Cannot get element for acceptor "
-                + acceptor.toString());
-        }
-
-        return this.m_elements.get(acceptor);
     }
 }

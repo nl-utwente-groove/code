@@ -1,6 +1,5 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Class;
@@ -9,7 +8,7 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.value.Value;
 
 /** Property expressing that a given field should have a default (initial) value. */
-public class DefaultValueProperty implements Property {
+public class DefaultValueProperty extends Property {
     private final Class m_class;
     private final Name m_fieldName;
     private Field m_field;
@@ -37,12 +36,6 @@ public class DefaultValueProperty implements Property {
     /** Returns the intended default value of the field. */
     public Value getDefaultValue() {
         return this.m_defaultValue;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addDefaultValueProp(this);
-        return true;
     }
 
     @Override

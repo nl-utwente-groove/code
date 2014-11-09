@@ -1,6 +1,5 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.Container;
 
 import java.util.ArrayList;
@@ -20,12 +19,6 @@ public class ContainerValue extends Value {
     /** Adds a value to the container. */
     public void addValue(Value v) {
         this.m_values.add(v);
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addContainerValue(this, param);
-        return true;
     }
 
     @Override

@@ -14,21 +14,13 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.io.conceptual.graph;
 
 /**
- * Class defining a number of standard exceptions.
+ * Common super-interface serving as return type of the to-groove export.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Exceptions {
-    /** Fixed exception to be thrown at unreachable program locations,
-     * e.g., default clauses of switches where all cases have been dealt with.
-     */
-    public static final RuntimeException UNREACHABLE = new RuntimeException("Unreachable location");
-
-    /** COnstructs an IllegalA for a given message and set of message parameters. */
-    public static final IllegalArgumentException illegalArg(String message, Object... args) {
-        return new IllegalArgumentException(String.format(message, args));
-    }
+public interface AbsNodeIter extends Iterable<AbsNode> {
+    // empty
 }

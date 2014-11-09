@@ -1,6 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 
 /** Container type. */
@@ -14,7 +13,17 @@ public class Container extends Type {
         /** Ordered container with duplicates. */
         SEQ,
         /** Ordered container without duplicates. */
-        ORD
+        ORD, ;
+
+        /** Indicates if this container kind is ordered. */
+        public boolean isOrdered() {
+            return this == SEQ || this == ORD;
+        }
+
+        /** Indicates if this container has unique values, i.e., no duplicates. */
+        public boolean isUnique() {
+            return this == SET || this == ORD;
+        }
     }
 
     private Kind m_ctype;
@@ -131,12 +140,6 @@ public class Container extends Type {
     /** Indicates if this container is ordered. */
     public boolean isOrdered() {
         return this.m_ctype == Kind.SEQ || this.m_ctype == Kind.ORD;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addContainer(this, param);
-        return true;
     }
 
     @Override

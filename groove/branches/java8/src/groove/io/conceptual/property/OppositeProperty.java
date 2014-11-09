@@ -1,6 +1,5 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Class;
@@ -13,7 +12,7 @@ import groove.io.conceptual.type.Class;
  * @author s0141844
  * @version $Revision $
  */
-public class OppositeProperty implements Property {
+public class OppositeProperty extends Property {
     private final Class m_class1;
     private final Class m_class2;
 
@@ -29,12 +28,6 @@ public class OppositeProperty implements Property {
 
         this.m_fieldName1 = field1;
         this.m_fieldName2 = field2;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addOppositeProp(this);
-        return true;
     }
 
     /** Returns the first source class of the opposite fields. */

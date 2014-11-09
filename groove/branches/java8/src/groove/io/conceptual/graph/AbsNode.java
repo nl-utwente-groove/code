@@ -8,6 +8,8 @@ import groove.graph.GraphRole;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -15,7 +17,7 @@ import java.util.List;
  * @author Harold Bruijntjes
  *
  */
-public class AbsNode {
+public class AbsNode implements AbsNodeIter {
     private String[] m_names;
 
     private List<AbsEdge> m_edges = new ArrayList<AbsEdge>();
@@ -161,5 +163,10 @@ public class AbsNode {
      */
     public List<AspectEdge> getAspectEdges() {
         return this.m_aspectEdges;
+    }
+
+    @Override
+    public Iterator<AbsNode> iterator() {
+        return Collections.singleton(this).iterator();
     }
 }

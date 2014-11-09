@@ -130,14 +130,14 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         Glossary tm = outcome.one();
         Design im = outcome.two();
         if (tm == null) {
-            throw new PortException("Unable to load type model");
+            throw new PortException("Unable to load glossary");
         }
         boolean isHost = kind == ResourceKind.HOST;
         if (isHost && im == null) {
-            throw new PortException("Unable to load instance model");
+            throw new PortException("Unable to load design");
         }
         try {
-            getResource(file, isHost, tm, im).export();
+            getExport(file, isHost, tm, im).export();
         } catch (ExportException e) {
             throw new PortException(e);
         }
@@ -146,7 +146,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     /** Callback method obtaining an exportable object in the required format.
      * @param isHost flag indicating that we want to export an instance model
      */
-    abstract protected Export getResource(Path file, boolean isHost, Glossary tm, Design im)
+    abstract protected Export getExport(Path file, boolean isHost, Glossary tm, Design im)
         throws PortException;
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
@@ -179,7 +179,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         } catch (ImportException e) {
             throw new PortException(e);
         }
-        return success ? Pair.newPair(visitor.getTypeModel(), visitor.getInstanceModel()) : null;
+        return success ? Pair.newPair(visitor.getGlossary(), visitor.getInstanceModel()) : null;
     }
 
     /**

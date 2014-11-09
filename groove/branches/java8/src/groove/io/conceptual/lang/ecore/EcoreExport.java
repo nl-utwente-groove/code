@@ -35,6 +35,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+/** Export object for the ECore format. */
 public class EcoreExport extends Export {
     private final ResourceSet m_resourceSet;
     private final Map<String,Resource> m_typeResources = new HashMap<String,Resource>();
@@ -43,9 +44,11 @@ public class EcoreExport extends Export {
     private final Path m_typeFile;
     private final Path m_instanceFile;
 
-    private final String relPath;
-
     //files allowed null if instance or type not required
+    /** Constructs an export object from a meta-model and instance file.
+     * @param typeTarget location of the meta-model; may be {@code null}
+     * @param instanceTarget location of the instance model; may be {@code null}
+     */
     public EcoreExport(Path typeTarget, Path instanceTarget) {
         this.m_resourceSet = new ResourceSetImpl();
         this.m_resourceSet.getResourceFactoryRegistry()
@@ -54,24 +57,6 @@ public class EcoreExport extends Export {
 
         this.m_typeFile = typeTarget;
         this.m_instanceFile = instanceTarget;
-
-        if (this.m_typeFile == this.m_instanceFile || this.m_typeFile == null
-            || this.m_instanceFile == null) {
-            this.relPath = "";
-        } else {
-            this.relPath =
-                this.m_instanceFile.toAbsolutePath()
-                    .relativize(this.m_typeFile.toAbsolutePath())
-                    .toString();
-        }
-    }
-
-    public ResourceSet getResourceSet() {
-        return this.m_resourceSet;
-    }
-
-    public String getTypePath() {
-        return this.relPath;
     }
 
     /** Returns the ECore metamodel of a given name.

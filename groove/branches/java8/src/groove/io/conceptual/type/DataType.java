@@ -7,7 +7,7 @@ import groove.io.conceptual.value.Value;
 /** Abstract superclass for all primitive data types. */
 public abstract class DataType extends Type implements Identifiable {
     /** Constructor setting the identifier for the type. */
-    protected DataType(Id id) {
+    protected DataType(Kind kind, Id id) {
         this.m_id = id;
     }
 

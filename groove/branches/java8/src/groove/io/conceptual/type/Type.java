@@ -1,10 +1,10 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.Acceptor;
+import groove.io.conceptual.Concept;
 import groove.io.conceptual.value.Value;
 
 /** Superclass of all types. */
-public abstract class Type implements Acceptor {
+public abstract class Type extends Concept {
     /** Indicates if this is a composite type. */
     public boolean isComplex() {
         return false;

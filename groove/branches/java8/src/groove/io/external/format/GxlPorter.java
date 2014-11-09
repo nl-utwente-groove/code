@@ -59,7 +59,7 @@ public class GxlPorter extends ConceptualPorter {
     }
 
     @Override
-    protected Export getResource(Path file, boolean isHost, Glossary tm, Design im)
+    protected Export getExport(Path file, boolean isHost, Glossary tm, Design im)
         throws PortException {
         // Use same file for both instance and type, so type gets included with instance
         GxlExport result = new GxlExport(file, file);

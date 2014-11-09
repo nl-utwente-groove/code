@@ -3,7 +3,6 @@ package groove.io.conceptual.lang.groove;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.io.conceptual.configuration.Config;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.lang.Messenger;
@@ -18,16 +17,10 @@ import java.util.Set;
 /*
  * Should only generate some map of Node types (strings) to NodeType enum in TypeGraphVisitor
  */
+/** Bridge from GROOVE type meta-information to a {@link GraphNodeTypes} object. */
 public class GrooveToMeta implements Messenger {
-    private Config m_cfg;
-
-    List<Message> m_messages = new ArrayList<Message>();
-
-    private Map<TypeNode,MetaType> m_metaNodes = new HashMap<TypeNode,MetaType>();
-    private GraphNodeTypes m_types;
-
-    public GrooveToMeta(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg)
-        throws ImportException {
+    /** Constructs an instance for a given type graph and node types object. */
+    public GrooveToMeta(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg) {
         this.m_types = types;
         this.m_cfg = cfg;
 
@@ -56,61 +49,36 @@ public class GrooveToMeta implements Messenger {
         // And we're done
     }
 
-    // The actual meta nodes in the meta graph. Other nodes inherit from these and use ModelType enum
-    private enum MetaType {
-        Type,
-        Class,
-        ClassNullable,
-        Enum,
-        Intermediate,
-        ContainerSet,
-        ContainerBag,
-        ContainerSeq,
-        ContainerOrd,
-        DataType,
-        Tuple,
-        None;
-    }
+    private final Config m_cfg;
+    private final GraphNodeTypes m_types;
 
     private MetaType getNodeType(TypeNode node) {
-        if (this.m_metaNodes.containsKey(node)) {
-            return this.m_metaNodes.get(node);
+        MetaType result = this.m_metaNodes.get(node);
+        if (result == null) {
+            String label = node.label().text();
+            result = getMetaType(label);
+            if (result != MetaType.None) {
+                this.m_metaNodes.put(node, result);
+            }
         }
-        String label = node.label().text();
-        MetaType type = MetaType.None;
-
-        if (label == null) {
-            return MetaType.None;
-        }
-
-        if (label.equals(this.m_cfg.getStrings().getMetaType())) {
-            type = MetaType.Type;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaClass())) {
-            type = MetaType.Class;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaClassNullable())) {
-            type = MetaType.ClassNullable;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaEnum())) {
-            type = MetaType.Enum;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaDataType())) {
-            type = MetaType.DataType;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaTuple())) {
-            type = MetaType.Tuple;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaContainerSet())) {
-            type = MetaType.ContainerSet;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaContainerBag())) {
-            type = MetaType.ContainerBag;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaContainerSeq())) {
-            type = MetaType.ContainerSeq;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaContainerOrd())) {
-            type = MetaType.ContainerOrd;
-        } else if (label.equals(this.m_cfg.getStrings().getMetaIntermediate())) {
-            type = MetaType.Intermediate;
-        }
-
-        this.m_metaNodes.put(node, type);
-
-        return type;
+        return result;
     }
+
+    private final Map<TypeNode,MetaType> m_metaNodes = new HashMap<TypeNode,MetaType>();
+
+    /** Returns the meta-type for a given type name. */
+    private MetaType getMetaType(String name) {
+        if (this.metaTypeMap == null) {
+            this.metaTypeMap = MetaType.createMap(this.m_cfg.getStrings());
+        }
+        MetaType result = this.metaTypeMap.get(name);
+        if (result == null) {
+            result = MetaType.None;
+        }
+        return result;
+    }
+
+    private Map<String,MetaType> metaTypeMap;
 
     private ModelType getModelType(MetaType metaType) {
         switch (metaType) {
@@ -145,4 +113,6 @@ public class GrooveToMeta implements Messenger {
     public List<Message> getMessages() {
         return this.m_messages;
     }
+
+    private final List<Message> m_messages = new ArrayList<Message>();
 }

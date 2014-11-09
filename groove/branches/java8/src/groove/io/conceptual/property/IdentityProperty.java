@@ -1,6 +1,5 @@
 package groove.io.conceptual.property;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Class;
@@ -11,7 +10,7 @@ import groove.io.conceptual.type.Class;
  * @author Harold Bruintjes
  * @version $Revision $
  */
-public class IdentityProperty implements Property {
+public class IdentityProperty extends Property {
     final private Class m_class;
     final private Name[] m_fieldNames;
     private Field[] m_fields;
@@ -20,12 +19,6 @@ public class IdentityProperty implements Property {
     public IdentityProperty(Class c, Name... idFields) {
         this.m_class = c;
         this.m_fieldNames = idFields;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addIdentityProp(this);
-        return true;
     }
 
     /** Returns the class that has the identity property. */

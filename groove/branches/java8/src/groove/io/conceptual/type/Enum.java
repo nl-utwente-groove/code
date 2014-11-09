@@ -1,6 +1,5 @@
 package groove.io.conceptual.type;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.EnumValue;
@@ -16,7 +15,7 @@ public class Enum extends DataType {
 
     /** Constructs an initially empty enumerated type with a given identifier. */
     public Enum(Id id) {
-        super(id);
+        super(Kind.ENUM_TYPE, id);
     }
 
     /** Adds an allowed value to this enumerated type. */
@@ -37,12 +36,6 @@ public class Enum extends DataType {
     /** Returns the collection of allowed values of this enumerated type. */
     public Collection<Name> getLiterals() {
         return this.m_values;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addEnum(this);
-        return true;
     }
 
     @Override

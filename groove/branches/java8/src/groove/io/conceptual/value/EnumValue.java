@@ -1,6 +1,5 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.type.Enum;
 
@@ -15,12 +14,6 @@ public class EnumValue extends Value {
     @Override
     public Name getValue() {
         return this.m_value;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addEnumValue(this);
-        return true;
     }
 
     @Override

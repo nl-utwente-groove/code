@@ -1,12 +1,11 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.StringType;
 
 import java.util.regex.Matcher;
 
 /** Representation of string values. */
-public class StringValue extends LiteralValue {
+public class StringValue extends Value {
     /** Constructs a value wrapping a given string. */
     public StringValue(java.lang.String value) {
         super(StringType.instance());
@@ -16,12 +15,6 @@ public class StringValue extends LiteralValue {
     @Override
     public String getValue() {
         return this.m_value;
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addStringValue(this);
-        return true;
     }
 
     @Override

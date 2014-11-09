@@ -74,11 +74,7 @@ public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
     private final GraphType m_instanceGraph;
 
     @Override
-    public void addObject(groove.io.conceptual.value.Object object) {
-        if (hasElement(object)) {
-            return;
-        }
-
+    protected Object addObject(groove.io.conceptual.value.Object object) {
         Class cmClass = (Class) object.getType();
         String classNodeId = this.m_glossToGxl.getId(cmClass);
 
@@ -87,7 +83,7 @@ public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
             id = getNodeId();
         }
         NodeType objectNode = createNode(id, "#" + classNodeId, cmClass.getId().getNamespace());
-        setElement(object, objectNode);
+        put(object, objectNode);
 
         for (Entry<Field,Value> fieldEntry : object.getValue().entrySet()) {
             Value fieldValue = fieldEntry.getValue();
@@ -97,7 +93,7 @@ public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
             }
 
             if (this.m_glossToGxl.isAttribute(fieldEntry.getKey())) {
-                JAXBElement<?> attrObject = (JAXBElement<?>) getElement(fieldValue);
+                JAXBElement<?> attrObject = (JAXBElement<?>) add(fieldValue);
                 GxlUtil.setAttribute(objectNode,
                     fieldEntry.getKey().getName().toString(),
                     attrObject.getValue(),
@@ -112,121 +108,101 @@ public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
                             || ((Container) cv.getType()).getContainerType() == Kind.SEQ;
                     int index = 0;
                     for (Value subValue : cv.getValue()) {
-                        NodeType valueNode = (NodeType) getElement(subValue);
+                        NodeType valueNode = (NodeType) add(subValue);
                         EdgeType edge = createEdge(objectNode, valueNode, fieldEdgeId);
                         if (isordered) {
                             edge.setToorder(BigInteger.valueOf(index++));
                         }
                     }
                 } else {
-                    NodeType valueNode = (NodeType) getElement(fieldValue);
+                    NodeType valueNode = (NodeType) add(fieldValue);
                     createEdge(objectNode, valueNode, fieldEdgeId);
                 }
             }
         }
+        return objectNode;
     }
 
     @Override
-    public void addRealValue(RealValue realval) {
-        if (hasElement(realval)) {
-            return;
-        }
-
-        JAXBElement<Float> floatElem =
+    protected Object addRealValue(RealValue realval) {
+        JAXBElement<Float> result =
             GxlUtil.g_objectFactory.createFloat(new Float(realval.getValue()));
-        setElement(realval, floatElem);
+        put(realval, result);
+        return result;
     }
 
     @Override
-    public void addStringValue(StringValue stringval) {
-        if (hasElement(stringval)) {
-            return;
-        }
-
-        JAXBElement<String> stringElem = GxlUtil.g_objectFactory.createString(stringval.getValue());
-        setElement(stringval, stringElem);
+    protected Object addStringValue(StringValue stringval) {
+        JAXBElement<String> result = GxlUtil.g_objectFactory.createString(stringval.getValue());
+        put(stringval, result);
+        return result;
     }
 
     @Override
-    public void addIntValue(IntValue intval) {
-        if (hasElement(intval)) {
-            return;
-        }
-
-        JAXBElement<BigInteger> intElem = GxlUtil.g_objectFactory.createInt(intval.getValue());
-        setElement(intval, intElem);
+    protected Object addIntValue(IntValue val) {
+        JAXBElement<BigInteger> result = GxlUtil.g_objectFactory.createInt(val.getValue());
+        put(val, result);
+        return result;
     }
 
     @Override
-    public void addBoolValue(BoolValue boolval) {
-        if (hasElement(boolval)) {
-            return;
-        }
-
-        JAXBElement<Boolean> boolElem =
-            GxlUtil.g_objectFactory.createBool(new Boolean(boolval.getValue()));
-        setElement(boolval, boolElem);
+    protected Object addBoolValue(BoolValue val) {
+        JAXBElement<Boolean> result =
+            GxlUtil.g_objectFactory.createBool(new Boolean(val.getValue()));
+        put(val, result);
+        return result;
     }
 
     @Override
-    public void addEnumValue(EnumValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
-        JAXBElement<String> enumElem =
-            GxlUtil.g_objectFactory.createEnum(val.getValue().toString());
-        setElement(val, enumElem);
+    protected Object addEnumValue(EnumValue val) {
+        JAXBElement<String> result = GxlUtil.g_objectFactory.createEnum(val.getValue().toString());
+        put(val, result);
+        return result;
     }
 
     @Override
-    public void addContainerValue(ContainerValue val, String base) {
+    protected Object addContainerValue(ContainerValue val, String base) {
         //TODO: check if for an attribute. Reference should be handled directly
-        if (hasElement(val)) {
-            return;
-        }
-
-        CompositeValueType cntType = null;
-        JAXBElement<?> cntElem = null;
+        CompositeValueType cntType;
+        JAXBElement<?> result;
 
         switch (((Container) val.getType()).getContainerType()) {
         case SET:
-            cntType = GxlUtil.g_objectFactory.createSetType();
-            cntElem = GxlUtil.g_objectFactory.createSet((SetType) cntType);
+            SetType setType = GxlUtil.g_objectFactory.createSetType();
+            result = GxlUtil.g_objectFactory.createSet(setType);
+            cntType = setType;
             break;
         case BAG:
-            cntType = GxlUtil.g_objectFactory.createBagType();
-            cntElem = GxlUtil.g_objectFactory.createBag((BagType) cntType);
+            BagType bagType = GxlUtil.g_objectFactory.createBagType();
+            result = GxlUtil.g_objectFactory.createBag(bagType);
+            cntType = bagType;
             break;
         case ORD:
         case SEQ:
-            cntType = GxlUtil.g_objectFactory.createSeqType();
-            cntElem = GxlUtil.g_objectFactory.createSeq((SeqType) cntType);
+            SeqType seqType = GxlUtil.g_objectFactory.createSeqType();
+            result = GxlUtil.g_objectFactory.createSeq(seqType);
+            cntType = seqType;
             break;
         default:
             throw Exceptions.UNREACHABLE;
         }
-        setElement(val, cntElem);
+        put(val, result);
 
         for (Value subVal : val.getValue()) {
-            JAXBElement<?> cntValue = (JAXBElement<?>) getElement(subVal);
+            JAXBElement<?> cntValue = (JAXBElement<?>) add(subVal);
             cntType.getBagOrSetOrSeq().add(cntValue);
         }
+        return result;
     }
 
     @Override
-    public void addTupleValue(TupleValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
+    protected Object addTupleValue(TupleValue val) {
+        JAXBElement<?> result;
         if (this.m_glossToGxl.isAttribute(val.getType())) {
             TupType tupType = GxlUtil.g_objectFactory.createTupType();
-            JAXBElement<TupType> tupElem = GxlUtil.g_objectFactory.createTup(tupType);
-            setElement(val, tupElem);
-
+            put(val, result = GxlUtil.g_objectFactory.createTup(tupType));
             for (Entry<Integer,Value> entry : val.getValue().entrySet()) {
-                JAXBElement<?> tupValue = (JAXBElement<?>) getElement(entry.getValue());
+                JAXBElement<?> tupValue = (JAXBElement<?>) add(entry.getValue());
                 tupType.getBagOrSetOrSeq().add(tupValue);
             }
         } else {
@@ -239,20 +215,17 @@ public class DesignToGxl extends DesignExportBuilder<GxlExport,Object> {
                 o.setFieldValue(cmClass.getField(Name.getName("_" + entry.getKey())),
                     entry.getValue());
             }
-
-            setElement(val, getElement(o));
+            put(val, result = (JAXBElement<?>) add(o));
         }
+        return result;
     }
 
     @Override
-    public void addCustomDataValue(CustomDataValue val) {
-        if (hasElement(val)) {
-            return;
-        }
-
+    protected Object addCustomDataValue(CustomDataValue val) {
         //DataValue treated as string in GXL
-        JAXBElement<String> stringElem = GxlUtil.g_objectFactory.createString(val.getValue());
-        setElement(val, stringElem);
+        JAXBElement<String> result = GxlUtil.g_objectFactory.createString(val.getValue());
+        put(val, result);
+        return result;
     }
 
     private NodeType createNode(String id, String type, Id packageId) {

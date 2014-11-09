@@ -1,6 +1,5 @@
 package groove.io.conceptual.value;
 
-import groove.io.conceptual.ExportBuilder;
 import groove.io.conceptual.type.Tuple;
 
 import java.util.HashMap;
@@ -26,12 +25,6 @@ public class TupleValue extends Value {
         for (int i = 0; i < type.getTypes().size(); i++) {
             this.m_values.put(i + 1, null);
         }
-    }
-
-    @Override
-    public boolean doBuild(ExportBuilder<?> v, String param) {
-        v.addTupleValue(this);
-        return true;
     }
 
     /** Sets the tuple value at a given index. */
