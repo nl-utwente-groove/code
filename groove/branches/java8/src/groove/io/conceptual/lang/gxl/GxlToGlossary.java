@@ -8,7 +8,7 @@ import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
-import groove.io.conceptual.lang.TypeImporter;
+import groove.io.conceptual.lang.GlossaryImporter;
 import groove.io.conceptual.lang.gxl.GxlUtil.AttrTypeEnum;
 import groove.io.conceptual.lang.gxl.GxlUtil.EdgeWrapper;
 import groove.io.conceptual.lang.gxl.GxlUtil.NodeWrapper;
@@ -59,7 +59,7 @@ import de.gupro.gxl.gxl_1_0.TupType;
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class GxlToGlossary extends TypeImporter {
+public class GxlToGlossary extends GlossaryImporter {
     /** GXL type graph to use to use (select the first one from the document). */
     private final List<GraphType> m_gxlTypeGraphs = new ArrayList<GraphType>();
 

@@ -189,12 +189,14 @@ public class UserSettings {
                         userPrefs.remove(this.keys[i].one());
                     }
                 }
-                // apply the values to the simulator
-                try {
-                    setValue(sim, values);
-                } catch (RuntimeException exc) {
-                    // Ignore any exceptions
-                }
+                SwingUtilities.invokeLater(() -> {
+                    // apply the values to the simulator
+                    try {
+                        setValue(sim, values);
+                    } catch (RuntimeException exc) {
+                        // Ignore any exceptions
+                    }
+                });
             }
         }
 

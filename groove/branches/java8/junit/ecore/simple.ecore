@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="def" nsURI="simple" nsPrefix="simple">
+  <eClassifiers xsi:type="ecore:EClass" name="Hotel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rooms" upperBound="-1"
+        eType="#//Room" containment="true" eOpposite="#//Room/hotel"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Room">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="hotel" lowerBound="1" eType="#//Hotel"
+        eOpposite="#//Hotel/rooms"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guest" eType="#//guest/Guest"
+        eOpposite="#//guest/Guest/room"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="nr" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eSubpackages name="guest" nsURI="guest" nsPrefix="guest">
+    <eClassifiers xsi:type="ecore:EClass" name="Guest">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="status" lowerBound="1"
+          eType="#//guest/Status"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="room" eType="#//Room"
+          eOpposite="#//Room/guest"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+          defaultValueLiteral="&quot;&quot;"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="Status">
+      <eLiterals name="VIP"/>
+      <eLiterals name="Priority" value="1" literal=""/>
+      <eLiterals name="Normal" value="2"/>
+    </eClassifiers>
+  </eSubpackages>
+</ecore:EPackage>

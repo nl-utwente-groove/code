@@ -14,10 +14,9 @@ import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.ModeType;
 import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
-import groove.io.conceptual.lang.ImportException;
+import groove.io.conceptual.lang.GlossaryImporter;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
-import groove.io.conceptual.lang.TypeImporter;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
 import groove.io.conceptual.property.AbstractProperty;
 import groove.io.conceptual.property.ContainmentProperty;
@@ -39,7 +38,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class GrooveToType extends TypeImporter {
+/** Class providing the functionality to convert a GROOVE type graph
+ * into a glossary.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class GrooveToGlossary extends GlossaryImporter {
     private static Map<Id,Type> g_primitiveIds = new HashMap<Id,Type>();
     static {
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("bool")), BoolType.instance());
@@ -48,7 +52,8 @@ public class GrooveToType extends TypeImporter {
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("string")), StringType.instance());
     }
 
-    public GrooveToType(GraphNodeTypes types, Config cfg) throws ImportException {
+    /** Constructs an instance for a given set of types and a configuration. */
+    public GrooveToGlossary(GraphNodeTypes types, Config cfg) {
         this.m_types = types;
         this.m_cfg = cfg;
     }

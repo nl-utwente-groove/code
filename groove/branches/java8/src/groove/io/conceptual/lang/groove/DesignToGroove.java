@@ -103,9 +103,12 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,AbsNodeIter
     }
 
     @Override
-    protected void put(Concept o, AbsNodeIter e) {
-        this.m_currentGraph.addNodes(e);
-        super.put(o, e);
+    protected boolean put(Concept o, AbsNodeIter e) {
+        boolean result = super.put(o, e);
+        if (result) {
+            this.m_currentGraph.addNodes(e);
+        }
+        return result;
     }
 
     private AbsNode getNode(Concept o) {

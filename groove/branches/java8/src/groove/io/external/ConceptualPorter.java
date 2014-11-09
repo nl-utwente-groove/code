@@ -164,22 +164,19 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @param cfg the configuration under which the conceptual model is constructed
      * @param grammar the grammar from which the models are extracted
      * @param namespace namespace for the conceptual model
-     * @param typeModel name of the type model to be extracted; may be {@code null}
-     * @param instanceModel name of the instance model to be extracted; may be {@code null}
+     * @param typeName name of the type model to be extracted; may be {@code null}
+     * @param hostName name of the instance model to be extracted; may be {@code null}
      */
     private Pair<Glossary,Design> constructModels(Config cfg, GrammarModel grammar,
-        String namespace, String typeModel, String instanceModel) throws PortException {
-        GrammarVisitor visitor = new GrammarVisitor(cfg, namespace);
-        visitor.setFixedType(typeModel);
-        visitor.setFixedInstance(instanceModel);
-
+        String namespace, String typeName, String hostName) throws PortException {
+        GrammarVisitor visitor = new GrammarVisitor(cfg, namespace, typeName, hostName);
         boolean success;
         try {
             success = visitor.doVisit(getParent(), grammar);
         } catch (ImportException e) {
             throw new PortException(e);
         }
-        return success ? Pair.newPair(visitor.getGlossary(), visitor.getInstanceModel()) : null;
+        return success ? Pair.newPair(visitor.getGlossary(), visitor.getDesign()) : null;
     }
 
     /**

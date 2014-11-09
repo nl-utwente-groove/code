@@ -10,6 +10,12 @@ import groove.io.conceptual.configuration.schema.StringsType;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsNode;
 import groove.io.conceptual.lang.GlossaryExportBuilder;
+import groove.io.conceptual.property.AbstractProperty;
+import groove.io.conceptual.property.ContainmentProperty;
+import groove.io.conceptual.property.DefaultValueProperty;
+import groove.io.conceptual.property.IdentityProperty;
+import groove.io.conceptual.property.KeysetProperty;
+import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.CustomDataType;
@@ -43,11 +49,12 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
     }
 
     @Override
-    protected void put(Concept c, AbsNode n) {
-        super.put(c, n);
-        if (n != null) {
+    protected boolean put(Concept c, AbsNode n) {
+        boolean result = super.put(c, n);
+        if (result && n != null) {
             getGrammarGraph().addNodes(n);
         }
+        return result;
     }
 
     private GrammarGraph getGrammarGraph() {
@@ -200,6 +207,42 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
         new AbsEdge(result, tupleMetaNode, "sub:");
 
         return result;
+    }
+
+    @Override
+    protected AbsNode addAbstractProp(AbstractProperty prop) {
+        // this kind of property does not concern the meta-graph
+        return null;
+    }
+
+    @Override
+    protected AbsNode addContainmentProp(ContainmentProperty prop) {
+        // this kind of property does not concern the meta-graph
+        return null;
+    }
+
+    @Override
+    protected AbsNode addIdentityProp(IdentityProperty prop) {
+        // this kind of property does not concern the meta-graph
+        return null;
+    }
+
+    @Override
+    protected AbsNode addKeysetProp(KeysetProperty prop) {
+        // this kind of property does not concern the meta-graph
+        return null;
+    }
+
+    @Override
+    protected AbsNode addOppositeProp(OppositeProperty prop) {
+        // this kind of property does not concern the meta-graph
+        return null;
+    }
+
+    @Override
+    protected AbsNode addDefaultValueProp(DefaultValueProperty prop) {
+        // this kind of property does not concern the meta-graph
+        return null;
     }
 
     private AbsNode getMetaNode(MetaType type) {

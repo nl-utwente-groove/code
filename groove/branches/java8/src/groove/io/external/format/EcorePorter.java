@@ -25,8 +25,8 @@ import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.ecore.DesignToEcore;
 import groove.io.conceptual.lang.ecore.EcoreExport;
-import groove.io.conceptual.lang.ecore.EcoreToInstance;
-import groove.io.conceptual.lang.ecore.EcoreToType;
+import groove.io.conceptual.lang.ecore.EcoreToDesign;
+import groove.io.conceptual.lang.ecore.EcoreToGlossary;
 import groove.io.conceptual.lang.ecore.GlossaryToEcore;
 import groove.io.external.ConceptualPorter;
 import groove.io.external.PortException;
@@ -46,8 +46,8 @@ public class EcorePorter extends ConceptualPorter {
     @Override
     protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
         throws ImportException {
-        EcoreToType ett = new EcoreToType(file.toString());
-        Glossary tm = ett.getGlossary();
+        EcoreToGlossary e2g = new EcoreToGlossary(file.toFile());
+        Glossary tm = e2g.getGlossary();
         return Pair.newPair(tm, null);
     }
 
@@ -61,12 +61,10 @@ public class EcorePorter extends ConceptualPorter {
         }
         File typeFile = getECoreChooser().getSelectedFile();
 
-        EcoreToType ett = new EcoreToType(typeFile.toString());
-        EcoreToInstance eti = new EcoreToInstance(ett, file.toString());
-
-        Glossary tm = ett.getGlossary();
-        Design im = eti.getDesign();
-        return Pair.newPair(tm, im);
+        EcoreToGlossary e2g = new EcoreToGlossary(typeFile);
+        Glossary glos = e2g.getGlossary();
+        Design design = new EcoreToDesign(e2g, file.toString()).build().getDesign();
+        return Pair.newPair(glos, design);
     }
 
     /** Returns the file chooser for the ECore meta-model. */

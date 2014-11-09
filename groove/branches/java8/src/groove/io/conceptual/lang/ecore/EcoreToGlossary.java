@@ -1,15 +1,15 @@
 package groove.io.conceptual.lang.ecore;
 
 import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.Glossary;
+import groove.io.conceptual.lang.GlossaryImporter;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InvalidTypeException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
-import groove.io.conceptual.lang.TypeImporter;
 import groove.io.conceptual.property.AbstractProperty;
 import groove.io.conceptual.property.ContainmentProperty;
 import groove.io.conceptual.property.DefaultValueProperty;
@@ -26,6 +26,7 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,23 +51,12 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 /** Class wrapping the functionality to convert an ECore model to a design type. */
-public class EcoreToType extends TypeImporter {
-    /** Resource containing ECore type model. */
-    private final Resource r;
-    /** Name of TypeModel, simply "ecore". */
-    private String m_typeName = "ecore";
-
-    /** Map to keep track of Java class names for custom data types, used when importing instance models.
-     * Strictly speaking this should be linked to a single TypeModel,
-     * but since only one ECore type model exists per instance of this class, this should be fine.
-     */
-    private final Map<String,Id> m_customDatatypeInstances = new HashMap<String,Id>();
-
+public class EcoreToGlossary extends GlossaryImporter {
     /**
      * Handler for Ecore type models to be converted to the conceptual model
      * @param typeModel URI for the Ecore model to be loaded
      */
-    public EcoreToType(String typeModel) throws ImportException {
+    public EcoreToGlossary(File typeModel) throws ImportException {
         // Create new ResourceSet and register an XMI model loader (for all filetypes)
         this.rs = new ResourceSetImpl();
         this.rs.getResourceFactoryRegistry()
@@ -74,15 +64,10 @@ public class EcoreToType extends TypeImporter {
             .put("*", new XMIResourceFactoryImpl());
 
         // Load the XMI model containing Ecore type model
-        try {
-            this.r = this.rs.createResource(URI.createURI(typeModel));
-            FileInputStream in = new FileInputStream(typeModel);
+        try (FileInputStream in = new FileInputStream(typeModel)) {
+            this.r = this.rs.createResource(URI.createURI(typeModel.getPath()));
             int timer = Timer.start("Load Ecore");
-            try {
-                this.r.load(in, null);
-            } finally {
-                in.close();
-            }
+            this.r.load(in, null);
             org.eclipse.emf.ecore.util.EcoreUtil.resolveAll(this.rs);
             Timer.stop(timer);
         } catch (FileNotFoundException e) {
@@ -90,8 +75,13 @@ public class EcoreToType extends TypeImporter {
         } catch (IOException e) {
             throw new ImportException(e);
         }
-        buildTypeModel();
+        buildGlossary();
     }
+
+    /** Resource containing ECore type model. */
+    private final Resource r;
+    /** Name of TypeModel, simply "ecore". */
+    private String m_typeName = "ecore";
 
     /**
      * Get the resource set associated with this type model (used for loading instance models)
@@ -103,7 +93,7 @@ public class EcoreToType extends TypeImporter {
 
     private final ResourceSet rs;
 
-    private void buildTypeModel() {
+    private void buildGlossary() {
         Glossary tm = new Glossary(this.m_typeName);
         Iterator<EObject> it = this.r.getAllContents();
         // It can happen that the same entry is visit multiple times when browsing the tree of dependent elements
@@ -204,6 +194,12 @@ public class EcoreToType extends TypeImporter {
 
         return cmEnum;
     }
+
+    /** Map to keep track of Java class names for custom data types, used when importing instance models.
+     * Strictly speaking this should be linked to a single TypeModel,
+     * but since only one ECore type model exists per instance of this class, this should be fine.
+     */
+    private final Map<String,Id> m_customDatatypeInstances = new HashMap<String,Id>();
 
     private void visitAttribute(Glossary mm, Class cmClass, EAttribute eAttribute) {
         Name attrName = Name.getName(eAttribute.getName());

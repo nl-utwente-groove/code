@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 /** Abstract class wrapping the functionality to create a design type from another format. */
-public abstract class TypeImporter implements Messenger {
+public abstract class GlossaryImporter implements Messenger {
     /**
      * Returns a collection of strings representing each loaded type model.
-     * Use {@link TypeImporter#getGlossary(String)} to retrieve the actual associated type
+     * Use {@link GlossaryImporter#getGlossary(String)} to retrieve the actual associated type
      * model.
      * @return A collection of strings representing each type model
      */

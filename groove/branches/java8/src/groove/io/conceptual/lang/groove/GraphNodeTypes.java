@@ -21,6 +21,7 @@ import groove.io.conceptual.type.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Record of type name associations with corresponding meta-types and glossary types. */
 public class GraphNodeTypes {
     /** Enumeration of (outer) types that may occur in a metamodel. */
     public enum ModelType {
@@ -44,12 +45,13 @@ public class GraphNodeTypes {
         TypeContainerSeq,
         /** Ordered (set-like) container. */
         TypeContainerOrd,
-        /** Class type. */
+        /** Tuple type. */
         TypeTuple,
         /** Artificial type with no values. */
         TypeNone
     }
 
+    /** Adds a mapping from a type name to a meta-type. */
     public void addModelType(String typeName, ModelType typeString) {
         if (this.m_modelTypes.containsKey(typeName)) {
             return;
@@ -57,43 +59,36 @@ public class GraphNodeTypes {
         this.m_modelTypes.put(typeName, typeString);
     }
 
+    /** Tests if a given type name has a known associated meta-type. */
     public boolean hasModelType(String typeString) {
         return this.m_modelTypes.containsKey(typeString);
     }
 
+    /** Returns the meta-type for a given type name. */
     public ModelType getModelType(String typeString) {
-        if (!this.m_modelTypes.containsKey(typeString)) {
-            return null;
-        }
-
         return this.m_modelTypes.get(typeString);
     }
 
     private final Map<String,ModelType> m_modelTypes = new HashMap<String,ModelType>();
 
+    /** Adds a mapping from a type name to a glossary type. */
     public void addType(String typeName, Type cmType) {
-        if (this.m_types.containsKey(typeName)) {
-            return;
-        }
-
         if (!this.m_modelTypes.containsKey(typeName)) {
             throw new IllegalArgumentException("Setting type without model type");
         }
-
-        this.m_types.put(typeName, cmType);
+        Type oldType = this.m_types.put(typeName, cmType);
+        assert oldType == null : "Double definition of " + typeName;
     }
 
+    /** Tests if a given type name has a known associated glossary type. */
     public boolean hasType(String typeString) {
         return this.m_types.containsKey(typeString);
     }
 
+    /** Returns the glossary type for a given type name. */
     public Type getType(String typeString) {
-        if (!this.m_types.containsKey(typeString)) {
-            return null;
-        }
-
         return this.m_types.get(typeString);
     }
 
-    private final Map<String,Type> m_types = new HashMap<String,Type>();
+    private final Map<String,Type> m_types = new HashMap<>();
 }

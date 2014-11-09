@@ -22,9 +22,9 @@ import groove.grammar.aspect.AspectLabel;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.model.RuleModel;
 import groove.graph.GraphRole;
+import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
-import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.TypeModel.Constraints;
@@ -53,46 +53,39 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class wrapping the functionality to fill a TypeModel with constraints
+ * Class wrapping the functionality to fill a {@link Glossary} with constraints
  * derived from a given set of rules.
  */
 public class GrooveToConstraint {
     private Collection<RuleModel> m_ruleModels;
     private Config m_cfg;
-    private Glossary m_typeModel;
+    private Glossary m_glossary;
     private GraphNodeTypes m_types;
 
+    /** Constructs an instance for the given parameters. */
     public GrooveToConstraint(Collection<RuleModel> ruleModels, GraphNodeTypes types, Config cfg,
-        Glossary typeModel) {
+        Glossary glossary) {
         this.m_ruleModels = ruleModels;
         this.m_types = types;
         this.m_cfg = cfg;
-        this.m_typeModel = typeModel;
+        this.m_glossary = glossary;
 
         parseRules();
     }
 
     private void parseRules() {
-        Constraints constraints = this.m_cfg.getXMLConfig().getTypeModel().getConstraints();
+        Constraints constraints = this.m_cfg.getTypeModel().getConstraints();
         for (RuleModel model : this.m_ruleModels) {
             if (!model.isEnabled() || model.hasErrors()) {
                 continue;
             }
             String name = model.getFullName();
             if (constraints.isCheckUniqueness() && name.contains("Unique")) {
-                if (!this.m_cfg.getXMLConfig()
-                    .getTypeModel()
-                    .getFields()
-                    .getContainers()
-                    .isUseTypeName()) {
+                if (!this.m_cfg.getTypeModel().getFields().getContainers().isUseTypeName()) {
                     parseUniqueRule(model);
                 }
             } else if (constraints.isCheckOrdering() && name.contains("Ordered")) {
-                if (!this.m_cfg.getXMLConfig()
-                    .getTypeModel()
-                    .getFields()
-                    .getContainers()
-                    .isUseTypeName()) {
+                if (!this.m_cfg.getTypeModel().getFields().getContainers().isUseTypeName()) {
                     parseOrderedRule(model);
                 }
             } else if (constraints.isCheckIdentifier() && name.contains("Identity")) {
@@ -108,7 +101,11 @@ public class GrooveToConstraint {
                 if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseOpposite()) {
                     parseOppositeRule(model);
                 }
-            } else if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isUseRule()
+            } else if (this.m_cfg.getXMLConfig()
+                .getTypeModel()
+                .getFields()
+                .getDefaults()
+                .isUseRule()
                 && name.contains("Default")) {
                 if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseDefaultValue()) {
                     parseDefaultRule(model);
@@ -186,7 +183,7 @@ public class GrooveToConstraint {
             if (fieldNames.size() > 0) {
                 IdentityProperty ip =
                     new IdentityProperty(idClass, fieldNames.toArray(new Name[fieldNames.size()]));
-                this.m_typeModel.addProperty(ip);
+                this.m_glossary.addProperty(ip);
             }
         }
     }
@@ -243,7 +240,7 @@ public class GrooveToConstraint {
             KeysetProperty kp =
                 new KeysetProperty(relClass, relField, c,
                     fieldNames.toArray(new Name[fieldNames.size()]));
-            this.m_typeModel.addProperty(kp);
+            this.m_glossary.addProperty(kp);
         }
     }
 
@@ -292,7 +289,7 @@ public class GrooveToConstraint {
         }
 
         OppositeProperty op = new OppositeProperty(class1, field1, class2, field2);
-        this.m_typeModel.addProperty(op);
+        this.m_glossary.addProperty(op);
     }
 
     // Determines subject of rule and creates DefaultValueProperty
@@ -329,7 +326,7 @@ public class GrooveToConstraint {
                         Value value = getNodeValue(targetNode);
 
                         DefaultValueProperty dp = new DefaultValueProperty(cmClass, field, value);
-                        this.m_typeModel.addProperty(dp);
+                        this.m_glossary.addProperty(dp);
 
                         break;
                     }

@@ -24,17 +24,28 @@ import java.util.function.Function;
 
 /** Types of the nodes in the meta-graph. */
 enum MetaType {
+    /** Class type. */
     Class(s -> s.getMetaClass()),
+    /** Nullable class type. */
     ClassNullable(s -> s.getMetaClassNullable()),
+    /** Enumeration type. */
     Enum(s -> s.getMetaEnum()),
+    /** Type of intermediate nodes. */
     Intermediate(s -> s.getMetaIntermediate()),
     Type(s -> s.getMetaType()),
+    /** Set container. */
     ContainerSet(s -> s.getMetaContainerSet()),
+    /** Multiset container. */
     ContainerBag(s -> s.getMetaContainerBag()),
+    /** Ordered (list-like) container. */
     ContainerSeq(s -> s.getMetaContainerSeq()),
+    /** Ordered (set-like) container. */
     ContainerOrd(s -> s.getMetaContainerOrd()),
+    /** Primitive data type. */
     DataType(s -> s.getMetaDataType()),
+    /** Tuple type. */
     Tuple(s -> s.getMetaTuple()),
+    /** Artificial type with no values. */
     None(null), ;
 
     private MetaType(Function<StringsType,String> name) {

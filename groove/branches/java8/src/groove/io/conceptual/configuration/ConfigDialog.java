@@ -345,12 +345,9 @@ public class ConfigDialog extends JDialog {
                 PrintStream out = System.out;
                 System.setOut(tmpOut);
                 Document xmlDoc = DOMHelper.createDocument(xmlString);
+                DOMBuilder instance = DOMBuilder.getInstance();
                 com.jaxfront.core.dom.Document doc =
-                    DOMBuilder.getInstance().build(null,
-                        getSchemaURL(),
-                        xmlDoc,
-                        null,
-                        "configuration");
+                    instance.build(null, getSchemaURL(), xmlDoc, null, "configuration");
                 setDocument(doc);
                 System.setOut(out);
             } catch (SAXException | IOException | SchemaCreationException

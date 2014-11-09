@@ -11,16 +11,17 @@ import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.graph.EdgeRole;
-import groove.io.conceptual.Field;
-import groove.io.conceptual.Id;
 import groove.io.conceptual.Design;
+import groove.io.conceptual.Field;
+import groove.io.conceptual.Glossary;
+import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.OrderType;
-import groove.io.conceptual.lang.InstanceImporter;
+import groove.io.conceptual.lang.DesignImporter;
+import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
@@ -57,65 +58,55 @@ import java.util.TreeMap;
 /**
  * Converts a Groove {@link HostGraph} to a conceptual model instance.
  */
-public class GrooveToInstance extends InstanceImporter {
-    private GraphNodeTypes m_types;
-    private Config m_cfg;
-
-    private Glossary m_typeModel;
-
-    private Map<HostNode,Object> m_objectNodes = new HashMap<HostNode,Object>();
-    private Map<HostNode,Value> m_nodeValues = new HashMap<HostNode,Value>();
-    private HostEdgeStore<HostNode> m_nodeEdges = new HostEdgeStore<HostNode>();
-
-    private int m_nodeCounter = 1;
-
+public class GrooveToDesign extends DesignImporter {
     /**
      * Creates instance models from a collection of host models
      * @param hostGraph HostGraph to import
      * @param types As filled by TypeGraphVisitor (when used without error)
-     * @param typeModel TypeModel for the generated InstanceModel
+     * @param glossary TypeModel for the generated InstanceModel
      */
-    public GrooveToInstance(HostGraph hostGraph, GraphNodeTypes types,
-            Config cfg, Glossary typeModel) {
+    public GrooveToDesign(HostGraph hostGraph, GraphNodeTypes types, Config cfg, Glossary glossary) {
         this.m_types = types;
         this.m_cfg = cfg;
 
-        this.m_typeModel = typeModel;
-
-        int timer = Timer.start("GROOVE to IM");
-        buildInstanceModel(hostGraph);
-        Timer.stop(timer);
+        this.m_glossary = glossary;
+        this.host = hostGraph;
     }
 
-    private void buildInstanceModel(HostGraph hostGraph) {
-        Design instanceModel =
-            new Design(this.m_typeModel, hostGraph.getName());
-        this.m_cfg.setGlossary(this.m_typeModel);
+    private final HostGraph host;
+    private final GraphNodeTypes m_types;
+    private final Config m_cfg;
+    private final Glossary m_glossary;
+
+    @Override
+    public GrooveToDesign build() throws ImportException {
+        int timer = Timer.start("GROOVE to IM");
+        Design instanceModel = new Design(this.m_glossary, this.host.getName());
+        this.m_cfg.setGlossary(this.m_glossary);
 
         // Map nodes to edges
-        for (HostNode n : hostGraph.nodeSet()) {
+        for (HostNode n : this.host.nodeSet()) {
             this.m_nodeEdges.addKey(n);
         }
-        for (HostEdge e : hostGraph.edgeSet()) {
+        for (HostEdge e : this.host.edgeSet()) {
             this.m_nodeEdges.get(e.source()).add(e);
         }
 
         // Set of Nodes that need to be walked through
-        HostNodeSet unvisitedNodes = new HostNodeSet(hostGraph.nodeSet());
+        HostNodeSet unvisitedNodes = new HostNodeSet(this.host.nodeSet());
 
         // Some trickery is required to obtain the ID of a node
         // Find original aspect node and obtain ID from that
-        HostToAspectMap map = GraphConverter.toAspectMap(hostGraph);
+        HostToAspectMap map = GraphConverter.toAspectMap(this.host);
         // Find all class instances
-        for (HostNode node : hostGraph.nodeSet()) {
+        for (HostNode node : this.host.nodeSet()) {
             AspectNode aspectNode = map.getNode(node);
 
             Type t = getNodeType(node);
             if (t instanceof Class) {
                 unvisitedNodes.remove(node);
                 //Object nodeObj = new Object((Class) t, Name.getName(getNodeName(node)));
-                Object nodeObj =
-                    new Object((Class) t, Name.getName(getNodeName(aspectNode)));
+                Object nodeObj = new Object((Class) t, Name.getName(getNodeName(aspectNode)));
                 this.m_objectNodes.put(node, nodeObj);
                 instanceModel.addObject(nodeObj);
             } else {
@@ -132,29 +123,36 @@ public class GrooveToInstance extends InstanceImporter {
                 if (field.getType() instanceof Container) {
                     if (!this.m_cfg.useIntermediate(field)) {
                         fieldValue =
-                            getFieldContainerValue(entry.getKey(), fieldName,
+                            getFieldContainerValue(entry.getKey(),
+                                fieldName,
                                 (Container) field.getType());
                     } else {
-                        fieldValue =
-                            getContainerValue(entry.getKey(), fieldName);
+                        fieldValue = getContainerValue(entry.getKey(), fieldName);
                     }
                 } else {
-                    fieldValue =
-                        getNodeValue(getEdgeNode(entry.getKey(), fieldName));
+                    fieldValue = getNodeValue(getEdgeNode(entry.getKey(), fieldName));
 
                 }
                 if (fieldValue != null) {
                     entry.getValue().setFieldValue(field, fieldValue);
                 } else {
-                    addMessage(new Message("Cannot obtain value for field "
-                        + field.getName(), MessageType.WARNING));
+                    addMessage(new Message("Cannot obtain value for field " + field.getName(),
+                        MessageType.WARNING));
                 }
             }
         }
 
         // And we're done
-        addInstanceModel(instanceModel);
+        addDesign(instanceModel);
+        Timer.stop(timer);
+        return this;
     }
+
+    private final Map<HostNode,Object> m_objectNodes = new HashMap<HostNode,Object>();
+    private final Map<HostNode,Value> m_nodeValues = new HashMap<HostNode,Value>();
+    private final HostEdgeStore<HostNode> m_nodeEdges = new HostEdgeStore<HostNode>();
+
+    private int m_nodeCounter = 1;
 
     private Type getNodeType(HostNode node) {
         String label = node.getType().label().text();
@@ -175,7 +173,12 @@ public class GrooveToInstance extends InstanceImporter {
     // Integer.MIN_VALUE on error
     private int getNodeIndex(HostNode node) {
         OrderType orderType =
-            this.m_cfg.getXMLConfig().getTypeModel().getFields().getContainers().getOrdering().getType();
+            this.m_cfg.getXMLConfig()
+                .getTypeModel()
+                .getFields()
+                .getContainers()
+                .getOrdering()
+                .getType();
         if (orderType == OrderType.INDEX) {
             String indexName = this.m_cfg.getStrings().getIndexEdge();
             HostNode indexNode = getEdgeNode(node, indexName);
@@ -230,9 +233,7 @@ public class GrooveToInstance extends InstanceImporter {
                 HostEdgeSet edges = this.m_nodeEdges.get(node);
                 for (HostEdge enumEdge : edges) {
                     if (enumEdge.getType().getRole() == EdgeRole.FLAG) {
-                        EnumValue ev =
-                            new EnumValue(e,
-                                Name.getName(enumEdge.label().text()));
+                        EnumValue ev = new EnumValue(e, Name.getName(enumEdge.label().text()));
                         resultValue = ev;
                         break;
                     }
@@ -244,8 +245,7 @@ public class GrooveToInstance extends InstanceImporter {
             CustomDataType cdt = (CustomDataType) nodeType;
             String dataValueName = this.m_cfg.getStrings().getDataValue();
             HostNode valueNode = getEdgeNode(node, dataValueName);
-            String valueString =
-                (((ValueNode) valueNode).getValue().toString());
+            String valueString = (((ValueNode) valueNode).getValue().toString());
             CustomDataValue dv = new CustomDataValue(cdt, valueString);
             resultValue = dv;
         }
@@ -254,14 +254,12 @@ public class GrooveToInstance extends InstanceImporter {
             Container ct = (Container) nodeType;
             ContainerValue cv = new ContainerValue(ct);
             String valueEdge = this.m_cfg.getStrings().getValueEdge();
-            SortedMap<Integer,Value> containerValues =
-                new TreeMap<Integer,Value>();
+            SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
             for (HostEdge e : this.m_nodeEdges.get(node)) {
                 if (e.label().text().equals(valueEdge)) {
                     Value subVal = getNodeValue(e.target());
                     int index = 0;
-                    if (ct.getContainerType() == Kind.ORD
-                        || ct.getContainerType() == Kind.SEQ) {
+                    if (ct.getContainerType() == Kind.ORD || ct.getContainerType() == Kind.SEQ) {
                         index = getNodeIndex(e.target());
                     }
                     containerValues.put(index, subVal);
@@ -320,8 +318,8 @@ public class GrooveToInstance extends InstanceImporter {
     }
 
     // For container field w/o intermediate
-    private ContainerValue getFieldContainerValue(HostNode fieldNode,
-            String fieldName, Container containerType) {
+    private ContainerValue getFieldContainerValue(HostNode fieldNode, String fieldName,
+        Container containerType) {
         Set<HostEdge> nodeEdges = new HashSet<HostEdge>();
         for (HostEdge e : this.m_nodeEdges.get(fieldNode)) {
             if (e.label().text().equals(fieldName)) {
@@ -384,8 +382,8 @@ public class GrooveToInstance extends InstanceImporter {
             Type checkType = getNodeType(e.target());
             if (!nextType.equals(checkType)) {
                 // Inconsistent types between container values
-                addMessage(new Message("Invalid container value, type "
-                    + nextType + " does not correspond with type " + checkType));
+                addMessage(new Message("Invalid container value, type " + nextType
+                    + " does not correspond with type " + checkType));
                 return null;
             } else {
                 Value subVal = getContainerValue(e.target(), valueName);

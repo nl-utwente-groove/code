@@ -37,14 +37,15 @@ import groove.util.Exceptions;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Optional;
+import java.util.function.Function;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -71,74 +72,56 @@ import de.gupro.gxl.gxl_1_0.TypedElementType;
 
 /** Utilities for handling GXL files. */
 public class GxlUtil {
-    public static class GraphWrapper {
-        private GraphType m_graph;
-        private String m_type;
-
-        private Set<NodeWrapper> m_nodes = new HashSet<NodeWrapper>();
-
-        public GraphWrapper(GraphType graph) {
-            this.m_graph = graph;
-            this.m_type = GxlUtil.getElemType(graph);
-            assert (this.m_type != null);
-        }
-
-        protected void addNode(NodeWrapper node) {
-            this.m_nodes.add(node);
-        }
-
-        public GraphType getGraph() {
-            return this.m_graph;
-        }
-
-        public String getType() {
-            return this.m_type;
-        }
-
-        public Set<NodeWrapper> getNodes() {
-            return this.m_nodes;
-        }
-    }
-
+    /** Wrapper of a GXL node. */
     public static class NodeWrapper {
-        private NodeType m_node;
-        private String m_type;
-
-        private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
-        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
-
+        /** Constructs a wrapper for a given node. */
         public NodeWrapper(NodeType node) {
             this.m_node = node;
             this.m_type = GxlUtil.getElemType(node);
             assert (this.m_type != null);
         }
 
+        /** Returns the wrapped GXL node. */
+        public NodeType getNode() {
+            return this.m_node;
+        }
+
+        private final NodeType m_node;
+
+        /** Returns a string description of the type of this node. */
+        public String getType() {
+            return this.m_type;
+        }
+
+        private final String m_type;
+
+        /** Adds an outgoing edge to this node. */
         protected void addEdge(EdgeWrapper edge) {
             assert (edge.getSource() == this);
             this.m_edges.add(edge);
         }
 
+        /** Returns the set of outgoing edges of this node. */
+        public List<EdgeWrapper> getEdges() {
+            return this.m_edges;
+        }
+
+        private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
+
+        /** Adds an incoming edge to this node. */
         protected void addIncomingEdge(EdgeWrapper edge) {
             assert (edge.getTarget() == this);
             this.m_incomingEdges.add(edge);
         }
 
-        public NodeType getNode() {
-            return this.m_node;
-        }
-
-        public List<EdgeWrapper> getEdges() {
-            return this.m_edges;
-        }
-
+        /** Returns the set of incoming edges of this node. */
         public List<EdgeWrapper> getIncomingEdges() {
             return this.m_incomingEdges;
         }
 
-        public String getType() {
-            return this.m_type;
-        }
+        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
 
+        /** Sorts the outgoing edges of this node according to label and multiplicity. */
         public void sortEdges() {
             Collections.sort(this.m_edges, new Comparator<EdgeWrapper>() {
                 @Override
@@ -163,89 +146,106 @@ public class GxlUtil {
         //sortIncomingEdges possible to using getFromorder
     }
 
+    /** Wrapper of a GXL edge. */
     public static class EdgeWrapper {
-        private EdgeType m_edge;
-        private String m_type;
-
-        private NodeWrapper m_nodeFrom;
-        private NodeWrapper m_nodeTo;
-
-        private EdgeWrapper m_edgeFrom;
-        private EdgeWrapper m_edgeTo;
-
-        private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
-        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
-
-        // True if connecting nodes, false if connecting edges
-        private boolean m_nodeEdge;
-
+        /** Constructs a wrapper for a given GXL edge. */
         public EdgeWrapper(EdgeType edge) {
             this.m_edge = edge;
             this.m_type = GxlUtil.getElemType(edge);
             assert (this.m_type != null);
         }
 
+        /** Returns the wrapped GXL edge. */
         public EdgeType getEdge() {
             return this.m_edge;
         }
 
+        private final EdgeType m_edge;
+
+        /** Returns a string representation of the edge type. */
+        public String getType() {
+            return this.m_type;
+        }
+
+        private final String m_type;
+
+        /** Sets the source and target nodes for this edge. */
         public void setWrapper(NodeWrapper nodeFrom, NodeWrapper nodeTo) {
             this.m_nodeFrom = nodeFrom;
             this.m_nodeTo = nodeTo;
             this.m_nodeEdge = true;
         }
 
+        /** Returns the source node of this edge, if any. */
+        public NodeWrapper getSource() {
+            return this.m_nodeFrom;
+        }
+
+        /** Returns the target node of this edge, if any. */
+        public NodeWrapper getTarget() {
+            return this.m_nodeTo;
+        }
+
+        private NodeWrapper m_nodeFrom;
+        private NodeWrapper m_nodeTo;
+
+        /** Sets source and target edges for this edge. */
         public void setWrapper(EdgeWrapper edgeFrom, EdgeWrapper edgeTo) {
             this.m_edgeFrom = edgeFrom;
             this.m_edgeTo = edgeTo;
             this.m_nodeEdge = false;
         }
 
-        public NodeWrapper getSource() {
-            return this.m_nodeFrom;
-        }
-
-        public NodeWrapper getTarget() {
-            return this.m_nodeTo;
-        }
-
+        /** Returns the source edge of this edge, if any. */
         public EdgeWrapper getSourceEdge() {
             return this.m_edgeFrom;
         }
 
+        /** Returns the target edge of this edge, if any. */
         public EdgeWrapper getTargetEdge() {
             return this.m_edgeTo;
         }
 
-        public List<EdgeWrapper> getEdges() {
-            return this.m_edges;
-        }
+        private EdgeWrapper m_edgeFrom;
+        private EdgeWrapper m_edgeTo;
 
-        public List<EdgeWrapper> getIncomingEdges() {
-            return this.m_incomingEdges;
-        }
-
+        /** Adds an outgoing edge to this edge. */
         protected void addEdge(EdgeWrapper edge) {
             assert (edge.getSourceEdge() == this);
             this.m_edges.add(edge);
         }
 
+        /** Returns the list of outgoing edges of this edge. */
+        public List<EdgeWrapper> getEdges() {
+            return this.m_edges;
+        }
+
+        private final List<EdgeWrapper> m_edges = new ArrayList<>();
+
+        /** Returns the list of incoming edges of this edge. */
+        public List<EdgeWrapper> getIncomingEdges() {
+            return this.m_incomingEdges;
+        }
+
+        private final List<EdgeWrapper> m_incomingEdges = new ArrayList<>();
+
+        /** Adds an incoming edge to this edge. */
         protected void addIncomingEdge(EdgeWrapper edge) {
             assert (edge.getTargetEdge() == this);
             this.m_incomingEdges.add(edge);
         }
 
-        public String getType() {
-            return this.m_type;
-        }
-
+        /** Indicates if this edge connects nodes; if false, it connects edges. */
         public boolean connectsNodes() {
             return this.m_nodeEdge;
         }
+
+        /** True if connecting nodes, false if connecting edges. */
+        private boolean m_nodeEdge;
     }
 
     /** URI of the GXL schema. */
-    public static String g_gxlTypeGraphURI = "http://www.gupro.de/GXL/gxl-1.0.gxl";
+    public static final String g_gxlTypeGraphURI = "http://www.gupro.de/GXL/gxl-1.0.gxl";
 
     /** Marshaller for the GXL documents. */
     public static final Marshaller g_marshaller;
@@ -261,8 +261,10 @@ public class GxlUtil {
             throw new RuntimeException(e);
         }
     }
+    /** Globally fixed GXL factory. */
     public static final ObjectFactory g_objectFactory = new ObjectFactory();
 
+    /** Returns a type description for a given GXL element. */
     public static String getElemType(TypedElementType elem) {
         String type = null;
         Map<QName,String> attrMap = elem.getType().getOtherAttributes();
@@ -293,17 +295,18 @@ public class GxlUtil {
         return type;
     }
 
+    /** Sets a type value for a GXL element type.*/
     public static void setElemType(TypedElementType elem, String type) {
         TypeType typeType = new TypeType();
         Map<QName,String> attrMap = typeType.getOtherAttributes();
         attrMap.put(new QName("http://www.w3.org/1999/xlink", "href", "xlink"), type);
-
         elem.setType(typeType);
     }
 
+    /** Extracts a mapping from GXL nodes to node wrappers from a GXL graph. */
     public static Map<NodeType,NodeWrapper> wrapGraph(GraphType graph) {
-        Map<NodeType,NodeWrapper> nodes = new HashMap<NodeType,NodeWrapper>();
-        Map<EdgeType,EdgeWrapper> edges = new HashMap<EdgeType,EdgeWrapper>();
+        Map<NodeType,NodeWrapper> nodes = new HashMap<>();
+        Map<EdgeType,EdgeWrapper> edges = new HashMap<>();
 
         for (GraphElementType elem : graph.getNodeOrEdgeOrRel()) {
             if (elem instanceof NodeType) {
@@ -316,244 +319,188 @@ public class GxlUtil {
     }
 
     private static NodeWrapper getWrapper(Map<NodeType,NodeWrapper> nodes, NodeType node) {
-        if (nodes.containsKey(node)) {
-            return nodes.get(node);
+        NodeWrapper result = nodes.get(node);
+        if (result == null) {
+            result = new NodeWrapper(node);
+            nodes.put(node, result);
         }
-        NodeWrapper nw = new NodeWrapper(node);
-        nodes.put(node, nw);
-
-        return nw;
+        return result;
     }
 
     private static EdgeWrapper getWrapper(Map<NodeType,NodeWrapper> nodes,
         Map<EdgeType,EdgeWrapper> edges, EdgeType edge) {
-        if (edges.containsKey(edge)) {
-            return edges.get(edge);
+        EdgeWrapper result = edges.get(edge);
+        if (result == null) {
+            result = new EdgeWrapper(edge);
+            edges.put(edge, result);
+
+            if (edge.getFrom() instanceof NodeType) {
+                NodeType source = (NodeType) edge.getFrom();
+                NodeType target = (NodeType) edge.getTo();
+
+                NodeWrapper sourceWrapper = getWrapper(nodes, source);
+                NodeWrapper targetWrapper = getWrapper(nodes, target);
+
+                result.setWrapper(sourceWrapper, targetWrapper);
+                sourceWrapper.addEdge(result);
+                targetWrapper.addIncomingEdge(result);
+            } else if (edge.getFrom() instanceof EdgeType) {
+                EdgeType source = (EdgeType) edge.getFrom();
+                EdgeType target = (EdgeType) edge.getTo();
+
+                EdgeWrapper sourceWrapper = getWrapper(nodes, edges, source);
+                EdgeWrapper targetWrapper = getWrapper(nodes, edges, target);
+
+                result.setWrapper(sourceWrapper, targetWrapper);
+                sourceWrapper.addEdge(result);
+                targetWrapper.addIncomingEdge(result);
+            }
+            // else ignore edge, cannot handle it
         }
-        EdgeWrapper ew = new EdgeWrapper(edge);
-        edges.put(edge, ew);
-
-        if (edge.getFrom() instanceof NodeType) {
-            NodeType source = (NodeType) edge.getFrom();
-            NodeType target = (NodeType) edge.getTo();
-
-            NodeWrapper sourceWrapper = getWrapper(nodes, source);
-            NodeWrapper targetWrapper = getWrapper(nodes, target);
-
-            ew.setWrapper(sourceWrapper, targetWrapper);
-            sourceWrapper.addEdge(ew);
-            targetWrapper.addIncomingEdge(ew);
-        } else if (edge.getFrom() instanceof EdgeType) {
-            EdgeType source = (EdgeType) edge.getFrom();
-            EdgeType target = (EdgeType) edge.getTo();
-
-            EdgeWrapper sourceWrapper = getWrapper(nodes, edges, source);
-            EdgeWrapper targetWrapper = getWrapper(nodes, edges, target);
-
-            ew.setWrapper(sourceWrapper, targetWrapper);
-            sourceWrapper.addEdge(ew);
-            targetWrapper.addIncomingEdge(ew);
-        }
-        // else ignore edge, cannot handle it
-
-        return ew;
+        return result;
     }
 
+    /** Attribute type enum reflecting the GXL attribute types. */
     public enum AttrTypeEnum {
-        STRING,
-        BOOL,
-        INT,
-        FLOAT,
-        LOCATOR,
-        ENUM,
-        BAG,
-        SET,
-        SEQ,
-        TUP,
-        AUTO //automatically try to determine the correct type when applicable
+        /** String type. */
+        STRING(AttrType::getString, String.class),
+        /** Boolean type. */
+        BOOL(AttrType::isBool, Boolean.class),
+        /** Integer type. */
+        INT(AttrType::getInt, BigInteger.class),
+        /** Floating number type. */
+        FLOAT(AttrType::getFloat, Float.class),
+        /** Location type. */
+        LOCATOR(AttrType::getLocator, LocatorType.class),
+        /** Enumeration type. */
+        ENUM(AttrType::getEnum, null),
+        /** Multiset type. */
+        BAG(AttrType::getBag, BagType.class),
+        /** Set type. */
+        SET(AttrType::getSet, SetType.class),
+        /** Sequence type. */
+        SEQ(AttrType::getSeq, SeqType.class),
+        /** Tuple type. */
+        TUP(AttrType::getTup, TupType.class),
+        /** Automatically try to determine the correct type. */
+        AUTO(null, null), ;
+
+        AttrTypeEnum(Function<AttrType,Object> f, Class<?> type) {
+            this.f = f;
+            this.type = type;
+        }
+
+        /** Tests if a given GXL attribute is of this type. */
+        boolean isTypeOf(AttrType attr) {
+            return this.f != null && this.f.apply(attr) != null;
+        }
+
+        /** Retrieves the value of a given GXL attribute, if it is of this type. */
+        Object getValue(AttrType attr) {
+            return this.f == null ? null : this.f.apply(attr);
+        }
+
+        private final Function<AttrType,Object> f;
+
+        /** Tests if a given object value is of this type. */
+        boolean isTypeOf(Object o) {
+            return this.type != null && this.type.isInstance(o);
+        }
+
+        private final Class<?> type;
     }
 
+    /** Retrieves an attribute value from a given GXL element. */
     public static Object getAttribute(TypedElementType elem, String name, AttrTypeEnum type) {
         List<AttrType> attrs = elem.getAttr();
         Object value = null;
-        for (AttrType attr : attrs) {
-            if (name.equals(attr.getName())) {
-                if (type == AttrTypeEnum.AUTO) {
-                    if (attr.getString() != null) {
-                        type = AttrTypeEnum.STRING;
-                    } else if (attr.isBool() != null) {
-                        type = AttrTypeEnum.BOOL;
-                    } else if (attr.getInt() != null) {
-                        type = AttrTypeEnum.INT;
-                    } else if (attr.getFloat() != null) {
-                        type = AttrTypeEnum.FLOAT;
-                    } else if (attr.getLocator() != null) {
-                        type = AttrTypeEnum.LOCATOR;
-                    } else if (attr.getEnum() != null) {
-                        type = AttrTypeEnum.ENUM;
-                    } else if (attr.getBag() != null) {
-                        type = AttrTypeEnum.BAG;
-                    } else if (attr.getSet() != null) {
-                        type = AttrTypeEnum.SET;
-                    } else if (attr.getSeq() != null) {
-                        type = AttrTypeEnum.SEQ;
-                    } else if (attr.getTup() != null) {
-                        type = AttrTypeEnum.TUP;
-                    }
-                }
-
-                switch (type) {
-                case STRING:
-                    value = attr.getString();
-                    return value;
-                case BOOL:
-                    value = attr.isBool();
-                    return value;
-                case INT:
-                    value = attr.getInt();
-                    return value;
-                case FLOAT:
-                    value = attr.getFloat();
-                    return value;
-                case LOCATOR:
-                    value = attr.getLocator();
-                    return value;
-                case ENUM:
-                    value = attr.getEnum();
-                    return value;
-                case BAG:
-                    value = attr.getBag();
-                    return value;
-                case SET:
-                    value = attr.getSet();
-                    return value;
-                case SEQ:
-                    value = attr.getSeq();
-                    return value;
-                case TUP:
-                    value = attr.getTup();
-                    return value;
-                }
+        Optional<AttrType> attr = attrs.stream().filter(a -> name.equals(a.getName())).findAny();
+        if (attr.isPresent()) {
+            if (type == AttrTypeEnum.AUTO) {
+                type =
+                    Arrays.stream(AttrTypeEnum.values())
+                        .filter(t -> t.isTypeOf(attr.get()))
+                        .findAny()
+                        .get();
             }
+            value = type.getValue(attr.get());
         }
-
-        return null;
+        return value;
     }
 
+    /** Sets an attribute value for a given GXL element. */
     public static void setAttribute(TypedElementType elem, String name, Object value,
         AttrTypeEnum type) {
         List<AttrType> attrs = elem.getAttr();
-        AttrType attr = null;
-        // If attr already exists, use that instead
-        for (AttrType curAttr : attrs) {
-            if (curAttr.getName().equals(name)) {
-                attr = curAttr;
-                break;
-            }
-        }
-        if (attr == null) {
-            attr = new AttrType();
-            attrs.add(attr);
-        }
-
-        // Note that enum is missing because it cannot be distinguished from a normal string
+        // find the attribute with the right name, if any
+        Optional<AttrType> optAttr = attrs.stream().filter(a -> a.getName().equals(name)).findAny();
+        // construct a new attribute if there was none
+        AttrType attr = optAttr.orElseGet(() -> {
+            AttrType newAttr = new AttrType();
+            newAttr.setName(name);
+            attrs.add(newAttr);
+            return newAttr;
+        });
         if (type == AttrTypeEnum.AUTO) {
-            if (value instanceof String) {
-                type = AttrTypeEnum.STRING;
-            } else if (value instanceof Boolean) {
-                type = AttrTypeEnum.BOOL;
-            } else if (value instanceof BigInteger) {
-                type = AttrTypeEnum.INT;
-            } else if (value instanceof Float) {
-                type = AttrTypeEnum.FLOAT;
-            } else if (value instanceof LocatorType) {
-                type = AttrTypeEnum.LOCATOR;
-            } else if (value instanceof BagType) {
-                type = AttrTypeEnum.BAG;
-            } else if (value instanceof SetType) {
-                type = AttrTypeEnum.SET;
-            } else if (value instanceof SeqType) {
-                type = AttrTypeEnum.SEQ;
-            } else if (value instanceof TupType) {
-                type = AttrTypeEnum.TUP;
-            }
+            // Note that enum cannot be detected because it cannot be distinguished from a normal string
+            type =
+                Arrays.stream(AttrTypeEnum.values()).filter(a -> a.isTypeOf(value)).findAny().get();
         }
-
-        attr.setName(name);
         switch (type) {
         case STRING:
             attr.setString((String) value);
-            return;
+            break;
         case BOOL:
             attr.setBool((Boolean) value);
-            return;
+            break;
         case INT:
             attr.setInt((BigInteger) value);
-            return;
+            break;
         case FLOAT:
             attr.setFloat((Float) value);
-            return;
+            break;
         case LOCATOR:
             attr.setLocator((LocatorType) value);
-            return;
+            break;
         case ENUM:
             attr.setEnum((String) value);
-            return;
+            break;
         case BAG:
             attr.setBag((BagType) value);
-            return;
+            break;
         case SET:
             attr.setSet((SetType) value);
-            return;
+            break;
         case SEQ:
             attr.setSeq((SeqType) value);
-            return;
+            break;
         case TUP:
             attr.setTup((TupType) value);
-            return;
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
-
-        return;
     }
 
-    public static Object getAttrObject(AttrType attr) {
-        if (attr.isBool() != null) {
-            return attr.isBool();
-        } else if (attr.getInt() != null) {
-            return attr.getInt();
-        } else if (attr.getFloat() != null) {
-            return attr.getFloat();
-        } else if (attr.getString() != null) {
-            return attr.getString();
-        } else if (attr.getLocator() != null) {
-            return attr.getLocator();
-        } else if (attr.getSet() != null) {
-            return attr.getSet();
-        } else if (attr.getBag() != null) {
-            return attr.getBag();
-        } else if (attr.getSeq() != null) {
-            return attr.getSeq();
-        } else if (attr.getTup() != null) {
-            return attr.getTup();
-        } else if (attr.getEnum() != null) {
-            return attr.getEnum();
-        }
-
-        return null;
-    }
-
+    /** Returns the design value of a GXL attribute. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static Value getTypedAttrValue(AttrType attr, Type type) {
-        Object o = getAttrObject(attr);
-        if (o == null) {
-            return null;
-        }
-        // Wrap in JAXBElement for getTypedValue
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        JAXBElement<?> elem = new JAXBElement(new QName("attr"), o.getClass(), o);
-        return getTypedValue(elem, type);
+        return getAttrObject(attr).map(o -> {
+            // Wrap in JAXBElement for getTypedValue
+            JAXBElement<?> elem = new JAXBElement(new QName("attr"), o.getClass(), o);
+            return getTypedValue(elem, type);
+        }).orElse(null);
     }
 
-    public static Value getTypedValue(JAXBElement<?> elem, Type type) {
+    /** Returns the object value of a GXL attribute. */
+    public static Optional<Object> getAttrObject(AttrType attr) {
+        return Arrays.stream(AttrTypeEnum.values())
+            .filter(t -> t.isTypeOf(attr))
+            .map(t -> t.getValue(attr))
+            .findAny();
+    }
+
+    private static Value getTypedValue(JAXBElement<?> elem, Type type) {
         Object o = elem.getValue();
         if (type instanceof DataType) {
             if (o instanceof JAXBElement<?>) {
@@ -633,6 +580,7 @@ public class GxlUtil {
         return null;
     }
 
+    /** Converts a design value into a GXL value. */
     public static JAXBElement<?> valueToGxl(Value val) {
         if (val instanceof BoolValue) {
             return g_objectFactory.createBool(((BoolValue) val).getValue());

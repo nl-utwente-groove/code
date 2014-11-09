@@ -41,9 +41,12 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 public class GrammarDialog extends JDialog {
+    private Frame m_parent;
     private JComboBox<String> m_typeList;
     private JComboBox<String> m_metaList;
     private JComboBox<String> m_instanceList;
+
+    private boolean m_dialogResult;
 
     public GrammarDialog(Frame parent) {
         super(parent, "Select graphs to export", true);
@@ -70,8 +73,6 @@ public class GrammarDialog extends JDialog {
         buildGUI();
     }
 
-    private final Frame m_parent;
-
     public boolean doDialog() {
         this.m_dialogResult = false;
         setLocationRelativeTo(this.m_parent);
@@ -79,12 +80,10 @@ public class GrammarDialog extends JDialog {
         return this.m_dialogResult;
     }
 
-    private boolean m_dialogResult;
-
     private void buildGUI() {
-        this.m_typeList = new JComboBox<String>();
-        this.m_metaList = new JComboBox<String>();
-        this.m_instanceList = new JComboBox<String>();
+        this.m_typeList = new JComboBox();
+        this.m_metaList = new JComboBox();
+        this.m_instanceList = new JComboBox();
 
         JLabel typeLabel = new JLabel("Select type graph:", JLabel.TRAILING);
         typeLabel.setLabelFor(this.m_typeList);

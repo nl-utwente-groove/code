@@ -69,7 +69,7 @@ public abstract class GlossaryExportBuilder<X,E> extends ExportBuilder<X,E> impl
             add(cmData);
         }
         for (Property prop : getGlossary().getProperties()) {
-            add(prop, null);
+            add(prop);
         }
     }
 }

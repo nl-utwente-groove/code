@@ -26,43 +26,30 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+/** Class combining the construction of a glossary and deisgn from a given grammar. */
 public class GrammarVisitor {
-    private final GraphNodeTypes m_types;
-    private final Config m_cfg;
-    private final String m_namespace;
-    private final boolean useMeta;
-
     private Map<String,groove.grammar.model.TypeModel> m_typeMap;
     private Map<String,HostModel> m_hostMap;
     private Map<String,RuleModel> m_ruleMap;
     private Map<String,groove.grammar.model.TypeModel> m_metaMap;
 
-    public GrammarVisitor(Config cfg, String namespace) {
+    /** Constructs an instance from a given configuration and name space. */
+    public GrammarVisitor(Config cfg, String namespace, String typeName, String hostName) {
         this.m_cfg = cfg;
         this.m_namespace = namespace;
 
         this.m_types = new GraphNodeTypes();
-        this.useMeta = this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema();
+        this.m_useMeta = this.m_cfg.getTypeModel().isMetaSchema();
+        this.m_fixedType = typeName;
+        this.m_fixedInstance = hostName;
     }
 
-    public void setFixedType(String fixedType) {
-        this.m_fixedType = fixedType;
-    }
-
-    private String m_fixedType;
-
-    public void setFixedMeta(String fixedMeta) {
-        this.m_fixedMeta = fixedMeta;
-    }
-
-    private String m_fixedMeta;
-
-    // As an exception, if string is empty (not null), then instance will be ignored
-    public void setFixedInstance(String fixedInstance) {
-        this.m_fixedInstance = fixedInstance;
-    }
-
-    private String m_fixedInstance;
+    private final GraphNodeTypes m_types;
+    private final Config m_cfg;
+    private final String m_namespace;
+    private final boolean m_useMeta;
+    private final String m_fixedType;
+    private final String m_fixedInstance;
 
     /** Tests if there is more than one type, meta-schema, or host present. */
     private boolean isAmbiguous() {
@@ -71,7 +58,7 @@ public class GrammarVisitor {
 
     /** Tests if there is enough type information present to convert the graphs. */
     private boolean isParseable() {
-        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_useMeta) {
             return this.m_typeMap.size() == 1 || this.m_metaMap.size() == 1;
         } else {
             return this.m_typeMap.size() == 1;
@@ -82,7 +69,7 @@ public class GrammarVisitor {
         GrammarDialog dlg = new GrammarDialog(parent);
 
         dlg.setTypeModels(this.m_typeMap.keySet());
-        if (this.useMeta) {
+        if (this.m_useMeta) {
             dlg.setMetaModels(this.m_metaMap.keySet());
         }
         dlg.setInstanceModels(this.m_hostMap.keySet(), this.m_fixedInstance != null);
@@ -134,17 +121,19 @@ public class GrammarVisitor {
         }
     }
 
+    /**
+     * Applies this visitor to a given grammar.
+     * The result can be retrieved afterwards by {@link #getGlossary()} and {@link #getDesign()}.
+     */
+    @SuppressWarnings("unchecked")
     public boolean doVisit(Frame parent, GrammarModel grammar) throws ImportException {
         this.m_typeMap =
-            new HashMap<String,TypeModel>(
-                (Map<String,TypeModel>) grammar.getResourceMap(ResourceKind.TYPE));
+            new HashMap<>((Map<String,TypeModel>) grammar.getResourceMap(ResourceKind.TYPE));
         this.m_hostMap =
-            new HashMap<String,HostModel>(
-                (Map<String,HostModel>) grammar.getResourceMap(ResourceKind.HOST));
+            new HashMap<>((Map<String,HostModel>) grammar.getResourceMap(ResourceKind.HOST));
         this.m_ruleMap =
-            new HashMap<String,RuleModel>(
-                (Map<String,RuleModel>) grammar.getResourceMap(ResourceKind.RULE));
-        this.m_metaMap = new HashMap<String,TypeModel>();
+            new HashMap<>((Map<String,RuleModel>) grammar.getResourceMap(ResourceKind.RULE));
+        this.m_metaMap = new HashMap<>();
 
         browseGraphs(this.m_namespace);
 
@@ -164,7 +153,7 @@ public class GrammarVisitor {
         int timer = Timer.start("Load GROOVE grammar");
 
         // Parse meta graph
-        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_useMeta) {
             try {
                 TypeGraph metaGraph = this.m_metaMap.values().iterator().next().toResource();
 
@@ -176,8 +165,8 @@ public class GrammarVisitor {
             }
         }
 
-        Set<String> typeGraphSet = new HashSet<String>(this.m_typeMap.keySet());
-        Set<String> hostGraphSet = new HashSet<String>(this.m_hostMap.keySet());
+        Set<String> typeGraphSet = new HashSet<>(this.m_typeMap.keySet());
+        Set<String> hostGraphSet = new HashSet<>(this.m_hostMap.keySet());
         Pair<TypeGraph,HostGraph> graphs =
             computeCompositeGraphs(grammar, typeGraphSet, hostGraphSet);
 
@@ -192,7 +181,7 @@ public class GrammarVisitor {
 
         if (!hostGraphSet.isEmpty()) {
             Timer.stop(timer);
-            setInstanceGraph(graphs.two());
+            setDesign(graphs.two());
             Timer.cont(timer);
         }
 
@@ -206,11 +195,10 @@ public class GrammarVisitor {
         filterMap(this.m_hostMap, namespace);
         filterMap(this.m_ruleMap, namespace);
 
-        if (this.useMeta) {
-            Iterator<Entry<String,groove.grammar.model.TypeModel>> it =
-                this.m_typeMap.entrySet().iterator();
+        if (this.m_useMeta) {
+            Iterator<Entry<String,TypeModel>> it = this.m_typeMap.entrySet().iterator();
             while (it.hasNext()) {
-                Entry<String,groove.grammar.model.TypeModel> entry = it.next();
+                Entry<String,TypeModel> entry = it.next();
                 if (entry.getKey().contains("meta")) {
                     it.remove();
                     this.m_metaMap.put(entry.getKey(), entry.getValue());
@@ -219,15 +207,9 @@ public class GrammarVisitor {
         }
 
         if (this.m_fixedType != null && this.m_typeMap.containsKey(this.m_fixedType)) {
-            groove.grammar.model.TypeModel keepModel = this.m_typeMap.get(this.m_fixedType);
+            TypeModel keepModel = this.m_typeMap.get(this.m_fixedType);
             this.m_typeMap.clear();
             this.m_typeMap.put(this.m_fixedType, keepModel);
-        }
-
-        if (this.m_fixedMeta != null && this.m_metaMap.containsKey(this.m_fixedMeta)) {
-            groove.grammar.model.TypeModel keepModel = this.m_metaMap.get(this.m_fixedMeta);
-            this.m_metaMap.clear();
-            this.m_metaMap.put(this.m_fixedMeta, keepModel);
         }
 
         if (this.m_fixedInstance != null && this.m_hostMap.containsKey(this.m_fixedInstance)) {
@@ -248,8 +230,8 @@ public class GrammarVisitor {
         new GrooveToMeta(typeGraph, this.m_types, this.m_cfg);
     }
 
-    private void setTypeGraph(TypeGraph typeGraph) throws ImportException {
-        GrooveToType gtt = new GrooveToType(this.m_types, this.m_cfg);
+    private void setTypeGraph(TypeGraph typeGraph) {
+        GrooveToGlossary gtt = new GrooveToGlossary(this.m_types, this.m_cfg);
         this.m_glos = gtt.buildGlossary(typeGraph);
     }
 
@@ -260,14 +242,14 @@ public class GrammarVisitor {
 
     private Glossary m_glos;
 
-    private void setInstanceGraph(HostGraph hostGraph) throws ImportException {
-        GrooveToInstance gti =
-            new GrooveToInstance(hostGraph, this.m_types, this.m_cfg, this.m_glos);
+    private void setDesign(HostGraph hostGraph) throws ImportException {
+        GrooveToDesign gti =
+            new GrooveToDesign(hostGraph, this.m_types, this.m_cfg, this.m_glos).build();
         this.m_design = gti.getDesign();
     }
 
     /** Returns the instance model constructed by this visitor. */
-    public Design getInstanceModel() {
+    public Design getDesign() {
         return this.m_design;
     }
 

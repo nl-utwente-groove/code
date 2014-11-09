@@ -129,10 +129,12 @@ public abstract class ExportBuilder<X,E> {
 
     /** Inserts a new concept with target element into the map.
      * The concept is assumed to be fresh.
+     * @return if {@code false}, the mapping was already present
      */
-    protected void put(Concept c, E e) {
-        assert !has(c);
-        this.map.put(c, e);
+    protected boolean put(Concept c, E e) {
+        E oldE = this.map.put(c, e);
+        assert oldE == null || oldE.equals(e);
+        return oldE == null;
     }
 
     private final Map<Concept,E> map = new HashMap<>();

@@ -51,10 +51,8 @@ public class GxlPorter extends ConceptualPorter {
     protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
         throws ImportException {
         GxlToGlossary g2g = new GxlToGlossary(file.toString(), false);
-        GxlToDesign g2d = new GxlToDesign(g2g, file.toString());
-
         Glossary glos = g2g.getGlossary();
-        Design design = g2d.getDesign();
+        Design design = new GxlToDesign(g2g, file.toString()).build().getDesign();
         return Pair.newPair(glos, design);
     }
 

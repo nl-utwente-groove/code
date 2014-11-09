@@ -51,11 +51,12 @@ public class GlossaryToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode
     }
 
     @Override
-    protected void put(Concept c, AbsNode n) {
-        super.put(c, n);
-        if (n != null) {
+    protected boolean put(Concept c, AbsNode n) {
+        boolean result = super.put(c, n);
+        if (result && n != null) {
             this.m_currentGraph.addNodes(n);
         }
+        return result;
     }
 
     @Override
