@@ -17,7 +17,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Collections;
@@ -339,7 +341,9 @@ public class ConfigDialog extends JDialog {
         } else {
             String xmlString = getGrammar().getConfigModel(name).toConfig();
             // Do something with xmlString
-            try {
+            try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
+                PrintStream out = System.out;
+                System.setOut(tmpOut);
                 Document xmlDoc = DOMHelper.createDocument(xmlString);
                 com.jaxfront.core.dom.Document doc =
                     DOMBuilder.getInstance().build(null,
@@ -348,6 +352,7 @@ public class ConfigDialog extends JDialog {
                         null,
                         "configuration");
                 setDocument(doc);
+                System.setOut(out);
             } catch (SAXException | IOException | SchemaCreationException
                 | DocumentCreationException e) {
                 // Not much that can be done here, silently catch the error
