@@ -18,17 +18,19 @@ package groove.io.conceptual.lang.groove;
 
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceKind;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.ExportException;
+import groove.io.external.PortException;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /** Resource ready to be exported to GROOVE native format, in the form
  * of a set of graphs (possibly including type graph, host graph and constraints).
@@ -77,19 +79,20 @@ public class GrooveExport extends Export {
     }
 
     @Override
-    public boolean export() throws ExportException {
+    public boolean export() throws PortException {
         int timer = Timer.start("Groove save");
         for (GraphRole role : this.m_graphs.keySet()) {
-            for (PreGraph graph : this.m_graphs.get(role).values()) {
-                AspectGraph aspectGraph = graph.toAspectGraph();
-                try {
-                    this.m_simModel.getGrammar()
-                        .getStore()
-                        .put(aspectGraph.getKind(), Collections.singleton(aspectGraph), false);
-                    this.m_simModel.doRefreshGrammar();
-                } catch (IOException e) {
-                    throw new ExportException(e);
-                }
+            Collection<AspectGraph> graphs =
+                this.m_graphs.get(role)
+                    .values()
+                    .stream()
+                    .map(g -> g.toAspectGraph())
+                    .collect(Collectors.toList());
+            try {
+                this.m_simModel.getGrammar().getStore().put(ResourceKind.toResource(role), graphs);
+                this.m_simModel.doRefreshGrammar();
+            } catch (IOException e) {
+                throw new PortException(e);
             }
         }
         Timer.stop(timer);

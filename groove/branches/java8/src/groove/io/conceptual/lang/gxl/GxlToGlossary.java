@@ -5,10 +5,9 @@ import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
-import groove.io.conceptual.lang.ImportException;
+import groove.io.conceptual.lang.GlossaryImporter;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
-import groove.io.conceptual.lang.GlossaryImporter;
 import groove.io.conceptual.lang.gxl.GxlUtil.AttrTypeEnum;
 import groove.io.conceptual.lang.gxl.GxlUtil.EdgeWrapper;
 import groove.io.conceptual.lang.gxl.GxlUtil.NodeWrapper;
@@ -28,9 +27,9 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
+import groove.io.external.PortException;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -103,7 +102,7 @@ public class GxlToGlossary extends GlossaryImporter {
      * Constructs an instance from a given document location.
      * A further parameter determines if complex types may be used.
      */
-    public GxlToGlossary(String location, boolean useComplex) throws ImportException {
+    public GxlToGlossary(String location, boolean useComplex) throws PortException {
         this.m_useComplex = useComplex;
         // Load the GXL
         try {
@@ -125,12 +124,8 @@ public class GxlToGlossary extends GlossaryImporter {
             } finally {
                 in.close();
             }
-        } catch (JAXBException e) {
-            throw new ImportException(e);
-        } catch (FileNotFoundException e) {
-            throw new ImportException(e);
-        } catch (IOException e) {
-            throw new ImportException(e);
+        } catch (JAXBException | IOException e) {
+            throw new PortException(e);
         }
 
         // Preload TypeModels

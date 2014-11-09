@@ -22,7 +22,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.conceptual.Design;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.ecore.DesignToEcore;
 import groove.io.conceptual.lang.ecore.EcoreExport;
 import groove.io.conceptual.lang.ecore.EcoreToDesign;
@@ -45,7 +44,7 @@ public class EcorePorter extends ConceptualPorter {
 
     @Override
     protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
-        throws ImportException {
+        throws PortException {
         EcoreToGlossary e2g = new EcoreToGlossary(file.toFile());
         Glossary tm = e2g.getGlossary();
         return Pair.newPair(tm, null);
@@ -53,7 +52,7 @@ public class EcorePorter extends ConceptualPorter {
 
     @Override
     protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
-        throws ImportException {
+        throws PortException {
         //Request ecore type model file
         int approve = getECoreChooser().showDialog(null, "Import Ecore type model");
         if (approve != JFileChooser.APPROVE_OPTION) {

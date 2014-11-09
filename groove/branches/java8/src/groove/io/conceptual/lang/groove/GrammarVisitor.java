@@ -13,7 +13,7 @@ import groove.io.conceptual.Design;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
-import groove.io.conceptual.lang.ImportException;
+import groove.io.external.PortException;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
 
@@ -126,7 +126,7 @@ public class GrammarVisitor {
      * The result can be retrieved afterwards by {@link #getGlossary()} and {@link #getDesign()}.
      */
     @SuppressWarnings("unchecked")
-    public boolean doVisit(Frame parent, GrammarModel grammar) throws ImportException {
+    public boolean doVisit(Frame parent, GrammarModel grammar) throws PortException {
         this.m_typeMap =
             new HashMap<>((Map<String,TypeModel>) grammar.getResourceMap(ResourceKind.TYPE));
         this.m_hostMap =
@@ -145,8 +145,7 @@ public class GrammarVisitor {
         }
 
         if (!isParseable()) {
-            throw new ImportException(
-                "Unable to translate graphs, some type information is missing");
+            throw new PortException("Unable to translate graphs, some type information is missing");
         }
 
         // Timer is stopped and continued when actually parsing the graphs
@@ -161,7 +160,7 @@ public class GrammarVisitor {
                 setMetaGraph(metaGraph);
                 Timer.cont(timer);
             } catch (FormatException e) {
-                throw new ImportException(e);
+                throw new PortException(e);
             }
         }
 
@@ -242,7 +241,7 @@ public class GrammarVisitor {
 
     private Glossary m_glos;
 
-    private void setDesign(HostGraph hostGraph) throws ImportException {
+    private void setDesign(HostGraph hostGraph) throws PortException {
         GrooveToDesign gti =
             new GrooveToDesign(hostGraph, this.m_types, this.m_cfg, this.m_glos).build();
         this.m_design = gti.getDesign();
@@ -256,7 +255,7 @@ public class GrammarVisitor {
     private Design m_design;
 
     private Pair<TypeGraph,HostGraph> computeCompositeGraphs(GrammarModel grammar,
-        Set<String> typeModels, Set<String> hostModels) throws ImportException {
+        Set<String> typeModels, Set<String> hostModels) throws PortException {
         Set<String> localTypeNames = grammar.getLocalActiveNames(ResourceKind.TYPE);
         if (localTypeNames == null) {
             localTypeNames = grammar.getActiveNames(ResourceKind.TYPE);
@@ -282,7 +281,7 @@ public class GrammarVisitor {
 
             result = new Pair<TypeGraph,HostGraph>(tg, hg);
         } catch (FormatException e) {
-            throw new ImportException(e);
+            throw new PortException(e);
         } finally {
             grammar.setLocalActiveNames(ResourceKind.HOST, localHostNames);
             grammar.setLocalActiveNames(ResourceKind.TYPE, localTypeNames);

@@ -16,12 +16,15 @@
  */
 package groove.io.conceptual.lang;
 
+import groove.io.external.PortException;
+
 /**
  * Glossary and (optional) design, ready to be exported to an external format.
  * @author Rensink
  * @version $Revision $
  */
 public abstract class Export {
-    /** Causes the resource to be exported to the predefined destination. */
-    public abstract boolean export() throws ExportException;
+    /** Causes the resource to be exported to the predefined destination.
+     * @throws PortException if an error occurred during export */
+    public abstract boolean export() throws PortException;
 }

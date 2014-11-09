@@ -6,7 +6,6 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.GlossaryImporter;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InvalidTypeException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
@@ -25,6 +24,7 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
+import groove.io.external.PortException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,7 +56,7 @@ public class EcoreToGlossary extends GlossaryImporter {
      * Handler for Ecore type models to be converted to the conceptual model
      * @param typeModel URI for the Ecore model to be loaded
      */
-    public EcoreToGlossary(File typeModel) throws ImportException {
+    public EcoreToGlossary(File typeModel) throws PortException {
         // Create new ResourceSet and register an XMI model loader (for all filetypes)
         this.rs = new ResourceSetImpl();
         this.rs.getResourceFactoryRegistry()
@@ -71,9 +71,9 @@ public class EcoreToGlossary extends GlossaryImporter {
             org.eclipse.emf.ecore.util.EcoreUtil.resolveAll(this.rs);
             Timer.stop(timer);
         } catch (FileNotFoundException e) {
-            throw new ImportException("Cannot find file " + typeModel, e);
+            throw new PortException("Cannot find file " + typeModel, e);
         } catch (IOException e) {
-            throw new ImportException(e);
+            throw new PortException(e);
         }
         buildGlossary();
     }

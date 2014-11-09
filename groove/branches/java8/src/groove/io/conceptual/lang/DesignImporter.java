@@ -1,6 +1,7 @@
 package groove.io.conceptual.lang;
 
 import groove.io.conceptual.Design;
+import groove.io.external.PortException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,10 +11,10 @@ import java.util.Map;
 
 /** Abstract superclass for importers from an external format to the conceptual instance model. */
 public abstract class DesignImporter implements Messenger {
-    /** Builds the target design. 
+    /** Builds the target design.
      * @return TODO
-     * @throws ImportException TODO*/
-    public abstract DesignImporter build() throws ImportException;
+     * @throws PortException TODO*/
+    public abstract DesignImporter build() throws PortException;
 
     private final Map<String,Design> m_designs = new HashMap<String,Design>();
     private final List<Message> m_messages = new ArrayList<Message>();
@@ -35,9 +36,8 @@ public abstract class DesignImporter implements Messenger {
     /**
      * Returns the first instance model. Messages may be generated during this operation.
      * @return The instance model, or null if the model could not be found.
-     * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public Design getDesign() throws ImportException {
+    public Design getDesign() {
         Iterator<Design> iter = this.m_designs.values().iterator();
         if (iter.hasNext()) {
             return iter.next();

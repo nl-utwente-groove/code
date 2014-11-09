@@ -141,9 +141,9 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Collection<Resource> put(ResourceKind kind, Collection<Resource> ress, boolean layout)
-        throws IOException {
-        Collection<Resource> result = Collections.emptyList();
+    public Collection<? extends Resource> put(ResourceKind kind,
+        Collection<? extends Resource> ress, boolean layout) throws IOException {
+        Collection<? extends Resource> result = Collections.emptyList();
         ResourceEdit edit = doPut(kind, ress, layout);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -157,8 +157,8 @@ public class DefaultFileSystemStore extends SystemStore {
      * Implements the functionality of {@link #put(ResourceKind, Collection, boolean)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private ResourceEdit doPut(ResourceKind kind, Collection<Resource> newRess, boolean layout)
-        throws IOException {
+    private ResourceEdit doPut(ResourceKind kind, Collection<? extends Resource> newRess,
+        boolean layout) throws IOException {
         testInit();
         List<Resource> oldRess = new ArrayList<>(newRess.size());
         Set<String> newNames = new HashSet<String>();
@@ -205,9 +205,9 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Collection<Resource> delete(ResourceKind kind, Collection<String> name)
+    public Collection<? extends Resource> delete(ResourceKind kind, Collection<String> name)
         throws IOException {
-        Collection<Resource> result = Collections.emptySet();
+        Collection<? extends Resource> result = Collections.emptySet();
         ResourceEdit edit = doDelete(kind, name);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -876,8 +876,9 @@ public class DefaultFileSystemStore extends SystemStore {
 
     /** Edit consisting of additions and deletions of text-based resources. */
     private class ResourceEdit extends MyEdit {
-        public ResourceEdit(ResourceKind kind, EditType type, Collection<Resource> oldRess,
-            Collection<Resource> newRess, GrammarProperties oldProps, GrammarProperties newProps) {
+        public ResourceEdit(ResourceKind kind, EditType type,
+            Collection<? extends Resource> oldRess, Collection<? extends Resource> newRess,
+            GrammarProperties oldProps, GrammarProperties newProps) {
             super(type, kind);
             this.oldRess = oldRess;
             this.newRess = newRess;
@@ -937,14 +938,14 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** Returns the deleted texts. */
-        public final Collection<Resource> getOldRess() {
+        public final Collection<? extends Resource> getOldRess() {
             return this.oldRess;
         }
 
         /** The deleted texts, if any. */
-        private final Collection<Resource> oldRess;
+        private final Collection<? extends Resource> oldRess;
         /** The added texts. */
-        private final Collection<Resource> newRess;
+        private final Collection<? extends Resource> newRess;
         /** The old system properties; possibly {@code null}. */
         private final GrammarProperties oldProps;
         /** The new system properties; possibly {@code null}. */

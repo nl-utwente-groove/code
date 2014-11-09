@@ -18,7 +18,7 @@ package groove.io.conceptual.lang.gxl;
 
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.ExportException;
+import groove.io.external.PortException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -111,12 +111,12 @@ public class GxlExport extends Export {
     }
 
     @Override
-    public boolean export() throws ExportException {
+    public boolean export() throws PortException {
         return export(false);
     }
 
     /** Helper method containing some leftover code to use old-style export. */
-    private boolean export(boolean oldStyle) throws ExportException {
+    private boolean export(boolean oldStyle) throws PortException {
         // m_gxlType contains all graphs
         int timer = Timer.start("Save GXL");
         JAXBElement<GxlType> mainElement = GxlUtil.g_objectFactory.createGxl(this.m_gxlTypeType);
@@ -151,7 +151,7 @@ public class GxlExport extends Export {
                 }
             }
         } catch (JAXBException | IOException e) {
-            throw new ExportException(e);
+            throw new PortException(e);
         }
 
         Timer.stop(timer);

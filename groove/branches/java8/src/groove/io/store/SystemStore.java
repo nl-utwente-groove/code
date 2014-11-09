@@ -128,7 +128,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    final public Collection<Resource> put(ResourceKind kind, Collection<Resource> resources)
+    final public Collection<? extends Resource> put(ResourceKind kind, Collection<? extends Resource> resources)
         throws IOException {
         return put(kind, resources, false);
     }
@@ -143,7 +143,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    abstract public Collection<Resource> put(ResourceKind kind, Collection<Resource> resources,
+    abstract public Collection<? extends Resource> put(ResourceKind kind, Collection<? extends Resource> resources,
         boolean layout) throws IOException;
 
     /**
@@ -153,7 +153,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    abstract public Collection<Resource> delete(ResourceKind kind, Collection<String> names)
+    abstract public Collection<? extends Resource> delete(ResourceKind kind, Collection<String> names)
         throws IOException;
 
     /**

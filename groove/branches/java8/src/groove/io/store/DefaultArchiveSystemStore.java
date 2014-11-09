@@ -162,13 +162,13 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public Collection<Resource> put(ResourceKind kind, Collection<Resource> graphs, boolean layout)
+    public Collection<? extends Resource> put(ResourceKind kind, Collection<? extends Resource> graphs, boolean layout)
         throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Collection<Resource> delete(ResourceKind kind, Collection<String> names)
+    public Collection<? extends Resource> delete(ResourceKind kind, Collection<String> names)
         throws IOException {
         throw createImmutable();
     }

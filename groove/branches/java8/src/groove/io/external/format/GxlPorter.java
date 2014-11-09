@@ -21,7 +21,6 @@ import groove.io.FileType;
 import groove.io.conceptual.Design;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.gxl.DesignToGxl;
 import groove.io.conceptual.lang.gxl.GlossaryToGxl;
 import groove.io.conceptual.lang.gxl.GxlExport;
@@ -41,7 +40,7 @@ public class GxlPorter extends ConceptualPorter {
 
     @Override
     protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
-        throws ImportException {
+        throws PortException {
         GxlToGlossary g2g = new GxlToGlossary(file.toString(), false);
         Glossary glos = g2g.getGlossary();
         return Pair.newPair(glos, null);
@@ -49,7 +48,7 @@ public class GxlPorter extends ConceptualPorter {
 
     @Override
     protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
-        throws ImportException {
+        throws PortException {
         GxlToGlossary g2g = new GxlToGlossary(file.toString(), false);
         Glossary glos = g2g.getGlossary();
         Design design = new GxlToDesign(g2g, file.toString()).build().getDesign();

@@ -18,7 +18,7 @@ package groove.io.conceptual.lang.ecore;
 
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.ExportException;
+import groove.io.external.PortException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -86,7 +86,7 @@ public class EcoreExport extends Export {
     }
 
     @Override
-    public boolean export() throws ExportException {
+    public boolean export() throws PortException {
         try {
             if (this.m_typeFile != null) {
                 for (Entry<String,Resource> resourceEntry : this.m_typeResources.entrySet()) {
@@ -116,7 +116,7 @@ public class EcoreExport extends Export {
             }
         } catch (IOException e) {
             // abort
-            throw new ExportException(e);
+            throw new PortException(e);
         }
         return true;
     }

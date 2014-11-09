@@ -20,7 +20,7 @@ import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphRole;
 import groove.gui.Simulator;
 import groove.io.conceptual.configuration.Config;
-import groove.io.conceptual.lang.ExportException;
+import groove.io.external.PortException;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,7 +48,7 @@ public class GrooveExportThreaded extends GrooveExport {
     }
 
     @Override
-    public boolean export() throws ExportException {
+    public boolean export() throws PortException {
         worker();
         return false;
     }

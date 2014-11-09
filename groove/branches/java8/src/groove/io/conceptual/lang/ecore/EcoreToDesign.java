@@ -8,7 +8,6 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.DesignImporter;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InvalidTypeException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
@@ -18,6 +17,7 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.Value;
+import groove.io.external.PortException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,14 +43,14 @@ public class EcoreToDesign extends DesignImporter {
      * Creates an ECore design importer.
      * @param ecoreToGlos {@link EcoreToGlossary} to use for the corresponding glossary. The glossary should not contain errors.
      * @param filename Name of the design file to load
-     * @throws ImportException When the file could not be properly loaded, or the glossary is invalid
+     * @throws PortException When the file could not be properly loaded, or the glossary is invalid
      */
-    public EcoreToDesign(EcoreToGlossary ecoreToGlos, String filename) throws ImportException {
+    public EcoreToDesign(EcoreToGlossary ecoreToGlos, String filename) throws PortException {
         this.m_ecoreToGlos = ecoreToGlos;
         // "ecore" is the hardcoded string for an ecore type model
         this.m_glossary = this.m_ecoreToGlos.getGlossary("ecore");
         if (this.m_glossary == null) {
-            throw new ImportException("Cannot load type model from given EcoreToType");
+            throw new PortException("Cannot load type model from given EcoreToType");
         }
         this.m_filename = filename;
     }
@@ -62,7 +62,7 @@ public class EcoreToDesign extends DesignImporter {
     private final String m_filename;
 
     @Override
-    public EcoreToDesign build() throws ImportException {
+    public EcoreToDesign build() throws PortException {
         ResourceSet rs = this.m_ecoreToGlos.getResourceSet();
 
         // Load the XMI model containing Ecore instance model
@@ -74,9 +74,9 @@ public class EcoreToDesign extends DesignImporter {
             resource.load(in, null);
             Timer.stop(timer);
         } catch (FileNotFoundException e) {
-            throw new ImportException("Cannot find file " + this.m_ecoreToGlos, e);
+            throw new PortException("Cannot find file " + this.m_ecoreToGlos, e);
         } catch (IOException e) {
-            throw new ImportException(e);
+            throw new PortException(e);
         }
         int timer = Timer.start("Ecore to IM");
         addDesign(buildDesign(resource, FileType.getPureName(file)));

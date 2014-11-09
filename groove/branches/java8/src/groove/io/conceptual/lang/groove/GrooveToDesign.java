@@ -21,7 +21,6 @@ import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.lang.DesignImporter;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
@@ -46,6 +45,7 @@ import groove.io.conceptual.value.RealValue;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
+import groove.io.external.PortException;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,7 +79,7 @@ public class GrooveToDesign extends DesignImporter {
     private final Glossary m_glossary;
 
     @Override
-    public GrooveToDesign build() throws ImportException {
+    public GrooveToDesign build() throws PortException {
         int timer = Timer.start("GROOVE to IM");
         Design instanceModel = new Design(this.m_glossary, this.host.getName());
         this.m_cfg.setGlossary(this.m_glossary);

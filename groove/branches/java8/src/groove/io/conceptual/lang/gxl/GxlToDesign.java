@@ -23,7 +23,6 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.DesignImporter;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.gxl.GxlUtil.EdgeWrapper;
 import groove.io.conceptual.lang.gxl.GxlUtil.NodeWrapper;
 import groove.io.conceptual.type.Class;
@@ -31,6 +30,7 @@ import groove.io.conceptual.type.Container;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.Value;
+import groove.io.external.PortException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class GxlToDesign extends DesignImporter {
     private final String m_designName;
 
     @Override
-    public DesignImporter build() throws ImportException {
+    public DesignImporter build() throws PortException {
         // Load the GXL
         try (FileInputStream in = new FileInputStream(this.m_designName)) {
             int timer = Timer.cont("Load GXL");
@@ -77,7 +77,7 @@ public class GxlToDesign extends DesignImporter {
                 .forEach(d -> addDesign(d));
             Timer.stop(timer);
         } catch (JAXBException | IOException e) {
-            throw new ImportException(e);
+            throw new PortException(e);
         }
         return this;
     }

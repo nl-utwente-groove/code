@@ -30,15 +30,13 @@ import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.ConfigDialog;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.ExportException;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.groove.ConstraintToGroove;
 import groove.io.conceptual.lang.groove.DesignToGroove;
 import groove.io.conceptual.lang.groove.GlossaryToGroove;
-import groove.io.conceptual.lang.groove.PreGraph;
 import groove.io.conceptual.lang.groove.GrammarVisitor;
 import groove.io.conceptual.lang.groove.GrooveExport;
 import groove.io.conceptual.lang.groove.MetaToGroove;
+import groove.io.conceptual.lang.groove.PreGraph;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
 
@@ -63,14 +61,10 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         throws PortException {
         Set<Resource> result = Collections.emptySet();
         Pair<Glossary,Design> models = null;
-        try {
-            if (fileType == getFileType(ResourceKind.HOST)) {
-                models = importDesign(file, grammar);
-            } else if (fileType == getFileType(ResourceKind.TYPE)) {
-                models = importGlossary(file, grammar);
-            }
-        } catch (ImportException e) {
-            throw new PortException(e);
+        if (fileType == getFileType(ResourceKind.HOST)) {
+            models = importDesign(file, grammar);
+        } else if (fileType == getFileType(ResourceKind.TYPE)) {
+            models = importGlossary(file, grammar);
         }
         if (models != null) {
             Config cfg = loadConfig(grammar);
@@ -81,13 +75,15 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         return result;
     }
 
-    /** Reads in type and instance models for an instance model import. */
+    /** Reads in type and instance models for an instance model import.
+     * @throws PortException if an error occurred during importing */
     abstract protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
-        throws ImportException;
+        throws PortException;
 
-    /** Reads in type and instance models for a type import. */
+    /** Reads in type and instance models for a type import.
+     * @throws PortException if an error occurred during importing*/
     abstract protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
-        throws ImportException;
+        throws PortException;
 
     @Override
     public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
@@ -134,11 +130,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         if (isHost && im == null) {
             throw new PortException("Unable to load design");
         }
-        try {
-            getExport(file, isHost, tm, im).export();
-        } catch (ExportException e) {
-            throw new PortException(e);
-        }
+        getExport(file, isHost, tm, im).export();
     }
 
     /** Callback method obtaining an exportable object in the required format.
@@ -168,12 +160,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     private Pair<Glossary,Design> constructModels(Config cfg, GrammarModel grammar,
         String namespace, String typeName, String hostName) throws PortException {
         GrammarVisitor visitor = new GrammarVisitor(cfg, namespace, typeName, hostName);
-        boolean success;
-        try {
-            success = visitor.doVisit(getParent(), grammar);
-        } catch (ImportException e) {
-            throw new PortException(e);
-        }
+        boolean success = visitor.doVisit(getParent(), grammar);
         return success ? Pair.newPair(visitor.getGlossary(), visitor.getDesign()) : null;
     }
 
@@ -199,8 +186,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             new DesignToGroove(design, export).build();
         }
 
-        for (Map.Entry<GraphRole,HashMap<String,PreGraph>> entry : export.getGraphs()
-            .entrySet()) {
+        for (Map.Entry<GraphRole,HashMap<String,PreGraph>> entry : export.getGraphs().entrySet()) {
             for (PreGraph graph : entry.getValue().values()) {
                 AspectGraph aspectGraph = graph.toAspectGraph();
                 result.add(aspectGraph);
