@@ -29,17 +29,15 @@ import groove.io.conceptual.Design;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.ConfigDialog;
-import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ExportException;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.groove.ConstraintToGroove;
 import groove.io.conceptual.lang.groove.DesignToGroove;
 import groove.io.conceptual.lang.groove.GlossaryToGroove;
-import groove.io.conceptual.lang.groove.GrammarGraph;
+import groove.io.conceptual.lang.groove.PreGraph;
 import groove.io.conceptual.lang.groove.GrammarVisitor;
 import groove.io.conceptual.lang.groove.GrooveExport;
-import groove.io.conceptual.lang.groove.GrooveUtil;
 import groove.io.conceptual.lang.groove.MetaToGroove;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
@@ -201,13 +199,10 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             new DesignToGroove(design, export).build();
         }
 
-        for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : export.getGraphs()
+        for (Map.Entry<GraphRole,HashMap<String,PreGraph>> entry : export.getGraphs()
             .entrySet()) {
-            GraphRole role = entry.getKey();
-            for (GrammarGraph graph : entry.getValue().values()) {
-                AbsGraph absGraph = graph.getGraph();
-                String name = GrooveUtil.getSafeResource(graph.getGraphName());
-                AspectGraph aspectGraph = absGraph.toAspectGraph(name, role);
+            for (PreGraph graph : entry.getValue().values()) {
+                AspectGraph aspectGraph = graph.toAspectGraph();
                 result.add(aspectGraph);
             }
         }

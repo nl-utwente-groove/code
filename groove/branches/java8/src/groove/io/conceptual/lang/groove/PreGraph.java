@@ -16,6 +16,7 @@
  */
 package groove.io.conceptual.lang.groove;
 
+import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphRole;
 import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.graph.AbsNode;
@@ -24,23 +25,12 @@ import groove.io.conceptual.graph.AbsNodeIter;
 import java.util.LinkedList;
 import java.util.List;
 
-/** Extension of an {@link AbsGraph} with graph name and role. */
-public class GrammarGraph {
+/** Collection of {@link AbsNode}s from which an {@link AspectGraph} can be lazily constructed. */
+public class PreGraph {
     /** Constructs an initially empty graph with a given name and role. */
-    public GrammarGraph(String graphName, GraphRole graphRole) {
+    public PreGraph(String graphName, GraphRole graphRole) {
         this.m_graphName = graphName;
         this.m_graphRole = graphRole;
-    }
-
-    /** Converts this pre-graph into an {@link AbsGraph}. */
-    public AbsGraph getGraph() {
-        AbsGraph result = new AbsGraph();
-        for (AbsNodeIter iter : this.m_nodes) {
-            for (AbsNode node : iter) {
-                result.addNode(node);
-            }
-        }
-        return result;
     }
 
     /** Adds a set of nodes to this pre-graph. */
@@ -63,4 +53,15 @@ public class GrammarGraph {
     }
 
     private final GraphRole m_graphRole;
+
+    /** Converts this pre-graph into an {@link AspectGraph}. */
+    public AspectGraph toAspectGraph() {
+        AbsGraph result = new AbsGraph();
+        for (AbsNodeIter iter : this.m_nodes) {
+            for (AbsNode node : iter) {
+                result.addNode(node);
+            }
+        }
+        return result.toAspectGraph(getGraphName(), getGraphRole());
+    }
 }

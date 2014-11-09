@@ -10,89 +10,45 @@ import java.util.Set;
 
 /**
  * Thin layer between {@link AspectGraph} and the conceptual model.
- * Keeps track of edges and nodes by means of references.
+ * Keeps track of nodes by means of references.
  * @author Harold Bruijntjes
  *
  */
 public class AbsGraph {
-    private Set<AbsNode> m_nodes = new HashSet<AbsNode>();
-    private Set<AbsEdge> m_edges = new HashSet<AbsEdge>();
-    private AspectGraph m_aGraph = null;
-
     /** Returns the set of nodes in this graph. */
     public Set<AbsNode> getNodes() {
         return this.m_nodes;
     }
 
-    /** Returns the set of edges in this graph. */
-    public Set<AbsEdge> getEdges() {
-        return this.m_edges;
-    }
+    private final Set<AbsNode> m_nodes = new HashSet<AbsNode>();
 
     /** Adds a given node to this graph. */
     public void addNode(AbsNode node) {
-        if (node.getParent() != null && node.getParent() != this) {
-            throw new IllegalArgumentException("Node already added to graph!");
-        }
-        if (this.m_nodes.contains(node)) {
-            return;
-        }
+        if (this.m_nodes.add(node)) {
+            node.setId(this.m_nodes.size() + 1);
 
-        this.m_nodes.add(node);
-        node.addToGraph(this, this.m_nodes.size() + 1);
+            for (AbsEdge e : node.getEdges()) {
+                addNode(e.getTarget());
+            }
 
-        for (AbsEdge e : node.getEdges()) {
-            addEdge(e);
-            addNode(e.getTarget());
+            for (AbsEdge e : node.getTargetEdges()) {
+                addNode(e.getSource());
+            }
         }
-
-        for (AbsEdge e : node.getTargetEdges()) {
-            addNode(e.getSource());
-        }
-    }
-
-    /** Adds a given edge to this graph. */
-    public void addEdge(AbsEdge edge) {
-        if (!this.m_edges.contains(edge)) {
-            this.m_edges.add(edge);
-        }
-    }
-
-    /** Clears the nodes and edges of this graph. */
-    public void clear() {
-        this.m_nodes.clear();
-        this.m_edges.clear();
-        this.m_aGraph = null;
     }
 
     /** Returns an aspect graph constructed from this graph. */
     public AspectGraph toAspectGraph(String name, GraphRole role) {
-        if (this.m_aGraph != null) {
-            return this.m_aGraph;
-        }
-
-        AspectGraph ag = new AspectGraph(name, role);
-
+        AspectGraph result = new AspectGraph(name, role);
         for (AbsNode n : this.m_nodes) {
             n.buildAspect(role);
             AspectNode an = n.getAspect();
-            ag.addNode(an);
+            result.addNode(an);
             for (AspectEdge ae : n.getAspectEdges()) {
-                ag.addEdge(ae);
+                result.addEdge(ae);
             }
         }
-
-        for (AbsEdge e : this.m_edges) {
-            e.buildAspect(role);
-            for (AspectEdge ae : e.getAspect()) {
-                ag.addEdge(ae);
-            }
-        }
-
-        ag.setFixed();
-
-        this.m_aGraph = ag;
-
-        return ag;
+        result.setFixed();
+        return result;
     }
 }

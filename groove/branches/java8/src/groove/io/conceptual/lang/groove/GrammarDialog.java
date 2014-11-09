@@ -40,14 +40,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
+/** Dialog to choose type and meta-graphs prior to an import or export action. */
 public class GrammarDialog extends JDialog {
-    private Frame m_parent;
+    private final Frame m_parent;
     private JComboBox<String> m_typeList;
     private JComboBox<String> m_metaList;
-    private JComboBox<String> m_instanceList;
+    private JComboBox<String> m_hostList;
 
     private boolean m_dialogResult;
 
+    /** Constructs a dialog for a given frame. */
     public GrammarDialog(Frame parent) {
         super(parent, "Select graphs to export", true);
         this.m_parent = parent;
@@ -59,38 +61,25 @@ public class GrammarDialog extends JDialog {
                 close();
             }
         });
-        ActionListener actionListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                setVisible(false);
-            }
-        };
         KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        this.getRootPane().registerKeyboardAction(actionListener,
-            stroke,
-            JComponent.WHEN_IN_FOCUSED_WINDOW);
+        this.getRootPane().registerKeyboardAction(ae -> {
+            setVisible(false);
+        }, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         buildGUI();
     }
 
-    public boolean doDialog() {
-        this.m_dialogResult = false;
-        setLocationRelativeTo(this.m_parent);
-        setVisible(true);
-        return this.m_dialogResult;
-    }
-
     private void buildGUI() {
-        this.m_typeList = new JComboBox();
-        this.m_metaList = new JComboBox();
-        this.m_instanceList = new JComboBox();
+        this.m_typeList = new JComboBox<>();
+        this.m_metaList = new JComboBox<>();
+        this.m_hostList = new JComboBox<>();
 
         JLabel typeLabel = new JLabel("Select type graph:", JLabel.TRAILING);
         typeLabel.setLabelFor(this.m_typeList);
         JLabel metaLabel = new JLabel("Select meta graph:", JLabel.TRAILING);
         metaLabel.setLabelFor(this.m_metaList);
         JLabel instanceLabel = new JLabel("Select instance graph:", JLabel.TRAILING);
-        instanceLabel.setLabelFor(this.m_instanceList);
+        instanceLabel.setLabelFor(this.m_hostList);
 
         JPanel form = new JPanel(new GridBagLayout());
 
@@ -119,7 +108,7 @@ public class GrammarDialog extends JDialog {
         form.add(instanceLabel, c);
         c.gridx = 1;
         c.gridy = 2;
-        form.add(this.m_instanceList, c);
+        form.add(this.m_hostList, c);
 
         //SpringUtilities.makeCompactGrid(form, 3, 2, 6, 6, 6, 6);
 
@@ -142,7 +131,7 @@ public class GrammarDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 GrammarDialog.this.m_typeList.removeAllItems();
                 GrammarDialog.this.m_metaList.removeAllItems();
-                GrammarDialog.this.m_instanceList.removeAllItems();
+                GrammarDialog.this.m_hostList.removeAllItems();
                 GrammarDialog.this.dispose();
             }
         });
@@ -161,50 +150,63 @@ public class GrammarDialog extends JDialog {
         this.setSize(350, 150);
     }
 
-    public void setTypeModels(Set<String> typeModelNames) {
-        this.m_typeList.removeAllItems();
+    /** Invokes the dialog. */
+    public boolean doDialog() {
+        this.m_dialogResult = false;
+        setLocationRelativeTo(this.m_parent);
+        setVisible(true);
+        return this.m_dialogResult;
+    }
 
-        for (String type : typeModelNames) {
+    /** Sets the collection of type graph names to choose from. */
+    public void setTypeGraphs(Set<String> typeNames) {
+        this.m_typeList.removeAllItems();
+        for (String type : typeNames) {
             this.m_typeList.addItem(type);
         }
     }
 
-    public void setMetaModels(Set<String> metaModelNames) {
+    /** Sets the collection of meta-graph names to choose from. */
+    public void setMetaGraphs(Set<String> metaNames) {
         this.m_metaList.removeAllItems();
         this.m_metaList.addItem("");
 
-        for (String type : metaModelNames) {
+        for (String type : metaNames) {
             this.m_metaList.addItem(type);
         }
-        if (metaModelNames.size() > 0) {
+        if (metaNames.size() > 0) {
             this.m_metaList.setSelectedIndex(1);
         }
     }
 
-    public void setInstanceModels(Set<String> instanceModelNames, boolean force) {
-        this.m_instanceList.removeAllItems();
+    /** Sets the collection of type names to choose from. */
+    public void setHostGraphs(Set<String> hostNames, boolean force) {
+        this.m_hostList.removeAllItems();
         if (!force) {
-            this.m_instanceList.addItem("");
+            this.m_hostList.addItem("");
         }
 
-        for (String type : instanceModelNames) {
-            this.m_instanceList.addItem(type);
+        for (String type : hostNames) {
+            this.m_hostList.addItem(type);
         }
-        if (!force && instanceModelNames.size() > 0) {
-            this.m_instanceList.setSelectedIndex(1);
+        if (!force && hostNames.size() > 0) {
+            this.m_hostList.setSelectedIndex(1);
         }
     }
 
-    public String getTypeModel() {
+    /** Returns the selected type graph name. */
+    public String getTypeGraph() {
         return (String) this.m_typeList.getSelectedItem();
     }
 
-    public String getMetaModel() {
+    /** Returns the selected meta-graph name. */
+    public String getMetaGraph() {
         return (String) this.m_metaList.getSelectedItem();
     }
 
-    public String getInstanceModel() {
-        return (String) this.m_instanceList.getSelectedItem();
+    /** Returns the selected host graph name. */
+    public String getHostGraph() {
+        return (String) this.m_hostList.getSelectedItem();
     }
 
     private void close() {

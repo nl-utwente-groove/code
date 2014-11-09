@@ -68,34 +68,34 @@ public class GrammarVisitor {
     private boolean doDialog(Frame parent) {
         GrammarDialog dlg = new GrammarDialog(parent);
 
-        dlg.setTypeModels(this.m_typeMap.keySet());
+        dlg.setTypeGraphs(this.m_typeMap.keySet());
         if (this.m_useMeta) {
-            dlg.setMetaModels(this.m_metaMap.keySet());
+            dlg.setMetaGraphs(this.m_metaMap.keySet());
         }
-        dlg.setInstanceModels(this.m_hostMap.keySet(), this.m_fixedInstance != null);
+        dlg.setHostGraphs(this.m_hostMap.keySet(), this.m_fixedInstance != null);
 
         if (!dlg.doDialog()) {
             return false;
         }
 
         // When finished, selection should have been made for each graph type
-        if (dlg.getTypeModel() != null && !dlg.getTypeModel().equals("")) {
-            filterMap(this.m_typeMap, dlg.getTypeModel());
+        if (dlg.getTypeGraph() != null && !dlg.getTypeGraph().equals("")) {
+            filterMap(this.m_typeMap, dlg.getTypeGraph());
         } else {
             return false;
         }
 
         if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
-            if (dlg.getMetaModel() != null && !dlg.getMetaModel().equals("")) {
-                filterMap(this.m_metaMap, dlg.getTypeModel());
+            if (dlg.getMetaGraph() != null && !dlg.getMetaGraph().equals("")) {
+                filterMap(this.m_metaMap, dlg.getTypeGraph());
             } else {
                 return false;
             }
         }
 
-        if (dlg.getInstanceModel() != null) {
-            if (!dlg.getInstanceModel().equals("")) {
-                filterMap(this.m_hostMap, dlg.getInstanceModel());
+        if (dlg.getHostGraph() != null) {
+            if (!dlg.getHostGraph().equals("")) {
+                filterMap(this.m_hostMap, dlg.getHostGraph());
             } else {
                 this.m_hostMap.clear();
             }

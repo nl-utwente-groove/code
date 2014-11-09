@@ -16,12 +16,10 @@
  */
 package groove.io.conceptual.lang.groove;
 
-import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphRole;
 import groove.gui.Simulator;
 import groove.io.conceptual.configuration.Config;
-import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.ExportException;
 
 import java.io.IOException;
@@ -70,16 +68,11 @@ public class GrooveExportThreaded extends GrooveExport {
             @Override
             protected Boolean doInBackground() throws Exception {
                 for (GraphRole role : GraphRole.values()) {
-                    for (GrammarGraph graph : getGraphs().get(role).values()) {
+                    for (PreGraph graph : getGraphs().get(role).values()) {
                         if (this.dlg.isCanceled() || this.isCancelled()) {
                             return false;
                         }
-                        AbsGraph absGraph = graph.getGraph();
-                        String safeName =
-                            GrooveUtil.getSafeResource(getNamespace() + QualName.SEPARATOR
-                                + graph.getGraphName());
-                        AspectGraph aspectGraph =
-                            absGraph.toAspectGraph(safeName, graph.getGraphRole());
+                        AspectGraph aspectGraph = graph.toAspectGraph();
 
                         // importGraph here puts work on worker thread and updates GUI better.
                         // Alas, it's not thread safe, so putting it in process() instead

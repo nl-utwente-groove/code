@@ -55,7 +55,7 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,AbsNodeIter
         this.m_currentGraph = export.getGraph(design.getName(), GraphRole.HOST);
     }
 
-    private final GrammarGraph m_currentGraph;
+    private final PreGraph m_currentGraph;
     private final Config m_cfg;
 
     // This is used to generate opposite edges

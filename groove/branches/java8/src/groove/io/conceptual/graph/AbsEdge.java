@@ -10,14 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Edge class for wrapper around AspectGraph. Unidirectional and attaches itself to both source and target nodes.
+ * Edge class for wrapper around AspectGraph.
+ * Unidirectional and attaches itself to both source and target nodes.
  * @author Harold Bruijntjes
- *
  */
 public class AbsEdge {
-    String m_name;
-    List<AspectEdge> m_aspectEdges = new ArrayList<AspectEdge>();
-
     /** Constructs an edge with given source, target and label. */
     public AbsEdge(AbsNode source, AbsNode target, String name) {
         this.m_source = source;
@@ -33,14 +30,14 @@ public class AbsEdge {
         return this.m_source;
     }
 
-    AbsNode m_source;
+    private final AbsNode m_source;
 
     /** Returns the target node of this edge. */
     public AbsNode getTarget() {
         return this.m_target;
     }
 
-    AbsNode m_target;
+    private final AbsNode m_target;
 
     /** Returns the label of this edge. */
     public String getName() {
@@ -51,6 +48,8 @@ public class AbsEdge {
     public void setName(String name) {
         this.m_name = name;
     }
+
+    private String m_name;
 
     @Override
     public String toString() {
@@ -91,4 +90,5 @@ public class AbsEdge {
         return this.m_aspectEdges;
     }
 
+    private final List<AspectEdge> m_aspectEdges = new ArrayList<AspectEdge>();
 }

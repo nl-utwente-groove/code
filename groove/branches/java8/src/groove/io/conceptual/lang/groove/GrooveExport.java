@@ -22,7 +22,6 @@ import groove.graph.GraphRole;
 import groove.gui.SimulatorModel;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
-import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.Export;
 import groove.io.conceptual.lang.ExportException;
 
@@ -72,17 +71,17 @@ public class GrooveExport extends Export {
     /** Name space of this resource. */
     private final String m_namespace;
 
+    /** Returns the namespace-prefixed version of a name. */
+    protected String prefix(String name) {
+        return GrooveUtil.getSafeResource(this.m_namespace + QualName.SEPARATOR + name);
+    }
+
     @Override
     public boolean export() throws ExportException {
         int timer = Timer.start("Groove save");
         for (GraphRole role : this.m_graphs.keySet()) {
-            for (GrammarGraph graph : this.m_graphs.get(role).values()) {
-                AbsGraph absGraph = graph.getGraph();
-                String safeName =
-                    GrooveUtil.getSafeResource(this.m_namespace + QualName.SEPARATOR
-                        + graph.getGraphName());
-                AspectGraph aspectGraph = absGraph.toAspectGraph(safeName, graph.getGraphRole());
-
+            for (PreGraph graph : this.m_graphs.get(role).values()) {
+                AspectGraph aspectGraph = graph.toAspectGraph();
                 try {
                     this.m_simModel.getGrammar()
                         .getStore()
@@ -104,7 +103,7 @@ public class GrooveExport extends Export {
 
     /** Tests if a graph with a given name and role is in this resource. */
     public boolean hasGraph(String name, GraphRole graphRole) {
-        return this.m_graphs.get(graphRole).containsKey(name);
+        return this.m_graphs.get(graphRole).containsKey(prefix(name));
     }
 
     /**
@@ -114,23 +113,24 @@ public class GrooveExport extends Export {
      * @param graphRole role of the desired graph
      * @return previously or freshly generated graph with these characteristics
      */
-    public GrammarGraph getGraph(String name, GraphRole graphRole) {
-        GrammarGraph result = this.m_graphs.get(graphRole).get(name);
+    public PreGraph getGraph(String name, GraphRole graphRole) {
+        String nsName = prefix(name);
+        PreGraph result = this.m_graphs.get(graphRole).get(nsName);
         if (result == null) {
-            result = new GrammarGraph(name, graphRole);
-            this.m_graphs.get(graphRole).put(name, result);
+            result = new PreGraph(nsName, graphRole);
+            this.m_graphs.get(graphRole).put(nsName, result);
         }
         assert result.getGraphRole() == graphRole;
         return result;
     }
 
     /** Returns a mapping from graph roles to a name-graph map of graphs with that role. */
-    public Map<GraphRole,HashMap<String,GrammarGraph>> getGraphs() {
+    public Map<GraphRole,HashMap<String,PreGraph>> getGraphs() {
         return this.m_graphs;
     }
 
     /** Set of graphs of which this resource consists. */
-    private final Map<GraphRole,HashMap<String,GrammarGraph>> m_graphs =
-        new HashMap<GraphRole,HashMap<String,GrammarGraph>>();
+    private final Map<GraphRole,HashMap<String,PreGraph>> m_graphs =
+        new HashMap<GraphRole,HashMap<String,PreGraph>>();
 
 }

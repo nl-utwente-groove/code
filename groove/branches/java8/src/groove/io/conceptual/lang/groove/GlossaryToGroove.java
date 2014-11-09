@@ -40,7 +40,7 @@ public class GlossaryToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode
     }
 
     private final Config m_cfg;
-    private final GrammarGraph m_currentGraph;
+    private final PreGraph m_currentGraph;
 
     @Override
     public void build() throws PortException {

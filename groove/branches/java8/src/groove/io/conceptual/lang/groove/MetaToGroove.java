@@ -57,7 +57,7 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
         return result;
     }
 
-    private GrammarGraph getGrammarGraph() {
+    private PreGraph getGrammarGraph() {
         if (this.m_currentGraph == null) {
             this.m_currentGraph =
                 getExport().getGraph(GrooveUtil.getSafeId(getGlossary().getName()) + "_meta",
@@ -66,7 +66,7 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
         return this.m_currentGraph;
     }
 
-    private GrammarGraph m_currentGraph;
+    private PreGraph m_currentGraph;
 
     private void setupMetaModel() {
         AbsNode typeNode = getMetaNode(MetaType.Type);

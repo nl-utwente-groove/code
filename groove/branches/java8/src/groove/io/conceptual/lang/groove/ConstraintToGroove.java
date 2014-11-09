@@ -531,12 +531,12 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
         while (getExport().hasGraph(index == 0 ? name : name + index, GraphRole.RULE)) {
             index++;
         }
-        GrammarGraph graph = getExport().getGraph(index == 0 ? name : name + index, GraphRole.RULE);
+        PreGraph graph = getExport().getGraph(index == 0 ? name : name + index, GraphRole.RULE);
         this.m_currentGraph = graph;
         this.m_recursiveTypes = recursiveTypes;
     }
 
-    private GrammarGraph m_currentGraph;
+    private PreGraph m_currentGraph;
     // If true, hasElement always returns false
     private boolean m_recursiveTypes;
 
