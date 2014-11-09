@@ -16,12 +16,14 @@
  */
 package groove.io;
 
+import groove.util.Duo;
 import groove.util.Groove;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,19 +42,9 @@ import javax.swing.plaf.basic.BasicFileChooserUI;
  * @version $Revision$
  */
 public class GrooveFileChooser extends JFileChooser {
-
     /** File chooser with initial directory {@link Groove#WORKING_DIR}. */
-    // This class is now protected, what you probably want are the static
-    // methods in the end of this class.
-    protected GrooveFileChooser() {
-        this(Groove.CURRENT_WORKING_DIR);
-    }
-
-    /**
-     * File chooser with given initial directory.
-     */
-    private GrooveFileChooser(String currentDirectoryPath) {
-        super(currentDirectoryPath);
+    private GrooveFileChooser() {
+        super(Groove.CURRENT_WORKING_DIR);
         setFileView(createFileView());
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
@@ -105,8 +97,8 @@ public class GrooveFileChooser extends JFileChooser {
         return getFileFilter() instanceof ExtensionFilter;
     }
 
-    /** 
-     * Returns the file type of the currently selected file filter, 
+    /**
+     * Returns the file type of the currently selected file filter,
      * if that file filter is an {@link ExtensionFilter}.
      */
     public FileType getFileType() {
@@ -126,7 +118,8 @@ public class GrooveFileChooser extends JFileChooser {
             if (f.exists()) {
                 int result =
                     JOptionPane.showConfirmDialog(this,
-                        f.getName() + " already exists, overwrite?", "Overwrite existing file",
+                        f.getName() + " already exists, overwrite?",
+                        "Overwrite existing file",
                         JOptionPane.YES_NO_OPTION);
                 switch (result) {
                 case JOptionPane.YES_OPTION:
@@ -160,7 +153,7 @@ public class GrooveFileChooser extends JFileChooser {
     }
 
     /**
-     * If true, a dialog will show asking if a file should be overwritten 
+     * If true, a dialog will show asking if a file should be overwritten
      * during save if it already exists. Defaults to {@code true}.
      */
     private boolean askOverwrite = true;
@@ -173,9 +166,10 @@ public class GrooveFileChooser extends JFileChooser {
         return new GrooveFileView();
     }
 
-    // Maps from filters to choosers.
-    private static final Map<Set<FileType>,GrooveFileChooser> listMap =
-        new HashMap<Set<FileType>,GrooveFileChooser>();
+    /** Maps from file type sets to choosers. */
+    private static final Map<Set<FileType>,GrooveFileChooser> listMap = new HashMap<>();
+    /** Map from file type sets to preferences. */
+    private static final Map<String,Preference> prefsMap = new HashMap<>();
 
     /** Returns a file chooser object for selecting directories. */
     public static GrooveFileChooser getInstance() {
@@ -209,8 +203,91 @@ public class GrooveFileChooser extends JFileChooser {
             result.setFileFilter(first);
             listMap.put(fileTypes, result);
         }
-        result.setCurrentDirectory(result.getFileSystemView().createFileObject(
-            Groove.CURRENT_WORKING_DIR));
+        result.setCurrentDirectory(result.getFileSystemView()
+            .createFileObject(Groove.CURRENT_WORKING_DIR));
+        Preference pref = prefsMap.get(toString(fileTypes));
+        if (pref != null) {
+            pref.apply(result);
+        }
         return result;
+    }
+
+    /** Returns a normalised string for a given set of file types. */
+    private static String toString(Set<FileType> fileTypes) {
+        return EnumSet.copyOf(fileTypes).toString();
+    }
+
+    /** Sets location and filter preferences for the file choosers to be created. */
+    static public void setPreferences(String prefs) {
+        List<String> prefArray = Groove.splitLines(prefs);
+        assert prefArray.size() % 2 == 0 : "Preference string " + prefs
+            + " should have even set of lines";
+        for (int i = 0; i < prefArray.size(); i += 2) {
+            prefsMap.put(prefArray.get(i), new Preference(prefArray.get(i + 1)));
+        }
+    }
+
+    /** Returns a string describing the preferences of the known choosers. */
+    static public String getPreferences() {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<Set<FileType>,GrooveFileChooser> e : listMap.entrySet()) {
+            prefsMap.put(toString(e.getKey()), new Preference(e.getValue()));
+        }
+        for (Map.Entry<String,Preference> e : prefsMap.entrySet()) {
+            result.append(e.getKey());
+            result.append('\n');
+            result.append(e.getValue().encode());
+            result.append('\n');
+        }
+        return result.toString();
+    }
+
+    /** Preference for a file chooser. */
+    private final static class Preference extends Duo<String> {
+        /** Creates a preference object from a string. */
+        Preference(String prefString) {
+            String[] prefs = prefString.split(SPLIT_CHAR);
+            assert prefs.length == 2 : "Error in preference string " + prefString;
+            setOne(prefs[0]);
+            setTwo(prefs[1]);
+        }
+
+        /** Creates a preference object from a given file chooser. */
+        Preference(GrooveFileChooser chooser) {
+            super("", "");
+            ExtensionFilter filter = (ExtensionFilter) chooser.getFileFilter();
+            if (filter != null) {
+                setOne(filter.getFileType().name());
+            }
+            File file = chooser.getSelectedFile();
+            if (file != null) {
+                setTwo(chooser.getSelectedFile().getPath());
+            }
+        }
+
+        /** Applies the settings in this preference to a given file chooser. */
+        void apply(GrooveFileChooser chooser) {
+            try {
+                ExtensionFilter filter = FileType.valueOf(one()).getFilter();
+                if (filter != null) {
+                    chooser.setFileFilter(filter);
+                }
+            } catch (IllegalArgumentException exc) {
+                // in case one() wasn't a filter
+            }
+            String filename = two();
+            if (!filename.isEmpty()) {
+                chooser.setSelectedFile(new File(filename));
+            }
+        }
+
+        /** Encodes this preference as a single string value
+         * that can be fed back into {@link Preference#Preference(String)}
+         */
+        String encode() {
+            return one() + SPLIT_CHAR + two();
+        }
+
+        private final static String SPLIT_CHAR = "\u0000";
     }
 }
