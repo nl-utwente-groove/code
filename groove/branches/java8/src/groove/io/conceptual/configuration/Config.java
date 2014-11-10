@@ -47,6 +47,8 @@ public class Config {
     /** Location of the XSD for configurations. */
     public static final String CONFIG_SCHEMA =
         "groove/io/conceptual/configuration/ConfigSchema.xsd";
+    /** Location of the XUI for the editor configuration. */
+    public static final String CONFIG_XUI = "groove/io/conceptual/configuration/ConfigSchema.xui";
 
     /** Instantiates a given named configuration. */
     public Config(GrammarModel grammar, String xml) {

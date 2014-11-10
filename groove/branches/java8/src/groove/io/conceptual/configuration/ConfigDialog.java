@@ -321,11 +321,18 @@ public class ConfigDialog extends JDialog {
 
     /** Load a fresh, empty configuration into this dialog. */
     private void loadEmptyConfig() {
-        try {
-            com.jaxfront.core.dom.Document dom =
-                DOMBuilder.getInstance().build(null, getSchemaURL(), "configuration");
-            setDocument(dom);
-        } catch (SchemaCreationException | DocumentCreationException e) {
+        try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
+            PrintStream out = System.out;
+            System.setOut(tmpOut);
+            com.jaxfront.core.dom.Document doc =
+                DOMBuilder.getInstance().build(null,
+                    getSchemaURL(),
+                    (Document) null,
+                    getSchemaXUI(),
+                    "configuration");
+            setDocument(doc);
+            System.setOut(out);
+        } catch (IOException | SchemaCreationException | DocumentCreationException e) {
             // Silently catch error
         }
     }
@@ -347,7 +354,7 @@ public class ConfigDialog extends JDialog {
                 Document xmlDoc = DOMHelper.createDocument(xmlString);
                 DOMBuilder instance = DOMBuilder.getInstance();
                 com.jaxfront.core.dom.Document doc =
-                    instance.build(null, getSchemaURL(), xmlDoc, null, "configuration");
+                    instance.build(null, getSchemaURL(), xmlDoc, getSchemaXUI(), "configuration");
                 setDocument(doc);
                 System.setOut(out);
             } catch (SAXException | IOException | SchemaCreationException
@@ -487,6 +494,21 @@ public class ConfigDialog extends JDialog {
     }
 
     private URL m_schemaURL;
+
+    /** Returns the URL of the configuration editor settings. */
+    private URL getSchemaXUI() {
+        if (this.m_schemaXUI == null) {
+            this.m_schemaXUI = this.getClass().getClassLoader().getResource(Config.CONFIG_XUI);
+            if (this.m_schemaXUI == null) {
+                throw new IllegalStateException("Unable to load the XML schema resource "
+                    + Config.CONFIG_XUI);
+            }
+
+        }
+        return this.m_schemaXUI;
+    }
+
+    private URL m_schemaXUI;
 
     // Store the default Swing tooltip class, so the broken JaxFront version wont interfere after dialog is closed
     private final static Object s_tooltipObj;

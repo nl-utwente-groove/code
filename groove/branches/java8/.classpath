@@ -24,8 +24,6 @@
 	<classpathentry kind="lib" path="lib/io/jaxb-gxl-1_0.jar"/>
 	<classpathentry kind="lib" path="lib/opencsv-2.3.jar" sourcepath="lib/src/opencsv-2_3-src.zip"/>
 	<classpathentry kind="lib" path="lib/io/com.alexmerz.graphviz.jar"/>
-	<classpathentry kind="lib" path="lib/jaxfront/jaxfront-core.jar"/>
-	<classpathentry kind="lib" path="lib/jaxfront/jaxfront-swing.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2_11_0/xercesImpl.jar" sourcepath="lib/src/xerces-2_11_0-src.zip"/>
 	<classpathentry kind="lib" path="lib/xerces-2_11_0/resolver.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2_11_0/xml-apis.jar"/>
@@ -37,5 +35,10 @@
 	<classpathentry kind="lib" path="lib/emf-2_10_1/org.eclipse.emf.ecore.xmi_2.10.1.v20140901-1043.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jdt.annotation_2.0.0.v20140415-1436.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre8"/>
+	<classpathentry kind="lib" path="lib/jaxfront/jaxfront-core-2_95.jar"/>
+	<classpathentry kind="lib" path="lib/jaxfront/jaxfront-swing-2_95.jar"/>
+	<classpathentry kind="lib" path="lib/jaxfront/commons-collections.jar"/>
+	<classpathentry kind="lib" path="lib/jaxfront/brownies-collections-0.9.6.jar"/>
+	<classpathentry kind="lib" path="lib/jaxfront/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
