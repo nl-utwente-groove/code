@@ -2,12 +2,13 @@ package groove.io.conceptual.graph;
 
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectLabel;
+import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.AspectParser;
 import groove.graph.GraphRole;
 import groove.util.Groove;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Edge class for wrapper around AspectGraph.
@@ -56,39 +57,34 @@ public class AbsEdge {
         return this.m_name;
     }
 
+    /** Computes and returns the
+     * aspect edges constructed from this edge.
+     */
+    public List<AspectEdge> getAspect(GraphRole role) {
+        if (this.m_aspectEdges == null) {
+            this.m_aspectEdges = computeAspect(role);
+        }
+        return this.m_aspectEdges;
+    }
+
     /**
      * Constructs a set of {@link AspectEdge} from this edge.
      * Each sublabel in the newline-separated label of this edge
      * is transformed to an {@link AspectLabel}, from which an edge is constructed.
-     * The aspect edge can be retrieved after this call returns by {@link #getAspect()}.
      * @param role graph role for which the edge is to be created
      */
-    public void buildAspect(GraphRole role) {
-        if (this.m_aspectEdges.size() != 0) {
-            return;
-        }
-
+    public List<AspectEdge> computeAspect(GraphRole role) {
         this.m_source.buildAspect(role);
+        AspectNode source = this.m_source.getAspect();
         this.m_target.buildAspect(role);
-
-        for (String sublabel : Groove.splitLines(this.m_name)) {
-            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, role);
-            if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge =
-                    new AspectEdge(this.m_source.getAspect(), alabel, this.m_target.getAspect());
-                this.m_aspectEdges.add(newEdge);
-            } else {
-                // error
-            }
-        }
+        AspectNode target = this.m_target.getAspect();
+        return Groove.splitLines(this.m_name)
+            .stream()
+            .map(lab -> AspectParser.getInstance().parse(lab, role))
+            .filter(al -> !al.isNodeOnly())
+            .map(al -> new AspectEdge(source, al, target))
+            .collect(Collectors.toList());
     }
 
-    /** After a call to {@link #buildAspect(GraphRole)}, returns the
-     * aspect edges constructed from this edge.
-     */
-    public List<AspectEdge> getAspect() {
-        return this.m_aspectEdges;
-    }
-
-    private final List<AspectEdge> m_aspectEdges = new ArrayList<AspectEdge>();
+    private List<AspectEdge> m_aspectEdges;
 }

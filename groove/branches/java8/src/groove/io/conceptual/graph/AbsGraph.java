@@ -40,7 +40,7 @@ public class AbsGraph {
     /** Returns an aspect graph constructed from this graph. */
     public AspectGraph toAspectGraph(String name, GraphRole role) {
         AspectGraph result = new AspectGraph(name, role);
-        for (AbsNode n : this.m_nodes) {
+        for (AbsNode n : getNodes()) {
             n.buildAspect(role);
             AspectNode an = n.getAspect();
             result.addNode(an);
@@ -48,6 +48,11 @@ public class AbsGraph {
                 result.addEdge(ae);
             }
         }
+        // now build the edges
+        getNodes().stream()
+            .flatMap(n -> n.getEdges().stream())
+            .flatMap(e -> e.getAspect(role).stream())
+            .forEach(ae -> result.addEdge(ae));
         result.setFixed();
         return result;
     }
