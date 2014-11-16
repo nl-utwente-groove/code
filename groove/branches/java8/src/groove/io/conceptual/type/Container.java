@@ -1,19 +1,26 @@
 package groove.io.conceptual.type;
 
 import groove.io.conceptual.Field;
+import groove.io.conceptual.configuration.schema.Meta;
+
+import java.util.function.Function;
 
 /** Container type. */
 public class Container extends Type {
     /** Kind of container type. */
     public enum Kind {
         /** Unordered container with duplicates. */
-        BAG,
+        BAG(m -> m.getMetaContainerBag()),
         /** Unordered container without duplicates. */
-        SET,
+        SET(m -> m.getMetaContainerSet()),
         /** Ordered container with duplicates. */
-        SEQ,
+        SEQ(m -> m.getMetaContainerSeq()),
         /** Ordered container without duplicates. */
-        ORD, ;
+        ORD(m -> m.getMetaContainerOrd()), ;
+
+        private Kind(Function<Meta,String> postfix) {
+            this.postfix = postfix;
+        }
 
         /** Indicates if this container kind is ordered. */
         public boolean isOrdered() {
@@ -24,6 +31,19 @@ public class Container extends Type {
         public boolean isUnique() {
             return this == SET || this == ORD;
         }
+
+        /** Returns the meta-type name of this kind of container. */
+        public String getName(Meta meta) {
+            return this.postfix.apply(meta);
+        }
+
+        /** Indicates whether a given type name ends the postfix indicating this container kind. */
+        public boolean admits(Meta meta, String typeName) {
+            String post = getName(meta);
+            return post.length() > 0 && typeName.endsWith(post);
+        }
+
+        private final Function<Meta,String> postfix;
     }
 
     private Kind m_ctype;

@@ -17,7 +17,6 @@
 package groove.io.conceptual.lang.groove;
 
 import groove.io.conceptual.configuration.schema.Meta;
-import groove.io.conceptual.configuration.schema.StringsType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,14 +52,14 @@ enum MetaType {
         this.name = name;
     }
 
-    /** Retrieves the node name for this meta-type from a {@link StringsType} object. */
+    /** Retrieves the node name for this meta-type from a {@link Meta} object. */
     public String getName(Meta strings) {
         return this.name.apply(strings);
     }
 
     private final Function<Meta,String> name;
 
-    /** Creates a map from strings to metatypes, based on a given {@link StringsType} object. */
+    /** Creates a map from strings to metatypes, based on a given {@link Meta} object. */
     public static Map<String,MetaType> createMap(Meta strings) {
         Map<String,MetaType> result = new HashMap<>();
         for (MetaType mt : MetaType.values()) {

@@ -16,39 +16,63 @@
  */
 package groove.io.conceptual.lang.groove;
 
+import groove.io.conceptual.configuration.schema.StringsType;
 import groove.io.conceptual.type.Type;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /** Record of type name associations with corresponding meta-types and glossary types. */
 public class GraphNodeTypes {
     /** Enumeration of (outer) types that may occur in a metamodel. */
     public enum ModelType {
         /** Class type. */
-        TypeClass,
+        TypeClass(s -> s.getProperPostfix()),
         /** Nullable class type. */
-        TypeClassNullable,
+        TypeClassNullable(s -> s.getNullablePostfix()),
         /** Enumeration type. */
-        TypeEnum,
+        TypeEnum(s -> s.getEnumPostfix()),
         /** Type of (singleton) enumeration subtypes, if that is the chosen representation. */
-        TypeEnumValue,
+        TypeEnumValue(),
         /** Type of intermediate nodes. */
-        TypeIntermediate,
+        TypeIntermediate(),
         /** Primitive data type. */
-        TypeDatatype,
+        TypeDatatype(s -> s.getDataPostfix()),
         /** Set container. */
-        TypeContainerSet,
+        TypeContainerSet(),
         /** Multiset container. */
-        TypeContainerBag,
+        TypeContainerBag(),
         /** Ordered (list-like) container. */
-        TypeContainerSeq,
+        TypeContainerSeq(),
         /** Ordered (set-like) container. */
-        TypeContainerOrd,
+        TypeContainerOrd(),
         /** Tuple type. */
-        TypeTuple,
+        TypeTuple(s -> s.getTuplePostfix()),
         /** Artificial type with no values. */
-        TypeNone
+        TypeNone(), ;
+
+        private ModelType() {
+            this(null);
+        }
+
+        private ModelType(Function<StringsType,String> postfix) {
+            this.postfix = postfix;
+        }
+
+        /** Indicates if a given type name ends on the postfix specifying this model type. */
+        public boolean admits(StringsType strings, String typeName) {
+            boolean result;
+            if (this.postfix == null) {
+                String post = this.postfix.apply(strings);
+                result = post.length() > 0 && typeName.endsWith(post);
+            } else {
+                result = false;
+            }
+            return result;
+        }
+
+        private final Function<StringsType,String> postfix;
     }
 
     /** Adds a mapping from a type name to a meta-type. */

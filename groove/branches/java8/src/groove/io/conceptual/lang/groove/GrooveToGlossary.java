@@ -11,9 +11,11 @@ import groove.io.conceptual.Name;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
+import groove.io.conceptual.configuration.schema.Meta;
 import groove.io.conceptual.configuration.schema.ModeType;
 import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
+import groove.io.conceptual.configuration.schema.StringsType;
 import groove.io.conceptual.lang.GlossaryImporter;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
@@ -32,10 +34,12 @@ import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /** Class providing the functionality to convert a GROOVE type graph
@@ -108,45 +112,26 @@ public class GrooveToGlossary extends GlossaryImporter {
             for (Iterator<? extends TypeNode> it = unvisitedNodes.iterator(); it.hasNext();) {
                 TypeNode n = it.next();
                 String nameStr = n.label().text();
-                Id id = getNodeId(n);
 
                 // Enums end with EnumPostfix
-                if (this.m_cfg.getStrings().getEnumPostfix().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings().getEnumPostfix())) {
-                    enumIds.put(id, null);
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeEnum);
-                } else if (this.m_cfg.getStrings().getProperPostfix().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings().getProperPostfix())) {
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeClass);
-                } else if (this.m_cfg.getStrings().getNullablePostfix().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings().getNullablePostfix())) {
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeClassNullable);
-                } else if (this.m_cfg.getStrings().getDataPostfix().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings().getDataPostfix())) {
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
-                } else if (this.m_cfg.getStrings().getIntermediatePostfix().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings().getIntermediatePostfix())) { //Non-container intermediates
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (this.m_cfg.getMeta().getMetaContainerSet().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getMeta().getMetaContainerSet())) { //Container intermediates when postfix enabled
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (this.m_cfg.getMeta().getMetaContainerBag().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getMeta().getMetaContainerBag())) { //Container intermediates when postfix enabled
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (this.m_cfg.getMeta().getMetaContainerOrd().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getMeta().getMetaContainerOrd())) { //Container intermediates when postfix enabled
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (this.m_cfg.getMeta().getMetaContainerSeq().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getMeta().getMetaContainerSeq())) { //Container intermediates when postfix enabled
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
-                } else if (this.m_cfg.getStrings().getTuplePostfix().length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings().getTuplePostfix())) {
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeTuple);
-                } else {
-                    // If no actual postfix, try other options later on
-                    continue;
+                StringsType strings = this.m_cfg.getStrings();
+                Meta meta = this.m_cfg.getMeta();
+                Optional<ModelType> type =
+                    Arrays.asList(ModelType.values())
+                        .stream()
+                        .filter(t -> t.admits(strings, nameStr))
+                        .findAny();
+                if (!type.isPresent()
+                    && Arrays.asList(Kind.values()).stream().anyMatch(k -> k.admits(meta, nameStr))) {
+                    type = Optional.of(ModelType.TypeIntermediate);
                 }
-                it.remove();
+                if (type.isPresent()) {
+                    if (type.get() == ModelType.TypeEnum) {
+                        enumIds.put(getNodeId(n), null);
+                    }
+                    this.m_types.addModelType(nameStr, type.get());
+                    it.remove();
+                }
             }
         }
 
@@ -178,21 +163,20 @@ public class GrooveToGlossary extends GlossaryImporter {
         for (Iterator<? extends TypeNode> it = unvisitedNodes.iterator(); it.hasNext();) {
             TypeNode n = it.next();
             Id id = getNodeId(n);
-
+            ModelType type;
             if (n.isDataType()) {
                 // Simple data types
-                this.m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
+                type = ModelType.TypeDatatype;
             } else if (enumIds.keySet().contains(id.getNamespace())) {
                 // Enum values
-                this.m_types.addModelType(getLabel(n), ModelType.TypeEnumValue);
-            } else {
+                type = ModelType.TypeEnumValue;
+            } else if (getLabel(n).equals(this.m_cfg.getStrings().getNilName())) {
                 // mark everything else as a class
-                if (getLabel(n).equals(this.m_cfg.getStrings().getNilName())) {
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeNone);
-                } else {
-                    this.m_types.addModelType(getLabel(n), ModelType.TypeClass);
-                }
+                type = ModelType.TypeNone;
+            } else {
+                type = ModelType.TypeClass;
             }
+            this.m_types.addModelType(getLabel(n), type);
             it.remove();
         }
 
@@ -474,9 +458,9 @@ public class GrooveToGlossary extends GlossaryImporter {
 
         // No luxury of metamodel, maybe postfixes were used
         if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
-            Kind ct = getPostfixType(interNode);
-            if (ct != null) {
-                Container c = new Container(ct, t);
+            Optional<Kind> ct = getPostfixType(interNode);
+            if (ct.isPresent()) {
+                Container c = new Container(ct.get(), t);
                 setNodeType(interNode, c);
 
                 return c;
@@ -554,25 +538,12 @@ public class GrooveToGlossary extends GlossaryImporter {
         return this.m_types.getType(node.label().text());
     }
 
-    private Kind getPostfixType(TypeNode node) {
+    private Optional<Kind> getPostfixType(TypeNode node) {
         String typeName = node.label().text();
-        if (this.m_cfg.getMeta().getMetaContainerSet().length() > 0
-            && typeName.endsWith(this.m_cfg.getMeta().getMetaContainerSet())) { //Container intermediates when postfix enabled
-            return Kind.SET;
-        } else if (this.m_cfg.getMeta().getMetaContainerBag().length() > 0
-            && typeName.endsWith(this.m_cfg.getMeta().getMetaContainerBag())) { //Container intermediates when postfix enabled
-            return Kind.BAG;
-        } else if (this.m_cfg.getMeta().getMetaContainerOrd().length() > 0
-            && typeName.endsWith(this.m_cfg.getMeta().getMetaContainerOrd())) { //Container intermediates when postfix enabled
-            return Kind.ORD;
-        } else if (this.m_cfg.getMeta().getMetaContainerSeq().length() > 0
-            && typeName.endsWith(this.m_cfg.getMeta().getMetaContainerSeq())) { //Container intermediates when postfix enabled
-            return Kind.SEQ;
-        }
-
-        //No type detected
-        return null;
+        Meta meta = this.m_cfg.getMeta();
+        return Arrays.asList(Kind.values())
+            .stream()
+            .filter(k -> k.admits(meta, typeName))
+            .findFirst();
     }
-
-    // intermediate = edge with properties. Properties determined by either intermediate, or target node
 }
