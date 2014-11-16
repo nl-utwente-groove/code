@@ -69,7 +69,7 @@ public class GrooveToMeta implements Messenger {
     /** Returns the meta-type for a given type name. */
     private MetaType getMetaType(String name) {
         if (this.metaTypeMap == null) {
-            this.metaTypeMap = MetaType.createMap(this.m_cfg.getStrings());
+            this.metaTypeMap = MetaType.createMap(this.m_cfg.getMeta());
         }
         MetaType result = this.metaTypeMap.get(name);
         if (result == null) {

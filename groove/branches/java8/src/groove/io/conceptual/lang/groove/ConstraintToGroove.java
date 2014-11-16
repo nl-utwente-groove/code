@@ -82,7 +82,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
 
     @Override
     protected AbsNode addIdentityProp(IdentityProperty prop) {
-        if (this.m_cfg.getTypeModel().getConstraints().isCheckIdentifier()) {
+        if (this.m_cfg.getConstraints().getChecks().isCheckIdentifier()) {
             setRuleGraph("Identity_" + prop.getIdClass().getId().getName(), CONSTRAINT_NS, false);
             equivalencyCheck(prop.getIdClass(), prop.getFields(), null);
         }
@@ -92,7 +92,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
 
     @Override
     protected AbsNode addKeysetProp(KeysetProperty prop) {
-        if (this.m_cfg.getTypeModel().getConstraints().isCheckKeyset()) {
+        if (this.m_cfg.getConstraints().getChecks().isCheckKeyset()) {
             setRuleGraph("Keyset_" + prop.getRelField().getName(), CONSTRAINT_NS, false);
             equivalencyCheck(prop.getKeyClass(), prop.getKeyFields(), prop.getRelField());
         }
@@ -286,7 +286,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
     // Called twice, opposite has a reverse
     // SO only handle a single direction
     protected AbsNode addOppositeProp(OppositeProperty prop) {
-        if (this.m_cfg.getTypeModel().getConstraints().isCheckOpposite()) {
+        if (this.m_cfg.getConstraints().getChecks().isCheckOpposite()) {
             String valueName = this.m_cfg.getStrings().getValueEdge();
 
             setRuleGraph("Opposite_" + prop.getField1().getName(), CONSTRAINT_NS, false);
@@ -322,7 +322,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
 
     @Override
     protected AbsNode addDefaultValueProp(DefaultValueProperty prop) {
-        if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isUseRule()) {
+        if (this.m_cfg.getXMLConfig().getConstraints().getRules().isSetDefault()) {
             if (prop.getField().getType() instanceof Container
                 && prop.getField().getUpperBound() > 1) {
                 // Cannot support containers, because hard to determine if container is empty, or not there
@@ -412,7 +412,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
         Container fieldType =
             field.getType() instanceof Container ? (Container) field.getType() : null;
         Container.Kind containerKind = fieldType == null ? null : fieldType.getContainerType();
-        if (this.m_cfg.getTypeModel().getConstraints().isCheckUniqueness()
+        if (this.m_cfg.getConstraints().getChecks().isCheckUniqueness()
             && this.m_cfg.useIntermediate(field)
             && (containerKind == Kind.SET || containerKind == Kind.ORD)) {
             assert fieldType != null : "Guaranteed by containerKind != null";
@@ -439,7 +439,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
         }
 
         // Ordering, check if indices are well ordered, or next edges don't have two heads (rest is checked by multiplicities)
-        if (this.m_cfg.getTypeModel().getConstraints().isCheckOrdering()
+        if (this.m_cfg.getConstraints().getChecks().isCheckOrdering()
             && (containerKind == Kind.ORD || containerKind == Kind.SEQ)) {
             setRuleGraph("Ordered_" + field.getName(), CONSTRAINT_NS, false);
 
@@ -478,7 +478,7 @@ public class ConstraintToGroove extends GlossaryExportBuilder<GrooveExport,AbsNo
             return;
         }
 
-        if (!this.m_cfg.getTypeModel().getConstraints().isCheckEnum()) {
+        if (!this.m_cfg.getConstraints().getChecks().isCheckEnum()) {
             // No checks for enum
             return;
         }

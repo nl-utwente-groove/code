@@ -3,8 +3,8 @@ How to generate the data bound file for Config.xsd
 
 Note: this works better under Windows if the path_to_xjc contains spaces
 
-- Go to groove/io/conceptual/configuration 
+- Go to this directory (xsd)
 - call xjc: 
 
-path_to_xjc/bin/xjc.sh -p groove.io.conceptual.configuration.schema -d ../../../.. ConfigSchame.xsd
-%PATH_TO_XJC%\bin\xjc.bat -p groove.io.conceptual.configuration.schema -d ..\..\..\.. ConfigSchame.xsd
+path_to_xjc/bin/xjc.sh -p groove.io.conceptual.configuration.schema ConfigSchema.xsd
+%PATH_TO_XJC%\bin\xjc.bat -p groove.io.conceptual.configuration.schema ConfigSchema.xsd

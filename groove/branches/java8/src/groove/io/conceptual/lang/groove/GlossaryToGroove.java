@@ -293,35 +293,31 @@ public class GlossaryToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode
 
     @Override
     protected AbsNode addAbstractProp(AbstractProperty prop) {
-        if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseAbstract()) {
-            AbsNode classNode = add(prop.getAbstractClass().getProperClass());
-            classNode.addName("abs:");
-        }
+        AbsNode classNode = add(prop.getAbstractClass().getProperClass());
+        classNode.addName("abs:");
         put(prop, null);
         return null;
     }
 
     @Override
     protected AbsNode addContainmentProp(ContainmentProperty prop) {
-        if (this.m_cfg.getXMLConfig().getTypeModel().getProperties().isUseContainment()) {
-            // Add containment to field edge
-            String edgeName = prop.getField().getName().toString();
-            AbsNode containmentNode = add(prop.getContainerClass());
+        // Add containment to field edge
+        String edgeName = prop.getField().getName().toString();
+        AbsNode containmentNode = add(prop.getContainerClass());
+        for (AbsEdge edge : containmentNode.getEdges()) {
+            if (edge.getName().endsWith(edgeName)) {
+                edge.setName("part:" + edge.getName());
+            }
+        }
+
+        // Add to intermediate node as well if required
+        if (this.m_cfg.useIntermediate(prop.getField())) {
+            edgeName = this.m_cfg.getStrings().getValueEdge();
+            containmentNode = add(prop.getField());
+
             for (AbsEdge edge : containmentNode.getEdges()) {
                 if (edge.getName().endsWith(edgeName)) {
                     edge.setName("part:" + edge.getName());
-                }
-            }
-
-            // Add to intermediate node as well if required
-            if (this.m_cfg.useIntermediate(prop.getField())) {
-                edgeName = this.m_cfg.getStrings().getValueEdge();
-                containmentNode = add(prop.getField());
-
-                for (AbsEdge edge : containmentNode.getEdges()) {
-                    if (edge.getName().endsWith(edgeName)) {
-                        edge.setName("part:" + edge.getName());
-                    }
                 }
             }
         }
@@ -348,8 +344,7 @@ public class GlossaryToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode
     // So only handle a single direction
     protected AbsNode addOppositeProp(OppositeProperty prop) {
         TypeModel typeModel = this.m_cfg.getXMLConfig().getTypeModel();
-        boolean useOpposites =
-            typeModel.getProperties().isUseOpposite() && typeModel.getFields().isOpposites();
+        boolean useOpposites = typeModel.getFields().isOpposites();
         if (useOpposites) {
             //TODO: possible for self referential opposites, make sure the field nodes are split in that case
             AbsNode class1Node = add(prop.getClass1());

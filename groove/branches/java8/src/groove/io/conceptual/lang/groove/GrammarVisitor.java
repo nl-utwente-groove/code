@@ -18,7 +18,6 @@ import groove.util.Pair;
 import groove.util.parse.FormatException;
 
 import java.awt.Frame;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,7 +38,7 @@ public class GrammarVisitor {
         this.m_namespace = namespace;
 
         this.m_types = new GraphNodeTypes();
-        this.m_useMeta = this.m_cfg.getTypeModel().isMetaSchema();
+        this.m_useMeta = this.m_cfg.getMeta().isMetaSchema();
         this.m_fixedType = typeName;
         this.m_fixedInstance = hostName;
     }
@@ -85,7 +84,7 @@ public class GrammarVisitor {
             return false;
         }
 
-        if (this.m_cfg.getXMLConfig().getTypeModel().isMetaSchema()) {
+        if (this.m_cfg.getXMLConfig().getMeta().isMetaSchema()) {
             if (dlg.getMetaGraph() != null && !dlg.getMetaGraph().equals("")) {
                 filterMap(this.m_metaMap, dlg.getTypeGraph());
             } else {
@@ -174,7 +173,6 @@ public class GrammarVisitor {
 
         Timer.stop(timer);
         setTypeGraph(graphs.one());
-        setRuleGraphs(this.m_ruleMap.values());
         this.m_glos.resolve();
         Timer.cont(timer);
 
@@ -218,10 +216,6 @@ public class GrammarVisitor {
         } else if ("".equals(this.m_fixedInstance)) {
             this.m_hostMap.clear();
         }
-    }
-
-    private void setRuleGraphs(Collection<groove.grammar.model.RuleModel> ruleModels) {
-        new GrooveToConstraint(ruleModels, this.m_types, this.m_cfg, this.m_glos);
     }
 
     private void setMetaGraph(TypeGraph typeGraph) {

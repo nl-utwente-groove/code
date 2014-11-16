@@ -6,7 +6,6 @@ import groove.io.conceptual.Field;
 import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.NullableType;
-import groove.io.conceptual.configuration.schema.StringsType;
 import groove.io.conceptual.graph.AbsEdge;
 import groove.io.conceptual.graph.AbsNode;
 import groove.io.conceptual.lang.GlossaryExportBuilder;
@@ -41,7 +40,7 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
     @Override
     public void build() throws PortException {
         // Only create meta graph if config requires it
-        if (this.m_cfg.getTypeModel().isMetaSchema()) {
+        if (this.m_cfg.getMeta().isMetaSchema()) {
             setupMetaModel();
             this.m_cfg.setGlossary(getGlossary());
             super.build();
@@ -256,8 +255,7 @@ public class MetaToGroove extends GlossaryExportBuilder<GrooveExport,AbsNode> {
     private final Map<MetaType,AbsNode> m_metaNodes = new HashMap<MetaType,AbsNode>();
 
     private AbsNode computeMetaNode(MetaType type) {
-        StringsType strings = this.m_cfg.getStrings();
-        String name = type.getName(strings);
+        String name = type.getName(this.m_cfg.getMeta());
         return new AbsNode("type:" + name);
     }
 }

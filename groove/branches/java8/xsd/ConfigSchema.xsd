@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:cnf="ConfigSchema" elementFormDefault="qualified" targetNamespace="ConfigSchema">
+	<element name="configuration">
+		<complexType>
+			<sequence>
+			    <element name="sourceLocation" type="anyURI"/>
+				<element name="typeModel" type="cnf:typeModel"/>
+				<element name="instanceModel" type="cnf:instanceModel"/>
+				<element name="global" type="cnf:global"/>
+				<element name="meta" type="cnf:meta"/>
+				<element name="constraints" type="cnf:constraints"/>
+			</sequence>
+		</complexType>
+    </element>
+
+	<complexType name="typeModel">
+		<sequence>
+			<element name="fields">
+				<complexType>
+					<sequence>
+						<element name="intermediates">
+							<complexType>
+								<attribute default="required" name="when" type="cnf:intermediateWhenType">
+								</attribute>
+							</complexType>
+						</element>
+						<element name="containers">
+							<complexType>
+								<sequence>
+									<element name="ordering">
+										<complexType>
+											<attribute default="edge" name="type" type="cnf:orderType">
+											</attribute>
+											<attribute default="preferValue" name="mode" type="cnf:modeType">
+											</attribute>
+											<attribute default="false" name="usePrevEdge" type="boolean">
+											</attribute>
+										</complexType>
+									</element>
+								</sequence>
+								<attribute default="false" name="useTypeName" type="boolean">
+								</attribute>
+							</complexType>
+						</element>
+					</sequence>
+					<attribute default="false" name="opposites" type="boolean">
+					</attribute>
+				</complexType>
+			</element>
+		</sequence>
+		<attribute default="flag" name="enumMode" type="cnf:enumModeType"/>
+	</complexType>
+
+	<complexType name="instanceModel">
+		<sequence>
+			<element name="objects">
+				<complexType>
+					<attribute default="false" name="use_identifier" type="boolean"/>
+				</complexType>
+			</element>
+			<element name="defaults">
+				<complexType>
+					<attribute default="true" name="setValue" type="boolean">
+					</attribute>
+				</complexType>
+			</element>
+		</sequence>
+	</complexType>
+
+	<complexType name="global">
+		<sequence>
+			<element maxOccurs="unbounded" minOccurs="0" name="id_overrides">
+				<complexType>
+					<sequence>
+						<element name="id" type="string"/>
+						<element name="name" type="string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="strings" type="cnf:stringsType"/>
+		</sequence>
+		<attribute default="required" name="nullable" type="cnf:nullableType">
+		</attribute>
+		<attribute default="disambiguate" name="id_mode" type="cnf:idModeType"/>
+		<attribute default="$" name="id_separator" type="cnf:idSeparatorType"/>
+	</complexType>
+
+	<complexType name="meta">
+		<attribute default="false" name="metaSchema" type="boolean"/>
+		<attribute default="Type" name="metaType" type="string"/>
+		<attribute default="Class" name="metaClass" type="string"/>
+		<attribute default="NullableClass" name="metaClassNullable" type="string">
+		</attribute>
+		<attribute default="Enum" name="metaEnum" type="string"/>
+		<attribute default="Tuple" name="metaTuple" type="string"/>
+		<attribute default="Bag" name="metaContainerBag" type="string">
+		</attribute>
+		<attribute default="Set" name="metaContainerSet" type="string">
+		</attribute>
+		<attribute default="Seq" name="metaContainerSeq" type="string">
+		</attribute>
+		<attribute default="Ord" name="metaContainerOrd" type="string">
+		</attribute>
+		<attribute default="DataType" name="metaDataType" type="string">
+		</attribute>
+		<attribute default="Intermediate" name="metaIntermediate" type="string">
+		</attribute>
+	</complexType>
+
+	<complexType name="constraints">
+		<sequence>
+			<element name="rules">
+				<complexType>
+					<attribute default="true" name="setDefault" type="boolean">
+					</attribute>
+				</complexType>
+			</element>
+		
+			<element name="checks">
+				<complexType>
+					<attribute default="true" name="checkUniqueness" type="boolean">
+					</attribute>
+					<attribute default="true" name="checkIdentifier" type="boolean">
+					</attribute>
+					<attribute default="true" name="checkKeyset" type="boolean">
+					</attribute>
+					<attribute default="true" name="checkOpposite" type="boolean">
+					</attribute>
+					<attribute default="true" name="checkOrdering" type="boolean">
+					</attribute>
+					<attribute default="true" name="checkEnum" type="boolean"/>
+				</complexType>
+			</element>
+		</sequence>
+	</complexType>
+
+	<simpleType name="nullableType">
+		<restriction base="string">
+			<enumeration value="all"/>
+			<enumeration value="required"/>
+			<enumeration value="none"/>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="idSeparatorType">
+		<restriction base="string">
+			<enumeration value="$"/>
+			<enumeration value="_"/>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="idModeType">
+		<restriction base="string">
+			<enumeration value="full"/>
+			<enumeration value="flat"/>
+			<enumeration value="disambiguate"/>
+		</restriction>
+	</simpleType>
+	
+	<simpleType name="orderType">
+		<restriction base="string">
+			<enumeration value="index"/>
+			<enumeration value="edge"/>
+			<enumeration value="none"/>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="modeType">
+		<restriction base="string">
+			<enumeration value="useIntermediate">
+			</enumeration>
+			<enumeration value="preferValue"/>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="enumModeType">
+		<restriction base="string">
+			<enumeration value="node"/>
+			<enumeration value="flag"/>
+		</restriction>
+	</simpleType>
+	
+	<simpleType name="intermediateWhenType">
+		<restriction base="string">
+			<enumeration value="always"/>
+			<enumeration value="container"/>
+			<enumeration value="required"/>
+		</restriction>
+	</simpleType>
+	
+	<simpleType name="intermediateNameType">
+		<restriction base="string">
+			<enumeration value="field"/>
+			<enumeration value="type"/>
+			<enumeration value="combined"/>
+		</restriction>
+	</simpleType>
+	
+	<simpleType name="enumType">
+		<restriction base="string">
+			<enumeration value="subClasses"/>
+			<enumeration value="flags"/>
+		</restriction>
+	</simpleType>
+	
+	<simpleType name="representationType">
+		<restriction base="string">
+			<enumeration value="internal"/>
+			<enumeration value="asClass"/>
+		</restriction>
+	</simpleType>
+	
+	<simpleType name="literalsType">
+		<restriction base="string">
+			<enumeration value="singleton"/>
+			<enumeration value="multiple"/>
+		</restriction>
+	</simpleType>
+
+
+	<complexType name="stringsType">
+		<attribute default="$data$" name="dataPostfix" type="string">
+		</attribute>
+		<attribute default="" name="properPostfix" type="string"/>
+		<attribute default="$nullable$" name="nullablePostfix" type="string">
+		</attribute>
+		<attribute default="$enum$" name="enumPostfix" type="string">
+		</attribute>
+		<attribute default="$tuple$" name="tuplePostfix" type="string">
+		</attribute>
+		<attribute default="val" name="valueEdge" type="string"/>
+		<attribute default="index" name="indexEdge" type="string"/>
+		<attribute default="next" name="nextEdge" type="string"/>
+		<attribute default="prev" name="prevEdge" type="string"/>
+		<attribute default="opposite" name="oppositeEdge" type="string">
+		</attribute>
+		<attribute default="value" name="dataValue" type="string"/>
+		<attribute default="" name="intermediatePostfix" type="string">
+		</attribute>
+		<attribute default="Nil" name="nilName" type="string"/>
+		<attribute default="elem" name="intermediateName" type="string">
+		</attribute>
+	</complexType>
+</schema>

@@ -145,7 +145,7 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,AbsNodeIter
 
         // Set default values for those fields not set in the object
         Set<Field> defaultFields = new HashSet<Field>();
-        if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
+        if (this.m_cfg.getXMLConfig().getConstraints().getRules().isSetDefault()) {
             for (Property p : getGlossary().getProperties()) {
                 if (p instanceof DefaultValueProperty) {
                     DefaultValueProperty dp = (DefaultValueProperty) p;
@@ -198,7 +198,7 @@ public class DesignToGroove extends DesignExportBuilder<GrooveExport,AbsNodeIter
             }
         }
         // Clear previously set default values so model is not changed by import
-        if (this.m_cfg.getXMLConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
+        if (this.m_cfg.getXMLConfig().getConstraints().getRules().isSetDefault()) {
             for (Field f : defaultFields) {
                 object.getValue().remove(f);
             }

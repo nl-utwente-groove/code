@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jaxfront version=2.95;time=2014-11-16 09:38:31.674;xui=ConfigSchema.xui;xsd=ConfigSchema.xsd;nsMapping=%KEYhttp://www.jaxfront.com/xui%VAL%KEYhttp://www.w3.org/2001/XMLSchema%VALxsd%KEYhttp://www.w3.org/2001/XMLSchema-instance%VALxsi?>
+<XUI  xsi:schemaLocation="http://www.jaxfront.com/xui jar:file:/C:/Program%20Files%20(x86)/JAXFront-2.95/lib/jaxfront-core.jar!/xui.xsd" xmlns="http://www.jaxfront.com/xui" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+       <component xpath="/cnf:configuration">
+              <style>
+                     <mode childrenView="tab">
+                            <message/>
+                     </mode>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Global"></component>
+       <component xpath="/cnf:configuration/cnf:Glossary"></component>
+       <component xpath="/cnf:configuration/cnf:Source">
+              <style>
+                     <leaf>
+                            <component size="40"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global"></component>
+       <component xpath="/cnf:configuration/cnf:instanceModel"></component>
+       <component xpath="/cnf:configuration/cnf:sourceLocation">
+              <style>
+                     <leaf>
+                            <component size="40">
+                                   <value enableEditableComboBox="true"/>
+                            </component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel"></component>
+       <component xpath="/cnf:configuration/cnf:Design/cnf:objects">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Global/@id_mode">
+              <style>
+                     <leaf>
+                            <component size="15">
+                                   <value>
+                                          <singleValue defaultValue="flat"/>
+                                   </value>
+                            </component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Global/@id_separator">
+              <style>
+                     <leaf>
+                            <component size="15">
+                                   <value>
+                                          <singleValue defaultValue="$"/>
+                                   </value>
+                            </component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Global/@nullable">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/@enumMode">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/@metaSchema"></component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/@id_mode">
+              <style>
+                     <leaf>
+                            <component size="15">
+                                   <value>
+                                          <singleValue defaultValue="full"/>
+                                   </value>
+                            </component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/@id_separator">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/@nullable">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:id_overrides[list]">
+              <style>
+                     <list showSequenceNumbering="false" altColFitMethod="true">
+                            <table allowTableFlippingOnTheFly="false"></table>
+                     </list>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings"></component>
+       <component xpath="/cnf:configuration/cnf:instanceModel/cnf:objects">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/@enumMode">
+              <style>
+                     <leaf>
+                            <component size="15">
+                                   <value>
+                                          <singleValue defaultValue="node"/>
+                                   </value>
+                            </component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/@metaSchema">
+              <style>
+                     <leaf>
+                            <component size="-1.0"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Design/cnf:objects/@use_identifier">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/@opposites">
+              <style>
+                     <leaf>
+                            <component size="-1.0" booleanVisualizer="radioButton"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:containers"></component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:intermediates">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:properties/@useAbstract"></component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:id_overrides/cnf:id">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:id_overrides/cnf:name">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@dataPostfix">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@dataValue">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@enumPostfix">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@indexEdge">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@intermediateName">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@intermediatePostfix">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaClass">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaClassNullable">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaContainerBag">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaContainerOrd">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaContainerSeq">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaContainerSet">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaDataType">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaEnum">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaIntermediate">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaTuple">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@metaType">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@nextEdge">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@nilName">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@nullablePostfix">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@oppositeEdge">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@prevEdge">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@properPostfix">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@tuplePostfix">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:global/cnf:strings/@valueEdge">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:instanceModel/cnf:objects/@use_identifier"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/@opposites">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:containers"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:defaults"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:intermediates">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:containers/@useTypeName"></component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:containers/cnf:ordering">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:intermediates/@when">
+              <style>
+                     <leaf>
+                            <component size="15">
+                                   <value>
+                                          <singleValue defaultValue="required"/>
+                                   </value>
+                            </component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:containers/@useTypeName"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:containers/cnf:ordering">
+              <style>
+                     <caption>
+                            <style>
+                                   <occurrence>
+                                          <visibility>
+                                                 <never/>
+                                          </visibility>
+                                   </occurrence>
+                            </style>
+                     </caption>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:defaults/@setValue"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:defaults/@useRule"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:intermediates/@when">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:containers/cnf:ordering/@mode">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:containers/cnf:ordering/@type">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:Glossary/cnf:fields/cnf:containers/cnf:ordering/@usePrevEdge"></component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:containers/cnf:ordering/@mode">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:containers/cnf:ordering/@type">
+              <style>
+                     <leaf>
+                            <component size="15"></component>
+                     </leaf>
+              </style>
+       </component>
+       <component xpath="/cnf:configuration/cnf:typeModel/cnf:fields/cnf:containers/cnf:ordering/@usePrevEdge"></component>
+</XUI>

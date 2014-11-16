@@ -443,7 +443,7 @@ public class ConfigDialog extends JDialog {
             TypeWorkspace space = (TypeWorkspace) pane.getRightComponent();
             space.getButtonBar().setVisible(false);
             space.getHeaderPanel().setVisible(false);
-            space.getMessageTablePanel().setVisible(false);
+            //space.getMessageTablePanel().setVisible(false);
             this.m_panelComponent = space;
             getXMLPanel().add(this.m_panelComponent);
         } catch (ClassCastException ex) {

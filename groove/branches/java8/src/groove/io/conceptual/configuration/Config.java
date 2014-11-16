@@ -6,9 +6,12 @@ import groove.io.conceptual.Glossary;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.configuration.schema.Configuration;
+import groove.io.conceptual.configuration.schema.Constraints;
 import groove.io.conceptual.configuration.schema.Global;
 import groove.io.conceptual.configuration.schema.Global.IdOverrides;
 import groove.io.conceptual.configuration.schema.IdModeType;
+import groove.io.conceptual.configuration.schema.InstanceModel;
+import groove.io.conceptual.configuration.schema.Meta;
 import groove.io.conceptual.configuration.schema.NullableType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.configuration.schema.StringsType;
@@ -45,10 +48,9 @@ import org.xml.sax.InputSource;
  */
 public class Config {
     /** Location of the XSD for configurations. */
-    public static final String CONFIG_SCHEMA =
-        "groove/io/conceptual/configuration/ConfigSchema.xsd";
+    public static final String CONFIG_SCHEMA = "ConfigSchema.xsd";
     /** Location of the XUI for the editor configuration. */
-    public static final String CONFIG_XUI = "groove/io/conceptual/configuration/ConfigSchema.xui";
+    public static final String CONFIG_XUI = "ConfigSchema.xui";
 
     /** Instantiates a given named configuration. */
     public Config(GrammarModel grammar, String xml) {
@@ -82,6 +84,9 @@ public class Config {
         return this.m_xmlConfig;
     }
 
+    /** The XML-bound configuration object. */
+    private final Configuration m_xmlConfig;
+
     /** Convenience method to return the global settings part
      * of the XML-bound configuration object. */
     final public Global getXMLGlobal() {
@@ -94,14 +99,30 @@ public class Config {
         return getXMLGlobal().getStrings();
     }
 
-    /** Convenience method to return the type model
+    /** Convenience method to return the glossary
      * of the XML-bound configuration object. */
     final public TypeModel getTypeModel() {
         return getXMLConfig().getTypeModel();
     }
 
-    /** The XML-bound configuration object. */
-    private final Configuration m_xmlConfig;
+    /** Convenience method to return the meta-graph information
+     * of the XML-bound configuration object. */
+    final public Meta getMeta() {
+        return getXMLConfig().getMeta();
+    }
+
+    /** Convenience method to return the instance model information
+     * of the XML-bound configuration object. */
+    final public InstanceModel getInstanceModel() {
+        return getXMLConfig().getInstanceModel();
+    }
+
+    /** Convenience method to return the constraints information
+     * of the XML-bound configuration object. */
+    final public Constraints getConstraints() {
+        return getXMLConfig().getConstraints();
+    }
+
     /** Configuration-induced mapping from simple names to identifiers. */
     private final HashMap<String,Id> m_mappedNames = new HashMap<String,Id>();
     /** Configuration-induced mapping from identifiers to simple names. */
@@ -127,7 +148,7 @@ public class Config {
      * Returns the list of name suffixes.
      */
     private Set<String> getSuffixSet() {
-        if (this.m_suffixSet == null && !this.m_xmlConfig.getTypeModel().isMetaSchema()) {
+        if (this.m_suffixSet == null && !this.m_xmlConfig.getMeta().isMetaSchema()) {
             this.m_suffixSet = new HashSet<>();
             if (!getStrings().getProperPostfix().isEmpty()) {
                 this.m_suffixSet.add(getStrings().getProperPostfix());
@@ -325,7 +346,7 @@ public class Config {
 
     /** Constructs the GROOVE type label to be used for a given design type. */
     public String getName(Type type) {
-        boolean usePostfix = !this.m_xmlConfig.getTypeModel().isMetaSchema();
+        boolean usePostfix = !this.m_xmlConfig.getMeta().isMetaSchema();
         String name = "type:";
 
         if (type instanceof Class) {
@@ -385,21 +406,21 @@ public class Config {
     /** Returns the suffix to be used for container names. */
     public String getContainerPostfix(Container c) {
         String result = "";
-        if (!getXMLConfig().getTypeModel().isMetaSchema()
+        if (!getXMLConfig().getMeta().isMetaSchema()
             && getXMLConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
             result = "_";
             switch (c.getContainerType()) {
             case SET:
-                result += getStrings().getMetaContainerSet();
+                result += getXMLConfig().getMeta().getMetaContainerSet();
                 break;
             case BAG:
-                result += getStrings().getMetaContainerBag();
+                result += getXMLConfig().getMeta().getMetaContainerBag();
                 break;
             case ORD:
-                result += getStrings().getMetaContainerOrd();
+                result += getXMLConfig().getMeta().getMetaContainerOrd();
                 break;
             case SEQ:
-                result += getStrings().getMetaContainerSeq();
+                result += getXMLConfig().getMeta().getMetaContainerSeq();
                 break;
             }
         }
