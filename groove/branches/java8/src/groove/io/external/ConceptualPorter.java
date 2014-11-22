@@ -30,7 +30,6 @@ import groove.io.conceptual.Glossary;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.ConfigDialog;
 import groove.io.conceptual.lang.Export;
-import groove.io.conceptual.lang.groove.ConstraintToGroove;
 import groove.io.conceptual.lang.groove.DesignToGroove;
 import groove.io.conceptual.lang.groove.GlossaryToGroove;
 import groove.io.conceptual.lang.groove.GrammarVisitor;
@@ -45,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /** Im- and exporter for conceptual model-based formats. */
@@ -67,9 +67,9 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             models = importGlossary(file, grammar);
         }
         if (models != null) {
-            Config cfg = loadConfig(grammar);
-            if (cfg != null) {
-                result = loadModel(cfg, models.one(), models.two());
+            Optional<Config> cfg = ConfigDialog.load(getSimulator());
+            if (cfg.isPresent()) {
+                result = loadModel(cfg.get(), models.one(), models.two());
             }
         }
         return result;
@@ -77,12 +77,12 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
 
     /** Reads in type and instance models for an instance model import.
      * @throws PortException if an error occurred during importing */
-    abstract protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
+    public abstract Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
         throws PortException;
 
     /** Reads in type and instance models for a type import.
      * @throws PortException if an error occurred during importing*/
-    abstract protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
+    public abstract Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
         throws PortException;
 
     @Override
@@ -97,8 +97,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
 
         ResourceModel<?> model = exportable.getModel();
         GrammarModel grammar = model.getGrammar();
-        Config cfg = loadConfig(grammar);
-        if (cfg == null) {
+        Optional<Config> cfg = ConfigDialog.load(getSimulator());
+        if (!cfg.isPresent()) {
             return;
         }
 
@@ -107,13 +107,13 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         switch (kind) {
         case HOST:
             assert fileType == getFileType(ResourceKind.HOST);
-            outcome = constructModels(cfg, grammar, namespace, null, name);
+            outcome = constructModels(cfg.get(), grammar, namespace, null, name);
             break;
         case RULE:
             throw new PortException("Rules cannot be exported in this format");
         case TYPE:
             assert fileType == getFileType(ResourceKind.TYPE);
-            outcome = constructModels(cfg, grammar, namespace, name, null);
+            outcome = constructModels(cfg.get(), grammar, namespace, name, null);
             break;
         default:
             assert false;
@@ -138,16 +138,6 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      */
     abstract protected Export getExport(Path file, boolean isHost, Glossary tm, Design im)
         throws PortException;
-
-    /** Opens a configuration dialog and returns the resulting configuration object. */
-    private Config loadConfig(GrammarModel grammar) {
-        ConfigDialog dlg = new ConfigDialog(getSimulator());
-        String cfg = dlg.getConfig();
-        if (cfg != null) {
-            return new Config(grammar, cfg);
-        }
-        return null;
-    }
 
     /**
      * Extracts a conceptual type and/or optionally instance model from a grammar.
@@ -178,7 +168,6 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         GrooveExport export = new GrooveExport(cfg, simulatorModel, "");
         if (glos != null) {
             new GlossaryToGroove(glos, export).build();
-            new ConstraintToGroove(glos, export).build();
             new MetaToGroove(glos, export).build();
         }
 

@@ -24,6 +24,7 @@ import groove.grammar.model.ResourceModel;
 import groove.grammar.model.RuleModel;
 import groove.grammar.model.Text;
 import groove.gui.Icons;
+import groove.gui.Icons.Icon;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
@@ -52,7 +53,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -622,14 +622,14 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method to construct the label for a given (named) graph
      * that should be used in the label list.
      */
-    final public Icon getListIcon(String name) {
+    final public javax.swing.Icon getListIcon(String name) {
         Icon result;
         if (this.editorMap.containsKey(name)) {
             result = Icons.getListEditIcon(getResourceKind());
         } else {
             result = Icons.getListIcon(getResourceKind());
         }
-        return result;
+        return result == null ? null : result.getIcon();
     }
 
     /**

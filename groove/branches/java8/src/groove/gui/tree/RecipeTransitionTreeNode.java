@@ -32,10 +32,10 @@ class RecipeTransitionTreeNode extends DisplayTreeNode {
     /**
      * Creates a new tree node based on a given recipe transition. The node cannot have
      * children.
-     * @param source source state of the recipe transition 
+     * @param source source state of the recipe transition
      */
     public RecipeTransitionTreeNode(SimulatorModel model, GraphState source, RecipeEvent event,
-            int nr) {
+        int nr) {
         super(event.toTransition(source), false);
         this.nr = nr;
         this.model = model;
@@ -57,7 +57,7 @@ class RecipeTransitionTreeNode extends DisplayTreeNode {
 
     @Override
     public Icon getIcon() {
-        return Icons.GRAPH_MATCH_ICON;
+        return Icons.GRAPH_MATCH_ICON.getIcon();
     }
 
     @Override

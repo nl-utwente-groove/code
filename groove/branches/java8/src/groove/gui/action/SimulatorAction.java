@@ -6,6 +6,7 @@ import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.Icons;
+import groove.gui.Icons.Icon;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -60,7 +60,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     protected SimulatorAction(Simulator simulator, String name, Icon icon, EditType edit,
         ResourceKind resource) {
-        super(name, icon);
+        super(name, icon == null ? null : icon.getIcon());
         this.simulator = simulator;
         this.resource = resource;
         this.edit = edit;

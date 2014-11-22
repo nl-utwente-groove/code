@@ -11,6 +11,7 @@ import groove.util.Exceptions;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,11 +23,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -39,6 +44,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -53,12 +59,16 @@ import org.xml.sax.SAXException;
 
 import com.jaxfront.core.dom.DOMBuilder;
 import com.jaxfront.core.dom.DOMHelper;
+import com.jaxfront.core.dom.DirtyChangeEvent;
+import com.jaxfront.core.dom.DirtyChangeListener;
 import com.jaxfront.core.dom.DocumentCreationException;
 import com.jaxfront.core.schema.SchemaCreationException;
 import com.jaxfront.core.schema.ValidationException;
+import com.jaxfront.core.type.ErrorController;
+import com.jaxfront.core.ui.TypeVisualizerFactory;
 import com.jaxfront.swing.ui.editor.EditorPanel;
 import com.jaxfront.swing.ui.editor.TypeWorkspace;
-import com.jaxfront.swing.ui.wrapper.JAXJSplitPane;
+import com.jaxfront.swing.ui.wrapper.JAXJTabbedPane;
 import com.sun.istack.internal.Nullable;
 
 /** Dialog for creating and manipulating im/-export configurations. */
@@ -66,6 +76,7 @@ public class ConfigDialog extends JDialog {
     /** Constructs a new dialog, for a given simulator. */
     public ConfigDialog(Simulator simulator) {
         super(simulator.getFrame(), "Config Dialog", true);
+        muffle(() -> TypeVisualizerFactory.setInstance(MyVisualizerFactory.instance()));
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
         // Make sure that closeDialog is called whenever the dialog is closed.
@@ -147,15 +158,7 @@ public class ConfigDialog extends JDialog {
 
         this.getContentPane().add(getXMLPanel(), BorderLayout.CENTER);
 
-        JButton okBtn = new JButton("OK");
-        okBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getAction(ConfigAction.Type.SAVE).execute();
-                setSelectedConfig(getActiveName());
-                ConfigDialog.this.dispose();
-            }
-        });
+        JButton okBtn = getOKButton();
         this.getRootPane().setDefaultButton(okBtn);
 
         JButton cancelBtn = new JButton("Cancel");
@@ -178,6 +181,26 @@ public class ConfigDialog extends JDialog {
         String name = hasConfigs() ? getConfigNames().iterator().next() : null;
         loadConfig(name);
     }
+
+    /**
+     * Constructs the OK button.
+     */
+    private JButton getOKButton() {
+        if (this.okButton == null) {
+            this.okButton = new JButton("OK");
+            this.okButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getAction(ConfigAction.Type.SAVE).execute();
+                    setSelectedConfig(getActiveName());
+                    ConfigDialog.this.dispose();
+                }
+            });
+        }
+        return this.okButton;
+    }
+
+    private JButton okButton;
 
     /**
      * Returns the combobox holding the list of configurations.
@@ -439,13 +462,22 @@ public class ConfigDialog extends JDialog {
         this.m_panelComponent = this.m_editor;
         try {
             // get the editor pane from the original editor panel and put it on our dialog
-            JAXJSplitPane pane = (JAXJSplitPane) this.m_editor.getComponent(0);
-            TypeWorkspace space = (TypeWorkspace) pane.getRightComponent();
+            TypeWorkspace space = this.m_editor.getWorkspace();
             space.getButtonBar().setVisible(false);
             space.getHeaderPanel().setVisible(false);
             //space.getMessageTablePanel().setVisible(false);
             this.m_panelComponent = space;
             getXMLPanel().add(this.m_panelComponent);
+            // make sure errors cause the OK button to be disabled
+            ErrorController contr = doc.getController().getErrorController();
+            contr.addValidationChangeListener(e -> enableOKButton(doc));
+            enableOKButton(doc);
+            doc.addDirtyChangeListener(new DirtyChangeListener() {
+                @Override
+                public void dirtyChange(DirtyChangeEvent event) {
+                    System.err.printf("Dirty change: %s%n", event);
+                }
+            });
         } catch (ClassCastException ex) {
             // In case of an exception (the UI is changed) just add the editor itself
             // nothing to do here
@@ -456,8 +488,49 @@ public class ConfigDialog extends JDialog {
         getXMLPanel().validate();
     }
 
+    /**
+     * Enables or disables the OK button, based on the question whether a
+     * given document has validation errors.
+     */
+    private void enableOKButton(com.jaxfront.core.dom.Document doc) {
+        ErrorController contr = doc.getController().getErrorController();
+        getOKButton().setEnabled(!contr.hasValidationErrors());
+    }
+
     private EditorPanel m_editor;
     private Component m_panelComponent;
+
+    /** Changes the top-level tab to a given XML type. */
+    public void setTab(String name) {
+        com.jaxfront.core.dom.Document doc = this.m_editor.getDOM();
+        com.jaxfront.core.type.Type type = doc.getRootType().getChild("constraints");
+        TypeWorkspace space = this.m_editor.getWorkspace();
+        JAXJTabbedPane tabPane = find(space.getCenterPanel().getComponents());
+        for (int i = 0; i < tabPane.getTabCount(); i++) {
+            if (tabPane.getTabTypeAt(i).equals(type)) {
+                tabPane.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    /** Recursively searches the component hierarchy for the first instance of {@link JAXJTabbedPane}. */
+    private JAXJTabbedPane find(Component[] comps) {
+        Collection<Component> collect = Arrays.asList(comps);
+        Optional<JAXJTabbedPane> result =
+            collect.stream()
+                .filter(c -> c instanceof JAXJTabbedPane)
+                .map(c -> (JAXJTabbedPane) c)
+                .findAny();
+        if (!result.isPresent()) {
+            result =
+                collect.stream()
+                    .filter(c -> (c instanceof Container))
+                    .map(c -> find(((Container) c).getComponents()))
+                    .findAny();
+        }
+        return result.get();
+    }
 
     /**
      * Sets the name of the currently selected configuration to a given value.
@@ -514,6 +587,38 @@ public class ConfigDialog extends JDialog {
     private final static Object s_tooltipObj;
     static {
         s_tooltipObj = javax.swing.UIManager.get("ToolTipUI");
+    }
+
+    /** Diverts the stdout while executing a given action. */
+    static private <T> T muffle(Supplier<T> action) {
+        T result = null;
+        try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
+            PrintStream out = System.out;
+            System.setOut(tmpOut);
+            result = action.get();
+            System.setOut(out);
+        } catch (IOException e) {
+            // Silently catch error
+        }
+        return result;
+    }
+
+    /** Opens a configuration dialog and returns the resulting configuration object. */
+    static public Optional<Config> load(Simulator simulator) {
+        return load(simulator, null);
+    }
+
+    /** Opens a configuration dialog at a given tab and returns the resulting configuration object. */
+    static public Optional<Config> load(Simulator simulator, Class<?> xmlType) {
+        ConfigDialog dlg = new ConfigDialog(simulator);
+        if (xmlType != null) {
+            dlg.setTab(xmlType.getAnnotation(XmlType.class).name());
+        }
+        String cfg = dlg.getConfig();
+        if (cfg != null) {
+            return Optional.of(new Config(simulator.getModel().getGrammar(), cfg));
+        }
+        return Optional.empty();
     }
 
 }

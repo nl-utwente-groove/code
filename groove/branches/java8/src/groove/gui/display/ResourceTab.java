@@ -144,7 +144,7 @@ abstract public class ResourceTab extends JPanel {
      * Returns the icon for this tab.
      */
     public Icon getIcon() {
-        return Icons.getEditorTabIcon(getDisplay().getKind().getResource());
+        return Icons.getEditorTabIcon(getDisplay().getKind().getResource()).getIcon();
     }
 
     /**

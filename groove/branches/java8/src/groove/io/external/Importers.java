@@ -78,14 +78,14 @@ public class Importers {
                 ResourceKind kind = resource.getKind();
                 if (grammar.getResource(kind, name) == null
                     || confirmOverwrite(simulator.getFrame(), kind, name)) {
-                    Collection<groove.grammar.model.Resource> ress = newRess.get(kind);
+                    Collection<Resource> ress = newRess.get(kind);
                     if (ress == null) {
                         newRess.put(kind, ress = new ArrayList<>());
                     }
                     ress.add(resource);
                 }
             }
-            for (Map.Entry<ResourceKind,Collection<groove.grammar.model.Resource>> e : newRess.entrySet()) {
+            for (Map.Entry<ResourceKind,Collection<Resource>> e : newRess.entrySet()) {
                 grammar.getStore().put(e.getKey(), e.getValue());
             }
         }

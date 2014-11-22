@@ -3,12 +3,11 @@ package groove.gui.display;
 import groove.grammar.model.ResourceKind;
 import groove.graph.GraphRole;
 import groove.gui.Icons;
+import groove.gui.Icons.Icon;
 import groove.util.Exceptions;
 
 import java.util.EnumMap;
 import java.util.Map;
-
-import javax.swing.ImageIcon;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -34,7 +33,7 @@ public enum DisplayKind {
     PROPERTIES(ResourceKind.PROPERTIES, Icons.PROPERTIES_FRAME_ICON, "Properties",
         "System properties");
 
-    private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title, String tip) {
+    private DisplayKind(ResourceKind resource, Icon tabIcon, String title, String tip) {
         this.resource = resource;
         this.tabIcon = tabIcon;
         this.title = title;
@@ -42,7 +41,7 @@ public enum DisplayKind {
     }
 
     /** Returns the icon that should be used on the tab for a display of this kind. */
-    public final ImageIcon getTabIcon() {
+    public final Icon getTabIcon() {
         return this.tabIcon;
     }
 
@@ -107,7 +106,7 @@ public enum DisplayKind {
     }
 
     private final ResourceKind resource;
-    private final ImageIcon tabIcon;
+    private final Icon tabIcon;
     private final String title;
     private final String tip;
 

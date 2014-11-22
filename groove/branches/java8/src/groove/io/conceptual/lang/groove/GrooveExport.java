@@ -48,7 +48,9 @@ public class GrooveExport extends Export {
         this.m_namespace = namespace;
 
         for (GraphRole role : GraphRole.values()) {
-            this.m_graphs.put(role, new HashMap<>());
+            if (ResourceKind.isResource(role)) {
+                this.m_graphs.put(role, new HashMap<>());
+            }
         }
     }
 
@@ -63,6 +65,12 @@ public class GrooveExport extends Export {
     /** Optional simulator model to which the generated sources should be added. */
     private final SimulatorModel m_simModel;
 
+    /** Indicates if this export has a non-empty name space.
+     */
+    public boolean hasNamespace() {
+        return getNamespace() != null && !getNamespace().isEmpty();
+    }
+
     /** Returns the name space of this resource.
      * The name space is prepended to all names of graphs in this resource.
      */
@@ -75,7 +83,8 @@ public class GrooveExport extends Export {
 
     /** Returns the namespace-prefixed version of a name. */
     protected String prefix(String name) {
-        return GrooveUtil.getSafeResource(this.m_namespace + QualName.SEPARATOR + name);
+        return GrooveUtil.getSafeResource(hasNamespace() ? getNamespace() + QualName.SEPARATOR
+            + name : name);
     }
 
     @Override
@@ -133,7 +142,6 @@ public class GrooveExport extends Export {
     }
 
     /** Set of graphs of which this resource consists. */
-    private final Map<GraphRole,HashMap<String,PreGraph>> m_graphs =
-        new HashMap<GraphRole,HashMap<String,PreGraph>>();
+    private final Map<GraphRole,HashMap<String,PreGraph>> m_graphs = new HashMap<>();
 
 }

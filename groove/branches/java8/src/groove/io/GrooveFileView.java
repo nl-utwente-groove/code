@@ -26,10 +26,9 @@ import static groove.io.FileType.STATE;
 import static groove.io.FileType.TYPE;
 import static groove.io.FileType.ZIP;
 import groove.gui.Icons;
+import groove.gui.Icons.Icon;
 
 import java.io.File;
-
-import javax.swing.Icon;
 
 /**
  * Implements a file view that displays the correct icons and descriptions for
@@ -42,8 +41,8 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * Constructs a standard file view, in which production system directories
      * can be traversed.
      */
-    GrooveFileView() {
-        setGpsTraversable(true);
+    private GrooveFileView() {
+        // empty
     }
 
     /**
@@ -53,24 +52,26 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     @Override
-    public Icon getIcon(File f) {
+    public javax.swing.Icon getIcon(File f) {
+        Icon result;
         if (isGpsFolder(f)) {
-            return Icons.GPS_FOLDER_ICON;
+            result = Icons.GPS_FOLDER_ICON;
         } else if (isCompressedGpsFolder(f)) {
-            return Icons.GPS_COMPRESSED_FOLDER_ICON;
+            result = Icons.GPS_COMPRESSED_FOLDER_ICON;
         } else if (isGraphFile(f)) {
-            return Icons.GRAPH_FILE_ICON;
+            result = Icons.GRAPH_FILE_ICON;
         } else if (isRuleFile(f)) {
-            return Icons.RULE_FILE_ICON;
+            result = Icons.RULE_FILE_ICON;
         } else if (isTypeFile(f)) {
-            return Icons.TYPE_FILE_ICON;
+            result = Icons.TYPE_FILE_ICON;
         } else if (isControlFile(f)) {
-            return Icons.CONTROL_FILE_ICON;
+            result = Icons.CONTROL_FILE_ICON;
         } else if (isPrologFile(f)) {
-            return Icons.PROLOG_FILE_ICON;
+            result = Icons.PROLOG_FILE_ICON;
         } else {
             return null;
         }
+        return result == null ? null : result.getIcon();
     }
 
     /**
@@ -109,43 +110,15 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
         return getDescription(f);
     }
 
-    /**
-     * Overrides the superclass implementation so that directories deemed to
-     * represent entire production systems are not traversable, unless indicated
-     * otherwise by <tt>isGpsTraversable()</tt>.
-     * @param f the file of which the traversability is to be determined
-     * @see #isGpsTraversable()
-     */
-    @Override
-    public Boolean isTraversable(File f) {
-        Boolean superTraversable = super.isTraversable(f);
-        if (isGpsTraversable()) {
-            return superTraversable;
-        } else {
-            return Boolean.valueOf((superTraversable == null || superTraversable.booleanValue())
-                && !isGpsFolder(f));
+    /** Returns the singleton instance of this class. */
+    public static GrooveFileView instance() {
+        if (INSTANCE == null) {
+            INSTANCE = new GrooveFileView();
         }
+        return INSTANCE;
     }
 
-    /**
-     * Indicates if production system directories are traversable.
-     * @see #isTraversable(File)
-     */
-    public boolean isGpsTraversable() {
-        return this.gpsTraversable;
-    }
-
-    /**
-     * Changes the traversability of production system directories.
-     * @param gpsTraversable indicates if production system directories should
-     *        henceforth be traversable
-     * @ensure <tt>isGpsTraversable() == gpsTraversable</tt>
-     */
-    public void setGpsTraversable(boolean gpsTraversable) {
-        this.gpsTraversable = gpsTraversable;
-    }
-
-    private boolean gpsTraversable;
+    private static GrooveFileView INSTANCE;
 
     /**
      * Tests whether a given file is a control program.

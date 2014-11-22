@@ -457,6 +457,7 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         result.add(new JMenuItem(this.actions.getImportAction()));
+        result.add(new JMenuItem(this.actions.getImportRulesAction()));
         result.add(getExportMenuItem());
 
         result.addSeparator();

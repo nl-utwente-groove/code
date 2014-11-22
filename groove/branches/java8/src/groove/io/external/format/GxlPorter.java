@@ -39,7 +39,7 @@ public class GxlPorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
+    public Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
         throws PortException {
         GxlToGlossary g2g = new GxlToGlossary(file.toString(), false);
         Glossary glos = g2g.getGlossary();
@@ -47,7 +47,7 @@ public class GxlPorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
+    public Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
         throws PortException {
         GxlToGlossary g2g = new GxlToGlossary(file.toString(), false);
         Glossary glos = g2g.getGlossary();

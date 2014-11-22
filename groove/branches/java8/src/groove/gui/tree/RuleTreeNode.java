@@ -24,6 +24,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphProperties.Key;
 import groove.gui.Icons;
+import groove.gui.Icons.Icon;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
@@ -32,8 +33,6 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.Icon;
 
 /**
  * Rule nodes (= level 1 nodes) of the directory
@@ -49,12 +48,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     }
 
     @Override
-    public Icon getIcon() {
+    public javax.swing.Icon getIcon() {
         Icon result;
         if (isRecipeChild()) {
             result = Icons.PUZZLE_ICON;
-        } else if (super.getIcon() == Icons.EDIT_WIDE_ICON) {
-            result = super.getIcon();
+        } else if (super.getIcon() == Icons.EDIT_WIDE_ICON.getIcon()) {
+            result = Icons.EDIT_WIDE_ICON;
         } else {
             boolean injective = getRule().isInjective();
             if (getRule().isProperty()) {
@@ -63,7 +62,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                 result = injective ? Icons.RULE_I_TREE_ICON : Icons.RULE_TREE_ICON;
             }
         }
-        return result;
+        return result == null ? null : result.getIcon();
     }
 
     /**
@@ -91,8 +90,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        result.append(getRule().getRole() == Role.TRANSFORMER ? "Rule" : getRule().getRole().text(
-            true));
+        result.append(getRule().getRole() == Role.TRANSFORMER ? "Rule" : getRule().getRole()
+            .text(true));
         result.append(" ");
         result.append(HTMLConverter.ITALIC_TAG.on(getName()));
         AspectGraph source = getRule().getSource();
@@ -121,8 +120,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not enabled stand-alone because it is invoked from ");
             result.append(recipes.size() == 1 ? "recipe " : "recipes ");
-            result.append(Groove.toString(getRule().getRecipes().toArray(), "<i>", "</i>",
-                "</i>, <i>", "</i> and <i>"));
+            result.append(Groove.toString(getRule().getRecipes().toArray(),
+                "<i>",
+                "</i>",
+                "</i>, <i>",
+                "</i> and <i>"));
         } else if (!isTried()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not scheduled in this state, due to rule priorities or control");
@@ -217,8 +219,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     private final static Map<Role,Icon> roleInjectiveIconMap;
     static {
         Map<Role,String> suffixMap = roleSuffixMap = new EnumMap<Role,String>(Role.class);
-        Map<Role,Icon> normalIconMap = roleNormalIconMap = new EnumMap<Role,Icon>(Role.class);
-        Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<Role,Icon>(Role.class);
+        Map<Role,Icon> normalIconMap = roleNormalIconMap = new EnumMap<>(Role.class);
+        Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<>(Role.class);
         for (Role role : Role.values()) {
             suffixMap.put(role, " : " + HTMLConverter.STRONG_TAG.on(role.toString()));
             Icon normalIcon = null;

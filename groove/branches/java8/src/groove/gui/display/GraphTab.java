@@ -100,7 +100,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     @Override
     public Icon getIcon() {
-        return Icons.getMainTabIcon(getResourceKind());
+        return Icons.getMainTabIcon(getResourceKind()).getIcon();
     }
 
     @Override

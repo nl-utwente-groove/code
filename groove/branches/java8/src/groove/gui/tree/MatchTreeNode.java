@@ -64,7 +64,7 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public Icon getIcon() {
-        return Icons.GRAPH_MATCH_ICON;
+        return Icons.GRAPH_MATCH_ICON.getIcon();
     }
 
     @Override

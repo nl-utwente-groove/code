@@ -43,7 +43,7 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
+    public Pair<Glossary,Design> importGlossary(Path file, GrammarModel grammar)
         throws PortException {
         EcoreToGlossary e2g = new EcoreToGlossary(file.toFile());
         Glossary tm = e2g.getGlossary();
@@ -51,7 +51,7 @@ public class EcorePorter extends ConceptualPorter {
     }
 
     @Override
-    protected Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
+    public Pair<Glossary,Design> importDesign(Path file, GrammarModel grammar)
         throws PortException {
         //Request ecore type model file
         int approve = getECoreChooser().showDialog(null, "Import Ecore type model");

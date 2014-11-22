@@ -1,12 +1,12 @@
 package groove.gui.display;
 
 import static javax.swing.JSplitPane.HORIZONTAL_SPLIT;
+import groove.gui.Icons.Icon;
 
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
@@ -17,7 +17,7 @@ import javax.swing.JSplitPane;
  * @version $Revision $
  */
 class DisplayWindow extends JFrame {
-    private DisplayWindow(Kind kind, String title, ImageIcon icon) {
+    private DisplayWindow(Kind kind, String title, Icon icon) {
         super(title);
         this.kind = kind;
         if (icon != null) {
@@ -50,9 +50,9 @@ class DisplayWindow extends JFrame {
         if (this.contentPanel == null) {
             JSplitPane displayPanel = getDisplayInfoPanel();
             this.contentPanel =
-                this.display.getListPanel().map(
-                    p -> new JSplitPane(HORIZONTAL_SPLIT, p, displayPanel)).orElse(
-                    getDisplayInfoPanel());
+                this.display.getListPanel()
+                    .map(p -> new JSplitPane(HORIZONTAL_SPLIT, p, displayPanel))
+                    .orElse(getDisplayInfoPanel());
         }
         return this.contentPanel;
     }

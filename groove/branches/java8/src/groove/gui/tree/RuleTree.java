@@ -99,7 +99,7 @@ public class RuleTree extends AbstractResourceTree {
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // set icons
         DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) this.cellRenderer;
-        renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
+        renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON.getIcon());
         this.topDirectoryNode = new DisplayTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
         setModel(this.ruleDirectory);
@@ -518,8 +518,8 @@ public class RuleTree extends AbstractResourceTree {
     private Set<Duo<String>> getTried(GraphState state) {
         // set the tried status of the rules
         Set<? extends CallStack> pastAttempts =
-            state == null ? Collections.<CallStack>emptySet()
-                : state.getActualFrame().getPastAttempts();
+            state == null ? Collections.<CallStack>emptySet() : state.getActualFrame()
+                .getPastAttempts();
         // convert the transitions to pairs of rule name + recipe name
         Set<Duo<String>> triedPairs = new HashSet<Duo<String>>();
         for (CallStack t : pastAttempts) {
@@ -806,7 +806,7 @@ public class RuleTree extends AbstractResourceTree {
 
         @Override
         public Icon getIcon() {
-            return Icons.EMPTY_ICON;
+            return Icons.EMPTY_ICON.getIcon();
         }
 
         @Override

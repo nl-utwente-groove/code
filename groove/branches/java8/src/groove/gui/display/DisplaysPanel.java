@@ -360,7 +360,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                     }
                 }
                 listsPanel.insertTab(null,
-                    myKind.getTabIcon(),
+                    myKind.getTabIcon().getIcon(),
                     listPanel.get(),
                     myKind.getTip(),
                     index);
@@ -379,7 +379,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 }
             }
             insertTab(null, null, display, myKind.getTip(), index);
-            TabLabel tabComponent = new TabLabel(this, display, myKind.getTabIcon(), null);
+            TabLabel tabComponent =
+                new TabLabel(this, display, myKind.getTabIcon().getIcon(), null);
             tabComponent.setFocusable(false);
             setTabComponentAt(index, tabComponent);
             setTabEnabled(index, index == getSelectedIndex());

@@ -29,8 +29,12 @@ import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 
 import java.io.StringReader;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -230,6 +234,15 @@ public class Config {
         return result;
     }
 
+    /** Returns the format location wrapped in this configuration. */
+    public Optional<Path> getFormatLocation() {
+        try {
+            return Optional.of(Paths.get(getXMLConfig().getSourceLocation()));
+        } catch (InvalidPathException exc) {
+            return Optional.empty();
+        }
+    }
+
     /**
      * Tests whether intermediate nodes are required to represent the elements
      * of a given container.
@@ -394,35 +407,20 @@ public class Config {
     /** Returns the flat type name for a given field, if represented by an intermediate node. */
     public String getName(Field field) {
         String classId = idToName(field.getDefiningClass().getId());
-        return "type:" + classId + this.m_xmlConfig.getGlobal().getIdSeparator() + field.getName();
+        return "type:" + classId + getXMLGlobal().getIdSeparator() + field.getName();
     }
 
     /** Returns the flat type name for a given container, if represented by an intermediate node. */
     public String getContainerName(String base, Container c) {
-        return base == null ? null : base + this.m_xmlConfig.getGlobal().getIdSeparator()
+        return base == null ? null : base + getXMLGlobal().getIdSeparator()
             + getStrings().getIntermediateName();
     }
 
     /** Returns the suffix to be used for container names. */
     public String getContainerPostfix(Container c) {
         String result = "";
-        if (!getXMLConfig().getMeta().isMetaSchema()
-            && getXMLConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
-            result = "_";
-            switch (c.getContainerType()) {
-            case SET:
-                result += getXMLConfig().getMeta().getMetaContainerSet();
-                break;
-            case BAG:
-                result += getXMLConfig().getMeta().getMetaContainerBag();
-                break;
-            case ORD:
-                result += getXMLConfig().getMeta().getMetaContainerOrd();
-                break;
-            case SEQ:
-                result += getXMLConfig().getMeta().getMetaContainerSeq();
-                break;
-            }
+        if (!getMeta().isMetaSchema() && getTypeModel().getFields().getContainers().isUseTypeName()) {
+            result = "_" + c.getContainerType().getName(getMeta());
         }
         return result;
     }

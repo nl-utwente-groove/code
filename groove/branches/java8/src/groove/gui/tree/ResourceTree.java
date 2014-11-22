@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.tree;
@@ -49,8 +49,8 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a tree of resources. Each resource is added by means of
- * a list of strings, which corresponds to its full path name in the grammar. 
- *  
+ * a list of strings, which corresponds to its full path name in the grammar.
+ *
  * @author Maarten de Mol
  */
 public class ResourceTree extends AbstractResourceTree {
@@ -79,7 +79,7 @@ public class ResourceTree extends AbstractResourceTree {
 
         // set cell renderer
         DisplayTreeCellRenderer renderer = new DisplayTreeCellRenderer(this);
-        renderer.setLeafIcon(Icons.getListIcon(parent.getResourceKind()));
+        renderer.setLeafIcon(Icons.getListIcon(parent.getResourceKind()).getIcon());
         setCellRenderer(renderer);
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 
@@ -233,13 +233,13 @@ public class ResourceTree extends AbstractResourceTree {
 
     /**
      * Mouse listener that relays events to {@link ResourceTree#mouseClicked},
-     * {@link ResourceTree#mousePressed} and {@link ResourceTree#createPopupMenu}.  
+     * {@link ResourceTree#mousePressed} and {@link ResourceTree#createPopupMenu}.
      */
     private class MyMouseListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent evt) {
 
-            // find the node that belongs to this event 
+            // find the node that belongs to this event
             TreeNode selected = getMousedNode(evt);
 
             // show popup menu
@@ -350,7 +350,7 @@ public class ResourceTree extends AbstractResourceTree {
      */
     private class FolderTree {
 
-        // The subfolders of this tree. 
+        // The subfolders of this tree.
         private final TreeMap<String,FolderTree> folders;
 
         // The resources that are stores directly at this level.
@@ -382,7 +382,7 @@ public class ResourceTree extends AbstractResourceTree {
             }
         }
 
-        /** 
+        /**
          * Adds all tree resources to a DefaultMutableTreeNode (with the given
          * path). Also collects the created {@link TreeNode}s.
          */

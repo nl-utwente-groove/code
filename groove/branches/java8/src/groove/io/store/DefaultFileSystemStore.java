@@ -550,30 +550,32 @@ public class DefaultFileSystemStore extends SystemStore {
         throws IOException, FormatException {
         Map<QualName,Path> result = new HashMap<>();
         // find all files in the current path
-        Iterable<Path> curFiles = Files.newDirectoryStream(path, kind.getFileType().getFilter());
-        // collect errors while loading files
-        FormatErrorSet errors = new FormatErrorSet();
-        // process all files one by one
-        for (Path file : curFiles) {
-            // get qualified name of file
-            String fileName = kind.getFileType().stripExtension(file.getFileName().toString());
+        try (DirectoryStream<Path> curFiles =
+            Files.newDirectoryStream(path, kind.getFileType().getFilter())) {
+            // collect errors while loading files
+            FormatErrorSet errors = new FormatErrorSet();
+            // process all files one by one
+            for (Path file : curFiles) {
+                // get qualified name of file
+                String fileName = kind.getFileType().stripExtension(file.getFileName().toString());
 
-            int separatorPos = fileName.indexOf(QualName.SEPARATOR);
-            // File contains separator, must be renamed to use subdirectories instead
-            if (separatorPos > 0) {
-                errors.add("File name %s contains separator CHARACTER '%s'",
-                    file.toString(),
-                    QualName.SEPARATOR);
-            } else if (separatorPos < 0) {
-                QualName qualFileName = QualName.extend(pathName, fileName);
-                if (Files.isDirectory(file)) {
-                    result.putAll(collectResources(kind, file, qualFileName));
-                } else {
-                    result.put(qualFileName, file);
+                int separatorPos = fileName.indexOf(QualName.SEPARATOR);
+                // File contains separator, must be renamed to use subdirectories instead
+                if (separatorPos > 0) {
+                    errors.add("File name %s contains separator CHARACTER '%s'",
+                        file.toString(),
+                        QualName.SEPARATOR);
+                } else if (separatorPos < 0) {
+                    QualName qualFileName = QualName.extend(pathName, fileName);
+                    if (Files.isDirectory(file)) {
+                        result.putAll(collectResources(kind, file, qualFileName));
+                    } else {
+                        result.put(qualFileName, file);
+                    }
                 }
             }
+            errors.throwException();
         }
-        errors.throwException();
         return result;
     }
 
@@ -680,8 +682,8 @@ public class DefaultFileSystemStore extends SystemStore {
             QualName qualName = new QualName(name);
             for (int i = 0; i < qualName.size() - 1; i++) {
                 basis = basis.resolve(qualName.get(i));
-                Files.createDirectories(basis);
             }
+            Files.createDirectories(basis);
             String shortName = qualName.child();
             return basis.resolve(kind.getFileType().addExtension(shortName));
         } catch (FormatException e) {

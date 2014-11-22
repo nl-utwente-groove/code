@@ -151,8 +151,10 @@ public class StateTree extends JTree implements SimulatorListener {
                 if (suspendListening()) {
                     SimulatorModel model = getSimulatorModel();
                     refreshList(model.getGts(), model.getState());
-                    refreshSelection(model.getState(), (RuleModel) model.getResource(RULE),
-                        model.getMatch(), model.getTransition());
+                    refreshSelection(model.getState(),
+                        (RuleModel) model.getResource(RULE),
+                        model.getMatch(),
+                        model.getTransition());
                     activateListening();
                 }
             }
@@ -246,7 +248,9 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
                 refreshStates(refreshables);
             }
-            refreshSelection(source.getState(), ruleModel, source.getMatch(),
+            refreshSelection(source.getState(),
+                ruleModel,
+                source.getMatch(),
                 source.getTransition());
             activateListening();
         }
@@ -656,25 +660,27 @@ public class StateTree extends JTree implements SimulatorListener {
 
         @Override
         public Icon getIcon() {
+            groove.gui.Icons.Icon icon;
             GraphState state = getState();
             if (state instanceof StartGraphState) {
-                return Icons.STATE_START_ICON;
+                icon = Icons.STATE_START_ICON;
             } else if (state.isResult()) {
-                return Icons.STATE_RESULT_ICON;
+                icon = Icons.STATE_RESULT_ICON;
             } else if (state.isFinal()) {
-                return Icons.STATE_FINAL_ICON;
+                icon = Icons.STATE_FINAL_ICON;
             } else if (state.isInternalState()) {
-                return state.isAbsent() ? Icons.STATE_INTERNAL_ABSENT_ICON
-                    : Icons.STATE_INTERNAL_ICON;
+                icon =
+                    state.isAbsent() ? Icons.STATE_INTERNAL_ABSENT_ICON : Icons.STATE_INTERNAL_ICON;
             } else if (state.isTransient()) {
-                return Icons.STATE_TRANSIENT_ICON;
+                icon = Icons.STATE_TRANSIENT_ICON;
             } else if (state.isAbsent()) {
-                return Icons.STATE_ABSENT_ICON;
+                icon = Icons.STATE_ABSENT_ICON;
             } else if (state.isClosed()) {
-                return Icons.STATE_CLOSED_ICON;
+                icon = Icons.STATE_CLOSED_ICON;
             } else {
-                return Icons.STATE_OPEN_ICON;
+                icon = Icons.STATE_OPEN_ICON;
             }
+            return icon == null ? null : icon.getIcon();
         }
 
         private final boolean expanded;

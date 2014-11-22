@@ -118,7 +118,8 @@ final public class TextTab extends ResourceTab {
 
     @Override
     public Icon getIcon() {
-        return isEditor() ? super.getIcon() : Icons.getMainTabIcon(getDisplay().getResourceKind());
+        return isEditor() ? super.getIcon() : Icons.getMainTabIcon(getDisplay().getResourceKind())
+            .getIcon();
     }
 
     @Override
@@ -298,12 +299,12 @@ final public class TextTab extends ResourceTab {
             ((RSyntaxDocument) getDocument()).setSyntaxStyle(createTokenMaker());
             setTabSize(4);
             discardAllEdits();
-            getUndoAction().putValue(Action.SMALL_ICON, Icons.UNDO_ICON);
-            getRedoAction().putValue(Action.SMALL_ICON, Icons.REDO_ICON);
-            getCopyAction().putValue(Action.SMALL_ICON, Icons.COPY_ICON);
-            getPasteAction().putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
-            getCutAction().putValue(Action.SMALL_ICON, Icons.CUT_ICON);
-            getDeleteAction().putValue(Action.SMALL_ICON, Icons.DELETE_ICON);
+            getUndoAction().putValue(Action.SMALL_ICON, Icons.UNDO_ICON.getIcon());
+            getRedoAction().putValue(Action.SMALL_ICON, Icons.REDO_ICON.getIcon());
+            getCopyAction().putValue(Action.SMALL_ICON, Icons.COPY_ICON.getIcon());
+            getPasteAction().putValue(Action.SMALL_ICON, Icons.PASTE_ICON.getIcon());
+            getCutAction().putValue(Action.SMALL_ICON, Icons.CUT_ICON.getIcon());
+            getDeleteAction().putValue(Action.SMALL_ICON, Icons.DELETE_ICON.getIcon());
             addMouseListener(new EditMouseListener());
         }
 

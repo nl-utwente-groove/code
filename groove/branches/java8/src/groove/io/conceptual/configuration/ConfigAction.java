@@ -22,8 +22,6 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.action.SimulatorAction;
 
-import javax.swing.Icon;
-
 /** Actions to manipulate (save, copy, ect.) configurations. */
 public class ConfigAction extends SimulatorAction {
     /** Constructs a new configuration manipulation action of a given type. */
@@ -95,9 +93,9 @@ public class ConfigAction extends SimulatorAction {
         RENAME("Rename", Icons.RENAME_ICON);
 
         private String m_text;
-        private Icon m_icon;
+        private groove.gui.Icons.Icon m_icon;
 
-        Type(String text, Icon icon) {
+        Type(String text, groove.gui.Icons.Icon icon) {
             this.m_text = text;
             this.m_icon = icon;
         }
@@ -108,7 +106,7 @@ public class ConfigAction extends SimulatorAction {
         }
 
         /** Returns the icon used for this action. */
-        public Icon getIcon() {
+        public groove.gui.Icons.Icon getIcon() {
             return this.m_icon;
         }
     }

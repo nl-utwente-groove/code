@@ -3,7 +3,7 @@
 	<element name="configuration">
 		<complexType>
 			<sequence>
-			    <element name="sourceLocation" type="anyURI"/>
+			    <element name="sourceLocation" type="string"/>
 				<element name="typeModel" type="cnf:typeModel"/>
 				<element name="instanceModel" type="cnf:instanceModel"/>
 				<element name="global" type="cnf:global"/>

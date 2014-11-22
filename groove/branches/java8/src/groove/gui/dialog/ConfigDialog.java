@@ -17,6 +17,7 @@
 package groove.gui.dialog;
 
 import groove.gui.Icons;
+import groove.gui.Icons.Icon;
 import groove.gui.action.Refreshable;
 import groove.util.collect.UncasedStringMap;
 
@@ -38,7 +39,6 @@ import java.util.TreeMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -396,7 +396,10 @@ abstract public class ConfigDialog<@Nullable C> extends JDialog {
         int answer =
             JOptionPane.showConfirmDialog(this,
                 String.format("Configuration '%s' has been modified. Save changes?",
-                    getSelectedName(), getName()), null, JOptionPane.YES_NO_CANCEL_OPTION);
+                    getSelectedName(),
+                    getName()),
+                null,
+                JOptionPane.YES_NO_CANCEL_OPTION);
         if (answer == JOptionPane.YES_OPTION) {
             saveConfig();
         } else if (answer == JOptionPane.NO_OPTION) {
@@ -648,7 +651,7 @@ abstract public class ConfigDialog<@Nullable C> extends JDialog {
 
         /** Constructor for subclassing. */
         protected RefreshableAction(String name, Icon icon) {
-            super(name, icon);
+            super(name, icon.getIcon());
         }
     }
 
@@ -776,7 +779,8 @@ abstract public class ConfigDialog<@Nullable C> extends JDialog {
             int answer =
                 JOptionPane.showConfirmDialog(ConfigDialog.this,
                     String.format("Delete configuration '%s'?", getSelectedName(), getName()),
-                    null, JOptionPane.YES_NO_OPTION);
+                    null,
+                    JOptionPane.YES_NO_OPTION);
             return answer == JOptionPane.YES_OPTION;
         }
 

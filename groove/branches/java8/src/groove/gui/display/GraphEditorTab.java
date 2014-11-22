@@ -783,7 +783,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
             Action action = TransferHandler.getCutAction();
             action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
             this.cutAction = new TransferAction(action, Options.CUT_KEY, Options.CUT_ACTION_NAME);
-            this.cutAction.putValue(Action.SMALL_ICON, Icons.CUT_ICON);
+            this.cutAction.putValue(Action.SMALL_ICON, Icons.CUT_ICON.getIcon());
         }
         return this.cutAction;
     }
@@ -800,7 +800,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
             Action action = TransferHandler.getCopyAction();
             this.copyAction =
                 new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
-            this.copyAction.putValue(Action.SMALL_ICON, Icons.COPY_ICON);
+            this.copyAction.putValue(Action.SMALL_ICON, Icons.COPY_ICON.getIcon());
         }
         return this.copyAction;
     }
@@ -817,7 +817,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
             Action action = TransferHandler.getPasteAction();
             this.pasteAction =
                 new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
-            this.pasteAction.putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
+            this.pasteAction.putValue(Action.SMALL_ICON, Icons.PASTE_ICON.getIcon());
             this.pasteAction.setEnabled(true);
         }
         return this.pasteAction;
@@ -832,7 +832,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private Action getRedoAction() {
         if (this.redoAction == null) {
             this.redoAction =
-                new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, Icons.REDO_ICON) {
+                new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY,
+                    Icons.REDO_ICON.getIcon()) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -855,7 +856,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private Action getUndoAction() {
         if (this.undoAction == null) {
             this.undoAction =
-                new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, Icons.UNDO_ICON) {
+                new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY,
+                    Icons.UNDO_ICON.getIcon()) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -967,7 +969,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private class DeleteAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected DeleteAction() {
-            super(Options.DELETE_ACTION_NAME, Options.DELETE_KEY, Icons.DELETE_ICON);
+            super(Options.DELETE_ACTION_NAME, Options.DELETE_KEY, Icons.DELETE_ICON.getIcon());
             setEnabled(false);
         }
 

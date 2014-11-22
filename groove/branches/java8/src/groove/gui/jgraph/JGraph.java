@@ -286,8 +286,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * May return {@code null} if the simulator is not set.
      */
     private GrammarProperties getProperties() {
-        return getSimulatorModel() == null ? null
-            : getSimulatorModel().getGrammar().getProperties();
+        return getSimulatorModel() == null ? null : getSimulatorModel().getGrammar()
+            .getProperties();
     }
 
     /*
@@ -379,7 +379,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                     // adjust the x,y corner so that the center stays in place
                     double shiftX = (bounds.getWidth() - d.getWidth() - inset) / 2;
                     double shiftY = (bounds.getHeight() - d.getHeight() - inset) / 2;
-                    bounds.setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
+                    bounds.setFrame(bounds.getX() + shiftX,
+                        bounds.getY() + shiftY,
+                        d.getWidth(),
                         d.getHeight());
                     // Remove resize attribute
                     snap(bounds);
@@ -1194,7 +1196,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         if (this.modeActionMap == null) {
             this.modeActionMap = new EnumMap<JGraphMode,Action>(JGraphMode.class);
             for (final JGraphMode any : JGraphMode.values()) {
-                Action action = new AbstractAction(any.getName(), any.getIcon()) {
+                Action action = new AbstractAction(any.getName(), any.getIcon().getIcon()) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         setMode(any);

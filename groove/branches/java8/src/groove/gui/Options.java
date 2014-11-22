@@ -519,14 +519,16 @@ public class Options implements Cloneable {
     public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
     /** Hide LTS action name */
     public static final String HIDE_LTS_ACTION_NAME = "Hide LTS";
+    /** Import action name */
+    public static final String IMPORT_ACTION_NAME = "Import ...";
+    /** Rules import action name */
+    public static final String IMPORT_RULES_ACTION_NAME = "Import Rules ...";
     /** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME = "List Atom. Prop.";
     /** Load control file action name */
     public static final String LOAD_CONTROL_FILE_ACTION_NAME = "Load Control ...";
     /** Load start state action name */
     public static final String LOAD_START_STATE_ACTION_NAME = "Load External Start State ...";
-    /** Import action name */
-    public static final String IMPORT_ACTION_NAME = "Import ...";
     /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
     /** Load grammar from url action name */
@@ -832,7 +834,9 @@ public class Options implements Cloneable {
 
     /** Set of resource kinds for which the display tab is optional. */
     private static final Set<ResourceKind> optionalTabs = EnumSet.of(ResourceKind.CONTROL,
-        ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
+        ResourceKind.PROLOG,
+        ResourceKind.TYPE,
+        ResourceKind.GROOVY);
 
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
@@ -899,17 +903,19 @@ public class Options implements Cloneable {
             result = StringHandler.splitExpr(storedValue, ",");
         } catch (FormatException e) {
             assert false : String.format("Format error in user preference string %s: %s",
-                storedValue, e.getMessage());
+                storedValue,
+                e.getMessage());
         }
         for (int i = 0; i < result.length; i++) {
             try {
                 String newValue = StringHandler.toUnquoted(result[i], '"');
-                assert result[i] != null : String.format(
-                    "User preference string %s is not correctly quoted", result[i]);
+                assert result[i] != null : String.format("User preference string %s is not correctly quoted",
+                    result[i]);
                 result[i] = newValue;
             } catch (FormatException e) {
                 assert false : String.format("Format error in user preference string %s: %s",
-                    result[i], e.getMessage());
+                    result[i],
+                    e.getMessage());
             }
         }
         return result;

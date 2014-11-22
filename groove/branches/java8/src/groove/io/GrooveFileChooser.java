@@ -20,6 +20,7 @@ import groove.util.Duo;
 import groove.util.Groove;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -163,7 +164,7 @@ public class GrooveFileChooser extends JFileChooser {
      * @return This implementation returns a {@link GrooveFileView}.
      */
     protected FileView createFileView() {
-        return new GrooveFileView();
+        return GrooveFileView.instance();
     }
 
     /** Maps from file type sets to choosers. */
@@ -176,9 +177,9 @@ public class GrooveFileChooser extends JFileChooser {
         return getInstance(Collections.<FileType>emptySet());
     }
 
-    /** Returns the file chooser object associated with the given file type. */
-    public static GrooveFileChooser getInstance(FileType fileType) {
-        return getInstance(EnumSet.of(fileType));
+    /** Returns the file chooser object associated with the given set of file type. */
+    public static GrooveFileChooser getInstance(FileType... fileTypes) {
+        return getInstance(EnumSet.copyOf(Arrays.asList(fileTypes)));
     }
 
     /** Returns the file chooser object associated with the given set
