@@ -17,6 +17,7 @@ import groove.gui.dialog.SaveDialog;
 import groove.gui.display.ControlDisplay;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.DisplaysPanel;
+import groove.gui.display.FormatDisplay;
 import groove.gui.display.GroovyDisplay;
 import groove.gui.display.LTSDisplay;
 import groove.gui.display.PrologDisplay;
@@ -28,6 +29,7 @@ import groove.io.GrooveFileChooser;
 import groove.io.store.EditType;
 import groove.io.store.SystemStore;
 import groove.util.Duo;
+import groove.util.Exceptions;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 
@@ -155,10 +157,11 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             return getTypeDisplay();
         case GROOVY:
             return getGroovyDisplay();
+        case FORMAT:
+            return getFormatDisplay();
         case PROPERTIES:
         default:
-            assert false;
-            return null;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -185,6 +188,11 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
         return (PrologDisplay) getDisplaysPanel().getDisplay(DisplayKind.PROLOG);
+    }
+
+    /** Returns the format panel that owns the action. */
+    final protected FormatDisplay getFormatDisplay() {
+        return (FormatDisplay) getDisplaysPanel().getDisplay(DisplayKind.FORMAT);
     }
 
     /** Returns the groovy panel that owns the action. */

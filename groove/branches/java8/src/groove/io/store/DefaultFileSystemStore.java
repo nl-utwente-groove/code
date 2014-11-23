@@ -958,14 +958,13 @@ public class DefaultFileSystemStore extends SystemStore {
     private class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
-                ResourceKind.TYPE,
-                ResourceKind.HOST,
-                ResourceKind.CONTROL)) {
-                Set<String> oldNames = oldProperties.getActiveNames(kind);
-                Set<String> newNames = newProperties.getActiveNames(kind);
-                if (!oldNames.equals(newNames)) {
-                    addChange(kind);
+            for (ResourceKind kind : ResourceKind.values()) {
+                if (kind.isEnableable() && kind != ResourceKind.RULE) {
+                    Set<String> oldNames = oldProperties.getActiveNames(kind);
+                    Set<String> newNames = newProperties.getActiveNames(kind);
+                    if (!oldNames.equals(newNames)) {
+                        addChange(kind);
+                    }
                 }
             }
             this.oldProperties = oldProperties;

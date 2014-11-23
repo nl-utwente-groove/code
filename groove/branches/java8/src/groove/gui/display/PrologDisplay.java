@@ -76,10 +76,6 @@ import javax.swing.tree.TreePath;
  * @author Michiel Hendriks
  */
 public class PrologDisplay extends ResourceDisplay {
-    private static final int MAX_HISTORY = 50;
-
-    static final Preferences PREFS = Preferences.userNodeForPackage(PrologDisplay.class);
-
     /**
      * Construct a prolog panel
      */
@@ -304,7 +300,8 @@ public class PrologDisplay extends ResourceDisplay {
                 Object userObject =
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 if (userObject instanceof CompoundTermTag) {
-                    return getEngine().getEnvironment().getToolTipText((CompoundTermTag) userObject);
+                    return getEngine().getEnvironment()
+                        .getToolTipText((CompoundTermTag) userObject);
                 } else {
                     return null;
                 }
@@ -451,9 +448,9 @@ public class PrologDisplay extends ResourceDisplay {
             getResultsArea().setText("?- " + queryString + "\n");
 
             MatchResult match = getSimulatorModel().getMatch();
-            getEngine().setGrooveState(
-                new GrooveState(getGrammar().toGrammar(), getSimulatorModel().getGts(),
-                    getSimulatorModel().getState(), match == null ? null : match.getEvent()));
+            getEngine().setGrooveState(new GrooveState(getGrammar().toGrammar(),
+                getSimulatorModel().getGts(), getSimulatorModel().getState(), match == null ? null
+                    : match.getEvent()));
 
             this.solutionCount = 0;
             processResults(getEngine().newQuery(queryString));
@@ -583,7 +580,8 @@ public class PrologDisplay extends ResourceDisplay {
                     getEngine().lastReturnValue().toString()));
             }
             this.resultsStatus.setText(String.format("%d solution(s); Executed in %fms",
-                this.solutionCount, queryResult.getExecutionTime() / 1000000.0));
+                this.solutionCount,
+                queryResult.getExecutionTime() / 1000000.0));
         }
     }
 
@@ -630,7 +628,12 @@ public class PrologDisplay extends ResourceDisplay {
      * Counter used to show the number of found solutions (so far)
      */
     private int solutionCount;
-    final static Font EDIT_FONT = new Font("Monospaced", Font.PLAIN, 12);
+    /** Maximum number of items retained in the query history. */
+    private static final int MAX_HISTORY = 50;
+    /** Persisted query history. */
+    static private final Preferences PREFS = Preferences.userNodeForPackage(PrologDisplay.class);
+    /** Font for the Prolog windows. */
+    private final static Font EDIT_FONT = new Font("Monospaced", Font.PLAIN, 12);
 
     /**
      * Class used to redirect the standard output stream used by prolog to the

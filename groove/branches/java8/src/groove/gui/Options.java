@@ -836,7 +836,8 @@ public class Options implements Cloneable {
     private static final Set<ResourceKind> optionalTabs = EnumSet.of(ResourceKind.CONTROL,
         ResourceKind.PROLOG,
         ResourceKind.TYPE,
-        ResourceKind.GROOVY);
+        ResourceKind.GROOVY,
+        ResourceKind.FORMAT);
 
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";

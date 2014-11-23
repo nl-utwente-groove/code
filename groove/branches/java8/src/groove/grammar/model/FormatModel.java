@@ -17,28 +17,21 @@
 package groove.grammar.model;
 
 /**
- * Model for Groovy programs, which are just strings
+ * Model for format configurations, which are just strings
  *
  * @author Harold Bruijntjes
  */
-public class ConfigModel extends TextBasedModel<String> {
+public class FormatModel extends TextBasedModel<String> {
     /**
-     * Constructs a control view from a given config document.
+     * Constructs a control view from a given format document.
      *
      * @param grammar
-     *            the grammar view to which this config view belongs. Must be
-     *            non-{@code null} in order to compute the control automation
+     *            the grammar model to which this format view belongs.
      * @param document
-     *            the config document; non-null
+     *            the format document; non-null
      */
-    public ConfigModel(GrammarModel grammar, Text document) {
-        super(grammar, ResourceKind.GROOVY, document);
-    }
-
-    // Cannot be enabled
-    @Override
-    public boolean isEnabled() {
-        return false;
+    public FormatModel(GrammarModel grammar, Text document) {
+        super(grammar, ResourceKind.FORMAT, document);
     }
 
     @Override

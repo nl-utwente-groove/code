@@ -24,6 +24,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
+import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 
 import java.io.IOException;
@@ -134,6 +135,7 @@ public class SimulatorModel implements Cloneable {
         case TYPE:
         case PROLOG:
         case CONTROL:
+        case FORMAT:
             GrammarProperties newProperties = getGrammar().getProperties().clone();
             List<String> actives = new ArrayList<String>(newProperties.getActiveNames(kind));
             for (String typeName : names) {
@@ -146,7 +148,7 @@ public class SimulatorModel implements Cloneable {
             break;
         case PROPERTIES:
         default:
-            assert false;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -171,19 +173,10 @@ public class SimulatorModel implements Cloneable {
 
     /** Uniquely enables a named resource of a given kind. */
     private void setEnabledUniquely(ResourceKind kind, String name) throws IOException {
-        switch (kind) {
-        case HOST:
-        case TYPE:
-        case PROLOG:
-        case CONTROL:
-            GrammarProperties newProperties = getGrammar().getProperties().clone();
-            newProperties.setActiveNames(kind, Collections.singleton(name));
-            getStore().putProperties(newProperties);
-            break;
-        case PROPERTIES:
-        default:
-            assert false;
-        }
+        assert kind.isEnableable() && kind != ResourceKind.RULE;
+        GrammarProperties newProperties = getGrammar().getProperties().clone();
+        newProperties.setActiveNames(kind, Collections.singleton(name));
+        getStore().putProperties(newProperties);
     }
 
     /** Tests if a given aspect graph corresponds to an enabled resource. */
@@ -1233,9 +1226,9 @@ public class SimulatorModel implements Cloneable {
          */
         PROLOG(ResourceKind.PROLOG),
         /**
-         * The selected config file has changed.
+         * The selected format file has changed.
          */
-        CONFIG(ResourceKind.CONFIG),
+        FORMAT(ResourceKind.FORMAT),
         /**
          * The selected Groovy script has changed.
          */

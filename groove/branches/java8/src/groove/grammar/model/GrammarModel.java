@@ -269,12 +269,12 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Returns the configuration model for a given rule name.
-     * @return the configuration model for configuration <code>name</code>, or <code>null</code> if
-     *         there is no such configuration.
+     * Returns the format configuration model for a given format name.
+     * @return the model for format <code>name</code>, or <code>null</code> if
+     *         there is no such format.
      */
-    public ConfigModel getConfigModel(String name) {
-        return (ConfigModel) getResourceMap(ResourceKind.CONFIG).get(name);
+    public FormatModel getFormatModel(String name) {
+        return (FormatModel) getResourceMap(ResourceKind.FORMAT).get(name);
     }
 
     /**
@@ -582,7 +582,7 @@ public class GrammarModel implements Observer {
         modelMap.keySet().retainAll(sourceMap.keySet());
         // collect the new active names
         SortedSet<String> newActiveNames = new TreeSet<String>();
-        if (kind != RULE && kind != ResourceKind.GROOVY && kind != ResourceKind.CONFIG) {
+        if (kind.isEnableable() && kind != RULE) {
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
@@ -640,8 +640,8 @@ public class GrammarModel implements Observer {
         case GROOVY:
             result = new GroovyModel(this, text);
             break;
-        case CONFIG:
-            result = new ConfigModel(this, text);
+        case FORMAT:
+            result = new FormatModel(this, text);
             break;
         default:
             throw Exceptions.UNREACHABLE;
@@ -679,22 +679,22 @@ public class GrammarModel implements Observer {
     }
 
     /** Mapping from resource kinds and names to resource models. */
-    private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
-        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
+    private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap = new EnumMap<>(
+        ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
      * for all other resources, it is stored in the grammar properties.
      * @see #localActiveNamesMap
      */
-    private final Map<ResourceKind,SortedSet<String>> storedActiveNamesMap =
-        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+    private final Map<ResourceKind,SortedSet<String>> storedActiveNamesMap = new EnumMap<>(
+        ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * Where non-{@code null}, the values in this map override the {@link #storedActiveNamesMap}.
      */
-    private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
-        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+    private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap = new EnumMap<>(
+        ResourceKind.class);
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */

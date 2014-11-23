@@ -281,7 +281,7 @@ public class GrammarProperties extends Properties {
      */
     public Set<String> getActiveNames(ResourceKind kind) {
         assert kind != ResourceKind.RULE;
-        if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY) {
+        if (kind == ResourceKind.GROOVY) {
             return Collections.emptySet();
         }
         @SuppressWarnings("unchecked")
@@ -477,6 +477,6 @@ public class GrammarProperties extends Properties {
         resourceKeyMap.put(ResourceKind.CONTROL, GrammarKey.CONTROL_NAMES);
         resourceKeyMap.put(ResourceKind.PROLOG, GrammarKey.PROLOG_NAMES);
         resourceKeyMap.put(ResourceKind.HOST, GrammarKey.START_GRAPH_NAMES);
-
+        resourceKeyMap.put(ResourceKind.FORMAT, GrammarKey.FORMAT_NAMES);
     }
 }

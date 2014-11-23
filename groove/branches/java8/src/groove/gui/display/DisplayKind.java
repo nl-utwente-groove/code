@@ -25,6 +25,8 @@ public enum DisplayKind {
     PROLOG(ResourceKind.PROLOG, Icons.PROLOG_FRAME_ICON, "Prolog", "Prolog programs"),
     /** Groovy panel. */
     GROOVY(ResourceKind.GROOVY, Icons.GROOVY_FRAME_ICON, "Groovy", "Groovy scripts"),
+    /** Format configuration panel. */
+    FORMAT(ResourceKind.FORMAT, Icons.FORMAT_FRAME_ICON, "Format", "Format configurations"),
     /** State display. */
     STATE(null, Icons.STATE_FRAME_ICON, "State", "State panel"),
     /** LTS display. */
@@ -67,6 +69,7 @@ public enum DisplayKind {
         case STATE:
         case RULE:
         case PROPERTIES:
+        case FORMAT:
             result = Position.UPPER;
             break;
         case CONTROL:

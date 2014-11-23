@@ -1,6 +1,6 @@
 package groove.io.conceptual.configuration;
 
-import static groove.grammar.model.ResourceKind.CONFIG;
+import static groove.grammar.model.ResourceKind.FORMAT;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.Text;
 import groove.gui.Simulator;
@@ -231,7 +231,7 @@ public class ConfigDialog extends JDialog {
         getConfigList().removeAllItems();
 
         /** Add all current names in the grammar. */
-        Set<String> names = getGrammar().getNames(CONFIG);
+        Set<String> names = getGrammar().getNames(FORMAT);
         if (names.isEmpty()) {
             final String newStr = new String("<New>");
             getConfigList().addItem(newStr);
@@ -307,7 +307,7 @@ public class ConfigDialog extends JDialog {
                 break;
             case DELETE:
                 try {
-                    getStore().delete(CONFIG, Collections.singletonList(name));
+                    getStore().delete(FORMAT, Collections.singletonList(name));
                 } catch (IOException e) {
                     new ErrorDialog(getFrame(), "Error deleting configuration", e).setVisible(true);
                 }
@@ -317,7 +317,7 @@ public class ConfigDialog extends JDialog {
             case RENAME:
                 try {
                     assert hasActiveName();
-                    getStore().rename(CONFIG, getActiveName(), name);
+                    getStore().rename(FORMAT, getActiveName(), name);
                 } catch (IOException e) {
                     new ErrorDialog(getFrame(), "Error renaming configuration", e).setVisible(true);
                 }
@@ -325,9 +325,9 @@ public class ConfigDialog extends JDialog {
                 break;
             case COPY:
                 try {
-                    Text source = getStore().getText(CONFIG, getActiveName());
+                    Text source = getStore().getText(FORMAT, getActiveName());
                     Text target = source.rename(name);
-                    getStore().put(CONFIG, Collections.singleton(target));
+                    getStore().put(FORMAT, Collections.singleton(target));
                 } catch (IOException e) {
                     new ErrorDialog(getFrame(), "Error copying configuration", e).setVisible(true);
                 }
@@ -369,7 +369,7 @@ public class ConfigDialog extends JDialog {
         if (name == null) {
             loadEmptyConfig();
         } else {
-            String xmlString = getGrammar().getConfigModel(name).toConfig();
+            String xmlString = getGrammar().getFormatModel(name).toConfig();
             // Do something with xmlString
             try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
                 PrintStream out = System.out;
@@ -410,7 +410,7 @@ public class ConfigDialog extends JDialog {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            getStore().put(CONFIG, Collections.singleton(new Text(CONFIG, name, xmlString)));
+            getStore().put(FORMAT, Collections.singleton(new Text(FORMAT, name, xmlString)));
             if (!name.equals(getActiveName())) {
                 this.m_activeName = name;
                 refreshActions();
@@ -437,7 +437,7 @@ public class ConfigDialog extends JDialog {
 
     /** Convenience method to return the set of configuration names in the grammar. */
     public Set<String> getConfigNames() {
-        return getGrammar().getNames(CONFIG);
+        return getGrammar().getNames(FORMAT);
     }
 
     /** Convenience method to test if the grammar contains any configurations. */

@@ -26,7 +26,7 @@ import groove.gui.action.SimulatorAction;
 public class ConfigAction extends SimulatorAction {
     /** Constructs a new configuration manipulation action of a given type. */
     protected ConfigAction(Simulator simulator, Type type, ConfigDialog dlg) {
-        super(simulator, type.getText(), type.getIcon(), null, ResourceKind.CONFIG);
+        super(simulator, type.getText(), type.getIcon(), null, ResourceKind.FORMAT);
         this.m_type = type;
         this.m_dlg = dlg;
     }

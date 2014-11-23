@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.grammar.model.ResourceKind;
 import groove.io.store.EditType;
+import groove.util.Exceptions;
 import groove.util.Groove;
 
 import java.awt.Cursor;
@@ -50,6 +51,7 @@ public final class Icons {
                 return NEW_GRAPH_ICON;
             case PROLOG:
                 return NEW_PROLOG_ICON;
+            case FORMAT:
             case GROOVY:
                 return NEW_ICON;
             case RULE:
@@ -58,8 +60,7 @@ public final class Icons {
                 return NEW_TYPE_ICON;
             case PROPERTIES:
             default:
-                assert false;
-                return null;
+                throw Exceptions.UNREACHABLE;
             }
         case DELETE:
             return DELETE_ICON;
@@ -74,6 +75,7 @@ public final class Icons {
                 return EDIT_GRAPH_ICON;
             case PROLOG:
                 return EDIT_PROLOG_ICON;
+            case FORMAT:
             case GROOVY:
                 return EDIT_ICON;
             case PROPERTIES:
@@ -83,8 +85,7 @@ public final class Icons {
             case TYPE:
                 return EDIT_TYPE_ICON;
             default:
-                assert false;
-                return null;
+                throw Exceptions.UNREACHABLE;
             }
         case RENAME:
             return RENAME_ICON;
@@ -110,13 +111,14 @@ public final class Icons {
             return PROLOG_FILE_ICON;
         case GROOVY:
             return GROOVY_FILE_ICON;
+        case FORMAT:
+            return FORMAT_FILE_ICON;
         case RULE:
             return RULE_MODE_ICON;
         case TYPE:
             return TYPE_MODE_ICON;
         default:
-            assert false;
-            return null;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -132,6 +134,7 @@ public final class Icons {
             return EDIT_GRAPH_ICON;
         case PROLOG:
             return EDIT_PROLOG_ICON;
+        case FORMAT:
         case GROOVY:
             return EDIT_ICON;
         case RULE:
@@ -139,8 +142,7 @@ public final class Icons {
         case TYPE:
             return EDIT_TYPE_ICON;
         default:
-            assert false;
-            return null;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -155,6 +157,7 @@ public final class Icons {
         case PROLOG:
         case GROOVY:
         case TYPE:
+        case FORMAT:
             return EDIT_ICON;
         case RULE:
             return EDIT_WIDE_ICON;
@@ -176,6 +179,8 @@ public final class Icons {
             return GRAPH_LIST_ICON;
         case PROLOG:
             return PROLOG_LIST_ICON;
+        case FORMAT:
+            return FORMAT_LIST_ICON;
         case GROOVY:
             return GROOVY_LIST_ICON;
         case RULE:
@@ -260,6 +265,12 @@ public final class Icons {
     public static final Icon FORBIDDEN_TREE_ICON = createIcon("rule-forbidden.gif");
     /** Small icon for injective forbidden condition rules, as shown in the rule tree. */
     public static final Icon FORBIDDEN_I_TREE_ICON = createIcon("rule-forbidden-I.gif");
+    /** Icon for Format Panel. */
+    public static final Icon FORMAT_FRAME_ICON = createIcon("format-frame.gif");
+    /** Icon for Format Files. */
+    public static final Icon FORMAT_FILE_ICON = createIcon("format-file.gif");
+    /** Icon for to appear in the format list. */
+    public static final Icon FORMAT_LIST_ICON = createIcon("format-file.gif");
     /** Icon for restart movement. */
     public static final Icon GO_PREVIOUS_ICON = createIcon("go-previous.gif");
     /** Icon for fast-forward movement. */
@@ -290,6 +301,12 @@ public final class Icons {
     public static final Icon GRAPH_MODE_ICON = createIcon("graph-mode.gif");
     /** Icon for snap to grid action. */
     public static final Icon GRID_ICON = createIcon("grid.gif");
+    /** Icon for Groovy Panel. */
+    public static final Icon GROOVY_FRAME_ICON = createIcon("groovy-frame.gif");
+    /** Icon for Groovy Files. */
+    public static final Icon GROOVY_FILE_ICON = createIcon("groovy-file.gif");
+    /** Small icon for scripts, as shown in the Groovy list. */
+    public static final Icon GROOVY_LIST_ICON = createIcon("groovy-file.gif");
     /** Icon in the shape of an open hand, to be used as cursor. */
     public static final Icon HAND_OPEN_CURSOR_ICON = createIcon("hand-open.gif");
     /** Icon in the shape of an open hand. */
@@ -344,12 +361,6 @@ public final class Icons {
     public static final Icon PUZZLE_C_ICON = createIcon("puzzle-C.gif");
     /** Small icon for R-indexed puzzle piece. */
     public static final Icon PUZZLE_R_ICON = createIcon("puzzle-R.gif");
-    /** Icon for Groovy Panel. */
-    public static final Icon GROOVY_FRAME_ICON = createIcon("groovy-frame.gif");
-    /** Icon for Groovy Files. */
-    public static final Icon GROOVY_FILE_ICON = createIcon("groovy-file.gif");
-    /** Small icon for scripts, as shown in the Groovy list. */
-    public static final Icon GROOVY_LIST_ICON = createIcon("groovy-file.gif");
     /** Icon for Properties Panel. */
     public static final Icon PROPERTIES_FRAME_ICON = createIcon("properties-frame.gif");
     /** Redo action icon. */

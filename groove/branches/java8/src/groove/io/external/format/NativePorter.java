@@ -56,7 +56,7 @@ public class NativePorter extends AbstractExporter implements Importer {
         register(ResourceKind.CONTROL);
         register(ResourceKind.PROLOG);
         register(ResourceKind.GROOVY);
-        register(ResourceKind.CONFIG);
+        register(ResourceKind.FORMAT);
     }
 
     @Override

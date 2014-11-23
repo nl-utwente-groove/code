@@ -85,7 +85,6 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /**
      * Returns the panel holding all display tabs.
-     * This may or may not be the same as #getDisplayPanel().
      */
     final public JTabbedPane getTabPane() {
         if (this.tabPane == null) {
@@ -95,8 +94,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /**
-     * Returns the panel holding all display tabs.
-     * This may or may not be the same as #getDisplayPanel().
+     * Creates the panel holding all display tabs.
      */
     final protected MyTabbedPane createTabPane() {
         return new MyTabbedPane();
@@ -150,9 +148,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         ResourceKind kind = getResourceKind();
         if (kind.isEnableable()) {
             result.add(getEnableButton());
-            if (getResourceKind() == ResourceKind.HOST || getResourceKind() == ResourceKind.TYPE
-                || getResourceKind() == ResourceKind.PROLOG
-                || getResourceKind() == ResourceKind.CONTROL) {
+            if (getResourceKind() != ResourceKind.RULE) {
                 result.add(getEnableUniqueAction());
             }
         }

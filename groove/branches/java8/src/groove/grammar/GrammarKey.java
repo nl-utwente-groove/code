@@ -101,6 +101,12 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         ResourceChecker.get(ResourceKind.HOST)),
 
     /**
+     * Space-separated list of active start graph names.
+     */
+    FORMAT_NAMES("format", "List of applicable format definitions", Parser.splitter,
+        ResourceChecker.get(ResourceKind.FORMAT)),
+
+    /**
      * Name of the active control program.
      */
     CONTROL_NAMES("controlProgram", "List of enabled control programs", Parser.splitter,
@@ -345,7 +351,8 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
             FormatErrorSet result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());
             if (!unknowns.isEmpty()) {
-                result.add("Unknown %s name%s %s", StringHandler.toLower(getKind().getName()),
+                result.add("Unknown %s name%s %s",
+                    StringHandler.toLower(getKind().getName()),
                     unknowns.size() == 1 ? "" : "s",
                     Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
@@ -368,6 +375,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
                 case HOST:
                 case PROLOG:
                 case TYPE:
+                case FORMAT:
                     map.put(kind, new ResourceChecker(kind));
                 }
             }
@@ -398,13 +406,16 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
                     } else {
                         CheckPolicy policy = entry.getValue();
                         if (!policy.isFor(rule.getRole())) {
-                            result.add("Policy '%s' is unsuitable for %s '%s'", policy.getName(),
-                                rule.getRole(), rule.getFullName());
+                            result.add("Policy '%s' is unsuitable for %s '%s'",
+                                policy.getName(),
+                                rule.getRole(),
+                                rule.getFullName());
                         }
                     }
                 }
                 if (!unknowns.isEmpty()) {
-                    result.add("Unknown %s name%s %s", StringHandler.toLower(getKind().getName()),
+                    result.add("Unknown %s name%s %s",
+                        StringHandler.toLower(getKind().getName()),
                         unknowns.size() == 1 ? "" : "s",
                         Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
                 }

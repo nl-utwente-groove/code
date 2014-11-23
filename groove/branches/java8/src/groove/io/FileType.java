@@ -28,12 +28,12 @@ import groove.io.graph.GxlIO;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Enumeration of file types supported by Groove.
@@ -70,7 +70,7 @@ public enum FileType {
     /** Prolog files. */
     PROLOG2("Prolog files", ".pl"),
     /** Configuration files. */
-    CONFIG("Configuration files", ".xml"),
+    FORMAT("Configuration files", ".format", ".xml"),
     /** Groovy files. */
     GROOVY("Groovy files", ".groovy"),
 
@@ -119,14 +119,14 @@ public enum FileType {
     PROLOG("Prolog files", PROLOG1, PROLOG2), ;
 
     /** Constructs a singular file type. */
-    private FileType(String description, String extension) {
+    private FileType(String description, String... extensions) {
         assert description != null && description.length() > 0 : String.format("Badly formatted file type description: %s",
             description);
-        assert extension != null && extension.length() > 1 && extension.charAt(0) == SEPARATOR : String.format("Badly formatted file type extension: %s",
-            extension);
-        this.extension = extension;
+        assert extensions != null && extensions.length >= 1;
         this.description = description;
-        this.subTypes = new ArrayList<FileType>();
+        this.primary = extensions[0];
+        this.extensions = Collections.unmodifiableList(Arrays.asList(extensions));
+        this.subTypes = Collections.emptyList();
     }
 
     /**
@@ -135,14 +135,19 @@ public enum FileType {
      * The first of the sub-types will be the primary file type.
      */
     private FileType(String description, FileType... subTypes) {
-        this(description, subTypes[0].getExtension());
-        this.subTypes.addAll(Arrays.asList(subTypes));
+        this.description = description;
+        this.primary = subTypes[0].getExtension();
+        this.subTypes = Collections.unmodifiableList(Arrays.asList(subTypes));
+        this.extensions =
+            Collections.unmodifiableList(this.subTypes.stream()
+                .flatMap(t -> t.getExtensions().stream())
+                .collect(Collectors.toList()));
     }
 
     /** Returns the primary extension of this file type,
      * with {@link #SEPARATOR} prefix. */
     public String getExtension() {
-        return this.extension;
+        return this.primary;
     }
 
     /**
@@ -150,31 +155,27 @@ public enum FileType {
      * @see #getExtension()
      */
     public String getExtensionName() {
-        return this.extension.substring(1);
+        return this.primary.substring(1);
     }
 
-    /** Returns the list of all file extensions for this file type. */
-    public List<String> getExtensions() {
-        List<String> result = this.extensions;
-        if (result == null) {
-            if (isMultiple()) {
-                result = new ArrayList<String>();
-                for (FileType subType : getSubTypes()) {
-                    result.add(subType.getExtension());
-                }
-                result = Collections.unmodifiableList(result);
-            } else {
-                result = Collections.singletonList(getExtension());
-            }
-            this.extensions = result;
-        }
-        return result;
-    }
+    /** The primary file extension. */
+    private final String primary;
 
     /** Returns the description associated with this file type. */
     public String getDescription() {
         return this.description;
     }
+
+    /** Description of the file type. */
+    private final String description;
+
+    /** Returns the list of all file extensions for this file type. */
+    public List<String> getExtensions() {
+        return this.extensions;
+    }
+
+    /** List of all file extensions. */
+    private final List<String> extensions;
 
     /** Returns the extension filter associated with this file type. */
     public ExtensionFilter getFilter() {
@@ -184,23 +185,19 @@ public enum FileType {
         return this.filter;
     }
 
+    /** Extension filter for this file type. */
+    private ExtensionFilter filter;
+
     /**
      * Strips the extension of this file type from a filename, if the extension is in fact there.
      * @param filename the filename to be stripped
      */
     public String stripExtension(String filename) {
-        String result = filename;
-        if (isMultiple()) {
-            for (FileType subType : getSubTypes()) {
-                if (subType.hasExtension(filename)) {
-                    result = subType.stripExtension(filename);
-                    break;
-                }
-            }
-        } else if (filename.endsWith(this.getExtension())) {
-            result = filename.substring(0, filename.length() - getExtension().length());
-        }
-        return result;
+        return getExtensions().stream()
+            .filter(x -> filename.endsWith(x))
+            .map(x -> filename.substring(0, filename.length() - x.length()))
+            .findAny()
+            .orElse(filename);
     }
 
     /**
@@ -228,7 +225,7 @@ public enum FileType {
     public String addExtension(String filename) {
         String result = filename;
         if (!hasExtension(filename)) {
-            result = filename + getExtension();
+            result += getExtension();
         }
         return result;
     }
@@ -258,18 +255,7 @@ public enum FileType {
      *         of this filter
      */
     public boolean hasExtension(String filename) {
-        boolean result = false;
-        if (isMultiple()) {
-            for (FileType subType : getSubTypes()) {
-                if (subType.hasExtension(filename)) {
-                    result = true;
-                    break;
-                }
-            }
-        } else {
-            result = filename.endsWith(this.getExtension());
-        }
-        return result;
+        return getExtensions().stream().anyMatch(x -> filename.endsWith(x));
     }
 
     /**
@@ -339,30 +325,20 @@ public enum FileType {
     private GraphIO<?> io;
 
     /** Tests if this is a file type with multiple extensions. */
-    public boolean isMultiple() {
+    public boolean isComposed() {
         return !getSubTypes().isEmpty();
     }
 
     /** Returns the sub-file types of this {@link FileType}, or {@code null}
      * if this is not a multiple file type.
-     * @see #isMultiple()
+     * @see #isComposed()
      */
     public List<FileType> getSubTypes() {
         return this.subTypes;
     }
 
-    // Fields and methods.
-
-    /** The primary file extension. */
-    private final String extension;
-    /** Description of the file type. */
-    private final String description;
     /** Set of sub-file types, if this is a collective file type. */
     private final List<FileType> subTypes;
-    /** List of all file extensions. */
-    private List<String> extensions;
-    /** Extension filter for this file type. */
-    private ExtensionFilter filter;
 
     /** Returns the extension filter associated with the given graph role. */
     public static ExtensionFilter getFilter(GraphRole role) {
