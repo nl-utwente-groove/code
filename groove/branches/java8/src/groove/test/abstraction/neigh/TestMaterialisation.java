@@ -84,7 +84,7 @@ public class TestMaterialisation {
     public void testMaterialisation0a() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-0a").toResource();
+            graph = getHostGraph("materialisation-test-0a");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -125,7 +125,7 @@ public class TestMaterialisation {
     public void testMaterialisation0b() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-0b").toResource();
+            graph = getHostGraph("materialisation-test-0b");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -149,7 +149,7 @@ public class TestMaterialisation {
     public void testMaterialisation0c() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-0c").toResource();
+            graph = getHostGraph("materialisation-test-0c");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -173,7 +173,7 @@ public class TestMaterialisation {
     public void testMaterialisation1a() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-1a").toResource();
+            graph = getHostGraph("materialisation-test-1a");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -198,7 +198,7 @@ public class TestMaterialisation {
     public void testMaterialisation1b() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-1b").toResource();
+            graph = getHostGraph("materialisation-test-1b");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -249,7 +249,7 @@ public class TestMaterialisation {
     public void testMaterialisation1c() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-1c").toResource();
+            graph = getHostGraph("materialisation-test-1c");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -276,7 +276,7 @@ public class TestMaterialisation {
     public void testMaterialisation2() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-2").toResource();
+            graph = getHostGraph("materialisation-test-2");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -311,7 +311,7 @@ public class TestMaterialisation {
     public void testMaterialisation3() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-3").toResource();
+            graph = getHostGraph("materialisation-test-3");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -346,7 +346,7 @@ public class TestMaterialisation {
     public void testMaterialisation4() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-4").toResource();
+            graph = getHostGraph("materialisation-test-4");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -407,7 +407,7 @@ public class TestMaterialisation {
     public void testMaterialisation5() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-5").toResource();
+            graph = getHostGraph("materialisation-test-5");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -470,7 +470,7 @@ public class TestMaterialisation {
     public void testMaterialisation7() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-7").toResource();
+            graph = getHostGraph("materialisation-test-7");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -495,7 +495,7 @@ public class TestMaterialisation {
     public void testMaterialisation8() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-8").toResource();
+            graph = getHostGraph("materialisation-test-8");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -521,7 +521,7 @@ public class TestMaterialisation {
     public void testMaterialisation9() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-9").toResource();
+            graph = getHostGraph("materialisation-test-9");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -546,7 +546,7 @@ public class TestMaterialisation {
     public void testMaterialisation10() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-10").toResource();
+            graph = getHostGraph("materialisation-test-10");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -572,7 +572,7 @@ public class TestMaterialisation {
     public void testMaterialisation11() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-11").toResource();
+            graph = getHostGraph("materialisation-test-11");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -599,7 +599,7 @@ public class TestMaterialisation {
     public void testMaterialisation12() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-12").toResource();
+            graph = getHostGraph("materialisation-test-12");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -662,7 +662,7 @@ public class TestMaterialisation {
     public void testRuleAppAndNormalisation() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("rule-app-test-0").toResource();
+            graph = getHostGraph("rule-app-test-0");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -697,5 +697,9 @@ public class TestMaterialisation {
         } catch (IOException e) {
             throw new IllegalArgumentException();
         }
+    }
+
+    private HostGraph getHostGraph(String name) throws FormatException {
+        return view.getHostModel(name).get().toResource();
     }
 }

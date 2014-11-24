@@ -73,8 +73,8 @@ public class RegExprTyperTest {
         TypeGraph explicitType = null;
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            explicitType = view.getTypeModel("type").toResource();
-            startGraph = view.getHostModel("start").toResource();
+            explicitType = view.getTypeModel("type").get().toResource();
+            startGraph = view.getHostModel("start").get().toResource();
         } catch (FormatException e) {
             fail(e.getMessage());
             throw Exceptions.UNREACHABLE;

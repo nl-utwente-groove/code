@@ -28,13 +28,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
 public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge>
-implements AspectJCell {
+    implements AspectJCell {
     /**
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
@@ -203,25 +204,19 @@ implements AspectJCell {
 
     @Override
     protected Collection<TypeNode> getNodeKeys(boolean hasEdgeKeys) {
-        List<TypeNode> result = new ArrayList<TypeNode>();
-        TypeModelMap typeMap = getTypeMap();
-        if (typeMap != null) {
-            TypeNode type = typeMap.getNode(getNode());
-            if (type != null && (!hasEdgeKeys || !type.isTopType())) {
-                result.addAll(type.getSupertypes());
-            }
-        }
-        return result;
+        return getTypeMap().map(m -> m.getNode(getNode()))
+            .filter(t -> !hasEdgeKeys || !t.isTopType())
+            .map(t -> new ArrayList<>(t.getSupertypes()))
+            .orElse(new ArrayList<>());
     }
 
     @Override
     public TypeEdge getKey(Edge edge) {
-        TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? null : typeMap.getEdge(edge);
+        return getTypeMap().map(m -> m.getEdge(edge)).orElse(null);
     }
 
-    private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel().getTypeMap();
+    private Optional<TypeModelMap> getTypeMap() {
+        return getJModel().getResourceModel().map(r -> r.getTypeMap());
     }
 
     @Override
@@ -260,8 +255,7 @@ implements AspectJCell {
      * The node type may be {@code null} if the graph has typing errors.
      */
     public TypeNode getNodeType() {
-        TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? null : typeMap.getNode(getNode());
+        return getTypeMap().map(m -> m.getNode(getNode())).orElse(null);
     }
 
     @Override

@@ -61,9 +61,9 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         throws PortException {
         Set<Resource> result = Collections.emptySet();
         Pair<Glossary,Design> models = null;
-        if (fileType == getFileType(ResourceKind.HOST)) {
+        if (getFileType(ResourceKind.HOST).map(t -> t == fileType).orElse(false)) {
             models = importDesign(file, grammar);
-        } else if (fileType == getFileType(ResourceKind.TYPE)) {
+        } else if (getFileType(ResourceKind.TYPE).map(t -> t == fileType).orElse(false)) {
             models = importGlossary(file, grammar);
         }
         if (models != null) {
@@ -95,7 +95,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             throw new PortException(e);
         }
 
-        ResourceModel<?> model = exportable.getModel();
+        ResourceModel<?> model = exportable.getModel().get();
         GrammarModel grammar = model.getGrammar();
         Optional<Config> cfg = ConfigDialog.load(getSimulator());
         if (!cfg.isPresent()) {
@@ -106,13 +106,13 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         Pair<Glossary,Design> outcome = null;
         switch (kind) {
         case HOST:
-            assert fileType == getFileType(ResourceKind.HOST);
+            assert fileType == getFileType(ResourceKind.HOST).get();
             outcome = constructModels(cfg.get(), grammar, namespace, null, name);
             break;
         case RULE:
             throw new PortException("Rules cannot be exported in this format");
         case TYPE:
-            assert fileType == getFileType(ResourceKind.TYPE);
+            assert fileType == getFileType(ResourceKind.TYPE).get();
             outcome = constructModels(cfg.get(), grammar, namespace, name, null);
             break;
         default:

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.jgraph;
@@ -38,9 +38,9 @@ import groove.gui.layout.LayoutMap;
 import groove.gui.look.VisualMap;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Derived;
+import groove.util.Groove;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
-import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.swing.undo.UndoableEdit;
@@ -72,22 +73,21 @@ import org.jgraph.graph.ParentMap;
  * @version $Revision$
  */
 final public class AspectJModel extends JModel<AspectGraph> {
-    /** 
+    /**
      * Creates an new model, initially without a graph or grammar loaded.
      * Call {@link #setGrammar(GrammarModel)} to complete construction.
      */
     AspectJModel(AspectJGraph jGraph) {
         super(jGraph);
         this.graphModCount = new ChangeCount();
-        this.resource = new Derived<GraphBasedModel<?>>(this.graphModCount) {
+        this.resource = new Derived<Optional<GraphBasedModel<?>>>(this.graphModCount) {
             @Override
-            protected GraphBasedModel<?> computeValue() {
-                GraphBasedModel<?> result;
-                ResourceKind kind =
-                    ResourceKind.toResource(getJGraph().getGraphRole());
+            protected Optional<GraphBasedModel<?>> computeValue() {
+                Optional<GraphBasedModel<?>> result;
+                ResourceKind kind = ResourceKind.toResource(getJGraph().getGraphRole());
                 if (getJGraph().isEditable() || getJGraph().isForState()
                     || !getGrammar().hasResource(kind, getName())) {
-                    result = getGrammar().createGraphModel(getGraph());
+                    result = Optional.of(getGrammar().createGraphModel(getGraph()));
                 } else {
                     result = getGrammar().getGraphResource(kind, getName());
                 }
@@ -97,19 +97,13 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.typeGraph = new Derived<TypeGraph>(this.graphModCount) {
             @Override
             protected TypeGraph computeValue() {
-                TypeGraph result;
-                GraphBasedModel<?> resourceModel = getResourceModel();
-                if (resourceModel instanceof TypeModel) {
+                return getResourceModel().filter(m -> m instanceof TypeModel).map(m -> {
                     try {
-                        result = ((TypeModel) resourceModel).toResource();
+                        return ((TypeModel) m).toResource();
                     } catch (FormatException e) {
-                        result =
-                            ImplicitTypeGraph.newInstance(resourceModel.getLabels());
+                        return ImplicitTypeGraph.newInstance(m.getLabels());
                     }
-                } else {
-                    result = getGrammar().getTypeGraph();
-                }
-                return result;
+                }).orElse(getGrammar().getTypeGraph());
             }
         };
         this.graphModCount.addObserver(new Observer() {
@@ -134,8 +128,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     /** Sets a grammar model, with respect to which typing is resolved. */
     public void setGrammar(GrammarModel grammar) {
-        assert (this.grammar == null || this.grammar == grammar)
-            && grammar != null;
+        assert (this.grammar == null || this.grammar == grammar) && grammar != null;
         this.grammar = grammar;
     }
 
@@ -176,7 +169,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         setLoading(false);
     }
 
-    /** 
+    /**
      * Clones this model, and initialises the new model with the given
      * argument graph.
      */
@@ -190,11 +183,11 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return result;
     }
 
-    /** 
+    /**
      * Reconstructs the aspect graph on the basis of the current
      * content of the JModel.
      * This method should be called immediately after the changes to
-     * the JModel have been made, but before any graph listeners are 
+     * the JModel have been made, but before any graph listeners are
      * notified.
      */
     public void syncGraph() {
@@ -202,10 +195,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
             return;
         }
         GraphRole role = getGraph().getRole();
-        Map<AspectNode,AspectJVertex> nodeJVertexMap =
-            new HashMap<AspectNode,AspectJVertex>();
-        Map<AspectEdge,AspectJCell> edgeJCellMap =
-            new HashMap<AspectEdge,AspectJCell>();
+        Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<AspectNode,AspectJVertex>();
+        Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<AspectEdge,AspectJCell>();
         AspectGraph graph = new AspectGraph(getName(), role);
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
@@ -263,7 +254,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         }
     }
 
-    /** 
+    /**
      * Sets the extra-error flags of all the cells, based
      * on the errors in the view.
      */
@@ -275,7 +266,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             jCell.getErrors().clear();
         }
         this.errorMap.clear();
-        for (FormatError error : getResourceModel().getErrors()) {
+        for (FormatError error : getResourceModel().get().getErrors()) {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {
@@ -290,7 +281,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     }
 
     /** Returns an up-to-date resource model for the graph being edited here. */
-    public GraphBasedModel<?> getResourceModel() {
+    public Optional<GraphBasedModel<?>> getResourceModel() {
         return this.resource.getValue();
     }
 
@@ -299,9 +290,9 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return this.typeGraph.getValue();
     }
 
-    /** 
+    /**
      * Returns the mapping from errors to JCells with that error
-     * computed during the last call to {@link #loadGraph(AspectGraph)} 
+     * computed during the last call to {@link #loadGraph(AspectGraph)}
      * or {@link #syncGraph()}.
      */
     public Map<FormatError,AspectJCell> getErrorMap() {
@@ -367,8 +358,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void insert(Object[] roots, Map attributes, ConnectionSet cs,
-            ParentMap pm, UndoableEdit[] edits) {
+    public void insert(Object[] roots, Map attributes, ConnectionSet cs, ParentMap pm,
+        UndoableEdit[] edits) {
         Set<Object> insertables = new LinkedHashSet<Object>();
         // only copy edges whose source and target ports are connected
         for (Object root : roots) {
@@ -392,8 +383,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         if (cs != null) {
             Iterator it = cs.connections();
             while (it.hasNext()) {
-                ConnectionSet.Connection conn =
-                    (ConnectionSet.Connection) it.next();
+                ConnectionSet.Connection conn = (ConnectionSet.Connection) it.next();
                 if (!insertables.contains(conn.getEdge())) {
                     it.remove();
                 }
@@ -436,7 +426,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.graphModCount.increase();
     }
 
-    /** 
+    /**
      * We override this method to ensure that the aspect graph
      * remains in sync with any changes made to the JModel, <i>before</i>
      * the listeners are notified of the changes.
@@ -452,10 +442,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
             // (and not just the layout)
             boolean changed =
                 edit.getInserted() != null && edit.getInserted().length > 0
-                    || edit.getRemoved() != null
-                    && edit.getRemoved().length > 0
-                    || edit.getConnectionSet() != null
-                    && !edit.getConnectionSet().isEmpty();
+                    || edit.getRemoved() != null && edit.getRemoved().length > 0
+                    || edit.getConnectionSet() != null && !edit.getConnectionSet().isEmpty();
             // only user object changes in the attribute should trigger a reload
             if (!changed && edit.getAttributes() != null) {
                 for (Object attrValue : ((Map<?,?>) edit.getAttributes()).values()) {
@@ -489,7 +477,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.loading = loading;
     }
 
-    /** 
+    /**
      * Creates a new aspect node, with a fresh node number and
      * the graph role taken from the editor.
      */
@@ -548,7 +536,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     /** Counter of the modifications to the graph. */
     private final ChangeCount graphModCount;
     /** The resource model of the graph being edited. */
-    private final Derived<GraphBasedModel<?>> resource;
+    private final Derived<Optional<GraphBasedModel<?>>> resource;
     /** The type graph of the graph being edited. */
     private final Derived<TypeGraph> typeGraph;
     /** Flag to indicate if the graph is being edited or not. */
@@ -557,8 +545,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     /** Mapping from errors to affected cells. */
-    private Map<FormatError,AspectJCell> errorMap =
-        new HashMap<FormatError,AspectJCell>();
+    private Map<FormatError,AspectJCell> errorMap = new HashMap<FormatError,AspectJCell>();
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,
@@ -567,11 +554,11 @@ final public class AspectJModel extends JModel<AspectGraph> {
     private boolean loading;
 
     /** Role names (for the tool tips). */
-    static final Map<AspectKind,String> ROLE_NAMES =
-        new EnumMap<AspectKind,String>(AspectKind.class);
+    static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<AspectKind,String>(
+        AspectKind.class);
     /** Role descriptions (for the tool tips). */
-    static final Map<AspectKind,String> ROLE_DESCRIPTIONS =
-        new EnumMap<AspectKind,String>(AspectKind.class);
+    static final Map<AspectKind,String> ROLE_DESCRIPTIONS = new EnumMap<AspectKind,String>(
+        AspectKind.class);
 
     static private final boolean GUI_DEBUG = false;
 
@@ -585,16 +572,11 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
         ROLE_DESCRIPTIONS.put(AspectKind.EMBARGO,
             "Must be absent from a graph for this rule to apply");
-        ROLE_DESCRIPTIONS.put(AspectKind.READER,
-            "Must be matched for this rule to apply");
-        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR,
-            "Will be created by applying this rule");
-        ROLE_DESCRIPTIONS.put(
-            AspectKind.ADDER,
+        ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
+        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.ADDER,
             "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.ERASER,
-            "Will be deleted by applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.REMARK,
-            "Has no effect on the execution of the rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
     }
 }

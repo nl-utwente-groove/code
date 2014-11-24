@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -829,9 +830,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> impl
      * The merged graph is layed out by placing the original graphs next to one another.
      * @return a merged aspect graph or {@code null} if the set of input graphs is empty
      */
-    public static AspectGraph mergeGraphs(Collection<AspectGraph> graphs) {
+    public static Optional<AspectGraph> mergeGraphs(Collection<AspectGraph> graphs) {
         if (graphs.size() == 0) {
-            return null;
+            return Optional.empty();
         }
         // Compute name and layout boundaries
         StringBuilder name = new StringBuilder();
@@ -923,7 +924,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> impl
         GraphInfo.setLayoutMap(result, newLayoutMap);
         GraphInfo.setErrors(result, newErrors);
         result.setFixed();
-        return result;
+        return Optional.of(result);
     }
 
     /** The singleton aspect parser instance. */

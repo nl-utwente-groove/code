@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -152,26 +153,26 @@ public class GrammarModel implements Observer {
     }
 
     /** Returns a named graph-based resource model of a given kind. */
-    public GraphBasedModel<?> getGraphResource(ResourceKind kind, String name) {
+    public Optional<GraphBasedModel<?>> getGraphResource(ResourceKind kind, String name) {
         assert kind.isGraphBased() : String.format("Resource kind %s is not graph-based", kind);
-        return (GraphBasedModel<?>) getResourceMap(kind).get(name);
+        return Optional.ofNullable((GraphBasedModel<?>) getResourceMap(kind).get(name));
     }
 
     /** Returns a named text-based resource model of a given kind. */
-    public TextBasedModel<?> getTextResource(ResourceKind kind, String name) {
+    public Optional<TextBasedModel<?>> getTextResource(ResourceKind kind, String name) {
         assert kind.isTextBased() : String.format("Resource kind %s is not text-based", kind);
-        return (TextBasedModel<?>) getResourceMap(kind).get(name);
+        return Optional.ofNullable((TextBasedModel<?>) getResourceMap(kind).get(name));
     }
 
     /** Indicates if this grammar model has a named resource model of a given kind. */
     public boolean hasResource(ResourceKind kind, String name) {
-        return getResource(kind, name) != null;
+        return getResourceMap(kind).containsKey(name);
     }
 
     /** Returns a named resource model of a given kind. */
-    public ResourceModel<?> getResource(ResourceKind kind, String name) {
+    public Optional<? extends ResourceModel<?>> getResource(ResourceKind kind, String name) {
         assert name != null;
-        return getResourceMap(kind).get(name);
+        return Optional.ofNullable(getResourceMap(kind).get(name));
     }
 
     /**
@@ -235,8 +236,8 @@ public class GrammarModel implements Observer {
      * @return the graph model for graph <code>name</code>, or <code>null</code>
      *         if there is no such graph.
      */
-    public HostModel getHostModel(String name) {
-        return (HostModel) getResourceMap(HOST).get(name);
+    public Optional<HostModel> getHostModel(String name) {
+        return Optional.ofNullable((HostModel) getResourceMap(HOST).get(name));
     }
 
     /**
@@ -245,8 +246,8 @@ public class GrammarModel implements Observer {
      * @return the corresponding control program model, or <code>null</code> if
      *         no program by that name exists
      */
-    public ControlModel getControlModel(String name) {
-        return (ControlModel) getResource(CONTROL, name);
+    public Optional<ControlModel> getControlModel(String name) {
+        return Optional.ofNullable((ControlModel) getResourceMap(CONTROL).get(name));
     }
 
     /**
@@ -255,8 +256,8 @@ public class GrammarModel implements Observer {
      * @return the corresponding prolog model, or <code>null</code> if
      *         no program by that name exists
      */
-    public PrologModel getPrologModel(String name) {
-        return (PrologModel) getResourceMap(PROLOG).get(name);
+    public Optional<PrologModel> getPrologModel(String name) {
+        return Optional.ofNullable((PrologModel) getResourceMap(PROLOG).get(name));
     }
 
     /**
@@ -264,8 +265,8 @@ public class GrammarModel implements Observer {
      * @return the rule model for rule <code>name</code>, or <code>null</code> if
      *         there is no such rule.
      */
-    public RuleModel getRuleModel(String name) {
-        return (RuleModel) getResourceMap(RULE).get(name);
+    public Optional<RuleModel> getRuleModel(String name) {
+        return Optional.ofNullable((RuleModel) getResourceMap(RULE).get(name));
     }
 
     /**
@@ -273,8 +274,8 @@ public class GrammarModel implements Observer {
      * @return the model for format <code>name</code>, or <code>null</code> if
      *         there is no such format.
      */
-    public FormatModel getFormatModel(String name) {
-        return (FormatModel) getResourceMap(ResourceKind.FORMAT).get(name);
+    public Optional<FormatModel> getFormatModel(String name) {
+        return Optional.ofNullable((FormatModel) getResourceMap(ResourceKind.FORMAT).get(name));
     }
 
     /**
@@ -282,8 +283,8 @@ public class GrammarModel implements Observer {
      * @return the type graph model for type <code>name</code>, or
      *         <code>null</code> if there is no such graph.
      */
-    public TypeModel getTypeModel(String name) {
-        return (TypeModel) getResourceMap(TYPE).get(name);
+    public Optional<TypeModel> getTypeModel(String name) {
+        return Optional.ofNullable((TypeModel) getResourceMap(TYPE).get(name));
     }
 
     /**
@@ -326,10 +327,10 @@ public class GrammarModel implements Observer {
             for (String name : getActiveNames(HOST)) {
                 graphMap.put(name, getStore().getGraph(HOST, name));
             }
-            AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
-            if (startGraph != null) {
-                this.startGraphModel = new HostModel(this, startGraph);
-            }
+            this.startGraphModel =
+                AspectGraph.mergeGraphs(graphMap.values())
+                    .map(g -> new HostModel(this, g))
+                    .orElse(null);
         }
         return this.startGraphModel;
     }

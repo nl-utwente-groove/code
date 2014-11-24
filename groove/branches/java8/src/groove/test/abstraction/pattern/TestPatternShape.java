@@ -82,7 +82,7 @@ public class TestPatternShape {
         HostGraph sGraph = null;
         try {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
-            sGraph = view.getHostModel(hostGraphName).toResource();
+            sGraph = view.getHostModel(hostGraphName).get().toResource();
         } catch (IOException e) {
             Assert.fail(e.toString());
         } catch (FormatException e) {

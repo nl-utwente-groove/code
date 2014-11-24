@@ -101,30 +101,10 @@ public class TestDeleteUseWithAttributes {
 
     }
 
-    //    @Test
-    //    public void testAttributes_Point() {
-    //        String grammar = "junit/criticalpair/attributes.gps/";
-    //        File grammarFile = new File(grammar);
-    //        GrammarModel view = null;
-    //        try {
-    //            view = GrammarModel.newInstance(grammarFile, false);
-    //        } catch (IOException e) {
-    //            e.printStackTrace();
-    //        }
-    //        view.getProperties().setAlgebraFamily(AlgebraFamily.POINT);
-    //        Rule deleteNumberTwo = getSimpleRule("deleteNumberTwo", view);
-    //        Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
-    //        //Both left-hand
-    //        Set<CriticalPair> pairs =
-    //            CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberTwo);
-    //        assertTrue(pairs.size() == 1);
-    //
-    //    }
-
     private Rule getSimpleRule(String name, GrammarModel view) {
         Rule result = null;
         try {
-            result = view.getRuleModel(name).toResource();
+            result = view.getRuleModel(name).get().toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }

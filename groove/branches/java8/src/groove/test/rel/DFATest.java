@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -57,8 +57,7 @@ public class DFATest {
     /** Name of the type graph used in this test. */
     static public final String TYPE_NAME = "construction";
 
-    private final RegAutCalculator nfaCalculator = new RegAutCalculator(
-        SimpleNFA.PROTOTYPE);
+    private final RegAutCalculator nfaCalculator = new RegAutCalculator(SimpleNFA.PROTOTYPE);
 
     private TypeGraph type;
     private boolean useType;
@@ -71,11 +70,10 @@ public class DFATest {
     public void setUp() {
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            this.type = view.getTypeModel(TYPE_NAME).toResource();
+            this.type = view.getTypeModel(TYPE_NAME).get().toResource();
             this.xVar = new LabelVar("x", EdgeRole.BINARY);
             TypeFactory factory = this.type.getFactory();
-            Set<? extends TypeEdge> bEdges =
-                this.type.edgeSet(factory.createLabel("b"));
+            Set<? extends TypeEdge> bEdges = this.type.edgeSet(factory.createLabel("b"));
             this.bEdge = bEdges.iterator().next();
             this.aLabel = TypeLabel.createLabel("a");
         } catch (FormatException e) {
@@ -217,12 +215,10 @@ public class DFATest {
      * Tests if two regular expressions (given as strings) under a given valuation
      * give rise to equivalent DFA's, i.e., with the same language.
      */
-    private void assertEquivalent(String e1, String e2, Valuation val,
-            boolean equiv) {
+    private void assertEquivalent(String e1, String e2, Valuation val, boolean equiv) {
         SimpleNFA a1 = createNFA(e1);
         SimpleNFA a2 = createNFA(e2);
-        assertEquals(equiv,
-            a1.getDFA(OUTGOING, val).isEquivalent(a2.getDFA(OUTGOING, val)));
+        assertEquals(equiv, a1.getDFA(OUTGOING, val).isEquivalent(a2.getDFA(OUTGOING, val)));
     }
 
     /** Creates an NFA for a given regular expression. */
@@ -238,7 +234,7 @@ public class DFATest {
 
     /** Creates an NFA for a given regular expression. */
     private SimpleNFA createNFA(RegExpr expr) {
-        return (SimpleNFA) (this.useType ? this.nfaCalculator.compute(expr,
-            this.type) : this.nfaCalculator.compute(expr));
+        return (SimpleNFA) (this.useType ? this.nfaCalculator.compute(expr, this.type)
+            : this.nfaCalculator.compute(expr));
     }
 }

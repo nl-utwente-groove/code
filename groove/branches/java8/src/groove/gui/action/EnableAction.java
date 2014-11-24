@@ -8,6 +8,7 @@ import groove.gui.Simulator;
 import groove.io.store.EditType;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
 /** Action to enable or disable resources. */
@@ -43,16 +44,17 @@ public class EnableAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        ResourceKind resourceKind = getResourceKind();
-        String name = getSimulatorModel().getSelected(resourceKind);
-        ResourceModel<?> resource = getSimulatorModel().getResource(resourceKind);
-        boolean isEnabling = resource == null || !resource.isEnabled();
+        ResourceKind kind = getResourceKind();
+        String name = getSimulatorModel().getSelected(kind);
+        Optional<? extends ResourceModel<?>> resource =
+            getSimulatorModel().getResource(kind);
+        boolean isEnabling = resource.map(r -> !r.isEnabled()).orElse(true);
         boolean enabled =
-            resourceKind.isEnableable() && name != null && getGrammarStore().isModifiable();
+            kind.isEnableable() && name != null && getGrammarStore().isModifiable();
         if (enabled && getResourceKind() == ResourceKind.RULE) {
-            enabled = resource != null && !((RuleModel) resource).hasRecipes();
+            enabled = resource.map(r -> !((RuleModel) r).hasRecipes()).orElse(false);
         }
-        String description = Options.getEnableName(resourceKind, isEnabling);
+        String description = Options.getEnableName(kind, isEnabling);
         putValue(NAME, description);
         putValue(SHORT_DESCRIPTION, description);
         setEnabled(enabled);

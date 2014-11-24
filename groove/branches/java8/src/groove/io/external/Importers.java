@@ -76,7 +76,7 @@ public class Importers {
             for (Resource resource : resources) {
                 String name = resource.getName();
                 ResourceKind kind = resource.getKind();
-                if (grammar.getResource(kind, name) == null
+                if (!grammar.hasResource(kind, name)
                     || confirmOverwrite(simulator.getFrame(), kind, name)) {
                     Collection<Resource> ress = newRess.get(kind);
                     if (ress == null) {

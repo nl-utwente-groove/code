@@ -7,6 +7,7 @@ import groove.control.template.Template;
 import groove.grammar.model.ControlModel;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.TextBasedModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -18,6 +19,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -72,8 +74,7 @@ public class PreviewControlAction extends SimulatorAction {
     }
 
     private void showError(FormatException exc) {
-        showErrorDialog(
-            exc,
+        showErrorDialog(exc,
             String.format("Error in control program '%s'",
                 getSimulatorModel().getSelected(ResourceKind.CONTROL)));
     }
@@ -96,15 +97,15 @@ public class PreviewControlAction extends SimulatorAction {
         Collection<Template> result = null;
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
-            ControlModel controlModel =
-                (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
-            if (controlModel == null) {
+            Optional<TextBasedModel<?>> controlModel =
+                getSimulatorModel().getTextResource(getResourceKind());
+            if (controlModel.isPresent()) {
+                result = ((ControlModel) controlModel.get()).toResource();
+            } else {
                 Program program = grammarModel.getControlModel().getProgram();
                 if (program != null && program.getTemplate() != null) {
                     result = Collections.singleton(program.getTemplate());
                 }
-            } else {
-                result = controlModel.toResource();
             }
         }
         return result;

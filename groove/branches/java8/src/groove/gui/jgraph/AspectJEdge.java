@@ -25,13 +25,14 @@ import groove.util.parse.FormatError;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex>
-        implements AspectJCell {
+    implements AspectJCell {
     /**
      * Creates an uninitialised instance.
      */
@@ -191,16 +192,11 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
 
     @Override
     public TypeEdge getKey(Edge edge) {
-        TypeEdge result = null;
-        TypeModelMap typeMap = getTypeMap();
-        if (typeMap != null) {
-            result = typeMap.getEdge(edge);
-        }
-        return result;
+        return getTypeMap().map(m -> m.getEdge(edge)).orElse(null);
     }
 
-    private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel().getTypeMap();
+    private Optional<TypeModelMap> getTypeMap() {
+        return getJModel().getResourceModel().map(m -> m.getTypeMap());
     }
 
     /**

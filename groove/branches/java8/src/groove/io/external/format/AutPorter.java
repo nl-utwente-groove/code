@@ -66,7 +66,7 @@ public final class AutPorter extends AbstractExporter implements Importer {
 
     @Override
     public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
-        Graph graph = exportable.getGraph();
+        Graph graph = exportable.getGraph().get();
         try {
             this.io.saveGraph(graph, file);
         } catch (IOException e) {

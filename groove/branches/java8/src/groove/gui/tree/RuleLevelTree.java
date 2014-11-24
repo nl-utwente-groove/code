@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -78,11 +79,10 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         AspectJModel jModel = getJGraph().getModel();
         if (jModel != this.jModel) {
             this.jModel = jModel;
-            if (jModel == null) {
-                this.rule = null;
-            } else {
-                this.rule = (RuleModel) jModel.getResourceModel();
-            }
+            this.rule =
+                (RuleModel) Optional.ofNullable(jModel)
+                    .flatMap(m -> m.getResourceModel())
+                    .orElse(null);
             boolean enabled = updateTree();
             for (Set<AspectJCell> levelCells : this.levelCellMap.values()) {
                 this.allCellSet.addAll(levelCells);

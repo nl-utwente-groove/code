@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -127,11 +127,11 @@ public class RuleApplicationTest {
         }
     }
 
-    /** 
+    /**
      * Tests a named rule from a given grammar view.
      * The test applies the rule to all start graphs named
-     * {@code ruleName-<i>i</i>} (for <i>i</i> ranging from zero), 
-     * and compares the resulting 
+     * {@code ruleName-<i>i</i>} (for <i>i</i> ranging from zero),
+     * and compares the resulting
      * graphs with all graphs named {@code ruleName-<i>i</i>-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
@@ -150,11 +150,11 @@ public class RuleApplicationTest {
         }
     }
 
-    /** 
+    /**
      * Tests a named rule from a given grammar view by applying
      * it to a named host graph.
      * The test applies the rule to the start graph,
-     * and compares the resulting 
+     * and compares the resulting
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
@@ -168,7 +168,10 @@ public class RuleApplicationTest {
                 String resultName = startName + "-" + j;
                 cont = grammarModel.getNames(HOST).contains(resultName);
                 if (cont) {
-                    results.add(grammarModel.getHostModel(resultName).toResource().clone(family));
+                    results.add(grammarModel.getHostModel(resultName)
+                        .get()
+                        .toResource()
+                        .clone(family));
                 }
             }
             Rule rule = grammarModel.toGrammar().getRule(ruleName);
@@ -213,15 +216,19 @@ public class RuleApplicationTest {
                         Assert.fail(e.toString());
                     }
                 }
-                Assert.fail(String.format(
-                    "Rule %s, start graph %s: Found: %s; unexpected target graph %s",
-                    rule.getFullName(), start.getName(), found, target));
+                Assert.fail(String.format("Rule %s, start graph %s: Found: %s; unexpected target graph %s",
+                    rule.getFullName(),
+                    start.getName(),
+                    found,
+                    target));
             }
         }
         int leftOver = found.nextClearBit(0);
         if (leftOver < results.size()) {
             Assert.fail(String.format("Rule %s, start graph %s: Expected target missing: %s",
-                rule.getFullName(), start.getName(), results.get(leftOver).getName()));
+                rule.getFullName(),
+                start.getName(),
+                results.get(leftOver).getName()));
         }
     }
 }

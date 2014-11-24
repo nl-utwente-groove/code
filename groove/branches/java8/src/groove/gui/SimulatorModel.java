@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -782,9 +783,9 @@ public class SimulatorModel implements Cloneable {
      * if no resource is selected.
      * Convenience method for {@code getGrammar().getResource(resource,getSelected(name))}.
      */
-    public final ResourceModel<?> getResource(ResourceKind resource) {
+    public final Optional<? extends ResourceModel<?>> getResource(ResourceKind resource) {
         String name = getSelected(resource);
-        return name == null ? null : getGrammar().getResource(resource, name);
+        return Optional.ofNullable(name).flatMap(n -> getGrammar().getResource(resource, n));
     }
 
     /**
@@ -793,9 +794,9 @@ public class SimulatorModel implements Cloneable {
      * Convenience method for {@code getGrammar().getGraphResource(resource,getSelected(name))}.
      * @param resource the resource kind for which the resource is retrieved; must be graph-based
      */
-    public final GraphBasedModel<?> getGraphResource(ResourceKind resource) {
+    public final Optional<GraphBasedModel<?>> getGraphResource(ResourceKind resource) {
         String name = getSelected(resource);
-        return name == null ? null : getGrammar().getGraphResource(resource, name);
+        return Optional.ofNullable(name).flatMap(n -> getGrammar().getGraphResource(resource, n));
     }
 
     /**
@@ -804,9 +805,9 @@ public class SimulatorModel implements Cloneable {
      * Convenience method for {@code getGrammar().getTextResource(resource,getSelected(name))}.
      * @param resource the resource kind for which the resource is retrieved; must be text-based
      */
-    public final TextBasedModel<?> getTextResource(ResourceKind resource) {
+    public final Optional<TextBasedModel<?>> getTextResource(ResourceKind resource) {
         String name = getSelected(resource);
-        return name == null ? null : getGrammar().getTextResource(resource, name);
+        return Optional.ofNullable(name).flatMap(n -> getGrammar().getTextResource(resource, n));
     }
 
     /** Returns a list of search results for the given label. */
@@ -817,7 +818,7 @@ public class SimulatorModel implements Cloneable {
                 continue;
             }
             for (String name : getGrammar().getNames(kind)) {
-                AspectGraph graph = getGrammar().getGraphResource(kind, name).getSource();
+                AspectGraph graph = getGrammar().getGraphResource(kind, name).get().getSource();
                 graph.getSearchResults(label, searchResults);
             }
         }

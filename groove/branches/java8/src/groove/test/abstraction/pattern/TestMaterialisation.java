@@ -130,9 +130,9 @@ public class TestMaterialisation {
         Rule sRule = null;
         try {
             if (!hostIsShape) {
-                sHost = view.getHostModel(HOST).toResource();
+                sHost = view.getHostModel(HOST).get().toResource();
             }
-            sRule = view.getRuleModel(RULE).toResource();
+            sRule = view.getRuleModel(RULE).get().toResource();
             pTGraph = TypeGraphFactory.unmarshalTypeGraph(TYPE_GRAPH);
         } catch (IOException e) {
             Assert.fail(e.toString());

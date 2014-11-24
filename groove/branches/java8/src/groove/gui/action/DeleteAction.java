@@ -21,28 +21,23 @@ public class DeleteAction extends SimulatorAction {
     public void execute() {
         ResourceKind resource = getResourceKind();
         Set<String> names = getSimulatorModel().getSelectSet(resource);
-        boolean enabled = false;
-        for (String name : names) {
-            enabled |=
-                getGrammarModel().getResource(resource, name).isEnabled();
-            if (enabled) {
-                break;
-            }
-        }
+        boolean enabled =
+            getGrammarModel().getResourceSet(resource).stream().anyMatch(r -> r.isEnabled());
         String question;
         if (names.size() == 1) {
             String description =
                 resource == ResourceKind.HOST && enabled ? "start graph"
-                        : resource.getDescription();
+                    : resource.getDescription();
             String name = names.iterator().next();
             question = String.format("Delete %s '%s'?", description, name);
         } else {
             String addendum =
-                enabled && resource == ResourceKind.HOST
-                        ? " (including start graph)" : "";
+                enabled && resource == ResourceKind.HOST ? " (including start graph)" : "";
             question =
-                String.format("Delete these %d %ss%s?", names.size(),
-                    resource.getDescription(), addendum);
+                String.format("Delete these %d %ss%s?",
+                    names.size(),
+                    resource.getDescription(),
+                    addendum);
         }
         if (confirmBehaviour(Options.DELETE_RESOURCE_OPTION, question)) {
             // we do not ask for editor cancellation,
@@ -50,10 +45,10 @@ public class DeleteAction extends SimulatorAction {
             try {
                 getSimulatorModel().doDelete(resource, names);
             } catch (IOException exc) {
-                showErrorDialog(
-                    exc,
+                showErrorDialog(exc,
                     String.format("Error while deleting %s%s",
-                        resource.getDescription(), names.size() == 1 ? "" : "s"));
+                        resource.getDescription(),
+                        names.size() == 1 ? "" : "s"));
             }
         }
     }

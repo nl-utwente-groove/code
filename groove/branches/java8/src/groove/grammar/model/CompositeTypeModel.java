@@ -26,8 +26,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      * @param grammar the underlying graph grammar; non-{@code null}
      */
     CompositeTypeModel(GrammarModel grammar) {
-        super(grammar, ResourceKind.TYPE, "Composed type for "
-            + grammar.getName());
+        super(grammar, ResourceKind.TYPE, "Composed type for " + grammar.getName());
     }
 
     @Override
@@ -40,7 +39,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         return true;
     }
 
-    /** 
+    /**
      * Returns the constructed composite type graph, or the implicit
      * type graph if there are either no constituent type graph models enabled,
      * or there are errors in the constituent type graph models.
@@ -75,12 +74,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         FormatErrorSet errors = createErrors();
         this.typeModelMap.clear();
         for (String activeTypeName : getGrammar().getActiveNames(TYPE)) {
-            ResourceModel<?> typeModel =
-                getGrammar().getResource(TYPE, activeTypeName);
+            ResourceModel<?> typeModel = getGrammar().getResource(TYPE, activeTypeName).get();
             this.typeModelMap.put(activeTypeName, (TypeModel) typeModel);
             for (FormatError error : typeModel.getErrors()) {
-                errors.add("Error in type '%s': %s", activeTypeName, error,
-                    typeModel.getSource());
+                errors.add("Error in type '%s': %s", activeTypeName, error, typeModel.getSource());
             }
         }
         errors.throwException();
@@ -91,10 +88,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             result = new TypeGraph("combined type");
             // There are no errors in each of the models, try to compose the
             // type graph.
-            Map<TypeNode,TypeNode> importNodes =
-                new HashMap<TypeNode,TypeNode>();
-            Map<TypeNode,TypeModel> importModels =
-                new HashMap<TypeNode,TypeModel>();
+            Map<TypeNode,TypeNode> importNodes = new HashMap<TypeNode,TypeNode>();
+            Map<TypeNode,TypeModel> importModels = new HashMap<TypeNode,TypeModel>();
             for (TypeModel model : this.typeModelMap.values()) {
                 try {
                     TypeGraph graph = model.toResource();
@@ -114,9 +109,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 if (importEntry.getValue().isImported()) {
                     TypeNode origNode = importEntry.getKey();
                     TypeModel origModel = importModels.get(origNode);
-                    errors.add(
-                        "Error in type graph '%s': Unresolved type import '%s'",
-                        origModel.getFullName(), origNode.label(),
+                    errors.add("Error in type graph '%s': Unresolved type import '%s'",
+                        origModel.getFullName(),
+                        origNode.label(),
                         getInverse(origModel.getMap().nodeMap(), origNode),
                         origModel.getSource());
                 }
@@ -174,8 +169,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     }
 
     /** Mapping from active type names to corresponding type models. */
-    private final Map<String,TypeModel> typeModelMap =
-        new HashMap<String,TypeModel>();
+    private final Map<String,TypeModel> typeModelMap = new HashMap<String,TypeModel>();
     /** The implicit type graph. */
     private TypeGraph implicitTypeGraph;
 }

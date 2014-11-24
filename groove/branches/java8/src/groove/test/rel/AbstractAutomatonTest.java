@@ -116,7 +116,7 @@ abstract public class AbstractAutomatonTest {
         implicitTypeGraph.addLabel("D");
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            loadedTypeGraph = view.getTypeModel(TYPE_NAME).toResource();
+            loadedTypeGraph = view.getTypeModel(TYPE_NAME).get().toResource();
         } catch (FormatException e) {
             fail(e.getMessage());
         } catch (IOException e) {

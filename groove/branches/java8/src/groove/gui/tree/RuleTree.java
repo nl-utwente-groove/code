@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -173,7 +174,6 @@ public class RuleTree extends AbstractResourceTree {
             }
         }
         if (renewSelection) {
-            ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
             Set<GraphTransitionKey> keys = new HashSet<GraphTransitionKey>();
             if (source.hasMatch()) {
                 keys.add(source.getMatch());
@@ -181,7 +181,7 @@ public class RuleTree extends AbstractResourceTree {
             if (source.hasTransition()) {
                 keys.add(source.getTransition().getKey());
             }
-            selectMatch((RuleModel) ruleModel, keys);
+            selectMatch(source.getResource(ResourceKind.RULE), keys);
         }
         activateListeners();
     }
@@ -410,7 +410,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param rule the rule to be selected if the event is {@code null}
      * @param keys the match results to be selected
      */
-    private void selectMatch(RuleModel rule, Set<GraphTransitionKey> keys) {
+    private void selectMatch(Optional<? extends ResourceModel<?>> rule, Set<GraphTransitionKey> keys) {
         List<DisplayTreeNode> treeNodes = new ArrayList<DisplayTreeNode>();
         for (GraphTransitionKey key : keys) {
             DisplayTreeNode node = this.matchNodeMap.get(key);
@@ -418,8 +418,8 @@ public class RuleTree extends AbstractResourceTree {
                 treeNodes.add(node);
             }
         }
-        if (treeNodes.isEmpty() && rule != null) {
-            treeNodes.add(this.ruleNodeMap.get(rule.getFullName()));
+        if (treeNodes.isEmpty() && rule.isPresent()) {
+            treeNodes.add(this.ruleNodeMap.get(rule.get().getFullName()));
         }
         TreePath[] paths = new TreePath[treeNodes.size()];
         for (int i = 0; i < treeNodes.size(); i++) {

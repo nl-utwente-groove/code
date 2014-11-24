@@ -369,7 +369,7 @@ public class ConfigDialog extends JDialog {
         if (name == null) {
             loadEmptyConfig();
         } else {
-            String xmlString = getGrammar().getFormatModel(name).toConfig();
+            String xmlString = getGrammar().getFormatModel(name).get().toConfig();
             // Do something with xmlString
             try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
                 PrintStream out = System.out;

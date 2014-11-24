@@ -62,7 +62,7 @@ public class ResourceTreeNode extends DisplayTreeNode {
     /** Indicates if this tree node is enabled. */
     @Override
     public boolean isEnabled() {
-        return getDisplay().getResource(getName()).isEnabled();
+        return getResource().isEnabled();
     }
 
     /** Returns the text to be displayed on the tree node. */
@@ -92,7 +92,7 @@ public class ResourceTreeNode extends DisplayTreeNode {
 
     /** Returns the resource model. */
     protected ResourceModel<?> getResource() {
-        return getDisplay().getResource(getName());
+        return getDisplay().getResource(getName()).get();
     }
 
     /** Returns the display with which this tree node is associated. */

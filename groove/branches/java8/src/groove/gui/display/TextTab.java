@@ -9,12 +9,13 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.prolog.util.PrologTokenMaker;
 import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 import java.awt.BorderLayout;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -156,13 +157,13 @@ final public class TextTab extends ResourceTab {
     public void updateGrammar(GrammarModel grammar) {
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
-        TextBasedModel<?> textModel =
-            getName() == null ? null : (TextBasedModel<?>) grammar.getResource(getResourceKind(),
-                getName());
-        if (textModel == null) {
+        Optional<TextBasedModel<?>> textModel =
+            Optional.ofNullable(getName()).flatMap(n -> grammar.getTextResource(getResourceKind(),
+                n));
+        if (!textModel.isPresent()) {
             dispose();
         } else if (!isDirty()) {
-            this.textArea.setProgramText(textModel.getProgram());
+            this.textArea.setProgramText(textModel.get().getProgram());
             updateErrors();
         }
     }
@@ -197,12 +198,9 @@ final public class TextTab extends ResourceTab {
 
     @Override
     protected Collection<FormatError> getErrors() {
-        String name = getName();
-        if (name == null) {
-            return Collections.emptySet();
-        } else {
-            return getDisplay().getResource(name).getErrors();
-        }
+        return Optional.ofNullable(getName())
+            .map(n -> getDisplay().getResource(n).get().getErrors())
+            .orElse(new FormatErrorSet());
     }
 
     /** Selects a given line in the text area. */

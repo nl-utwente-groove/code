@@ -432,8 +432,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             if (changes.contains(Change.GRAMMAR)) {
                 updateGrammar(source.getGrammar(), source.getGrammar() != oldModel.getGrammar());
             }
-            ResourceModel<?> resourceModel = source.getResource(getResourceKind());
-            getEnableButton().setSelected(resourceModel != null && resourceModel.isEnabled());
+            getEnableButton().setSelected(source.getResource(getResourceKind())
+                .map(r -> r.isEnabled())
+                .orElse(false));
             selectResource(source.getSelected(getResourceKind()));
             buildInfoPanel();
             activateListening();
@@ -634,7 +635,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * tab component.
      */
     public final String getLabelText(String name) {
-        return getLabelText(name, "", getResource(name).isEnabled());
+        return getLabelText(name, "", getResource(name).get().isEnabled());
     }
 
     /**
@@ -646,7 +647,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * @param enabled flag indicating if the name should be shown as enabled
      */
     public String getLabelText(String name, String suffix, boolean enabled) {
-        ResourceModel<?> model = getResource(name);
+        ResourceModel<?> model = getResource(name).get();
         StringBuilder result = new StringBuilder(model.getLastName());
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);
@@ -675,8 +676,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * resource.
      */
     protected String getToolTip(String name) {
-        ResourceModel<?> model = getResource(name);
-        boolean enabled = model != null && model.isEnabled();
+        boolean enabled = getResource(name).map(r -> r.isEnabled()).orElse(false);
         return getToolTip(name, enabled);
     }
 
@@ -705,14 +705,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (this.editorMap.containsKey(name)) {
             result = this.editorMap.get(name).hasErrors();
         } else {
-            ResourceModel<?> model = getResource(name);
-            result = model != null && model.hasErrors();
+            result = getResource(name).map(r -> r.hasErrors()).orElse(false);
         }
         return result;
     }
 
     /** Retrieves the resource model for a given name from the grammar. */
-    public final ResourceModel<?> getResource(String name) {
+    public final Optional<? extends ResourceModel<?>> getResource(String name) {
         return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
     }
 

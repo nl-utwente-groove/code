@@ -255,7 +255,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
-                (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two().toString());
+                grammar.getGraphResource(resource.one(), resource.two().toString()).get();
             final Exportable exportable = toExportable(resourceModel, exporter.getFormatKinds());
             // make sure the export happens on the event thread
             Runnable export = new Runnable() {

@@ -31,12 +31,12 @@ import groove.gui.action.SimulatorAction;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.list.ListPanel;
 import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Observer;
 import java.util.Optional;
 
@@ -324,13 +324,9 @@ abstract public class ResourceTab extends JPanel {
      * Returns the resource model displayed on this tab,
      * or {@code null} if nothing is displayed.
      */
-    protected ResourceModel<?> getResourceModel() {
-        String name = getName();
-        if (name == null) {
-            return null;
-        } else {
-            return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
-        }
+    protected Optional<? extends ResourceModel<?>> getResourceModel() {
+        return Optional.ofNullable(getName()).flatMap(n -> getSimulatorModel().getGrammar()
+            .getResource(getResourceKind(), n));
     }
 
     /** Saves the resource that is currently being displayed. */
@@ -350,12 +346,7 @@ abstract public class ResourceTab extends JPanel {
 
     /** Returns the errors of the displayed resource. */
     protected Collection<FormatError> getErrors() {
-        ResourceModel<?> resource = getResourceModel();
-        if (resource == null) {
-            return Collections.emptyList();
-        } else {
-            return getResourceModel().getErrors();
-        }
+        return getResourceModel().map(m -> m.getErrors()).orElse(new FormatErrorSet());
     }
 
     /** Indicates if the displayed resource is currently in an error state. */

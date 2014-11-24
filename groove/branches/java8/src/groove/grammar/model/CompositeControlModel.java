@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -62,18 +63,18 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         // first build the trees, then check to avoid errors due to unresolved dependencies
         Map<ControlModel,CtrlTree> treeMap = new LinkedHashMap<ControlModel,CtrlTree>();
         for (String controlName : controlNames) {
-            ControlModel controlModel = getGrammar().getControlModel(controlName);
-            if (controlModel == null) {
-                addPartError(controlName, new FormatError("Control program cannot be found"));
-            } else {
+            Optional<ControlModel> controlModel = getGrammar().getControlModel(controlName);
+            if (controlModel.isPresent()) {
                 try {
-                    treeMap.put(controlModel,
-                        getLoader().parse(controlName, controlModel.getProgram().getContent()));
+                    treeMap.put(controlModel.get(),
+                        getLoader().parse(controlName, controlModel.get().getProgram().getContent()));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         addPartError(controlName, error);
                     }
                 }
+            } else {
+                addPartError(controlName, new FormatError("Control program cannot be found"));
             }
         }
         getAllPartErrors().throwException();

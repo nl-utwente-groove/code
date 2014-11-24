@@ -63,7 +63,7 @@ public class Config {
                 JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-            String xmlString = grammar.getFormatModel(xml).toConfig();
+            String xmlString = grammar.getFormatModel(xml).get().toConfig();
             Object obj = unmarshaller.unmarshal(new InputSource(new StringReader(xmlString)));
 
             this.m_xmlConfig = (Configuration) obj;

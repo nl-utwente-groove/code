@@ -406,8 +406,9 @@ public class StateDisplay extends Display implements SimulatorListener {
                 if (getJGraph().isShowAnchors()) {
                     result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
-                    result.append(String.format("with match of <i>%s</i>",
-                        match.getEvent().getRule().getFullName()));
+                    result.append(String.format("with match of <i>%s</i>", match.getEvent()
+                        .getRule()
+                        .getFullName()));
                 }
             }
             if (brackets) {
@@ -427,7 +428,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             AspectJModel model = getAspectJModel(state);
             getJGraph().setModel(model);
             getJGraph().doLayout(false);
-            errors = model.getResourceModel().getErrors();
+            errors = model.getResourceModel().get().getErrors();
         }
         Color background;
         if (state != null && state.isError()) {

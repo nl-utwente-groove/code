@@ -152,7 +152,7 @@ public class StateTree extends JTree implements SimulatorListener {
                     SimulatorModel model = getSimulatorModel();
                     refreshList(model.getGts(), model.getState());
                     refreshSelection(model.getState(),
-                        (RuleModel) model.getResource(RULE),
+                        (RuleModel) model.getResource(RULE).get(),
                         model.getMatch(),
                         model.getTransition());
                     activateListening();
@@ -237,7 +237,7 @@ public class StateTree extends JTree implements SimulatorListener {
                 setEnabled(source.hasGts());
                 refreshList(source.getGts(), oldModel.getState());
             }
-            RuleModel ruleModel = (RuleModel) source.getResource(RULE);
+            RuleModel ruleModel = (RuleModel) source.getResource(RULE).get();
             if (changes.contains(Change.TRACE)) {
                 Set<GraphState> refreshables = new HashSet<GraphState>();
                 for (GraphTransition trans : oldModel.getTrace()) {

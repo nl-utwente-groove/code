@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -211,9 +212,9 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
 
     @Override
     public void updateGrammar(GrammarModel grammar) {
-        GraphBasedModel<?> graphModel =
-            (GraphBasedModel<?>) grammar.getResource(getResourceKind(), getName());
-        AspectGraph source = graphModel == null ? null : graphModel.getSource();
+        Optional<GraphBasedModel<?>> graphModel =
+            grammar.getGraphResource(getResourceKind(), getName());
+        AspectGraph source = graphModel.map(m -> m.getSource()).orElse(null);
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
         if (source == null) {
@@ -330,7 +331,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     @Override
-    protected ResourceModel<?> getResourceModel() {
+    protected Optional<? extends ResourceModel<?>> getResourceModel() {
         return getJModel().getResourceModel();
     }
 

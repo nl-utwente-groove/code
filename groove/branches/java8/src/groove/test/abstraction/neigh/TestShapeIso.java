@@ -76,9 +76,9 @@ public class TestShapeIso {
         HostGraph graph1 = null;
         HostGraph graph2 = null;
         try {
-            graph0 = view.getHostModel("materialisation-test-0a").toResource();
-            graph1 = view.getHostModel("materialisation-test-1a").toResource();
-            graph2 = view.getHostModel("rule-app-test-0").toResource();
+            graph0 = view.getHostModel("materialisation-test-0a").get().toResource();
+            graph1 = view.getHostModel("materialisation-test-1a").get().toResource();
+            graph2 = view.getHostModel("rule-app-test-0").get().toResource();
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }

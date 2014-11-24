@@ -64,18 +64,15 @@ public class NativePorter extends AbstractExporter implements Importer {
         Set<FileType> result = EnumSet.noneOf(FileType.class);
         ResourceKind resourceKind = null;
         if (exportable.containsKind(Kind.GRAPH)) {
-            resourceKind = ResourceKind.toResource(exportable.getGraph().getRole());
+            resourceKind = ResourceKind.toResource(exportable.getGraph().get().getRole());
         } else if (exportable.containsKind(Kind.RESOURCE)) {
-            resourceKind = exportable.getModel().getKind();
+            resourceKind = exportable.getModel().get().getKind();
         }
         if (resourceKind == ResourceKind.HOST) {
             // host graphs can be exported to any known graph resource type
             result.addAll(FileType.GRAPHS.getSubTypes());
         } else if (resourceKind != null) {
-            FileType fileType = getFileType(resourceKind);
-            if (fileType != null) {
-                result.add(fileType);
-            }
+            getFileType(resourceKind).ifPresent(t -> result.add(t));
         }
         return Collections.unmodifiableSet(result);
     }
@@ -107,7 +104,7 @@ public class NativePorter extends AbstractExporter implements Importer {
     public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
         ResourceKind kind = exportable.getKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph = GraphConverter.toAspect(exportable.getGraph());
+            AspectGraph graph = GraphConverter.toAspect(exportable.getGraph().get());
             if (kind == ResourceKind.HOST && fileType != FileType.STATE) {
                 // we are converting a host graph to a rule or type graph
                 // so unwrap any literal labels
@@ -119,7 +116,7 @@ public class NativePorter extends AbstractExporter implements Importer {
                 throw new PortException(e);
             }
         } else {
-            TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel();
+            TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel().get();
             Writer writer = null;
             try {
                 Files.write(file, textModel.getSource().getLines());

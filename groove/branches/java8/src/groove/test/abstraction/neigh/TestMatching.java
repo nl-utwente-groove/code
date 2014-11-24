@@ -72,7 +72,7 @@ public class TestMatching {
         NeighAbsParam.getInstance().setEdgeMultBound(1);
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("shape-0").toResource();
+            graph = getHostGraph("shape-0");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -88,7 +88,7 @@ public class TestMatching {
         NeighAbsParam.getInstance().setEdgeMultBound(1);
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("shape-0").toResource();
+            graph = getHostGraph("shape-0");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -104,7 +104,7 @@ public class TestMatching {
         NeighAbsParam.getInstance().setEdgeMultBound(1);
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("shape-1").toResource();
+            graph = getHostGraph("shape-1");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -121,7 +121,7 @@ public class TestMatching {
     public void testPreMatch3() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("shape-2").toResource();
+            graph = getHostGraph("shape-2");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -138,10 +138,10 @@ public class TestMatching {
         HostGraph graph0c = null;
         HostGraph graph0d = null;
         try {
-            graph0a = view.getHostModel("test-nac-0a").toResource();
-            graph0b = view.getHostModel("test-nac-0b").toResource();
-            graph0c = view.getHostModel("test-nac-0c").toResource();
-            graph0d = view.getHostModel("test-nac-0d").toResource();
+            graph0a = getHostGraph("test-nac-0a");
+            graph0b = getHostGraph("test-nac-0b");
+            graph0c = getHostGraph("test-nac-0c");
+            graph0d = getHostGraph("test-nac-0d");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -169,8 +169,8 @@ public class TestMatching {
         HostGraph graph1a = null;
         HostGraph graph1b = null;
         try {
-            graph1a = view.getHostModel("test-nac-1a").toResource();
-            graph1b = view.getHostModel("test-nac-1b").toResource();
+            graph1a = getHostGraph("test-nac-1a");
+            graph1b = getHostGraph("test-nac-1b");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -192,8 +192,8 @@ public class TestMatching {
         HostGraph graph2a = null;
         HostGraph graph2b = null;
         try {
-            graph2a = view.getHostModel("test-nac-2a").toResource();
-            graph2b = view.getHostModel("test-nac-2b").toResource();
+            graph2a = getHostGraph("test-nac-2a");
+            graph2b = getHostGraph("test-nac-2b");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -211,7 +211,7 @@ public class TestMatching {
     public void testNAC3() {
         HostGraph graph3 = null;
         try {
-            graph3 = view.getHostModel("test-nac-3").toResource();
+            graph3 = getHostGraph("test-nac-3");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -228,7 +228,7 @@ public class TestMatching {
     public void testNAC4() {
         HostGraph graph4 = null;
         try {
-            graph4 = view.getHostModel("test-nac-4").toResource();
+            graph4 = getHostGraph("test-nac-4");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -245,7 +245,7 @@ public class TestMatching {
     public void testNAC5() {
         HostGraph graph4 = null;
         try {
-            graph4 = view.getHostModel("test-nac-4").toResource();
+            graph4 = getHostGraph("test-nac-4");
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -298,6 +298,10 @@ public class TestMatching {
         } catch (IOException e) {
             throw new IllegalArgumentException();
         }
+    }
+
+    private HostGraph getHostGraph(String name) throws FormatException {
+        return view.getHostModel(name).get().toResource();
     }
 
     @AfterClass

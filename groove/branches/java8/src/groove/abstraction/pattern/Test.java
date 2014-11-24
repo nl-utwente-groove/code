@@ -64,8 +64,8 @@ public class Test {
         HostGraph sGraph = null;
         try {
             GrammarModel view = GrammarModel.newInstance(GRAMMAR, false);
-            sRule = view.getRuleModel(RULE).toResource();
-            sGraph = view.getHostModel(HOST).toResource();
+            sRule = view.getRuleModel(RULE).get().toResource();
+            sGraph = view.getHostModel(HOST).get().toResource();
             pTGraph = TypeGraphFactory.unmarshalTypeGraph(TYPE_GRAPH);
             PatternAbstraction.initialise();
             PatternAbsParam.getInstance().setNodeMultBound(1);

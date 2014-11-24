@@ -47,7 +47,7 @@ public final class FsmExporter extends AbstractExporter {
 
     @Override
     public void doExport(Exportable exportable, Path file, FileType fileType) throws PortException {
-        Graph graph = exportable.getGraph();
+        Graph graph = exportable.getGraph().get();
         try {
             Files.write(file, convert(graph));
         } catch (IOException e) {

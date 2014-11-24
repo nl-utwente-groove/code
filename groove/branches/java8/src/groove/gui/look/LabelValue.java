@@ -311,8 +311,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 StringBuilder text = new StringBuilder("& ");
                 text.append(AspectKind.COLOR.getName());
                 Line colorLine =
-                    Line.atom(text.toString()).color(
-                        Colors.findColor(node.getColor().getContentString()));
+                    Line.atom(text.toString()).color(Colors.findColor(node.getColor()
+                        .getContentString()));
                 result.add(colorLine);
             }
         }
@@ -547,8 +547,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // add location variables
         for (CtrlVar var : state.getVars()) {
             Line line =
-                Line.atom(var.getName()).append(" : ").append(
-                    Line.atom(var.getType().toString()).style(Style.BOLD));
+                Line.atom(var.getName())
+                    .append(" : ")
+                    .append(Line.atom(var.getType().toString()).style(Style.BOLD));
             result.add(line);
         }
         // add self-edges
@@ -611,7 +612,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             LabelPattern pattern = jEdge.getTargetVertex().getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
-                (GraphBasedModel) jEdge.getJModel().getResourceModel();
+                (GraphBasedModel) jEdge.getJModel().getResourceModel().get();
             try {
                 HostNode target = (HostNode) resourceModel.getMap().getNode(jEdge.getTargetNode());
                 String label = pattern.getLabel(resourceModel.toResource(), target);
@@ -735,15 +736,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
         sigLineMap = map;
     }
 
-    static private final String IMPORT_TEXT = String.format("%simport%s", Util.FRENCH_QUOTES_OPEN,
+    static private final String IMPORT_TEXT = String.format("%simport%s",
+        Util.FRENCH_QUOTES_OPEN,
         Util.FRENCH_QUOTES_CLOSED);
     static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(Style.ITALIC);
     static private final Line EXISTS_LINE = Line.atom("" + Util.EXISTS);
-    static private final Line EXISTS_OPT_LINE =
-        EXISTS_LINE.append(Line.atom("?").style(Style.SUPER));
+    static private final Line EXISTS_OPT_LINE = EXISTS_LINE.append(Line.atom("?")
+        .style(Style.SUPER));
     static private final Line FORALL_LINE = Line.atom("" + Util.FORALL);
-    static private final Line FORALL_POS_LINE = FORALL_LINE.append(Line.atom(">0").style(
-        Style.SUPER));
+    static private final Line FORALL_POS_LINE = FORALL_LINE.append(Line.atom(">0")
+        .style(Style.SUPER));
     /** Final line in a state vertex indicating residual invisible outgoing transitions. */
     static private final Line RESIDUAL_LINE = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
     /** Line in a control vertex indicating a start state. */

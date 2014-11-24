@@ -36,6 +36,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** Grammar property keys. */
 public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
@@ -400,10 +401,9 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
             } else {
                 for (Map.Entry<String,CheckPolicy> entry : map.entrySet()) {
                     String name = entry.getKey();
-                    RuleModel rule = grammar.getRuleModel(name);
-                    if (rule == null) {
-                        unknowns.add(name);
-                    } else {
+                    Optional<RuleModel> ruleModel = grammar.getRuleModel(name);
+                    if (ruleModel.isPresent()) {
+                        RuleModel rule = ruleModel.get();
                         CheckPolicy policy = entry.getValue();
                         if (!policy.isFor(rule.getRole())) {
                             result.add("Policy '%s' is unsuitable for %s '%s'",
@@ -411,6 +411,8 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
                                 rule.getRole(),
                                 rule.getFullName());
                         }
+                    } else {
+                        unknowns.add(name);
                     }
                 }
                 if (!unknowns.isEmpty()) {

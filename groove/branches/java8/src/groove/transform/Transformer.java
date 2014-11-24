@@ -16,6 +16,7 @@
  */
 package groove.transform;
 
+import static groove.grammar.model.ResourceKind.HOST;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
@@ -29,8 +30,6 @@ import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.GraphBasedModel;
-import groove.grammar.model.ResourceKind;
 import groove.io.FileType;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -181,9 +180,11 @@ public class Transformer {
         AspectGraph result = null;
         if (startGraphName != null) {
             // first see if the name refers to a local host graph
-            GraphBasedModel<?> hostModel =
-                getGrammarModel().getGraphResource(ResourceKind.HOST, startGraphName);
-            if (hostModel == null) {
+            result =
+                getGrammarModel().getGraphResource(HOST, startGraphName)
+                    .map(r -> r.getSource())
+                    .orElse(null);
+            if (result == null) {
                 // try to load the graph as a standalone file
                 startGraphName = FileType.STATE.addExtension(startGraphName);
                 File startGraphFile = new File(startGraphName);
@@ -198,8 +199,6 @@ public class Transformer {
                     throw new IOException("Can't find start graph " + startGraphName);
                 }
                 result = GraphConverter.toAspect(Groove.loadGraph(startGraphFile));
-            } else {
-                result = hostModel.getSource();
             }
         }
         return result;
@@ -212,7 +211,7 @@ public class Transformer {
             for (String startGraphName : startGraphNames) {
                 graphs.add(computeStartGraph(startGraphName));
             }
-            result = AspectGraph.mergeGraphs(graphs);
+            result = AspectGraph.mergeGraphs(graphs).orElse(null);
         }
         return result;
     }

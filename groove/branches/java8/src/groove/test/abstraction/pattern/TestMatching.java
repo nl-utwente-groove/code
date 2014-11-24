@@ -86,7 +86,7 @@ public class TestMatching {
     private HostGraph getSimpleGraph(String name) {
         HostGraph result = null;
         try {
-            result = view.getHostModel(name).toResource();
+            result = view.getHostModel(name).get().toResource();
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }
@@ -96,7 +96,7 @@ public class TestMatching {
     private Rule getSimpleRule(String name) {
         Rule result = null;
         try {
-            result = view.getRuleModel(name).toResource();
+            result = view.getRuleModel(name).get().toResource();
         } catch (FormatException e) {
             Assert.fail(e.toString());
         }

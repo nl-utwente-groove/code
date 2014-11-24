@@ -220,7 +220,7 @@ public class TestDeleteUse {
     private Rule getSimpleRule(String name, GrammarModel view) {
         Rule result = null;
         try {
-            result = view.getRuleModel(name).toResource();
+            result = view.getRuleModel(name).get().toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
