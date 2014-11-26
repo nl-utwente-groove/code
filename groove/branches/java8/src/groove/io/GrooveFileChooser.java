@@ -215,7 +215,7 @@ public class GrooveFileChooser extends JFileChooser {
 
     /** Returns a normalised string for a given set of file types. */
     private static String toString(Set<FileType> fileTypes) {
-        return EnumSet.copyOf(fileTypes).toString();
+        return (fileTypes.isEmpty() ? EnumSet.noneOf(FileType.class) : EnumSet.copyOf(fileTypes)).toString();
     }
 
     /** Sets location and filter preferences for the file choosers to be created. */

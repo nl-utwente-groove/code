@@ -14,7 +14,6 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.PlainJGraph;
 
 import java.awt.Dialog;
@@ -126,9 +125,11 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                 jGraph = aspectJGraph;
             }
             break;
+        /* LTS graphs can't be just loaded as LTSs
         case LTS:
-            jGraph = new LTSJGraph(this.simulator);
-            break;
+        jGraph = new LTSJGraph(this.simulator);
+        break;
+        */
         }
         if (jGraph == null) {
             jGraph = PlainJGraph.newInstance(this.simulator);

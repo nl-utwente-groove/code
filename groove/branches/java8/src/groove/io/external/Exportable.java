@@ -47,7 +47,7 @@ public class Exportable {
         this.name = graph.getName();
         this.jGraph = null;
         this.graph = Optional.of(graph);
-        this.model = null;
+        this.model = Optional.empty();
     }
 
     /** Constructs an exportable for a given {@link JGraph}. */
