@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.abstraction.neigh.explore;
@@ -37,6 +37,7 @@ import groove.explore.util.ExplorationReporter;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.explore.util.LTSReporter;
+import groove.lts.Filter;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineTool;
 import groove.util.parse.FormatException;
@@ -49,7 +50,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * Counterpart of {@link Generator} for abstract state space exploration.
- * 
+ *
  * @author Eduardo Zambon
  */
 public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
@@ -99,10 +100,9 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
      * Compute the exploration out of the command line options.
      * Uses the default exploration for components that were not specified.
      */
-    private ShapeTransformer computeTransformer(File grammarLocation)
-        throws IOException, FormatException {
-        ShapeTransformer result =
-            new ShapeTransformer(grammarLocation, isReachability());
+    private ShapeTransformer computeTransformer(File grammarLocation) throws IOException,
+        FormatException {
+        ShapeTransformer result = new ShapeTransformer(grammarLocation, isReachability());
         if (hasStrategy()) {
             result.setStrategy(StrategyEnumerator.parseCommandLineStrategy(getStrategy()));
         }
@@ -125,14 +125,13 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
     private ExplorationReporter computeReporter() {
         CompositeReporter result = new CompositeReporter();
         ShapeLogReporter logger =
-            new ShapeLogReporter(getGrammar().getPath(), getStartGraphName(),
-                getVerbosity(), isReachability());
+            new ShapeLogReporter(getGrammar().getPath(), getStartGraphName(), getVerbosity(),
+                isReachability());
         if (hasLtsPattern()) {
-            LTSLabels ltsLabels =
-                new LTSLabels(Flag.START, Flag.FINAL, Flag.OPEN);
-            result.add(new LTSReporter(getLtsPattern(), ltsLabels, logger));
+            LTSLabels ltsLabels = new LTSLabels(Flag.START, Flag.FINAL, Flag.OPEN);
+            result.add(new LTSReporter(getLtsPattern(), ltsLabels, logger, getFilter()));
         }
-        // add the logger last, to ensure that any messages from the 
+        // add the logger last, to ensure that any messages from the
         // other reporters are included.
         result.add(logger);
         return result;
@@ -146,8 +145,8 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.grammar;
     }
 
-    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
-            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
+        handler = GrammarHandler.class)
     private File grammar;
 
     /** Returns the start graph name, relative to the grammar location. */
@@ -156,7 +155,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
     }
 
     @Argument(index = 1, metaVar = "start",
-            usage = "Start graph name (defined in grammar, no extension)")
+        usage = "Start graph name (defined in grammar, no extension)")
     private String startGraphName;
 
     private boolean hasStrategy() {
@@ -167,8 +166,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.strategy;
     }
 
-    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR,
-            usage = STRATEGY_USAGE)
+    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR, usage = STRATEGY_USAGE)
     private String strategy = "shapedfs";
 
     private boolean hasAcceptor() {
@@ -179,13 +177,27 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.acceptor;
     }
 
-    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR,
-            usage = ACCEPTOR_USAGE)
+    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR, usage = ACCEPTOR_USAGE)
     private String acceptor = "final";
 
     private int getResultCount() {
         return this.resultCount;
     }
+
+    /** Returns the filter mode to be used when saving the LTS. */
+    public Filter getFilter() {
+        return this.traces ? Filter.RESULT : this.spanning ? Filter.SPANNING : Filter.NONE;
+    }
+
+    @Option(name = "-spanning",
+        usage = "If switched on, only the spanning tree of the LTS will be saved")
+    private boolean spanning;
+
+    @Option(name = "-traces",
+        usage = "If switched on, only the result traces of the LTS will be saved "
+            + "(which may be only the start state, if there are no result states). "
+            + "Overrides -spanning if both are given")
+    private boolean traces;
 
     @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
     private int resultCount = 0;
@@ -198,9 +210,8 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.nodeMult;
     }
 
-    @Option(name = "-n", metaVar = MultiplicityHandler.VAR,
-            usage = MultiplicityHandler.NODE_USAGE,
-            handler = MultiplicityHandler.class)
+    @Option(name = "-n", metaVar = MultiplicityHandler.VAR, usage = MultiplicityHandler.NODE_USAGE,
+        handler = MultiplicityHandler.class)
     private int nodeMult;
 
     private boolean hasEdgeMult() {
@@ -211,9 +222,8 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.edgeMult;
     }
 
-    @Option(name = "-m", metaVar = MultiplicityHandler.VAR,
-            usage = MultiplicityHandler.EDGE_USAGE,
-            handler = MultiplicityHandler.class)
+    @Option(name = "-m", metaVar = MultiplicityHandler.VAR, usage = MultiplicityHandler.EDGE_USAGE,
+        handler = MultiplicityHandler.class)
     private int edgeMult;
 
     private boolean hasLtsPattern() {
@@ -224,13 +234,11 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.ltsPattern;
     }
 
-    @Option(
-            name = "-o",
-            metaVar = "file",
-            usage = "Save the generated LTS to a file with name derived from <file>, "
-                + "in which '#' is instantiated with the grammar ID. "
-                + "The \"-ef\"-option controls some additional state labels. "
-                + "The optional extension determines the output format (default is .gxl)")
+    @Option(name = "-o", metaVar = "file",
+        usage = "Save the generated LTS to a file with name derived from <file>, "
+            + "in which '#' is instantiated with the grammar ID. "
+            + "The \"-ef\"-option controls some additional state labels. "
+            + "The optional extension determines the output format (default is .gxl)")
     private String ltsPattern;
 
     /** Indicates if the three-valued exploration option has been invoked. */
@@ -238,9 +246,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.threeWay;
     }
 
-    @Option(
-            name = "-t",
-            usage = "Limit the possible multiplicity values to three: 0, 1, or 0+.")
+    @Option(name = "-t", usage = "Limit the possible multiplicity values to three: 0, 1, or 0+.")
     private boolean threeWay;
 
     /** Indicates if the reachability option has been invoked. */
@@ -248,9 +254,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         return this.reachability;
     }
 
-    @Option(
-            name = "-c",
-            usage = "Reachability exploration; disables model checking afterwards")
+    @Option(name = "-c", usage = "Reachability exploration; disables model checking afterwards")
     private boolean reachability;
 
     // ------------------------------------------------------------------------

@@ -24,6 +24,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.SaveLTSAsDialog;
 import groove.gui.dialog.SaveLTSAsDialog.StateExport;
+import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.collect.SetView;
@@ -51,13 +52,16 @@ public class SaveLTSAsAction extends SimulatorAction {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
         }
         if (dialog.showDialog(getSimulator())) {
-            doSave(dialog.getDirectory(), dialog.getLtsPattern(), dialog.getStatePattern(),
-                dialog.getExportStates(), dialog.getLTSLabels());
+            doSave(dialog.getDirectory(),
+                dialog.getLtsPattern(),
+                dialog.getStatePattern(),
+                dialog.getExportStates(),
+                dialog.getLTSLabels());
         }
     }
 
     private void doSave(String dir, String ltsPattern, String statePattern,
-            StateExport exportStates, LTSLabels flags) {
+        StateExport exportStates, LTSLabels flags) {
         GTS gts = getSimulatorModel().getGts();
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);
@@ -83,8 +87,10 @@ public class SaveLTSAsAction extends SimulatorAction {
             assert exportStates == StateExport.NONE;
         }
 
+        Filter filter = getLtsDisplay().getFilter();
+
         try {
-            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(), flags);
+            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(), flags, filter);
             for (GraphState state : export) {
                 StateReporter.exportState(state, new File(dir, statePattern).toString());
             }
