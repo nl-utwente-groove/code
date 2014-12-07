@@ -38,6 +38,7 @@ import groove.gui.jgraph.LTSJModel;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.tree.LabelTree;
+import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
@@ -328,7 +329,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
             this.mainPanel =
-                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -513,10 +514,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     public void refreshBackground() {
         Color background =
-                getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
+            getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
-        ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(
-            isEnabled() ? background : null);
+        ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(isEnabled()
+            ? background : null);
     }
 
     /** Returns an LTS display for a given simulator. */
@@ -686,26 +687,5 @@ public class LTSDisplay extends Display implements SimulatorListener {
             }
             LTSDisplay.this.setEnabled(enabled);
         }
-    }
-
-    /** LTS display filter values. */
-    public static enum Filter {
-        /** No filtering: all states shown (up to state bound). */
-        NONE("None"),
-        /** States and transitions of the spanning tree. */
-        SPANNING("Spanning tree"),
-        /** Only traces from start to result states. */
-        RESULT("Result traces"), ;
-
-        private Filter(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
-
-        private final String name;
     }
 }
