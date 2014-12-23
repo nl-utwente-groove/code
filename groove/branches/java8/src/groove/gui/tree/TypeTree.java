@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -171,15 +172,10 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     /**
-     * Convenience method to return the type graph of the grammar,
-     * or the graph in the jModel if that is a type graph.
+     * Convenience method to return the type graph of the JModel.
      */
-    private TypeGraph getTypeGraph() {
-        TypeGraph result = null;
-        if (getJGraph().getModel() != null) {
-            result = ((AspectJGraph) getJGraph()).getModel().getTypeGraph();
-        }
-        return result;
+    private Optional<TypeGraph> getTypeGraph() {
+        return ((AspectJGraph) getJGraph()).getJModel().map(m -> m.getTypeGraph());
     }
 
     @Override
@@ -198,14 +194,15 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     @Override
-    void updateFilter() {
-        for (TypeNode node : getTypeGraph().nodeSet()) {
+    void updateFilter(JModel<AspectGraph> model) {
+        TypeGraph typeGraph = ((AspectJModel) model).getTypeGraph();
+        for (TypeNode node : typeGraph.nodeSet()) {
             getFilter().addEntry(node);
         }
-        for (TypeEdge edge : getTypeGraph().edgeSet()) {
+        for (TypeEdge edge : typeGraph.edgeSet()) {
             getFilter().addEntry(edge);
         }
-        super.updateFilter();
+        super.updateFilter(model);
     }
 
     /**
@@ -239,16 +236,16 @@ public class TypeTree extends LabelTree<AspectGraph> {
     @Override
     List<TreeNode> fillTree() {
         List<TreeNode> result = new ArrayList<TreeNode>();
-        TypeGraph typeGraph = getTypeGraph();
-        if (typeGraph != null) {
-            Collection<TypeGraph.Sub> typeGraphMap = typeGraph.getComponentMap().values();
+        getTypeGraph().ifPresent(g -> {
+            Collection<TypeGraph.Sub> typeGraphMap = g.getComponentMap().values();
             if (typeGraphMap.isEmpty()) {
-                result = fillTree(getTopNode(), getTypeGraph().nodeSet(), getTypeGraph().edgeSet());
+                result.addAll(fillTree(getTopNode(), g.nodeSet(), g.edgeSet()));
             } else if (typeGraphMap.size() == 1) {
                 TypeGraph.Sub subTypeGraph = typeGraphMap.iterator().next();
-                result = fillTree(getTopNode(), subTypeGraph.getNodes(), subTypeGraph.getEdges());
+                result.addAll(fillTree(getTopNode(),
+                    subTypeGraph.getNodes(),
+                    subTypeGraph.getEdges()));
             } else {
-                result = new ArrayList<TreeNode>();
                 for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
                     TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(subTypeGraph);
                     result.addAll(fillTree(typeGraphNode,
@@ -261,7 +258,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                     }
                 }
             }
-        }
+        });
         return result;
     }
 
@@ -276,9 +273,9 @@ public class TypeTree extends LabelTree<AspectGraph> {
         Set<? extends TypeNode> typeNodes, Set<? extends TypeEdge> typeEdges) {
         List<TreeNode> result = new ArrayList<TreeNode>();
         // mapping from type nodes to related types (in the combined type graph)
+        TypeGraph typeGraph = getTypeGraph().get();
         Map<TypeNode,Set<TypeNode>> relatedMap =
-            isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
-                : getTypeGraph().getDirectSupertypeMap();
+            isShowsSubtypes() ? typeGraph.getDirectSubtypeMap() : typeGraph.getDirectSupertypeMap();
         for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
             if (node.isDataType()) {
                 continue;
@@ -295,7 +292,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 }
                 // check duplicates due to equi-labelled edges to different targets
                 Set<Entry> entries = new HashSet<Entry>();
-                for (TypeEdge edge : new TreeSet<TypeEdge>(getTypeGraph().outEdgeSet(node))) {
+                for (TypeEdge edge : new TreeSet<TypeEdge>(typeGraph.outEdgeSet(node))) {
                     if (typeEdges.contains(edge)) {
                         TypeEntry edgeEntry = getFilter().getEntry(edge);
                         if (entries.add(edgeEntry)) {
@@ -307,7 +304,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 }
             }
         }
-        if (getTypeGraph().isImplicit()) {
+        if (typeGraph.isImplicit()) {
             // add edge entries
             // check duplicates due to equi-labelled edges
             Set<Entry> entries = new HashSet<Entry>();
@@ -403,7 +400,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     /** The type graph in the model, if any. */
-    private TypeGraph typeGraph;
+    private Optional<TypeGraph> typeGraph;
     /** Mode of the label tree: showing all labels or just those in the graph. */
     private boolean showsAllLabels = false;
     /** Mode of the label tree: showing subtypes or supertypes. */

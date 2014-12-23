@@ -91,7 +91,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /**
      * Sends a set of cells to the back (in the z-order) without posting an edit.
      */
-    void toBackSilent(Collection<? extends JCell<G>> jCells) {
+    protected void toBackSilent(Collection<? extends JCell<G>> jCells) {
         createLayerEdit(jCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
@@ -163,15 +163,16 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     protected boolean addElements(Collection<? extends Node> nodeSet,
         Collection<? extends Edge> edgeSet, boolean replace) {
+        boolean result = replace;
         setLoading(true);
         prepareInsert();
-        boolean added = addNodes(nodeSet);
-        added |= addEdges(edgeSet);
-        if (added || replace) {
+        result |= addNodes(nodeSet);
+        result |= addEdges(edgeSet);
+        if (result) {
             doInsert(replace);
         }
         setLoading(false);
-        return replace || added;
+        return result;
     }
 
     /** Adds the given set of nodes to this JModel.

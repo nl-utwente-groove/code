@@ -18,8 +18,6 @@ package groove.gui.layout;
 
 import groove.gui.jgraph.JGraph;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -47,13 +45,8 @@ public class LayouterItem implements Layouter {
         this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
         if (jGraph != null) {
             jGraph.addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
-                new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        LayouterItem.this.facade =
-                                jGraph.getModel() == null ? null : new JGraphFacade(jGraph);
-                    }
-                });
+                e -> LayouterItem.this.facade =
+                    jGraph.getJModel().map(m -> new JGraphFacade(jGraph)).orElse(null));
         }
     }
 

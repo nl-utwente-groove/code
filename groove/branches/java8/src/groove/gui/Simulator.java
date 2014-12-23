@@ -49,12 +49,10 @@ import groove.gui.display.DisplayKind;
 import groove.gui.display.DisplaysPanel;
 import groove.gui.display.GraphEditorTab;
 import groove.gui.display.GraphTab;
-import groove.gui.display.JGraphPanel;
 import groove.gui.display.ResourceDisplay;
 import groove.gui.display.ResourceTab;
 import groove.gui.display.TextTab;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.JGraph;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.gui.list.ListTabbedPane;
 import groove.gui.list.SearchResult;
@@ -368,7 +366,8 @@ public class Simulator implements SimulatorListener {
         } else if (resource != null) {
             getModel().doSelect(resource, name);
             ResourceDisplay display = (ResourceDisplay) getDisplaysPanel().getDisplayFor(resource);
-            ResourceTab resourceTab = display.getSelectedTab();
+            // there is certainly a tab selected
+            ResourceTab resourceTab = display.getSelectedTab().get();
             if (resource.isGraphBased()) {
                 AspectJGraph jGraph;
                 if (resourceTab.isEditor()) {
@@ -534,13 +533,11 @@ public class Simulator implements SimulatorListener {
         menu.add(this.actions.getEditRulePropertiesAction());
 
         // add graph edit menu when appropriate
-        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
-        if (panel != null) {
-            JGraph<?> jGraph = panel.getJGraph();
-            if (jGraph instanceof AspectJGraph) {
-                menu.addSubmenu(((AspectJGraph) jGraph).createEditMenu(null));
+        getDisplaysPanel().getJGraph().ifPresent(g -> {
+            if (g instanceof AspectJGraph) {
+                menu.addSubmenu(((AspectJGraph) g).createEditMenu(null));
             }
-        }
+        });
 
         // system properties
         menu.addSeparator();
@@ -571,12 +568,10 @@ public class Simulator implements SimulatorListener {
      * Fills the show menu with items (upon refresh).
      */
     private void fillDisplayMenu(MyJMenu menu) {
-        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
-        if (panel != null) {
-            JGraph<?> jGraph = panel.getJGraph();
-            menu.add(jGraph.createShowHideMenu());
-            menu.add(jGraph.createZoomMenu());
-        }
+        getDisplaysPanel().getJGraph().ifPresent(g -> {
+            menu.add(g.createShowHideMenu());
+            menu.add(g.createZoomMenu());
+        });
         menu.addSubmenu(createOptionsMenu());
     }
 

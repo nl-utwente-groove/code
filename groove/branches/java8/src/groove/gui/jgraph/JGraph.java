@@ -77,6 +77,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.accessibility.AccessibleState;
@@ -366,7 +367,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             Rectangle2D bounds =
                 (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
                     : null;
-            AttributeMap attrs = getModel().getAttributes(view.getCell());
+            AttributeMap attrs = getJModel().get().getAttributes(view.getCell());
             if (bounds == null) {
                 bounds = GraphConstants.getBounds(attrs);
             }
@@ -470,9 +471,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Refreshes the visibility and view of all JCells in the model. */
     public void refreshAllCells() {
-        if (getModel() != null) {
-            refreshCells(getModel().getRoots());
-        }
+        getJModel().ifPresent(m -> refreshCells(m.getRoots()));
     }
 
     /**
@@ -507,7 +506,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 }
             }
         }
-        getModel().toBackSilent(changedJCells);
+        getJModel().ifPresent(m -> m.toBackSilent(changedJCells));
         refreshCells(changedJCells);
     }
 
@@ -592,15 +591,14 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         // Added a check that the new model differs from the current one
         // This should be OK, but if not, please comment here!
         if ((model == null || model instanceof JModel) && model != getModel()) {
-            JModel<G> oldJModel = getModel();
-            @SuppressWarnings("unchecked")
-            JModel<G> newJModel = (JModel<G>) model;
-            if (oldJModel != null) {
+            getJModel().ifPresent(m -> {
                 // if we don't clear the selection, the old selection
                 // gives trouble when setting the model
                 clearSelection();
-                oldJModel.removeGraphModelListener(getCancelEditListener());
-            }
+                m.removeGraphModelListener(getCancelEditListener());
+            });
+            @SuppressWarnings("unchecked")
+            JModel<G> newJModel = (JModel<G>) model;
             if (newJModel != null) {
                 newJModel.refreshVisuals();
             }
@@ -608,9 +606,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             if (newJModel != null) {
                 setName(newJModel.getName());
             }
-            //            if (newJModel != null) {
-            //                doLayout(false);
-            //            }
             if (newJModel != null) {
                 newJModel.addGraphModelListener(getCancelEditListener());
             }
@@ -622,18 +617,17 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         }
     }
 
-    /** Specialises the return type to a {@link JModel}. */
+    /** Returns the optional JModel set in this JGraph. */
     @SuppressWarnings("unchecked")
-    @Override
-    public JModel<G> getModel() {
-        return (JModel<G>) this.graphModel;
+    public Optional<? extends JModel<G>> getJModel() {
+        return Optional.ofNullable((JModel<G>) this.graphModel);
     }
 
     /** Callback factory method to create an appropriate JModel
      * instance for this JGraph.
      */
-    public JModel<G> newModel() {
-        return getFactory().newModel();
+    public JModel<G> newJModel() {
+        return getFactory().newJModel();
     }
 
     /**
@@ -838,7 +832,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public Layouter doLayout(boolean complete) {
         Layouter result = null;
         if (complete) {
-            getModel().setLayoutable(true);
+            getJModel().ifPresent(m -> m.setLayoutable(true));
             result = getLayouter();
         } else {
             result = getLayouter().getIncremental();
@@ -1000,9 +994,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             result = (JGraphLayoutCache) superCache;
         } else {
             result = createGraphLayoutCache();
-            if (getModel() != null) {
-                result.setModel(getModel());
-            }
+            getJModel().ifPresent(m -> result.setModel(m));
             setGraphLayoutCache(result);
         }
         return result;
@@ -1258,30 +1250,33 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Clear all intermediate points from all edges. */
     public void clearAllEdgePoints() {
-        Map<JCell<G>,AttributeMap> change = new HashMap<JCell<G>,AttributeMap>();
-        for (JCell<G> jCell : getModel().getRoots()) {
-            if (jCell instanceof JEdge) {
-                VisualMap visuals = jCell.getVisuals();
-                List<Point2D> points = visuals.getPoints();
-                // don't make the change directly in the cell,
-                // as this messes up the undo history
-                List<Point2D> newPoints =
-                    Arrays.asList(points.get(0), points.get(points.size() - 1));
-                AttributeMap newAttributes = new AttributeMap();
-                GraphConstants.setPoints(newAttributes, newPoints);
-                change.put(jCell, newAttributes);
+        getJModel().ifPresent(m -> {
+            Map<JCell<G>,AttributeMap> change = new HashMap<JCell<G>,AttributeMap>();
+            for (JCell<G> jCell : m.getRoots()) {
+                if (jCell instanceof JEdge) {
+                    VisualMap visuals = jCell.getVisuals();
+                    List<Point2D> points = visuals.getPoints();
+                    // don't make the change directly in the cell,
+                    // as this messes up the undo history
+                    List<Point2D> newPoints =
+                        Arrays.asList(points.get(0), points.get(points.size() - 1));
+                    AttributeMap newAttributes = new AttributeMap();
+                    GraphConstants.setPoints(newAttributes, newPoints);
+                    change.put(jCell, newAttributes);
+                }
             }
-        }
-        getModel().edit(change, null, null, null);
+            m.edit(change, null, null, null);
+        });
     }
 
     /** Sets the layouting flag to the given value. */
     public void setLayouting(boolean layouting) {
         if (layouting != this.layouting) {
+            JModel<G> model = getJModel().get();
             this.layouting = layouting;
             if (layouting) {
                 // start the layouting
-                getModel().beginUpdate();
+                model.beginUpdate();
             } else {
                 // reroute the loops
                 GraphLayoutCache cache = getGraphLayoutCache();
@@ -1291,7 +1286,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                     }
                 }
                 // end the layouting
-                getModel().endUpdate();
+                model.endUpdate();
             }
         }
     }
@@ -1445,7 +1440,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
         /** Callback option to refresh as this listener demands. */
         protected void doRefresh() {
-            getModel().refreshVisuals();
+            getJModel().ifPresent(m -> m.refreshVisuals());
             refreshAllCells();
         }
     }

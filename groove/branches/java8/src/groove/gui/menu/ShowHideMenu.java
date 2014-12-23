@@ -28,6 +28,7 @@ import groove.gui.dialog.FormulaDialog;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.io.FileType;
@@ -283,8 +284,13 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         protected ShowHideAction(JGraph<G> jgraph, int showMode, String name) {
             super(getModeName(showMode) + " " + name);
-            this.jgraph = jgraph;
+            this.jGraph = jgraph;
             this.showMode = showMode;
+        }
+
+        /** Convenience method to return the current (non-{@code null}) JModel. */
+        protected JModel<G> getJModel() {
+            return this.jGraph.getJModel().get();
         }
 
         /**
@@ -298,7 +304,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         public void actionPerformed(ActionEvent e) {
             Set<JCell<G>> hiddenCells = new HashSet<JCell<G>>();
             Set<JCell<G>> shownCells = new HashSet<JCell<G>>();
-            for (JCell<G> jCell : this.jgraph.getModel().getRoots()) {
+            for (JCell<G> jCell : getJModel().getRoots()) {
                 if (isHiding(jCell)) {
                     hiddenCells.add(jCell);
                 } else if (isShowing(jCell)) {
@@ -314,7 +320,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 setHidden(shownCells, false);
                 setHidden(hiddenCells, true);
             }
-            this.jgraph.repaint();
+            this.jGraph.repaint();
         }
 
         /**
@@ -364,7 +370,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
         protected final void setHidden(Set<JCell<G>> cells, boolean hidden) {
-            this.jgraph.changeGrayedOut(cells, hidden);
+            this.jGraph.changeGrayedOut(cells, hidden);
         }
 
         /**
@@ -378,7 +384,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         abstract protected boolean isInvolved(JCell<G> jCell);
 
         /** The jgraph upon which this menu works. */
-        protected final JGraph<G> jgraph;
+        protected final JGraph<G> jGraph;
 
         /**
          * The show mode of this action.
@@ -463,7 +469,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 JEdge<G> edge = (JEdge<G>) cell;
                 JCell<G> sourceVertex = edge.getSourceVertex();
                 JCell<G> targetVertex = edge.getTargetVertex();
-                Object[] selectedCellArray = this.jgraph.getSelectionCells();
+                Object[] selectedCellArray = this.jGraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
                     result = !sourceVertex.isGrayedOut() || !targetVertex.isGrayedOut();
                 } else {
@@ -496,7 +502,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
             putValue(NAME, label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
-                    : HTMLConverter.HTML_TAG.on(label.toLine().toHTMLString()));
+                : HTMLConverter.HTML_TAG.on(label.toLine().toHTMLString()));
             this.label = label;
         }
 
@@ -536,7 +542,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph graph = this.jgraph.getModel().getGraph();
+            Graph graph = getJModel().getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -611,7 +617,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         @Override
         protected boolean isInvolved(JCell<G> jCell) {
-            return this.jgraph.getSelectionModel().isCellSelected(jCell);
+            return this.jGraph.getSelectionModel().isCellSelected(jCell);
         }
     }
 
@@ -635,7 +641,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             GrooveFileChooser fileChooser = GrooveFileChooser.getInstance(FileType.TEXT);
-            int result = fileChooser.showOpenDialog(this.jgraph);
+            int result = fileChooser.showOpenDialog(this.jGraph);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
                 String fileLine;
@@ -695,7 +701,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            LTSJGraph jGraph = (LTSJGraph) this.jgraph;
+            LTSJGraph jGraph = (LTSJGraph) this.jGraph;
             this.trace = jGraph.findTraces(Collections.singleton(jGraph.getActiveState()));
             if (jGraph.getModel() != null) {
                 super.actionPerformed(evt);

@@ -91,7 +91,7 @@ public class ExportAction extends SimulatorAction {
         String type = null;
         if (this.isGraph) {
             JGraph<?> jGraph = getJGraph();
-            Graph graph = jGraph.getModel().getGraph();
+            Graph graph = jGraph.getJModel().get().getGraph();
             GraphRole role = graph.getRole();
             boolean isState =
                 jGraph instanceof AspectJGraph && ((AspectJGraph) jGraph).isForState();
@@ -107,12 +107,9 @@ public class ExportAction extends SimulatorAction {
         if (!(this.display instanceof ResourceDisplay)) {
             return null;
         }
-
-        ResourceTab tab = ((ResourceDisplay) this.display).getSelectedTab();
-        if (tab == null) {
-            return null;
-        }
-        return getGrammarModel().getResource(this.displayKind.getResource(), tab.getName());
+        Optional<ResourceTab> tab = ((ResourceDisplay) this.display).getSelectedTab();
+        return tab.flatMap(t -> getGrammarModel().getResource(this.displayKind.getResource(),
+            t.getName()));
     }
 
     // Get active graph if any
@@ -123,10 +120,10 @@ public class ExportAction extends SimulatorAction {
             case HOST:
             case RULE:
             case TYPE:
-                ResourceTab selectedTab = ((ResourceDisplay) this.display).getSelectedTab();
-                return selectedTab == null ? null : selectedTab instanceof GraphTab
-                    ? ((GraphTab) selectedTab).getJGraph()
-                    : ((GraphEditorTab) selectedTab).getJGraph();
+                Optional<ResourceTab> selectedTab =
+                    ((ResourceDisplay) this.display).getSelectedTab();
+                return selectedTab.map(t -> t instanceof GraphTab ? ((GraphTab) t).getJGraph()
+                    : ((GraphEditorTab) t).getJGraph()).orElse(null);
             case STATE:
                 return getStateDisplay().getJGraph();
             case LTS:

@@ -174,7 +174,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
      * argument graph.
      */
     public AspectJModel cloneWithNewGraph(AspectGraph graph) {
-        AspectJModel result = getJGraph().newModel();
+        AspectJModel result = getJGraph().newJModel();
         if (getGrammar() != null) {
             result.setGrammar(getGrammar());
         }

@@ -37,6 +37,7 @@ import groove.explore.util.ExplorationReporter;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.explore.util.LTSReporter;
+import groove.lts.Filter;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineTool;
 import groove.util.parse.FormatException;
@@ -128,7 +129,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
             new ShapeLogReporter(getStartGraphName(), getVerbosity(), isReachability());
         if (hasLtsPattern()) {
             LTSLabels ltsLabels = new LTSLabels(Flag.START, Flag.FINAL, Flag.OPEN);
-            result.add(new LTSReporter(getLtsPattern(), ltsLabels, logger));
+            result.add(new LTSReporter(getLtsPattern(), ltsLabels, logger, getFilter()));
         }
         // add the logger last, to ensure that any messages from the
         // other reporters are included.
@@ -185,6 +186,21 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
 
     @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
     private int resultCount = 0;
+
+    /** Returns the filter mode to be used when saving the LTS. */
+    public Filter getFilter() {
+        return this.traces ? Filter.RESULT : this.spanning ? Filter.SPANNING : Filter.NONE;
+    }
+
+    @Option(name = "-spanning",
+        usage = "If switched on, only the spanning tree of the LTS will be saved")
+    private boolean spanning;
+
+    @Option(name = "-traces",
+        usage = "If switched on, only the result traces of the LTS will be saved "
+            + "(which may be only the start state, if there are no result states). "
+            + "Overrides -spanning if both are given")
+    private boolean traces;
 
     private boolean hasNodeMult() {
         return getNodeMult() != 0;

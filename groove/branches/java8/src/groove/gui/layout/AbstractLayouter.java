@@ -205,7 +205,7 @@ abstract public class AbstractLayouter implements Layouter {
 
     /** Returns the jModel currently being layed out. */
     protected JModel<?> getJModel() {
-        return getJGraph().getModel();
+        return getJGraph().getJModel().get();
     }
 
     /**

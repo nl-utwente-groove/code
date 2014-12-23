@@ -60,7 +60,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog<Shape> {
     @Override
     protected ShapeJGraph createJGraph() {
         ShapeJGraph jGraph = new ShapeJGraph(this.simulator);
-        ShapeJModel model = (ShapeJModel) jGraph.newModel();
+        ShapeJModel model = (ShapeJModel) jGraph.newJModel();
         model.loadGraph(this.graph);
         model.setLayoutable(true);
         jGraph.setModel(model);

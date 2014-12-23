@@ -53,7 +53,7 @@ public class LayoutAction extends AbstractAction {
     public void doLayout() {
         // only layout selected cells, if there are any
         Object[] selection = this.jGraph.getSelectionCells();
-        this.jGraph.getModel().setLayoutable(selection.length == 0);
+        this.jGraph.getJModel().get().setLayoutable(selection.length == 0);
         for (Object jCell : selection) {
             if (jCell instanceof JVertex) {
                 ((JVertex<?>) jCell).setLayoutable(true);

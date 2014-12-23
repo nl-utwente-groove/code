@@ -23,6 +23,7 @@ import groove.grammar.host.HostGraph;
 import groove.graph.iso.IsoChecker;
 import groove.graph.multi.MultiGraph;
 import groove.lts.AbstractGraphState;
+import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
@@ -65,8 +66,10 @@ public final class TransSystemChecker {
     public void report() {
         PrintStream out = System.out;
         out.println(String.format("PGTS: states = %s / transitions = %s",
-            this.pgts.getStateCount(), this.pgts.getTransitionCount()));
-        out.println(String.format("SGTS: states = %s / transitions = %s", this.sgts.nodeCount(),
+            this.pgts.getStateCount(),
+            this.pgts.getTransitionCount()));
+        out.println(String.format("SGTS: states = %s / transitions = %s",
+            this.sgts.nodeCount(),
             this.sgts.edgeCount()));
         compare(out);
     }
@@ -91,7 +94,7 @@ public final class TransSystemChecker {
      * @return true if the systems are equivalent, false otherwise.
      */
     private boolean compare(PrintStream out) {
-        MultiGraph plainSGTS = this.sgts.toPlainGraph(LTSLabels.EMPTY);
+        MultiGraph plainSGTS = this.sgts.toPlainGraph(LTSLabels.EMPTY, Filter.NONE);
         MultiGraph plainPGTS = this.pgts.toPlainGraph();
         IsoChecker gtsChecker = IsoChecker.getInstance(true);
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.jgraph;
@@ -50,6 +50,7 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.accessibility.AccessibleState;
 import javax.swing.AbstractAction;
@@ -96,24 +97,22 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     @Override
     public void setModel(GraphModel model) {
-        GraphModel oldModel = getModel();
-        if (oldModel != null) {
-            oldModel.removeGraphModelListener(getRefreshGraphListener());
-        }
+        getJModel().ifPresent(m -> m.removeGraphModelListener(getRefreshGraphListener()));
         super.setModel(model);
         if (model != null) {
             model.addGraphModelListener(getRefreshGraphListener());
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public AspectJModel getModel() {
-        return (AspectJModel) super.getModel();
+    public Optional<AspectJModel> getJModel() {
+        return (Optional<AspectJModel>) super.getJModel();
     }
 
     @Override
-    public AspectJModel newModel() {
-        AspectJModel result = (AspectJModel) super.newModel();
+    public AspectJModel newJModel() {
+        AspectJModel result = (AspectJModel) super.newJModel();
         GrammarModel grammar = getGrammar();
         if (grammar == null) {
             assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
@@ -150,16 +149,16 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Sets a level tree for this JGraph. */
     public void setLevelTree(RuleLevelTree levelTree) {
-        assert levelTree == null || getGraphRole() == GraphRole.RULE && !hasActiveEditor();
+        assert levelTree != null && getGraphRole() == GraphRole.RULE && !hasActiveEditor();
         this.levelTree = levelTree;
     }
 
     /**
-     * Lazily creates and returns the rule level tree associated
-     * with this JGraph, if any.
+     * Returns the optional rule level tree associated
+     * with this JGraph.
      */
-    public RuleLevelTree getLevelTree() {
-        return this.levelTree;
+    public Optional<RuleLevelTree> getLevelTree() {
+        return Optional.ofNullable(this.levelTree);
     }
 
     /** Indicates that the JModel has an editor enabled. */
@@ -167,14 +166,14 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         return this.editing && getMode() != PREVIEW_MODE;
     }
 
-    /** 
+    /**
      * Indicates if the graph being displayed is a graph state.
      */
     public boolean isForState() {
         return this.forState;
     }
 
-    /** 
+    /**
      * Returns the role of the graph being displayed.
      */
     @Override
@@ -253,8 +252,11 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null,
-            null);
+        getJModel().ifPresent(m -> m.edit(Collections.singletonMap(jCell,
+            newVisuals.getAttributes()),
+            null,
+            null,
+            null));
     }
 
     /**
@@ -266,13 +268,13 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex =
-            (AspectJVertex) getModel().createJVertex(getModel().createAspectNode());
+        AspectJModel jModel = getJModel().get();
+        AspectJVertex jVertex = (AspectJVertex) jModel.createJVertex(jModel.createAspectNode());
         jVertex.setNodeFixed();
         jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
         Object[] insert = new Object[] {jVertex};
-        getModel().insert(insert, null, null, null, null);
+        getJModel().get().insert(insert, null, null, null, null);
         setSelectionCell(jVertex);
         // immediately add a label, if so indicated by startEditingNewNode
         if (this.startEditingNewNode) {
@@ -306,7 +308,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        AspectJEdge newEdge = (AspectJEdge) getModel().createJEdge(null);
+        AspectJModel jModel = getJModel().get();
+        AspectJEdge newEdge = (AspectJEdge) jModel.createJEdge(null);
         // add a single, empty label so the edge will be displayed
         newEdge.getUserObject().add("");
         // to make sure there is at least one graph edge wrapped by this JEdge,
@@ -324,8 +327,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             points = Arrays.asList(from, to);
         }
         newEdge.putVisual(VisualKey.POINTS, points);
-        // add the cell to the jGraph
-        getModel().insert(insert, null, cs, null, null);
+        // add the cell to the jModel
+        getJModel().get().insert(insert, null, cs, null, null);
         setSelectionCell(newEdge);
         // immediately add a label
         if (this.startEditingNewEdge) {
@@ -345,10 +348,11 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
      */
     public boolean selectJCell(Element elem) {
         JCell<?> cell = null;
+        AspectJModel jModel = getJModel().get();
         if (elem instanceof Node) {
-            cell = getModel().getJCellForNode((Node) elem);
+            cell = jModel.getJCellForNode((Node) elem);
         } else if (elem instanceof Edge) {
-            cell = getModel().getJCellForEdge((Edge) elem);
+            cell = jModel.getJCellForEdge((Edge) elem);
         }
         if (cell != null) {
             if (cell instanceof AspectJEdge && ((AspectJEdge) cell).isSourceLabel()) {
@@ -487,7 +491,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * Returns the positive index in a non-empty list of points of that
          * point which is closest to a given location.
          * @param location the location to which distances are measured.
-         * @param points the list in which the index is sought 
+         * @param points the list in which the index is sought
          * @return the index of the point (from position 1) closest to the location
          */
         protected int getClosestIndex(List<Point2D> points, Point2D location) {
@@ -815,7 +819,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     private GraphModelListener refreshListener;
 
-    /** 
+    /**
      * Repaints the graph on a model change.
      */
     private class RefreshGraphListener implements GraphModelListener {
@@ -825,7 +829,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         }
     }
 
-    /** 
+    /**
      * Special listener for the show bidirectional edges option, for which a
      * refresh is not enough, but a rebuild is required.
      */
@@ -851,7 +855,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * option is changed.
          */
         private void rebuild() {
-            AspectJModel oldModel = getModel();
+            AspectJModel oldModel = getJModel().get();
             AspectJModel newModel = oldModel.cloneWithNewGraph(oldModel.getGraph());
             setModel(newModel);
         }
@@ -885,7 +889,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         }
 
         @Override
-        public AspectJModel newModel() {
+        public AspectJModel newJModel() {
             return new AspectJModel(getJGraph());
         }
     }

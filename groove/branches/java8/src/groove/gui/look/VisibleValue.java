@@ -34,7 +34,6 @@ import groove.gui.jgraph.LTSJCell;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.tree.LabelTree;
-import groove.gui.tree.RuleLevelTree;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 
@@ -52,15 +51,15 @@ public class VisibleValue implements VisualValue<Boolean> {
         boolean isVertex = cell instanceof JVertex;
         if (cell instanceof AspectJCell) {
             result =
-                    isVertex ? getAspectVertexValue((AspectJVertex) cell)
-                            : getAspectEdgeValue((AspectJEdge) cell);
+                isVertex ? getAspectVertexValue((AspectJVertex) cell)
+                    : getAspectEdgeValue((AspectJEdge) cell);
         } else if (cell instanceof LTSJCell) {
             result =
-                    isVertex ? getLTSVertexValue((LTSJVertex) cell) : getLTSEdgeValue((LTSJEdge) cell);
+                isVertex ? getLTSVertexValue((LTSJVertex) cell) : getLTSEdgeValue((LTSJEdge) cell);
         } else if (cell instanceof JVertex) {
             result =
-                    isVertex ? getBasicVertexValue((JVertex<?>) cell)
-                            : getBasicEdgeValue((JEdge<?>) cell);
+                isVertex ? getBasicVertexValue((JVertex<?>) cell)
+                    : getBasicEdgeValue((JEdge<?>) cell);
         }
         return result;
     }
@@ -105,8 +104,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = jVertex.getJGraph().getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(jVertex)) {
+        if (jVertex.getJGraph().getLevelTree().map(t -> !t.isVisible(jVertex)).orElse(false)) {
             return false;
         }
         // parameter nodes, quantifiers and error nodes are always visible
@@ -148,8 +146,7 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private boolean getAspectEdgeValue(AspectJEdge jEdge) {
         // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = jEdge.getJGraph().getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(jEdge)) {
+        if (jEdge.getJGraph().getLevelTree().map(t -> !t.isVisible(jEdge)).orElse(false)) {
             return false;
         }
         return getBasicEdgeValue(jEdge);
@@ -181,7 +178,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         if (!jEdge.getJGraph().isShowRecipeSteps() && trans.isInternalStep()
-                && trans.source().isDone()) {
+            && trans.source().isDone()) {
             return false;
         }
         if (!getBasicEdgeValue(jEdge)) {

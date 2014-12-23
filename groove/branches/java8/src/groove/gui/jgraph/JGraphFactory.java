@@ -63,7 +63,7 @@ abstract public class JGraphFactory<G extends Graph> {
     abstract public JEdge<G> newJEdge(Edge edge);
 
     /** Constructs a new JModel suitable for the JGraph of this factory. */
-    public JModel<G> newModel() {
+    public JModel<G> newJModel() {
         return new JModel<G>(getJGraph()) {
             // empty
         };

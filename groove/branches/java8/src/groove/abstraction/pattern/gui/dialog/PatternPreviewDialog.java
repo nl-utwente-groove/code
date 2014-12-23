@@ -59,7 +59,7 @@ public final class PatternPreviewDialog extends GraphPreviewDialog<AbstractPatte
     @Override
     protected PatternJGraph createJGraph() {
         PatternJGraph jGraph = new PatternJGraph(this.simulator);
-        PatternJModel model = (PatternJModel) jGraph.newModel();
+        PatternJModel model = (PatternJModel) jGraph.newJModel();
         model.loadGraph(this.graph);
         model.setLayoutable(true);
         jGraph.setModel(model);

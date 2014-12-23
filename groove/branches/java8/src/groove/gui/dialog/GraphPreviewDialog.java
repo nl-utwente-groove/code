@@ -134,7 +134,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         if (jGraph == null) {
             jGraph = PlainJGraph.newInstance(this.simulator);
         }
-        JModel<G> model = jGraph.newModel();
+        JModel<G> model = jGraph.newJModel();
         model.loadGraph((G) shownGraph);
         jGraph.setModel(model);
         jGraph.doLayout(false);

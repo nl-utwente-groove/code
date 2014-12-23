@@ -200,7 +200,7 @@ public class ForestLayouter extends AbstractLayouter {
             LTSJModel jModel = ((LTSJGraph) jGraph).getModel();
             result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
         } else if (jGraph instanceof CtrlJGraph) {
-            JModel<ControlGraph> jModel = ((CtrlJGraph) jGraph).getModel();
+            JModel<ControlGraph> jModel = ((CtrlJGraph) jGraph).getJModel().get();
             ControlNode start = jModel.getGraph().getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {

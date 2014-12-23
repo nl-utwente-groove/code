@@ -54,13 +54,13 @@ public class Exportable {
     public Exportable(JGraph<?> jGraph) {
         this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
         this.jGraph = jGraph;
-        this.graph = Optional.of(jGraph.getModel().getGraph());
-        this.model =
-            jGraph instanceof AspectJGraph ? ((AspectJGraph) jGraph).getModel().getResourceModel()
-                : Optional.empty();
-        if (this.model.isPresent()) {
-            this.porterKinds.add(Kind.RESOURCE);
+        this.graph = jGraph.getJModel().map(m -> m.getGraph());
+        if (jGraph instanceof AspectJGraph) {
+            this.model = ((AspectJGraph) jGraph).getJModel().flatMap(m -> m.getResourceModel());
+        } else {
+            this.model = Optional.empty();
         }
+        this.model.ifPresent(m -> this.porterKinds.add(Kind.RESOURCE));
         this.name = this.graph.get().getName();
     }
 
@@ -84,7 +84,7 @@ public class Exportable {
         this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
         this.name = model.getFullName();
         this.jGraph = jGraph;
-        this.graph = Optional.of(jGraph.getModel().getGraph());
+        this.graph = jGraph.getJModel().map(m -> m.getGraph());
         this.model = Optional.of(model);
     }
 

@@ -18,6 +18,7 @@ package groove.gui.display;
 
 import groove.grammar.groovy.GraphManager;
 import groove.grammar.model.ResourceKind;
+import groove.grammar.model.Text;
 import groove.gui.Simulator;
 import groove.io.FileType;
 import groovy.lang.Binding;
@@ -78,8 +79,6 @@ final public class GroovyDisplay extends ResourceDisplay {
      * @param name Name of script resource to execute
      */
     public void executeGroovy(String name) {
-        String program =
-            getSimulatorModel().getStore().getText(getResourceKind(), name).getContent();
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 
@@ -102,7 +101,8 @@ final public class GroovyDisplay extends ResourceDisplay {
         binding.setVariable("out", newstream);
         GroovyShell shell = new GroovyShell(binding);
         try {
-            shell.evaluate(program);
+            Text program = getSimulatorModel().getStore().getText(getResourceKind(), name).get();
+            shell.evaluate(program.getContent());
         } catch (CompilationFailedException e) {
             newstream.println("Failed to compile Groovy script");
             newstream.println(e.getMessage());

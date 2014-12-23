@@ -104,7 +104,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             // fill the set of labels for autocompletion
             this.labels.clear();
             this.labels.addAll(prefixes);
-            AspectJModel jmodel = (AspectJModel) graph.getModel();
+            AspectJModel jmodel = ((AspectJGraph) graph).getJModel().get();
             TypeGraph type = jmodel.getResourceModel().get().getGrammar().getTypeGraph();
             for (TypeLabel label : type.getLabels()) {
                 this.labels.add(label.text());

@@ -36,11 +36,11 @@ public class CopyAction extends SimulatorAction {
         boolean result = false;
         ResourceKind resourceKind = getResourceKind();
         if (resourceKind.isTextBased()) {
-            Text oldText = getGrammarStore().getText(resourceKind, oldName);
+            Text oldText = getGrammarStore().getText(resourceKind, oldName).get();
             Text newText = oldText.rename(newName);
             result = getActions().getSaveAction(resourceKind).doSave(newText, false);
         } else {
-            AspectGraph oldGraph = getGrammarStore().getGraph(resourceKind, oldName);
+            AspectGraph oldGraph = getGrammarStore().getGraph(resourceKind, oldName).get();
             AspectGraph newGraph = oldGraph.rename(newName);
             try {
                 getSimulatorModel().doAdd(newGraph, false);

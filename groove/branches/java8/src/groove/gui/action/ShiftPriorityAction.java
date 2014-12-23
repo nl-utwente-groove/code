@@ -131,7 +131,7 @@ public class ShiftPriorityAction extends SimulatorAction {
         for (int i = 0; i < newPriorities.size(); i++) {
             int priority = newPriorities.get(i);
             for (String ruleName : newCells.get(i)) {
-                AspectGraph ruleGraph = getGrammarStore().getGraph(RULE, ruleName);
+                AspectGraph ruleGraph = getGrammarStore().getGraph(RULE, ruleName).get();
                 if (GraphInfo.getPriority(ruleGraph) != priority) {
                     priorityMap.put(ruleName, priority);
                 }

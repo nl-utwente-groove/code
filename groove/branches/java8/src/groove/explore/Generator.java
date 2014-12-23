@@ -25,6 +25,7 @@ import groove.explore.util.LTSReporter;
 import groove.explore.util.LogReporter;
 import groove.explore.util.StateReporter;
 import groove.grammar.GrammarKey;
+import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.transform.Transformer;
 import groove.util.cli.DirectoryHandler;
@@ -264,6 +265,21 @@ public class Generator extends GrooveCmdLineTool<GTS> {
             + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
+    /** Returns the filter mode to be used when saving the LTS. */
+    public Filter getFilter() {
+        return this.traces ? Filter.RESULT : this.spanning ? Filter.SPANNING : Filter.NONE;
+    }
+
+    @Option(name = "-spanning",
+        usage = "If switched on, only the spanning tree of the LTS will be saved")
+    private boolean spanning;
+
+    @Option(name = "-traces",
+        usage = "If switched on, only the result traces of the LTS will be saved "
+            + "(which may be only the start state, if there are no result states). "
+            + "Overrides -spanning if both are given")
+    private boolean traces;
+
     /**
      * Returns the grammar location.
      * The location is guaranteed to be an existing directory.
@@ -305,7 +321,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         CompositeReporter result = new CompositeReporter();
         LogReporter logger = new LogReporter(getVerbosity(), getLogDir());
         if (isSaveLts()) {
-            result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), logger));
+            result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), logger, getFilter()));
         }
         if (isSaveState()) {
             result.add(new StateReporter(getStatePattern(), logger));

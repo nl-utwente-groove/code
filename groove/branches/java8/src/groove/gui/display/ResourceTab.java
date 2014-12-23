@@ -161,13 +161,13 @@ abstract public class ResourceTab extends JPanel {
      * Returns the upper information panel of this tab.
      * @return the upper information panel
      */
-    protected abstract JComponent getUpperInfoPanel();
+    protected abstract Optional<JComponent> getUpperInfoPanel();
 
     /**
      * Returns the lower information panel of this tab.
      * @return the lower information panel, or {@code null} if there is none such.
      */
-    protected abstract JComponent getLowerInfoPanel();
+    protected abstract Optional<JComponent> getLowerInfoPanel();
 
     /** Creates a listener that conveys the selected tab index to the display. */
     protected ChangeListener createInfoListener(final boolean upper) {
@@ -194,7 +194,7 @@ abstract public class ResourceTab extends JPanel {
     }
 
     /** Returns the resource displayed in this tab. */
-    abstract public Resource getResource();
+    abstract public Optional<Resource> getResource();
 
     /** Returns the resource kind of this editor tab. */
     final public ResourceKind getResourceKind() {
@@ -204,13 +204,28 @@ abstract public class ResourceTab extends JPanel {
     /**
      * Changes this tab so as to display a given, named resource, if it exists.
      * Should only be used if this is not an editor tab.
-     * @param name the name of the resource; if {@code null}, the display
-     * should be emptied
+     * @param name the (non-{@code null}) name of the resource
      * @return if {@code false}, no resource with the given name
-     * exists (and so the main tab was not changed)
+     * exists (and so the tab was not changed)
      * @throws UnsupportedOperationException if this is an editor tab
      */
-    abstract public boolean setResource(String name);
+    final public boolean setResource(String name) {
+        Optional<? extends Resource> resource =
+            getSimulatorModel().getStore().get(getResourceKind(), name);
+        resource.ifPresent(r -> setResource(r));
+        return resource.isPresent();
+    }
+
+    /**
+     * Changes this tab so as to display a given resource.
+     * @param res the resource to be set; guaranteed to be non-{@code null} and
+     * of the correct resource kind
+     */
+    protected void setResource(Resource res) {
+        String name = res.getName();
+        setName(name);
+        setClean();
+    }
 
     /**
      * Removes a resource that is currently being edited from the
@@ -221,6 +236,15 @@ abstract public class ResourceTab extends JPanel {
      * @throws UnsupportedOperationException if this is an editor tab
      */
     abstract public boolean removeResource(String name);
+
+    /**
+     * Returns the resource model displayed on this tab,
+     * or {@code null} if nothing is displayed.
+     */
+    protected Optional<? extends ResourceModel<?>> getResourceModel() {
+        return Optional.ofNullable(getName()).flatMap(n -> getSimulatorModel().getGrammar()
+            .getResource(getResourceKind(), n));
+    }
 
     /**
      * Indicates if this tab is an editor tab.
@@ -314,23 +338,13 @@ abstract public class ResourceTab extends JPanel {
     protected void updateDirty() {
         getTabLabel().setTitle(this.display.getLabelText(getName()));
         getSaveAction().refresh();
-        Optional<Display.ListPanel> listPanel = this.display.getListPanel();
-        if (listPanel.isPresent()) {
-            listPanel.get().repaint();
-        }
-    }
-
-    /**
-     * Returns the resource model displayed on this tab,
-     * or {@code null} if nothing is displayed.
-     */
-    protected Optional<? extends ResourceModel<?>> getResourceModel() {
-        return Optional.ofNullable(getName()).flatMap(n -> getSimulatorModel().getGrammar()
-            .getResource(getResourceKind(), n));
+        this.display.getListPanel().ifPresent(p -> p.repaint());
     }
 
     /** Saves the resource that is currently being displayed. */
-    abstract protected void saveResource();
+    protected void saveResource() {
+        getResource().ifPresent(r -> getSaveAction().doSave(r, isDirtMinor()));
+    }
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
     public void dispose() {

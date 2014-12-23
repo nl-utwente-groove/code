@@ -16,6 +16,7 @@
  */
 package groove.grammar.model;
 
+
 /**
  * Model for format configurations, which are just strings
  *

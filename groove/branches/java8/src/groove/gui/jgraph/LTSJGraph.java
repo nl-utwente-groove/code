@@ -29,11 +29,11 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.display.LTSDisplay.Filter;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.MyJMenu;
+import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -325,43 +325,42 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     public boolean setActive(GraphState activeState, GraphTransition activeTrans) {
         boolean result = false;
         List<JCell<GTS>> activeCells = new ArrayList<JCell<GTS>>();
-        List<JCell<GTS>> changedCells = new ArrayList<JCell<GTS>>();
+        boolean changed = false;
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
         if (oldActiveTrans != null) {
             for (LTSJCell jCell : getTransitionCells(oldActiveTrans)) {
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
-                }
+                changed |= jCell.setActive(false);
             }
         }
         if (activeTrans != null) {
             for (LTSJCell jCell : getTransitionCells(activeTrans)) {
-                activeCells.add(jCell);
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
+                if (jCell.getVisuals().isVisible()) {
+                    activeCells.add(jCell);
                 }
+                changed |= jCell.setActive(true);
             }
         }
         GraphState oldActiveState = this.activeState;
         this.activeState = activeState;
         if (oldActiveState != null) {
             LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(oldActiveState);
-            if (jCell != null && jCell.setActive(false)) {
-                changedCells.add(jCell);
-            }
+            changed |= jCell != null && jCell.setActive(false);
         }
         if (activeState != null && getModel() != null) {
-            result = addToModel(activeState);
             LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
+            if (jCell == null) {
+                result = addToModel(activeState);
+                jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
+            }
             if (jCell != null) {
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
+                changed |= jCell.setActive(true);
+                if (jCell.getVisuals().isVisible()) {
+                    activeCells.add(jCell);
                 }
-                activeCells.add(jCell);
             }
         }
-        if (!changedCells.isEmpty()) {
+        if (changed) {
             setSelectionCells(activeCells.toArray());
         }
         return result;
@@ -447,7 +446,6 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Returns the traces from the given set of states to the start state. */
     public Set<LTSJCell> findTraces(Collection<GraphState> states) {
         Set<GraphTransition> simulatorTrace = new HashSet<GraphTransition>();
-        simulatorTrace.clear();
         Set<LTSJCell> result = new HashSet<LTSJCell>();
         LTSJModel model = getModel();
         for (GraphState state : states) {
@@ -472,23 +470,33 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         if (getFilter() == Filter.RESULT && getModel().getGraph().hasResultStates()) {
             traces = findTraces(getModel().getGraph().getResultStates());
         }
+        // first make the vertices (in)visible,
+        // as otherwise they may prevent the edges from becoming visible
         for (Object root : getRoots()) {
-            LTSJCell jCell = (LTSJCell) root;
-            boolean visible;
-            if (getFilter() == Filter.NONE) {
-                visible = true;
-            } else if (traces != null) {
-                visible = traces.contains(jCell);
-            } else if (jCell instanceof LTSJVertex) {
-                visible = true;
-            } else if (getFilter() == Filter.SPANNING) {
-                LTSJEdge jEdge = (LTSJEdge) root;
-                visible = (jEdge.getTargetVertex().getParentEdge() == jEdge);
-            } else {
-                visible = true;
+            if (root instanceof LTSJVertex) {
+                boolean visible = traces == null || traces.contains(root);
+                boolean thisChanged = ((LTSJVertex) root).setVisibleFlag(visible);
+                result |= thisChanged & visible;
             }
-            boolean thisChanged = jCell.setVisibleFlag(visible);
-            result |= thisChanged & visible;
+        }
+        // now change the visibility of the edges
+        for (Object root : getRoots()) {
+            if (root instanceof LTSJEdge) {
+                LTSJEdge jEdge = (LTSJEdge) root;
+                boolean visible;
+                switch (getFilter()) {
+                case SPANNING:
+                    visible = jEdge.getTargetVertex().getParentEdge() == jEdge;
+                    break;
+                case RESULT:
+                    visible = traces == null || traces.contains(root);
+                    break;
+                default:
+                    visible = true;
+                }
+                boolean thisChanged = jEdge.setVisibleFlag(visible);
+                result |= thisChanged & visible;
+            }
         }
         return result;
     }
@@ -599,7 +607,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
 
         @Override
-        public LTSJModel newModel() {
+        public LTSJModel newJModel() {
             return new LTSJModel((LTSJGraph) getJGraph());
         }
     }

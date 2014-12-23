@@ -709,8 +709,8 @@ public class RuleTree extends AbstractResourceTree {
                         getSimulatorModel().doSelectSet(ResourceKind.RULE,
                             Collections.<String>emptySet());
                         getSimulatorModel().doSelect(ResourceKind.CONTROL, recipe.getControlName());
-                        TextTab controlTab = (TextTab) getControlDisplay().getSelectedTab();
-                        controlTab.select(recipe.getStartLine(), 0);
+                        getControlDisplay().getSelectedTab()
+                            .ifPresent(t -> ((TextTab) t).select(recipe.getStartLine(), 0));
                         done = true;
                         break;
                     }

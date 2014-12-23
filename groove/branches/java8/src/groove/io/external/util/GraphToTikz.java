@@ -82,7 +82,7 @@ public final class GraphToTikz<G extends Graph> {
      */
     private GraphToTikz(JGraph<G> jGraph) {
         this.jGraph = jGraph;
-        this.model = this.jGraph.getModel();
+        this.model = this.jGraph.getJModel().get();
         this.graph = this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.result = new ArrayList<>();

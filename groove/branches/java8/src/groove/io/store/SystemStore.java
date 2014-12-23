@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.swing.undo.UndoableEdit;
@@ -83,33 +84,33 @@ abstract public class SystemStore extends UndoableEditSupport {
      * and resource name.
      * @param kind the resource kind
      * @param name the name of the requested resource
-     * @return the requested resource, or {@code null} if there is none
+     * @return the requested resource
      */
-    final public Resource get(ResourceKind kind, String name) {
+    final public Optional<? extends Resource> get(ResourceKind kind, String name) {
         testInit();
-        return getResourceMap(kind).get(name);
+        return Optional.ofNullable(getResourceMap(kind).get(name));
     }
 
     /** Returns the graph resource corresponding to a given (graph-based) resource kind
      * and resource name.
      * @param kind the resource kind; should be graph-based
      * @param name the name of the requested resource
-     * @return the requested graph, or {@code null} if there is none
+     * @return the requested graph
      */
-    final public AspectGraph getGraph(ResourceKind kind, String name) {
+    final public Optional<AspectGraph> getGraph(ResourceKind kind, String name) {
         assert kind.isGraphBased() : String.format("Resource kind %s is not graph-based", kind);
-        return (AspectGraph) get(kind, name);
+        return Optional.ofNullable((AspectGraph) getResourceMap(kind).get(name));
     }
 
     /** Returns the graph resource corresponding to a given (text-based) resource kind
      * and resource name.
      * @param kind the resource kind; should be text-based
      * @param name the name of the requested resource
-     * @return the requested text, or {@code null} if there is none
+     * @return the requested text
      */
-    final public Text getText(ResourceKind kind, String name) {
+    final public Optional<Text> getText(ResourceKind kind, String name) {
         assert kind.isTextBased() : String.format("Resource kind %s is not text-based", kind);
-        return (Text) get(kind, name);
+        return Optional.ofNullable((Text) getResourceMap(kind).get(name));
     }
 
     /**
@@ -128,8 +129,8 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    final public Collection<? extends Resource> put(ResourceKind kind, Collection<? extends Resource> resources)
-        throws IOException {
+    final public Collection<? extends Resource> put(ResourceKind kind,
+        Collection<? extends Resource> resources) throws IOException {
         return put(kind, resources, false);
     }
 
@@ -143,8 +144,8 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    abstract public Collection<? extends Resource> put(ResourceKind kind, Collection<? extends Resource> resources,
-        boolean layout) throws IOException;
+    abstract public Collection<? extends Resource> put(ResourceKind kind,
+        Collection<? extends Resource> resources, boolean layout) throws IOException;
 
     /**
      * Deletes a set of resources from the store.
@@ -153,8 +154,8 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    abstract public Collection<? extends Resource> delete(ResourceKind kind, Collection<String> names)
-        throws IOException;
+    abstract public Collection<? extends Resource> delete(ResourceKind kind,
+        Collection<String> names) throws IOException;
 
     /**
      * Renames a resource in the store.

@@ -44,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.function.Supplier;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -309,6 +310,20 @@ public class Groove {
             }
         } catch (IOException exc) {
             assert false : "Shouldn't happen for a StringReader";
+        }
+        return result;
+    }
+
+    /** Diverts the stdout while executing a given action. */
+    static public <T> T muffle(Supplier<T> action) {
+        T result = null;
+        try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
+            PrintStream out = System.out;
+            System.setOut(tmpOut);
+            result = action.get();
+            System.setOut(out);
+        } catch (IOException e) {
+            // Silently catch error
         }
         return result;
     }

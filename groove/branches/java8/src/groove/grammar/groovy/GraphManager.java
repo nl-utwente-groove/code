@@ -31,6 +31,7 @@ import groove.gui.layout.LayoutMap;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Optional;
 
 /** Auxiliary class for the GROOVY plugin. */
 public class GraphManager {
@@ -81,14 +82,14 @@ public class GraphManager {
      * @return A copy of the graph that can be modified, will overwrite existing graph upon calling doneGraph.
      */
     public AspectGraph loadGraph(String name, GraphRole role) {
-        AspectGraph result = null;
+        Optional<AspectGraph> result = Optional.empty();
         switch (role) {
         case HOST:
         case RULE:
         case TYPE:
             result = this.simulatorModel.getStore().getGraph(ResourceKind.toResource(role), name);
         }
-        return result == null ? null : result.clone();
+        return result.map(g -> g.clone()).orElse(null);
     }
 
     /**

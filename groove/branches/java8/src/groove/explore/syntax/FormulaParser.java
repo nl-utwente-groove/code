@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove-java8\\src\\groove\\explore\\syntax\\Formula.g 2014-10-23 18:35:38
+// $ANTLR 3.4 D:\\Eclipse\\groove-java8\\src\\groove\\explore\\syntax\\Formula.g 2014-12-21 10:48:52
 
 package groove.explore.syntax;
 import groove.util.parse.FormatErrorSet;
@@ -916,7 +916,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: RPAR, arg, qual_name
+            // elements: qual_name, arg, RPAR
             // token labels: 
             // rule labels: retval
             // token list labels: 

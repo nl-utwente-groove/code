@@ -54,8 +54,8 @@ public class CtrlJGraph extends JGraph<ControlGraph> {
 
     /** Creates a new model based on a given control automaton. */
     public void setModel(Template template) {
-        if (getModel() == null || getModel().getGraph().getTemplate() != template) {
-            JModel<ControlGraph> newModel = newModel();
+        if (getJModel().map(m -> m.getGraph().getTemplate() != template).orElse(true)) {
+            JModel<ControlGraph> newModel = newJModel();
             newModel.loadGraph(template.toGraph(true));
             setModel(newModel);
         }

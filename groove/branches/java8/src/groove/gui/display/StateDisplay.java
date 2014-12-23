@@ -212,7 +212,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Returns the currently displayed state graph. */
     public AspectGraph getStateGraph() {
-        return getJGraph().getModel().getGraph();
+        return getJGraph().getJModel().get().getGraph();
     }
 
     /** Returns component on which the state graph is displayed. */
@@ -249,6 +249,13 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** List of state errors, only shown if there are any errors in the current state. */
     private ErrorListPanel errorPanel;
 
+    /** Returns the JModel currently displayed.
+     * The model is assumed to be non-{@code null}.
+     */
+    private AspectJModel getJModel() {
+        return getJGraph().getJModel().get();
+    }
+
     /** Returns the JGraph component of the state display. */
     final public AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
@@ -280,7 +287,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    AspectJCell errorCell = getJGraph().getModel().getErrorMap().get(arg);
+                    AspectJCell errorCell = getJModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -348,17 +355,16 @@ public class StateDisplay extends Display implements SimulatorListener {
     private void selectMatch(Proof match) {
         assert match != null : "Match update should not be called with empty match";
         displayState(getSimulatorModel().getState());
-        AspectJModel jModel = getJGraph().getModel();
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectJCell> emphElems = new HashSet<AspectJCell>();
         for (HostNode matchedNode : match.getNodeValues()) {
-            AspectJCell jCell = jModel.getJCellForNode(aspectMap.getNode(matchedNode));
+            AspectJCell jCell = getJModel().getJCellForNode(aspectMap.getNode(matchedNode));
             if (jCell != null) {
                 emphElems.add(jCell);
             }
         }
         for (HostEdge matchedEdge : match.getEdgeValues()) {
-            AspectJCell jCell = jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge));
+            AspectJCell jCell = getJModel().getJCellForEdge(aspectMap.getEdge(matchedEdge));
             if (jCell != null) {
                 emphElems.add(jCell);
             }
@@ -717,7 +723,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Creates a j-model for a given aspect graph. */
     private AspectJModel createAspectJModel(AspectGraph graph) {
-        AspectJModel result = getJGraph().newModel();
+        AspectJModel result = getJGraph().newJModel();
         result.loadGraph(graph);
         return result;
     }

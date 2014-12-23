@@ -24,6 +24,7 @@ import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.display.Display.ListPanel;
+import groove.gui.jgraph.JGraph;
 import groove.util.Exceptions;
 
 import java.awt.CardLayout;
@@ -307,10 +308,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /**
-     * Returns the currently selected graph view component, if that is a
-     * {@link JGraphPanel}. Returns {@code null} otherwise.
+     * Returns the currently selected {@link JGraph}, if any.
      */
-    public JGraphPanel<?> getGraphPanel() {
+    public Optional<JGraph<?>> getJGraph() {
         JGraphPanel<?> result = null;
         Display display = getSelectedDisplay();
         if (display.getResourceKind() != null) {
@@ -328,7 +328,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         } else if (display.getKind() == DisplayKind.STATE) {
             result = ((StateDisplay) display).getGraphPanel();
         }
-        return result;
+        return Optional.ofNullable(result == null ? null : result.getJGraph());
     }
 
     /** Returns the panel corresponding to a certain tab kind. */

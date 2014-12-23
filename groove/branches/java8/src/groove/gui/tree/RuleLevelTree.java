@@ -19,6 +19,7 @@ package groove.gui.tree;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectElement;
 import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.RuleModel;
 import groove.grammar.model.RuleModel.Index;
 import groove.gui.jgraph.AspectJCell;
@@ -54,6 +55,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     /** Creates a new tree, for a given rule model. */
     public RuleLevelTree(AspectJGraph jGraph) {
         this.jGraph = jGraph;
+        this.rule = Optional.empty();
         setLargeModel(true);
         setEnabled(jGraph.isEnabled());
         setShowsRootHandles(false);
@@ -76,13 +78,10 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
      * model from the jmodel.
      */
     private void synchroniseJModel() {
-        AspectJModel jModel = getJGraph().getModel();
+        Optional<AspectJModel> jModel = getJGraph().getJModel();
         if (jModel != this.jModel) {
             this.jModel = jModel;
-            this.rule =
-                (RuleModel) Optional.ofNullable(jModel)
-                    .flatMap(m -> m.getResourceModel())
-                    .orElse(null);
+            this.rule = jModel.flatMap(m -> m.getResourceModel());
             boolean enabled = updateTree();
             for (Set<AspectJCell> levelCells : this.levelCellMap.values()) {
                 this.allCellSet.addAll(levelCells);
@@ -131,7 +130,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         getTopNode().removeAllChildren();
         Set<LevelNode> newNodes = new HashSet<LevelNode>();
         Map<Index,Set<AspectElement>> levelTree =
-            this.rule == null ? null : this.rule.getLevelTree();
+            this.rule.map(m -> ((RuleModel) m).getLevelTree()).orElse(null);
         if (levelTree != null && levelTree.size() > 1) {
             for (Map.Entry<Index,Set<AspectElement>> levelEntry : levelTree.entrySet()) {
                 Index index = levelEntry.getKey();
@@ -146,7 +145,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     parentNode.add(levelNode);
                 }
                 this.levelNodeMap.put(index, levelNode);
-                AspectJModel jModel = getJGraph().getModel();
+                AspectJModel jModel = getJGraph().getJModel().get();
                 Set<AspectJCell> levelCells = new HashSet<AspectJCell>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
@@ -168,7 +167,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
-                    for (AspectEdge edge : this.rule.getSource().edgeSet(ruleLevelNode)) {
+                    for (AspectEdge edge : this.rule.get().getSource().edgeSet(ruleLevelNode)) {
                         jCell = jModel.getJCell(edge);
                         if (jCell != null) {
                             levelCells.add(jCell);
@@ -236,14 +235,14 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     /** The JGraph permanently associated with this {@link JTree}. */
     private final AspectJGraph jGraph;
     /** Rule of which this tree shows the levels. */
-    private RuleModel rule;
+    private Optional<GraphBasedModel<?>> rule;
     /** Mapping from level indices to level tree nodes. */
-    private final Map<Index,LevelNode> levelNodeMap = new TreeMap<RuleModel.Index,LevelNode>();
+    private final Map<Index,LevelNode> levelNodeMap = new TreeMap<>();
     /**
      * Model for which {@link #levelNodeMap} {@link #levelCellMap} and
      * {@link #selectedSet} are currently computed.
      */
-    private AspectJModel jModel;
+    private Optional<AspectJModel> jModel;
     /** Set of all rule elements. */
     private final Set<AspectJCell> allCellSet = new HashSet<AspectJCell>();
     /** Set of rule elements that are visible according to the currently selected

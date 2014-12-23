@@ -251,37 +251,29 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Returns the prolog model associated with a given (named) prolog program.
-     * @param name the name of the prolog program to return the model of;
-     * @return the corresponding prolog model, or <code>null</code> if
-     *         no program by that name exists
+     * Returns the optional prolog model associated with a given (named) prolog program.
+     * @param name the name of the prolog program to return the model of
      */
     public Optional<PrologModel> getPrologModel(String name) {
         return Optional.ofNullable((PrologModel) getResourceMap(PROLOG).get(name));
     }
 
     /**
-     * Returns the rule model for a given rule name.
-     * @return the rule model for rule <code>name</code>, or <code>null</code> if
-     *         there is no such rule.
+     * Returns the optional rule model for a given rule name.
      */
     public Optional<RuleModel> getRuleModel(String name) {
         return Optional.ofNullable((RuleModel) getResourceMap(RULE).get(name));
     }
 
     /**
-     * Returns the format configuration model for a given format name.
-     * @return the model for format <code>name</code>, or <code>null</code> if
-     *         there is no such format.
+     * Returns the optional format configuration model for a given format name.
      */
     public Optional<FormatModel> getFormatModel(String name) {
         return Optional.ofNullable((FormatModel) getResourceMap(ResourceKind.FORMAT).get(name));
     }
 
     /**
-     * Returns the type graph model for a given graph name.
-     * @return the type graph model for type <code>name</code>, or
-     *         <code>null</code> if there is no such graph.
+     * Returns the optional type graph model for a given graph name.
      */
     public Optional<TypeModel> getTypeModel(String name) {
         return Optional.ofNullable((TypeModel) getResourceMap(TYPE).get(name));
@@ -324,9 +316,10 @@ public class GrammarModel implements Observer {
     public HostModel getStartGraphModel() {
         if (this.startGraphModel == null) {
             TreeMap<String,AspectGraph> graphMap = new TreeMap<String,AspectGraph>();
-            for (String name : getActiveNames(HOST)) {
-                graphMap.put(name, getStore().getGraph(HOST, name));
-            }
+            getStore().get(HOST)
+                .entrySet()
+                .stream()
+                .forEach(e -> graphMap.put(e.getKey(), (AspectGraph) e.getValue()));
             this.startGraphModel =
                 AspectGraph.mergeGraphs(graphMap.values())
                     .map(g -> new HostModel(this, g))
@@ -592,7 +585,7 @@ public class GrammarModel implements Observer {
             Object source = sourceEntry.getValue();
             ResourceModel<?> model = modelMap.get(name);
             if (model == null || model.getSource() != source) {
-                modelMap.put(name, model = createModel(kind, name));
+                modelMap.put(name, model = createModel(kind, name).get());
                 // collect the active rules
             }
             if (kind == RULE && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
@@ -609,19 +602,13 @@ public class GrammarModel implements Observer {
     }
 
     /** Callback method to create a model for a named resource. */
-    private ResourceModel<?> createModel(ResourceKind kind, String name) {
-        ResourceModel<?> result = null;
+    private Optional<ResourceModel<?>> createModel(ResourceKind kind, String name) {
+        Optional<ResourceModel<?>> result = null;
         if (kind.isGraphBased()) {
-            AspectGraph graph = getStore().getGraph(kind, name);
-            if (graph != null) {
-                result = createGraphModel(graph);
-            }
+            result = getStore().getGraph(kind, name).map(g -> createGraphModel(g));
         } else {
             assert kind.isTextBased();
-            Text text = getStore().getText(kind, name);
-            if (text != null) {
-                result = createTextModel(text);
-            }
+            result = getStore().getText(kind, name).map(t -> createTextModel(t));
         }
         return result;
     }

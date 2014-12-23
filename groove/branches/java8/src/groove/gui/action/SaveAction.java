@@ -53,7 +53,7 @@ public final class SaveAction extends SimulatorAction {
                 resource = getGrammarStore().get(resourceKind).get(name);
                 minor = true;
             } else {
-                resource = editor.getResource();
+                resource = editor.getResource().get();
                 minor = editor.isDirtMinor();
             }
             saved = this.saveAs ? doSaveAs(resource) : doSave(resource, minor);

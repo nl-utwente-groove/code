@@ -198,38 +198,37 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Adjust the info panel by retrieving upper and lower info subpanels from the selected tab. */
     protected void buildInfoPanel() {
-        JComponent upperInfoPanel = null;
-        JComponent lowerInfoPanel = null;
-        ResourceTab tab = getSelectedTab();
-        if (tab != null) {
-            upperInfoPanel = tab.getUpperInfoPanel();
-            lowerInfoPanel = tab.getLowerInfoPanel();
-        }
+        Optional<ResourceTab> tab = getSelectedTab();
+        Optional<JComponent> upperInfoPanel = tab.flatMap(t -> t.getUpperInfoPanel());
+        Optional<JComponent> lowerInfoPanel = tab.flatMap(t -> t.getLowerInfoPanel());
         JPanel infoPanel = (JPanel) getInfoPanel();
         String key;
-        if (lowerInfoPanel == null || !lowerInfoPanel.isEnabled()) {
-            // if we switch from split to single, freeze the divider location
-            if (upperInfoPanel != null && upperInfoPanel.getParent() == getSplitInfoPanel()) {
-                this.frozenDividerPos = getSplitInfoPanel().getDividerLocation();
-            }
-            getSingleInfoPanel().removeAll();
-            if (upperInfoPanel != null) {
-                getSingleInfoPanel().add(upperInfoPanel, BorderLayout.CENTER);
-                getSingleInfoPanel().validate();
-                getSingleInfoPanel().repaint();
-            }
-            key = this.SINGLE_INFO_KEY;
-        } else {
+        if (lowerInfoPanel.map(p -> p.isEnabled()).orElse(false)) {
             JSplitPane splitInfoPanel = getSplitInfoPanel();
             int dividerPos = this.frozenDividerPos;
             this.frozenDividerPos = 0;
             if (dividerPos == 0) {
                 dividerPos = splitInfoPanel.getDividerLocation();
             }
-            splitInfoPanel.setTopComponent(upperInfoPanel);
-            splitInfoPanel.setBottomComponent(lowerInfoPanel);
+            splitInfoPanel.setTopComponent(upperInfoPanel.get());
+            splitInfoPanel.setBottomComponent(lowerInfoPanel.get());
             splitInfoPanel.setDividerLocation(dividerPos);
             key = this.SPLIT_INFO_KEY;
+        } else if (upperInfoPanel.isPresent()) {
+            // there is only an upper info panel
+            // if we switch from split to single, freeze the divider location
+            if (upperInfoPanel.get().getParent() == getSplitInfoPanel()) {
+                this.frozenDividerPos = getSplitInfoPanel().getDividerLocation();
+            }
+            getSingleInfoPanel().removeAll();
+            getSingleInfoPanel().add(upperInfoPanel.get(), BorderLayout.CENTER);
+            getSingleInfoPanel().validate();
+            getSingleInfoPanel().repaint();
+            key = this.SINGLE_INFO_KEY;
+        } else {
+            // there is no info panel
+            getSingleInfoPanel().removeAll();
+            key = this.SINGLE_INFO_KEY;
         }
         ((CardLayout) infoPanel.getLayout()).show(infoPanel, key);
     }
@@ -360,12 +359,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected ResourceTab createEditorTab(String name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph = getSimulatorModel().getStore().getGraph(getResourceKind(), name);
+            AspectGraph graph =
+                getSimulatorModel().getStore().getGraph(getResourceKind(), name).get();
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
-            result.setGraph(graph);
+            result.setResource(graph);
             return result;
         } else {
-            Text program = getSimulatorModel().getStore().getText(getResourceKind(), name);
+            Text program = getSimulatorModel().getStore().getText(getResourceKind(), name).get();
             return new TextTab(this, name, program.getContent());
         }
     }
@@ -422,8 +422,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns the currently selected tab, or {@code null} if no editor is selected. */
-    public ResourceTab getSelectedTab() {
-        return (ResourceTab) getTabPane().getSelectedComponent();
+    public Optional<ResourceTab> getSelectedTab() {
+        return Optional.ofNullable((ResourceTab) getTabPane().getSelectedComponent());
     }
 
     @Override

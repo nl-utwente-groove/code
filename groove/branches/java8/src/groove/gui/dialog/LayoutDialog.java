@@ -17,16 +17,15 @@
 package groove.gui.dialog;
 
 import groove.gui.Simulator;
-import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.JGraph;
 import groove.gui.layout.LayoutKind;
 import groove.gui.layout.LayouterItem;
-import groove.gui.menu.SetLayoutMenu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.util.Optional;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -56,12 +55,10 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     private final LayouterItem protoLayouterItems[];
     private final JComboBox<String> layoutBox;
     private final JPanel panel;
-    private JGraph<?> jGraph;
 
     private LayoutDialog(Simulator simulator) {
         super(simulator.getFrame());
-        this.setAlwaysOnTop(true);
-        this.setTitle("Configure Graph Layout");
+        this.jGraph = Optional.empty();
         this.simulator = simulator;
         this.protoLayouterItems = new LayouterItem[LayoutKind.values().length];
 
@@ -77,8 +74,10 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
 
         this.panel = new JPanel();
         this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
-        this.add(this.panel);
-        this.addWindowFocusListener(this);
+        add(this.panel);
+        addWindowFocusListener(this);
+        setAlwaysOnTop(true);
+        setTitle("Configure Graph Layout");
     }
 
     @Override
@@ -110,11 +109,11 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     }
 
     private void refreshPanel(LayouterItem item) {
-        if (getJGraph() != null) {
-            getLayoutMenu().selectLayoutAction(item).actionPerformed(null);
-            LayouterItem layouterItem = (LayouterItem) getJGraph().getLayouter();
+        getJGraph().ifPresent(g -> {
+            g.getSetLayoutMenu().selectLayoutAction(item).actionPerformed(null);
+            LayouterItem layouterItem = (LayouterItem) g.getLayouter();
             replacePanel(layouterItem.getPanel());
-        }
+        });
     }
 
     private void replacePanel(JPanel panel) {
@@ -128,19 +127,14 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
         this.pack();
     }
 
-    private SetLayoutMenu getLayoutMenu() {
-        return getJGraph() == null ? null : getJGraph().getSetLayoutMenu();
-    }
-
     private void refreshJGraph() {
-        DisplayKind display = this.simulator.getModel().getDisplay();
-        if (display.isGraphBased()) {
-            this.jGraph = this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
-        }
+        this.jGraph = this.simulator.getDisplaysPanel().getJGraph();
     }
 
-    private JGraph<?> getJGraph() {
+    private Optional<JGraph<?>> getJGraph() {
         return this.jGraph;
     }
+
+    private Optional<JGraph<?>> jGraph;
 
 }

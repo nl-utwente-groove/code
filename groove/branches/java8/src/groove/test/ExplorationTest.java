@@ -27,6 +27,7 @@ import groove.grammar.Grammar;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
@@ -315,7 +316,8 @@ public class ExplorationTest {
 
             if (save) {
                 try {
-                    Groove.saveGraph(lts.toPlainGraph(LTSLabels.DEFAULT), view.getName());
+                    Groove.saveGraph(lts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE),
+                        view.getName());
                 } catch (IOException exc) { // proceed
                 }
             }

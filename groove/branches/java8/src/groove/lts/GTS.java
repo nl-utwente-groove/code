@@ -58,8 +58,11 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -590,11 +593,36 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * Exports the GTS to a plain graph representation,
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.
+     * @param filter determines which part of the LTS should be included
      */
-    public MultiGraph toPlainGraph(LTSLabels flags) {
+    public MultiGraph toPlainGraph(LTSLabels flags, Filter filter) {
         MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
+        // Set of nodes and edges to be saved
+        Collection<? extends GraphState> states;
+        Collection<? extends GraphTransition> transitions;
+        switch (filter) {
+        case NONE:
+            states = nodeSet();
+            transitions = edgeSet();
+            break;
+        case SPANNING:
+            states = nodeSet();
+            transitions = getSpanningTransitions(states, flags.showRecipes());
+            break;
+        case RESULT:
+            transitions = getSpanningTransitions(getResultStates(), flags.showRecipes());
+            Set<GraphState> traces = new LinkedHashSet<GraphState>();
+            traces.add(startState());
+            for (GraphTransition trans : transitions) {
+                traces.add(trans.target());
+            }
+            states = traces;
+            break;
+        default:
+            throw new RuntimeException();//groove.util.Exceptions.UNREACHABLE;
+        }
         Map<GraphState,MultiNode> nodeMap = new HashMap<GraphState,MultiNode>();
-        for (GraphState state : nodeSet()) {
+        for (GraphState state : states) {
             // don't include transient states unless forced to
             if (state.isInternalState() && !flags.showRecipes()) {
                 continue;
@@ -633,7 +661,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result.addEdge(image, label, image);
             }
         }
-        for (GraphTransition transition : edgeSet()) {
+        for (GraphTransition transition : transitions) {
             // don't include partial transitions unless forced to
             if (transition.isInternalStep() && !flags.showRecipes()) {
                 continue;
@@ -641,6 +669,71 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             MultiNode sourceImage = nodeMap.get(transition.source());
             MultiNode targetImage = nodeMap.get(transition.target());
             result.addEdge(sourceImage, transition.label().text(), targetImage);
+        }
+        return result;
+    }
+
+    /** Returns the set of transitions leading from the start state
+     * to any of a given set of target states. Optionally includes
+     * the internal recipe steps.
+     */
+    private Set<GraphTransition> getSpanningTransitions(Collection<? extends GraphState> targets,
+        boolean internal) {
+        Set<GraphTransition> result = new LinkedHashSet<GraphTransition>();
+        Queue<GraphState> queue = new LinkedList<GraphState>(targets);
+        Set<GraphState> reached = new HashSet<GraphState>();
+        while (!queue.isEmpty()) {
+            GraphState target = queue.poll();
+            if (!reached.add(target)) {
+                continue;
+            }
+            // it's a new target
+            if (!(target instanceof GraphNextState)) {
+                continue;
+            }
+            GraphTransition incoming = (GraphNextState) target;
+            // it's not the start state
+            if (target.isInternalState()) {
+                if (internal) {
+                    result.add(incoming);
+                }
+                queue.add(incoming.source());
+                continue;
+            }
+            // it's not an internal state; we have to look for an incoming
+            // non-internal transition
+            if (!incoming.isInternalStep()) {
+                result.add(incoming);
+                queue.add(incoming.source());
+                continue;
+            }
+            // it's an internal step leading to a non-internal state,
+            // hence the final step of a recipe transition
+            if (internal) {
+                result.add(incoming);
+            }
+            GraphState source = incoming.source();
+            while (source.isInternalState()) {
+                incoming = (GraphNextState) source;
+                if (internal) {
+                    result.add(incoming);
+                }
+                source = incoming.source();
+            }
+            // incoming is now the initial transition of the recipe transition
+            // leading from source to target
+            // look for the corresponding recipe transition
+            for (GraphTransition outgoing : source.getTransitions()) {
+                if (!(outgoing instanceof RecipeTransition)) {
+                    continue;
+                }
+                RecipeTransition candidate = (RecipeTransition) outgoing;
+                if (candidate.getInitial() == incoming && candidate.target() == target) {
+                    result.add(candidate);
+                    break;
+                }
+            }
+            queue.add(source);
         }
         return result;
     }
@@ -723,7 +816,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private Set<GTSListener> listeners = new HashSet<GTSListener>();
 
     /** Set of all flags of which state sets are recorded. */
-    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.RESULT,
+    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED,
+        Flag.FINAL,
+        Flag.RESULT,
         Flag.ERROR);
     /** Array of all flags of which state sets are recorded. */
     private static final Flag[] FLAG_ARRAY = FLAG_SET.toArray(new Flag[FLAG_SET.size()]);
@@ -795,7 +890,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
-                return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
+                return this.checker.areIsomorphic(myGraph,
+                    otherGraph,
+                    myBoundNodes,
                     otherBoundNodes);
             }
         }

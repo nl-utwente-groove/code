@@ -41,8 +41,8 @@ public class GraphToEPS extends GraphToVector {
 
         try (OutputStream fos = Files.newOutputStream(file)) {
             EpsGraphics g2d =
-                new EpsGraphics(graph.getModel().getName(), fos, 0, 0, (int) bounds.getWidth(),
-                    (int) bounds.getHeight(), ColorMode.COLOR_RGB);
+                new EpsGraphics(graph.getJModel().get().getName(), fos, 0, 0,
+                    (int) bounds.getWidth(), (int) bounds.getHeight(), ColorMode.COLOR_RGB);
             // Render
             toGraphics(graph, g2d);
         } catch (FileNotFoundException e) {

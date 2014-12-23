@@ -117,32 +117,11 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         start();
     }
 
-    /** Sets a given graph as the model to be edited. */
-    public void setGraph(AspectGraph graph) {
-        AspectJModel oldModel = getJModel();
-        if (oldModel != null) {
-            oldModel.removeUndoableEditListener(getUndoManager());
-            oldModel.removeGraphModelListener(this);
-        }
-        setName(graph.getName());
-        AspectJModel newModel = getJGraph().newModel();
-        newModel.setBeingEdited(true);
-        AspectGraph graphClone = graph.clone();
-        graphClone.setFixed();
-        newModel.loadGraph(graphClone);
-        getJGraph().setModel(newModel);
-        loadProperties(graphClone, true);
-        newModel.addUndoableEditListener(getUndoManager());
-        newModel.addGraphModelListener(this);
-        setClean();
-        getUndoManager().discardAllEdits();
-        updateHistoryButtons();
-        updateStatus();
-    }
-
-    /** Returns the graph being edited. */
+    /** Returns the graph being edited.
+     * Should only be called after the graph has been initialised.
+     */
     public AspectGraph getGraph() {
-        return getJModel().getGraph();
+        return getJModel().get().getGraph();
     }
 
     @Override
@@ -151,7 +130,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    JCell<?> errorCell = getJModel().getErrorMap().get(arg);
+                    JCell<?> errorCell = getJModel().get().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -214,24 +193,26 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     public void updateGrammar(GrammarModel grammar) {
         Optional<GraphBasedModel<?>> graphModel =
             grammar.getGraphResource(getResourceKind(), getName());
-        AspectGraph source = graphModel.map(m -> m.getSource()).orElse(null);
         // test if the graph being edited is still in the grammar;
-        // if not, silently dispose it - it's too late to do anything else!
-        if (source == null) {
-            dispose();
-        } else if (isDirty() || source == getGraph()) {
-            // to keep the edit history, don't change the underlying graph
-            // check if the properties have changed
-            GraphProperties properties = GraphInfo.getProperties(source);
-            if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
-                changeProperties(properties, true);
+        if (graphModel.isPresent()) {
+            AspectGraph source = graphModel.get().getSource();
+            if (isDirty() || source == getGraph()) {
+                // to keep the edit history, don't change the underlying graph
+                // check if the properties have changed
+                GraphProperties properties = GraphInfo.getProperties(source);
+                if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
+                    changeProperties(properties, true);
+                } else {
+                    getJModel().get().setGraphModified();
+                    getJGraph().refresh();
+                }
+                updateStatus();
             } else {
-                getJModel().setGraphModified();
-                getJGraph().refresh();
+                setResource(source);
             }
-            updateStatus();
         } else {
-            setGraph(source);
+            // if not, silently dispose it - it's too late to do anything else!
+            dispose();
         }
     }
 
@@ -276,7 +257,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         AspectGraph newGraph = getGraph().clone();
         newGraph.setName(newName);
         newGraph.setFixed();
-        getJModel().loadGraph(newGraph);
+        getJModel().get().loadGraph(newGraph);
         loadProperties(newGraph, true);
         setName(newName);
         updateStatus();
@@ -293,7 +274,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         GraphProperties newProperties = new GraphProperties(propertiesMap);
         GraphInfo.setProperties(newGraph, newProperties);
         newGraph.setFixed();
-        getJModel().loadGraph(newGraph);
+        getJModel().get().loadGraph(newGraph);
         loadProperties(newGraph, updatePropertiesPanel);
         updateStatus();
     }
@@ -316,13 +297,29 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     @Override
-    public Resource getResource() {
-        return getGraph();
+    protected void setResource(Resource res) {
+        getJModel().ifPresent(m -> {
+            m.removeUndoableEditListener(getUndoManager());
+            m.removeGraphModelListener(this);
+        });
+        AspectJModel newModel = getJGraph().newJModel();
+        newModel.setBeingEdited(true);
+        AspectGraph graphClone = ((AspectGraph) res).clone();
+        graphClone.setFixed();
+        newModel.loadGraph(graphClone);
+        getJGraph().setModel(newModel);
+        loadProperties(graphClone, true);
+        newModel.addUndoableEditListener(getUndoManager());
+        newModel.addGraphModelListener(this);
+        getUndoManager().discardAllEdits();
+        updateHistoryButtons();
+        updateStatus();
+        super.setResource(res);
     }
 
     @Override
-    public boolean setResource(String name) {
-        throw new UnsupportedOperationException();
+    public Optional<Resource> getResource() {
+        return Optional.of(getGraph());
     }
 
     @Override
@@ -332,16 +329,16 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
 
     @Override
     protected Optional<? extends ResourceModel<?>> getResourceModel() {
-        return getJModel().getResourceModel();
+        return getJModel().flatMap(m -> m.getResourceModel());
     }
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSave(getGraph(), isDirtMinor());
+        super.saveResource();
         setClean();
     }
 
-    /** Returns the jgraph component of this editor. */
+    /** Returns the JGraph component of this editor. */
     public AspectJGraph getJGraph() {
         AspectJGraph result = this.jgraph;
         if (result == null) {
@@ -355,11 +352,10 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private AspectJGraph jgraph;
 
     /**
-     * @return the j-model currently being edited, or <tt>null</tt> if no editor
-     *         model is set.
+     * Returns the JModel currently being edited.
      */
-    public AspectJModel getJModel() {
-        return getJGraph().getModel();
+    public Optional<AspectJModel> getJModel() {
+        return getJGraph().getJModel();
     }
 
     /**
@@ -386,7 +382,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         JGraphMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
             this.refreshing = true;
-            getJModel().syncGraph();
+            getJModel().get().syncGraph();
             getJGraph().setEditable(mode != PREVIEW_MODE);
             getJGraph().refreshAllCells();
             getJGraph().refresh();
@@ -447,7 +443,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private JGraphPanel<AspectGraph> editArea;
 
     @Override
-    protected JComponent getUpperInfoPanel() {
+    protected Optional<JComponent> getUpperInfoPanel() {
         JTabbedPane result = this.upperInfoPanel;
         if (result == null) {
             this.upperInfoPanel = result = new JTabbedPane();
@@ -464,7 +460,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         if (getResourceKind().hasProperties()) {
             result.setSelectedIndex(getDisplay().getInfoTabIndex(true));
         }
-        return result;
+        return Optional.of(result);
     }
 
     /** Label panel of this tab. */
@@ -526,12 +522,12 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     private boolean listenToPropertiesPanel;
 
     @Override
-    protected JComponent getLowerInfoPanel() {
+    protected Optional<JComponent> getLowerInfoPanel() {
         JComponent result = this.syntaxHelp;
         if (result == null) {
             this.syntaxHelp = result = createSyntaxHelp();
         }
-        return result;
+        return Optional.of(result);
     }
 
     /** Syntax help panel. */
@@ -979,7 +975,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
             if (!getJGraph().isSelectionEmpty()) {
                 Object[] cells = getJGraph().getSelectionCells();
                 cells = getJGraph().getDescendants(cells);
-                getJGraph().getModel().remove(cells);
+                getJGraph().getJModel().get().remove(cells);
             }
         }
     }

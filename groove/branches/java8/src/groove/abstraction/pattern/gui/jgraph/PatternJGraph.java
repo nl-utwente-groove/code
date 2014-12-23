@@ -192,7 +192,7 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
         }
 
         @Override
-        public PatternJModel newModel() {
+        public PatternJModel newJModel() {
             return new PatternJModel(getJGraph());
         }
 

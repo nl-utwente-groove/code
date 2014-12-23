@@ -124,7 +124,7 @@ public class SimulatorModel implements Cloneable {
         case RULE:
             Collection<Resource> newRules = new ArrayList<>(names.size());
             for (String ruleName : names) {
-                AspectGraph oldRule = getStore().getGraph(ResourceKind.RULE, ruleName);
+                AspectGraph oldRule = getStore().getGraph(ResourceKind.RULE, ruleName).get();
                 AspectGraph newRule = oldRule.clone();
                 GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
                 newRule.setFixed();
@@ -221,7 +221,7 @@ public class SimulatorModel implements Cloneable {
         start();
         Set<Resource> newGraphs = new HashSet<>();
         for (Map.Entry<String,Integer> entry : priorityMap.entrySet()) {
-            AspectGraph oldGraph = getStore().getGraph(ResourceKind.RULE, entry.getKey());
+            AspectGraph oldGraph = getStore().getGraph(ResourceKind.RULE, entry.getKey()).get();
             AspectGraph newGraph = oldGraph.clone();
             GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();

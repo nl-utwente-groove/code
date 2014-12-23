@@ -304,7 +304,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
             jGraph.setGrammar(resourceModel.getGrammar());
-            AspectJModel model = jGraph.newModel();
+            AspectJModel model = jGraph.newJModel();
             model.loadGraph(aspectGraph);
             jGraph.setModel(model);
             // Ugly hack to prevent clipping of the image. We set the

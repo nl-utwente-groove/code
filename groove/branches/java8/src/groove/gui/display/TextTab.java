@@ -108,12 +108,12 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    protected JComponent getUpperInfoPanel() {
+    protected Optional<JComponent> getUpperInfoPanel() {
         return null;
     }
 
     @Override
-    protected JComponent getLowerInfoPanel() {
+    protected Optional<JComponent> getLowerInfoPanel() {
         return null;
     }
 
@@ -129,17 +129,9 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    public boolean setResource(String name) {
-        Text program = null;
-        if (name != null) {
-            program = getSimulatorModel().getStore().getText(getResourceKind(), name);
-        }
-        if (program != null) {
-            setName(name);
-            this.textArea.setProgramText(program);
-            updateErrors();
-        }
-        return program != null;
+    protected void setResource(Resource res) {
+        this.textArea.setProgramText((Text) res);
+        super.setResource(res);
     }
 
     @Override
@@ -192,8 +184,8 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    public Resource getResource() {
-        return getProgram();
+    public Optional<Resource> getResource() {
+        return Optional.of(getProgram());
     }
 
     @Override
@@ -215,11 +207,6 @@ final public class TextTab extends ResourceTab {
         } catch (BadLocationException e) {
             // do nothing
         }
-    }
-
-    @Override
-    protected void saveResource() {
-        getSaveAction().doSave(getProgram(), false);
     }
 
     /** Creates a token maker for the text area of this tab. */

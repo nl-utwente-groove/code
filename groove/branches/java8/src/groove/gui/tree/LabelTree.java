@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -75,7 +76,7 @@ import org.jgraph.event.GraphSelectionListener;
  * @version $Revision$
  */
 public class LabelTree<G extends Graph> extends CheckboxTree implements GraphModelListener,
-        TreeSelectionListener {
+    TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
@@ -84,6 +85,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      */
     public LabelTree(JGraph<G> jGraph, boolean filtering) {
         this.jGraph = jGraph;
+        this.jModel = jGraph.getJModel();
         this.labelFilter = createLabelFilter();
         this.filtering = filtering;
         // make sure tool tips get displayed
@@ -196,7 +198,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
 
     /** Tests if the model underlying this label tree is stale w.r.t. the JGraph. */
     boolean isModelStale() {
-        return this.jModel != getJGraph().getModel();
+        return this.jModel != getJGraph().getJModel();
     }
 
     /**
@@ -205,19 +207,17 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      * model and adds them to this label list.
      */
     public void updateModel() {
-        if (this.jModel != null) {
-            removeJModelListeners(this.jModel);
-        }
-        this.jModel = getJGraph().getModel();
+        this.jModel.ifPresent(m -> removeJModelListeners(m));
+        this.jModel = getJGraph().getJModel();
         if (hasFilter()) {
             clearFilter();
         }
-        if (this.jModel != null) {
-            installJModelListeners(this.jModel);
+        this.jModel.ifPresent(m -> {
+            installJModelListeners(m);
             if (hasFilter()) {
-                updateFilter();
+                updateFilter(m);
             }
-        }
+        });
         updateTree();
         setEnabled(this.jModel != null);
     }
@@ -234,8 +234,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      * Reloads the filter from the model.
      * Only called when {@link #hasFilter()} holds.
      */
-    void updateFilter() {
-        for (JCell<G> cell : this.jModel.getRoots()) {
+    void updateFilter(JModel<G> model) {
+        for (JCell<G> cell : model.getRoots()) {
             if (cell.getVisuals().isVisible()) {
                 getFilter().addJCell(cell);
             }
@@ -432,7 +432,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      */
     @Override
     public String convertValueToText(Object value, boolean selected, boolean expanded,
-            boolean leaf, int row, boolean hasFocus) {
+        boolean leaf, int row, boolean hasFocus) {
         if (value instanceof LabelTree.EntryNode) {
             Entry entry = ((EntryNode) value).getEntry();
             return getText(entry);
@@ -487,7 +487,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
     /**
      * The {@link JModel} currently being viewed by this label list.
      */
-    private JModel<G> jModel;
+    private Optional<? extends JModel<G>> jModel;
     /** Set of filtered labels. */
     private final LabelFilter<G> labelFilter;
     /** Flag indicating if there is active filtering. */
@@ -637,7 +637,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
 
         @Override
         public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-                boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JComponent result =
                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
@@ -673,7 +673,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
                     TypeElement typeElement = ((TypeEntry) entry).getType();
                     TypeNode typeNode =
                         typeElement instanceof TypeNode ? (TypeNode) typeElement
-                                : ((TypeEdge) typeElement).source();
+                            : ((TypeEdge) typeElement).source();
                     Color color = typeNode.getColor();
                     if (color != null) {
                         getInner().setForeground(color);

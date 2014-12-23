@@ -170,7 +170,7 @@ public final class ShapeJGraph extends JGraph<Shape> {
         }
 
         @Override
-        public ShapeJModel newModel() {
+        public ShapeJModel newJModel() {
             return new ShapeJModel(getJGraph());
         }
 

@@ -8,6 +8,7 @@ import groove.gui.SimulatorModel;
 import groove.gui.dialog.ErrorDialog;
 import groove.io.store.SystemStore;
 import groove.util.Exceptions;
+import groove.util.Groove;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -31,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -76,7 +76,7 @@ public class ConfigDialog extends JDialog {
     /** Constructs a new dialog, for a given simulator. */
     public ConfigDialog(Simulator simulator) {
         super(simulator.getFrame(), "Config Dialog", true);
-        muffle(() -> TypeVisualizerFactory.setInstance(MyVisualizerFactory.instance()));
+        Groove.muffle(() -> TypeVisualizerFactory.setInstance(MyVisualizerFactory.instance()));
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
         // Make sure that closeDialog is called whenever the dialog is closed.
@@ -325,7 +325,7 @@ public class ConfigDialog extends JDialog {
                 break;
             case COPY:
                 try {
-                    Text source = getStore().getText(FORMAT, getActiveName());
+                    Text source = getStore().getText(FORMAT, getActiveName()).get();
                     Text target = source.rename(name);
                     getStore().put(FORMAT, Collections.singleton(target));
                 } catch (IOException e) {
@@ -587,20 +587,6 @@ public class ConfigDialog extends JDialog {
     private final static Object s_tooltipObj;
     static {
         s_tooltipObj = javax.swing.UIManager.get("ToolTipUI");
-    }
-
-    /** Diverts the stdout while executing a given action. */
-    static private <T> T muffle(Supplier<T> action) {
-        T result = null;
-        try (PrintStream tmpOut = new PrintStream(File.createTempFile("tmp", null))) {
-            PrintStream out = System.out;
-            System.setOut(tmpOut);
-            result = action.get();
-            System.setOut(out);
-        } catch (IOException e) {
-            // Silently catch error
-        }
-        return result;
     }
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
