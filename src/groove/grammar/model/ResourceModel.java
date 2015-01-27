@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.model;
@@ -23,9 +23,9 @@ import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphInfo;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
+import groove.util.Status;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-import groove.util.Status;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,14 +33,14 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * General interface for classes that provide part of a graph grammar. 
+ * General interface for classes that provide part of a graph grammar.
  * A resource model may still contain errors, which could prevent it from
  * being translated to an actual resource.
  * @author Arend Rensink
  * @version $Revision $
  */
 abstract public class ResourceModel<R> {
-    /** 
+    /**
      * Creates a named resource model of a given kind.
      * @param grammar the grammar to which this resource belongs; may be {@code null}
      * if the resource is being considered outside the context of a grammar
@@ -52,15 +52,11 @@ abstract public class ResourceModel<R> {
         this.grammar = grammar;
         this.kind = kind;
         this.name = name;
-        this.grammarTracker =
-            grammar == null ? null : grammar.createChangeTracker();
-        this.resourceTrackers =
-            new EnumMap<ResourceKind,ChangeCount.Tracker>(ResourceKind.class);
+        this.grammarTracker = grammar == null ? null : grammar.createChangeTracker();
+        this.resourceTrackers = new EnumMap<ResourceKind,ChangeCount.Tracker>(ResourceKind.class);
         for (ResourceKind rk : ResourceKind.values()) {
-            this.resourceTrackers.put(
-                rk,
-                grammar == null ? ChangeCount.DUMMY_TRACKER
-                        : grammar.createChangeTracker(rk));
+            this.resourceTrackers.put(rk,
+                grammar == null ? ChangeCount.DUMMY_TRACKER : grammar.createChangeTracker(rk));
         }
     }
 
@@ -102,14 +98,14 @@ abstract public class ResourceModel<R> {
         return QualName.lastName(getFullName());
     }
 
-    /** 
+    /**
      * Returns the source object for this resource.
      * This is the {@link String} or {@link AspectGraph} in the store
      * from which this model is derived.
      */
     abstract public Object getSource();
 
-    /** 
+    /**
      * Indicates if this resource is currently enabled for use in the grammar.
      * For non-composite resource models, this is the case if and only if
      * the name is active in the grammar.
@@ -142,7 +138,7 @@ abstract public class ResourceModel<R> {
         return this.errors;
     }
 
-    /** 
+    /**
      * Indicates that there are errors in the model.
      * Convenience method for {@code !getErrors().isEmpty()}.
      */
@@ -155,14 +151,14 @@ abstract public class ResourceModel<R> {
         return new FormatErrorSet();
     }
 
-    /** 
+    /**
      * Synchronises the resource with the model source.
      * After invocation of this method, the status is either
      * {@link Status#DONE} or {@link Status#ERROR}.
-     * @see #getStatus() 
+     * @see #getStatus()
      */
     final void synchronise() {
-        if (isShouldRebuild()) {
+        if (isShouldRebuild()) {// || this.resource == null && this.errors.isEmpty()) {
             notifyWillRebuild();
             this.status = Status.START;
             this.errors.clear();
@@ -204,7 +200,7 @@ abstract public class ResourceModel<R> {
         return this.status;
     }
 
-    /** 
+    /**
      * Returns the constructed resource.
      * @return The constructed resource, or {@code null} if there were
      * errors.
@@ -215,7 +211,7 @@ abstract public class ResourceModel<R> {
         return this.resource;
     }
 
-    /** 
+    /**
      * Callback method that (re)computes the resource.
      * Called on initialisation and whenever the grammar model has changed.
      */
@@ -223,8 +219,7 @@ abstract public class ResourceModel<R> {
 
     /** Returns the set of error-free, enabled rules. */
     Collection<Rule> getRules() {
-        Collection<ResourceModel<?>> ruleModels =
-            getGrammar().getResourceSet(RULE);
+        Collection<ResourceModel<?>> ruleModels = getGrammar().getResourceSet(RULE);
         Collection<Rule> result = new ArrayList<Rule>(ruleModels.size());
         // set rules
         for (ResourceModel<?> model : ruleModels) {
