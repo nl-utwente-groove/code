@@ -200,16 +200,16 @@ public enum NodeShape {
             if (result != null) {
                 double x = result.getX();
                 double y = result.getY();
-                if ((x1 - EPS < x) && (x > x1 + dx1 + EPS)) {
+                if (x > x1 + EPS + Math.max(dx1, 0)) {
                     assert !this.nonnull;
                     result = null;
-                } else if (x1 + dx1 - EPS < x && x > x1 + EPS) {
+                } else if (x < x1 - EPS + Math.min(dx1, 0)) {
                     assert !this.nonnull;
                     result = null;
-                } else if (y1 - EPS < y && y > y1 + dy1 + EPS) {
+                } else if (y > y1 + EPS + Math.max(dy1, 0)) {
                     assert !this.nonnull;
                     result = null;
-                } else if (y1 + dy1 - EPS < y && y > y1 + EPS) {
+                } else if (y < y1 - EPS + Math.min(dy1, 0)) {
                     assert !this.nonnull;
                     result = null;
                 }
