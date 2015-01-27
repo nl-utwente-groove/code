@@ -132,10 +132,6 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             unit *= 10;
             digitFound = true;
         }
-        // invert the number if it is preceded by a minus sign
-        if (charIx >= 0 && id.charAt(charIx) == '-') {
-            nodeNr = -nodeNr;
-        }
         AttrNode result = null;
         if (digitFound) {
             AttrNode node = getFactory().createNode(nodeNr);
@@ -316,8 +312,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             // add multiplicities
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 String attrName =
-                        direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
-                                : EDGE_IN_MULT_ATTR_NAME;
+                    direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
+                        : EDGE_IN_MULT_ATTR_NAME;
                 String multStr = edge.getAttribute(attrName);
                 if (multStr != null) {
                     Multiplicity mult = getMultiplicity(multStr, MultKind.EDGE_MULT);
@@ -421,8 +417,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 Multiplicity edgeMult = shape.getEdgeMult(edge, direction);
                 String attrName =
-                        direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
-                                : EDGE_IN_MULT_ATTR_NAME;
+                    direction == EdgeMultDir.OUTGOING ? EDGE_OUT_MULT_ATTR_NAME
+                        : EDGE_IN_MULT_ATTR_NAME;
                 edgeImage.setAttribute(attrName, edgeMult.toSerialString());
             }
         }
@@ -474,7 +470,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     private static final String EDGE_MULT_ATTR_NAME = "emult";
 
     private static class AspectToAttrMap extends
-    AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
+        AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public AspectToAttrMap() {
             super(AttrFactory.instance());
@@ -495,7 +491,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class AttrToGraphMap<N extends Node,E extends Edge> extends
-    AElementMap<AttrNode,AttrEdge,N,E> {
+        AElementMap<AttrNode,AttrEdge,N,E> {
         /** Constructs a new, empty map. */
         public AttrToGraphMap(ElementFactory<N,E> factory) {
             super(factory);
@@ -547,7 +543,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class PatternToXmlMap extends
-    AElementMap<PatternNode,PatternEdge,AttrNode,AttrEdge> {
+        AElementMap<PatternNode,PatternEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public PatternToXmlMap() {
             super(AttrFactory.instance());
