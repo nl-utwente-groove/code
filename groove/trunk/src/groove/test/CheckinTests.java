@@ -16,7 +16,6 @@
  */
 package groove.test;
 
-import groove.test.abstraction.AllAbstractionTests;
 import groove.test.algebra.AllAlgebraTests;
 import groove.test.control.AllControlTests;
 import groove.test.criticalpair.AllCriticalPairTests;
@@ -39,10 +38,10 @@ import org.junit.runners.Suite;
  * @version $Revision$
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AllAbstractionTests.class, AllAlgebraTests.class, AllControlTests.class,
-    AllCriticalPairTests.class, AllGraphTests.class, AllPrologTests.class, AllRuleTests.class,
-    AllTypeTests.class, AllRelTests.class, AllVerifyTests.class, BinaryEdgeTest.class,
-    ExplorationTest.class, IOTest.class, AllUtilTests.class, AllSTSTests.class})
+@Suite.SuiteClasses({AllAlgebraTests.class, AllControlTests.class, AllCriticalPairTests.class,
+    AllGraphTests.class, AllPrologTests.class, AllRuleTests.class, AllTypeTests.class,
+    AllRelTests.class, AllVerifyTests.class, BinaryEdgeTest.class, ExplorationTest.class,
+    IOTest.class, AllUtilTests.class, AllSTSTests.class})
 public class CheckinTests {
     // Empty by design.
 }

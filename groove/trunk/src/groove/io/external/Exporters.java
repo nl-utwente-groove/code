@@ -27,7 +27,6 @@ import groove.io.external.format.DotPorter;
 import groove.io.external.format.EcorePorter;
 import groove.io.external.format.FsmExporter;
 import groove.io.external.format.GxlPorter;
-import groove.io.external.format.KthExporter;
 import groove.io.external.format.NativePorter;
 import groove.io.external.format.RasterExporter;
 import groove.io.external.format.TikzExporter;
@@ -78,7 +77,8 @@ public class Exporters {
                 e.setSimulator(simulator);
                 e.doExport(exportable, selectedFile, fileType);
             } catch (PortException e) {
-                showErrorDialog(simulator == null ? null : simulator.getFrame(), e,
+                showErrorDialog(simulator == null ? null : simulator.getFrame(),
+                    e,
                     "Error while exporting to " + selectedFile);
             }
         }
@@ -133,7 +133,6 @@ public class Exporters {
         result.add(RasterExporter.getInstance());
         result.add(VectorExporter.getInstance());
         result.add(AutPorter.instance());
-        result.add(KthExporter.getInstance());
         result.add(FsmExporter.getInstance());
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());

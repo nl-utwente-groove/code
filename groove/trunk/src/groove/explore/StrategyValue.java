@@ -1,7 +1,5 @@
 package groove.explore;
 
-import groove.abstraction.neigh.explore.strategy.ShapeBFSStrategy;
-import groove.abstraction.neigh.explore.strategy.ShapeDFSStrategy;
 import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
@@ -115,12 +113,6 @@ public enum StrategyValue implements ParsableValue {
         "Nested Depth-First Search for a given LTL formula,"
             + "using incremental bounds based on graph size or rule applications"
             + "and optimised to avoid reexploring connected components ('pockets')"),
-    /** Shape exploration strategy. */
-    SHAPE_DFS("shapedfs", "Shape Depth-First Exploration",
-        "This strategy is used for abstract state space exploration."),
-    /** Shape exploration strategy. */
-    SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
-        "This strategy is used for abstract state space exploration."),
     /** Minimax strategy. */
     MINIMAX("minimax", "Minimax Strategy Generation",
         "This strategy generates a strategy for a two-player game."),
@@ -165,8 +157,9 @@ public enum StrategyValue implements ParsableValue {
     @Override
     public boolean isDefault(GrammarModel grammar) {
         Exploration exploration = grammar.getDefaultExploration();
-        return exploration == null ? this == BFS : exploration.getStrategy().getKeyword().equals(
-            getKeyword());
+        return exploration == null ? this == BFS : exploration.getStrategy()
+            .getKeyword()
+            .equals(getKeyword());
     }
 
     /** Creates the appropriate template for this strategy. */
@@ -323,22 +316,6 @@ public enum StrategyValue implements ParsableValue {
                     return result;
                 }
             };
-
-        case SHAPE_BFS:
-            return new MyTemplate0() {
-                @Override
-                public Strategy create() {
-                    return new ShapeBFSStrategy();
-                }
-            };
-
-        case SHAPE_DFS:
-            return new MyTemplate0() {
-                @Override
-                public Strategy create() {
-                    return new ShapeDFSStrategy();
-                }
-            };
         case REMOTE:
             return new MyTemplate1<String>(new PAll("host"), "host", new EncodedHostName()) {
 
@@ -386,19 +363,16 @@ public enum StrategyValue implements ParsableValue {
     private final String description;
 
     /** Set of model checking strategies. */
-    public final static EnumSet<StrategyValue> LTL_STRATEGIES = EnumSet.of(LTL, LTL_BOUNDED,
+    public final static EnumSet<StrategyValue> LTL_STRATEGIES = EnumSet.of(LTL,
+        LTL_BOUNDED,
         LTL_POCKET);
     /** Set of strategies that can be selected from the exploration dialog. */
     public final static EnumSet<StrategyValue> DIALOG_STRATEGIES;
     /** Special mask for development strategies only. Treated specially. */
     public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES = EnumSet.of(RETE,
-        RETE_LINEAR, RETE_RANDOM, SHAPE_DFS, SHAPE_BFS, MINIMAX);
-    /** Set of strategies for abstract exploration. */
-    public final static EnumSet<StrategyValue> ABSTRACT_STRATEGIES = EnumSet.of(SHAPE_DFS,
-        SHAPE_BFS);
-    /** Set of strategies for concrete exploration. */
-    public final static EnumSet<StrategyValue> CONCRETE_STRATEGIES =
-        EnumSet.complementOf(ABSTRACT_STRATEGIES);
+        RETE_LINEAR,
+        RETE_RANDOM,
+        MINIMAX);
     static {
         DIALOG_STRATEGIES = EnumSet.complementOf(LTL_STRATEGIES);
         DIALOG_STRATEGIES.remove(STATE);
@@ -421,7 +395,7 @@ public enum StrategyValue implements ParsableValue {
     /** Specialised 2-parameter template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate2<T1,T2> extends Template2<Strategy,T1,T2> {
         public MyTemplate2(SerializedParser parser, String name1, EncodedType<T1,String> type1,
-                String name2, EncodedType<T2,String> type2) {
+            String name2, EncodedType<T2,String> type2) {
             super(StrategyValue.this, parser, name1, type1, name2, type2);
         }
     }
@@ -431,9 +405,8 @@ public enum StrategyValue implements ParsableValue {
         @SuppressWarnings("unchecked")
         //cast to Object won't go wrong
         public MyTemplate5(SerializedParser parser, String name1, EncodedType<T1,String> type1,
-                String name2, EncodedType<T2,String> type2, String name3,
-                EncodedType<T3,String> type3, String name4, EncodedType<T4,String> type4,
-                String name5, EncodedType<T5,String> type5) {
+            String name2, EncodedType<T2,String> type2, String name3, EncodedType<T3,String> type3,
+            String name4, EncodedType<T4,String> type4, String name5, EncodedType<T5,String> type5) {
             super(StrategyValue.this, parser, new String[] {name1, name2, name3, name4, name5},
                 type1, type2, type3, type4, type5);
 

@@ -170,14 +170,6 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         Parser.splitter),
 
     /**
-     * Space-separated list of abstraction node labels of a graph grammar.
-     * These labels are used to define the level zero neighbourhood relation
-     * between nodes.
-     */
-    ABSTRACTION_LABELS("abstractionLabels",
-        "List of node labels, used by neighbourhood abstraction", Parser.splitter),
-
-    /**
      * Flag that determines if transition parameters are included in the LTS
      * transition labels
      */
@@ -345,7 +337,8 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
             FormatErrorSet result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());
             if (!unknowns.isEmpty()) {
-                result.add("Unknown %s name%s %s", StringHandler.toLower(getKind().getName()),
+                result.add("Unknown %s name%s %s",
+                    StringHandler.toLower(getKind().getName()),
                     unknowns.size() == 1 ? "" : "s",
                     Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
@@ -398,13 +391,16 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
                     } else {
                         CheckPolicy policy = entry.getValue();
                         if (!policy.isFor(rule.getRole())) {
-                            result.add("Policy '%s' is unsuitable for %s '%s'", policy.getName(),
-                                rule.getRole(), rule.getFullName());
+                            result.add("Policy '%s' is unsuitable for %s '%s'",
+                                policy.getName(),
+                                rule.getRole(),
+                                rule.getFullName());
                         }
                     }
                 }
                 if (!unknowns.isEmpty()) {
-                    result.add("Unknown %s name%s %s", StringHandler.toLower(getKind().getName()),
+                    result.add("Unknown %s name%s %s",
+                        StringHandler.toLower(getKind().getName()),
                         unknowns.size() == 1 ? "" : "s",
                         Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
                 }

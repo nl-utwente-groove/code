@@ -105,8 +105,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
     enum Reuse {
         /** No event or node reuse. */
         NONE,
-        /** Aggressive node reuse, no event reuse. */
-        AGGRESSIVE,
         /** Normal event and node reuse. */
         EVENT;
     }

@@ -30,7 +30,6 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNodeSet;
 import groove.graph.AGraph;
-import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -156,12 +155,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     // ----------------------- OBJECT OVERRIDES ------------------------
-
-    /** The default is not to create any graph elements. */
-    @Override
-    public ElementFactory<GraphState,GraphTransition> getFactory() {
-        return new LTSFactory<GraphState,GraphTransition>(this);
-    }
 
     /**
      * Adds a state to the GTS, if it is not isomorphic to an existing state.

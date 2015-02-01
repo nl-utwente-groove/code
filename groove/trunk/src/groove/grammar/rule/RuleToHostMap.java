@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.rule;
@@ -24,7 +24,6 @@ import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AElementBiMap;
 import groove.graph.AElementMap;
 import groove.graph.Label;
 
@@ -38,8 +37,8 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
-        VarMap {
+public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
+    VarMap {
     /**
      * Creates an empty map with an empty valuation.
      */
@@ -75,8 +74,8 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
                 result = getVar(guard.getVar()).label();
             }
         } else {
-            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format(
-                "Label %s should be sharp or atom", label);
+            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format("Label %s should be sharp or atom",
+                label);
             result = ruleLabel.getTypeLabel();
         }
         return result;
@@ -113,7 +112,7 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
         }
     }
 
-    /** 
+    /**
      * Inserts an anchor key-value pair into the map.
      * @return the old value for {@code key}
      */
