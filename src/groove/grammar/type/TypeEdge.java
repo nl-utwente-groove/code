@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -38,9 +38,11 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
     TypeEdge(TypeNode source, TypeLabel label, TypeNode target, TypeGraph graph) {
         super(source, label, target);
         assert graph != null;
-        assert source.equals(target) || label.getRole() == BINARY : String.format(
-            "Can't create %s label %s between distinct nodes %s and %s",
-            label.getRole().getDescription(false), label, source, target);
+        assert source.equals(target) || label.getRole() == BINARY : String.format("Can't create %s label %s between distinct nodes %s and %s",
+            label.getRole().getDescription(false),
+            label,
+            source,
+            target);
         this.graph = graph;
     }
 
@@ -56,7 +58,7 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
 
     /** Indicates if this edge type is composite. */
     public final boolean isComposite() {
-        return this.iscomposite;
+        return this.isComposite;
     }
 
     /** Sets this edge type to abstract. */
@@ -66,7 +68,7 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
 
     /** Sets this edge type to composite. */
     public final void setComposite(boolean value) {
-        this.iscomposite = value;
+        this.isComposite = value;
     }
 
     /**
@@ -95,7 +97,7 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
         this.outMult = outMult;
     }
 
-    /** 
+    /**
      * Tests if another type edge is either equal to this one or,
      * if this one is abstract, is a subtype.
      */
@@ -164,7 +166,7 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
     private boolean abstractType;
 
     /** Flag indicating if this edge type is composite. */
-    private boolean iscomposite;
+    private boolean isComposite;
 
     /** In multiplicity of the edge type, if any. */
     private Multiplicity inMult;

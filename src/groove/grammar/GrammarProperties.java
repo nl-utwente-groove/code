@@ -361,23 +361,6 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Returns a list of node labels that are to be used in the abstraction.
-     * @see GrammarKey#ABSTRACTION_LABELS
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getAbstractionLabels() {
-        return (List<String>) parseProperty(GrammarKey.ABSTRACTION_LABELS);
-    }
-
-    /**
-     * Sets the abstraction labels property.
-     * @see GrammarKey#ABSTRACTION_LABELS
-     */
-    public void setAbstractionLabels(List<String> abstractionLabels) {
-        storeProperty(GrammarKey.ABSTRACTION_LABELS, abstractionLabels);
-    }
-
-    /**
      * Returns a clone of this properties object where all occurrences of a
      * given label are replaced by a new label.
      * @param oldLabel the label to be replaced

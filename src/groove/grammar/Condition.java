@@ -111,7 +111,7 @@ public class Condition implements Fixable {
      * @param properties properties for matching the condition
      */
     public Condition(String name, Op operator, RuleGraph pattern, RuleGraph root,
-            GrammarProperties properties) {
+        GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
@@ -239,8 +239,8 @@ public class Condition implements Fixable {
      */
     public void addSubCondition(Condition condition) {
         if (!getOp().hasOperands()) {
-            throw new UnsupportedOperationException(String.format(
-                "%s conditions cannot have subconditions", condition.getOp()));
+            throw new UnsupportedOperationException(
+                String.format("%s conditions cannot have subconditions", condition.getOp()));
         }
         condition.testFixed(true);
         testFixed(false);
@@ -367,9 +367,9 @@ public class Condition implements Fixable {
         Map<VariableNode,List<Set<VariableNode>>> resolverMap = createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            errors.add(
-                "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration)",
-                node, AlgebraFamily.POINT.getName());
+            errors.add("Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration)",
+                node,
+                AlgebraFamily.POINT.getName());
         }
         errors.throwException();
     }
@@ -682,24 +682,6 @@ public class Condition implements Fixable {
         switch (searchMode) {
         case NORMAL:
             return true;
-        case MINIMAL:
-            return !(isNot() && hasBinaryEdges());
-        case REVERSE:
-            if (!isNot()) {
-                // EZ says: current abstraction implementation does not support
-                // rules with multiple levels. Therefore, if this point in the
-                // code is reached it is due to artificial FORALL level that is
-                // introduced when we reverse a NAC. This handles the True
-                // sub-condition.
-                assert getOp() == Op.TRUE;
-                return true;
-            } else { // isNot()
-                // EZ says: there are two possibilities for this condition.
-                // Either it will be discarded (because it was already handled
-                // in the minimal mode) or it will be reversed. In any case we
-                // set it to incompatible at this point.
-                return false;
-            }
         default:
             assert false;
             return false;
@@ -791,8 +773,8 @@ public class Condition implements Fixable {
     /** Constructs a disjunctive condition for a non-empty list of operands. */
     static private final Condition newCondition(Op op, String descr, Condition... operands) {
         if (operands.length == 0) {
-            throw new IllegalArgumentException(String.format(
-                "Can't build '%s' with empty operand list", descr));
+            throw new IllegalArgumentException(
+                String.format("Can't build '%s' with empty operand list", descr));
         }
         StringBuilder name = new StringBuilder();
         for (int i = 0; i < operands.length; i++) {
@@ -812,8 +794,8 @@ public class Condition implements Fixable {
         try {
             result.setFixed();
         } catch (FormatException e) {
-            throw new IllegalArgumentException(String.format(
-                "Error while fixing new condition %s: %s", name, e.getMessage()));
+            throw new IllegalArgumentException(
+                String.format("Error while fixing new condition %s: %s", name, e.getMessage()));
         }
         return result;
     }

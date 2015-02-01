@@ -1,22 +1,21 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
 
-import static groove.match.SearchEngine.SearchMode.NORMAL;
 import groove.algebra.AlgebraFamily;
 import groove.automaton.RegExpr;
 import groove.grammar.Condition;
@@ -99,23 +98,22 @@ public class PlanSearchEngine extends SearchEngine {
             relevant |=
                 item instanceof ConditionSearchItem
                     && ((ConditionSearchItem) item).getCondition().getOp() == Op.FORALL;
-            // EZ says: when working in minimal search mode, everything is
-            // relevant. This is true even if the sub-tree is formed only of
-            // readers and NACs because the pre-match checks on multiplicities
-            // may fail and we want to properly backtrack and continue the search.
-            relevant |= this.searchMode == SearchMode.MINIMAL;
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan, oracle);
         if (PRINT) {
-            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s", condition.getName(),
-                seed, result));
+            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s",
+                condition.getName(),
+                seed,
+                result));
             System.out.printf("%n    Dependencies & Relevance: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d%s: %s", i, plan.get(i).isRelevant() ? "*" : "",
+                System.out.printf("%d%s: %s",
+                    i,
+                    plan.get(i).isRelevant() ? "*" : "",
                     plan.getDependency(i));
             }
             System.out.println("]");
@@ -195,11 +193,6 @@ public class PlanSearchEngine extends SearchEngine {
 
         private boolean getInjectivity() {
             switch (this.searchMode) {
-            case MINIMAL:
-            case REGEXPR:
-                return false;
-            case REVERSE:
-                return true;
             case NORMAL:
                 return this.condition.isInjective();
             default:
@@ -271,10 +264,6 @@ public class PlanSearchEngine extends SearchEngine {
                         item = createEdgeEmbargoItem((EdgeEmbargo) subCondition);
                     } else {
                         item = new ConditionSearchItem(subCondition);
-                    }
-                } else {
-                    if (this.searchMode == SearchMode.REVERSE && subCondition.isReversable()) {
-                        item = new ConditionSearchItem(subCondition.reverse());
                     }
                 }
                 if (item != null) {
@@ -367,8 +356,9 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet().contains(node) : String.format(
-                        "Variable node '%s' should be among anchors %s", node, seed);
+                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet().contains(node) : String.format("Variable node '%s' should be among anchors %s",
+                        node,
+                        seed);
                     result.add(nodeItem);
                 }
             }
@@ -458,14 +448,14 @@ public class PlanSearchEngine extends SearchEngine {
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
-                assert this.searchMode == NORMAL;
+                assert this.searchMode == SearchMode.NORMAL;
                 if (((VariableNode) node).hasConstant() || this.algebraFamily.supportsSymbolic()) {
                     result = new ValueNodeSearchItem((VariableNode) node, this.algebraFamily);
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
             } else if (node instanceof OperatorNode) {
-                assert this.searchMode == NORMAL;
+                assert this.searchMode == SearchMode.NORMAL;
                 result = new OperatorNodeSearchItem((OperatorNode) node, this.algebraFamily);
             } else {
                 assert node instanceof DefaultRuleNode;
@@ -497,7 +487,7 @@ public class PlanSearchEngine extends SearchEngine {
         private final Set<LabelVar> remainingVars;
         /** The label store containing the subtype relation. */
         private final TypeGraph typeGraph;
-        /** 
+        /**
          * The algebra family to be used for algebraic operations.
          * If {@code null}, the default will be used.
          * @see AlgebraFamily#getInstance(String)
