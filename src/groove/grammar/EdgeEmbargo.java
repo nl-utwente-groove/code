@@ -21,7 +21,6 @@ import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.match.SearchEngine.SearchMode;
 import groove.util.Groove;
 
 /**
@@ -88,17 +87,6 @@ public class EdgeEmbargo extends Condition {
      */
     public Label edgeLabel() {
         return this.embargoEdge.label();
-    }
-
-    @Override
-    public boolean isCompatible(SearchMode searchMode) {
-        switch (searchMode) {
-        case NORMAL:
-            return true;
-        default:
-            assert false;
-            return false;
-        }
     }
 
     /**
