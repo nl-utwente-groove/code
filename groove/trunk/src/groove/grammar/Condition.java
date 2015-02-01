@@ -29,7 +29,6 @@ import groove.grammar.type.TypeGraph;
 import groove.graph.EdgeRole;
 import groove.io.HTMLConverter;
 import groove.io.Util;
-import groove.match.SearchEngine.SearchMode;
 import groove.util.Fixable;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
@@ -672,20 +671,6 @@ public class Condition implements Fixable {
     /** Returns true if this condition can be reversed. */
     public boolean isReversable() {
         return isNot() && hasBinaryEdges();
-    }
-
-    /**
-     * Returns true if this condition is compatible with the given search
-     * mode and therefore should be included in the search plan.
-     */
-    public boolean isCompatible(SearchMode searchMode) {
-        switch (searchMode) {
-        case NORMAL:
-            return true;
-        default:
-            assert false;
-            return false;
-        }
     }
 
     private boolean hasBinaryEdges() {

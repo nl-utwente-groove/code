@@ -42,13 +42,4 @@ public abstract class SearchEngine {
     public abstract SearchStrategy createMatcher(Condition condition, Anchor seed,
         ValueOracle oracle);
 
-    /**
-     * Value determining what is actually checked in the search.
-     * For abstraction, it is important that NACs are checked only after
-     * materialisation.
-     */
-    public static enum SearchMode {
-        /** Everything is checked. */
-        NORMAL
-    }
 }
