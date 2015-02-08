@@ -145,7 +145,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getDataLines(node));
                 // show the visible self-edges
                 Line id = getIdLine(node);
-                boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspect());
@@ -159,8 +158,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                             }
                             id = null;
                         }
-                        if (!implicitType && edge.getRole() == EdgeRole.BINARY
-                            && !jVertex.hasErrors() && !edge.hasErrors()) {
+                        if (showLoopSuffix(jVertex, edge)) {
                             line = line.append(LOOP_SUFFIX);
                         }
                         result.add(line);
@@ -215,12 +213,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show data constants and variables correctly
             result.add(getDataLines(node));
             // show the visible self-edges
-            boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !jVertex.hasErrors()
-                        && !edge.hasErrors()) {
+                    if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -278,7 +274,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show data constants and variables correctly
             result.add(getDataLines(node));
             // show the visible self-edges
-            boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
@@ -290,8 +285,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                         }
                         idLine = null;
                     }
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !jVertex.hasErrors()
-                        && !edge.hasErrors()) {
+                    if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -311,12 +305,31 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 StringBuilder text = new StringBuilder("& ");
                 text.append(AspectKind.COLOR.getName());
                 Line colorLine =
-                    Line.atom(text.toString()).color(
-                        Colors.findColor(node.getColor().getContentString()));
+                    Line.atom(text.toString()).color(Colors.findColor(node.getColor()
+                        .getContentString()));
                 result.add(colorLine);
             }
         }
         return result;
+    }
+
+    /** Indicates if the label corresponding to a given node edge should be
+     * suffixed by {@link #LOOP_SUFFIX}.
+     */
+    private boolean showLoopSuffix(AspectJVertex jVertex, AspectEdge edge) {
+        if (jVertex.hasErrors() || edge.hasErrors()) {
+            return false;
+        }
+        if (jVertex.getJModel().getTypeGraph().isImplicit()) {
+            return false;
+        }
+        if (edge.getRole() != EdgeRole.BINARY) {
+            return false;
+        }
+        if (edge.getKind() == AspectKind.REMARK) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -547,8 +560,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // add location variables
         for (CtrlVar var : state.getVars()) {
             Line line =
-                Line.atom(var.getName()).append(" : ").append(
-                    Line.atom(var.getType().toString()).style(Style.BOLD));
+                Line.atom(var.getName())
+                    .append(" : ")
+                    .append(Line.atom(var.getType().toString()).style(Style.BOLD));
             result.add(line);
         }
         // add self-edges
@@ -735,15 +749,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
         sigLineMap = map;
     }
 
-    static private final String IMPORT_TEXT = String.format("%simport%s", Util.FRENCH_QUOTES_OPEN,
+    static private final String IMPORT_TEXT = String.format("%simport%s",
+        Util.FRENCH_QUOTES_OPEN,
         Util.FRENCH_QUOTES_CLOSED);
     static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(Style.ITALIC);
     static private final Line EXISTS_LINE = Line.atom("" + Util.EXISTS);
-    static private final Line EXISTS_OPT_LINE =
-        EXISTS_LINE.append(Line.atom("?").style(Style.SUPER));
+    static private final Line EXISTS_OPT_LINE = EXISTS_LINE.append(Line.atom("?")
+        .style(Style.SUPER));
     static private final Line FORALL_LINE = Line.atom("" + Util.FORALL);
-    static private final Line FORALL_POS_LINE = FORALL_LINE.append(Line.atom(">0").style(
-        Style.SUPER));
+    static private final Line FORALL_POS_LINE = FORALL_LINE.append(Line.atom(">0")
+        .style(Style.SUPER));
     /** Final line in a state vertex indicating residual invisible outgoing transitions. */
     static private final Line RESIDUAL_LINE = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
     /** Line in a control vertex indicating a start state. */

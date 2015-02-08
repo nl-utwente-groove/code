@@ -150,7 +150,6 @@ public abstract class IntSignature<Int,Real,Bool,String> implements Signature {
     @ToolTipHeader("Integer-to-real conversion")
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipBody("Converts %s to a real number")
-    @PrefixSymbol(symbol = "(real)", kind = UNARY)
     public abstract Real toReal(Int arg);
 
     @Override
