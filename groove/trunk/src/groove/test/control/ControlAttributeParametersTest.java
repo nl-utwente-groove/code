@@ -38,7 +38,7 @@ public class ControlAttributeParametersTest {
 
     @Test
     public void testAttributes() {
-        explore("control", 9, 8, 36, 40);
+        explore("control", 9, 8, 36, 46);
     }
 
     private void explore(String control, int controlStates, int controlTransitions,
