@@ -24,7 +24,7 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String> implements
+public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> implements
     PointAlgebra<Double> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {
@@ -147,6 +147,11 @@ public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String> impleme
     }
 
     @Override
+    public Integer toInt(Double arg) {
+        return singleInt;
+    }
+
+    @Override
     public String toString(Double arg) {
         return singleString;
     }
@@ -165,6 +170,8 @@ public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String> impleme
      * @see PointBoolAlgebra#singleBool
      */
     public static final Boolean singleBool = PointBoolAlgebra.singleBool;
+    /** Point value of the int algebra. */
+    public static final Integer singleInt = 0;
     /** Point value of the real algebra. */
     public static final Double singleReal = 0.0;
     /** Point value of the real algebra, represented as a {@link Double}. */

@@ -146,7 +146,7 @@ public abstract class IntSignature<Int,Real,Bool,String> implements Signature {
     @ToolTipBody("Yields a string representation of %s")
     public abstract String toString(Int arg);
 
-    /** String representation. */
+    /** Real number conversion. */
     @ToolTipHeader("Integer-to-real conversion")
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipBody("Converts %s to a real number")
