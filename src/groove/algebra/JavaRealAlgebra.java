@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.algebra;
@@ -23,7 +23,7 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JavaRealAlgebra extends RealAlgebra<Double,Boolean,String> {
+public class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private JavaRealAlgebra() {
         // empty
@@ -100,6 +100,11 @@ public class JavaRealAlgebra extends RealAlgebra<Double,Boolean,String> {
     }
 
     @Override
+    public Integer toInt(Double arg) {
+        return arg.intValue();
+    }
+
+    @Override
     public String toString(Double arg) {
         return arg.toString();
     }
@@ -147,8 +152,7 @@ public class JavaRealAlgebra extends RealAlgebra<Double,Boolean,String> {
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(double d1, double d2) {
-        return Math.abs(d1 - d2) <= (Math.abs(d1) + Math.abs(d2) + TOLERANCE)
-            * TOLERANCE;
+        return Math.abs(d1 - d2) <= (Math.abs(d1) + Math.abs(d2) + TOLERANCE) * TOLERANCE;
     }
 
     /**
