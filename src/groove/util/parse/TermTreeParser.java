@@ -72,7 +72,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * Neither sort declarations nor qualified identifiers are recognised
      * by default.
      * @param prototype prototype object of the tree type; used to construct instances.
-     * The operator type is assumed to be an {@link Enum}, and the operator 
+     * The operator type is assumed to be an {@link Enum}, and the operator
      * kind to be {@link OpKind#ATOM}; this kind will be used to construct
      * term instances for atomic terms
      */
@@ -91,7 +91,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * Neither sort declarations nor qualified identifiers are recognised
      * by default.
      * @param prototype prototype object of the tree type; used to construct instances.
-     * The operator type is assumed to be an {@link Enum}, and the operator 
+     * The operator type is assumed to be an {@link Enum}, and the operator
      * kind to be {@link OpKind#ATOM}; this kind will be used to construct
      * term instances for atomic terms
      * @param ops collection of operators to be recognised by this parser;
@@ -313,15 +313,15 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
 
     private Map<TokenType,TokenFamily> typeFamilyMap;
 
-    /** Returns the fixed constant token type for a given sort. 
-     * @see TokenClaz#CONST 
+    /** Returns the fixed constant token type for a given sort.
+     * @see TokenClaz#CONST
      */
     TokenType getConstTokenType(Sort sort) {
         return getConstTokenMap().get(sort);
     }
 
     /** Returns the mapping from sorts to constant token types.
-     * @see TokenClaz#CONST 
+     * @see TokenClaz#CONST
      */
     private Map<Sort,TokenType> getConstTokenMap() {
         if (this.constTokenMap == null) {
@@ -342,8 +342,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
-                result.addError(new FormatError("Unparsed suffix: %s", this.input.substring(
-                    next().start(), this.input.length())));
+                result.addError(new FormatError("Unparsed suffix: %s",
+                    this.input.substring(next().start(), this.input.length())));
             }
         } catch (FormatException exc) {
             result = createErrorTree(exc);
@@ -358,10 +358,11 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     protected X parse(OpKind context) throws FormatException {
         X result = null;
         Token nextToken = next();
-        if (nextToken.has(LPAR)) {
-            result = parseBracketed();
-        } else if (nextToken.has(PRE_OP)) {
+        // first parse for prefix operators to accomodate casts
+        if (nextToken.has(PRE_OP)) {
             result = parsePrefixed();
+        } else if (nextToken.has(LPAR)) {
+            result = parseBracketed();
         } else if (nextToken.has(NAME)) {
             result = parseName();
         } else if (nextToken.has(CONST)) {
@@ -472,8 +473,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         } else if (op.getArity() == 1) {
             result.addArg(parse(op.getKind()));
         } else {
-            assert op.getKind() == OpKind.ATOM : String.format(
-                "Encountered '%s' in prefix position", op);
+            assert op.getKind() == OpKind.ATOM : String.format("Encountered '%s' in prefix position",
+                op);
         }
         setParseString(result, opToken);
         return result;
@@ -564,7 +565,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     }
 
     /** Tests if the next token has a certain token class.
-     * Convenience method for {@code next().has(claz)}. 
+     * Convenience method for {@code next().has(claz)}.
      */
     protected boolean has(TokenClaz claz) throws ScanException {
         return next().has(claz);
@@ -581,7 +582,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     }
 
     /** Rolls back the scanner by one token.
-     * This can only be done once in a row; 
+     * This can only be done once in a row;
      * i.e., only the previous token is retained and can be rolled back.
      */
     protected final void rollBack() {
@@ -648,27 +649,30 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         if (atEnd()) {
             result = eot();
         } else {
-            TokenFamily type = null;
             int start = this.ix;
+            // last recognised type
+            TokenFamily type = null;
+            // first index beyond the recognised type
+            int typeEnd = start;
             SymbolTable map = getSymbolTable();
             while (!atEnd()) {
                 SymbolTable nextMap = map.get(curChar());
                 if (nextMap == null) {
                     // nextChar is not part of any operator symbol
-                    type = map.getTokenFamily();
                     break;
                 }
                 incChar();
-                if (atEnd()) {
-                    // there is no next character after this
-                    type = nextMap.getTokenFamily();
-                    break;
-                }
                 map = nextMap;
+                TokenFamily recognisedType = map.getTokenFamily();
+                if (recognisedType != null) {
+                    type = recognisedType;
+                    typeEnd = this.ix;
+                }
             }
             if (type != null) {
-                result = new Token(type, createFragment(start, this.ix));
+                result = new Token(type, createFragment(start, typeEnd));
             }
+            this.ix = typeEnd;
         }
         return result;
     }
@@ -738,7 +742,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         return createConstToken(Sort.STRING, start, this.ix);
     }
 
-    /** 
+    /**
      * Tests if there is a next non-EOT token.
      */
     private boolean hasNext() {
@@ -970,9 +974,9 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
                 result = sort.createConstant(symbol);
                 result.setParseString(symbol);
             } catch (FormatException exc) {
-                assert false : String.format(
-                    "'%s' has been scanned as a token; how can it fail to be one? (%s)",
-                    substring(), exc.getMessage());
+                assert false : String.format("'%s' has been scanned as a token; how can it fail to be one? (%s)",
+                    substring(),
+                    exc.getMessage());
             }
             return result;
         }
@@ -1194,9 +1198,9 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         }
     }
 
-    /** 
+    /**
      * Token type class class.
-     * Every token type has a class. 
+     * Every token type has a class.
      * A token type class can either be singular, meaning that
      * there exists exactly one type of that class, or multiple.
      * @author Arend Rensink
@@ -1261,7 +1265,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         }
 
         /**
-         * Indicates if this is a token kind 
+         * Indicates if this is a token kind
          * of which only a single token type can exist.
          * If that is the case, then the unique
          * token type is given by {@link #type()}
@@ -1272,7 +1276,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
 
         private final boolean single;
 
-        /** Returns the unique token type of this kind, if 
+        /** Returns the unique token type of this kind, if
          * the kind is singular.
          */
         public TokenType type() {
