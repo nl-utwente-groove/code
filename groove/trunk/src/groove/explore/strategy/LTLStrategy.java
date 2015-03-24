@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008/03/05 08:41:17 kastenberg
  * Exp $
  */
@@ -44,7 +44,7 @@ import java.util.Stack;
 /**
  * This class provides some default implementations for the methods that are
  * required for strategies that perform model checking activities.
- * 
+ *
  * @author Harmen Kastenberg
  * @version $Revision$
  */
@@ -119,7 +119,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         return this.property;
     }
 
-    /** 
+    /**
      * Sets the next state to be explored.
      * The next state is determined by a call to {@link #computeNextState()}.
      */
@@ -127,7 +127,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         this.nextState = computeNextState();
     }
 
-    /** 
+    /**
      * Callback method to return the next state to be explored.
      * Also pushes this state on the explored stack.
      */
@@ -140,7 +140,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         getStateStack().push(state);
     }
 
-    /** 
+    /**
      * Pops the top element of the state stack, and processes the fact
      * that this is now completely explored, without finding a counterexample.
      * @return the new top of the search stack, or {@code null} if
@@ -206,7 +206,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     /**
      * Backtracks the state stack, and returns the
      * topmost unexplored state.
-     * @return the topmost incompletely explored state on the 
+     * @return the topmost incompletely explored state on the
      * state stack, or {@code null} if there is none.
      */
     protected ProductState backtrack() {
@@ -244,7 +244,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     protected final boolean findCounterExample(ProductState source, ProductState target) {
         boolean result =
             (target.colour() == getRecord().cyan())
-                && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
+                && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation()
+                    .isAccepting());
         if (result) {
             // notify counter-example
             for (ProductState state : getStateStack()) {
@@ -286,7 +287,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     private Set<String> getLabels(Set<? extends GraphTransition> transitions) {
         Set<String> result = new HashSet<String>();
         for (GraphTransition nextTransition : transitions) {
-            result.add(nextTransition.label().toString());
+            result.add(nextTransition.label().text());
         }
         return result;
     }
