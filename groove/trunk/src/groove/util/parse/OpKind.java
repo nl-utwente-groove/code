@@ -24,8 +24,10 @@ public enum OpKind {
     OR(RIGHT),
     /** Conjunction. */
     AND(RIGHT),
-    /** Temporal until operators. */
-    UNTIL(RIGHT),
+    /** Temporal prefix operators. */
+    TEMP_PREFIX(PREFIX),
+    /** Temporal infix operators. */
+    TEMP_INFIX(RIGHT),
     /** Negation. */
     NOT(PREFIX),
     /** Existential and universal quantification. */
