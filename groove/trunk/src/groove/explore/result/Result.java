@@ -86,13 +86,6 @@ public class Result {
         return this.bound > 0 && this.elements.size() >= this.bound;
     }
 
-    /** Sets the result status to all states in this result. */
-    public void register() {
-        for (GraphState state : this.elements) {
-            state.setResult();
-        }
-    }
-
     /** Callback factory method for the result set. */
     protected Collection<GraphState> createResultSet() {
         return new LinkedHashSet<GraphState>();
