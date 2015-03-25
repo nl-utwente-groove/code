@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -104,20 +104,20 @@ public enum LogicOp implements Op {
     @ToolTipHeader("Until")
     @ToolTipBody({"%1$s holds up until one state before %2$s holds,",
         "and %2$s will indeed eventually hold."})
-    UNTIL("U", OpKind.COMPARE),
+    UNTIL("U", OpKind.UNTIL),
 
     /** Weak temporal until (second operand may never hold). */
     @Syntax("first W_UNTIL second")
     @ToolTipHeader("Weak until")
     @ToolTipBody({"Either %1$s holds up until one state before %2$s holds,",
         "or %1$s holds forever."})
-    W_UNTIL("W", OpKind.COMPARE),
+    W_UNTIL("W", OpKind.UNTIL),
 
     /** Temporal release. */
-    RELEASE("R", OpKind.COMPARE),
+    RELEASE("R", OpKind.UNTIL),
 
     /** Strong temporal release (second operand must eventually hold). */
-    S_RELEASE("M", OpKind.COMPARE),
+    S_RELEASE("M", OpKind.UNTIL),
 
     /** Everywhere along a path. */
     @Syntax("ALWAYS form")

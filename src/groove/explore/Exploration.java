@@ -268,7 +268,6 @@ public class Exploration {
 
         // store result
         this.lastResult = parsedAcceptor.getResult();
-        this.lastResult.register();
         this.lastState = parsedStrategy.getLastState();
         this.lastMessage = parsedStrategy.getMessage();
     }

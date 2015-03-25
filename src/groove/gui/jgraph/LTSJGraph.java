@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import static groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static groove.gui.Options.SHOW_INVARIANTS_OPTION;
 import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
@@ -81,6 +82,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         addOptionListener(SHOW_INVARIANTS_OPTION);
         addOptionListener(SHOW_ABSENT_STATES_OPTION);
         addOptionListener(SHOW_RECIPE_STEPS_OPTION);
+        addOptionListener(SHOW_ANCHORS_OPTION);
     }
 
     @Override

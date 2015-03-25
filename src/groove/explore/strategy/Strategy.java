@@ -21,6 +21,8 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.Status.Flag;
 
+import java.util.ArrayList;
+
 /**
  * A strategy defines an order in which the states of a graph transition system
  * are to be explored. It can also determine which states are to be explored
@@ -88,6 +90,7 @@ public abstract class Strategy {
      * ignored if {@code null}
      */
     final public void play(Halter halter) {
+        resetResult();
         this.iterator.prepare(this.gts, this.startState, this.acceptor);
         collectKnownStates();
         this.interrupted = false;
@@ -95,6 +98,27 @@ public abstract class Strategy {
             this.lastState = this.iterator.doNext();
         }
         this.iterator.finish();
+        setResult();
+    }
+
+    /**
+     * Resets the result flag of all currently known result states.
+     */
+    private void resetResult() {
+        for (GraphState next : new ArrayList<GraphState>(this.gts.getResultStates())) {
+            next.resetResult();
+        }
+    }
+
+    /**
+     * Sets the result flag of all states in the exploration result.
+     */
+    private void setResult() {
+        if (this.acceptor != null && this.acceptor.getResult() != null) {
+            for (GraphState next : this.acceptor.getResult().getValue()) {
+                next.setResult();
+            }
+        }
     }
 
     /**

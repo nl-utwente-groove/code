@@ -566,6 +566,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 }
             } else if (had) {
                 this.stateCounts[index]--;
+                if (this.statesMap.containsKey(recorded)) {
+                    this.statesMap.get(recorded).remove(state);
+                }
             }
         }
         for (GTSListener listener : getGraphListeners()) {

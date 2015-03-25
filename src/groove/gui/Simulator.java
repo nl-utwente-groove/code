@@ -613,6 +613,7 @@ public class Simulator implements SimulatorListener {
             result.add(getOptions().getItem(SHOW_INVARIANTS_OPTION));
             result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
             result.add(getOptions().getItem(SHOW_ABSENT_STATES_OPTION));
+            result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
         }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
