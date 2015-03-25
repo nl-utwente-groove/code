@@ -104,44 +104,44 @@ public enum LogicOp implements Op {
     @ToolTipHeader("Until")
     @ToolTipBody({"%1$s holds up until one state before %2$s holds,",
         "and %2$s will indeed eventually hold."})
-    UNTIL("U", OpKind.UNTIL),
+    UNTIL("U", OpKind.TEMP_INFIX),
 
     /** Weak temporal until (second operand may never hold). */
     @Syntax("first W_UNTIL second")
     @ToolTipHeader("Weak until")
     @ToolTipBody({"Either %1$s holds up until one state before %2$s holds,",
         "or %1$s holds forever."})
-    W_UNTIL("W", OpKind.UNTIL),
+    W_UNTIL("W", OpKind.TEMP_INFIX),
 
     /** Temporal release. */
-    RELEASE("R", OpKind.UNTIL),
+    RELEASE("R", OpKind.TEMP_INFIX),
 
     /** Strong temporal release (second operand must eventually hold). */
-    S_RELEASE("M", OpKind.UNTIL),
+    S_RELEASE("M", OpKind.TEMP_INFIX),
 
     /** Everywhere along a path. */
     @Syntax("ALWAYS form")
     @ToolTipHeader("Globally")
     @ToolTipBody("In all states of the current path %s holds.")
-    ALWAYS("G", OpKind.QUANT),
+    ALWAYS("G", OpKind.TEMP_PREFIX),
 
     /** Eventually along a path. */
     @Syntax("EVENTUALLY form")
     @ToolTipHeader("Eventually")
     @ToolTipBody("There is a state of the current path in which %s holds.")
-    EVENTUALLY("F", OpKind.QUANT),
+    EVENTUALLY("F", OpKind.TEMP_PREFIX),
 
     /** For all paths. */
     @Syntax("FORALL form")
     @ToolTipHeader("For all paths")
     @ToolTipBody("Along all paths starting in the current state %s holds.")
-    FORALL("A", OpKind.QUANT),
+    FORALL("A", OpKind.TEMP_PREFIX),
 
     /** There exists a path. */
     @Syntax("EXISTS form")
     @ToolTipHeader("For some path")
     @ToolTipBody("There is a path, starting in the current state, along which %s holds.")
-    EXISTS("E", OpKind.QUANT),
+    EXISTS("E", OpKind.TEMP_PREFIX),
 
     /** Left parenthesis. */
     @Syntax("LPAR form RPAR")
