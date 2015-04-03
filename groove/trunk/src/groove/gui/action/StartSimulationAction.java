@@ -34,7 +34,7 @@ public class StartSimulationAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        getSimulatorModel().setGts();
+        getSimulatorModel().setGTS();
     }
 
     @Override

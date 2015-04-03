@@ -199,7 +199,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      * new exploration for it.
      */
     private void startExploration() {
-        getSimulatorModel().setGts();
+        getSimulatorModel().setGTS();
         doExploration();
     }
 

@@ -22,7 +22,6 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
-import groove.explore.ExploreResult;
 import groove.grammar.model.GrammarModel;
 import groove.graph.GraphInfo;
 import groove.gui.Options;
@@ -465,7 +464,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 getJGraph().doLayout(isNew);
                 setEnabled(true);
                 getJGraph().scrollToActive();
-                setFilterResultItem(!source.getResult().isEmpty());
+                setFilterResultItem(source.hasResult());
             }
             if (gts != oldModel.getGTS()) {
                 if (oldModel.getGTS() != null) {
@@ -604,15 +603,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 }
                 text.append(gts.getFinalStateCount() + " final");
             }
-            ExploreResult result = getSimulatorModel().getResult();
-            if (!result.isEmpty()) {
+            if (getSimulatorModel().hasResult()) {
                 if (brackets) {
                     text.append(", ");
                 } else {
                     text.append(" (");
                     brackets = true;
                 }
-                int c = result.size();
+                int c = getSimulatorModel().getResult().size();
                 text.append(c + " result");
             }
             if (gts.hasErrorStates()) {

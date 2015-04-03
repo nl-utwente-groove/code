@@ -27,7 +27,6 @@ import groove.gui.dialog.SaveLTSAsDialog.StateExport;
 import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.util.collect.SetView;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,12 +71,7 @@ public class SaveLTSAsAction extends SimulatorAction {
             export = gts.getStates();
             break;
         case FINAL:
-            export = new SetView<GraphState>(gts.getStates()) {
-                @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphState && ((GraphState) obj).isFinal();
-                }
-            };
+            export = gts.getFinalStates();
             break;
         case RESULT:
             export = getSimulatorModel().getResult();

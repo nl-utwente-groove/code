@@ -74,15 +74,15 @@ public class ExploreAction extends SimulatorAction {
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
     public void explore(Exploration exploration, boolean emphasise) {
+        SimulatorModel simModel = getSimulatorModel();
         LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
-            if (getSimulatorModel().setGts()) {
+            if (simModel.setGTS()) {
                 ltsJModel = getLtsDisplay().getJModel();
             } else {
                 return;
             }
         }
-        SimulatorModel simModel = getSimulatorModel();
         GTS gts = simModel.getGTS();
         if (isAnimated()) {
             simModel.setDisplay(DisplayKind.LTS);
@@ -100,7 +100,7 @@ public class ExploreAction extends SimulatorAction {
         exploreStats.report();
         // emphasise the result states, if required
         ltsJModel.setExploring(false);
-        simModel.setGts(gts, true);
+        simModel.setGTS(gts, true);
         if (exploration.getLastState() != null) {
             simModel.setState(exploration.getLastState());
         }
@@ -383,7 +383,7 @@ public class ExploreAction extends SimulatorAction {
 
         /**
          * Runs the exploration as a parallel thread;
-         * then hides the cancel dialog invisible, causing the event
+         * then disposes the cancel dialog, causing the event
          * dispatch thread to continue.
          */
         @Override
