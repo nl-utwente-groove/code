@@ -22,11 +22,8 @@ import static groove.verify.LogicOp.TRUE;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.util.parse.FormatException;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -50,57 +47,20 @@ public class CTLMarker {
      * Constructs a marker for a given (top-level) formula over a given
      * graph, where certain special LTS-related properties may be indicated
      * by special labels.
-     * @throws FormatException if the model has special state markers that occur
-     * on edge labels
      */
-    public CTLMarker(Formula formula, Graph model, LTSLabels ltsLabels) throws FormatException {
+    public CTLMarker(Formula formula, CTLModelChecker.Model model) {
         assert model != null;
         this.formula = formula;
-        this.model = new GraphModel(model);
-        this.ltsLabels = ltsLabels == null ? LTSLabels.DEFAULT : ltsLabels;
-        testFormat();
+        this.model = model;
         init();
-    }
-
-    /**
-     * Constructs a marker for a given (top-level) formula over a given
-     * GTS.
-     */
-    public CTLMarker(Formula formula, GTS model) {
-        assert model != null;
-        this.formula = formula;
-        this.model = new GTSModel(model);
-        this.ltsLabels = null;
-        try {
-            init();
-        } catch (FormatException exc) {
-            throw new IllegalStateException(exc);
-        }
-    }
-
-    /** Tests if the model is consistent with the special state markers.
-     * @throws FormatException if the model has special state markers that occur
-     * on edge labels
-     */
-    private void testFormat() throws FormatException {
-        for (Node node : this.model.nodeSet()) {
-            Set<? extends Edge> outEdges = this.model.outEdgeSet(node);
-            for (Edge outEdge : outEdges) {
-                if (getFlag(outEdge.label().text()) != null && !outEdge.isLoop()) {
-                    throw new FormatException(
-                        "Special state marker '%s' occurs as edge label in model", outEdge.label());
-                }
-            }
-        }
+        assert hasRoot();
     }
 
     /**
      * Creates and initialises the internal data structures for marking.
      * To be invoked immediately after construction.
-     * @throws FormatException if the model is a graph which does not comply
-     * with the expected structure
      */
-    private void init() throws FormatException {
+    private void init() {
         // initialise the formula numbering
         registerFormula(this.formula);
         registerFormula(START_ATOM);
@@ -134,7 +94,7 @@ public class CTLMarker {
             int specialEdgeCount = 0;
             for (Edge outEdge : outEdges) {
                 String label = outEdge.label().text();
-                Flag flag = getFlag(label);
+                Flag flag = this.model.getFlag(label);
                 if (flag == null) {
                     Node target = outEdge.target();
                     // EZ says: change for SF bug #442.
@@ -146,8 +106,8 @@ public class CTLMarker {
                     backward[targetNr].add(nodeNr);
                     setAtom(nodeNr, label);
                 } else {
-                    assert outEdge.isLoop() : String.format(
-                        "Special state marker '%s' occurs as edge label in model", outEdge.label());
+                    assert outEdge.isLoop() : String.format("Special state marker '%s' occurs as edge label in model",
+                        outEdge.label());
                     setAtom(nodeNr, flagText.get(flag));
                     specialEdgeCount++;
                 }
@@ -172,19 +132,6 @@ public class CTLMarker {
             }
             this.backward[i] = backEntry;
         }
-        if (!hasRoot()) {
-            throw new FormatException(
-                "The model being checked does not have an unambiguous root node. Maybe the start state was not marked?");
-        }
-    }
-
-    /** Returns the special-label-flag corresponding to a given edge label, if any. */
-    private Flag getFlag(String label) {
-        Flag result = null;
-        if (this.ltsLabels != null) {
-            return this.ltsLabels.getFlag(label);
-        }
-        return result;
     }
 
     /**
@@ -622,8 +569,7 @@ public class CTLMarker {
     /** The (top-level) formula to check. */
     private final Formula formula;
     /** The GTS on which to check the formula. */
-    private final Model model;
-    private final LTSLabels ltsLabels;
+    private final CTLModelChecker.Model model;
     /**
      * Mapping from subformulas to (consecutive) numbers
      */
@@ -667,130 +613,4 @@ public class CTLMarker {
     }
     /** Proposition text expressing that a node is the start state of the GTS. */
     static public final Formula START_ATOM = Formula.Prop(flagText.get(Flag.START));
-
-    /** Facade for models, with the functionality required by this class. */
-    private static interface Model {
-        /** Returns the number of (real) nodes of the model. */
-        int nodeCount();
-
-        /** Returns the set of (real) nodes of the model. */
-        Set<? extends Node> nodeSet();
-
-        /** Returns the set of (real) outgoing edges of a node. */
-        Set<? extends Edge> outEdgeSet(Node node);
-
-        /** Tests if a given node satisfies the special property expressed by a given flag. */
-        boolean isSpecial(Node node, Flag flag);
-
-        // EZ says: change for SF bug #442. See below.
-        /**
-         * Return the proper index of the given node to be used in the arrays.
-         * Usually the index is the same as the node number, but this can change
-         * when the GTS has absent states.
-         */
-        int nodeIndex(Node node);
-    }
-
-    /*
-     * EZ says: this is a hack to fix SF bug #442.
-     * The new level of indirection introduced by having to check the node
-     * index with the model obviously hurts performance a bit. But... this
-     * change touched just a few parts of the code and mainly at the
-     * initialization. So I'd say that this is not so bad...
-     */
-    private static class GTSModel implements Model {
-        GTSModel(GTS gts) {
-            this.gts = gts;
-            if (gts.hasAbsentStates() || gts.hasTransientStates()) {
-                this.nodeIdxMap = new HashMap<GraphState,Integer>();
-                int nr = 0;
-                for (GraphState state : gts.getStates()) {
-                    this.nodeIdxMap.put(state, nr);
-                    nr++;
-                }
-            } else {
-                this.nodeIdxMap = null;
-            }
-        }
-
-        @Override
-        public int nodeCount() {
-            return this.nodeSet().size();
-        }
-
-        @Override
-        public Set<? extends Node> nodeSet() {
-            return this.gts.getStates();
-        }
-
-        @Override
-        public Set<? extends Edge> outEdgeSet(Node node) {
-            return ((GraphState) node).getTransitions();
-        }
-
-        @Override
-        public boolean isSpecial(Node node, Flag flag) {
-            boolean result = false;
-            switch (flag) {
-            case FINAL:
-                result = ((GraphState) node).isFinal();
-                break;
-            case OPEN:
-                result = !((GraphState) node).isClosed();
-                break;
-            case RESULT:
-                result = ((GraphState) node).isResult();
-                break;
-            case START:
-                result = node == this.gts.startState();
-            }
-            return result;
-        }
-
-        @Override
-        public int nodeIndex(Node node) {
-            if (this.nodeIdxMap == null) {
-                return node.getNumber();
-            } else {
-                return this.nodeIdxMap.get(node);
-            }
-        }
-
-        private final GTS gts;
-        private final Map<GraphState,Integer> nodeIdxMap;
-
-    }
-
-    private static class GraphModel implements Model {
-        public GraphModel(Graph graph) {
-            this.graph = graph;
-        }
-
-        @Override
-        public int nodeCount() {
-            return this.graph.nodeCount();
-        }
-
-        @Override
-        public Set<? extends Node> nodeSet() {
-            return this.graph.nodeSet();
-        }
-
-        @Override
-        public Set<? extends Edge> outEdgeSet(Node node) {
-            return this.graph.outEdgeSet(node);
-        }
-
-        @Override
-        public boolean isSpecial(Node node, Flag flag) {
-            return false;
-        }
-
-        private final Graph graph;
-
-        @Override
-        public int nodeIndex(Node node) {
-            return node.getNumber();
-        }
-    }
 }

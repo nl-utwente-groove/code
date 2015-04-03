@@ -43,7 +43,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
             setLook(Look.RECIPE, state.isInternalState());
             setLook(Look.TRANSIENT, state.isTransient());
             setLook(Look.FINAL, state.isFinal());
-            setLook(Look.RESULT, state.isResult());
+            setLook(Look.RESULT, isResult());
             setLook(Look.ERROR, state.isError());
         }
     }
@@ -152,7 +152,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
      * Returns {@code true} if the state is a result state.
      */
     public boolean isResult() {
-        return getNode().isResult();
+        return getJGraph().isResult(getNode());
     }
 
     @Override

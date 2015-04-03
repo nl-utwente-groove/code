@@ -49,6 +49,7 @@ import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
+import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
@@ -432,8 +433,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Returns the status line for a given state. */
     private Line getStatus(GraphState state) {
         Line result;
-        if (state instanceof StartGraphState && !state.isError() && !state.isFinal()
-            && !state.isResult()) {
+        if (isResult(state)) {
+            result = this.resultLine;
+        } else if (state instanceof StartGraphState && !state.isError() && !state.isFinal()) {
             result = this.startLine;
         } else {
             // determine main flag
@@ -446,8 +448,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 main = Flag.ERROR;
             } else if (state.isTransient()) {
                 main = Flag.TRANSIENT;
-            } else if (state.isResult()) {
-                main = Flag.RESULT;
             } else if (state.isFinal()) {
                 main = Flag.FINAL;
             } else if (state.isDone()) {
@@ -458,6 +458,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = main == null ? this.openLine : getStatus(main);
         }
         return result;
+    }
+
+    private boolean isResult(GraphState state) {
+        return ((LTSJGraph) getJGraph()).isResult(state);
     }
 
     /** Returns the status line for a given status flag. */
@@ -483,9 +487,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 case INTERNAL:
                     text = "internal";
                     break;
-                case RESULT:
-                    text = "result";
-                    break;
                 case TRANSIENT:
                     text = "transient";
                     break;
@@ -502,6 +503,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Map<Flag,Line> statusMap;
     /** State line for the start state. */
     private final Line startLine = Line.atom("start").style(Style.BOLD);
+    /** State line result states. */
+    private final Line resultLine = Line.atom("result").style(Style.BOLD);
     /** State line for an open state. */
     private final Line openLine = Line.atom("open").style(Style.BOLD);
 

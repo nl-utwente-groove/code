@@ -16,11 +16,16 @@
  */
 package groove.verify;
 
+import groove.explore.ExploreResult;
 import groove.explore.Generator;
 import groove.explore.Generator.LTSLabelsHandler;
 import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSLabels.Flag;
+import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Node;
 import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.util.Groove;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
@@ -34,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -104,23 +110,23 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     private void modelCheck(String[] genArgs) throws Exception {
         long genStartTime = System.currentTimeMillis();
-        Graph model;
+        Model model;
         if (genArgs != null) {
             try {
-                model = Generator.execute(genArgs);
+                model = new GTSModel(Generator.execute(genArgs));
             } catch (Exception e) {
                 throw new Exception("Error while invoking Generator\n" + e.getMessage(), e);
             }
         } else {
             emit("Model: %s%n", this.modelGraph);
-            model = Groove.loadGraph(this.modelGraph);
+            model = new GraphModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
         }
         long mcStartTime = System.currentTimeMillis();
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
         for (Formula property : this.properties) {
             maxWidth = Math.max(maxWidth, property.getParseString().length());
-            CTLMarker marker = createMarker(property, model);
+            CTLMarker marker = new CTLMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
         emit("%nModel checking outcome:%n");
@@ -132,16 +138,6 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
         emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
-    }
-
-    /** Factory method to create a marker for a given property and model.
-     */
-    private CTLMarker createMarker(Formula property, Graph model) throws FormatException {
-        if (model instanceof GTS) {
-            return new CTLMarker(property, (GTS) model);
-        } else {
-            return new CTLMarker(property, model, this.ltsLabels);
-        }
     }
 
     @Option(name = "-ef", metaVar = "flags", usage = "" + "Special GTS labels. Legal values are:\n" //
@@ -244,5 +240,208 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
 
         private final List<String> args;
+    }
+
+    /** Creates a CTL-checkable model from an exploration result. */
+    public static Model newModel(ExploreResult result) {
+        return new GTSModel(result);
+    }
+
+    /** Creates a CTL-checkable model from a graph plus special labels mapping.
+     * @throws FormatException if the graph is not compatible with the special labels.
+     */
+    public static Model newModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
+        return new GraphModel(graph, ltsLabels == null ? LTSLabels.DEFAULT : ltsLabels);
+    }
+
+    /** Facade for models, with the functionality required for CTL model checking. */
+    public static interface Model {
+        /** Returns the number of (real) nodes of the model. */
+        int nodeCount();
+
+        /** Returns the set of (real) nodes of the model. */
+        Set<? extends Node> nodeSet();
+
+        /** Returns the set of (real) outgoing edges of a node. */
+        Set<? extends Edge> outEdgeSet(Node node);
+
+        /** Tests if a given node satisfies the special property expressed by a given flag. */
+        boolean isSpecial(Node node, Flag flag);
+
+        // EZ says: change for SF bug #442. See below.
+        /**
+         * Return the proper index of the given node to be used in the arrays.
+         * Usually the index is the same as the node number, but this can change
+         * when the GTS has absent states.
+         */
+        int nodeIndex(Node node);
+
+        /** Returns the special-label-flag corresponding to a given edge label, if any. */
+        Flag getFlag(String label);
+    }
+
+    /*
+     * EZ says: this is a hack to fix SF bug #442.
+     * The new level of indirection introduced by having to check the node
+     * index with the model obviously hurts performance a bit. But... this
+     * change touched just a few parts of the code and mainly at the
+     * initialization. So I'd say that this is not so bad...
+     */
+    /** Model built from an exploration result. */
+    private static class GTSModel implements Model {
+        /** Maps an exploration result into a model. */
+        public GTSModel(ExploreResult result) {
+            this.gts = result.getGTS();
+            this.result = result;
+            if (this.gts.hasAbsentStates() || this.gts.hasTransientStates()) {
+                this.nodeIdxMap = new HashMap<GraphState,Integer>();
+                int nr = 0;
+                for (GraphState state : this.gts.getStates()) {
+                    this.nodeIdxMap.put(state, nr);
+                    nr++;
+                }
+            } else {
+                this.nodeIdxMap = null;
+            }
+        }
+
+        private final ExploreResult result;
+        private final GTS gts;
+
+        @Override
+        public int nodeCount() {
+            return this.nodeSet().size();
+        }
+
+        @Override
+        public Set<? extends Node> nodeSet() {
+            return this.gts.getStates();
+        }
+
+        @Override
+        public Set<? extends Edge> outEdgeSet(Node node) {
+            return ((GraphState) node).getTransitions();
+        }
+
+        @Override
+        public boolean isSpecial(Node node, Flag flag) {
+            GraphState state = (GraphState) node;
+            boolean result = false;
+            switch (flag) {
+            case FINAL:
+                result = state.isFinal();
+                break;
+            case OPEN:
+                result = !state.isClosed();
+                break;
+            case START:
+                result = state == this.gts.startState();
+                break;
+            case RESULT:
+                result = this.result != null && this.result.containsState(state);
+            }
+            return result;
+        }
+
+        @Override
+        public int nodeIndex(Node node) {
+            if (this.nodeIdxMap == null) {
+                return node.getNumber();
+            } else {
+                return this.nodeIdxMap.get(node);
+            }
+        }
+
+        private final Map<GraphState,Integer> nodeIdxMap;
+
+        @Override
+        public Flag getFlag(String label) {
+            return null;
+        }
+    }
+
+    /** Model built from a graph and a special labels mapping. */
+    private static class GraphModel implements Model {
+        /** Wraps a graph and a special labels mapping into a model.
+         * @throws FormatException if the graph is not compatible with the special labels.
+         */
+        public GraphModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
+            this.graph = graph;
+            this.ltsLabels = ltsLabels == null ? LTSLabels.DEFAULT : ltsLabels;
+            testFormat();
+        }
+
+        /** Tests if the model is consistent with the special state markers.
+         * @throws FormatException if the model has special state markers that occur
+         * on edge labels
+         */
+        private void testFormat() throws FormatException {
+            boolean startFound = false;
+            for (Node node : nodeSet()) {
+                Set<? extends Edge> outEdges = outEdgeSet(node);
+                for (Edge outEdge : outEdges) {
+                    Flag flag = getFlag(outEdge.label().text());
+                    if (flag == null) {
+                        continue;
+                    }
+                    if (!outEdge.isLoop()) {
+                        throw new FormatException(
+                            "Special state marker '%s' occurs as edge label in model",
+                            outEdge.label());
+                    }
+                    if (flag == Flag.START) {
+                        if (startFound) {
+                            throw new FormatException(
+                                "Start state marker '%s' occurs more than once in model",
+                                outEdge.label());
+                        } else {
+                            startFound = true;
+                        }
+                    }
+                }
+            }
+            if (!startFound) {
+                throw new FormatException("Start state marker '%s' does not occur in model",
+                    this.ltsLabels.getLabel(Flag.START));
+            }
+        }
+
+        @Override
+        public int nodeCount() {
+            return this.graph.nodeCount();
+        }
+
+        @Override
+        public Set<? extends Node> nodeSet() {
+            return this.graph.nodeSet();
+        }
+
+        @Override
+        public Set<? extends Edge> outEdgeSet(Node node) {
+            return this.graph.outEdgeSet(node);
+        }
+
+        @Override
+        public boolean isSpecial(Node node, Flag flag) {
+            return false;
+        }
+
+        private final Graph graph;
+
+        @Override
+        public int nodeIndex(Node node) {
+            return node.getNumber();
+        }
+
+        @Override
+        public Flag getFlag(String label) {
+            Flag result = null;
+            if (this.ltsLabels != null) {
+                return this.ltsLabels.getFlag(label);
+            }
+            return result;
+        }
+
+        private final LTSLabels ltsLabels;
     }
 }

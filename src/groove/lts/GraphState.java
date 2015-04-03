@@ -183,25 +183,6 @@ public interface GraphState extends Node {
     public boolean isClosed();
 
     /**
-     * Declares this state to be a result state.
-     * The return value indicates if the result status was changed as
-     * a result of this call.
-     * @return if {@code false}, the state was already known to be a result state
-     */
-    public boolean setResult();
-
-    /**
-     * Declares this state to be a non-result state.
-     * The return value indicates if the result status was changed as
-     * a result of this call.
-     * @return if {@code false}, the state was not known to be a result state
-     */
-    public boolean resetResult();
-
-    /** Indicates if this is a result state. */
-    public boolean isResult();
-
-    /**
      * Declares this state to be an error state.
      * The return value indicates if the error status was changed as
      * a result of this call.

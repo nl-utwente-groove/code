@@ -23,11 +23,6 @@ import groove.lts.Status.Flag;
 
 /**
  * Acceptor that accepts any new state that is added to the LTS.
- *
- * Implements the following methods:
- * - addUpdate (overridden) - add a state to the result set whenever a new node
- *                            is created in the LTS
- *
  * @author Maarten de Mol
  * @version $Revision $
  */
@@ -35,31 +30,36 @@ public class AnyStateAcceptor extends Acceptor {
     /**
      * Constructor. Only calls super method.
      */
-    public AnyStateAcceptor() {
-        super();
+    private AnyStateAcceptor() {
+        super(true);
     }
 
     /**
-     * Constructor. Only calls super method.
-     * @param result - the result set in which the accepted states will be stored
+     * Private constructor for an acceptor with a given exploration bound.
      */
-    public AnyStateAcceptor(Result result) {
-        super(result);
+    private AnyStateAcceptor(int bound) {
+        super(bound);
+    }
+
+    @Override
+    public AnyStateAcceptor newAcceptor(int bound) {
+        return new AnyStateAcceptor(bound);
     }
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
         if (state.isDone()) {
-            getResult().add(state);
+            getResult().addState(state);
         }
     }
 
     @Override
     public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
         if (flag == Flag.DONE) {
-            getResult().add(explored);
-            super.statusUpdate(graph, explored, flag, oldStatus);
+            getResult().addState(explored);
         }
     }
 
+    /** Prototype acceptor. */
+    public final static AnyStateAcceptor PROTOTYPE = new AnyStateAcceptor();
 }

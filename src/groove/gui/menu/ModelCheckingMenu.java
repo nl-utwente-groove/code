@@ -79,7 +79,7 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(Change.GTS)) {
-            refreshActions(source.getGts() != null);
+            refreshActions(source.getGTS() != null);
         }
     }
 

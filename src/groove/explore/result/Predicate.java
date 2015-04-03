@@ -191,11 +191,11 @@ public abstract class Predicate<X> {
      * checks whether a given rule has been applied.
      * <======================================================================>
      */
-    public static class RuleApplied extends TransitionPredicate {
+    public static class ActionApplied extends TransitionPredicate {
         private final Action action;
 
         /** Default constructor. */
-        public RuleApplied(Action action) {
+        public ActionApplied(Action action) {
             this.action = action;
         }
 

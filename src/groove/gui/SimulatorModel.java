@@ -1,6 +1,8 @@
 package groove.gui;
 
 import groove.explore.Exploration;
+import groove.explore.ExplorationListener;
+import groove.explore.ExploreResult;
 import groove.explore.util.StatisticsReporter;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
@@ -427,7 +429,7 @@ public class SimulatorModel implements Cloneable {
             // to have been this transition already
             this.old.trans = trans;
         }
-        changeGts();
+        changeGTS();
         changeState(state);
         MatchResult match = getMatch(state);
         changeMatch(match);
@@ -461,12 +463,12 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Indicates if there is an active GTS. */
-    public final boolean hasGts() {
-        return getGts() != null;
+    public final boolean hasGTS() {
+        return getGTS() != null;
     }
 
     /** Returns the active GTS, if any. */
-    public final GTS getGts() {
+    public final GTS getGTS() {
         return this.gts;
     }
 
@@ -474,16 +476,16 @@ public class SimulatorModel implements Cloneable {
      * Refreshes the GTS by firing an update event if any changes occurred
      * since the GTS was last set or refreshed.
      */
-    public final boolean refreshGts() {
+    public final boolean refreshGTS() {
         start();
-        changeGts();
+        changeGTS();
         return finish();
     }
 
     /**
      * Refreshes the GTS.
      */
-    private final boolean changeGts() {
+    private final boolean changeGTS() {
         boolean result = this.ltsListener.isChanged();
         if (result) {
             this.ltsListener.clear();
@@ -559,13 +561,18 @@ public class SimulatorModel implements Cloneable {
             if (gts != null) {
                 gts.addLTSListener(this.ltsListener);
             }
-            this.gtsCounter.setGTS(gts);
+            getGTSCounter().setGTS(gts);
             this.ltsListener.clear();
             this.gts = gts;
             this.changes.add(Change.GTS);
         }
         return result;
     }
+
+    /** Currently active GTS. */
+    private GTS gts;
+
+    private final MyGTSListener ltsListener = new MyGTSListener();
 
     /**
      * Indicates if there is an active state.
@@ -591,7 +598,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setState(GraphState state) {
         start();
-        changeGts();
+        changeGTS();
         if (changeState(state)) {
             changeMatch(null);
             changeTransition(null);
@@ -615,6 +622,9 @@ public class SimulatorModel implements Cloneable {
         }
         return result;
     }
+
+    /** Currently active state. */
+    private GraphState state;
 
     /** Indicates if there is a currently selected match result. */
     public final boolean hasMatch() {
@@ -652,8 +662,8 @@ public class SimulatorModel implements Cloneable {
             }
         }
         if (matchChanged) {
-            changeSelected(ResourceKind.RULE, match == null ? null
-                : match.getAction().getFullName());
+            changeSelected(ResourceKind.RULE, match == null ? null : match.getAction()
+                .getFullName());
         }
         return finish();
     }
@@ -663,7 +673,7 @@ public class SimulatorModel implements Cloneable {
      * @param trace the new trace to be selected
      * @return if {@code true}, the trace was really changed
      */
-    public final boolean setTrace(Set<GraphTransition> trace) {
+    public final boolean setTrace(Collection<GraphTransition> trace) {
         start();
         boolean result = !this.trace.equals(trace);
         if (result) {
@@ -679,6 +689,9 @@ public class SimulatorModel implements Cloneable {
     public final Set<GraphTransition> getTrace() {
         return Collections.unmodifiableSet(this.trace);
     }
+
+    /** Currently selected trace (set of transitions). */
+    private final Set<GraphTransition> trace = new HashSet<GraphTransition>();
 
     /** Indicates if there is currently a transition selected.
      */
@@ -725,6 +738,9 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** Currently selected match (event or transition). */
+    private MatchResult match;
+
     /**
      * Changes the selected transition.
      */
@@ -736,6 +752,9 @@ public class SimulatorModel implements Cloneable {
         }
         return result;
     }
+
+    /** Currently selected transition, if any. */
+    private GraphTransition trans;
 
     /**
      * Indicates if there is a loaded grammar.
@@ -760,20 +779,15 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            changeExploration();
+            resetExploration();
             clearExplorationStats();
             for (ResourceKind resource : ResourceKind.all(false)) {
                 changeSelected(resource, null);
             }
-            if (getExploration() != null && grammar != null && !grammar.hasErrors()) {
-                try {
-                    getExploration().test(grammar.toGrammar());
-                } catch (FormatException e) {
-                    // the exploration strategy is not compatible with the
-                    // grammar;
-                    // reset to default exploration
-                    changeExploration(new Exploration());
-                }
+            try {
+                setExploration(getExploration());
+            } catch (FormatException e) {
+                // do nothing
             }
         }
         finish();
@@ -794,7 +808,7 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            changeExploration();
+            resetExploration();
         }
         // restrict the selected resources to those that are (still)
         // in the grammar
@@ -816,11 +830,14 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** Currently loaded grammar. */
+    private GrammarModel grammar;
+
     /** Convenience method to return the store of the currently loaded
      * grammar view, if any.
      */
     public final SystemStore getStore() {
-        return this.grammar == null ? null : this.grammar.getStore();
+        return hasGrammar() ? getGrammar().getStore() : null;
     }
 
     /**
@@ -971,34 +988,6 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** Returns true if the simulator is in abstraction mode. */
-    public boolean isAbstractionMode() {
-        return this.abstractionMode;
-    }
-
-    /**
-     * Sets the abstraction mode.
-     * @param value if {@code true}, the simulator is set to abstract.
-     */
-    public boolean setAbstractionMode(boolean value) {
-        start();
-        changeAbstractionMode(value);
-        return finish();
-    }
-
-    /**
-     * Sets the abstraction mode.
-     * @param value if {@code true}, the simulator is set to abstract.
-     */
-    private boolean changeAbstractionMode(boolean value) {
-        boolean result = false;
-        if (value != this.abstractionMode) {
-            this.abstractionMode = value;
-            this.changes.add(Change.ABSTRACT);
-        }
-        return result;
-    }
-
     /**
      * Returns the internally stored default exploration.
      */
@@ -1007,35 +996,67 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Sets the internally stored default exploration.
-     * @param exploration may not be null
+     * Sets the internally stored exploration to a given value.
+     * If the given exploration is incompatible with the grammar,
+     * the grammar's default exploration is used instead.
+     * @param exploration non-{@code null} exploration
      * @throws FormatException if the new exploration is not
      * compatible with the existing grammar
      */
     public void setExploration(Exploration exploration) throws FormatException {
         if (hasGrammar() && !getGrammar().hasErrors()) {
-            exploration.test(getGrammar().toGrammar());
+            try {
+                exploration.test(getGrammar().toGrammar());
+            } catch (FormatException exc) {
+                resetExploration();
+                throw exc;
+            }
         }
         changeExploration(exploration);
     }
 
     /**
-     * If the grammar has a default exploration,
-     * sets the exploration to that exploration.
+     * Sets the internally stored exploration to the default for the grammar.
+     * If there is currently no grammar or it has no default exploration,
+     * sets to {@link Exploration#DEFAULT}
      */
-    public void changeExploration() {
-        Exploration exploration = getGrammar().getDefaultExploration();
-        if (exploration != null) {
-            changeExploration(exploration);
+    private void resetExploration() {
+        Exploration exploration = null;
+        if (hasGrammar()) {
+            exploration = getGrammar().getDefaultExploration();
+        }
+        if (exploration == null) {
+            exploration = Exploration.DEFAULT;
+        }
+        changeExploration(exploration);
+    }
+
+    /** Changes the exploration field, and adds the ltsListener. */
+    private void changeExploration(Exploration exploration) {
+        if (exploration != this.exploration) {
+            if (this.exploration != null) {
+                this.exploration.removeListener(this.ltsListener);
+            }
+            this.exploration = exploration;
+            if (this.exploration != null) {
+                this.exploration.addListener(this.ltsListener);
+            }
         }
     }
 
     /**
-     * Sets the internally stored default exploration.
-     * @param exploration may not be null
+     * The default exploration to be performed. This value is either the
+     * previous exploration, or the default constructor of the Exploration class
+     * (=breadth first). This value may never be null (and must be initialized
+     * explicitly).
      */
-    public void changeExploration(Exploration exploration) {
-        this.exploration = exploration;
+    private Exploration exploration = Exploration.DEFAULT;
+
+    /**
+     * Convenience method to return the last exploration result.
+     */
+    public ExploreResult getResult() {
+        return getExploration().getResult();
     }
 
     /** Returns the display currently showing in the simulator panel. */
@@ -1060,6 +1081,9 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** Display currently showing in the simulator panel. */
+    private DisplayKind display = DisplayKind.HOST;
+
     /**
      * Returns the exploration statistics object associated with the current
      * GTS.
@@ -1080,6 +1104,9 @@ public class SimulatorModel implements Cloneable {
         this.explorationStats = null;
     }
 
+    /** Statistics for the last exploration performed. */
+    private StatisticsReporter explorationStats;
+
     @Override
     public String toString() {
         return "GuiState [gts=" + this.gts + ", state=" + this.state + ", match=" + this.match
@@ -1087,45 +1114,12 @@ public class SimulatorModel implements Cloneable {
             + this.changes + "]";
     }
 
-    /**
-     * Adds a given simulation listener to the list.
-     * An optional parameter indicates which kinds of changes should be
-     * notified.
-     * @param listener the listener to be registered
-     * @param changes the set of change events the listener should be notified of;
-     * if empty, the listener is notified of all types of events
-     */
-    public void addListener(SimulatorListener listener, Change... changes) {
-        if (changes.length == 0) {
-            changes = Change.values();
-        }
-        for (Change change : changes) {
-            List<SimulatorListener> listeners = this.listeners.get(change);
-            if (!listeners.contains(listener)) {
-                listeners.add(listener);
-            }
-        }
-    }
-
-    /**
-     * Removes a given listener from the list.
-     * @param listener the listener to be removed
-     * @param changes the set of change events the listener should be notified of;
-     * if empty, the listener is notified of all types of events
-     */
-    public void removeListener(SimulatorListener listener, Change... changes) {
-        if (changes.length == 0) {
-            changes = Change.values();
-        }
-        for (Change change : changes) {
-            this.listeners.get(change).remove(listener);
-        }
-    }
-
     /** Returns a counter registering all kinds of counts for the currently loaded GTS. */
     public GTSCounter getGTSCounter() {
         return this.gtsCounter;
     }
+
+    private final GTSCounter gtsCounter = new GTSCounter();
 
     /**
      * Starts a transaction.
@@ -1189,16 +1183,6 @@ public class SimulatorModel implements Cloneable {
     private SimulatorModel old;
     /** Set of changes made in the current transaction. */
     private Set<Change> changes = EnumSet.noneOf(Change.class);
-    /** Currently active GTS. */
-    private GTS gts;
-    /** Currently active state. */
-    private GraphState state;
-    /** Currently selected match (event or transition). */
-    private MatchResult match;
-    /** Currently selected transition, if any. */
-    private GraphTransition trans;
-    /** Currently selected trace (set of transitions). */
-    private final Set<GraphTransition> trace = new HashSet<GraphTransition>();
     /** Mapping from resource kinds to sets of selected resources of that kind. */
     private Map<ResourceKind,Set<String>> resources = new EnumMap<ResourceKind,Set<String>>(
         ResourceKind.class);
@@ -1207,23 +1191,42 @@ public class SimulatorModel implements Cloneable {
             this.resources.put(resource, Collections.<String>emptySet());
         }
     }
-    /** Currently loaded grammar. */
-    private GrammarModel grammar;
 
     /**
-     * The default exploration to be performed. This value is either the
-     * previous exploration, or the default constructor of the Exploration class
-     * (=breadth first). This value may never be null (and must be initialized
-     * explicitly).
+     * Adds a given simulation listener to the list.
+     * An optional parameter indicates which kinds of changes should be
+     * notified.
+     * @param listener the listener to be registered
+     * @param changes the set of change events the listener should be notified of;
+     * if empty, the listener is notified of all types of events
      */
-    private Exploration exploration = new Exploration();
-    /** Statistics for the last exploration performed. */
-    private StatisticsReporter explorationStats;
+    public void addListener(SimulatorListener listener, Change... changes) {
+        if (changes.length == 0) {
+            changes = Change.values();
+        }
+        for (Change change : changes) {
+            List<SimulatorListener> listeners = this.listeners.get(change);
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+    }
 
-    /** Flag to indicate that the Simulator is in abstraction mode. */
-    private boolean abstractionMode = false;
-    /** Display currently showing in the simulator panel. */
-    private DisplayKind display = DisplayKind.HOST;
+    /**
+     * Removes a given listener from the list.
+     * @param listener the listener to be removed
+     * @param changes the set of change events the listener should be notified of;
+     * if empty, the listener is notified of all types of events
+     */
+    public void removeListener(SimulatorListener listener, Change... changes) {
+        if (changes.length == 0) {
+            changes = Change.values();
+        }
+        for (Change change : changes) {
+            this.listeners.get(change).remove(listener);
+        }
+    }
+
     /** Array of listeners. */
     private final Map<Change,List<SimulatorListener>> listeners =
         new EnumMap<Change,List<SimulatorListener>>(Change.class);
@@ -1232,13 +1235,26 @@ public class SimulatorModel implements Cloneable {
             this.listeners.put(change, new ArrayList<SimulatorListener>());
         }
     }
-    private final GTSChangeListener ltsListener = new GTSChangeListener();
-    private final GTSCounter gtsCounter = new GTSCounter();
+
+    private static class MyGTSListener extends GTSChangeListener implements ExplorationListener {
+        @Override
+        public void start(Exploration exploration, GTS gts) {
+            setChanged();
+        }
+
+        @Override
+        public void stop(GTS gts) {
+            // do nothing
+        }
+
+        @Override
+        public void abort(GTS gts) {
+            // do nothing
+        }
+    }
 
     /** Change type. */
     public static enum Change {
-        /** The abstraction mode has changed. */
-        ABSTRACT,
         /**
          * The selected control program has changed.
          */
@@ -1250,7 +1266,7 @@ public class SimulatorModel implements Cloneable {
         GRAMMAR,
         /**
          * The GTS has changed.
-         * @see SimulatorModel#getGts()
+         * @see SimulatorModel#getGTS()
          */
         GTS,
         /**
