@@ -153,28 +153,22 @@ public class Exploration {
 
     /**
      * Returns the result of the most recent exploration.
-     * Should only be called after {@link #play(GTS, GraphState)}.
      */
     public ExploreResult getResult() {
-        assert this.lastResult != null;
         return this.lastResult;
     }
 
     /**
      * Returns the state in which the most recent exploration ended.
-     * Should only be called after {@link #play(GTS, GraphState)}.
      */
     public GraphState getLastState() {
-        assert this.lastState != null;
         return this.lastState;
     }
 
     /**
      * Returns the message of the last exploration.
-     * Should only be called after {@link #play(GTS, GraphState)}.
      */
     public String getLastMessage() {
-        assert this.lastMessage != null;
         return this.lastMessage;
     }
 
