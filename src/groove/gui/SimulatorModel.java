@@ -506,15 +506,17 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the GTS was really changed
      * @see #setState(GraphState)
      */
-    public final boolean setGts(GTS gts, boolean switchTab) {
+    public final boolean setGTS(GTS gts, boolean switchTab) {
         start();
-        if (changeGts(gts, false)) {
-            changeState(gts == null ? null : gts.startState());
+        if (changeGTS(gts, false)) {
+            changeState(null);
             changeMatch(null);
             changeTransition(null);
+            setExploreResult(gts == null ? null : new ExploreResult(gts));
             this.trace.clear();
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
+            setExploreResult(gts == null ? null : getExploration().getResult());
             this.changes.add(Change.GTS);
         }
         if (gts != null && getState() == null) {
@@ -527,32 +529,28 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Creates a fresh GTS and fires an update event.
-     * This has the side effects of
-     * <li> setting the state to the start state of the new GTS,
-     * or to {@code null} if the new GTS is {@code null}
-     * <li> setting the transition to {@code null}
-     * <li> setting the event to {@code null}
-     * @return {@code true} if the GTS could be created and set
-     * @see #setGts(GTS, boolean)
+     * Creates a fresh GTS from the grammar model and sets it using {@link #setGTS(GTS, boolean)}.
+     * If the currently stored grammar has errors, sets the GTS to {@code null} instead.
+     * @return {@code true} if the stored GTS was changed as a result of this call
+     * @see #setGTS(GTS, boolean)
      */
-    public final boolean setGts() {
+    public final boolean setGTS() {
         try {
             Grammar grammar = getGrammar().toGrammar();
             GTS gts = new GTS(grammar);
             gts.getRecord().setRandomAccess(true);
-            return setGts(gts, false);
+            return setGTS(gts, false);
         } catch (FormatException e) {
-            return setGts(null, false);
+            return setGTS(null, false);
         }
     }
 
     /**
      * Changes the active GTS.
      * @param always also fire an event if the GTS actually is the same object.
-     * @see #setGts(GTS, boolean)
+     * @see #setGTS(GTS, boolean)
      */
-    private final boolean changeGts(GTS gts, boolean always) {
+    private final boolean changeGTS(GTS gts, boolean always) {
         boolean result = always || this.gts != gts;
         if (result) {
             if (this.gts != null) {
@@ -775,7 +773,7 @@ public class SimulatorModel implements Cloneable {
         start();
         if (changeGrammar(grammar)) {
             // reset the GTS in any case
-            changeGts(null, false);
+            changeGTS(null, false);
             changeState(null);
             changeMatch(null);
             changeTransition(null);
@@ -804,7 +802,7 @@ public class SimulatorModel implements Cloneable {
         GrammarModel grammar = this.grammar;
         changeGrammar(grammar);
         if (reset) {
-            changeGts(null, false);
+            changeGTS(null, false);
             changeState(null);
             changeMatch(null);
             changeTransition(null);
@@ -1053,11 +1051,29 @@ public class SimulatorModel implements Cloneable {
     private Exploration exploration = Exploration.DEFAULT;
 
     /**
+     * Sets the internally stored exploration result.
+     * The new result should have the currently set GTS.
+     */
+    public void setExploreResult(ExploreResult result) {
+        assert result.getGTS() == this.gts;
+        this.exploreResult = result;
+    }
+
+    /**
+     * Tests if the current exploration has a non-{@code null}, non-empty result.
+     */
+    public boolean hasResult() {
+        return getResult() != null && !getResult().isEmpty();
+    }
+
+    /**
      * Convenience method to return the last exploration result.
      */
     public ExploreResult getResult() {
-        return getExploration().getResult();
+        return this.exploreResult;
     }
+
+    private ExploreResult exploreResult;
 
     /** Returns the display currently showing in the simulator panel. */
     public final DisplayKind getDisplay() {

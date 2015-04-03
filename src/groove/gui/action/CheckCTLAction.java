@@ -39,7 +39,7 @@ public class CheckCTLAction extends SimulatorAction {
             boolean doCheck = true;
             ExploreResult result = getSimulatorModel().getResult();
             GTS gts = getSimulatorModel().getGTS();
-            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGts()) {
+            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGTS()) {
                 getActions().getExploreAction()
                     .explore(getSimulatorModel().getExploration(), false);
                 gts = getSimulatorModel().getGTS();
