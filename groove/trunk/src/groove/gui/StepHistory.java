@@ -65,7 +65,7 @@ public class StepHistory implements SimulatorListener {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
-        if (changes.contains(Change.GTS) && source.getGts() != oldModel.getGts()) {
+        if (changes.contains(Change.GTS) && source.getGTS() != oldModel.getGTS()) {
             this.history.clear();
             refreshActions();
         }

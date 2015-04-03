@@ -263,31 +263,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setResult() {
-        int oldStatus = this.status;
-        boolean result = setStatus(Flag.RESULT, true);
-        if (result) {
-            fireStatus(Flag.RESULT, oldStatus);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean resetResult() {
-        int oldStatus = this.status;
-        boolean result = setStatus(Flag.RESULT, false);
-        if (result) {
-            fireStatus(Flag.RESULT, oldStatus);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean isResult() {
-        return hasFlag(Flag.RESULT);
-    }
-
-    @Override
     public boolean setError() {
         int oldStatus = this.status;
         boolean result = setStatus(Flag.ERROR, true);

@@ -22,6 +22,7 @@ import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.algebra.AlgebraFamily;
 import groove.control.Valuator;
 import groove.control.instance.Frame;
+import groove.explore.ExploreResult;
 import groove.explore.util.LTSLabels;
 import groove.grammar.CheckPolicy;
 import groove.grammar.Grammar;
@@ -301,26 +302,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Indicates whether we have found a result state during exploration.
-     * Convenience method for <tt>getResultStateCount() > 0</tt>.
-     */
-    public boolean hasResultStates() {
-        return hasStates(Flag.RESULT);
-    }
-
-    /**
-     * Returns the set of result states.
-     */
-    public Collection<GraphState> getResultStates() {
-        return getStates(Flag.RESULT);
-    }
-
-    /** Returns the set of result states. */
-    public int getResultStateCount() {
-        return getStateCount(Flag.RESULT);
-    }
-
-    /**
      * Indicates if the GTS currently has open (real) states.
      * @return <code>true</code> if the GTS currently has open states
      */
@@ -596,8 +577,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.
      * @param filter determines which part of the LTS should be included
+     * @param answer if non-{@code null}, the result that should be saved.
+     * Only used if {@code filter} equals {@link Filter#RESULT}
      */
-    public MultiGraph toPlainGraph(LTSLabels flags, Filter filter) {
+    public MultiGraph toPlainGraph(LTSLabels flags, Filter filter, ExploreResult answer) {
         MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
         // Set of nodes and edges to be saved
         Collection<? extends GraphState> states;
@@ -612,13 +595,18 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             transitions = getSpanningTransitions(states, flags.showRecipes());
             break;
         case RESULT:
-            transitions = getSpanningTransitions(getResultStates(), flags.showRecipes());
-            Set<GraphState> traces = new LinkedHashSet<GraphState>();
-            traces.add(startState());
-            for (GraphTransition trans : transitions) {
-                traces.add(trans.target());
+            if (answer.storesTransitions()) {
+                transitions = answer.getTransitions();
+                states = answer.getStates();
+            } else {
+                transitions = getSpanningTransitions(answer.getStates(), flags.showRecipes());
+                Set<GraphState> traces = new LinkedHashSet<GraphState>();
+                traces.add(startState());
+                for (GraphTransition trans : transitions) {
+                    traces.add(trans.target());
+                }
+                states = traces;
             }
-            states = traces;
             break;
         default:
             throw new RuntimeException();//groove.util.Exceptions.UNREACHABLE;
@@ -634,7 +622,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             MultiNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
-            if (flags.showResult() && state.isResult()) {
+            if (flags.showResult() && answer != null && answer.containsState(state)) {
                 result.addEdge(image, flags.getResultLabel(), image);
             }
             if (flags.showFinal() && state.isFinal()) {
@@ -818,10 +806,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private Set<GTSListener> listeners = new HashSet<GTSListener>();
 
     /** Set of all flags of which state sets are recorded. */
-    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED,
-        Flag.FINAL,
-        Flag.RESULT,
-        Flag.ERROR);
+    private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.ERROR);
     /** Array of all flags of which state sets are recorded. */
     private static final Flag[] FLAG_ARRAY = FLAG_SET.toArray(new Flag[FLAG_SET.size()]);
 

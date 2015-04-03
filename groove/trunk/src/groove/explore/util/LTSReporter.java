@@ -16,6 +16,7 @@
  */
 package groove.explore.util;
 
+import groove.explore.ExploreResult;
 import groove.graph.multi.MultiGraph;
 import groove.io.FileType;
 import groove.io.external.Exportable;
@@ -38,7 +39,7 @@ import java.io.IOException;
 public class LTSReporter extends AExplorationReporter {
     /** Constructs a new LTS reporter, for a given output file name pattern,
      * a set of format flags and an LTS filter.
-     * @param filter TODO
+     * @param filter determines which part of the LTS should be included
      */
     public LTSReporter(String filePattern, LTSLabels labels, LogReporter logger, Filter filter) {
         this.filePattern = filePattern;
@@ -49,7 +50,12 @@ public class LTSReporter extends AExplorationReporter {
 
     @Override
     public void report() throws IOException {
-        File outFile = exportLTS(getGTS(), this.filePattern, this.labels, this.filter);
+        File outFile =
+            exportLTS(getGTS(),
+                this.filePattern,
+                this.labels,
+                this.filter,
+                getExploration().getResult());
         this.logger.append("LTS saved as %s%n", outFile.getPath());
     }
 
@@ -64,14 +70,16 @@ public class LTSReporter extends AExplorationReporter {
      * @param lts the LTS to be saved
      * @param filePattern string  to derive the file name and format from
      * @param labels options to label particular special states
-     * @param filter TODO
+     * @param filter determines which part of the LTS should be included
+     * @param answer if non-{@code null}, the result that should be saved.
+     * Only used if {@code filter} equals {@link Filter#RESULT}
      * @return the output file name
      * @throws IOException if any error occurred during export
      */
-    static public File exportLTS(GTS lts, String filePattern, LTSLabels labels, Filter filter)
-        throws IOException {
+    static public File exportLTS(GTS lts, String filePattern, LTSLabels labels, Filter filter,
+        ExploreResult answer) throws IOException {
         // Create the LTS view to be exported.
-        MultiGraph ltsGraph = lts.toPlainGraph(labels, filter);
+        MultiGraph ltsGraph = lts.toPlainGraph(labels, filter, answer);
         // Export GTS.
         String ltsName;
         File dir = new File(filePattern);

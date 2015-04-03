@@ -24,6 +24,7 @@ import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.explore.ExploreResult;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphRole;
@@ -446,7 +447,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     /** Returns the traces from the given set of states to the start state. */
-    public Set<LTSJCell> findTraces(Collection<GraphState> states) {
+    public Set<LTSJCell> findTraces(Iterable<GraphState> states) {
         Set<GraphTransition> simulatorTrace = new HashSet<GraphTransition>();
         Set<LTSJCell> result = new HashSet<LTSJCell>();
         LTSJModel model = getModel();
@@ -464,13 +465,49 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         return result;
     }
 
+    /** Convenience method to test if there is a non-empty result object. */
+    private boolean hasResult() {
+        return getSimulatorModel() != null && !getSimulatorModel().getResult().isEmpty();
+    }
+
+    /** Convenience method to returns the result object from the simulator model, if any. */
+    private ExploreResult getResult() {
+        return getSimulatorModel() == null ? null : getSimulatorModel().getResult();
+    }
+
+    /** Convenience method to test whether a given state is included in the result object. */
+    public boolean isResult(GraphState state) {
+        ExploreResult result = getResult();
+        return result != null && result.containsState(state);
+    }
+
+    /** Returns the trace from a given result set. */
+    private Set<LTSJCell> findTraces() {
+        Set<LTSJCell> result;
+        ExploreResult answer = getResult();
+        if (getResult().storesTransitions()) {
+            result = new HashSet<LTSJCell>();
+            LTSJModel model = getModel();
+            for (GraphState state : answer) {
+                result.add((LTSJCell) model.getJCellForNode(state));
+            }
+            for (GraphTransition trans : answer.getTransitions()) {
+                result.add((LTSJEdge) model.getJCellForEdge(trans));
+            }
+            getSimulatorModel().setTrace(answer.getTransitions());
+        } else {
+            result = findTraces(answer);
+        }
+        return result;
+    }
+
     /** Filters the LTS.
      * @return {@code true} if any cells were added (necessitating a relayout). */
     public boolean refreshFiltering() {
         boolean result = false;
         Set<LTSJCell> traces = null;
-        if (getFilter() == Filter.RESULT && getModel().getGraph().hasResultStates()) {
-            traces = findTraces(getModel().getGraph().getResultStates());
+        if (getFilter() == Filter.RESULT && hasResult()) {
+            traces = findTraces();
         }
         // first make the vertices (in)visible,
         // as otherwise they may prevent the edges from becoming visible
@@ -530,8 +567,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         if (result) {
             if (getModel().getStateBound() < getModel().nodeCount()) {
                 result = false;
-            } else if (getFilter() == Filter.RESULT) {
-                result = !getModel().getGraph().hasResultStates();
+            } else if (getFilter() == Filter.RESULT && getSimulatorModel() != null) {
+                result = !hasResult();
             }
         }
         return result;

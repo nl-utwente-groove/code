@@ -150,9 +150,11 @@ public class StateTree extends JTree implements SimulatorListener {
             public void itemStateChanged(ItemEvent e) {
                 if (suspendListening()) {
                     SimulatorModel model = getSimulatorModel();
-                    refreshList(model.getGts(), model.getState());
-                    refreshSelection(model.getState(), (RuleModel) model.getResource(RULE),
-                        model.getMatch(), model.getTransition());
+                    refreshList(model.getGTS(), model.getState());
+                    refreshSelection(model.getState(),
+                        (RuleModel) model.getResource(RULE),
+                        model.getMatch(),
+                        model.getTransition());
                     activateListening();
                 }
             }
@@ -232,21 +234,25 @@ public class StateTree extends JTree implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (suspendListening()) {
             if (changes.contains(Change.GTS)) {
-                setEnabled(source.hasGts());
-                refreshList(source.getGts(), oldModel.getState());
+                setEnabled(source.hasGTS());
+                refreshList(source.getGTS(), oldModel.getState());
             }
             RuleModel ruleModel = (RuleModel) source.getResource(RULE);
             if (changes.contains(Change.TRACE)) {
                 Set<GraphState> refreshables = new HashSet<GraphState>();
-                for (GraphTransition trans : oldModel.getTrace()) {
-                    refreshables.add(trans.source());
+                if (!changes.contains(Change.GTS)) {
+                    for (GraphTransition trans : oldModel.getTrace()) {
+                        refreshables.add(trans.source());
+                    }
                 }
                 for (GraphTransition trans : source.getTrace()) {
                     refreshables.add(trans.source());
                 }
                 refreshStates(refreshables);
             }
-            refreshSelection(source.getState(), ruleModel, source.getMatch(),
+            refreshSelection(source.getState(),
+                ruleModel,
+                source.getMatch(),
                 source.getTransition());
             activateListening();
         }
@@ -617,7 +623,7 @@ public class StateTree extends JTree implements SimulatorListener {
     /**
      * Tree node wrapping a graph state.
      */
-    static class StateTreeNode extends NumberedTreeNode {
+    class StateTreeNode extends NumberedTreeNode {
         /**
          * Creates a new rule node based on a given state. The node can have
          * children.
@@ -659,7 +665,7 @@ public class StateTree extends JTree implements SimulatorListener {
             GraphState state = getState();
             if (state instanceof StartGraphState) {
                 return Icons.STATE_START_ICON;
-            } else if (state.isResult()) {
+            } else if (isResult(state)) {
                 return Icons.STATE_RESULT_ICON;
             } else if (state.isFinal()) {
                 return Icons.STATE_FINAL_ICON;
@@ -675,6 +681,10 @@ public class StateTree extends JTree implements SimulatorListener {
             } else {
                 return Icons.STATE_OPEN_ICON;
             }
+        }
+
+        private boolean isResult(GraphState state) {
+            return getSimulatorModel().getResult().containsState(state);
         }
 
         private final boolean expanded;

@@ -124,8 +124,6 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 jCell.setLook(Look.TRANSIENT, explored.isTransient());
                 jCell.setLook(Look.FINAL, explored.isFinal());
                 break;
-            case RESULT:
-                jCell.setLook(Look.RESULT, explored.isResult());
             }
             if (explored.isAbsent() && !Flag.ABSENT.test(oldStatus)) {
                 Iterator<? extends JEdge<GTS>> iter = jCell.getContext();

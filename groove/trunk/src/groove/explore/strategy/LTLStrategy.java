@@ -18,9 +18,9 @@
 package groove.explore.strategy;
 
 import gov.nasa.ltl.trans.Formula;
+import groove.explore.ExploreResult;
 import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
-import groove.explore.result.Result;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
 import groove.graph.EdgeRole;
@@ -51,10 +51,10 @@ import java.util.Stack;
 public class LTLStrategy extends Strategy implements ExploreIterator {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        assert acceptor instanceof CycleAcceptor;
         MatcherFactory.instance().setDefaultEngine();
         this.stateSet = new ProductStateSet();
         this.stateSet.addListener(this.collector);
-        assert acceptor instanceof CycleAcceptor;
         this.acceptor = (CycleAcceptor) acceptor;
         this.acceptor.setStrategy(this);
         this.result = acceptor.getResult();
@@ -249,7 +249,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         if (result) {
             // notify counter-example
             for (ProductState state : getStateStack()) {
-                this.result.add(state.getGraphState());
+                this.result.addState(state.getGraphState());
             }
         }
         return result;
@@ -303,6 +303,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
             this.stateStrategy.play();
         }
     }
+
+    private final Strategy stateStrategy = new ExploreStateStrategy();
 
     /**
      * Adds a product transition to the product GTS. If the source state is
@@ -389,7 +391,6 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     private String property;
     /** Record of this model checking run. */
     private Record record = new Record();
-    private final Strategy stateStrategy = new ExploreStateStrategy();
     /** The synchronised product of the system and the property. */
     private ProductStateSet stateSet;
     /** The current Buchi graph-state the system is at. */
@@ -403,5 +404,5 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     /** Initial location of the Buchi graph encoding the property to be verified. */
     private BuchiLocation startLocation;
     private Stack<ProductState> stateStack;
-    private Result result;
+    private ExploreResult result;
 }
