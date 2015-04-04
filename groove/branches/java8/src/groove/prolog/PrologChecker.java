@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.prolog;
@@ -36,7 +36,7 @@ import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Command-line tool for running Prolog queries after state space exploration.
- * 
+ *
  * @author Eduardo Zambon
  */
 public class PrologChecker extends GrooveCmdLineTool<Object> {
@@ -78,7 +78,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
         long genStartTime = System.currentTimeMillis();
         GTS gts;
         try {
-            gts = Generator.execute(genArgs);
+            gts = Generator.execute(genArgs).getGTS();
         } catch (Exception e) {
             throw new Exception("Error while invoking Generator\n" + e.getMessage(), e);
         }
@@ -103,11 +103,11 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
     }
 
     @Option(name = "-p", metaVar = "query", usage = "Performs the given query (multiple allowed)",
-            handler = QueryHandler.class, required = true)
+        handler = QueryHandler.class, required = true)
     private List<String> queries;
     @Option(name = "-g", metaVar = "args",
-            usage = "Invoke the generator using <args> as options + arguments",
-            handler = GeneratorHandler.class, required = true)
+        usage = "Invoke the generator using <args> as options + arguments",
+        handler = GeneratorHandler.class, required = true)
     private GeneratorArgs genArgs;
 
     /**
@@ -147,7 +147,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
     public static class GeneratorHandler extends OptionHandler<GeneratorArgs> {
         /** Required constructor. */
         public GeneratorHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super GeneratorArgs> setter) {
+            Setter<? super GeneratorArgs> setter) {
             super(parser, option, setter);
         }
 

@@ -17,9 +17,11 @@
 
 package groove.explore.result;
 
+import groove.explore.ExploreResult;
 import groove.explore.strategy.LTLStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.Status.Flag;
 import groove.verify.ModelChecking.Outcome;
 import groove.verify.ModelChecking.Record;
@@ -30,6 +32,7 @@ import groove.verify.ProductTransition;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Acceptor that is notified on closing a Buchi graph-state in a
@@ -42,9 +45,25 @@ import java.util.Collection;
  * @version $Revision$
  */
 public class CycleAcceptor extends Acceptor implements ProductListener {
-    /** Creates a new acceptor with a 1-bounded {@link Result}. */
-    public CycleAcceptor() {
-        super(new CycleResult());
+    /** Creates a new acceptor with a 1-bounded {@link ExploreResult}. */
+    private CycleAcceptor(boolean prototype) {
+        super(prototype);
+    }
+
+    @Override
+    public CycleAcceptor newAcceptor(int bound) {
+        // the bound is disregarded
+        return new CycleAcceptor(false);
+    }
+
+    @Override
+    protected ExploreResult createResult(GTS gts) {
+        return new CycleResult(gts);
+    }
+
+    @Override
+    public boolean done() {
+        return !getResult().isEmpty();
     }
 
     /** Sets the strategy to which this acceptor listens,
@@ -53,11 +72,6 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     public void setStrategy(LTLStrategy strategy) {
         this.strategy = strategy;
         this.record = strategy.getRecord();
-    }
-
-    @Override
-    public void setResult(Result result) {
-        // resist attempts to change the result: do nothing
     }
 
     @Override
@@ -77,9 +91,9 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
             if (event != Outcome.OK) {
                 // put the counter-example in the result
                 for (ProductState stackState : this.strategy.getStateStack()) {
-                    getResult().add(stackState.getGraphState());
+                    getResult().addState(stackState.getGraphState());
                 }
-                getResult().add(state.getGraphState());
+                getResult().addState(state.getGraphState());
             }
         }
     }
@@ -114,12 +128,11 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     @Override
     public String getMessage() {
         String result;
-        Collection<GraphState> states = getResult().getValue();
         String property = this.strategy.getProperty();
-        if (states.size() == 0) {
+        if (getResult().isEmpty()) {
             result = "No counterexample found for " + property;
         } else {
-            result = property + " is violated; counterexample: " + states;
+            result = property + " is violated; counterexample: " + getResult();
         }
         return result;
     }
@@ -127,15 +140,37 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     private LTLStrategy strategy;
     private Record record;
 
+    /** Prototype acceptor. */
+    public static final CycleAcceptor PROTOTYPE = new CycleAcceptor(true);
+
     /**
      * Type of the result object for the {@link CycleAcceptor}.
      * The result is a list rather than a set, allowing for the multiple
      * occurrence of the same graph state in a counter-example.
      */
-    static private class CycleResult extends Result {
-        public CycleResult() {
-            super(1);
+    static private class CycleResult extends ExploreResult {
+        public CycleResult(GTS gts) {
+            super(gts);
+            this.transitions = new ArrayList<GraphTransition>();
         }
+
+        @Override
+        public void addState(GraphState state) {
+            super.addState(state);
+            if (this.lastState != null) {
+                // look for the outgoing transition to state
+                for (GraphTransition trans : this.lastState.getTransitions()) {
+                    if (trans.target() == state) {
+                        addTransition(trans);
+                        break;
+                    }
+                }
+            }
+            this.lastState = state;
+        }
+
+        /** The previously added state. */
+        private GraphState lastState;
 
         @Override
         protected Collection<GraphState> createResultSet() {
@@ -143,8 +178,20 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         }
 
         @Override
-        public Result newInstance() {
-            return new CycleResult();
+        public boolean storesTransitions() {
+            return true;
         }
+
+        /** Adds a transition to those stored in this result object. */
+        private void addTransition(GraphTransition trans) {
+            this.transitions.add(trans);
+        }
+
+        @Override
+        public Collection<GraphTransition> getTransitions() {
+            return this.transitions;
+        }
+
+        private List<GraphTransition> transitions;
     }
 }

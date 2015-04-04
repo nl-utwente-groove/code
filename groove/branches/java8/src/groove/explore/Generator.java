@@ -26,7 +26,6 @@ import groove.explore.util.LogReporter;
 import groove.explore.util.StateReporter;
 import groove.grammar.GrammarKey;
 import groove.lts.Filter;
-import groove.lts.GTS;
 import groove.transform.Transformer;
 import groove.util.cli.DirectoryHandler;
 import groove.util.cli.GrammarHandler;
@@ -55,7 +54,7 @@ import org.kohsuke.args4j.spi.Setter;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Generator extends GrooveCmdLineTool<GTS> {
+public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /**
      * Constructs the generator and processes the command-line arguments.
      * @throws CmdLineException if any error was found in the command-line arguments
@@ -68,15 +67,15 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * Runs the exploration and returns the generated GTS.
      */
     @Override
-    protected GTS run() throws Exception {
+    protected ExploreResult run() throws Exception {
         Transformer transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
             transformer.addListener(new GenerateProgressListener());
         }
-        transformer.explore(getStartGraphs());
+        ExploreResult result = transformer.explore(getStartGraphs());
         getReporter().report();
-        return transformer.getGTS();
+        return result;
     }
 
     /* Adds a message about the -XX:SoftRefLRUPolicyMSPerMB JVM option. */
@@ -414,14 +413,14 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * @return the generated transition system
      * @throws Exception if any error occurred that prevented the GTS from being fully generated
      */
-    static public GTS execute(String[] args) throws Exception {
-        staticGTS = new Generator(args).start();
-        return staticGTS;
+    static public ExploreResult execute(String[] args) throws Exception {
+        staticResult = new Generator(args).start();
+        return staticResult;
     }
 
     /** Returns the most recently generated GTS. */
-    static public GTS getGts() {
-        return staticGTS;
+    static public ExploreResult getGts() {
+        return staticResult;
     }
 
     /**
@@ -429,7 +428,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * profiling. The field is cleared in the constructor, so consecutive
      * Generator instances work as expected.
      */
-    private static GTS staticGTS;
+    private static ExploreResult staticResult;
 
     /** Handler for the {@link #ltsLabels} option. */
     public static class LTSLabelsHandler extends OneArgumentOptionHandler<LTSLabels> {

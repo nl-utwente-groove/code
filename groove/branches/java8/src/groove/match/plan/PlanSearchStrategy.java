@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
@@ -54,8 +54,7 @@ public class PlanSearchStrategy implements SearchStrategy {
      * @param plan the search items that make up the search plan
      * @param oracle the oracle to obtain values for unbound variable nodes
      */
-    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan,
-            ValueOracle oracle) {
+    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan, ValueOracle oracle) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
@@ -77,8 +76,7 @@ public class PlanSearchStrategy implements SearchStrategy {
     }
 
     @Override
-    public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
-            Visitor<TreeMatch,T> visitor) {
+    public <T> T traverse(HostGraph host, RuleToHostMap seedMap, Visitor<TreeMatch,T> visitor) {
         Search search = getSearch(host, seedMap);
         while (search.find() && visitor.visit(search.getMatch())) {
             // do nothing
@@ -102,8 +100,7 @@ public class PlanSearchStrategy implements SearchStrategy {
 
     @Override
     public String toString() {
-        return this.plan.toString()
-            + (isInjective() ? " (injective)" : " (non-injective)");
+        return this.plan.toString() + (isInjective() ? " (injective)" : " (non-injective)");
     }
 
     @Override
@@ -144,9 +141,7 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Callback factory method for an auxiliary {@link Search} object.
      */
     private Search getSearch(HostGraph host, RuleToHostMap seedMap) {
-        //        if (this.search == null) {
         this.search = createSearch();
-        //        }
         this.search.initialise(host, seedMap);
         return this.search;
     }
@@ -280,8 +275,8 @@ public class PlanSearchStrategy implements SearchStrategy {
      */
     private void testFixed(boolean fixed) {
         if (this.fixed != fixed) {
-            throw new IllegalStateException(String.format(
-                "Search plan is %s fixed", fixed ? "not yet" : ""));
+            throw new IllegalStateException(String.format("Search plan is %s fixed", fixed
+                ? "not yet" : ""));
         }
     }
 
@@ -332,11 +327,9 @@ public class PlanSearchStrategy implements SearchStrategy {
     private boolean fixed;
 
     /** Reporter instance to profile matcher methods. */
-    static private final Reporter reporter =
-        Reporter.register(PlanSearchStrategy.class);
+    static private final Reporter reporter = Reporter.register(PlanSearchStrategy.class);
     /** Handle for profiling {@link Search#find()} */
-    static public final Reporter searchFindReporter =
-        reporter.register("Search.find()");
+    static public final Reporter searchFindReporter = reporter.register("Search.find()");
 
     /**
      * Class implementing an instantiation of the search plan algorithm for a
@@ -349,20 +342,13 @@ public class PlanSearchStrategy implements SearchStrategy {
             this.records = new SearchItem.Record[planSize];
             this.influence = new SearchItem.Record[planSize][];
             this.influenceCount = new int[planSize];
-            this.nodeImages =
-                new HostNode[PlanSearchStrategy.this.nodeKeys.length];
-            this.edgeImages =
-                new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
-            this.varImages =
-                new TypeElement[PlanSearchStrategy.this.varKeys.length];
-            this.nodeSeeds =
-                new HostNode[PlanSearchStrategy.this.nodeKeys.length];
-            this.edgeSeeds =
-                new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
-            this.varSeeds =
-                new TypeElement[PlanSearchStrategy.this.varKeys.length];
-            this.subMatches =
-                new TreeMatch[PlanSearchStrategy.this.condIxMap.size()];
+            this.nodeImages = new HostNode[PlanSearchStrategy.this.nodeKeys.length];
+            this.edgeImages = new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
+            this.varImages = new TypeElement[PlanSearchStrategy.this.varKeys.length];
+            this.nodeSeeds = new HostNode[PlanSearchStrategy.this.nodeKeys.length];
+            this.edgeSeeds = new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
+            this.varSeeds = new TypeElement[PlanSearchStrategy.this.varKeys.length];
+            this.subMatches = new TreeMatch[PlanSearchStrategy.this.condIxMap.size()];
         }
 
         /** Initialises the search for a given host graph and seed map. */
@@ -372,20 +358,20 @@ public class PlanSearchStrategy implements SearchStrategy {
                 getUsedNodes().clear();
             }
             if (seedMap != null) {
-                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : seedMap.nodeMap().entrySet()) {
+                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : seedMap.nodeMap()
+                    .entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
                     int i = getNodeIx(nodeEntry.getKey());
-                    this.nodeImages[i] =
-                        this.nodeSeeds[i] = nodeEntry.getValue();
+                    this.nodeImages[i] = this.nodeSeeds[i] = nodeEntry.getValue();
                     if (isInjective()) {
                         getUsedNodes().add(nodeEntry.getValue());
                     }
                 }
-                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : seedMap.edgeMap().entrySet()) {
+                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : seedMap.edgeMap()
+                    .entrySet()) {
                     assert isEdgeFound(edgeEntry.getKey());
                     int i = getEdgeIx(edgeEntry.getKey());
-                    this.edgeImages[i] =
-                        this.edgeSeeds[i] = edgeEntry.getValue();
+                    this.edgeImages[i] = this.edgeSeeds[i] = edgeEntry.getValue();
                 }
                 for (Map.Entry<LabelVar,TypeElement> varEntry : seedMap.getValuation().entrySet()) {
                     assert isVarFound(varEntry.getKey());
@@ -420,8 +406,7 @@ public class PlanSearchStrategy implements SearchStrategy {
             if (found) {
                 current = planSize - 1;
                 SearchItem.Record currentRecord;
-                while (current >= 0
-                    && !(currentRecord = getRecord(current)).isRelevant()) {
+                while (current >= 0 && !(currentRecord = getRecord(current)).isRelevant()) {
                     currentRecord.repeat();
                     current--;
                 }
@@ -438,8 +423,7 @@ public class PlanSearchStrategy implements SearchStrategy {
                 } else if (getRecord(current).isEmpty()) {
                     // go back to the last dependency to have any hope
                     // of finding a match
-                    int dependency =
-                        PlanSearchStrategy.this.plan.getDependency(current);
+                    int dependency = PlanSearchStrategy.this.plan.getDependency(current);
                     for (current--; current > dependency; current--) {
                         getRecord(current).repeat();
                     }
@@ -451,12 +435,10 @@ public class PlanSearchStrategy implements SearchStrategy {
             boolean oldFound = this.found;
             this.found = found;
             if (PRINT_MATCHES) {
-                Condition condition =
-                    PlanSearchStrategy.this.plan.getCondition();
+                Condition condition = PlanSearchStrategy.this.plan.getCondition();
                 if (condition.hasRule() && condition.getRule().isTop()) {
-                    System.out.printf("Next match for %s%s%n",
-                        condition.getName(), oldFound ? ": " : " in "
-                            + this.host);
+                    System.out.printf("Next match for %s%s%n", condition.getName(), oldFound ? ": "
+                        : " in " + this.host);
                     if (found) {
                         System.out.print("  " + getMatch());
                     } else {
@@ -480,14 +462,11 @@ public class PlanSearchStrategy implements SearchStrategy {
                 result = item.createRecord(this);
                 result.initialise(this.host);
                 this.records[current] = result;
-                this.influence[current] =
-                    new SearchItem.Record[this.influence.length - current];
-                int dependency =
-                    PlanSearchStrategy.this.plan.getDependency(current);
+                this.influence[current] = new SearchItem.Record[this.influence.length - current];
+                int dependency = PlanSearchStrategy.this.plan.getDependency(current);
                 assert dependency < current;
                 if (dependency >= 0) {
-                    this.influence[dependency][this.influenceCount[dependency]] =
-                        result;
+                    this.influence[dependency][this.influenceCount[dependency]] = result;
                     this.influenceCount[dependency]++;
                 }
                 if (this.lastSingular == current - 1 && result.isSingular()) {
@@ -500,16 +479,17 @@ public class PlanSearchStrategy implements SearchStrategy {
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, HostNode image) {
             if (CHECK_IMAGES) {
-                if (image instanceof DefaultHostNode
-                    && !this.host.containsNode(image)) {
-                    assert false : String.format(
-                        "Node %s does not occur in graph %s", image, this.host);
+                if (image instanceof DefaultHostNode && !this.host.containsNode(image)) {
+                    assert false : String.format("Node %s does not occur in graph %s",
+                        image,
+                        this.host);
                 }
             }
             RuleNode nodeKey = PlanSearchStrategy.this.nodeKeys[index];
-            assert image == null || this.nodeSeeds[index] == null : String.format(
-                "Assignment %s=%s replaces pre-matched image %s", nodeKey,
-                image, this.nodeSeeds[index]);
+            assert image == null || this.nodeSeeds[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s",
+                nodeKey,
+                image,
+                this.nodeSeeds[index]);
             boolean keyIsVariableNode = nodeKey instanceof VariableNode;
             if (image instanceof ValueNode) {
                 // value nodes only matched by value nodes without signature or of the
@@ -517,8 +497,7 @@ public class PlanSearchStrategy implements SearchStrategy {
                 if (!keyIsVariableNode) {
                     return false;
                 } else {
-                    Sort keySignature =
-                        ((VariableNode) nodeKey).getSignature();
+                    Sort keySignature = ((VariableNode) nodeKey).getSignature();
                     if (((ValueNode) image).getSignature() != keySignature) {
                         return false;
                     }
@@ -529,8 +508,8 @@ public class PlanSearchStrategy implements SearchStrategy {
                 HostNode oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
-                    assert removed : String.format(
-                        "Node image %s not in used nodes %s", oldImage,
+                    assert removed : String.format("Node image %s not in used nodes %s",
+                        oldImage,
                         getUsedNodes());
                 }
                 if (image != null && !getUsedNodes().add(image)) {
@@ -546,8 +525,9 @@ public class PlanSearchStrategy implements SearchStrategy {
         final boolean putEdge(int index, HostEdge image) {
             if (CHECK_IMAGES) {
                 if (image != null && !this.host.containsEdge(image)) {
-                    assert false : String.format(
-                        "Edge %s does not occur in graph %s", image, this.host);
+                    assert false : String.format("Edge %s does not occur in graph %s",
+                        image,
+                        this.host);
                 }
             }
             this.edgeImages[index] = image;
@@ -614,32 +594,26 @@ public class PlanSearchStrategy implements SearchStrategy {
         public TreeMatch getMatch() {
             TreeMatch result = null;
             if (this.found) {
-                RuleToHostMap patternMap =
-                    this.host.getFactory().createRuleToHostMap();
+                RuleToHostMap patternMap = this.host.getFactory().createRuleToHostMap();
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     HostNode image = this.nodeImages[i];
                     if (image != null) {
-                        patternMap.putNode(PlanSearchStrategy.this.nodeKeys[i],
-                            image);
+                        patternMap.putNode(PlanSearchStrategy.this.nodeKeys[i], image);
                     }
                 }
                 for (int i = 0; i < this.edgeImages.length; i++) {
                     HostEdge image = this.edgeImages[i];
                     if (image != null) {
-                        patternMap.putEdge(PlanSearchStrategy.this.edgeKeys[i],
-                            image);
+                        patternMap.putEdge(PlanSearchStrategy.this.edgeKeys[i], image);
                     }
                 }
                 for (int i = 0; i < this.varImages.length; i++) {
                     TypeElement image = this.varImages[i];
                     if (image != null) {
-                        patternMap.putVar(PlanSearchStrategy.this.varKeys[i],
-                            image);
+                        patternMap.putVar(PlanSearchStrategy.this.varKeys[i], image);
                     }
                 }
-                result =
-                    new TreeMatch(PlanSearchStrategy.this.plan.getCondition(),
-                        patternMap);
+                result = new TreeMatch(PlanSearchStrategy.this.plan.getCondition(), patternMap);
                 for (int i = 0; i < this.subMatches.length; i++) {
                     result.addSubMatch(this.subMatches[i]);
                 }

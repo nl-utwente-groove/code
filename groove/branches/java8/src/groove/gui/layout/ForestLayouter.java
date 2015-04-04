@@ -96,16 +96,14 @@ public class ForestLayouter extends AbstractLayouter {
     private Forest computeForest(Forest oldForest) {
         BranchMap oldBranchMap = oldForest.two();
         // Collect the layout nodes whose position in the forest should remain fixed
-        Set<JVertex<?>> fixed = new HashSet<JVertex<?>>(this.immovableMap.keySet());
+        Set<JVertex<?>> fixed = new HashSet<JVertex<?>>();
         fixed.retainAll(oldBranchMap.keySet());
         // clear the indegree- and branch maps
         Map<Integer,Set<LayoutNode>> inDegreeMap = new TreeMap<Integer,Set<LayoutNode>>();
         BranchMap branchMap = new BranchMap();
-        // count the incoming edges and compose the branch map
-        for (Map.Entry<JVertex<?>,LayoutNode> layoutEntry : this.layoutMap.entrySet()) {
-            JVertex<?> key = layoutEntry.getKey();
+        // compose the branch map
+        for (JVertex<?> key : this.layoutMap.keySet()) {
             assert key.getVisuals().isVisible();
-            LayoutNode layoutable = layoutEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<LayoutNode> branchSet = new LinkedHashSet<LayoutNode>();
             branchMap.put(key, branchSet);
@@ -114,11 +112,16 @@ public class ForestLayouter extends AbstractLayouter {
             if (oldBranchSet != null) {
                 for (LayoutNode oldChild : oldBranchSet) {
                     JVertex<?> jVertex = oldChild.getVertex();
-                    if (fixed.contains(jVertex)) {
+                    if (this.immovableMap.containsKey(jVertex)) {
                         branchSet.add(this.layoutMap.get(jVertex));
+                        fixed.add(jVertex);
                     }
                 }
             }
+        }
+        // count the incoming edges and add outgoing edges to the branch map
+        for (Map.Entry<JVertex<?>,LayoutNode> layoutEntry : this.layoutMap.entrySet()) {
+            JVertex<?> key = layoutEntry.getKey();
             // Initialise the incoming edge count
             int inEdgeCount = 0;
             // calculate the incoming edge count and (deterministic) outgoing edge map
@@ -147,6 +150,7 @@ public class ForestLayouter extends AbstractLayouter {
                     inEdgeCount++;
                 }
             }
+            Set<LayoutNode> branchSet = branchMap.get(key);
             for (JEdge<?> edge : outEdges) {
                 JVertex<?> targetVertex = edge.getTargetVertex();
                 branchSet.add(this.layoutMap.get(targetVertex));
@@ -156,7 +160,7 @@ public class ForestLayouter extends AbstractLayouter {
             if (inDegreeSet == null) {
                 inDegreeMap.put(inEdgeCount, inDegreeSet = new LinkedHashSet<LayoutNode>());
             }
-            inDegreeSet.add(layoutable);
+            inDegreeSet.add(layoutEntry.getValue());
         }
         Set<LayoutNode> remaining = new LinkedHashSet<LayoutNode>();
         // Transfer immovable old roots

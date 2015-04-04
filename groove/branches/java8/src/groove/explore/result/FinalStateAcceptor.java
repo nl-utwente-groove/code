@@ -25,21 +25,31 @@ import groove.lts.Status.Flag;
  */
 public class FinalStateAcceptor extends Acceptor {
     /**
-     * Creates an instance with a default {@link Result}.
+     * Creates a default instance.
      */
-    public FinalStateAcceptor() {
-        // empty
+    private FinalStateAcceptor() {
+        super(true);
     }
 
-    /** Creates an instance with given {@link Result}. */
-    public FinalStateAcceptor(Result result) {
-        super(result);
+    /**
+     * Creates an instance with a given exploration bound.
+     */
+    private FinalStateAcceptor(int bound) {
+        super(bound);
+    }
+
+    @Override
+    public FinalStateAcceptor newAcceptor(int bound) {
+        return new FinalStateAcceptor(bound);
     }
 
     @Override
     public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
         if (!Flag.FINAL.test(oldStatus) && state.isFinal()) {
-            getResult().add(state);
+            getResult().addState(state);
         }
     }
+
+    /** Prototype acceptor. */
+    public static final FinalStateAcceptor PROTOTYPE = new FinalStateAcceptor();
 }

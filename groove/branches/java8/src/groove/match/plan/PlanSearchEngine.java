@@ -1,22 +1,21 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
 
-import static groove.match.SearchEngine.SearchMode.NORMAL;
 import groove.algebra.AlgebraFamily;
 import groove.automaton.RegExpr;
 import groove.grammar.Condition;
@@ -47,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,10 +68,9 @@ public class PlanSearchEngine extends SearchEngine {
     /**
      * Private constructor. Get the instance through
      * {@link #getInstance()}.
-     * @see AlgebraFamily#getInstance(String)
      */
-    private PlanSearchEngine(SearchMode searchMode) {
-        this.searchMode = searchMode;
+    private PlanSearchEngine() {
+        // empty
     }
 
     @Override
@@ -82,7 +79,7 @@ public class PlanSearchEngine extends SearchEngine {
         if (condition.hasRule()) {
             anchorKeys.addAll(condition.getRule().getAnchor());
         }
-        PlanData planData = new PlanData(condition, this.searchMode);
+        PlanData planData = new PlanData(condition);
         if (seed == null) {
             seed = new Anchor();
         }
@@ -99,23 +96,22 @@ public class PlanSearchEngine extends SearchEngine {
             relevant |=
                 item instanceof ConditionSearchItem
                     && ((ConditionSearchItem) item).getCondition().getOp() == Op.FORALL;
-            // EZ says: when working in minimal search mode, everything is
-            // relevant. This is true even if the sub-tree is formed only of
-            // readers and NACs because the pre-match checks on multiplicities
-            // may fail and we want to properly backtrack and continue the search.
-            relevant |= this.searchMode == SearchMode.MINIMAL;
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan, oracle);
         if (PRINT) {
-            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s", condition.getName(),
-                seed, result));
+            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s",
+                condition.getName(),
+                seed,
+                result));
             System.out.printf("%n    Dependencies & Relevance: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d%s: %s", i, plan.get(i).isRelevant() ? "*" : "",
+                System.out.printf("%d%s: %s",
+                    i,
+                    plan.get(i).isRelevant() ? "*" : "",
                     plan.getDependency(i));
             }
             System.out.println("]");
@@ -124,30 +120,13 @@ public class PlanSearchEngine extends SearchEngine {
         return result;
     }
 
-    /** The search mode for plans created by this engine. */
-    private final SearchMode searchMode;
+    static private PlanSearchEngine instance = new PlanSearchEngine();
 
     /** Returns an instance of this factory class.
-     * @see AlgebraFamily#getInstance(String)
      */
     static public PlanSearchEngine getInstance() {
-        return getInstance(SearchMode.NORMAL);
+        return instance;
     }
-
-    /** Returns an instance of this factory class, for a given search mode.
-     * @see AlgebraFamily#getInstance(String)
-     */
-    static public PlanSearchEngine getInstance(SearchMode searchMode) {
-        if (instance == null) {
-            instance = new EnumMap<SearchMode,PlanSearchEngine>(SearchMode.class);
-            for (SearchMode mode : SearchMode.values()) {
-                instance.put(mode, new PlanSearchEngine(mode));
-            }
-        }
-        return instance.get(searchMode);
-    }
-
-    static private Map<SearchMode,PlanSearchEngine> instance;
 
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;
@@ -165,9 +144,8 @@ public class PlanSearchEngine extends SearchEngine {
          * @param condition the graph condition for which we develop the search
          *        plan
          */
-        PlanData(Condition condition, SearchMode searchMode) {
+        PlanData(Condition condition) {
             this.condition = condition;
-            this.searchMode = searchMode;
             this.typeGraph = condition.getTypeGraph();
             this.remainingNodes = new LinkedHashSet<RuleNode>();
             this.remainingEdges = new LinkedHashSet<RuleEdge>();
@@ -194,18 +172,9 @@ public class PlanSearchEngine extends SearchEngine {
         }
 
         private boolean getInjectivity() {
-            switch (this.searchMode) {
-            case MINIMAL:
-            case REGEXPR:
-                return false;
-            case REVERSE:
-                return true;
-            case NORMAL:
-                return this.condition.isInjective();
-            default:
-                assert false;
-                return false;
-            }
+
+            return this.condition.isInjective();
+
         }
 
         /**
@@ -266,16 +235,10 @@ public class PlanSearchEngine extends SearchEngine {
             }
             for (Condition subCondition : this.condition.getSubConditions()) {
                 AbstractSearchItem item = null;
-                if (subCondition.isCompatible(this.searchMode)) {
-                    if (subCondition instanceof EdgeEmbargo) {
-                        item = createEdgeEmbargoItem((EdgeEmbargo) subCondition);
-                    } else {
-                        item = new ConditionSearchItem(subCondition);
-                    }
+                if (subCondition instanceof EdgeEmbargo) {
+                    item = createEdgeEmbargoItem((EdgeEmbargo) subCondition);
                 } else {
-                    if (this.searchMode == SearchMode.REVERSE && subCondition.isReversable()) {
-                        item = new ConditionSearchItem(subCondition.reverse());
-                    }
+                    item = new ConditionSearchItem(subCondition);
                 }
                 if (item != null) {
                     result.add(item);
@@ -367,8 +330,9 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet().contains(node) : String.format(
-                        "Variable node '%s' should be among anchors %s", node, seed);
+                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet().contains(node) : String.format("Variable node '%s' should be among anchors %s",
+                        node,
+                        seed);
                     result.add(nodeItem);
                 }
             }
@@ -458,14 +422,12 @@ public class PlanSearchEngine extends SearchEngine {
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
-                assert this.searchMode == NORMAL;
                 if (((VariableNode) node).hasConstant() || this.algebraFamily.supportsSymbolic()) {
                     result = new ValueNodeSearchItem((VariableNode) node, this.algebraFamily);
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
             } else if (node instanceof OperatorNode) {
-                assert this.searchMode == NORMAL;
                 result = new OperatorNodeSearchItem((OperatorNode) node, this.algebraFamily);
             } else {
                 assert node instanceof DefaultRuleNode;
@@ -497,7 +459,7 @@ public class PlanSearchEngine extends SearchEngine {
         private final Set<LabelVar> remainingVars;
         /** The label store containing the subtype relation. */
         private final TypeGraph typeGraph;
-        /** 
+        /**
          * The algebra family to be used for algebraic operations.
          * If {@code null}, the default will be used.
          * @see AlgebraFamily#getInstance(String)
@@ -514,9 +476,6 @@ public class PlanSearchEngine extends SearchEngine {
          * already called.
          */
         private boolean used;
-
-        /** The search mode for the plan. */
-        private final SearchMode searchMode;
         /** The graph condition for which we develop the plan. */
         private final Condition condition;
     }

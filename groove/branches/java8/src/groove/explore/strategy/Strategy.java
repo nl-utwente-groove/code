@@ -26,8 +26,8 @@ import groove.lts.Status.Flag;
  * are to be explored. It can also determine which states are to be explored
  * because of the nature of the strategy (see for instance
  * {@link LinearStrategy}).
- * To use, call {@link #setGTS} and optionally {@link #setState} and
- * {@link #setAcceptor}, and then call {@link #play()} or {@link #play(Halter)}.
+ * To use, call {@link #setGTS} and {@link #setAcceptor} and optionally {@link #setState}
+ * then call {@link #play()}.
  */
 public abstract class Strategy {
     /**
@@ -60,10 +60,10 @@ public abstract class Strategy {
     }
 
     /**
-     * Sets the state to be explored, in preparation
-     * to a call of {@link #play()}.
-     * It is assumed that the state (if not {@code null} is already in the GTS.
-     * @param state the start state for the exploration; non-{@code null}
+     * Sets the state to be explored, in preparation to a call of {@link #play()}.
+     * It is assumed that the state (if not {@code null}) is already in the GTS.
+     * @param state the start state for the exploration; if {@code null},
+     * the GTS start state will be used
      */
     final public void setState(GraphState state) {
         this.startState = state;
@@ -72,26 +72,23 @@ public abstract class Strategy {
     /**
      * Adds an acceptor to the strategy.
      */
-    final public void setAcceptor(Acceptor listener) {
-        this.acceptor = listener;
-    }
-
-    /** Plays out this strategy, until the thread is interrupted or exploration is done. */
-    final public void play() {
-        play(null);
+    final public void setAcceptor(Acceptor acceptor) {
+        assert acceptor != null;
+        this.acceptor = acceptor;
     }
 
     /**
      * Plays out this strategy, until a halting condition kicks in,
-     * the thread is interrupted or exploration is done.
-     * @param halter halting condition invoked after each state exploration;
-     * ignored if {@code null}
+     * the thread is interrupted or the acceptor signals that exploration is done.
      */
-    final public void play(Halter halter) {
+    final public void play() {
+        assert this.gts != null : "GTS not initialised";
+        assert this.acceptor != null : "Acceptor not initialised";
+        this.acceptor.prepare(this.gts);
         this.iterator.prepare(this.gts, this.startState, this.acceptor);
         collectKnownStates();
         this.interrupted = false;
-        while ((halter == null || !halter.halt()) && this.iterator.hasNext() && !testInterrupted()) {
+        while (!this.acceptor.done() && this.iterator.hasNext() && !testInterrupted()) {
             this.lastState = this.iterator.doNext();
         }
         this.iterator.finish();
@@ -156,10 +153,4 @@ public abstract class Strategy {
     private Acceptor acceptor;
     /** The state returned by the last call of {@link ExploreIterator#doNext()}. */
     private GraphState lastState;
-
-    /** Interface for a halting condition on exploration. */
-    public interface Halter {
-        /** Callback method to determine whether exploration should halt. */
-        public boolean halt();
-    }
 }

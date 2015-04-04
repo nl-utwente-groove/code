@@ -19,6 +19,7 @@ package groove.explore.util;
 import static groove.explore.Verbosity.HIGH;
 import static groove.explore.Verbosity.MEDIUM;
 import groove.explore.Exploration;
+import groove.explore.ExploreResult;
 import groove.explore.Verbosity;
 import groove.grammar.Rule;
 import groove.grammar.host.HostFactory;
@@ -209,8 +210,9 @@ public class StatisticsReporter extends AExplorationReporter {
             emit(HIGH, subFormatString, "Closed:", getGTS().getStateCount()
                 - getGTS().getOpenStateCount());
         }
-        if (getGTS().hasResultStates()) {
-            emit(HIGH, subFormatString, "Result:", getGTS().getResultStateCount());
+        ExploreResult result = getExploration().getResult();
+        if (!result.isEmpty()) {
+            emit(HIGH, subFormatString, "Result:", result.size());
         }
         if (getGTS().hasErrorStates()) {
             emit(HIGH, subFormatString, "Errors:", getGTS().getErrorStateCount());
@@ -241,7 +243,10 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(HIGH, intFormat, "Reused:", MatchCollector.getEventReuse());
         emit(HIGH, intFormat, "Confluent:", MatchApplier.getConfluentDiamondCount());
         emit(HIGH, intFormat, "Events:", Record.getEventCount());
-        emit(HIGH, ratioFormat, "Coanchor reuse:", HostFactory.getNormaliseGain(),
+        emit(HIGH,
+            ratioFormat,
+            "Coanchor reuse:",
+            HostFactory.getNormaliseGain(),
             HostFactory.getNormaliseCount());
     }
 

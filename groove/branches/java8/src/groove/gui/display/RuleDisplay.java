@@ -49,7 +49,7 @@ final public class RuleDisplay extends ResourceDisplay {
 
     @Override
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.ABSTRACT, Change.STATE);
+        getSimulatorModel().addListener(this, Change.STATE);
         super.installListeners();
     }
 
@@ -97,9 +97,6 @@ final public class RuleDisplay extends ResourceDisplay {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         super.update(source, oldModel, changes);
         if (suspendListening()) {
-            if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
-                resetList();
-            }
             if (changes.contains(Change.STATE)) {
                 String statusText;
                 GraphState state = source.getState();

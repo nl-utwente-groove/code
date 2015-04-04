@@ -448,9 +448,9 @@ public class PrologDisplay extends ResourceDisplay {
             getResultsArea().setText("?- " + queryString + "\n");
 
             MatchResult match = getSimulatorModel().getMatch();
-            getEngine().setGrooveState(new GrooveState(getGrammar().toGrammar(),
-                getSimulatorModel().getGts(), getSimulatorModel().getState(), match == null ? null
-                    : match.getEvent()));
+            getEngine().setGrooveState(
+                new GrooveState(getGrammar().toGrammar(), getSimulatorModel().getGTS(),
+                    getSimulatorModel().getState(), match == null ? null : match.getEvent()));
 
             this.solutionCount = 0;
             processResults(getEngine().newQuery(queryString));

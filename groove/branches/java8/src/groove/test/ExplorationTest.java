@@ -316,7 +316,7 @@ public class ExplorationTest {
 
             if (save) {
                 try {
-                    Groove.saveGraph(lts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE),
+                    Groove.saveGraph(lts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE, null),
                         view.getName());
                 } catch (IOException exc) { // proceed
                 }

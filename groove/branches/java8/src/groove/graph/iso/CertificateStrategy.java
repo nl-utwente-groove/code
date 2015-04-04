@@ -1,32 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.graph.iso;
 
-import groove.abstraction.neigh.EdgeMultDir;
-import groove.abstraction.neigh.equiv.EquivClass;
-import groove.abstraction.neigh.equiv.EquivRelation;
-import groove.abstraction.neigh.shape.EdgeSignature;
-import groove.abstraction.neigh.shape.EdgeSignatureStore;
-import groove.abstraction.neigh.shape.Shape;
-import groove.abstraction.neigh.shape.ShapeEdge;
-import groove.abstraction.neigh.shape.ShapeNode;
 import groove.grammar.host.ValueNode;
 import groove.graph.Edge;
-import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -52,8 +43,7 @@ abstract public class CertificateStrategy {
         this.graph = graph;
         // the graph may be null if a prototype is being constructed.
         if (graph != null) {
-            this.defaultNodeCerts =
-                new NodeCertificate[graph.getFactory().getMaxNodeNr() + 1];
+            this.defaultNodeCerts = new NodeCertificate[graph.getFactory().getMaxNodeNr() + 1];
         } else {
             this.defaultNodeCerts = null;
         }
@@ -81,10 +71,6 @@ abstract public class CertificateStrategy {
             if (this.graphCertificate == 0) {
                 this.graphCertificate = 1;
             }
-        }
-        if (getGraph() instanceof Shape) {
-            Shape shape = (Shape) getGraph();
-            shape.getEquivRelation().hashCode();
         }
         if (TRACE) {
             System.err.printf("Graph certificate: %d%n", this.graphCertificate);
@@ -115,9 +101,6 @@ abstract public class CertificateStrategy {
         computeCertReporter.start();
         initCertificates();
         iterateCertificates();
-        if (getGraph() instanceof Shape) {
-            processShapeCertificates((Shape) getGraph());
-        }
         computeCertReporter.stop();
     }
 
@@ -142,48 +125,6 @@ abstract public class CertificateStrategy {
         for (Edge edge : getGraph().edgeSet()) {
             initEdgeCert(edge);
         }
-    }
-
-    /** Computes an additional hash value for a shape graph. */
-    private void processShapeCertificates(Shape shape) {
-        int result = 0;
-        EquivRelation<ShapeNode> er = shape.getEquivRelation();
-        EdgeSignatureStore store = shape.getEdgeSigStore();
-        for (EquivClass<ShapeNode> ec : er) {
-            int ecHash = 0;
-            for (ShapeNode node : ec) {
-                ecHash += getNodeCert(node).hashCode();
-            }
-            ecHash *= ecHash;
-            for (ShapeNode node : ec) {
-                getNodeCert(node).modifyValue(ecHash);
-            }
-            result += ecHash;
-        }
-        Map<EdgeSignature,Integer> sigCertMap =
-            new HashMap<EdgeSignature,Integer>();
-        for (EdgeSignature sig : shape.getEdgeSigSet()) {
-            NodeCertificate sigNodeCert = getNodeCert(sig.getNode());
-            int nHash = sigNodeCert.hashCode();
-            int sigHash = sig.getLabel().hashCode();
-            for (ShapeNode opposite : sig.getEquivClass()) {
-                Node oppositeN = opposite;
-                sigHash += getNodeCert(oppositeN).hashCode();
-            }
-            sigHash *= nHash;
-            sigCertMap.put(sig, sigHash);
-            result += sigHash;
-        }
-        for (ElementCertificate<Edge> edgeCert : getEdgeCertificates()) {
-            ShapeEdge edge = (ShapeEdge) edgeCert.getElement();
-            if (edge.getRole() == EdgeRole.BINARY) {
-                edgeCert.modifyValue(sigCertMap.get(store.getSig(edge,
-                    EdgeMultDir.OUTGOING)));
-                edgeCert.modifyValue(-sigCertMap.get(store.getSig(edge,
-                    EdgeMultDir.INCOMING)));
-            }
-        }
-        this.graphCertificate += result;
     }
 
     /**
@@ -214,8 +155,8 @@ abstract public class CertificateStrategy {
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
         int nodeNr = node.getNumber();
-        assert nodeNr < this.defaultNodeCerts.length : String.format(
-            "Node nr %d higher than maximum %d", nodeNr,
+        assert nodeNr < this.defaultNodeCerts.length : String.format("Node nr %d higher than maximum %d",
+            nodeNr,
             this.defaultNodeCerts.length - 1);
         this.defaultNodeCerts[nodeNr] = nodeCert;
     }
@@ -228,8 +169,7 @@ abstract public class CertificateStrategy {
         NodeCertificate result;
         int nodeNr = node.getNumber();
         result = this.defaultNodeCerts[nodeNr];
-        assert result != null : String.format(
-            "Could not find certificate for %s", node);
+        assert result != null : String.format("Could not find certificate for %s", node);
         return result;
     }
 
@@ -240,28 +180,25 @@ abstract public class CertificateStrategy {
     private void initEdgeCert(Edge edge) {
         Node source = edge.source();
         NodeCertificate sourceCert = getNodeCert(source);
-        assert sourceCert != null : String.format(
-            "No source certifiate found for %s", edge);
+        assert sourceCert != null : String.format("No source certifiate found for %s", edge);
         if (source == edge.target()) {
-            EdgeCertificate edge1Cert =
-                createEdge1Certificate(edge, sourceCert);
-            this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
-                edge1Cert;
+            EdgeCertificate edge1Cert = createEdge1Certificate(edge, sourceCert);
+            this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] = edge1Cert;
             this.edge1CertCount++;
-            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
-                "%s unary and %s binary edges do not equal %s edges",
-                this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
+            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges",
+                this.edge1CertCount,
+                this.edge2CertCount,
+                this.edgeCerts.length);
         } else {
             NodeCertificate targetCert = getNodeCert(edge.target());
-            assert targetCert != null : String.format(
-                "No target certifiate found for %s", edge);
-            EdgeCertificate edge2Cert =
-                createEdge2Certificate(edge, sourceCert, targetCert);
+            assert targetCert != null : String.format("No target certifiate found for %s", edge);
+            EdgeCertificate edge2Cert = createEdge2Certificate(edge, sourceCert, targetCert);
             this.edgeCerts[this.edge2CertCount] = edge2Cert;
             this.edge2CertCount++;
-            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format(
-                "%s unary and %s binary edges do not equal %s edges",
-                this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
+            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges",
+                this.edge1CertCount,
+                this.edge2CertCount,
+                this.edgeCerts.length);
         }
     }
 
@@ -270,11 +207,11 @@ abstract public class CertificateStrategy {
     abstract NodeCertificate createNodeCertificate(Node node);
 
     abstract EdgeCertificate createEdge1Certificate(Edge edge,
-            groove.graph.iso.CertificateStrategy.NodeCertificate source);
+        groove.graph.iso.CertificateStrategy.NodeCertificate source);
 
     abstract EdgeCertificate createEdge2Certificate(Edge edge,
-            groove.graph.iso.CertificateStrategy.NodeCertificate source,
-            groove.graph.iso.CertificateStrategy.NodeCertificate target);
+        groove.graph.iso.CertificateStrategy.NodeCertificate source,
+        groove.graph.iso.CertificateStrategy.NodeCertificate target);
 
     /**
      * Returns a map from graph elements to certificates for the underlying
@@ -385,9 +322,9 @@ abstract public class CertificateStrategy {
      */
     abstract public CertificateStrategy newInstance(Graph graph, boolean strong);
 
-    /** 
+    /**
      * Returns the strength of the strategy:
-     * A strong strategy will spend more effort in avoiding false negatives. 
+     * A strong strategy will spend more effort in avoiding false negatives.
      */
     abstract public boolean getStrength();
 
@@ -411,7 +348,7 @@ abstract public class CertificateStrategy {
     int nodeCertCount;
     /**
      * The list of edge certificates in this bisimulator. The array consists of
-     * {@link #edge2CertCount} certificates for binary edges, followed by 
+     * {@link #edge2CertCount} certificates for binary edges, followed by
      * {@link #edge1CertCount} certificates for unary edges.
      */
     EdgeCertificate[] edgeCerts;
@@ -443,8 +380,7 @@ abstract public class CertificateStrategy {
     static void recordIterateCount(int count) {
         if (iterateCountArray.length < count + 1) {
             int[] newIterateCount = new int[count + 1];
-            System.arraycopy(iterateCountArray, 0, newIterateCount, 0,
-                iterateCountArray.length);
+            System.arraycopy(iterateCountArray, 0, newIterateCount, 0, iterateCountArray.length);
             iterateCountArray = newIterateCount;
         }
         iterateCountArray[count]++;
@@ -462,15 +398,13 @@ abstract public class CertificateStrategy {
     /** Reporter instance to profile methods of this class. */
     static public final Reporter reporter = IsoChecker.reporter;
     /** Handle to profile {@link #computeCertificates()}. */
-    static public final Reporter computeCertReporter =
-        reporter.register("computeCertificates()");
+    static public final Reporter computeCertReporter = reporter.register("computeCertificates()");
     /** Handle to profile {@link #getNodePartitionMap()}. */
-    static protected final Reporter getPartitionReporter =
-        reporter.register("getPartitionMap()");
+    static protected final Reporter getPartitionReporter = reporter.register("getPartitionMap()");
 
     /**
      * Type of the certificates constructed by the strategy. A value of this
-     * type represents a part of the graph structure in an isomorphism-invariant 
+     * type represents a part of the graph structure in an isomorphism-invariant
      * way. Hence, equality of certificates does not imply equality of the
      * corresponding graph elements.
      */
@@ -485,8 +419,7 @@ abstract public class CertificateStrategy {
     /**
      * Certificate representing a graph element
      */
-    static public interface ElementCertificate<EL extends Element> extends
-            Certificate {
+    static public interface ElementCertificate<EL extends Element> extends Certificate {
         /** Returns the element for which this is a certificate. */
         EL getElement();
     }

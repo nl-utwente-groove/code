@@ -29,24 +29,24 @@ import groove.lts.GraphState;
 public enum AcceptorValue implements ParsableValue {
     /** Acceptor for final states. */
     FINAL("final", "Final States",
-            "This acceptor succeeds when a state is added to the LTS that is "
-                + "<I>final</I>. A state is final when no modifying rule is" + "applicable on it."),
+        "This acceptor succeeds when a state is added to the LTS that is "
+            + "<I>final</I>. A state is final when no modifying rule is" + "applicable on it."),
     /** Acceptor for states where a given invariant rule is applicable. */
     INVARIANT("inv", "Check Invariant",
-            "This acceptor succeeds when a state is reached in which the "
-                + "indicated rule is applicable. Note that this is detected "
-                + "<I>before</I> the rule has been applied.<BR> "
-                + "This acceptor ignores rule priorities."),
+        "This acceptor succeeds when a state is reached in which the "
+            + "indicated rule is applicable. Note that this is detected "
+            + "<I>before</I> the rule has been applied.<BR> "
+            + "This acceptor ignores rule priorities."),
     /** Acceptor for states reached by the application of a certain rule. */
     RULE("ruleapp", "Rule Application",
-            "This acceptor succeeds when a transition of the indicated rule is "
-                + "added to the LTS. Note that this is detected <I>after</I> "
-                + "the rule has been applied (which means that rule priorities "
-                + "are taken into account)."),
+        "This acceptor succeeds when a transition of the indicated rule is "
+            + "added to the LTS. Note that this is detected <I>after</I> "
+            + "the rule has been applied (which means that rule priorities "
+            + "are taken into account)."),
     /** Acceptor for states that satisfy a given rule formula. */
     FORMULA("formula", "Rule Formula",
-            "This acceptor is a variant of Check Invariant that succeeds when a"
-                + " state is reached in which an arbitrary rule <i>formula</i> " + "is applicable."),
+        "This acceptor is a variant of Check Invariant that succeeds when a"
+            + " state is reached in which an arbitrary rule <i>formula</i> " + "is applicable."),
     /** Acceptor for arbitrary states. */
     ANY("any", "Any State", "This acceptor succeeds whenever a state is added to the LTS."),
     /** Acceptor for cycles. */
@@ -93,8 +93,9 @@ public enum AcceptorValue implements ParsableValue {
     @Override
     public boolean isDefault(GrammarModel grammar) {
         Exploration exploration = grammar.getDefaultExploration();
-        return exploration == null ? this == FINAL : exploration.getAcceptor().getKeyword().equals(
-            getKeyword());
+        return exploration == null ? this == FINAL : exploration.getAcceptor()
+            .getKeyword()
+            .equals(getKeyword());
     }
 
     /** Creates the appropriate template for this acceptor. */
@@ -104,7 +105,7 @@ public enum AcceptorValue implements ParsableValue {
             return new MyTemplate0() {
                 @Override
                 public Acceptor create() {
-                    return new AnyStateAcceptor();
+                    return AnyStateAcceptor.PROTOTYPE;
                 }
             };
 
@@ -112,7 +113,7 @@ public enum AcceptorValue implements ParsableValue {
             return new MyTemplate0() {
                 @Override
                 public Acceptor create() {
-                    return new CycleAcceptor();
+                    return CycleAcceptor.PROTOTYPE;
                 }
             };
 
@@ -120,7 +121,7 @@ public enum AcceptorValue implements ParsableValue {
             return new MyTemplate0() {
                 @Override
                 public Acceptor create() {
-                    return new FinalStateAcceptor();
+                    return FinalStateAcceptor.PROTOTYPE;
                 }
             };
 
@@ -154,7 +155,7 @@ public enum AcceptorValue implements ParsableValue {
             return new MyTemplate0() {
                 @Override
                 public Acceptor create() {
-                    return new NoStateAcceptor();
+                    return NoStateAcceptor.INSTANCE;
                 }
             };
 
@@ -163,7 +164,7 @@ public enum AcceptorValue implements ParsableValue {
 
                 @Override
                 public Acceptor create(Rule rule) {
-                    return new PredicateAcceptor(new Predicate.RuleApplied(rule));
+                    return new PredicateAcceptor(new Predicate.ActionApplied(rule));
                 }
             };
 
@@ -194,7 +195,7 @@ public enum AcceptorValue implements ParsableValue {
     /** Specialised 2-parameter template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate2<T1,T2> extends Template2<Acceptor,T1,T2> {
         public MyTemplate2(SerializedParser parser, String name1, EncodedType<T1,String> type1,
-                String name2, EncodedType<T2,String> type2) {
+            String name2, EncodedType<T2,String> type2) {
             super(AcceptorValue.this, parser, name1, type1, name2, type2);
         }
     }

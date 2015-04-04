@@ -306,8 +306,8 @@ public class StateDisplay extends Display implements SimulatorListener {
         boolean transferLayout =
             oldTtrans != null && oldTtrans != source.getTransition()
                 && oldTtrans.target() == source.getState();
-        if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
-            startSimulation(source.getGts());
+        if (changes.contains(GTS) && source.getGTS() != oldModel.getGTS()) {
+            startSimulation(source.getGTS());
         } else if (changes.contains(STATE)) {
             GraphState newState = source.getState();
             if (newState != null) {

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.algebra;
@@ -29,14 +29,14 @@ import groove.annotation.ToolTipHeader;
 
 /**
  * The signature for real number algebras.
- * @param <Real> The representation type of the real algebra 
- * @param <Bool> The representation type of the boolean algebra 
- * @param <String> The representation type of the string algebra  
+ * @param <Real> The representation type of the real algebra
+ * @param <Bool> The representation type of the boolean algebra
+ * @param <String> The representation type of the string algebra
  * @author Arend Rensink
  * @version $Revision$
  */
 @SuppressWarnings("hiding")
-public abstract class RealSignature<Real,Bool,String> implements Signature {
+public abstract class RealSignature<Int,Real,Bool,String> implements Signature {
     /** Absolute value of a real number. */
     @Syntax("Q%s.LPAR.i.RPAR")
     @ToolTipHeader("Absolute value")
@@ -138,6 +138,13 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     @ToolTipBody("Yields a string representation of %s")
     public abstract String toString(Real arg);
 
+    /** Integer conversion. */
+    @ToolTipHeader("Real-to-integer conversion")
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipBody("Converts %s to an integer number")
+    @PrefixSymbol(symbol = "(int)", kind = UNARY)
+    public abstract Int toInt(Real arg);
+
     @Override
     public Sort getSort() {
         return Sort.REAL;
@@ -176,6 +183,8 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
         NEG,
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
+        /** Value for {@link #toInt(Object)}. */
+        TO_INT,
         /** Value for {@link #toString(Object)}. */
         TO_STRING, ;
 

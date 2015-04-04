@@ -177,14 +177,6 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         Parser.splitter),
 
     /**
-     * Space-separated list of abstraction node labels of a graph grammar.
-     * These labels are used to define the level zero neighbourhood relation
-     * between nodes.
-     */
-    ABSTRACTION_LABELS("abstractionLabels",
-        "List of node labels, used by neighbourhood abstraction", Parser.splitter),
-
-    /**
      * Flag that determines if transition parameters are included in the LTS
      * transition labels
      */

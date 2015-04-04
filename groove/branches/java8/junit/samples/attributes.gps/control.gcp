@@ -10,3 +10,5 @@ set_score(_,score1);
 set_score(_,1000);
 
 set_finished(true);
+
+cast_values();

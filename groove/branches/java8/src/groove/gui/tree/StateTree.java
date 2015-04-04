@@ -150,7 +150,7 @@ public class StateTree extends JTree implements SimulatorListener {
             public void itemStateChanged(ItemEvent e) {
                 if (suspendListening()) {
                     SimulatorModel model = getSimulatorModel();
-                    refreshList(model.getGts(), model.getState());
+                    refreshList(model.getGTS(), model.getState());
                     refreshSelection(model.getState(),
                         (RuleModel) model.getResource(RULE).get(),
                         model.getMatch(),
@@ -234,8 +234,8 @@ public class StateTree extends JTree implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (suspendListening()) {
             if (changes.contains(Change.GTS)) {
-                setEnabled(source.hasGts());
-                refreshList(source.getGts(), oldModel.getState());
+                setEnabled(source.hasGTS());
+                refreshList(source.getGTS(), oldModel.getState());
             }
             RuleModel ruleModel = (RuleModel) source.getResource(RULE).get();
             if (changes.contains(Change.TRACE)) {
@@ -621,7 +621,7 @@ public class StateTree extends JTree implements SimulatorListener {
     /**
      * Tree node wrapping a graph state.
      */
-    static class StateTreeNode extends NumberedTreeNode {
+    class StateTreeNode extends NumberedTreeNode {
         /**
          * Creates a new rule node based on a given state. The node can have
          * children.
@@ -664,7 +664,7 @@ public class StateTree extends JTree implements SimulatorListener {
             GraphState state = getState();
             if (state instanceof StartGraphState) {
                 icon = Icons.STATE_START_ICON;
-            } else if (state.isResult()) {
+            } else if (isResult(state)) {
                 icon = Icons.STATE_RESULT_ICON;
             } else if (state.isFinal()) {
                 icon = Icons.STATE_FINAL_ICON;
@@ -681,6 +681,10 @@ public class StateTree extends JTree implements SimulatorListener {
                 icon = Icons.STATE_OPEN_ICON;
             }
             return icon == null ? null : icon.getIcon();
+        }
+
+        private boolean isResult(GraphState state) {
+            return getSimulatorModel().getResult().containsState(state);
         }
 
         private final boolean expanded;

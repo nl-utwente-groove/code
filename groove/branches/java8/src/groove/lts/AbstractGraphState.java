@@ -263,21 +263,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setResult() {
-        int oldStatus = this.status;
-        boolean result = setStatus(Flag.RESULT, true);
-        if (result) {
-            fireStatus(Flag.RESULT, oldStatus);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean isResult() {
-        return hasFlag(Flag.RESULT);
-    }
-
-    @Override
     public boolean setError() {
         int oldStatus = this.status;
         boolean result = setStatus(Flag.ERROR, true);
@@ -439,8 +424,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         } else if (obj instanceof GraphTransition) {
             return getNumber() - ((GraphTransition) obj).source().getNumber();
         } else {
-            throw new UnsupportedOperationException(String.format(
-                "Classes %s and %s cannot be compared", getClass(), obj.getClass()));
+            throw new UnsupportedOperationException(
+                String.format("Classes %s and %s cannot be compared", getClass(), obj.getClass()));
         }
     }
 

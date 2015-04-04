@@ -78,4 +78,5 @@ public interface ElementMap {
      * Returns the built-in edge map.
      */
     public Map<? extends Edge,? extends Edge> edgeMap();
+
 }

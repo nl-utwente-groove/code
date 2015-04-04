@@ -49,6 +49,7 @@ import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
+import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
@@ -145,7 +146,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getDataLines(node));
                 // show the visible self-edges
                 Line id = getIdLine(node);
-                boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspect());
@@ -159,8 +159,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                             }
                             id = null;
                         }
-                        if (!implicitType && edge.getRole() == EdgeRole.BINARY
-                            && !jVertex.hasErrors() && !edge.hasErrors()) {
+                        if (showLoopSuffix(jVertex, edge)) {
                             line = line.append(LOOP_SUFFIX);
                         }
                         result.add(line);
@@ -215,12 +214,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show data constants and variables correctly
             result.add(getDataLines(node));
             // show the visible self-edges
-            boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !jVertex.hasErrors()
-                        && !edge.hasErrors()) {
+                    if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -278,7 +275,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show data constants and variables correctly
             result.add(getDataLines(node));
             // show the visible self-edges
-            boolean implicitType = jVertex.getJModel().getTypeGraph().isImplicit();
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
@@ -290,8 +286,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                         }
                         idLine = null;
                     }
-                    if (!implicitType && edge.getRole() == EdgeRole.BINARY && !jVertex.hasErrors()
-                        && !edge.hasErrors()) {
+                    if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
                     }
                     result.add(line);
@@ -317,6 +312,25 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
         }
         return result;
+    }
+
+    /** Indicates if the label corresponding to a given node edge should be
+     * suffixed by {@link #LOOP_SUFFIX}.
+     */
+    private boolean showLoopSuffix(AspectJVertex jVertex, AspectEdge edge) {
+        if (jVertex.hasErrors() || edge.hasErrors()) {
+            return false;
+        }
+        if (jVertex.getJModel().getTypeGraph().isImplicit()) {
+            return false;
+        }
+        if (edge.getRole() != EdgeRole.BINARY) {
+            return false;
+        }
+        if (edge.getKind() == AspectKind.REMARK) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -419,8 +433,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Returns the status line for a given state. */
     private Line getStatus(GraphState state) {
         Line result;
-        if (state instanceof StartGraphState && !state.isError() && !state.isFinal()
-            && !state.isResult()) {
+        if (isResult(state)) {
+            result = this.resultLine;
+        } else if (state instanceof StartGraphState && !state.isError() && !state.isFinal()) {
             result = this.startLine;
         } else {
             // determine main flag
@@ -433,8 +448,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 main = Flag.ERROR;
             } else if (state.isTransient()) {
                 main = Flag.TRANSIENT;
-            } else if (state.isResult()) {
-                main = Flag.RESULT;
             } else if (state.isFinal()) {
                 main = Flag.FINAL;
             } else if (state.isDone()) {
@@ -445,6 +458,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = main == null ? this.openLine : getStatus(main);
         }
         return result;
+    }
+
+    private boolean isResult(GraphState state) {
+        return ((LTSJGraph) getJGraph()).isResult(state);
     }
 
     /** Returns the status line for a given status flag. */
@@ -470,9 +487,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 case INTERNAL:
                     text = "internal";
                     break;
-                case RESULT:
-                    text = "result";
-                    break;
                 case TRANSIENT:
                     text = "transient";
                     break;
@@ -489,6 +503,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Map<Flag,Line> statusMap;
     /** State line for the start state. */
     private final Line startLine = Line.atom("start").style(Style.BOLD);
+    /** State line result states. */
+    private final Line resultLine = Line.atom("result").style(Style.BOLD);
     /** State line for an open state. */
     private final Line openLine = Line.atom("open").style(Style.BOLD);
 

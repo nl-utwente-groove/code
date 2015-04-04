@@ -53,7 +53,7 @@ public class StateReporter extends AExplorationReporter {
         } else {
             this.logger.append("States saved as %s%n", stateFormat.one().getDescription());
         }
-        for (GraphState state : getGTS().getResultStates()) {
+        for (GraphState state : getExploration().getResult()) {
             Path savedFile = exportState(state, this.statePattern);
             this.logger.append("State saved: %s%n", savedFile);
         }

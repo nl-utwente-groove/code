@@ -347,8 +347,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
-                result.addError(new FormatError("Unparsed suffix: %s", this.input.substring(
-                    next().start(), this.input.length())));
+                result.addError(new FormatError("Unparsed suffix: %s",
+                    this.input.substring(next().start(), this.input.length())));
             }
         } catch (FormatException exc) {
             result = createErrorTree(exc);
@@ -363,10 +363,11 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     protected X parse(OpKind context) throws FormatException {
         X result;
         Token nextToken = next();
-        if (nextToken.has(LPAR)) {
-            result = parseBracketed();
-        } else if (nextToken.has(PRE_OP)) {
+        // first parse for prefix operators to accomodate casts
+        if (nextToken.has(PRE_OP)) {
             result = parsePrefixed();
+        } else if (nextToken.has(LPAR)) {
+            result = parseBracketed();
         } else if (nextToken.has(NAME)) {
             result = parseName();
         } else if (nextToken.has(CONST)) {
@@ -483,8 +484,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         } else if (op.getArity() == 1) {
             result.addArg(parse(op.getKind()));
         } else {
-            assert op.getKind() == OpKind.ATOM : String.format(
-                "Encountered '%s' in prefix position", op);
+            assert op.getKind() == OpKind.ATOM : String.format("Encountered '%s' in prefix position",
+                op);
         }
         setParseString(result, opToken);
         return result;
@@ -659,27 +660,30 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         if (atEnd()) {
             result = eot();
         } else {
-            TokenFamily type = null;
             int start = this.ix;
+            // last recognised type
+            TokenFamily type = null;
+            // first index beyond the recognised type
+            int typeEnd = start;
             SymbolTable map = getSymbolTable();
             while (!atEnd()) {
                 SymbolTable nextMap = map.get(curChar());
                 if (nextMap == null) {
                     // nextChar is not part of any operator symbol
-                    type = map.getTokenFamily();
                     break;
                 }
                 incChar();
-                if (atEnd()) {
-                    // there is no next character after this
-                    type = nextMap.getTokenFamily();
-                    break;
-                }
                 map = nextMap;
+                TokenFamily recognisedType = map.getTokenFamily();
+                if (recognisedType != null) {
+                    type = recognisedType;
+                    typeEnd = this.ix;
+                }
             }
             if (type != null) {
-                result = new Token(type, createFragment(start, this.ix));
+                result = new Token(type, createFragment(start, typeEnd));
             }
+            this.ix = typeEnd;
         }
         return result;
     }
@@ -986,9 +990,9 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
                 result = sort.createConstant(symbol);
                 result.setParseString(symbol);
             } catch (FormatException exc) {
-                assert false : String.format(
-                    "'%s' has been scanned as a token; how can it fail to be one? (%s)",
-                    substring(), exc.getMessage());
+                assert false : String.format("'%s' has been scanned as a token; how can it fail to be one? (%s)",
+                    substring(),
+                    exc.getMessage());
             }
             return result;
         }

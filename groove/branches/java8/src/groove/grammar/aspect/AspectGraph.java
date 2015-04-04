@@ -290,8 +290,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> impl
         // add the expression structure
         AspectNode target = addExpression(source, assign.getRhs());
         // add a creator edge (for a rule) or normal edge to the assignment target
-        String assignLabelText =
-            getRole() == RULE ? AspectKind.CREATOR.getPrefix() + assign.getLhs() : assign.getLhs();
+        String assignLabelText;
+        if (getRole() == RULE) {
+            AspectKind kind =
+                source.getKind() == AspectKind.ADDER ? AspectKind.ADDER : AspectKind.CREATOR;
+            assignLabelText = kind.getPrefix() + assign.getLhs();
+        } else {
+            assignLabelText = assign.getLhs();
+        }
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
         AspectEdge result = addEdge(source, assignLabel, target);
         if (getRole() == RULE && !source.getKind().isCreator()) {

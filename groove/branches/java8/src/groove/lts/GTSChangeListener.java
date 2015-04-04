@@ -32,6 +32,11 @@ public class GTSChangeListener implements GTSListener {
         this.changed = false;
     }
 
+    /** Hook for subclasses to signal that a change has occurred. */
+    protected void setChanged() {
+        this.changed = true;
+    }
+
     /**
      * May only be called with the current lts as first parameter. Updates
      * the frame title by showing the number of nodes and edges.

@@ -19,12 +19,13 @@ package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import groove.explore.ExploreResult;
 import groove.explore.Generator;
 import groove.explore.util.LTSLabels;
 import groove.graph.Graph;
-import groove.lts.GTS;
 import groove.util.Groove;
 import groove.verify.CTLMarker;
+import groove.verify.CTLModelChecker;
 import groove.verify.Formula;
 
 import java.io.File;
@@ -42,11 +43,6 @@ import org.junit.Test;
  * @version $Revision$
  */
 public class CTLTest {
-    /** Transistion system used by this test. */
-    private GTS gts;
-    private LTSLabels ltsLabels;
-    private Graph gtsGraph;
-
     /**
      * Tests whether the circular buffer fulfils certain properties and whether
      * the number of counter examples is correct for other properties.
@@ -112,7 +108,7 @@ public class CTLTest {
                 genArgs.add(startGraphName);
             }
             Generator generator = new Generator(genArgs.toArray(new String[0]));
-            this.gts = generator.start();
+            this.result = generator.start();
             this.gtsGraph = Groove.loadGraph(tmp);
             tmp.delete();
         } catch (Exception e) {
@@ -126,12 +122,18 @@ public class CTLTest {
         try {
             // all states satisfy the following property
             Formula property = Formula.parse(formula).toCtlFormula();
-            CTLMarker modelChecker = new CTLMarker(property, this.gts);
-            assertEquals(stateCount, modelChecker.getCount(true));
-            modelChecker = new CTLMarker(property, this.gtsGraph, this.ltsLabels);
-            assertEquals(stateCount, modelChecker.getCount(true));
+            CTLMarker marker = new CTLMarker(property, CTLModelChecker.newModel(this.result));
+            assertEquals(stateCount, marker.getCount(true));
+            marker =
+                new CTLMarker(property, CTLModelChecker.newModel(this.gtsGraph, this.ltsLabels));
+            assertEquals(stateCount, marker.getCount(true));
         } catch (Exception efe) {
             fail(efe.getMessage());
         }
     }
+
+    /** Transistion system used by this test. */
+    private ExploreResult result;
+    private LTSLabels ltsLabels;
+    private Graph gtsGraph;
 }

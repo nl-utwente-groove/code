@@ -461,7 +461,7 @@ public class SaveLTSAsDialog {
     private JLabel errorLabel;
 
     private GTS getGTS() {
-        return this.simulator.getModel().getGts();
+        return this.simulator.getModel().getGTS();
     }
 
     /**

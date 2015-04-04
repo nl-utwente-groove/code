@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
 import groove.explore.StrategyValue;
+import groove.explore.util.StatisticsReporter;
 import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -14,7 +15,6 @@ import groove.gui.jgraph.LTSJModel;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GTSChangeListener;
-import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.parse.FormatException;
@@ -74,17 +74,18 @@ public class ExploreAction extends SimulatorAction {
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
     public void explore(Exploration exploration, boolean emphasise) {
+        SimulatorModel simModel = getSimulatorModel();
         LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
-            if (getSimulatorModel().setGts()) {
+            if (simModel.setGTS()) {
                 ltsJModel = getLtsDisplay().getJModel();
             } else {
                 return;
             }
         }
-        GTS gts = getSimulatorModel().getGts();
+        GTS gts = simModel.getGTS();
         if (isAnimated()) {
-            getSimulatorModel().setDisplay(DisplayKind.LTS);
+            simModel.setDisplay(DisplayKind.LTS);
         }
         // unhook the lts' jmodel from the lts, for efficiency's sake
         ltsJModel.setExploring(true);
@@ -92,21 +93,20 @@ public class ExploreAction extends SimulatorAction {
         // create a thread to do the work in the background
         ExploreThread generateThread = new ExploreThread(exploration);
         // go!
-        exploration.addListener(getSimulatorModel().getExplorationStats());
+        StatisticsReporter exploreStats = simModel.getExplorationStats();
+        exploration.addListener(exploreStats);
         generateThread.start();
-        exploration.removeListener(getSimulatorModel().getExplorationStats());
-        getSimulatorModel().getExplorationStats().report();
+        exploration.removeListener(exploreStats);
+        exploreStats.report();
         // emphasise the result states, if required
         ltsJModel.setExploring(false);
-        if (generateThread.isChanged()) {
-            getSimulatorModel().setGts(gts, true);
-            if (emphasise) {
-                Collection<GraphState> result = exploration.getResult().getValue();
-                getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result), true);
-            }
-            if (exploration.getLastState() != null) {
-                getSimulatorModel().setState(exploration.getLastState());
-            }
+        simModel.setGTS(gts, true);
+        if (exploration.getLastState() != null) {
+            simModel.setState(exploration.getLastState());
+        }
+        if (emphasise) {
+            Collection<GraphState> result = exploration.getResult().getStates();
+            getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result), true);
         }
     }
 
@@ -129,8 +129,8 @@ public class ExploreAction extends SimulatorAction {
         }
         setEnabled(enabled);
         String toolTipText =
-            String.format("%s (%s)", this.animated ? Options.ANIMATE_ACTION_NAME
-                : Options.EXPLORE_ACTION_NAME,
+            String.format("%s (%s)",
+                this.animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
                 HTMLConverter.STRONG_TAG.on(exploration.getIdentifier()));
         if (compatibilityError != null) {
             toolTipText +=
@@ -282,7 +282,7 @@ public class ExploreAction extends SimulatorAction {
     }
 
     /**
-     * @return the explore-strategy for exploring a single state
+     * Returns the explore-strategy for exploring a single state
      */
     private Exploration getStateExploration() {
         if (this.stateExploration == null) {
@@ -292,15 +292,6 @@ public class ExploreAction extends SimulatorAction {
     }
 
     private Exploration stateExploration;
-
-    private GTSListener getChangedListener() {
-        if (this.changedListener == null) {
-            this.changedListener = new GTSChangeListener();
-        }
-        return this.changedListener;
-    }
-
-    private GTSListener changedListener;
 
     /** Number of states after which exploration should halt. */
     private int bound;
@@ -393,16 +384,15 @@ public class ExploreAction extends SimulatorAction {
 
         /**
          * Runs the exploration as a parallel thread;
-         * then hides the cancel dialog invisible, causing the event
+         * then disposes the cancel dialog, causing the event
          * dispatch thread to continue.
          */
         @Override
         final public void run() {
             final SimulatorModel simulatorModel = getSimulatorModel();
-            GTS gts = simulatorModel.getGts();
+            GTS gts = simulatorModel.getGTS();
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
-            gts.addLTSListener(getChangedListener());
             setInterrupted(false);
             GraphState state = simulatorModel.getState();
             try {
@@ -410,17 +400,12 @@ public class ExploreAction extends SimulatorAction {
             } catch (FormatException exc) {
                 // this should not occur, as the exploration and the
                 // grammar in the simulator model should always be compatible
-                showErrorDialog(exc, "Exploration strategy %s incompatible with grammar",
+                showErrorDialog(exc,
+                    "Exploration strategy %s incompatible with grammar",
                     this.exploration.getIdentifier());
             }
-            gts.removeLTSListener(getChangedListener());
             gts.removeLTSListener(this.progressListener);
             disposeCancelDialog();
-        }
-
-        /** Indicates if the latest invocation affected a change in the GTS. */
-        final public boolean isChanged() {
-            return this.progressListener.isChanged();
         }
 
         /**

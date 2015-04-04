@@ -23,7 +23,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Morphism<N extends Node,E extends Edge> extends AElementBiMap<N,E,N,E> {
+public class Morphism<N extends Node,E extends Edge> extends AElementMap<N,E,N,E> {
     /**
      * Creates a morphism, based on a given element factory.
      */

@@ -20,9 +20,9 @@ import static groove.grammar.model.ResourceKind.HOST;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
+import groove.explore.ExploreResult;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
-import groove.explore.result.Result;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
@@ -110,12 +110,11 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Collection<GraphState> explore() throws FormatException {
+    public ExploreResult explore() throws FormatException {
         Grammar grammar = getGrammarModel().toGrammar();
         GTS gts = getFreshGTS(grammar);
         getExploration().play(gts, null);
-        Result exploreResult = getExploration().getResult();
-        return exploreResult.getValue();
+        return getExploration().getResult();
     }
 
     /**
@@ -126,7 +125,7 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Collection<GraphState> explore(AspectGraph start) throws FormatException {
+    private ExploreResult explore(AspectGraph start) throws FormatException {
         if (start != null) {
             getGrammarModel().setStartGraph(start);
         }
@@ -141,7 +140,7 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Collection<GraphState> explore(Model start) throws FormatException {
+    public ExploreResult explore(Model start) throws FormatException {
         return explore(start == null ? null : start.toAspectGraph());
     }
 
@@ -154,8 +153,7 @@ public class Transformer {
      * or the exploration is not compatible with the grammar
      * @throws IOException if the named start graph cannot be loaded
      */
-    public Collection<GraphState> explore(String startGraphName) throws FormatException,
-        IOException {
+    public ExploreResult explore(String startGraphName) throws FormatException, IOException {
         return explore(computeStartGraph(startGraphName));
     }
 
@@ -170,8 +168,7 @@ public class Transformer {
      * or the exploration is not compatible with the grammar
      * @throws IOException if any of the named start graphs cannot be loaded
      */
-    public Collection<GraphState> explore(List<String> startGraphNames) throws IOException,
-        FormatException {
+    public ExploreResult explore(List<String> startGraphNames) throws IOException, FormatException {
         return explore(computeStartGraph(startGraphNames));
     }
 
@@ -217,17 +214,17 @@ public class Transformer {
     }
 
     /**
-     * Returns the (first) result of transforming the
+     * Returns the (first) outcome of transforming the
      * grammar's default start graph, or {@code null} if
      * there is no result.
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Model getResult() throws FormatException {
+    public Model compute() throws FormatException {
         Model result = null;
         int oldResultCount = getResultCount();
         setResultCount(1);
-        Collection<GraphState> exploreResult = explore();
+        ExploreResult exploreResult = explore();
         if (!exploreResult.isEmpty()) {
             result = createModel(exploreResult.iterator().next().getGraph());
         }
@@ -241,8 +238,8 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Collection<Model> getResults() throws FormatException {
-        Collection<GraphState> exploreResult = explore();
+    public Collection<Model> computeAll() throws FormatException {
+        Collection<GraphState> exploreResult = explore().getStates();
         return new TransformCollection<GraphState,Model>(exploreResult) {
             @Override
             protected Model toOuter(GraphState key) {
@@ -257,9 +254,9 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Model getResult(Model start) throws FormatException {
+    public Model compute(Model start) throws FormatException {
         getGrammarModel().setStartGraph(start.toAspectGraph());
-        return getResult();
+        return compute();
     }
 
     /**
@@ -267,9 +264,9 @@ public class Transformer {
      * @throws FormatException if either the grammar could not be built
      * or the exploration is not compatible with the grammar
      */
-    public Collection<Model> getResults(Model start) throws FormatException {
+    public Collection<Model> computeAll(Model start) throws FormatException {
         getGrammarModel().setStartGraph(start.toAspectGraph());
-        return getResults();
+        return computeAll();
     }
 
     /** Returns the GTS of the most recent exploration. */
@@ -321,7 +318,7 @@ public class Transformer {
         if (rebuild) {
             Serialized strategy = hasStrategy() ? getStrategy() : result.getStrategy();
             Serialized acceptor = hasAcceptor() ? getAcceptor() : result.getAcceptor();
-            int resultCount = hasResultCount() ? getResultCount() : result.getNrResults();
+            int resultCount = hasResultCount() ? getResultCount() : result.getBound();
             result = new Exploration(strategy, acceptor, resultCount);
         }
         for (ExplorationListener listener : getListeners()) {

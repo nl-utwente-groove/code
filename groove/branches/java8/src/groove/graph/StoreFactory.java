@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -22,13 +22,13 @@ import groove.util.Dispenser;
 import groove.util.collect.TreeHashSet;
 
 /**
- * Abstract factory class that stores canonical representatives 
+ * Abstract factory class that stores canonical representatives
  * of nodes and edges.
  * @author Arend Rensink
  * @version $Revision $
  */
 abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label> extends
-        ElementFactory<N,E> {
+    ElementFactory<N,E> {
     /** Constructor for a fresh factory. */
     @SuppressWarnings("unchecked")
     protected StoreFactory() {
@@ -41,14 +41,14 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
         return nr < this.nodes.length && this.nodes[nr] != null;
     }
 
-    /** 
+    /**
      * Returns a node with a given number, if created by this factory.
      * @return a node with number {@code nr}, or {@code null} if this factory
      * never created such a node
      */
     @Override
     public N getNode(int nr) {
-        assert nr >= 0;
+        assert nr >= 0 : "invalid node number " + nr;
         return nr < this.nodes.length ? this.nodes[nr] : null;
     }
 
@@ -148,7 +148,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
         return result;
     }
 
-    /** 
+    /**
      * Callback factory method to create a new edge object.
      * This will then be compared with the edge store to replace it by its
      * canonical representative.

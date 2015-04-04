@@ -23,7 +23,6 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AElementBiMap;
 import groove.graph.AElementMap;
 import groove.graph.Label;
 
@@ -37,7 +36,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
+public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
     VarMap {
     /**
      * Creates an empty map with an empty valuation.
@@ -74,8 +73,8 @@ public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,Host
                 result = getVar(guard.getVar()).label();
             }
         } else {
-            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format(
-                "Label %s should be sharp or atom", label);
+            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format("Label %s should be sharp or atom",
+                label);
             result = ruleLabel.getTypeLabel();
         }
         return result;

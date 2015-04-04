@@ -19,10 +19,8 @@ package groove.explore;
 import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
-import groove.explore.result.Result;
 import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.Strategy;
-import groove.explore.strategy.Strategy.Halter;
 import groove.grammar.Grammar;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -47,10 +45,10 @@ public class Exploration {
 
     private final Serialized strategy;
     private final Serialized acceptor;
-    private final int nrResults;
+    private final int bound;
     private GTS lastGts;
     /** Result of the last exploration. */
-    private Result lastResult;
+    private ExploreResult lastResult;
     /** Message of the last exploration. */
     private String lastMessage;
 
@@ -65,15 +63,14 @@ public class Exploration {
      * Initialise to a given exploration.
      * @param strategy strategy component of the exploration; non-{@code null}
      * @param acceptor acceptor component of the exploration; non-{@code null}
-     * @param nrResults number of results: {@code 0} means unbounded
+     * @param bound number of results: {@code 0} means unbounded
      */
-    public Exploration(Serialized strategy, Serialized acceptor, int nrResults) {
+    public Exploration(Serialized strategy, Serialized acceptor, int bound) {
         assert strategy != null;
         this.strategy = strategy;
         assert acceptor != null;
         this.acceptor = acceptor;
-        this.nrResults = nrResults;
-        this.lastResult = new Result(0);
+        this.bound = bound;
     }
 
     /**
@@ -128,13 +125,13 @@ public class Exploration {
     }
 
     /**
-     * Returns the acceptor, instantiated for a given graph grammar.
+     * Returns a prototype acceptor, instantiated for a given graph grammar.
      * @throws FormatException if the grammar is incompatible with the (serialised)
      * acceptor.
      */
     public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
         if (getParsedStrategy(grammar) instanceof LTLStrategy) {
-            return new CycleAcceptor();
+            return CycleAcceptor.PROTOTYPE;
         } else {
             return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
         }
@@ -148,16 +145,16 @@ public class Exploration {
     }
 
     /**
-     * Returns the number of results of the most recent exploration.
+     * Returns the exploration bound.
      */
-    public int getNrResults() {
-        return this.nrResults;
+    public int getBound() {
+        return this.bound;
     }
 
     /**
      * Returns the result of the most recent exploration.
      */
-    public Result getResult() {
+    public ExploreResult getResult() {
         return this.lastResult;
     }
 
@@ -193,10 +190,10 @@ public class Exploration {
         buffer.append(" / ");
         buffer.append(this.acceptor.toString());
         buffer.append(" / ");
-        if (this.nrResults == 0) {
+        if (this.bound == 0) {
             buffer.append("infinite");
         } else {
-            buffer.append(this.nrResults);
+            buffer.append(this.bound);
         }
         return buffer.toString();
     }
@@ -236,25 +233,19 @@ public class Exploration {
         Strategy parsedStrategy = getParsedStrategy(grammar);
 
         // parse the acceptor
-        final Acceptor parsedAcceptor = getParsedAcceptor(grammar);
+        final Acceptor parsedAcceptor = getParsedAcceptor(grammar).newAcceptor(this.bound);
 
         // initialize acceptor and GTS
-        parsedAcceptor.setResult(new Result(this.nrResults));
         parsedStrategy.setGTS(gts);
         parsedStrategy.setState(state);
+        parsedStrategy.setAcceptor(parsedAcceptor);
 
         // initialize profiling and prepare graph listener
         playReporter.start();
-        parsedStrategy.setAcceptor(parsedAcceptor);
         for (ExplorationListener listener : this.listeners) {
             listener.start(this, gts);
         }
-        parsedStrategy.play(new Halter() {
-            @Override
-            public boolean halt() {
-                return parsedAcceptor.getResult().done();
-            }
-        });
+        parsedStrategy.play();
         this.interrupted = parsedStrategy.isInterrupted();
         for (ExplorationListener listener : this.listeners) {
             if (this.interrupted) {
@@ -268,7 +259,6 @@ public class Exploration {
 
         // store result
         this.lastResult = parsedAcceptor.getResult();
-        this.lastResult.register();
         this.lastState = parsedStrategy.getLastState();
         this.lastMessage = parsedStrategy.getMessage();
     }
@@ -280,7 +270,7 @@ public class Exploration {
     public String toParsableString() {
         String result =
             StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.nrResults;
+                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.bound;
         return result;
     }
 
@@ -429,6 +419,8 @@ public class Exploration {
     /** Message describing the syntax of a parsable exploration strategy. */
     static public final String SYNTAX_MESSAGE =
         "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
+    /** Default exploration (DFS, final states, infinite). */
+    static public final Exploration DEFAULT = new Exploration();
     /** Reporter for profiling information. */
     static private final Reporter reporter = Reporter.register(Exploration.class);
     /** Handle for profiling {@link #play(GTS, GraphState)}. */

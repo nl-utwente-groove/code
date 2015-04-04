@@ -19,10 +19,8 @@ package groove.grammar;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
-import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.match.SearchEngine.SearchMode;
 import groove.util.Groove;
 
 /**
@@ -32,14 +30,14 @@ import groove.util.Groove;
  */
 public class EdgeEmbargo extends Condition {
     /** Constructs a named edge embargo.
-     * 
+     *
      * @param name the (non-{@code null}) name for the embargo
      * @param context the graph on which this is an embargo
      * @param embargoEdge the forbidden edge
      * @param properties properties of the graph grammar
      */
     private EdgeEmbargo(String name, RuleGraph context, RuleEdge embargoEdge,
-            GrammarProperties properties) {
+        GrammarProperties properties) {
         super(name, Condition.Op.NOT, context.newGraph(name), null, properties);
         this.embargoEdge = embargoEdge;
         getPattern().addEdgeContext(embargoEdge);
@@ -62,10 +60,9 @@ public class EdgeEmbargo extends Condition {
      * @param graph the graph on which this embargo works
      * @param embargoEdge the edge that is forbidden
      */
-    public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
-            GrammarProperties properties) {
-        this(String.format("%s:!(%s)", graph.getName(), embargoEdge), graph,
-            embargoEdge, properties);
+    public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge, GrammarProperties properties) {
+        this(String.format("%s:!(%s)", graph.getName(), embargoEdge), graph, embargoEdge,
+            properties);
     }
 
     /**
@@ -90,24 +87,6 @@ public class EdgeEmbargo extends Condition {
      */
     public Label edgeLabel() {
         return this.embargoEdge.label();
-    }
-
-    @Override
-    public boolean isCompatible(SearchMode searchMode) {
-        switch (searchMode) {
-        case NORMAL:
-            return true;
-        case MINIMAL:
-            return edgeLabel().getRole() != EdgeRole.BINARY;
-        case REVERSE:
-            // EZ says: here we always return false because either the embargo
-            // is going to be discarded (if it was checked in minimal mode) or
-            // it is going to be reversed.
-            return false;
-        default:
-            assert false;
-            return false;
-        }
     }
 
     /**

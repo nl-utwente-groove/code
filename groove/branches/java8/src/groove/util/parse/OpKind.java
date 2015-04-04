@@ -24,13 +24,17 @@ public enum OpKind {
     OR(RIGHT),
     /** Conjunction. */
     AND(RIGHT),
+    /** Temporal prefix operators. */
+    TEMP_PREFIX(PREFIX),
+    /** Temporal infix operators. */
+    TEMP_INFIX(RIGHT),
     /** Negation. */
     NOT(PREFIX),
     /** Existential and universal quantification. */
     QUANT(PREFIX),
     /** Equality and inequality tests. */
     EQUAL(NEITHER),
-    /** Comparison operators: lesser than, greater than (or equal). */
+    /** Comparison operators: lesser than, greater than [or equal]. */
     COMPARE(RIGHT),
     /** Assignment operators. */
     ASSIGN(RIGHT),

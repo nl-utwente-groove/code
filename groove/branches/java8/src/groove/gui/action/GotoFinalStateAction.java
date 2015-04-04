@@ -2,7 +2,6 @@ package groove.gui.action;
 
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.lts.GTS;
 import groove.lts.GraphState;
 
 import java.util.Collection;
@@ -47,7 +46,7 @@ public class GotoFinalStateAction extends SimulatorAction {
         } else {
             state = getSimulatorModel().getExploration().getLastState();
             if (state == null) {
-                state = getSimulatorModel().getGts().startState();
+                state = getSimulatorModel().getGTS().startState();
             }
         }
         getSimulatorModel().setState(state);
@@ -58,16 +57,15 @@ public class GotoFinalStateAction extends SimulatorAction {
      * the set of result states of the GTS.
      */
     private Collection<GraphState> getFinalStates() {
-        GTS gts = getSimulatorModel().getGts();
-        Collection<GraphState> result = gts.getFinalStates();
+        Collection<GraphState> result = getSimulatorModel().getGTS().getFinalStates();
         if (result.isEmpty()) {
-            result = gts.getResultStates();
+            result = getSimulatorModel().getResult().getStates();
         }
         return result;
     }
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGts() != null);
+        setEnabled(getSimulatorModel().getGTS() != null);
     }
 }

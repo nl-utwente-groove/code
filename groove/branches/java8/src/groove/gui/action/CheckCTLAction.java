@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+import groove.explore.ExploreResult;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -10,6 +11,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.parse.FormatException;
 import groove.verify.CTLMarker;
+import groove.verify.CTLModelChecker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.Logic;
@@ -35,15 +37,17 @@ public class CheckCTLAction extends SimulatorAction {
         String property = getCtlFormulaDialog().showDialog(getFrame());
         if (property != null) {
             boolean doCheck = true;
-            GTS gts = getSimulatorModel().getGts();
-            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGts()) {
-                getActions().getExploreAction().explore(getSimulatorModel().getExploration(), false);
-                gts = getSimulatorModel().getGts();
+            ExploreResult result = getSimulatorModel().getResult();
+            GTS gts = getSimulatorModel().getGTS();
+            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGTS()) {
+                getActions().getExploreAction()
+                    .explore(getSimulatorModel().getExploration(), false);
+                gts = getSimulatorModel().getGTS();
                 doCheck = !gts.hasOpenStates();
             }
             if (doCheck) {
                 try {
-                    doCheckProperty(gts, Formula.parse(property).toCtlFormula());
+                    doCheckProperty(result, Formula.parse(property).toCtlFormula());
                 } catch (FormatException e) {
                     // the property has already been parsed by the dialog
                     assert false;
@@ -67,8 +71,8 @@ public class CheckCTLAction extends SimulatorAction {
         return this.ctlFormulaDialog;
     }
 
-    private void doCheckProperty(GTS gts, Formula formula) {
-        CTLMarker modelChecker = new CTLMarker(formula, gts);
+    private void doCheckProperty(ExploreResult result, Formula formula) {
+        CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
         int counterExampleCount = modelChecker.getCount(false);
         List<GraphState> counterExamples = new ArrayList<GraphState>(counterExampleCount);
         String message;
@@ -84,9 +88,10 @@ public class CheckCTLAction extends SimulatorAction {
                 }
                 message =
                     String.format("The property '%s' fails to hold in the %d highlighted states",
-                        formula, counterExampleCount);
+                        formula,
+                        counterExampleCount);
             } else if (modelChecker.hasValue(false)) {
-                counterExamples.add(gts.startState());
+                counterExamples.add(result.getGTS().startState());
                 message =
                     String.format("The property '%s' fails to hold in the initial state", formula);
             } else {
@@ -100,7 +105,7 @@ public class CheckCTLAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGts() != null);
+        setEnabled(getSimulatorModel().getGTS() != null);
     }
 
     private final boolean full;

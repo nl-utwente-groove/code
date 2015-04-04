@@ -27,11 +27,9 @@ import groove.gui.dialog.SaveLTSAsDialog.StateExport;
 import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.util.collect.SetView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 
 /**
@@ -62,9 +60,9 @@ public class SaveLTSAsAction extends SimulatorAction {
 
     private void doSave(String dir, String ltsPattern, String statePattern,
         StateExport exportStates, LTSLabels flags) {
-        GTS gts = getSimulatorModel().getGts();
+        GTS gts = getSimulatorModel().getGTS();
 
-        Collection<? extends GraphState> export = new HashSet<GraphState>(0);
+        Iterable<? extends GraphState> export = new HashSet<GraphState>(0);
         switch (exportStates) {
         case ALL:
             export = gts.nodeSet();
@@ -73,12 +71,10 @@ public class SaveLTSAsAction extends SimulatorAction {
             export = gts.getStates();
             break;
         case FINAL:
-            export =
-                new SetView<GraphState>(gts.getStates(), obj -> obj instanceof GraphState
-                    && ((GraphState) obj).isFinal());
+            export = gts.getFinalStates();
             break;
         case RESULT:
-            export = gts.getResultStates();
+            export = getSimulatorModel().getResult();
             break;
         default:
             assert exportStates == StateExport.NONE;
@@ -87,7 +83,11 @@ public class SaveLTSAsAction extends SimulatorAction {
         Filter filter = getLtsDisplay().getFilter();
 
         try {
-            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(), flags, filter);
+            LTSReporter.exportLTS(gts,
+                new File(dir, ltsPattern).toString(),
+                flags,
+                filter,
+                getSimulatorModel().getResult());
             for (GraphState state : export) {
                 StateReporter.exportState(state, new File(dir, statePattern).toString());
             }
@@ -98,6 +98,6 @@ public class SaveLTSAsAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGts() != null);
+        setEnabled(getSimulatorModel().getGTS() != null);
     }
 }

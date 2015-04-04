@@ -433,7 +433,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
-            GTS gts = source.getGts();
+            GTS gts = source.getGTS();
             if (gts == null) {
                 getJGraph().setModel(null);
                 SwingUtilities.invokeLater(new Runnable() {
@@ -447,7 +447,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 });
             } else {
                 LTSJModel ltsModel;
-                boolean isNew = gts != oldModel.getGts();
+                boolean isNew = gts != oldModel.getGTS();
                 if (isNew) {
                     ltsModel = (LTSJModel) getJGraph().newJModel();
                     getJGraph().setFilter(getFilter());
@@ -456,6 +456,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     getJGraph().setModel(ltsModel);
                 } else {
                     ltsModel = getJModel();
+                    ltsModel.loadGraph(gts);
+                    //ltsModel.refreshVisuals();
                 }
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
@@ -463,11 +465,11 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 getJGraph().doLayout(isNew);
                 setEnabled(true);
                 getJGraph().scrollToActive();
-                setFilterResultItem(gts.hasResultStates());
+                setFilterResultItem(source.hasResult());
             }
-            if (gts != oldModel.getGts()) {
-                if (oldModel.getGts() != null) {
-                    oldModel.getGts().removeLTSListener(this.ltsListener);
+            if (gts != oldModel.getGTS()) {
+                if (oldModel.getGTS() != null) {
+                    oldModel.getGTS().removeLTSListener(this.ltsListener);
                 }
                 if (gts != null) {
                     gts.addLTSListener(this.ltsListener);
@@ -544,7 +546,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
          */
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            assert gts == getSimulatorModel().getGTS() : "I want to listen only to my lts";
             updateStatus(gts);
         }
 
@@ -554,7 +556,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
          */
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
-            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            assert gts == getSimulatorModel().getGTS() : "I want to listen only to my lts";
             updateStatus(gts);
         }
 
@@ -563,7 +565,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
          */
         @Override
         public void statusUpdate(GTS gts, GraphState closed, Flag flag, int oldStatus) {
-            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            assert gts == getSimulatorModel().getGTS() : "I want to listen only to my lts";
             if (flag == Flag.ERROR) {
                 updateErrors();
             }
@@ -602,14 +604,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 }
                 text.append(gts.getFinalStateCount() + " final");
             }
-            if (gts.hasResultStates()) {
+            if (getSimulatorModel().hasResult()) {
                 if (brackets) {
                     text.append(", ");
                 } else {
                     text.append(" (");
                     brackets = true;
                 }
-                text.append(gts.getResultStateCount() + " result");
+                int c = getSimulatorModel().getResult().size();
+                text.append(c + " result");
             }
             if (gts.hasErrorStates()) {
                 if (brackets) {

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,13 +24,10 @@ import groove.explore.strategy.Boundary;
 import groove.gui.Simulator;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.StringDialog;
-import groove.lts.GraphState;
 import groove.util.parse.FormatException;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.Logic;
-
-import java.util.Collection;
 
 import javax.swing.Action;
 import javax.swing.JOptionPane;
@@ -66,7 +63,7 @@ public class CheckLTLAction extends ExploreAction {
             strategy = this.strategyType.getTemplate().toSerialized(property);
         } else {
             BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
-            dialog.setGrammar(getSimulatorModel().getGts().getGrammar());
+            dialog.setGrammar(getSimulatorModel().getGTS().getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {
@@ -75,16 +72,19 @@ public class CheckLTLAction extends ExploreAction {
             strategy = this.strategyType.getTemplate().toSerialized(property, boundary);
         }
         Exploration exploration = new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
-        getActions().getExploreAction().explore(exploration, true);
-        Collection<GraphState> result = exploration.getResult().getValue();
-        if (result.isEmpty()) {
-            JOptionPane.showMessageDialog(getFrame(),
-                String.format("The property %s holds for this system", property));
-        } else {
-            JOptionPane.showMessageDialog(getFrame(),
-                String.format("A counter-example to %s is highlighted", property));
+        try {
+            getSimulatorModel().setExploration(exploration);
+            getActions().getExploreAction().execute();
+            if (exploration.getResult().isEmpty()) {
+                JOptionPane.showMessageDialog(getFrame(),
+                    String.format("The property %s holds for this system", property));
+            } else {
+                JOptionPane.showMessageDialog(getFrame(),
+                    String.format("A counter-example to %s is highlighted", property));
+            }
+        } catch (FormatException exc) {
+            showErrorDialog(exc, "Model checking failed");
         }
-        return;
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */
