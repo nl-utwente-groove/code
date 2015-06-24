@@ -318,6 +318,11 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
         keyMap = Collections.unmodifiableMap(defaultKeys);
     }
 
+    /** Name of deprecated key for attribute support. */
+    static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
+    /** Name of deprecated key for transition brackets. */
+    static public final String TRANSITION_BRACKETS = "transitionBrackets";
+
     /** Checks whether a value is a list of names of a given resource kind. */
     private static class ResourceChecker implements GrammarChecker {
         ResourceChecker(ResourceKind kind) {

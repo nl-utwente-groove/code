@@ -91,10 +91,14 @@ public class GrammarProperties extends Properties {
 
     /**
      * Indicates if the LTS labels should contain transition parameters. Default
-     * value: <code>false</code>.
+     * value: {@link ThreeValued#FALSE}.
      */
     public ThreeValued isUseParameters() {
-        return (ThreeValued) parseProperty(GrammarKey.TRANSITION_PARAMETERS);
+        ThreeValued result = (ThreeValued) parseProperty(GrammarKey.TRANSITION_PARAMETERS);
+        if (result == null) {
+            result = ThreeValued.FALSE;
+        }
+        return result;
     }
 
     /** Sets the {@link GrammarKey#TRANSITION_PARAMETERS} property to the given value * */
@@ -302,7 +306,11 @@ public class GrammarProperties extends Properties {
      * if none is selected.
      */
     public AlgebraFamily getAlgebraFamily() {
-        return (AlgebraFamily) parseProperty(GrammarKey.ALGEBRA);
+        AlgebraFamily result = (AlgebraFamily) parseProperty(GrammarKey.ALGEBRA);
+        if (result == null) {
+            result = AlgebraFamily.DEFAULT;
+        }
+        return result;
     }
 
     /**

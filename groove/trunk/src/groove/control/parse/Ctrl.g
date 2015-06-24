@@ -502,7 +502,7 @@ fragment
 EscapeSequence 
   : BSLASH
     ( QUOTE
-      BSLASH 
+    | BSLASH 
     )          
   ;    
 

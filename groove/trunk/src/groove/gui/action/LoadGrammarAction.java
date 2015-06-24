@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
@@ -12,6 +13,7 @@ import groove.gui.dialog.VersionDialog;
 import groove.io.store.DefaultArchiveSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
+import groove.util.ThreeValued;
 import groove.util.Version;
 
 import java.io.File;
@@ -143,8 +145,13 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         // store.reload(); - MdM - moved to version check code
         if (Version.compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_1) == -1) {
-            boolean success = makeIdentifiersValid(store);
+            boolean success = repairIdentifiers(store);
             if (!success) {
+                return false;
+            }
+        }
+        if (Version.compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_4) == -1) {
+            if (!repairGrammarProperties(store)) {
                 return false;
             }
         }
@@ -158,7 +165,7 @@ public class LoadGrammarAction extends SimulatorAction {
         return true;
     }
 
-    /** 
+    /**
      * Helper method for doLoadGrammar. Asks the user to select a new name for
      * saving the grammar after it has been loaded (and converted).
      */
@@ -189,7 +196,7 @@ public class LoadGrammarAction extends SimulatorAction {
      * hashed (but legal) versions of the old names.
      * The user must confirm the rename if there are names to be changed.
      */
-    private boolean makeIdentifiersValid(SystemStore store) throws IOException {
+    private boolean repairIdentifiers(SystemStore store) throws IOException {
         boolean result = true;
         boolean confirmed = false;
         store.setUndoSuspended(true);
@@ -281,7 +288,43 @@ public class LoadGrammarAction extends SimulatorAction {
         return JOptionPane.showOptionDialog(getFrame(),
             "Warning: the grammar contains resources with "
                 + "invalid (since grammar version 3.1) names.\n"
-                + "These will be renamed automatically.", "Warning: invalid identifiers",
-            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, "Continue") == JOptionPane.OK_OPTION;
+                + "These will be renamed automatically.",
+            "Warning: invalid identifiers",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE,
+            null,
+            options,
+            "Continue") == JOptionPane.OK_OPTION;
+    }
+
+    /**
+     * Changes the value of certain grammar properties to conform to syntax
+     * introduced in grammar version 3.4, and removes grammar
+     * properties that are no longer supported.
+     */
+    private boolean repairGrammarProperties(SystemStore store) throws IOException {
+        boolean changed = false;
+        GrammarProperties props = store.getProperties();
+        changed |= props.remove(GrammarKey.ATTRIBUTE_SUPPORT) != null;
+        changed |= props.remove(GrammarKey.TRANSITION_BRACKETS) != null;
+        // convert numeric value of TRANSITION_PARAMETERS
+        GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
+        String paramsVal = (String) props.get(paramsKey.getName());
+        if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
+            try {
+                int paramsIntVal = Integer.parseInt(paramsVal);
+                props.setUseParameters(paramsIntVal == 0 ? ThreeValued.FALSE : ThreeValued.TRUE);
+            } catch (NumberFormatException exc) {
+                // it was not a number either; remove the key altogether
+                props.remove(paramsKey.getName());
+            }
+            changed = true;
+        }
+        if (changed) {
+            store.setUndoSuspended(true);
+            store.putProperties(props);
+            store.setUndoSuspended(false);
+        }
+        return true;
     }
 }
