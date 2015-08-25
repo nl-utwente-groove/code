@@ -57,17 +57,11 @@ public class StatisticsReporter extends AExplorationReporter {
     // ------------------------------------------------------------------------
 
     /** Number of bytes in a kilobyte. */
-    static private final int BYTES_PER_KB = 1024;
+    private static final int BYTES_PER_KB = 1024;
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
-
-    /** Time stamp of the moment at which exploration was started. */
-    private long startTime;
-
-    /** Time stamp of the moment at which exploration was ended. */
-    private long endTime;
 
     /** Amount of memory used at the moment at which exploration was started. */
     private long startUsedMemory;
@@ -111,7 +105,6 @@ public class StatisticsReporter extends AExplorationReporter {
             gts.addLTSListener(this.gtsCounter);
             gts.addLTSListener(this.graphCounter);
         }
-        this.startTime = System.currentTimeMillis();
         // clear any previous report
         this.sb = null;
         this.fm = null;
@@ -119,7 +112,6 @@ public class StatisticsReporter extends AExplorationReporter {
 
     @Override
     public void stop(GTS gts) {
-        this.endTime = System.currentTimeMillis();
         getGTS().removeLTSListener(this.gtsCounter);
         getGTS().removeLTSListener(this.graphCounter);
     }
@@ -309,10 +301,8 @@ public class StatisticsReporter extends AExplorationReporter {
     /** Reports on the time usage. */
     private void reportTime() {
         // Timing figures.
-        long total = (this.endTime - this.startTime);
+        long total = Exploration.getRunningTime();
         long matching = Rule.getMatchingTime();
-        long running = Exploration.getRunningTime();
-        long overhead = total - running;
         long isoChecking = IsoChecker.getTotalTime();
         long generateTime = MatchApplier.getGenerateTime();
         long building = generateTime - isoChecking;
@@ -322,7 +312,7 @@ public class StatisticsReporter extends AExplorationReporter {
         // RuleApplications, bit weird maybe, but transforming is considered
         // everything besides the calculation of matches, isomorphisms, adding
         // to GTS, and reporter-duty: i.e. it's the "overhead" of the scenario.
-        long transforming = running - matching - isoChecking - building - measuring;
+        long transforming = total - matching - isoChecking - building - measuring;
 
         String format = "%-20s%d%n";
         emit(MEDIUM, "%n");
@@ -346,7 +336,6 @@ public class StatisticsReporter extends AExplorationReporter {
 
         emit(HIGH, format, "Building GTS:", building, 100 * building / (double) total);
         emit(HIGH, format, "Measuring:", measuring, 100 * measuring / (double) total);
-        emit(HIGH, format, "Initialization:", overhead, 100 * overhead / (double) total);
     }
 
     /**
