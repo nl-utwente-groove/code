@@ -18,31 +18,6 @@ package groove.gui.display;
 
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
-import groove.algebra.Algebras;
-import groove.annotation.Help;
-import groove.automaton.RegExpr;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectKind;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.GraphBasedModel;
-import groove.grammar.model.ResourceModel;
-import groove.graph.EdgeRole;
-import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
-import groove.graph.GraphRole;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.action.SnapToGridAction;
-import groove.gui.dialog.PropertiesTable;
-import groove.gui.jgraph.AspectJEdge;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JGraphMode;
-import groove.gui.tree.TypeTree;
-import groove.util.Pair;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -92,13 +67,39 @@ import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
+import groove.algebra.Algebras;
+import groove.annotation.Help;
+import groove.automaton.RegExpr;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.ResourceModel;
+import groove.graph.EdgeRole;
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.action.SnapToGridAction;
+import groove.gui.dialog.PropertiesTable;
+import groove.gui.jgraph.AspectJEdge;
+import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JGraphMode;
+import groove.gui.tree.TypeTree;
+import groove.util.Pair;
+
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class GraphEditorTab extends ResourceTab implements GraphModelListener,
-    PropertyChangeListener {
+final public class GraphEditorTab extends ResourceTab
+    implements GraphModelListener, PropertyChangeListener {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -361,9 +362,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
      */
     @Override
     public void graphChanged(GraphModelEvent e) {
-        boolean changed =
-            e.getChange().getInserted() != null || e.getChange().getRemoved() != null
-                || e.getChange().getAttributes() != null;
+        boolean changed = e.getChange().getInserted() != null || e.getChange().getRemoved() != null
+            || e.getChange().getAttributes() != null;
         if (changed) {
             updateStatus();
         }
@@ -467,10 +467,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         TitledPanel result = this.labelPanel;
         if (result == null) {
             TypeTree labelTree = getLabelTree();
-            this.labelPanel =
-                result =
-                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(),
-                        true);
+            this.labelPanel = result = new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                labelTree.createToolBar(), true);
             result.setTitled(false);
             result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
         }
@@ -503,7 +501,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
                 @Override
                 public void tableChanged(TableModelEvent e) {
                     if (GraphEditorTab.this.listenToPropertiesPanel) {
-                        changeProperties(GraphEditorTab.this.propertiesPanel.getProperties(), false);
+                        changeProperties(GraphEditorTab.this.propertiesPanel.getProperties(),
+                            false);
                         setDirty(false);
                     }
                 }
@@ -575,10 +574,10 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
      * @param data the data for the {@link JList}
      */
     private JComponent createSyntaxList(Collection<String> data) {
-        final JList list = new JList();
+        final JList<String> list = new JList<String>();
         list.setCellRenderer(new SyntaxCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
-        list.setListData(data.toArray());
+        list.setListData((String[]) data.toArray());
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -623,7 +622,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         this.edgeKeys = new TreeSet<String>(AspectKind.getEdgeDocMap(this.role).keySet());
         // the edge role description for binary edges in rule graphs is inappropriate
         Help extra = null;
-        for (Map.Entry<EdgeRole,Pair<String,String>> entry : EdgeRole.getRoleToDocMap().entrySet()) {
+        for (Map.Entry<EdgeRole,Pair<String,String>> entry : EdgeRole.getRoleToDocMap()
+            .entrySet()) {
             String item = entry.getValue().one();
             switch (entry.getKey()) {
             case BINARY:
@@ -631,7 +631,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
                     extra = EdgeRole.createHelp();
                     extra.setSyntax("regexpr");
                     extra.setHeader("Regular expression path");
-                    extra.setBody("An unadorned edge label in a rule by default denotes a regular expression.",
+                    extra.setBody(
+                        "An unadorned edge label in a rule by default denotes a regular expression.",
                         "This means that labels with non-standard characters need to be quoted, or preceded with 'COLON'.");
                     this.edgeKeys.add(extra.getItem());
                 } else {
@@ -897,8 +898,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
                 Object[] removed = edit.getRemoved();
                 Object[] changed = edit.getChanged();
                 relevant =
-                    inserted != null && inserted.length > 0 || removed != null
-                        && removed.length > 0 || changed != null && changed.length > 0;
+                    inserted != null && inserted.length > 0 || removed != null && removed.length > 0
+                        || changed != null && changed.length > 0;
             }
             if (relevant) {
                 super.undoableEditHappened(e);
@@ -935,10 +936,9 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
                 Object[] removed = edit.getRemoved();
                 Object[] changed = edit.getChanged();
                 ConnectionSet connections = edit.getConnectionSet();
-                minor =
-                    (connections == null || connections.isEmpty())
-                        && (inserted == null || inserted.length == 0)
-                        && (removed == null || removed.length == 0);
+                minor = (connections == null || connections.isEmpty())
+                    && (inserted == null || inserted.length == 0)
+                    && (removed == null || removed.length == 0);
                 if (minor && changed != null) {
                     for (Object in : changed) {
                         AttributeMap attrs = (AttributeMap) edit.getAttributes().get(in);
@@ -1019,9 +1019,8 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            evt =
-                new ActionEvent(getJGraph(), evt.getID(), evt.getActionCommand(),
-                    evt.getModifiers());
+            evt = new ActionEvent(getJGraph(), evt.getID(), evt.getActionCommand(),
+                evt.getModifiers());
             this.action.actionPerformed(evt);
             if (this == getCutAction() || this == getCopyAction()) {
                 clipboardFilled = true;
@@ -1035,6 +1034,7 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
 
     /** Private cell renderer class that inserts the correct tool tips. */
     private class SyntaxCellRenderer extends DefaultListCellRenderer {
+        @SuppressWarnings("rawtypes")
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
             boolean isSelected, boolean cellHasFocus) {

@@ -1,27 +1,20 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.dialog;
-
-import groove.grammar.type.TypeGraph;
-import groove.grammar.type.TypeLabel;
-import groove.grammar.type.TypeNode;
-import groove.graph.EdgeRole;
-import groove.io.HTMLConverter;
-import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,6 +40,13 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
+import groove.graph.EdgeRole;
+import groove.io.HTMLConverter;
+import groove.util.parse.FormatException;
 
 /**
  * Dialog finding/replacing labels.
@@ -150,8 +150,8 @@ public class FindReplaceDialog {
                 TypeNode newType = this.typeGraph.getNode(result);
                 if (newType != null) {
                     if (this.typeGraph.isSubtype(oldType, newType)) {
-                        throw new FormatException(
-                            "New label '%s' is an existing supertype of '%s'", result, oldLabel);
+                        throw new FormatException("New label '%s' is an existing supertype of '%s'",
+                            result, oldLabel);
                     } else if (this.typeGraph.isSubtype(newType, oldType)) {
                         throw new FormatException("New label '%s' is an existing subtype of '%s'",
                             result, oldLabel);
@@ -203,10 +203,9 @@ public class FindReplaceDialog {
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.add(getErrorLabel());
             errorPanel.setPreferredSize(oldPanel.getPreferredSize());
-            this.optionPane =
-                new JOptionPane(new Object[] {oldPanel, newPanel, errorPanel},
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
-                        getFindButton(), getReplaceButton(), getCancelButton()});
+            this.optionPane = new JOptionPane(new Object[] {oldPanel, newPanel, errorPanel},
+                JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null,
+                new Object[] {getFindButton(), getReplaceButton(), getCancelButton()});
         }
         return this.optionPane;
     }
@@ -257,9 +256,9 @@ public class FindReplaceDialog {
     private JButton cancelButton;
 
     /** Returns the text field in which the user is to enter his input. */
-    private JComboBox getOldField() {
+    private JComboBox<TypeLabel> getOldField() {
         if (this.oldField == null) {
-            final JComboBox result = this.oldField = getLabelComboBox(this.typeGraph);
+            final JComboBox<TypeLabel> result = this.oldField = getLabelComboBox(this.typeGraph);
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -271,7 +270,7 @@ public class FindReplaceDialog {
     }
 
     /** The text field where the original label is entered. */
-    private JComboBox oldField;
+    private JComboBox<TypeLabel> oldField;
 
     /** Returns the text field in which the user is to enter his input. */
     private JTextField getNewField() {
@@ -326,17 +325,21 @@ public class FindReplaceDialog {
     private JLabel oldTypeLabel;
 
     /** Returns the combo box for the label in the given type graph. */
-    private JComboBox getLabelComboBox(TypeGraph typeGraph) {
-        final JComboBox result = new JComboBox();
+    private JComboBox<TypeLabel> getLabelComboBox(TypeGraph typeGraph) {
+        final JComboBox<TypeLabel> result = new JComboBox<TypeLabel>();
         result.setFocusable(false);
         result.setRenderer(new DefaultListCellRenderer() {
+            @SuppressWarnings("rawtypes")
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index,
-                    boolean isSelected, boolean cellHasFocus) {
+                boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof TypeLabel) {
                     value = HTMLConverter.HTML_TAG.on(((TypeLabel) value).toLine().toHTMLString());
                 }
-                return super.getListCellRendererComponent(list, value, index, isSelected,
+                return super.getListCellRendererComponent(list,
+                    value,
+                    index,
+                    isSelected,
                     cellHasFocus);
             }
         });
@@ -375,9 +378,9 @@ public class FindReplaceDialog {
     }
 
     /** Returns the combobox for the new label's type. */
-    private JComboBox getNewTypeCombobox() {
+    private JComboBox<String> getNewTypeCombobox() {
         if (this.newTypeChoice == null) {
-            final JComboBox result = this.newTypeChoice = new JComboBox();
+            final JComboBox<String> result = this.newTypeChoice = new JComboBox<String>();
             for (EdgeRole kind : EdgeRole.values()) {
                 result.addItem(kind.getDescription(true));
             }
@@ -410,7 +413,7 @@ public class FindReplaceDialog {
     }
 
     /** Combobox showing the old label's type. */
-    private JComboBox newTypeChoice;
+    private JComboBox<String> newTypeChoice;
 
     /** Set of existing rule names. */
     private final TypeGraph typeGraph;

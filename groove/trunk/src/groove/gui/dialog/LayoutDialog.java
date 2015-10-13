@@ -1,27 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.dialog;
-
-import groove.gui.Simulator;
-import groove.gui.display.DisplayKind;
-import groove.gui.jgraph.JGraph;
-import groove.gui.layout.LayoutKind;
-import groove.gui.layout.LayouterItem;
-import groove.gui.menu.SetLayoutMenu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +28,13 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+
+import groove.gui.Simulator;
+import groove.gui.display.DisplayKind;
+import groove.gui.jgraph.JGraph;
+import groove.gui.layout.LayoutKind;
+import groove.gui.layout.LayouterItem;
+import groove.gui.menu.SetLayoutMenu;
 
 /**
  * @author Eduardo Zambon
@@ -54,7 +54,7 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
 
     private final Simulator simulator;
     private final LayouterItem protoLayouterItems[];
-    private final JComboBox layoutBox;
+    private final JComboBox<String> layoutBox;
     private final JPanel panel;
     private JGraph<?> jGraph;
 
@@ -65,7 +65,7 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
         this.simulator = simulator;
         this.protoLayouterItems = new LayouterItem[LayoutKind.values().length];
 
-        this.layoutBox = new JComboBox();
+        this.layoutBox = new JComboBox<String>();
         int i = 0;
         for (LayoutKind kind : LayoutKind.values()) {
             this.protoLayouterItems[i] = LayoutKind.getLayouterItemProto(kind);

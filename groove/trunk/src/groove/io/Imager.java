@@ -22,28 +22,6 @@ import static groove.io.FileType.GXL;
 import static groove.io.FileType.RULE;
 import static groove.io.FileType.STATE;
 import static groove.io.FileType.TYPE;
-import groove.explore.Verbosity;
-import groove.grammar.QualName;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.GraphBasedModel;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.display.DisplayKind;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
-import groove.io.external.Exportable;
-import groove.io.external.Exporter;
-import groove.io.external.Exporters;
-import groove.io.external.PortException;
-import groove.io.external.Porter;
-import groove.io.external.Porter.Kind;
-import groove.util.Groove;
-import groove.util.Pair;
-import groove.util.cli.ExistingFileHandler;
-import groove.util.cli.GrooveCmdLineTool;
-import groove.util.parse.FormatException;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -88,6 +66,29 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.FileOptionHandler;
 import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
 import org.kohsuke.args4j.spi.Setter;
+
+import groove.explore.Verbosity;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.display.DisplayKind;
+import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.AspectJModel;
+import groove.io.external.Exportable;
+import groove.io.external.Exporter;
+import groove.io.external.Exporters;
+import groove.io.external.PortException;
+import groove.io.external.Porter;
+import groove.io.external.Porter.Kind;
+import groove.util.Groove;
+import groove.util.Pair;
+import groove.util.cli.ExistingFileHandler;
+import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a
@@ -166,8 +167,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
             throw new IOException("Input file " + inFile + " is not part of a grammar");
         }
         if (inFile.isDirectory() && !outFile.isDirectory()) {
-            throw new IOException("Can't image files in directory " + inFile + " to single file "
-                + outFile);
+            throw new IOException(
+                "Can't image files in directory " + inFile + " to single file " + outFile);
         }
         try {
             GrammarModel grammar = GrammarModel.newInstance(grammarFile, false);
@@ -446,6 +447,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     /** An array of all file types that can be imaged. */
     private static final Set<FileType> acceptedTypes;
+
     static {
         acceptedTypes = EnumSet.noneOf(FileType.class);
         acceptedTypes.add(GRAMMAR);
@@ -465,7 +467,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
     /** Option handler for output format extension. */
     public static class FormatHandler extends OneArgumentOptionHandler<String> {
         /** Required constructor. */
-        public FormatHandler(CmdLineParser parser, OptionDef option, Setter<? super String> setter) {
+        public FormatHandler(CmdLineParser parser, OptionDef option,
+            Setter<? super String> setter) {
             super(parser, option, setter);
         }
 
@@ -702,8 +705,10 @@ public class Imager extends GrooveCmdLineTool<Object> {
             ItemListener enableItemListener = new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent evt) {
-                    ImagerFrame.this.outFileField.setEditable(ImagerFrame.this.outFileEnabler.isSelected());
-                    ImagerFrame.this.outFileBrowseButton.setEnabled(ImagerFrame.this.outFileEnabler.isSelected());
+                    ImagerFrame.this.outFileField
+                        .setEditable(ImagerFrame.this.outFileEnabler.isSelected());
+                    ImagerFrame.this.outFileBrowseButton
+                        .setEnabled(ImagerFrame.this.outFileEnabler.isSelected());
                 }
             };
             this.closeButton.setAction(closeAction);
@@ -742,6 +747,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox formatBox = new JComboBox(Imager.getFormatMap().keySet().toArray());
+        final JComboBox<String> formatBox =
+            new JComboBox<String>((String[]) Imager.getFormatMap().keySet().toArray());
     }
 }

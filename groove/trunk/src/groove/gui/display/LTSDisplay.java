@@ -22,29 +22,6 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
-import groove.grammar.model.GrammarModel;
-import groove.graph.GraphInfo;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.SimulatorListener;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JGraphMode;
-import groove.gui.jgraph.LTSJEdge;
-import groove.gui.jgraph.LTSJGraph;
-import groove.gui.jgraph.LTSJModel;
-import groove.gui.jgraph.LTSJVertex;
-import groove.gui.list.ErrorListPanel;
-import groove.gui.tree.LabelTree;
-import groove.lts.Filter;
-import groove.lts.GTS;
-import groove.lts.GTSAdapter;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.lts.Status.Flag;
-import groove.util.parse.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -78,6 +55,30 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import groove.grammar.model.GrammarModel;
+import groove.graph.GraphInfo;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraphMode;
+import groove.gui.jgraph.LTSJEdge;
+import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.LTSJModel;
+import groove.gui.jgraph.LTSJVertex;
+import groove.gui.list.ErrorListPanel;
+import groove.gui.tree.LabelTree;
+import groove.lts.Filter;
+import groove.lts.GTS;
+import groove.lts.GTSAdapter;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.Status.Flag;
+import groove.util.parse.FormatError;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -174,10 +175,11 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     private JPanel filterPanel;
 
-    private JComboBox getFilterChooser() {
+    private JComboBox<Filter> getFilterChooser() {
         if (this.filterChooser == null) {
             this.filterListening = true;
-            final JComboBox result = this.filterChooser = new JComboBox(Filter.values());
+            final JComboBox<Filter> result =
+                this.filterChooser = new JComboBox<Filter>(Filter.values());
             result.setMaximumSize(new Dimension(result.getPreferredSize().width, 1000));
             result.addItemListener(new ItemListener() {
                 @Override
@@ -193,7 +195,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     /** Adds or removes an item for {@link Filter#RESULT} to the filter chooser. */
     private void setFilterResultItem(boolean hasResults) {
-        JComboBox chooser = getFilterChooser();
+        JComboBox<Filter> chooser = getFilterChooser();
         if (hasResults != (chooser.getItemCount() == Filter.values().length)) {
             this.filterListening = false;
             boolean resultSelected = chooser.getSelectedIndex() == Filter.RESULT.ordinal();
@@ -217,7 +219,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         return (Filter) getFilterChooser().getSelectedItem();
     }
 
-    private JComboBox filterChooser;
+    private JComboBox<Filter> filterChooser;
 
     private JPanel getBoundSpinnerPanel() {
         JPanel result = this.boundSpinnerPanel;
@@ -314,7 +316,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
             jCells.add(getJModel().getJCellForNode(state));
             if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
-                for (GraphTransition trans : state.getTransitions(getJGraph().getTransitionClass())) {
+                for (GraphTransition trans : state
+                    .getTransitions(getJGraph().getTransitionClass())) {
                     if (trans.target() == counterExamples.get(i + 1)) {
                         jCells.add(getJModel().getJCellForEdge(trans));
                         break;
@@ -518,8 +521,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         Color background =
             getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
-        ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(isEnabled()
-            ? background : null);
+        ((NumberEditor) getBoundSpinner().getEditor()).getTextField()
+            .setBackground(isEnabled() ? background : null);
     }
 
     /** Returns an LTS display for a given simulator. */

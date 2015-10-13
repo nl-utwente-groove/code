@@ -1,29 +1,21 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id: OptimizedBoundedNestedDFSStrategy.java,v 1.2 2008/02/22 13:02:45 rensink
  * Exp $
  */
 package groove.gui.dialog;
-
-import groove.explore.strategy.Boundary;
-import groove.explore.strategy.GraphNodeSizeBoundary;
-import groove.explore.strategy.RuleSetBoundary;
-import groove.grammar.Action;
-import groove.grammar.Grammar;
-import groove.grammar.Rule;
-import groove.gui.layout.SpringUtilities;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,6 +40,14 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import groove.explore.strategy.Boundary;
+import groove.explore.strategy.GraphNodeSizeBoundary;
+import groove.explore.strategy.RuleSetBoundary;
+import groove.grammar.Action;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.gui.layout.SpringUtilities;
+
 /**
  * @author Harmen Kastenberg
  * @version $Revision$
@@ -56,9 +56,8 @@ public class BoundedModelCheckingDialog {
 
     JOptionPane createContentPane() {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
-        this.pane =
-            new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
-                null, buttons);
+        this.pane = new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
+            JOptionPane.OK_CANCEL_OPTION, null, buttons);
         return this.pane;
     }
 
@@ -80,13 +79,13 @@ public class BoundedModelCheckingDialog {
         this.addButton.addActionListener(this.selectionListener);
         this.addButton.setEnabled(false);
 
-        this.ruleList = new JList();
-        this.ruleList.setListData(this.ruleNames.toArray());
+        this.ruleList = new JList<String>();
+        this.ruleList.setListData((String[]) this.ruleNames.toArray());
         this.ruleList.setEnabled(false);
         this.ruleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.ruleList.addListSelectionListener(this.selectionListener);
         String[] singleton = {"empty"};
-        this.selectedRuleList = new JList();
+        this.selectedRuleList = new JList<String>();
         this.selectedRuleList.setListData(singleton);
         this.selectedRuleList.setEnabled(false);
         this.selectedRuleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -219,8 +218,8 @@ public class BoundedModelCheckingDialog {
     private JRadioButton graphBoundButton;
     private JRadioButton ruleSetBoundButton;
 
-    private JList ruleList;
-    private JList selectedRuleList;
+    private JList<String> ruleList;
+    private JList<String> selectedRuleList;
 
     private final SelectionListener selectionListener = new SelectionListener();
 
@@ -286,15 +285,17 @@ public class BoundedModelCheckingDialog {
                 aDialog.boundField.setEditable(false);
                 aDialog.deltaField.setEditable(false);
             } else if (e.getSource() == aDialog.addButton) {
-                for (Object object : aDialog.ruleList.getSelectedValues()) {
+                for (Object object : aDialog.ruleList.getSelectedValuesList()) {
                     aDialog.selectedRuleNames.add(object.toString());
                 }
-                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames.toArray());
+                aDialog.selectedRuleList
+                    .setListData((String[]) aDialog.selectedRuleNames.toArray());
             } else if (e.getSource() == aDialog.deleteButton) {
-                for (Object object : aDialog.selectedRuleList.getSelectedValues()) {
+                for (Object object : aDialog.selectedRuleList.getSelectedValuesList()) {
                     aDialog.selectedRuleNames.remove(object.toString());
                 }
-                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames.toArray());
+                aDialog.selectedRuleList
+                    .setListData((String[]) aDialog.selectedRuleNames.toArray());
             }
         }
 
@@ -302,13 +303,13 @@ public class BoundedModelCheckingDialog {
         public void valueChanged(ListSelectionEvent e) {
             BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (e.getSource() == aDialog.ruleList) {
-                if (aDialog.ruleList.getSelectedValues().length > 0) {
+                if (aDialog.ruleList.getSelectedValuesList().size() > 0) {
                     aDialog.addButton.setEnabled(true);
                 } else {
                     aDialog.addButton.setEnabled(false);
                 }
             } else if (e.getSource() == aDialog.selectedRuleList) {
-                if (aDialog.selectedRuleList.getSelectedValues().length > 0) {
+                if (aDialog.selectedRuleList.getSelectedValuesList().size() > 0) {
                     aDialog.deleteButton.setEnabled(true);
                 } else {
                     aDialog.deleteButton.setEnabled(false);

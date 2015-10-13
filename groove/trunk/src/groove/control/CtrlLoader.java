@@ -17,6 +17,20 @@
 package groove.control;
 
 import static groove.io.FileType.CONTROL;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.TreeMap;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.TokenRewriteStream;
+
 import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
@@ -32,19 +46,6 @@ import groove.util.Groove;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.TokenRewriteStream;
 
 /**
  * Wrapper for the ANTLR control parser and builder.
@@ -182,8 +183,8 @@ public class CtrlLoader {
             if (recipeTree.getChildCount() == 3) {
                 // no explicit priority
                 if (newPriority != 0) {
-                    rewriter.insertAfter(recipeTree.getChild(1).getToken(), "priority "
-                        + newPriority);
+                    rewriter.insertAfter(recipeTree.getChild(1).getToken(),
+                        "priority " + newPriority);
                     changed = true;
                 }
             } else {
@@ -226,7 +227,8 @@ public class CtrlLoader {
             Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String programName = CONTROL.stripExtension(args[1]);
-                System.out.printf("Control automaton for %s:%n%s", programName,
+                System.out.printf("Control automaton for %s:%n%s",
+                    programName,
                     run(grammar, programName, new File(grammarName)));
             }
         } catch (Exception e) {
@@ -254,7 +256,8 @@ public class CtrlLoader {
             control = new File(control, part);
         }
         File inputFile = CONTROL.addExtension(control);
-        Scanner scanner = new Scanner(inputFile).useDelimiter("\\A");
+        Scanner scanner = new Scanner(inputFile);
+        scanner.useDelimiter("\\A");
         instance.parse(programName, scanner.next());
         scanner.close();
         Program result = instance.buildProgram(Collections.singleton(programName));

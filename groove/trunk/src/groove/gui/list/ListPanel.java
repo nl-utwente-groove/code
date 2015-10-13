@@ -1,11 +1,11 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -13,12 +13,6 @@
  * the License.
  */
 package groove.gui.list;
-
-import groove.grammar.model.ResourceKind;
-import groove.graph.Element;
-import groove.gui.look.Values;
-import groove.gui.look.Values.Mode;
-import groove.io.HTMLConverter;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -41,6 +35,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import groove.grammar.model.ResourceKind;
+import groove.graph.Element;
+import groove.gui.look.Values;
+import groove.gui.look.Values.Mode;
+import groove.io.HTMLConverter;
 
 /**
  * Panel showing a list of messages. The panel hides itself when the
@@ -69,21 +69,21 @@ public abstract class ListPanel extends JPanel {
      * @param entries the list of messages to be shown
      */
     public void setEntries(Collection<? extends SelectableListEntry> entries) {
-        getEntryArea().setListData(entries.toArray());
+        getEntryArea().setListData(entries.toArray(new SelectableListEntry[] {}));
         setVisible(!entries.isEmpty());
     }
 
     /** Clears all entries from the list. */
     public void clearEntries() {
         getEntryArea().setListData(
-            Collections.<SelectableListEntry>emptySet().toArray());
+            Collections.<SelectableListEntry>emptySet().toArray(new SelectableListEntry[] {}));
         setVisible(false);
     }
 
-    /** 
+    /**
      * Adds an observer to the list.
      * The observer is notified whenever the selection changes or
-     * focus is regained. 
+     * focus is regained.
      */
     public void addSelectionListener(final Observer listener) {
         getEntryArea().addListSelectionListener(new ListSelectionListener() {
@@ -105,7 +105,7 @@ public abstract class ListPanel extends JPanel {
 
     /** Returns the currently selected entry. */
     public SelectableListEntry getSelectedEntry() {
-        return (SelectableListEntry) getEntryArea().getSelectedValue();
+        return getEntryArea().getSelectedValue();
     }
 
     @Override
@@ -136,15 +136,13 @@ public abstract class ListPanel extends JPanel {
     }
 
     /** Lazily creates and returns the panel. */
-    private JList getEntryArea() {
+    private JList<SelectableListEntry> getEntryArea() {
         if (this.entryArea == null) {
-            JList result = this.entryArea = new JList();
+            JList<SelectableListEntry> result = this.entryArea = new JList<SelectableListEntry>();
             result.setBackground(getColors().getBackground(Mode.NONE));
             result.setForeground(getColors().getForeground(Mode.NONE));
-            result.setSelectionBackground(getColors().getBackground(
-                Mode.FOCUSED));
-            result.setSelectionForeground(getColors().getBackground(
-                Mode.FOCUSED));
+            result.setSelectionBackground(getColors().getBackground(Mode.FOCUSED));
+            result.setSelectionForeground(getColors().getBackground(Mode.FOCUSED));
             result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             result.setCellRenderer(new CellRenderer());
         }
@@ -154,9 +152,7 @@ public abstract class ListPanel extends JPanel {
     /** Lazily creates and returns the title label. */
     private JLabel getTitle(String text) {
         if (this.title == null) {
-            this.title =
-                new JLabel(
-                    HTMLConverter.HTML_TAG.on(HTMLConverter.STRONG_TAG.on(text)));
+            this.title = new JLabel(HTMLConverter.HTML_TAG.on(HTMLConverter.STRONG_TAG.on(text)));
         }
         return this.title;
     }
@@ -175,7 +171,7 @@ public abstract class ListPanel extends JPanel {
     protected abstract Values.ColorSet getColors();
 
     /** The text area containing the messages. */
-    private JList entryArea;
+    private JList<SelectableListEntry> entryArea;
     /** The title of the panel. */
     private JLabel title;
 
@@ -185,15 +181,13 @@ public abstract class ListPanel extends JPanel {
             super();
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+            boolean isSelected, boolean cellHasFocus) {
             Component result =
-                super.getListCellRendererComponent(list, value, index,
-                    isSelected, false);
-            Mode mode =
-                cellHasFocus ? Mode.FOCUSED : isSelected ? Mode.SELECTED
-                        : Mode.NONE;
+                super.getListCellRendererComponent(list, value, index, isSelected, false);
+            Mode mode = cellHasFocus ? Mode.FOCUSED : isSelected ? Mode.SELECTED : Mode.NONE;
             result.setBackground(getColors().getBackground(mode));
             result.setForeground(getColors().getForeground(mode));
             return result;
