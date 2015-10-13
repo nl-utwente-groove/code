@@ -1,24 +1,20 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.dialog;
-
-import groove.gui.Options;
-import groove.gui.display.DismissDelayer;
-import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -50,6 +46,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import groove.gui.Options;
+import groove.gui.display.DismissDelayer;
+import groove.util.parse.FormatException;
 
 /**
  * Dialog for entering strings, with a large textfield rather than a text area.
@@ -122,9 +122,8 @@ abstract public class StringDialog {
             main.add(errorPanel, BorderLayout.SOUTH);
             main.add(createSyntaxPanel(), BorderLayout.EAST);
         }
-        JOptionPane panel =
-            new JOptionPane(main, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null,
-                buttons);
+        JOptionPane panel = new JOptionPane(main, JOptionPane.PLAIN_MESSAGE,
+            JOptionPane.OK_CANCEL_OPTION, null, buttons);
         JDialog result = panel.createDialog(frame, this.title);
         result.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         result.addWindowListener(this.closeListener);
@@ -132,8 +131,8 @@ abstract public class StringDialog {
     }
 
     private JComponent createSyntaxPanel() {
-        final JList list = new JList();
-        DefaultListModel model = new DefaultListModel();
+        final JList<String> list = new JList<String>();
+        DefaultListModel<String> model = new DefaultListModel<String>();
         for (Map.Entry<String,String> entry : this.docMap.entrySet()) {
             model.addElement(entry.getKey());
         }
@@ -164,16 +163,17 @@ abstract public class StringDialog {
     private JTextArea textArea;
 
     /** Lazily creates and returns the combobox containing the current choices. */
-    private JComboBox getChoiceBox() {
+    private JComboBox<String> getChoiceBox() {
         if (this.choiceBox == null) {
-            this.choiceBox = new JComboBox();
-            this.choiceBox.setPrototypeDisplayValue("The longest value we want to display completely");
+            this.choiceBox = new JComboBox<String>();
+            this.choiceBox
+                .setPrototypeDisplayValue("The longest value we want to display completely");
             this.choiceBox.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     if (StringDialog.this.choiceBox.getSelectedIndex() != 0) {
-                        getTextArea().setText(
-                            (String) StringDialog.this.choiceBox.getSelectedItem());
+                        getTextArea()
+                            .setText((String) StringDialog.this.choiceBox.getSelectedItem());
                         getTextArea().selectAll();
                         getTextArea().requestFocus();
                     }
@@ -215,7 +215,7 @@ abstract public class StringDialog {
     /** Attempts to parse the given text.
      * Calls {@link #parse(String)} for the actual parsing.
      * @param text the text to be parsed as a property
-     * @return {@code null} if the text cannot be parsed, 
+     * @return {@code null} if the text cannot be parsed,
      * or the parsed result otherwise
      */
     private String parseText(String text) {
@@ -243,7 +243,7 @@ abstract public class StringDialog {
     abstract protected String parse(String text) throws FormatException;
 
     /** The choice box */
-    private JComboBox choiceBox;
+    private JComboBox<String> choiceBox;
 
     /**
      * Lazily creates and returns a button labelled OK.
@@ -299,7 +299,7 @@ abstract public class StringDialog {
     private final String title;
 
     /**
-     * Sets the result of the dialog from the 
+     * Sets the result of the dialog from the
      * selection of the choice box.
      * Also adds the result to the history.
      */
@@ -417,6 +417,7 @@ abstract public class StringDialog {
             this.tipMap = tipMap;
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
             boolean isSelected, boolean cellHasFocus) {

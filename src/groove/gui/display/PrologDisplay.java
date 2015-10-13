@@ -1,39 +1,22 @@
 /*
  * Groove Prolog Interface
  * Copyright (C) 2009 Michiel Hendriks, University of Twente
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package groove.gui.display;
-
-import gnu.prolog.io.TermWriter;
-import gnu.prolog.term.AtomTerm;
-import gnu.prolog.term.CompoundTermTag;
-import gnu.prolog.term.Term;
-import gnu.prolog.vm.Environment;
-import gnu.prolog.vm.PrologException;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.lts.MatchResult;
-import groove.prolog.GrooveEnvironment;
-import groove.prolog.GrooveState;
-import groove.prolog.PrologEngine;
-import groove.prolog.QueryResult;
-import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -70,9 +53,26 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import gnu.prolog.io.TermWriter;
+import gnu.prolog.term.AtomTerm;
+import gnu.prolog.term.CompoundTermTag;
+import gnu.prolog.term.Term;
+import gnu.prolog.vm.Environment;
+import gnu.prolog.vm.PrologException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.lts.MatchResult;
+import groove.prolog.GrooveEnvironment;
+import groove.prolog.GrooveState;
+import groove.prolog.PrologEngine;
+import groove.prolog.QueryResult;
+import groove.util.parse.FormatException;
+
 /**
  * The Prolog editor tab for the improved simulator
- * 
+ *
  * @author Michiel Hendriks
  */
 public class PrologDisplay extends ResourceDisplay {
@@ -149,9 +149,9 @@ public class PrologDisplay extends ResourceDisplay {
      * Constructs and returns the query field.
      * Also initialises {@link #queryEdit}.
      */
-    private JComboBox getQueryField() {
+    private JComboBox<String> getQueryField() {
         if (this.queryField == null) {
-            this.queryField = new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
+            this.queryField = new JComboBox<String>(PREFS.get("queryHistory", "").split("\\n"));
             this.queryField.setFont(EDIT_FONT);
             this.queryField.setEditable(true);
             this.queryField.setEnabled(true);
@@ -304,7 +304,8 @@ public class PrologDisplay extends ResourceDisplay {
                 Object userObject =
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 if (userObject instanceof CompoundTermTag) {
-                    return getEngine().getEnvironment().getToolTipText((CompoundTermTag) userObject);
+                    return getEngine().getEnvironment()
+                        .getToolTipText((CompoundTermTag) userObject);
                 } else {
                     return null;
                 }
@@ -466,7 +467,7 @@ public class PrologDisplay extends ResourceDisplay {
      * Add the query to the history
      */
     private void addQueryHistory(String queryString) {
-        JComboBox query = getQueryField();
+        JComboBox<String> query = getQueryField();
         query.removeItem(queryString);
         query.insertItemAt(queryString, 0);
         query.setSelectedIndex(0);
@@ -583,7 +584,8 @@ public class PrologDisplay extends ResourceDisplay {
                     getEngine().lastReturnValue().toString()));
             }
             this.resultsStatus.setText(String.format("%d solution(s); Executed in %fms",
-                this.solutionCount, queryResult.getExecutionTime() / 1000000.0));
+                this.solutionCount,
+                queryResult.getExecutionTime() / 1000000.0));
         }
     }
 
@@ -599,7 +601,7 @@ public class PrologDisplay extends ResourceDisplay {
      * time "reconsult" action is performed.
      */
     private PrologEngine engine;
-    private JComboBox queryField;
+    private JComboBox<String> queryField;
     private JTextComponent queryEdit;
     /** Panel for the results area and status bar. */
     private JPanel resultsPanel;
@@ -623,7 +625,7 @@ public class PrologDisplay extends ResourceDisplay {
      */
     private JTree userTree;
     /**
-     * The button associated with the next solution action.    
+     * The button associated with the next solution action.
      */
     private JButton nextResultButton;
     /**
@@ -635,7 +637,7 @@ public class PrologDisplay extends ResourceDisplay {
     /**
      * Class used to redirect the standard output stream used by prolog to the
      * output panel
-     * 
+     *
      * @author Michiel Hendriks
      */
     static class JTextAreaOutputStream extends OutputStream {

@@ -1,31 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.dialog.config;
-
-import groove.explore.config.BooleanKey;
-import groove.explore.config.CheckingKind;
-import groove.explore.config.ExploreKey;
-import groove.explore.config.SettingKey;
-import groove.gui.display.DismissDelayer;
-import groove.io.HTMLConverter;
-import groove.io.HTMLConverter.HTMLTag;
-import groove.util.parse.StringHandler;
-import groove.verify.FormulaParser;
-import groove.verify.Logic;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -41,6 +30,17 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+
+import groove.explore.config.BooleanKey;
+import groove.explore.config.CheckingKind;
+import groove.explore.config.ExploreKey;
+import groove.explore.config.SettingKey;
+import groove.gui.display.DismissDelayer;
+import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
+import groove.util.parse.StringHandler;
+import groove.verify.FormulaParser;
+import groove.verify.Logic;
 
 /**
  * Factory for syntax help.
@@ -85,9 +85,10 @@ public class HelpFactory {
         text.append(HTMLConverter.HTML_LINEBREAK);
         switch (kind) {
         case FALSE:
-            text.append("Currently set to <b>false</b>, meaning that when the successors of a given state "
-                + "are explored, the next state to be picked is determined by the search strategy "
-                + "and deterministally fixed between one exploration and the next.");
+            text.append(
+                "Currently set to <b>false</b>, meaning that when the successors of a given state "
+                    + "are explored, the next state to be picked is determined by the search strategy "
+                    + "and deterministally fixed between one exploration and the next.");
             break;
         case TRUE:
             text.append("Currently set to <b>true</b>, meaning that whenever the next successor of "
@@ -110,9 +111,10 @@ public class HelpFactory {
         text.append(HTMLConverter.HTML_LINEBREAK);
         switch (kind) {
         case FALSE:
-            text.append("Currently set to <b>false</b>, meaning that no isomorphism check is performed. "
-                + "This will speed up exploration, but may result in a far greater number of states"
-                + "if there is any symmetry.");
+            text.append(
+                "Currently set to <b>false</b>, meaning that no isomorphism check is performed. "
+                    + "This will speed up exploration, but may result in a far greater number of states"
+                    + "if there is any symmetry.");
             break;
         case TRUE:
             text.append("Currently set to <b>true</b>, meaning that a state is only added if no"
@@ -142,8 +144,8 @@ public class HelpFactory {
     }
 
     private JComponent createSyntaxPanel(Logic logic) {
-        final JList list = new JList();
-        DefaultListModel model = new DefaultListModel();
+        final JList<String> list = new JList<String>();
+        DefaultListModel<String> model = new DefaultListModel<String>();
         Map<String,String> docMap = FormulaParser.getDocMap(logic);
         for (Map.Entry<String,String> entry : docMap.entrySet()) {
             model.addElement(entry.getKey());
@@ -206,6 +208,7 @@ public class HelpFactory {
             this.tipMap = tipMap;
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
             boolean isSelected, boolean cellHasFocus) {

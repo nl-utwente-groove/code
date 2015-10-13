@@ -16,10 +16,6 @@
  */
 package groove.gui.dialog;
 
-import groove.gui.Icons;
-import groove.gui.action.Refreshable;
-import groove.util.collect.UncasedStringMap;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -56,6 +52,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import groove.gui.Icons;
+import groove.gui.action.Refreshable;
+import groove.util.collect.UncasedStringMap;
 
 /**
  * Dialog to manage configurations.
@@ -112,9 +112,9 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     private JPanel listPanel;
 
-    private JList getConfigList() {
+    private JList<String> getConfigList() {
         if (this.configList == null) {
-            this.configList = new JList();
+            this.configList = new JList<String>();
             this.configList.setEnabled(true);
             this.configList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.configList.setPreferredSize(new Dimension(100, 100));
@@ -124,7 +124,7 @@ abstract public class ConfigDialog<C> extends JDialog {
                 public void valueChanged(ListSelectionEvent e) {
                     boolean wasListening = resetConfigListListening();
                     // get the name now because it may change if saving reorders the list
-                    String name = (String) getConfigList().getSelectedValue();
+                    String name = getConfigList().getSelectedValue();
                     if (wasListening) {
                         if (askSave()) {
                             selectConfig(name);
@@ -140,7 +140,7 @@ abstract public class ConfigDialog<C> extends JDialog {
         return this.configList;
     }
 
-    private JList configList;
+    private JList<String> configList;
 
     /** Sets the configuration list selection to a given name.
      * @param name the name to be selected; either {@code null} (in which case
@@ -178,14 +178,14 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     private boolean configListListening = true;
 
-    private DefaultListModel getConfigListModel() {
+    private DefaultListModel<String> getConfigListModel() {
         if (this.configListModel == null) {
-            this.configListModel = new DefaultListModel();
+            this.configListModel = new DefaultListModel<String>();
         }
         return this.configListModel;
     }
 
-    private DefaultListModel configListModel;
+    private DefaultListModel<String> configListModel;
 
     /** Returns the panel with the name field, main panel, syntax help, close buttons and error field. */
     private JPanel getConfigPanel() {
@@ -391,10 +391,12 @@ abstract public class ConfigDialog<C> extends JDialog {
         if (!isDirty()) {
             return true;
         }
-        int answer =
-            JOptionPane.showConfirmDialog(this,
-                String.format("Configuration '%s' has been modified. Save changes?",
-                    getSelectedName(), getName()), null, JOptionPane.YES_NO_CANCEL_OPTION);
+        int answer = JOptionPane.showConfirmDialog(this,
+            String.format("Configuration '%s' has been modified. Save changes?",
+                getSelectedName(),
+                getName()),
+            null,
+            JOptionPane.YES_NO_CANCEL_OPTION);
         if (answer == JOptionPane.YES_OPTION) {
             saveConfig();
         } else if (answer == JOptionPane.NO_OPTION) {
@@ -580,8 +582,8 @@ abstract public class ConfigDialog<C> extends JDialog {
      * the existing names
      */
     void addConfig(String newName, C newConfig) {
-        assert !isDirty();
-        assert !this.configMap.containsKey(newName);
+        assert!isDirty();
+        assert!this.configMap.containsKey(newName);
         getConfigMap().put(newName, newConfig);
         int index = getConfigMap().headMap(newName).size();
         getConfigListModel().add(index, newName);
@@ -637,8 +639,8 @@ abstract public class ConfigDialog<C> extends JDialog {
      */
     private final static String suggestedName = "newConfig";
 
-    private static abstract class RefreshableAction extends javax.swing.AbstractAction implements
-        Refreshable {
+    private static abstract class RefreshableAction extends javax.swing.AbstractAction
+        implements Refreshable {
         /** Constructor for subclassing. */
         protected RefreshableAction(String name) {
             super(name);
@@ -771,10 +773,10 @@ abstract public class ConfigDialog<C> extends JDialog {
 
         /** Asks and attempts to save the current configuration, if it is dirty. */
         boolean askDelete() {
-            int answer =
-                JOptionPane.showConfirmDialog(ConfigDialog.this,
-                    String.format("Delete configuration '%s'?", getSelectedName(), getName()),
-                    null, JOptionPane.YES_NO_OPTION);
+            int answer = JOptionPane.showConfirmDialog(ConfigDialog.this,
+                String.format("Delete configuration '%s'?", getSelectedName(), getName()),
+                null,
+                JOptionPane.YES_NO_OPTION);
             return answer == JOptionPane.YES_OPTION;
         }
 
@@ -895,7 +897,7 @@ abstract public class ConfigDialog<C> extends JDialog {
         }
 
         /** Sets the name error to a given value.
-         * @param category the category of the error; only used to distinguish errors 
+         * @param category the category of the error; only used to distinguish errors
          * @param error the error text; if {@code null} or empty, the error is reset
          */
         void setError(Object category, String error) {

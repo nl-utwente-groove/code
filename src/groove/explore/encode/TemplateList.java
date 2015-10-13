@@ -18,13 +18,6 @@ package groove.explore.encode;
 
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
-import groove.explore.ParsableValue;
-import groove.grammar.Grammar;
-import groove.grammar.model.GrammarModel;
-import groove.gui.dialog.ExplorationDialog;
-import groove.gui.layout.SpringUtilities;
-import groove.util.Version;
-import groove.util.parse.FormatException;
 
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -44,6 +37,14 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import groove.explore.ParsableValue;
+import groove.grammar.Grammar;
+import groove.grammar.model.GrammarModel;
+import groove.gui.dialog.ExplorationDialog;
+import groove.gui.layout.SpringUtilities;
+import groove.util.Version;
+import groove.util.parse.FormatException;
 
 /**
  * <!=========================================================================>
@@ -113,8 +114,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         StringBuffer error = new StringBuffer();
-        error.append("Unknown keyword '" + source.getKeyword() + "' for the " + this.typeIdentifier
-            + ".\n");
+        error.append(
+            "Unknown keyword '" + source.getKeyword() + "' for the " + this.typeIdentifier + ".\n");
         error.append("Expected one of the following keywords:");
         for (Template<A> template : this.templates) {
             error.append(" '");
@@ -177,13 +178,13 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * templates.
      * <!--------------------------------------------------------------------->
      */
-    private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized> implements
-            ListSelectionListener {
+    private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized>
+        implements ListSelectionListener {
 
         private final Map<String,EncodedTypeEditor<A,Serialized>> editors =
             new TreeMap<String,EncodedTypeEditor<A,Serialized>>();
         private ArrayList<String> templateKeywords;
-        private JList nameSelector;
+        private JList<String> nameSelector;
         private JPanel infoPanel;
 
         public TemplateListEditor(GrammarModel grammar) {
@@ -211,7 +212,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             }
             int selected = this.nameSelector.getSelectedIndex();
             this.nameSelector.removeListSelectionListener(this);
-            this.nameSelector.setListData(templateNames.toArray());
+            this.nameSelector.setListData((String[]) templateNames.toArray());
             if (selected >= 0) {
                 this.nameSelector.setSelectedIndex(selected);
             }
@@ -230,15 +231,14 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         private void addHeaderText() {
-            JLabel headerText =
-                new JLabel("<HTML><B><FONT color=" + ExplorationDialog.HEADER_COLOR + ">Select "
-                    + TemplateList.this.typeIdentifier + ":");
+            JLabel headerText = new JLabel("<HTML><B><FONT color=" + ExplorationDialog.HEADER_COLOR
+                + ">Select " + TemplateList.this.typeIdentifier + ":");
             headerText.setToolTipText(TemplateList.this.typeToolTip);
             add(headerText);
         }
 
         private void addListPanel() {
-            this.nameSelector = new JList();
+            this.nameSelector = new JList<String>();
             this.nameSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.nameSelector.setSelectedIndex(0);
             JScrollPane listScroller = new JScrollPane(this.nameSelector);
