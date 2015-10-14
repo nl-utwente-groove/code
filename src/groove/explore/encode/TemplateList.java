@@ -212,7 +212,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             }
             int selected = this.nameSelector.getSelectedIndex();
             this.nameSelector.removeListSelectionListener(this);
-            this.nameSelector.setListData((String[]) templateNames.toArray());
+            this.nameSelector.setListData(templateNames.toArray(new String[templateNames.size()]));
             if (selected >= 0) {
                 this.nameSelector.setSelectedIndex(selected);
             }

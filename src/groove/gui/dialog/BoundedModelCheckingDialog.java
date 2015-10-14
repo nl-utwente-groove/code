@@ -80,7 +80,7 @@ public class BoundedModelCheckingDialog {
         this.addButton.setEnabled(false);
 
         this.ruleList = new JList<String>();
-        this.ruleList.setListData((String[]) this.ruleNames.toArray());
+        this.ruleList.setListData(this.ruleNames.toArray(new String[this.ruleNames.size()]));
         this.ruleList.setEnabled(false);
         this.ruleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.ruleList.addListSelectionListener(this.selectionListener);
@@ -288,8 +288,8 @@ public class BoundedModelCheckingDialog {
                 for (Object object : aDialog.ruleList.getSelectedValuesList()) {
                     aDialog.selectedRuleNames.add(object.toString());
                 }
-                aDialog.selectedRuleList
-                    .setListData((String[]) aDialog.selectedRuleNames.toArray());
+                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames
+                    .toArray(new String[aDialog.selectedRuleNames.size()]));
             } else if (e.getSource() == aDialog.deleteButton) {
                 for (Object object : aDialog.selectedRuleList.getSelectedValuesList()) {
                     aDialog.selectedRuleNames.remove(object.toString());
