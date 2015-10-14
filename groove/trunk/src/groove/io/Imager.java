@@ -748,6 +748,6 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
         /** Combo box for the available image formats. */
         final JComboBox<String> formatBox =
-            new JComboBox<String>((String[]) Imager.getFormatMap().keySet().toArray());
+            new JComboBox<String>(Imager.getFormatMap().keySet().toArray(new String[] {}));
     }
 }

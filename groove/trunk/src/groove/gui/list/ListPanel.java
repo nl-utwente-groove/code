@@ -69,7 +69,7 @@ public abstract class ListPanel extends JPanel {
      * @param entries the list of messages to be shown
      */
     public void setEntries(Collection<? extends SelectableListEntry> entries) {
-        getEntryArea().setListData(entries.toArray(new SelectableListEntry[] {}));
+        getEntryArea().setListData(entries.toArray(new SelectableListEntry[entries.size()]));
         setVisible(!entries.isEmpty());
     }
 

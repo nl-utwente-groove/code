@@ -577,7 +577,7 @@ final public class GraphEditorTab extends ResourceTab
         final JList<String> list = new JList<String>();
         list.setCellRenderer(new SyntaxCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
-        list.setListData((String[]) data.toArray());
+        list.setListData(data.toArray(new String[data.size()]));
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
