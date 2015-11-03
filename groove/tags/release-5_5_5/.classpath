@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/.svn/*" kind="src" path="resources"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4_8_2.jar" sourcepath="lib/src/junit-4.8.2-src.zip"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="lib/src/jgraph-5.13.0.4-src.zip"/>
+	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar" sourcepath="lib/src/rsyntaxtextarea_1.5.1.zip"/>
+	<classpathentry kind="lib" path="lib/ltl2buchi-2010-12.jar" sourcepath="lib/src/ltl2buchi-2010-12.zip"/>
+	<classpathentry kind="lib" path="lib/gnuprologjava-0.2.6.jar" sourcepath="lib/src/gnuprologjava-0.2.6-src.zip"/>
+	<classpathentry kind="lib" path="lib/jgoodies-looks-2.4.1.jar" sourcepath="lib/src/jgoodies-looks-2.4.1.zip"/>
+	<classpathentry kind="lib" path="lib/jgoodies-common-1.2.0.jar" sourcepath="lib/src/jgoodies-common-1.2.0.zip"/>
+	<classpathentry kind="lib" path="lib/groovy/asm-4.0.jar"/>
+	<classpathentry kind="lib" path="lib/groovy/asm-analysis-4.0.jar"/>
+	<classpathentry kind="lib" path="lib/groovy/asm-tree-4.0.jar"/>
+	<classpathentry kind="lib" path="lib/groovy/groovy-2.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/io/epsgraphics-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/io/itextpdf-5.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/io/jaxb-gxl-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/opencsv-2.3.jar" sourcepath="lib/src/opencsv-2_3-src.zip"/>
+	<classpathentry kind="lib" path="lib/io/com.alexmerz.graphviz.jar"/>
+	<classpathentry kind="lib" path="lib/jaxfront/jaxfront-core.jar"/>
+	<classpathentry kind="lib" path="lib/jaxfront/jaxfront-swing.jar"/>
+	<classpathentry kind="lib" path="lib/xerces-2_11_0/xercesImpl.jar" sourcepath="lib/src/xerces-2_11_0-src.zip"/>
+	<classpathentry kind="lib" path="lib/xerces-2_11_0/resolver.jar"/>
+	<classpathentry kind="lib" path="lib/xerces-2_11_0/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
+	<classpathentry kind="lib" path="lib/args4j-2.0.26.jar" sourcepath="lib/src/args4j-2.0.26-sources.jar"/>
+	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlr-3.4-src.zip"/>
+	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jdt.annotation_1.1.0.v20140129-1625.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
