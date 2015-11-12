@@ -203,7 +203,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     @SuppressWarnings("unchecked")
     @Override
     public Class<X> getValueType() {
-        return (Class<X>) (Class<? extends TermTree<?,?>>) TermTree.class;
+        return (Class<X>) TermTree.class;
     }
 
     @Override
