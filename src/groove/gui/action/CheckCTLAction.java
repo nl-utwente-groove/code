@@ -37,7 +37,6 @@ public class CheckCTLAction extends SimulatorAction {
         String property = getCtlFormulaDialog().showDialog(getFrame());
         if (property != null) {
             boolean doCheck = true;
-            ExploreResult result = getSimulatorModel().getResult();
             GTS gts = getSimulatorModel().getGTS();
             if (gts.hasOpenStates() && this.full && getSimulatorModel().setGTS()) {
                 getActions().getExploreAction()
@@ -47,7 +46,7 @@ public class CheckCTLAction extends SimulatorAction {
             }
             if (doCheck) {
                 try {
-                    doCheckProperty(result, Formula.parse(property).toCtlFormula());
+                    doCheckProperty(getSimulatorModel().getResult(), property);
                 } catch (FormatException e) {
                     // the property has already been parsed by the dialog
                     assert false;
@@ -71,13 +70,18 @@ public class CheckCTLAction extends SimulatorAction {
         return this.ctlFormulaDialog;
     }
 
-    private void doCheckProperty(ExploreResult result, Formula formula) {
+    /**
+     * Model checks a given property on an exploration result.
+     * @throws FormatException if the property is not a properly formatted CTL property
+     */
+    private void doCheckProperty(ExploreResult result, String property) throws FormatException {
+        Formula formula = Formula.parse(property).toCtlFormula();
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
         int counterExampleCount = modelChecker.getCount(false);
         List<GraphState> counterExamples = new ArrayList<GraphState>(counterExampleCount);
         String message;
         if (counterExampleCount == 0) {
-            message = String.format("The property '%s' holds for all states", formula);
+            message = String.format("The property '%s' holds for all states", property);
         } else {
             boolean allStates =
                 confirmBehaviour(VERIFY_ALL_STATES_OPTION,
@@ -88,14 +92,14 @@ public class CheckCTLAction extends SimulatorAction {
                 }
                 message =
                     String.format("The property '%s' fails to hold in the %d highlighted states",
-                        formula,
+                        property,
                         counterExampleCount);
             } else if (modelChecker.hasValue(false)) {
                 counterExamples.add(result.getGTS().startState());
                 message =
-                    String.format("The property '%s' fails to hold in the initial state", formula);
+                    String.format("The property '%s' fails to hold in the initial state", property);
             } else {
-                message = String.format("The property '%s' holds in the initial state", formula);
+                message = String.format("The property '%s' holds in the initial state", property);
             }
         }
         getLtsDisplay().emphasiseStates(counterExamples, false);
