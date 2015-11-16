@@ -285,8 +285,9 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         }
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
-            result.add(getUpArg(nextArgIx).toLine(
-                me.getDirection() == Direction.LEFT ? me : me.increase(), spaces));
+            result.add(getUpArg(nextArgIx).toLine(me.getDirection() == Direction.LEFT ? me
+                : me.increase(),
+                spaces));
             nextArgIx++;
             if (addSpaces) {
                 result.add(Line.atom(" "));
@@ -298,8 +299,9 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
-            result.add(getUpArg(nextArgIx).toLine(
-                me.getDirection() == Direction.RIGHT ? me : me.increase(), spaces));
+            result.add(getUpArg(nextArgIx).toLine(me.getDirection() == Direction.RIGHT ? me
+                : me.increase(),
+                spaces));
             nextArgIx++;
         }
         if (addPars) {
@@ -405,6 +407,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         } else if (hasConstant()) {
             result += "<" + getConstant() + ">";
         }
-        return result + getArgs();
+        List<T> args = getArgs();
+        return result + (args.isEmpty() ? "" : args);
     }
 }

@@ -77,10 +77,10 @@ public class CheckLTLAction extends ExploreAction {
             getActions().getExploreAction().execute();
             if (exploration.getResult().isEmpty()) {
                 JOptionPane.showMessageDialog(getFrame(),
-                    String.format("The property %s holds for this system", property));
+                    String.format("The property '%s' holds for this system", property));
             } else {
                 JOptionPane.showMessageDialog(getFrame(),
-                    String.format("A counter-example to %s is highlighted", property));
+                    String.format("A counter-example to '%s' is highlighted", property));
             }
         } catch (FormatException exc) {
             showErrorDialog(exc, "Model checking failed");
