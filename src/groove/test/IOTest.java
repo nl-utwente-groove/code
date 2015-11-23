@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.test;
@@ -63,9 +63,15 @@ public class IOTest {
             File file = new File(DIRECTORY);
             URL url = Groove.toURL(file);
 
-            testControl(GrammarModel.newInstance(file, false), DEF_START, DEF_CONTROL, nodecount,
+            testControl(GrammarModel.newInstance(file, false),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
                 edgecount);
-            testControl(GrammarModel.newInstance(file, false), DEF_START, DEF_CONTROL, nodecount,
+            testControl(GrammarModel.newInstance(file, false),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
                 edgecount);
 
             testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
@@ -103,7 +109,7 @@ public class IOTest {
     }
 
     protected void testControl(GrammarModel view, String startName, String controlName,
-            int nodecount, int edgecount) {
+        int nodecount, int edgecount) {
         testExploration(view, "control", startName, controlName, 3, nodecount, edgecount);
     }
 
@@ -115,7 +121,7 @@ public class IOTest {
      * @return the explored GTS
      */
     protected GTS testExploration(GrammarModel view, String grammarName, String startName,
-            String controlName, int rulecount, int nodeCount, int edgeCount) {
+        String controlName, int rulecount, int nodeCount, int edgeCount) {
         try {
             // and also set the start graph directly
             view.setLocalActiveNames(ResourceKind.CONTROL, controlName);
@@ -129,18 +135,17 @@ public class IOTest {
             //            assertEquals(controlName, gg.getCtrlAut().getName());
             assertEquals(rulecount, gg.getActions().size());
 
-            GTS lts = new GTS(gg);
-            Exploration exploration = new Exploration();
-            exploration.play(lts, null);
+            GTS gts = new GTS(gg);
+            Exploration exploration = Exploration.explore(gts);
             assertFalse(exploration.isInterrupted());
 
             if (nodeCount >= 0) {
-                assertEquals(nodeCount, lts.nodeCount());
+                assertEquals(nodeCount, gts.nodeCount());
             }
             if (edgeCount >= 0) {
-                assertEquals(edgeCount, lts.edgeCount());
+                assertEquals(edgeCount, gts.edgeCount());
             }
-            return lts;
+            return gts;
         } catch (FormatException exc) {
             assertTrue(false);
             return null;

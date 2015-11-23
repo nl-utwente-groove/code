@@ -46,14 +46,13 @@ public class ControlAttributeParametersTest {
         try {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
-            GTS lts = new GTS(sgv.toGrammar());
+            GTS gts = new GTS(sgv.toGrammar());
 
-            Exploration exploration = new Exploration();
-            exploration.play(lts, null);
+            Exploration exploration = Exploration.explore(gts);
 
             assertFalse(exploration.isInterrupted());
-            assertEquals(expectedNodes, lts.nodeCount());
-            assertEquals(expectedEdges, lts.edgeCount());
+            assertEquals(expectedNodes, gts.nodeCount());
+            assertEquals(expectedEdges, gts.edgeCount());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.toString());

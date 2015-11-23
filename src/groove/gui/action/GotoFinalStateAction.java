@@ -30,10 +30,9 @@ public class GotoFinalStateAction extends SimulatorAction {
             finalStates = getFinalStates();
         }
         Iterator<GraphState> it = finalStates.iterator();
-        GraphState state;
+        GraphState state = null;
         if (it.hasNext()) {
             GraphState current = getSimulatorModel().getState();
-            state = null;
             // look for the current final state within the iterator
             while (state != current && it.hasNext()) {
                 state = it.next();
@@ -44,7 +43,8 @@ public class GotoFinalStateAction extends SimulatorAction {
                 state = finalStates.iterator().next();
             }
         } else {
-            state = getSimulatorModel().getExploration().getLastState();
+            // there are no final or result states
+            state = getSimulatorModel().getExploreResult().getLastState();
             if (state == null) {
                 state = getSimulatorModel().getGTS().startState();
             }
@@ -59,7 +59,7 @@ public class GotoFinalStateAction extends SimulatorAction {
     private Collection<GraphState> getFinalStates() {
         Collection<GraphState> result = getSimulatorModel().getGTS().getFinalStates();
         if (result.isEmpty()) {
-            result = getSimulatorModel().getResult().getStates();
+            result = getSimulatorModel().getExploreResult().getStates();
         }
         return result;
     }

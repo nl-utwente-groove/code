@@ -156,7 +156,7 @@ public enum StrategyValue implements ParsableValue {
 
     @Override
     public boolean isDefault(GrammarModel grammar) {
-        Exploration exploration = grammar.getDefaultExploration();
+        ExploreType exploration = grammar.getDefaultExploreType();
         return exploration == null ? this == BFS : exploration.getStrategy()
             .getKeyword()
             .equals(getKeyword());

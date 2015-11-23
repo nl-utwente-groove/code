@@ -21,7 +21,7 @@ import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.PROLOG;
 import static groove.grammar.model.ResourceKind.RULE;
 import static groove.grammar.model.ResourceKind.TYPE;
-import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
@@ -335,8 +335,8 @@ public class GrammarModel implements Observer {
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (startGraph.getRole() != GraphRole.HOST) {
-            throw new IllegalArgumentException(String.format(
-                "Prospective start graph '%s' is not a graph", startGraph));
+            throw new IllegalArgumentException(
+                String.format("Prospective start graph '%s' is not a graph", startGraph));
         }
         this.startGraphModel = new HostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
@@ -410,8 +410,10 @@ public class GrammarModel implements Observer {
         getPrologEnvironment();
         for (ResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
-                this.errors.add("Error in prolog program '%s': %s", prologModel.getFullName(),
-                    error, prologModel);
+                this.errors.add("Error in prolog program '%s': %s",
+                    prologModel.getFullName(),
+                    error,
+                    prologModel);
             }
         }
         // check if all resource names are valid identifiers
@@ -449,7 +451,9 @@ public class GrammarModel implements Observer {
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
-                    errors.add("Error in rule '%s': %s", ruleModel.getFullName(), error,
+                    errors.add("Error in rule '%s': %s",
+                        ruleModel.getFullName(),
+                        error,
                         ruleModel.getSource());
                 }
             }
@@ -657,8 +661,8 @@ public class GrammarModel implements Observer {
      * Returns the default exploration, based on the {@link GrammarKey#EXPLORATION}
      * value in the system properties.
      */
-    public Exploration getDefaultExploration() {
-        return getProperties().getExploration();
+    public ExploreType getDefaultExploreType() {
+        return getProperties().getExploreType();
     }
 
     /** Mapping from resource kinds and names to resource models. */

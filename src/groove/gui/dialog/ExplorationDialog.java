@@ -1,24 +1,24 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.dialog;
 
 import groove.explore.AcceptorEnumerator;
 import groove.explore.AcceptorValue;
-import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.explore.StrategyEnumerator;
 import groove.explore.StrategyValue;
 import groove.explore.encode.EncodedTypeEditor;
@@ -138,23 +138,25 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        dialogContent.registerKeyboardAction(createCloseListener(), escape,
+        dialogContent.registerKeyboardAction(createCloseListener(),
+            escape,
             JComponent.WHEN_IN_FOCUSED_WINDOW);
-        dialogContent.registerKeyboardAction(createExploreListener(), enter,
+        dialogContent.registerKeyboardAction(createExploreListener(),
+            enter,
             JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator =
             StrategyEnumerator.instance(StrategyValue.DIALOG_STRATEGIES);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
-        Serialized defaultStrategy = getSimulatorModel().getExploration().getStrategy();
+        Serialized defaultStrategy = getSimulatorModel().getExploreType().getStrategy();
 
         // Create the acceptor editor.
         EnumSet<AcceptorValue> acceptorMask = EnumSet.allOf(AcceptorValue.class);
         acceptorMask.remove(AcceptorValue.CYCLE);
         AcceptorEnumerator acceptorEnumerator = AcceptorEnumerator.instance(acceptorMask);
         this.acceptorEditor = acceptorEnumerator.createEditor(getGrammar());
-        Serialized defaultAcceptor = getSimulatorModel().getExploration().getAcceptor();
+        Serialized defaultAcceptor = getSimulatorModel().getExploreType().getAcceptor();
 
         // Initialize the editors with the stored default.
         this.strategyEditor.setCurrentValue(defaultStrategy);
@@ -195,11 +197,11 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
     /**
      * The start action. Gets the current selection (strategy, acceptor and
-     * result), constructs an exploration out of it, and then starts a 
+     * result), constructs an exploration out of it, and then starts a
      * new exploration for it.
      */
     private void startExploration() {
-        getSimulatorModel().setGTS();
+        getSimulatorModel().resetGTS();
         doExploration();
     }
 
@@ -209,7 +211,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      */
     private void doExploration() {
         try {
-            getSimulatorModel().setExploration(createExploration());
+            getSimulatorModel().setExploreType(createExploreType());
             closeDialog();
             this.simulator.getActions().getExploreAction().execute();
         } catch (FormatException exc) {
@@ -230,13 +232,13 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      * @return the selected exploration strategy, or {@code null} if no
      * coherent strategy is currently selected
      */
-    private Exploration createExploration() {
-        Exploration result = null;
+    private ExploreType createExploreType() {
+        ExploreType result = null;
         Serialized strategy = this.strategyEditor.getCurrentValue();
         Serialized acceptor = this.acceptorEditor.getCurrentValue();
         if (strategy != null && acceptor != null) {
             int nrResults = this.resultPanel.getSelectedValue();
-            result = new Exploration(strategy, acceptor, nrResults);
+            result = new ExploreType(strategy, acceptor, nrResults);
         }
         return result;
     }
@@ -244,11 +246,11 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
     /** Sets the currently selected exploration as the default for the
      * grammar.
      */
-    private void setDefaultExploration() {
+    private void setDefaultExploreType() {
         try {
-            Exploration exploration = createExploration();
-            exploration.test(getGrammar().toGrammar());
-            getSimulatorModel().doSetDefaultExploration(exploration);
+            ExploreType exploreType = createExploreType();
+            exploreType.test(getGrammar().toGrammar());
+            getSimulatorModel().doSetDefaultExploreType(exploreType);
             this.strategyEditor.refresh();
             this.acceptorEditor.refresh();
         } catch (FormatException exc) {
@@ -287,7 +289,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      */
     private ResultPanel createResultPanel() {
         this.resultPanel =
-            new ResultPanel(RESULT_TOOLTIP, getSimulatorModel().getExploration().getBound());
+            new ResultPanel(RESULT_TOOLTIP, getSimulatorModel().getExploreType().getBound());
         return this.resultPanel;
     }
 
@@ -313,9 +315,9 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
     }
 
     private void refreshButtons() {
-        Exploration exploration = createExploration();
+        ExploreType exploreType = createExploreType();
         for (RefreshButton button : this.buttons) {
-            button.refresh(exploration);
+            button.refresh(exploreType);
         }
     }
 
@@ -336,12 +338,12 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             this.defaultButton = new RefreshButton(DEFAULT_COMMAND) {
                 @Override
                 public void execute() {
-                    setDefaultExploration();
+                    setDefaultExploreType();
                 }
 
                 @Override
-                public void refresh(Exploration exploration) {
-                    setEnabled(DEFAULT_TOOLTIP, exploration);
+                public void refresh(ExploreType exploreType) {
+                    setEnabled(DEFAULT_TOOLTIP, exploreType);
                 }
             };
             this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
@@ -361,8 +363,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 }
 
                 @Override
-                public void refresh(Exploration exploration) {
-                    setEnabled(START_TOOLTIP, exploration);
+                public void refresh(ExploreType exploreType) {
+                    setEnabled(START_TOOLTIP, exploreType);
                 }
             };
         }
@@ -381,8 +383,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 }
 
                 @Override
-                public void refresh(Exploration exploration) {
-                    setEnabled(EXPLORE_TOOLTIP, exploration);
+                public void refresh(ExploreType exploreType) {
+                    setEnabled(EXPLORE_TOOLTIP, exploreType);
                 }
             };
         }
@@ -401,7 +403,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 }
 
                 @Override
-                public void refresh(Exploration exploration) {
+                public void refresh(ExploreType exploreType) {
                     // do nothing
                 }
             };
@@ -447,21 +449,21 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         public abstract void execute();
 
         /** Callback action allowing the button to refresh its status. */
-        public abstract void refresh(Exploration exploration);
+        public abstract void refresh(ExploreType exploreType);
 
         /** Tests if the current grammar is compatible with a given exploration;
          * if so, enables the button, if not, disables it and adds the error text
          * to the tooltip.
          * @param toolTipText bare tooltip text (without error)
-         * @param exploration the exploration strategy
+         * @param exploreType the exploration strategy
          */
-        protected void setEnabled(String toolTipText, Exploration exploration) {
+        protected void setEnabled(String toolTipText, ExploreType exploreType) {
             GrammarModel grammar = getGrammar();
-            boolean enabled = exploration != null && grammar != null && !grammar.hasErrors();
+            boolean enabled = exploreType != null && grammar != null && !grammar.hasErrors();
             StringBuilder toolTip = new StringBuilder(toolTipText);
             if (enabled) {
                 try {
-                    exploration.test(grammar.toGrammar());
+                    exploreType.test(grammar.toGrammar());
                 } catch (FormatException exc) {
                     enabled = false;
                     toolTip.append(HTMLConverter.HTML_LINEBREAK);

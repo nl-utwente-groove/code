@@ -42,6 +42,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
      * Constructs a new collection of collections.
      * @require <tt>collections \subseteq Collection</tt>
      */
+    @SafeVarargs
     public CollectionOfCollections(Collection<? extends T>... collections) {
         this(Arrays.asList(collections));
     }

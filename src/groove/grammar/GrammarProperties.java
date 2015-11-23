@@ -1,7 +1,7 @@
 package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
-import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.grammar.CheckPolicy.PolicyMap;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -254,18 +254,18 @@ public class GrammarProperties extends Properties {
 
     /**
      * Sets the exploration strategy to a certain value.
-     * @param strategy the new exploration strategy
+     * @param exploreType the new exploration strategy
      */
-    public void setExploration(Exploration strategy) {
-        storeProperty(GrammarKey.EXPLORATION, strategy);
+    public void setExploreType(ExploreType exploreType) {
+        storeProperty(GrammarKey.EXPLORATION, exploreType);
     }
 
     /**
      * Returns the exploration strategy, or <code>null</code> if there
      * is no strategy set.
      */
-    public Exploration getExploration() {
-        return (Exploration) parseProperty(GrammarKey.EXPLORATION);
+    public ExploreType getExploreType() {
+        return (ExploreType) parseProperty(GrammarKey.EXPLORATION);
     }
 
     /**

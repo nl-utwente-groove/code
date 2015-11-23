@@ -20,6 +20,7 @@ package groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.explore.util.LTSLabels;
@@ -300,36 +301,37 @@ public class ExplorationTest {
         int edgeCount, int openCount, boolean save) {
         try {
             Grammar gg = view.toGrammar();
-            GTS lts = new GTS(gg);
+            GTS gts = new GTS(gg);
 
-            Exploration exploration;
+            ExploreType exploreType;
             if (strategyDescr == null) {
-                exploration = new Exploration();
+                exploreType = ExploreType.DEFAULT;
             } else {
                 Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
-                exploration = new Exploration(strategy, acceptor, 0);
+                exploreType = new ExploreType(strategy, acceptor, 0);
             }
-            exploration.play(lts, null);
+            Exploration exploration = exploreType.newExploration(gts, null);
+            exploration.play();
             assertFalse(exploration.isInterrupted());
 
             if (save) {
                 try {
-                    Groove.saveGraph(lts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE, null),
+                    Groove.saveGraph(gts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE, null),
                         view.getName());
                 } catch (IOException exc) { // proceed
                 }
             }
             if (nodeCount >= 0) {
-                assertEquals(nodeCount, lts.nodeCount());
+                assertEquals(nodeCount, gts.nodeCount());
             }
             if (edgeCount >= 0) {
-                assertEquals(edgeCount, lts.edgeCount());
+                assertEquals(edgeCount, gts.edgeCount());
             }
             if (openCount >= 0) {
-                assertEquals(openCount, lts.getOpenStateCount());
+                assertEquals(openCount, gts.getOpenStateCount());
             }
-            return lts;
+            return gts;
         } catch (FormatException exc) {
             Assert.fail(exc.toString());
             return null;

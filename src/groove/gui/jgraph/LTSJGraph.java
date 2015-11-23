@@ -467,12 +467,12 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Convenience method to test if there is a non-empty result object. */
     private boolean hasResult() {
-        return getSimulatorModel() != null && !getSimulatorModel().getResult().isEmpty();
+        return getSimulatorModel() != null && !getSimulatorModel().getExploreResult().isEmpty();
     }
 
     /** Convenience method to returns the result object from the simulator model, if any. */
     private ExploreResult getResult() {
-        return getSimulatorModel() == null ? null : getSimulatorModel().getResult();
+        return getSimulatorModel() == null ? null : getSimulatorModel().getExploreResult();
     }
 
     /** Convenience method to test whether a given state is included in the result object. */

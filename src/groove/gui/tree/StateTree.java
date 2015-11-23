@@ -684,8 +684,8 @@ public class StateTree extends JTree implements SimulatorListener {
         }
 
         private boolean isResult(GraphState state) {
-            return getSimulatorModel().hasResult()
-                && getSimulatorModel().getResult().containsState(state);
+            return getSimulatorModel().hasExploreResult()
+                && getSimulatorModel().getExploreResult().containsState(state);
         }
 
         private final boolean expanded;

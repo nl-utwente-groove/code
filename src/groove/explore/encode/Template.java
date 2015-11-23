@@ -72,7 +72,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * set later by calls to setArgumentType().
      */
     public Template(ParsableValue value, SerializedParser commandlineParser,
-            String... argumentNames) {
+        String... argumentNames) {
         this.value = value;
         this.commandlineParser = commandlineParser;
         this.argumentNames = argumentNames;
@@ -232,8 +232,13 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             for (String argName : Template.this.argumentNames) {
                 addArgument(argName);
             }
-            SpringUtilities.makeCompactGrid(this, 6 + Template.this.argumentNames.length, 1, 2, 2,
-                0, 0);
+            SpringUtilities.makeCompactGrid(this,
+                6 + Template.this.argumentNames.length,
+                1,
+                2,
+                2,
+                0,
+                0);
             refresh();
         }
 
@@ -386,7 +391,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with 1 argument).
          */
         public Template1(ParsableValue value, SerializedParser commandlineParser, String arg1Name,
-                EncodedType<P1,String> arg1Type) {
+            EncodedType<P1,String> arg1Type) {
             super(value, commandlineParser, arg1Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
@@ -446,7 +451,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with 1 argument).
          */
         public Template2(ParsableValue value, SerializedParser commandlineParser, String arg1Name,
-                EncodedType<P1,String> arg1Type, String arg2Name, EncodedType<P2,String> arg2Type) {
+            EncodedType<P1,String> arg1Type, String arg2Name, EncodedType<P2,String> arg2Type) {
             super(value, commandlineParser, arg1Name, arg2Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
@@ -516,8 +521,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the template class (with argumentNames.length arguments)
          * It is required that argumentTypes.length==argumentNames.length
          */
+        @SafeVarargs
         public TemplateN(ParsableValue value, SerializedParser commandlineParser,
-                String[] argumentNames, EncodedType<? extends Object,String>... argumentTypes) {
+            String[] argumentNames, EncodedType<? extends Object,String>... argumentTypes) {
             super(value, commandlineParser, argumentNames);
             this.typenames = argumentNames;
             this.encodedtypes = argumentTypes;

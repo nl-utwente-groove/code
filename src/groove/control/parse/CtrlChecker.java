@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g 2014-08-24 00:54:21
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g 2015-11-23 22:05:23
 
 package groove.control.parse;
 import groove.control.*;
@@ -2564,11 +2564,11 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree STRING82_tree=null;
         CtrlTree INT83_tree=null;
         CtrlTree REAL84_tree=null;
-        RewriteRuleNodeStream stream_REAL=new RewriteRuleNodeStream(adaptor,"token REAL");
-        RewriteRuleNodeStream stream_INT=new RewriteRuleNodeStream(adaptor,"token INT");
-        RewriteRuleNodeStream stream_NODE=new RewriteRuleNodeStream(adaptor,"token NODE");
-        RewriteRuleNodeStream stream_STRING=new RewriteRuleNodeStream(adaptor,"token STRING");
         RewriteRuleNodeStream stream_BOOL=new RewriteRuleNodeStream(adaptor,"token BOOL");
+        RewriteRuleNodeStream stream_NODE=new RewriteRuleNodeStream(adaptor,"token NODE");
+        RewriteRuleNodeStream stream_REAL=new RewriteRuleNodeStream(adaptor,"token REAL");
+        RewriteRuleNodeStream stream_STRING=new RewriteRuleNodeStream(adaptor,"token STRING");
+        RewriteRuleNodeStream stream_INT=new RewriteRuleNodeStream(adaptor,"token INT");
 
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:184:3: ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL )

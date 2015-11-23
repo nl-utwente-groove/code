@@ -18,6 +18,7 @@ package groove.gui.action;
 
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
 import groove.explore.strategy.Boundary;
@@ -71,16 +72,18 @@ public class CheckLTLAction extends ExploreAction {
             }
             strategy = this.strategyType.getTemplate().toSerialized(property, boundary);
         }
-        Exploration exploration = new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {
-            getSimulatorModel().setExploration(exploration);
-            getActions().getExploreAction().execute();
-            if (exploration.getResult().isEmpty()) {
-                JOptionPane.showMessageDialog(getFrame(),
-                    String.format("The property '%s' holds for this system", property));
-            } else {
-                JOptionPane.showMessageDialog(getFrame(),
-                    String.format("A counter-example to '%s' is highlighted", property));
+            getSimulatorModel().setExploreType(exploreType);
+            Exploration exploration = getActions().getExploreAction().explore(exploreType, true);
+            if (exploration != null) {
+                if (exploration.getResult().isEmpty()) {
+                    JOptionPane.showMessageDialog(getFrame(),
+                        String.format("The property '%s' holds for this system", property));
+                } else {
+                    JOptionPane.showMessageDialog(getFrame(),
+                        String.format("A counter-example to '%s' is highlighted", property));
+                }
             }
         } catch (FormatException exc) {
             showErrorDialog(exc, "Model checking failed");

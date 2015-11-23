@@ -3,6 +3,7 @@ package groove.gui;
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
 import groove.explore.ExploreResult;
+import groove.explore.ExploreType;
 import groove.explore.util.StatisticsReporter;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
@@ -292,14 +293,14 @@ public class SimulatorModel implements Cloneable {
 
     /**
      * Changes the default exploration in the system properties.
-     * @param exploration the new default exploration
+     * @param exploreType the new default exploration
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
-    public boolean doSetDefaultExploration(Exploration exploration) throws IOException {
+    public boolean doSetDefaultExploreType(ExploreType exploreType) throws IOException {
         GrammarProperties properties = getGrammar().getProperties();
         GrammarProperties newProperties = properties.clone();
-        newProperties.setExploration(exploration);
+        newProperties.setExploreType(exploreType);
         return doSetProperties(newProperties);
     }
 
@@ -473,13 +474,41 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Refreshes the GTS by firing an update event if any changes occurred
-     * since the GTS was last set or refreshed.
+     * Creates a fresh GTS from the grammar model and sets it using {@link #setGTS(GTS)}.
+     * If the currently stored grammar has errors, sets the GTS to {@code null} instead.
+     * @return {@code true} if the stored GTS was changed as a result of this call
+     * @see #setGTS(GTS)
      */
-    public final boolean refreshGTS() {
-        start();
-        changeGTS();
-        return finish();
+    public final boolean resetGTS() {
+        try {
+            Grammar grammar = getGrammar().toGrammar();
+            GTS gts = new GTS(grammar);
+            gts.getRecord().setRandomAccess(true);
+            return setGTS(gts);
+        } catch (FormatException e) {
+            return setGTS(null);
+        }
+    }
+
+    /**
+     * Changes the active GTS.
+     * @see #setGTS(GTS)
+     */
+    private final boolean changeGTS(GTS gts) {
+        boolean result = this.gts != gts;
+        if (result) {
+            if (this.gts != null) {
+                this.gts.removeLTSListener(this.ltsListener);
+            }
+            if (gts != null) {
+                gts.addLTSListener(this.ltsListener);
+            }
+            getGTSCounter().setGTS(gts);
+            this.ltsListener.clear();
+            this.gts = gts;
+            this.changes.add(Change.GTS);
+        }
+        return result;
     }
 
     /**
@@ -502,73 +531,62 @@ public class SimulatorModel implements Cloneable {
      * <li> setting the transition to {@code null}
      * <li> setting the event to {@code null}
      * @param gts the new GTS; may be {@code null}
-     * @param switchTab if {@code true}, the simulator tab will be switched to the LTS
      * @return if {@code true}, the GTS was really changed
      * @see #setState(GraphState)
      */
-    public final boolean setGTS(GTS gts, boolean switchTab) {
+    private boolean setGTS(GTS gts) {
         start();
-        if (changeGTS(gts, false)) {
+        if (changeGTS(gts)) {
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            setExploreResult(gts == null ? null : new ExploreResult(gts));
+            changeExploreResult(gts == null ? null : new ExploreResult(gts));
             this.trace.clear();
-        } else if (this.ltsListener.isChanged()) {
-            this.ltsListener.clear();
-            setExploreResult(gts == null ? null : getExploration().getResult());
-            this.changes.add(Change.GTS);
         }
         if (gts != null && getState() == null) {
             changeState(gts.startState());
         }
-        if (switchTab && getDisplay() != DisplayKind.STATE) {
-            changeDisplay(DisplayKind.LTS);
-        }
         return finish();
-    }
-
-    /**
-     * Creates a fresh GTS from the grammar model and sets it using {@link #setGTS(GTS, boolean)}.
-     * If the currently stored grammar has errors, sets the GTS to {@code null} instead.
-     * @return {@code true} if the stored GTS was changed as a result of this call
-     * @see #setGTS(GTS, boolean)
-     */
-    public final boolean setGTS() {
-        try {
-            Grammar grammar = getGrammar().toGrammar();
-            GTS gts = new GTS(grammar);
-            gts.getRecord().setRandomAccess(true);
-            return setGTS(gts, false);
-        } catch (FormatException e) {
-            return setGTS(null, false);
-        }
-    }
-
-    /**
-     * Changes the active GTS.
-     * @param always also fire an event if the GTS actually is the same object.
-     * @see #setGTS(GTS, boolean)
-     */
-    private final boolean changeGTS(GTS gts, boolean always) {
-        boolean result = always || this.gts != gts;
-        if (result) {
-            if (this.gts != null) {
-                this.gts.removeLTSListener(this.ltsListener);
-            }
-            if (gts != null) {
-                gts.addLTSListener(this.ltsListener);
-            }
-            getGTSCounter().setGTS(gts);
-            this.ltsListener.clear();
-            this.gts = gts;
-            this.changes.add(Change.GTS);
-        }
-        return result;
     }
 
     /** Currently active GTS. */
     private GTS gts;
+
+    /**
+     * Sets the internally stored exploration result and notifies all listeners.
+     * The new result should have the currently set GTS.
+     */
+    public void setExploreResult(ExploreResult result) {
+        start();
+        changeExploreResult(result);
+        finish();
+    }
+
+    /**
+     * Changes the internally stored exploration result.
+     * The new result should have the currently set GTS.
+     */
+    private void changeExploreResult(ExploreResult result) {
+        assert result.getGTS() == this.gts;
+        this.exploreResult = result;
+        changeGTS();
+    }
+
+    /**
+     * Tests if the current exploration has a non-{@code null}, non-empty result.
+     */
+    public boolean hasExploreResult() {
+        return getExploreResult() != null && !getExploreResult().isEmpty();
+    }
+
+    /**
+     * Convenience method to return the last exploration result.
+     */
+    public ExploreResult getExploreResult() {
+        return this.exploreResult;
+    }
+
+    private ExploreResult exploreResult;
 
     private final MyGTSListener ltsListener = new MyGTSListener();
 
@@ -773,17 +791,17 @@ public class SimulatorModel implements Cloneable {
         start();
         if (changeGrammar(grammar)) {
             // reset the GTS in any case
-            changeGTS(null, false);
+            changeGTS(null);
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            resetExploration();
+            resetExploreType();
             clearExplorationStats();
             for (ResourceKind resource : ResourceKind.all(false)) {
                 changeSelected(resource, null);
             }
             try {
-                setExploration(getExploration());
+                setExploreType(getExploreType());
             } catch (FormatException e) {
                 // do nothing
             }
@@ -802,11 +820,11 @@ public class SimulatorModel implements Cloneable {
         GrammarModel grammar = this.grammar;
         changeGrammar(grammar);
         if (reset) {
-            changeGTS(null, false);
+            changeGTS(null);
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            resetExploration();
+            resetExploreType();
         }
         // restrict the selected resources to those that are (still)
         // in the grammar
@@ -989,56 +1007,51 @@ public class SimulatorModel implements Cloneable {
     /**
      * Returns the internally stored default exploration.
      */
-    public Exploration getExploration() {
-        return this.exploration;
+    public ExploreType getExploreType() {
+        return this.exploreType;
     }
 
     /**
      * Sets the internally stored exploration to a given value.
      * If the given exploration is incompatible with the grammar,
      * the grammar's default exploration is used instead.
-     * @param exploration non-{@code null} exploration
+     * @param exploreType non-{@code null} exploration
      * @throws FormatException if the new exploration is not
      * compatible with the existing grammar
      */
-    public void setExploration(Exploration exploration) throws FormatException {
+    public void setExploreType(ExploreType exploreType) throws FormatException {
         if (hasGrammar() && !getGrammar().hasErrors()) {
             try {
-                exploration.test(getGrammar().toGrammar());
+                exploreType.test(getGrammar().toGrammar());
             } catch (FormatException exc) {
-                resetExploration();
+                resetExploreType();
                 throw exc;
             }
         }
-        changeExploration(exploration);
+        changeExploreType(exploreType);
     }
 
     /**
-     * Sets the internally stored exploration to the default for the grammar.
+     * Sets the internally stored exploration type to the default for the
+     * grammar.
      * If there is currently no grammar or it has no default exploration,
-     * sets to {@link Exploration#DEFAULT}
+     * sets to {@link ExploreType#DEFAULT}
      */
-    private void resetExploration() {
-        Exploration exploration = null;
+    private void resetExploreType() {
+        ExploreType exploreType = null;
         if (hasGrammar()) {
-            exploration = getGrammar().getDefaultExploration();
+            exploreType = getGrammar().getDefaultExploreType();
         }
-        if (exploration == null) {
-            exploration = Exploration.DEFAULT;
+        if (exploreType == null) {
+            exploreType = ExploreType.DEFAULT;
         }
-        changeExploration(exploration);
+        changeExploreType(exploreType);
     }
 
     /** Changes the exploration field, and adds the ltsListener. */
-    private void changeExploration(Exploration exploration) {
-        if (exploration != this.exploration) {
-            if (this.exploration != null) {
-                this.exploration.removeListener(this.ltsListener);
-            }
-            this.exploration = exploration;
-            if (this.exploration != null) {
-                this.exploration.addListener(this.ltsListener);
-            }
+    private void changeExploreType(ExploreType exploreType) {
+        if (exploreType != this.exploreType) {
+            this.exploreType = exploreType;
         }
     }
 
@@ -1048,32 +1061,7 @@ public class SimulatorModel implements Cloneable {
      * (=breadth first). This value may never be null (and must be initialized
      * explicitly).
      */
-    private Exploration exploration = Exploration.DEFAULT;
-
-    /**
-     * Sets the internally stored exploration result.
-     * The new result should have the currently set GTS.
-     */
-    public void setExploreResult(ExploreResult result) {
-        assert result.getGTS() == this.gts;
-        this.exploreResult = result;
-    }
-
-    /**
-     * Tests if the current exploration has a non-{@code null}, non-empty result.
-     */
-    public boolean hasResult() {
-        return getResult() != null && !getResult().isEmpty();
-    }
-
-    /**
-     * Convenience method to return the last exploration result.
-     */
-    public ExploreResult getResult() {
-        return this.exploreResult;
-    }
-
-    private ExploreResult exploreResult;
+    private ExploreType exploreType = ExploreType.DEFAULT;
 
     /** Returns the display currently showing in the simulator panel. */
     public final DisplayKind getDisplay() {

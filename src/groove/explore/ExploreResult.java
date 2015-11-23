@@ -50,6 +50,12 @@ public class ExploreResult implements Iterable<GraphState> {
      */
     public void addState(GraphState t) {
         this.elements.add(t);
+        this.lastState = null;
+    }
+
+    /** Tests if this result contains a given graph state. */
+    public boolean containsState(GraphState state) {
+        return getStates().contains(state);
     }
 
     /**
@@ -59,10 +65,16 @@ public class ExploreResult implements Iterable<GraphState> {
         return this.elements;
     }
 
-    /** Tests if this result contains a given graph state. */
-    public boolean containsState(GraphState state) {
-        return getStates().contains(state);
+    /** The elements stored in this result. */
+    private final Collection<GraphState> elements;
+
+    /** Returns the most recently added state. */
+    public GraphState getLastState() {
+        return this.lastState;
     }
+
+    /** The most recently added state. */
+    private GraphState lastState;
 
     @Override
     public Iterator<GraphState> iterator() {
@@ -98,7 +110,4 @@ public class ExploreResult implements Iterable<GraphState> {
     protected Collection<GraphState> createResultSet() {
         return new LinkedHashSet<GraphState>();
     }
-
-    /** The elements stored in this result. */
-    private final Collection<GraphState> elements;
 }

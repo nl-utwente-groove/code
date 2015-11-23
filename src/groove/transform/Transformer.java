@@ -20,6 +20,7 @@ import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
 import groove.explore.ExploreResult;
+import groove.explore.ExploreType;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.grammar.Grammar;
@@ -113,8 +114,15 @@ public class Transformer {
     public ExploreResult explore() throws FormatException {
         Grammar grammar = getGrammarModel().toGrammar();
         GTS gts = getFreshGTS(grammar);
-        getExploration().play(gts, null);
-        return getExploration().getResult();
+        Exploration exploration = getExploreType().newExploration(gts, null);
+        for (ExplorationListener listener : getListeners()) {
+            exploration.addListener(listener);
+        }
+        exploration.play();
+        for (ExplorationListener listener : getListeners()) {
+            exploration.removeListener(listener);
+        }
+        return exploration.getResult();
     }
 
     /**
@@ -301,33 +309,30 @@ public class Transformer {
         return new Model(getGrammarModel(), host);
     }
 
-    /** Returns the exploration currently set for this transformer. */
-    public Exploration getExploration() {
-        if (this.exploration == null) {
-            this.exploration = computeExploration();
+    /** Returns the exploration type currently set for this transformer. */
+    public ExploreType getExploreType() {
+        if (this.exploreType == null) {
+            this.exploreType = computeExploreType();
         }
-        return this.exploration;
+        return this.exploreType;
     }
 
-    private Exploration computeExploration() {
-        Exploration result = getGrammarModel().getDefaultExploration();
+    private ExploreType computeExploreType() {
+        ExploreType result = getGrammarModel().getDefaultExploreType();
         if (result == null) {
-            result = new Exploration();
+            result = ExploreType.DEFAULT;
         }
         boolean rebuild = hasStrategy() || hasAcceptor() || hasResultCount();
         if (rebuild) {
             Serialized strategy = hasStrategy() ? getStrategy() : result.getStrategy();
             Serialized acceptor = hasAcceptor() ? getAcceptor() : result.getAcceptor();
             int resultCount = hasResultCount() ? getResultCount() : result.getBound();
-            result = new Exploration(strategy, acceptor, resultCount);
-        }
-        for (ExplorationListener listener : getListeners()) {
-            result.addListener(listener);
+            result = new ExploreType(strategy, acceptor, resultCount);
         }
         return result;
     }
 
-    private Exploration exploration;
+    private ExploreType exploreType;
 
     /**
      * Sets the strategy to be used in the next exploration.
@@ -337,7 +342,7 @@ public class Transformer {
     public void setStrategy(Serialized strategy) {
         this.strategy = strategy;
         // reset the exploration, so that it will be regenerated
-        this.exploration = null;
+        this.exploreType = null;
     }
 
     /**
@@ -368,7 +373,7 @@ public class Transformer {
     public void setAcceptor(Serialized acceptor) {
         this.acceptor = acceptor;
         // reset the exploration, so that it will be regenerated
-        this.exploration = null;
+        this.exploreType = null;
     }
 
     /**
@@ -399,7 +404,7 @@ public class Transformer {
     public void setResultCount(int count) {
         this.resultCount = count;
         // reset the exploration, so that it will be regenerated
-        this.exploration = null;
+        this.exploreType = null;
     }
 
     /** Returns the user-set result count for the next exploration. */
@@ -415,19 +420,11 @@ public class Transformer {
     /** Adds a listener for the subsequent explorations. */
     public void addListener(ExplorationListener listener) {
         this.gtsListeners.add(listener);
-        // do not use getExploration()
-        if (this.exploration != null) {
-            this.exploration.addListener(listener);
-        }
     }
 
     /** Removes an exploration listener. */
     public void removeListener(ExplorationListener listener) {
         this.gtsListeners.remove(listener);
-        // do not use getExploration()
-        if (this.exploration != null) {
-            this.exploration.removeListener(listener);
-        }
     }
 
     /** Returns the set of GTS listeners. */
