@@ -2,6 +2,7 @@ package groove.gui.action;
 
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.explore.StrategyValue;
 import groove.explore.util.StatisticsReporter;
 import groove.grammar.model.GrammarModel;
@@ -58,7 +59,7 @@ public class ExploreAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        explore(getSimulatorModel().getExploration(), true);
+        explore(getSimulatorModel().getExploreType(), true);
     }
 
     /** Fully explores a given state of the GTS. */
@@ -70,57 +71,68 @@ public class ExploreAction extends SimulatorAction {
 
     /**
      * Run a given exploration. Can be called from outside the Simulator.
-     * @param exploration the exploration strategy to be used
+     * @param exploreType the exploration strategy to be used
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
+     * @return the resulting exploration object, or {@code null} if setting up the exploration
+     * failed for some reason
      */
-    public void explore(Exploration exploration, boolean emphasise) {
+    public Exploration explore(ExploreType exploreType, boolean emphasise) {
+        Exploration result = null;
         SimulatorModel simModel = getSimulatorModel();
         LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
-            if (simModel.setGTS()) {
+            if (simModel.resetGTS()) {
                 ltsJModel = getLtsDisplay().getJModel();
             } else {
-                return;
+                return null;
             }
         }
         GTS gts = simModel.getGTS();
         if (isAnimated()) {
             simModel.setDisplay(DisplayKind.LTS);
         }
-        // unhook the lts' jmodel from the lts, for efficiency's sake
-        ltsJModel.setExploring(true);
-        this.bound = INITIAL_STATE_BOUND;
-        // create a thread to do the work in the background
-        ExploreThread generateThread = new ExploreThread(exploration);
-        // go!
-        StatisticsReporter exploreStats = simModel.getExplorationStats();
-        exploration.addListener(exploreStats);
-        generateThread.start();
-        exploration.removeListener(exploreStats);
-        exploreStats.report();
-        // emphasise the result states, if required
-        ltsJModel.setExploring(false);
-        simModel.setGTS(gts, true);
-        if (exploration.getLastState() != null) {
-            simModel.setState(exploration.getLastState());
+        GraphState start = simModel.getState();
+        try {
+            result = new Exploration(exploreType, gts, start);
+            // unhook the lts' jmodel from the lts, for efficiency's sake
+            ltsJModel.setExploring(true);
+            this.bound = INITIAL_STATE_BOUND;
+            // create a thread to do the work in the background
+            ExploreThread generateThread = new ExploreThread(result);
+            // go!
+            StatisticsReporter exploreStats = simModel.getExplorationStats();
+            result.addListener(exploreStats);
+            generateThread.start();
+            result.removeListener(exploreStats);
+            exploreStats.report();
+            // emphasise the result states, if required
+            ltsJModel.setExploring(false);
+            simModel.setExploreResult(result.getResult());
+            if (emphasise) {
+                Collection<GraphState> states = result.getResult().getStates();
+                getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(states), true);
+            }
+        } catch (FormatException exc) {
+            // this should not occur, as the exploration and the
+            // grammar in the simulator model should always be compatible
+            showErrorDialog(exc,
+                "Exploration strategy %s incompatible with grammar",
+                exploreType.getIdentifier());
         }
-        if (emphasise) {
-            Collection<GraphState> result = exploration.getResult().getStates();
-            getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result), true);
-        }
+        return result;
     }
 
     @Override
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
-        Exploration exploration = getSimulatorModel().getExploration();
+        ExploreType exploreType = getSimulatorModel().getExploreType();
         boolean enabled =
             grammar != null && grammar.getStartGraphModel() != null && !grammar.hasErrors()
                 && grammar.hasRules();
         FormatException compatibilityError = null;
         if (enabled) {
             try {
-                exploration.test(grammar.toGrammar());
+                exploreType.test(grammar.toGrammar());
             } catch (FormatException exc) {
                 compatibilityError = exc;
                 enabled = false;
@@ -130,7 +142,7 @@ public class ExploreAction extends SimulatorAction {
         String toolTipText =
             String.format("%s (%s)",
                 this.animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
-                HTMLConverter.STRONG_TAG.on(exploration.getIdentifier()));
+                HTMLConverter.STRONG_TAG.on(exploreType.getIdentifier()));
         if (compatibilityError != null) {
             toolTipText +=
                 HTMLConverter.HTML_LINEBREAK
@@ -283,14 +295,14 @@ public class ExploreAction extends SimulatorAction {
     /**
      * Returns the explore-strategy for exploring a single state
      */
-    private Exploration getStateExploration() {
+    private ExploreType getStateExploration() {
         if (this.stateExploration == null) {
-            this.stateExploration = new Exploration(StrategyValue.STATE, AcceptorValue.NONE, 0);
+            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.NONE, 0);
         }
         return this.stateExploration;
     }
 
-    private Exploration stateExploration;
+    private ExploreType stateExploration;
 
     /** Number of states after which exploration should halt. */
     private int bound;
@@ -393,16 +405,7 @@ public class ExploreAction extends SimulatorAction {
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
             setInterrupted(false);
-            GraphState state = simulatorModel.getState();
-            try {
-                this.exploration.play(gts, state);
-            } catch (FormatException exc) {
-                // this should not occur, as the exploration and the
-                // grammar in the simulator model should always be compatible
-                showErrorDialog(exc,
-                    "Exploration strategy %s incompatible with grammar",
-                    this.exploration.getIdentifier());
-            }
+            this.exploration.play();
             gts.removeLTSListener(this.progressListener);
             disposeCancelDialog();
         }

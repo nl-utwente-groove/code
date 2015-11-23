@@ -253,6 +253,7 @@ abstract public class Property<S> {
      */
     static public class Choice<S> extends Property<S> {
         /** Constructs a choice based on a given set of values, and a given description. */
+        @SafeVarargs
         public Choice(String comment, S... values) {
             this.values = new HashSet<S>(Arrays.asList(values));
             this.explanation = comment;

@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 
@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import groove.control.instance.Automaton;
 import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.grammar.Grammar;
@@ -40,7 +41,7 @@ import org.junit.Test;
 /**
  * System test class, which explores a number of graph production systems and
  * tests if this gives rise to the expected numbers of states and transitions.
- * 
+ *
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -98,7 +99,7 @@ public class RecipeTest {
     private int highLevelTransCount;
 
     /**
-     * 
+     *
      * @param startGraphName name of the start graph
      * @param control name of the control program
      * @param hls high-level state count
@@ -107,7 +108,7 @@ public class RecipeTest {
      * @param llt low-level transition count
      */
     private void testExploration(String startGraphName, String control, int hls, int lls, int hlt,
-            int llt) {
+        int llt) {
         setStateCount(hls, lls);
         setTransitionCount(hlt, llt);
         testExploration(startGraphName, control);
@@ -160,15 +161,15 @@ public class RecipeTest {
             GTS gts = new GTS(gg);
             counter.setGTS(gts);
 
-            Exploration exploration;
+            ExploreType exploreType;
             if (strategyDescr == null) {
-                exploration = new Exploration();
+                exploreType = ExploreType.DEFAULT;
             } else {
                 Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
-                exploration = new Exploration(strategy, acceptor, 0);
+                exploreType = new ExploreType(strategy, acceptor, 0);
             }
-            exploration.play(gts, null);
+            Exploration exploration = exploreType.newExploration(gts).play();
             assertFalse(exploration.isInterrupted());
         } catch (FormatException exc) {
             fail(exc.toString());

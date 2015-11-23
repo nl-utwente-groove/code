@@ -346,7 +346,6 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         return target == null ? null : (JV) target.getParent();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Iterator<JV> getContext() {
         Iterator<JV> result;

@@ -467,7 +467,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 getJGraph().doLayout(isNew);
                 setEnabled(true);
                 getJGraph().scrollToActive();
-                setFilterResultItem(source.hasResult());
+                setFilterResultItem(source.hasExploreResult());
             }
             if (gts != oldModel.getGTS()) {
                 if (oldModel.getGTS() != null) {
@@ -606,14 +606,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 }
                 text.append(gts.getFinalStateCount() + " final");
             }
-            if (getSimulatorModel().hasResult()) {
+            if (getSimulatorModel().hasExploreResult()) {
                 if (brackets) {
                     text.append(", ");
                 } else {
                     text.append(" (");
                     brackets = true;
                 }
-                int c = getSimulatorModel().getResult().size();
+                int c = getSimulatorModel().getExploreResult().size();
                 text.append(c + " result");
             }
             if (gts.hasErrorStates()) {

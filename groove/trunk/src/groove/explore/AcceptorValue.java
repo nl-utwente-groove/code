@@ -92,7 +92,7 @@ public enum AcceptorValue implements ParsableValue {
 
     @Override
     public boolean isDefault(GrammarModel grammar) {
-        Exploration exploration = grammar.getDefaultExploration();
+        ExploreType exploration = grammar.getDefaultExploreType();
         return exploration == null ? this == FINAL : exploration.getAcceptor()
             .getKeyword()
             .equals(getKeyword());

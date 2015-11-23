@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-08-24 01:37:49
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2015-11-23 22:05:24
 
 package groove.control.parse;
 import groove.control.*;
@@ -1066,21 +1066,19 @@ public class CtrlLexer extends Lexer {
     // $ANTLR start "EscapeSequence"
     public final void mEscapeSequence() throws RecognitionException {
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:504:3: ( BSLASH ( QUOTE BSLASH ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:504:5: BSLASH ( QUOTE BSLASH )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:504:3: ( BSLASH ( QUOTE | BSLASH ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:504:5: BSLASH ( QUOTE | BSLASH )
             {
             mBSLASH(); 
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:505:5: ( QUOTE BSLASH )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:505:7: QUOTE BSLASH
-            {
-            mQUOTE(); 
-
-
-            mBSLASH(); 
-
-
+            if ( input.LA(1)=='\"'||input.LA(1)=='\\' ) {
+                input.consume();
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                recover(mse);
+                throw mse;
             }
 
 

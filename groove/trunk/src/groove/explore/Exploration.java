@@ -16,18 +16,13 @@
  */
 package groove.explore;
 
-import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
-import groove.explore.result.CycleAcceptor;
-import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.Strategy;
 import groove.grammar.Grammar;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
-import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-import groove.util.parse.Parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,121 +37,50 @@ import java.util.List;
  * @author Maarten de Mol
  */
 public class Exploration {
-
-    private final Serialized strategy;
-    private final Serialized acceptor;
-    private final int bound;
-    private GTS lastGts;
-    /** Result of the last exploration. */
-    private ExploreResult lastResult;
-    /** Message of the last exploration. */
-    private String lastMessage;
-
-    private GraphState lastState;
-
-    /** List of currently active exploration listeners. */
-    private List<ExplorationListener> listeners = new ArrayList<ExplorationListener>();
-
-    private boolean interrupted;
-
     /**
-     * Initialise to a given exploration.
-     * @param strategy strategy component of the exploration; non-{@code null}
-     * @param acceptor acceptor component of the exploration; non-{@code null}
-     * @param bound number of results: {@code 0} means unbounded
+     * Creates an exploration with a given type and for a given GTS and start state.
      */
-    public Exploration(Serialized strategy, Serialized acceptor, int bound) {
-        assert strategy != null;
-        this.strategy = strategy;
-        assert acceptor != null;
-        this.acceptor = acceptor;
-        this.bound = bound;
+    public Exploration(ExploreType type, GTS gts, GraphState start) throws FormatException {
+        this.type = type;
+        this.gts = gts;
+        this.start = start;
+        Grammar grammar = this.gts.getGrammar();
+        // parse the strategy
+        this.strategy = this.type.getParsedStrategy(grammar);
+        // parse the acceptor
+        this.acceptor = this.type.getParsedAcceptor(grammar).newAcceptor(this.type.getBound());
+        // initialize acceptor and GTS
+        this.strategy.setGTS(this.gts);
+        this.strategy.setState(this.start);
+        this.strategy.setAcceptor(this.acceptor);
     }
 
-    /**
-     * Initialise to a given exploration, by named strategy and acceptor
-     * @param strategy name of the strategy component
-     * @param acceptor name of the acceptor component
-     * @param nrResults number of results: {@code 0} means unbounded
-     */
-    public Exploration(String strategy, String acceptor, int nrResults) {
-        this(new Serialized(strategy), new Serialized(acceptor), nrResults);
+    private final Strategy strategy;
+    private final Acceptor acceptor;
+    private final GraphState start;
+    /** Returns the type of this exploration. */
+    public ExploreType getType() {
+        return this.type;
     }
 
-    /**
-     * Initialise to a given exploration, by named strategy and acceptor
-     * @param strategy strategy component value
-     * @param acceptor acceptor component value
-     * @param nrResults number of results: {@code 0} means unbounded
-     */
-    public Exploration(StrategyValue strategy, AcceptorValue acceptor, int nrResults) {
-        this(strategy.toSerialized(), acceptor.toSerialized(), nrResults);
-    }
-
-    /**
-     * Initialises to the default exploration, which is formed by the BFS
-     * strategy, the final acceptor and 0 (=infinite) results.
-     */
-    public Exploration() {
-        this("bfs", "final", 0);
-    }
-
-    /**
-     * Getter for the serialised strategy.
-     */
-    public Serialized getStrategy() {
-        return this.strategy;
-    }
-
-    /**
-     * Returns the strategy, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the (serialised)
-     * strategy.
-     */
-    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
-        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
-    }
-
-    /**
-     * Getter for the serialised acceptor.
-     */
-    public Serialized getAcceptor() {
-        return this.acceptor;
-    }
-
-    /**
-     * Returns a prototype acceptor, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the (serialised)
-     * acceptor.
-     */
-    public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
-        if (getParsedStrategy(grammar) instanceof LTLStrategy) {
-            return CycleAcceptor.PROTOTYPE;
-        } else {
-            return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
-        }
-    }
-
+    private final ExploreType type;
     /**
      * Returns most recently explored GTS.
      */
     public GTS getGTS() {
-        return this.lastGts;
+        return this.gts;
     }
 
-    /**
-     * Returns the exploration bound.
-     */
-    public int getBound() {
-        return this.bound;
-    }
-
+    private final GTS gts;
     /**
      * Returns the result of the most recent exploration.
      */
     public ExploreResult getResult() {
         return this.lastResult;
     }
+
+    /** Result of the last exploration. */
+    private ExploreResult lastResult;
 
     /**
      * Returns the state in which the most recent exploration ended.
@@ -165,12 +89,17 @@ public class Exploration {
         return this.lastState;
     }
 
+    private GraphState lastState;
+
     /**
      * Returns the message of the last exploration.
      */
     public String getLastMessage() {
         return this.lastMessage;
     }
+
+    /** Message of the last exploration. */
+    private String lastMessage;
 
     /**
      * Indicates if the most recent exploration was manually interrupted.
@@ -179,104 +108,35 @@ public class Exploration {
         return this.interrupted;
     }
 
-    /**
-     * Returns a string that identifies the exploration.
-     * @return the identifying string
-     */
-    public String getIdentifier() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("");
-        buffer.append(this.strategy.toString());
-        buffer.append(" / ");
-        buffer.append(this.acceptor.toString());
-        buffer.append(" / ");
-        if (this.bound == 0) {
-            buffer.append("infinite");
-        } else {
-            buffer.append(this.bound);
-        }
-        return buffer.toString();
-    }
-
-    /**
-     * Tests if this exploration is compatible with a given rule system.
-     * If this method does not throw an exception, then neither will {@link #play(GTS, GraphState)}.
-     * @throws FormatException if the rule system is not compatible
-     */
-    public void test(Grammar grammar) throws FormatException {
-        FormatErrorSet errors = new FormatErrorSet();
-        try {
-            getParsedStrategy(grammar);
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        try {
-            getParsedAcceptor(grammar);
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        errors.throwException();
-    }
+    private boolean interrupted;
 
     /**
      * Executes the exploration.
-     * @param gts - the GTS on which the exploration will be performed
-     * @param state - the state in which exploration will start (may be null)
-     * @throws FormatException if the rule system of {@code gts} is not
-     * compatible with this exploration
-     * @see #test(Grammar)
+     * Returns {@code this} for call chaining.
      */
-    final public void play(GTS gts, GraphState state) throws FormatException {
-        this.lastGts = gts;
-        Grammar grammar = gts.getGrammar();
-        // parse the strategy
-        Strategy parsedStrategy = getParsedStrategy(grammar);
-
-        // parse the acceptor
-        final Acceptor parsedAcceptor = getParsedAcceptor(grammar).newAcceptor(this.bound);
-
-        // initialize acceptor and GTS
-        parsedStrategy.setGTS(gts);
-        parsedStrategy.setState(state);
-        parsedStrategy.setAcceptor(parsedAcceptor);
-
+    final public Exploration play() {
         // initialize profiling and prepare graph listener
         playReporter.start();
         for (ExplorationListener listener : this.listeners) {
-            listener.start(this, gts);
+            listener.start(this, this.gts);
         }
-        parsedStrategy.play();
-        this.interrupted = parsedStrategy.isInterrupted();
+        this.strategy.play();
+        this.interrupted = this.strategy.isInterrupted();
         for (ExplorationListener listener : this.listeners) {
             if (this.interrupted) {
-                listener.abort(gts);
+                listener.abort(this.gts);
             } else {
-                listener.stop(gts);
+                listener.stop(this.gts);
             }
         }
         // stop profiling
         playReporter.stop();
 
         // store result
-        this.lastResult = parsedAcceptor.getResult();
-        this.lastState = parsedStrategy.getLastState();
-        this.lastMessage = parsedStrategy.getMessage();
-    }
-
-    /**
-     * Returns a string that, when used as input for {@link #parse(String)},
-     * will return an exploration equal to this one.
-     */
-    public String toParsableString() {
-        String result =
-            StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.bound;
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return toParsableString();
+        this.lastResult = this.acceptor.getResult();
+        this.lastState = this.strategy.getLastState();
+        this.lastMessage = this.strategy.getMessage();
+        return this;
     }
 
     /**
@@ -293,118 +153,17 @@ public class Exploration {
         this.listeners.remove(listener);
     }
 
-    /** Parser for serialised explorations. */
-    static public Parser<Exploration> parser() {
-        return new Parser<Exploration>() {
-            @Override
-            public String getDescription() {
-                return SYNTAX_MESSAGE;
-            }
+    /** List of currently active exploration listeners. */
+    private List<ExplorationListener> listeners = new ArrayList<ExplorationListener>();
 
-            @Override
-            public boolean accepts(String text) {
-                if (text == null || text.length() == 0) {
-                    return true;
-                }
-                try {
-                    Exploration.parse(text);
-                    return true;
-                } catch (FormatException exc) {
-                    return false;
-                }
-            }
-
-            @Override
-            public Exploration parse(String input) {
-                if (input == null || input.length() == 0) {
-                    return null;
-                }
-                try {
-                    return Exploration.parse(input);
-                } catch (FormatException exc) {
-                    return null;
-                }
-            }
-
-            @Override
-            public String toParsableString(Object value) {
-                if (value == null) {
-                    return "";
-                } else {
-                    return ((Exploration) value).toParsableString();
-                }
-            }
-
-            @Override
-            public Class<Exploration> getValueType() {
-                return Exploration.class;
-            }
-
-            @Override
-            public boolean isValue(Object value) {
-                return value == null || value instanceof Exploration;
-            }
-
-            @Override
-            public boolean hasDefault() {
-                return true;
-            }
-
-            @Override
-            public Exploration getDefaultValue() {
-                return null;
-            }
-
-            @Override
-            public String getDefaultString() {
-                return "";
-            }
-
-            @Override
-            public boolean isDefault(Object value) {
-                return value == null;
-            }
-        };
-    }
-
-    /**
-     * Parses an exploration description into an exploration instance.
-     * The description must be a list of two or three space-separated substrings:
-     * <li> The first value is the name of the strategy
-     * <li> The second value is the name of the acceptor
-     * <li> the (optional) third value is the number of expected results;
-     * if omitted, the number is infinite
-     * @param description the exploration description to be parsed
-     * @return the parsed exploration (non-{@code null})
-     * @throws FormatException if the description could not be parsed
+    /** Returns the result of a default-type exploration (see {@link ExploreType#DEFAULT}) of a given GTS.
+     * @param gts the GTS on which the exploration is to be performed
+     * @return the resulting exploration object
+     * @throws FormatException if the grammar of {@code gts} is not
+     * compatible with the default exploration type
      */
-    static public Exploration parse(String description) throws FormatException {
-        String[] parts = description.split("\\s");
-        if (parts.length < 2 || parts.length > 3) {
-            throw new FormatException(SYNTAX_MESSAGE);
-        }
-        Serialized strategy = StrategyEnumerator.instance().parseCommandline(parts[0]);
-        if (strategy == null) {
-            throw new FormatException("Can't parse strategy %s", parts[0]);
-        }
-        Serialized acceptor = AcceptorEnumerator.instance().parseCommandline(parts[1]);
-        if (acceptor == null) {
-            throw new FormatException("Can't parse acceptor %s", parts[1]);
-        }
-        int resultCount = 0;
-        if (parts.length == 3) {
-            String countMessage =
-                String.format("Result count '%s' must be a non-negative number", parts[2]);
-            try {
-                resultCount = Integer.parseInt(parts[2]);
-            } catch (NumberFormatException e) {
-                throw new FormatException(countMessage);
-            }
-            if (resultCount < 0) {
-                throw new FormatException(countMessage);
-            }
-        }
-        return new Exploration(strategy, acceptor, resultCount);
+    static public final Exploration explore(GTS gts) throws FormatException {
+        return ExploreType.DEFAULT.newExploration(gts, null).play();
     }
 
     /**
@@ -416,13 +175,8 @@ public class Exploration {
         return playReporter.getTotalTime();
     }
 
-    /** Message describing the syntax of a parsable exploration strategy. */
-    static public final String SYNTAX_MESSAGE =
-        "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
-    /** Default exploration (DFS, final states, infinite). */
-    static public final Exploration DEFAULT = new Exploration();
     /** Reporter for profiling information. */
     static private final Reporter reporter = Reporter.register(Exploration.class);
-    /** Handle for profiling {@link #play(GTS, GraphState)}. */
+    /** Handle for profiling {@link #play()}. */
     static final Reporter playReporter = reporter.register("playScenario()");
 }

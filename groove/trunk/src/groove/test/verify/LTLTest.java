@@ -20,6 +20,7 @@ package groove.test.verify;
 import static org.junit.Assert.assertEquals;
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.explore.Generator;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
@@ -118,12 +119,13 @@ public class LTLTest {
         case LTL_POCKET:
             strategy = this.strategyTemplate.toSerialized(formula, new GraphNodeSizeBoundary(0, 1));
         }
-        Exploration exploration = new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {
-            exploration.play(this.gts, this.gts.startState());
+            Exploration exploration = exploreType.newExploration(this.gts, this.gts.startState());
+            exploration.play();
+            assertEquals(succeed, exploration.getResult().isEmpty());
         } catch (FormatException e) {
             Assert.fail();
         }
-        assertEquals(succeed, exploration.getResult().isEmpty());
     }
 }

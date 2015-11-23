@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-08-24 01:37:49
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2015-11-23 22:05:24
 
 package groove.control.parse;
 import groove.control.*;
@@ -165,11 +165,11 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree EOF6_tree=null;
         RewriteRuleTokenStream stream_EOF=new RewriteRuleTokenStream(adaptor,"token EOF");
-        RewriteRuleSubtreeStream stream_package_decl=new RewriteRuleSubtreeStream(adaptor,"rule package_decl");
-        RewriteRuleSubtreeStream stream_recipe=new RewriteRuleSubtreeStream(adaptor,"rule recipe");
-        RewriteRuleSubtreeStream stream_import_decl=new RewriteRuleSubtreeStream(adaptor,"rule import_decl");
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
+        RewriteRuleSubtreeStream stream_import_decl=new RewriteRuleSubtreeStream(adaptor,"rule import_decl");
         RewriteRuleSubtreeStream stream_function=new RewriteRuleSubtreeStream(adaptor,"rule function");
+        RewriteRuleSubtreeStream stream_recipe=new RewriteRuleSubtreeStream(adaptor,"rule recipe");
+        RewriteRuleSubtreeStream stream_package_decl=new RewriteRuleSubtreeStream(adaptor,"rule package_decl");
          helper.clearErrors(); 
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:77:3: ( package_decl ( import_decl )* ( function | recipe | stat )* EOF -> ^( PROGRAM package_decl ^( IMPORTS ( import_decl )* ) ^( FUNCTIONS ( function )* ) ^( RECIPES ( recipe )* ) ^( BLOCK ( stat )* ) ) )
@@ -306,7 +306,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) { helper.checkEOF(EOF6_tree); }
 
             // AST REWRITE
-            // elements: stat, function, package_decl, recipe, import_decl
+            // elements: recipe, package_decl, stat, import_decl, function
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -502,7 +502,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) { helper.setPackage((qual_name7!=null?((CtrlTree)qual_name7.tree):null)); }
 
                     // AST REWRITE
-                    // elements: PACKAGE, SEMI, qual_name
+                    // elements: qual_name, SEMI, PACKAGE
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -710,11 +710,11 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree DOT14_tree=null;
         CtrlTree ANY15_tree=null;
         CtrlTree OTHER16_tree=null;
-        RewriteRuleTokenStream stream_ANY=new RewriteRuleTokenStream(adaptor,"token ANY");
         RewriteRuleTokenStream stream_OTHER=new RewriteRuleTokenStream(adaptor,"token OTHER");
-        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleTokenStream stream_DOT=new RewriteRuleTokenStream(adaptor,"token DOT");
         RewriteRuleTokenStream stream_ASTERISK=new RewriteRuleTokenStream(adaptor,"token ASTERISK");
+        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
+        RewriteRuleTokenStream stream_ANY=new RewriteRuleTokenStream(adaptor,"token ANY");
         RewriteRuleSubtreeStream stream_qual_name=new RewriteRuleSubtreeStream(adaptor,"rule qual_name");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:116:3: ( ID ( DOT rest= qual_name[any] )? ->|{...}? ( ASTERISK DOT )? ( ANY ->| OTHER ->) )
@@ -1189,9 +1189,9 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree LPAR27_tree=null;
         CtrlTree COMMA29_tree=null;
         CtrlTree RPAR31_tree=null;
-        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
-        RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+        RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
+        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
         RewriteRuleSubtreeStream stream_par=new RewriteRuleSubtreeStream(adaptor,"rule par");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:168:3: ( LPAR ( par ( COMMA par )* )? RPAR -> ^( PARS ( par )* ) )
@@ -1354,8 +1354,8 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree OUT32_tree=null;
         CtrlTree ID34_tree=null;
         CtrlTree ID36_tree=null;
-        RewriteRuleTokenStream stream_OUT=new RewriteRuleTokenStream(adaptor,"token OUT");
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
+        RewriteRuleTokenStream stream_OUT=new RewriteRuleTokenStream(adaptor,"token OUT");
         RewriteRuleSubtreeStream stream_var_type=new RewriteRuleSubtreeStream(adaptor,"rule var_type");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:178:3: ( OUT var_type ID -> ^( PAR OUT var_type ID ) | var_type ID -> ^( PAR var_type ID ) )
@@ -1759,15 +1759,15 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree CHOICE75_tree=null;
         CtrlTree OR77_tree=null;
         CtrlTree SEMI80_tree=null;
-        RewriteRuleTokenStream stream_DO=new RewriteRuleTokenStream(adaptor,"token DO");
-        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
-        RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
-        RewriteRuleTokenStream stream_WHILE=new RewriteRuleTokenStream(adaptor,"token WHILE");
         RewriteRuleTokenStream stream_RANGLE=new RewriteRuleTokenStream(adaptor,"token RANGLE");
+        RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
+        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
+        RewriteRuleTokenStream stream_WHILE=new RewriteRuleTokenStream(adaptor,"token WHILE");
+        RewriteRuleTokenStream stream_DO=new RewriteRuleTokenStream(adaptor,"token DO");
         RewriteRuleTokenStream stream_UNTIL=new RewriteRuleTokenStream(adaptor,"token UNTIL");
         RewriteRuleTokenStream stream_LANGLE=new RewriteRuleTokenStream(adaptor,"token LANGLE");
-        RewriteRuleSubtreeStream stream_cond=new RewriteRuleSubtreeStream(adaptor,"rule cond");
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
+        RewriteRuleSubtreeStream stream_cond=new RewriteRuleSubtreeStream(adaptor,"rule cond");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:197:3: ( var_decl SEMI ^| block | ALAP ^ stat |open= LANGLE ( stat )* close= RANGLE -> ^( ATOM[$open] ^( BLOCK ( stat )* TRUE[$close] ) ) | WHILE ^ LPAR ! cond RPAR ! stat | UNTIL ^ LPAR ! cond RPAR ! stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF ^ LPAR ! cond RPAR ! stat ( ( ELSE )=> ELSE ! stat )? | TRY ^ stat ( ( ELSE )=> ELSE ! stat )? | CHOICE ^ stat ( ( OR )=> OR ! stat )+ | expr SEMI ^)
             int alt18=11;
@@ -2127,7 +2127,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: stat, WHILE, cond, stat
+                            // elements: stat, stat, WHILE, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2198,7 +2198,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: stat, stat, UNTIL, cond
+                            // elements: UNTIL, cond, stat, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2584,7 +2584,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) stream_call.add(call83.getTree());
 
                     // AST REWRITE
-                    // elements: BECOMES, call, var_decl_pure
+                    // elements: call, var_decl_pure, BECOMES
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2674,8 +2674,8 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree ID85_tree=null;
         CtrlTree COMMA86_tree=null;
         CtrlTree ID87_tree=null;
-        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_var_type=new RewriteRuleSubtreeStream(adaptor,"rule var_type");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:265:3: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
@@ -3318,9 +3318,9 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree plus_tree=null;
         CtrlTree ast_tree=null;
         CtrlTree op_tree=null;
-        RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
-        RewriteRuleTokenStream stream_SHARP=new RewriteRuleTokenStream(adaptor,"token SHARP");
         RewriteRuleTokenStream stream_ASTERISK=new RewriteRuleTokenStream(adaptor,"token ASTERISK");
+        RewriteRuleTokenStream stream_SHARP=new RewriteRuleTokenStream(adaptor,"token SHARP");
+        RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
         RewriteRuleSubtreeStream stream_expr_atom=new RewriteRuleSubtreeStream(adaptor,"rule expr_atom");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:300:3: (e= expr_atom (plus= PLUS -> ^( BLOCK $e ^( STAR[$plus] $e) ) |ast= ASTERISK -> ^( STAR[$ast] $e) | -> $e) |op= SHARP expr_atom -> ^( ALAP[$op] expr_atom ) )
@@ -3392,15 +3392,15 @@ public TreeAdaptor getTreeAdaptor() {
                             // AST REWRITE
                             // elements: e, e
                             // token labels: 
-                            // rule labels: retval, e
+                            // rule labels: e, retval
                             // token list labels: 
                             // rule list labels: 
                             // wildcard labels: 
                             if ( state.backtracking==0 ) {
 
                             retval.tree = root_0;
-                            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
+                            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
                             // 309:17: -> ^( BLOCK $e ^( STAR[$plus] $e) )
@@ -3447,15 +3447,15 @@ public TreeAdaptor getTreeAdaptor() {
                             // AST REWRITE
                             // elements: e
                             // token labels: 
-                            // rule labels: retval, e
+                            // rule labels: e, retval
                             // token list labels: 
                             // rule list labels: 
                             // wildcard labels: 
                             if ( state.backtracking==0 ) {
 
                             retval.tree = root_0;
-                            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
+                            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
                             // 310:20: -> ^( STAR[$ast] $e)
@@ -3486,15 +3486,15 @@ public TreeAdaptor getTreeAdaptor() {
                             // AST REWRITE
                             // elements: e
                             // token labels: 
-                            // rule labels: retval, e
+                            // rule labels: e, retval
                             // token list labels: 
                             // rule list labels: 
                             // wildcard labels: 
                             if ( state.backtracking==0 ) {
 
                             retval.tree = root_0;
-                            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
+                            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CtrlTree)adaptor.nil();
                             // 311:7: -> $e
@@ -3616,8 +3616,8 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree open_tree=null;
         CtrlTree close_tree=null;
-        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
         RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
+        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
         RewriteRuleSubtreeStream stream_expr=new RewriteRuleSubtreeStream(adaptor,"rule expr");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:321:2: (open= LPAR expr close= RPAR -> ^( BLOCK[$open] expr TRUE[$close] ) | assign | call )
@@ -3804,8 +3804,8 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlTree COMMA101_tree=null;
         CtrlTree BECOMES103_tree=null;
-        RewriteRuleTokenStream stream_BECOMES=new RewriteRuleTokenStream(adaptor,"token BECOMES");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+        RewriteRuleTokenStream stream_BECOMES=new RewriteRuleTokenStream(adaptor,"token BECOMES");
         RewriteRuleSubtreeStream stream_call=new RewriteRuleSubtreeStream(adaptor,"rule call");
         RewriteRuleSubtreeStream stream_target=new RewriteRuleSubtreeStream(adaptor,"rule target");
         try {
@@ -3866,7 +3866,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) stream_call.add(call104.getTree());
 
             // AST REWRITE
-            // elements: target, call, BECOMES
+            // elements: call, target, BECOMES
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4060,8 +4060,8 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlParser.arg_list_return arg_list107 =null;
 
 
-        RewriteRuleSubtreeStream stream_arg_list=new RewriteRuleSubtreeStream(adaptor,"rule arg_list");
         RewriteRuleSubtreeStream stream_rule_name=new RewriteRuleSubtreeStream(adaptor,"rule rule_name");
+        RewriteRuleSubtreeStream stream_arg_list=new RewriteRuleSubtreeStream(adaptor,"rule arg_list");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:352:2: ( rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) )
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:356:4: rule_name ( arg_list )?
@@ -4100,7 +4100,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) { helper.registerCall((rule_name106!=null?((CtrlTree)rule_name106.tree):null)); }
 
             // AST REWRITE
-            // elements: arg_list, rule_name
+            // elements: rule_name, arg_list
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4270,9 +4270,9 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree open_tree=null;
         CtrlTree close_tree=null;
         CtrlTree COMMA110_tree=null;
-        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
-        RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+        RewriteRuleTokenStream stream_LPAR=new RewriteRuleTokenStream(adaptor,"token LPAR");
+        RewriteRuleTokenStream stream_RPAR=new RewriteRuleTokenStream(adaptor,"token RPAR");
         RewriteRuleSubtreeStream stream_arg=new RewriteRuleSubtreeStream(adaptor,"rule arg");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:381:3: (open= LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( ARGS[$open] ( arg )* RPAR[$close] ) )
@@ -4439,9 +4439,9 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree ID113_tree=null;
         CtrlTree ID114_tree=null;
         CtrlTree DONT_CARE115_tree=null;
+        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleTokenStream stream_DONT_CARE=new RewriteRuleTokenStream(adaptor,"token DONT_CARE");
         RewriteRuleTokenStream stream_OUT=new RewriteRuleTokenStream(adaptor,"token OUT");
-        RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_literal=new RewriteRuleSubtreeStream(adaptor,"rule literal");
         try {
             // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:391:3: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
@@ -4493,7 +4493,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: OUT, ID
+                    // elements: ID, OUT
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -4881,11 +4881,11 @@ public TreeAdaptor getTreeAdaptor() {
         state.failed=false;
         return success;
     }
-    public final boolean synpred3_Ctrl() {
+    public final boolean synpred2_Ctrl() {
         state.backtracking++;
         int start = input.mark();
         try {
-            synpred3_Ctrl_fragment(); // can never throw exception
+            synpred2_Ctrl_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: "+re);
         }
@@ -4895,11 +4895,11 @@ public TreeAdaptor getTreeAdaptor() {
         state.failed=false;
         return success;
     }
-    public final boolean synpred2_Ctrl() {
+    public final boolean synpred3_Ctrl() {
         state.backtracking++;
         int start = input.mark();
         try {
-            synpred2_Ctrl_fragment(); // can never throw exception
+            synpred3_Ctrl_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: "+re);
         }

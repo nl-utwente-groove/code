@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g 2014-07-20 11:05:15
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g 2015-11-23 22:05:22
 
 package groove.explore.syntax;
 
@@ -60,15 +60,15 @@ public class FormulaLexer extends Lexer {
     public FormulaLexer(CharStream input, RecognizerSharedState state) {
         super(input,state);
     }
-    public String getGrammarFileName() { return "D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g"; }
+    public String getGrammarFileName() { return "E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g"; }
 
     // $ANTLR start "TRUE"
     public final void mTRUE() throws RecognitionException {
         try {
             int _type = TRUE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:104:6: ( 'true' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:104:8: 'true'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:104:6: ( 'true' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:104:8: 'true'
             {
             match("true"); 
 
@@ -90,8 +90,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = FALSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:105:7: ( 'false' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:105:9: 'false'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:105:7: ( 'false' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:105:9: 'false'
             {
             match("false"); 
 
@@ -113,13 +113,13 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = STRING_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:108:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:108:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:108:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:108:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
             {
             mQUOTE(); 
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:109:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:109:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
             loop1:
             do {
                 int alt1=3;
@@ -135,7 +135,7 @@ public class FormulaLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:109:7: EscapeSequence
+            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:109:7: EscapeSequence
             	    {
             	    mEscapeSequence(); 
 
@@ -143,7 +143,7 @@ public class FormulaLexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:110:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
+            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:110:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '[')||(input.LA(1) >= ']' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -181,14 +181,14 @@ public class FormulaLexer extends Lexer {
     // $ANTLR start "EscapeSequence"
     public final void mEscapeSequence() throws RecognitionException {
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:118:3: ( BSLASH ( QUOTE BSLASH ) )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:118:5: BSLASH ( QUOTE BSLASH )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:118:3: ( BSLASH ( QUOTE BSLASH ) )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:118:5: BSLASH ( QUOTE BSLASH )
             {
             mBSLASH(); 
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:119:5: ( QUOTE BSLASH )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:119:7: QUOTE BSLASH
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:119:5: ( QUOTE BSLASH )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:119:7: QUOTE BSLASH
             {
             mQUOTE(); 
 
@@ -214,8 +214,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = NAT_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:124:3: ( NaturalNumber )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:124:5: NaturalNumber
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:124:3: ( NaturalNumber )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:124:5: NaturalNumber
             {
             mNaturalNumber(); 
 
@@ -234,7 +234,7 @@ public class FormulaLexer extends Lexer {
     // $ANTLR start "NaturalNumber"
     public final void mNaturalNumber() throws RecognitionException {
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:132:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:132:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt3=2;
             int LA3_0 = input.LA(1);
 
@@ -253,18 +253,18 @@ public class FormulaLexer extends Lexer {
             }
             switch (alt3) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:132:5: '0'
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:132:5: '0'
                     {
                     match('0'); 
 
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:133:5: '1' .. '9' ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:133:5: '1' .. '9' ( '0' .. '9' )*
                     {
                     matchRange('1','9'); 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:133:14: ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:133:14: ( '0' .. '9' )*
                     loop2:
                     do {
                         int alt2=2;
@@ -277,7 +277,7 @@ public class FormulaLexer extends Lexer {
 
                         switch (alt2) {
                     	case 1 :
-                    	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
+                    	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
                     	    {
                     	    if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
                     	        input.consume();
@@ -315,8 +315,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = REAL_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:135:3: ( NonIntegerNumber )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:135:5: NonIntegerNumber
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:135:3: ( NonIntegerNumber )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:135:5: NonIntegerNumber
             {
             mNonIntegerNumber(); 
 
@@ -335,7 +335,7 @@ public class FormulaLexer extends Lexer {
     // $ANTLR start "NonIntegerNumber"
     public final void mNonIntegerNumber() throws RecognitionException {
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
             int alt7=2;
             int LA7_0 = input.LA(1);
 
@@ -354,9 +354,9 @@ public class FormulaLexer extends Lexer {
             }
             switch (alt7) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
                     {
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:9: ( '0' .. '9' )+
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:9: ( '0' .. '9' )+
                     int cnt4=0;
                     loop4:
                     do {
@@ -370,7 +370,7 @@ public class FormulaLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
+                    	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
                     	    {
                     	    if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
                     	        input.consume();
@@ -397,7 +397,7 @@ public class FormulaLexer extends Lexer {
 
                     match('.'); 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:27: ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:143:27: ( '0' .. '9' )*
                     loop5:
                     do {
                         int alt5=2;
@@ -410,7 +410,7 @@ public class FormulaLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
+                    	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
                     	    {
                     	    if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
                     	        input.consume();
@@ -434,11 +434,11 @@ public class FormulaLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:144:9: '.' ( '0' .. '9' )+
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:144:9: '.' ( '0' .. '9' )+
                     {
                     match('.'); 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:144:13: ( '0' .. '9' )+
+                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:144:13: ( '0' .. '9' )+
                     int cnt6=0;
                     loop6:
                     do {
@@ -452,7 +452,7 @@ public class FormulaLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
+                    	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
                     	    {
                     	    if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
                     	        input.consume();
@@ -494,8 +494,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:145:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:145:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:145:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:145:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             {
             if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
                 input.consume();
@@ -507,7 +507,7 @@ public class FormulaLexer extends Lexer {
             }
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:145:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:145:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             loop8:
             do {
                 int alt8=2;
@@ -520,7 +520,7 @@ public class FormulaLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
+            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
             	    {
             	    if ( (input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
             	        input.consume();
@@ -557,8 +557,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:147:11: ( '&' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:147:13: '&'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:147:11: ( '&' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:147:13: '&'
             {
             match('&'); 
 
@@ -578,8 +578,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:148:11: ( '&&' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:148:13: '&&'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:148:11: ( '&&' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:148:13: '&&'
             {
             match("&&"); 
 
@@ -601,8 +601,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:149:11: ( '|' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:149:13: '|'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:149:11: ( '|' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:149:13: '|'
             {
             match('|'); 
 
@@ -622,8 +622,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:150:11: ( '\\\\' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:150:13: '\\\\'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:150:11: ( '\\\\' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:150:13: '\\\\'
             {
             match('\\'); 
 
@@ -643,8 +643,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:151:11: ( ',' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:151:13: ','
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:151:11: ( ',' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:151:13: ','
             {
             match(','); 
 
@@ -664,8 +664,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = DONT_CARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:152:11: ( '_' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:152:13: '_'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:152:11: ( '_' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:152:13: '_'
             {
             match('_'); 
 
@@ -685,8 +685,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:153:11: ( '.' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:153:13: '.'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:153:11: ( '.' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:153:13: '.'
             {
             match('.'); 
 
@@ -706,8 +706,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = EQUIV;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:154:11: ( '<->' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:154:13: '<->'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:154:11: ( '<->' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:154:13: '<->'
             {
             match("<->"); 
 
@@ -729,8 +729,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:155:11: ( '-' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:155:13: '-'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:155:11: ( '-' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:155:13: '-'
             {
             match('-'); 
 
@@ -750,8 +750,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:156:11: ( '(' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:156:13: '('
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:156:11: ( '(' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:156:13: '('
             {
             match('('); 
 
@@ -771,8 +771,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:157:11: ( ')' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:157:13: ')'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:157:11: ( ')' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:157:13: ')'
             {
             match(')'); 
 
@@ -792,8 +792,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = IMPL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:158:11: ( '->' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:158:13: '->'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:158:11: ( '->' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:158:13: '->'
             {
             match("->"); 
 
@@ -815,8 +815,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = IMPL_BY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:159:11: ( '<-' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:159:13: '<-'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:159:11: ( '<-' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:159:13: '<-'
             {
             match("<-"); 
 
@@ -838,8 +838,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:160:11: ( '||' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:160:13: '||'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:160:11: ( '||' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:160:13: '||'
             {
             match("||"); 
 
@@ -861,8 +861,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:161:11: ( '!' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:161:13: '!'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:161:11: ( '!' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:161:13: '!'
             {
             match('!'); 
 
@@ -882,8 +882,8 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:162:11: ( '\"' )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:162:13: '\"'
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:162:11: ( '\"' )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:162:13: '\"'
             {
             match('\"'); 
 
@@ -903,10 +903,10 @@ public class FormulaLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:164:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:164:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:164:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:164:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:164:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:164:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt9=0;
             loop9:
             do {
@@ -920,7 +920,7 @@ public class FormulaLexer extends Lexer {
 
                 switch (alt9) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
+            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:
             	    {
             	    if ( (input.LA(1) >= '\t' && input.LA(1) <= '\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -959,12 +959,12 @@ public class FormulaLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:8: ( TRUE | FALSE | STRING_LIT | NAT_LIT | REAL_LIT | ID | AMP | AND | BAR | BSLASH | COMMA | DONT_CARE | DOT | EQUIV | MINUS | LPAR | RPAR | IMPL | IMPL_BY | OR | NOT | QUOTE | WS )
+        // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:8: ( TRUE | FALSE | STRING_LIT | NAT_LIT | REAL_LIT | ID | AMP | AND | BAR | BSLASH | COMMA | DONT_CARE | DOT | EQUIV | MINUS | LPAR | RPAR | IMPL | IMPL_BY | OR | NOT | QUOTE | WS )
         int alt10=23;
         alt10 = dfa10.predict(input);
         switch (alt10) {
             case 1 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:10: TRUE
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:10: TRUE
                 {
                 mTRUE(); 
 
@@ -972,7 +972,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 2 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:15: FALSE
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:15: FALSE
                 {
                 mFALSE(); 
 
@@ -980,7 +980,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 3 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:21: STRING_LIT
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:21: STRING_LIT
                 {
                 mSTRING_LIT(); 
 
@@ -988,7 +988,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 4 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:32: NAT_LIT
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:32: NAT_LIT
                 {
                 mNAT_LIT(); 
 
@@ -996,7 +996,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 5 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:40: REAL_LIT
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:40: REAL_LIT
                 {
                 mREAL_LIT(); 
 
@@ -1004,7 +1004,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 6 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:49: ID
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:49: ID
                 {
                 mID(); 
 
@@ -1012,7 +1012,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 7 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:52: AMP
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:52: AMP
                 {
                 mAMP(); 
 
@@ -1020,7 +1020,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 8 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:56: AND
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:56: AND
                 {
                 mAND(); 
 
@@ -1028,7 +1028,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 9 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:60: BAR
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:60: BAR
                 {
                 mBAR(); 
 
@@ -1036,7 +1036,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 10 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:64: BSLASH
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:64: BSLASH
                 {
                 mBSLASH(); 
 
@@ -1044,7 +1044,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 11 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:71: COMMA
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:71: COMMA
                 {
                 mCOMMA(); 
 
@@ -1052,7 +1052,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 12 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:77: DONT_CARE
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:77: DONT_CARE
                 {
                 mDONT_CARE(); 
 
@@ -1060,7 +1060,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 13 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:87: DOT
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:87: DOT
                 {
                 mDOT(); 
 
@@ -1068,7 +1068,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 14 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:91: EQUIV
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:91: EQUIV
                 {
                 mEQUIV(); 
 
@@ -1076,7 +1076,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 15 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:97: MINUS
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:97: MINUS
                 {
                 mMINUS(); 
 
@@ -1084,7 +1084,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 16 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:103: LPAR
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:103: LPAR
                 {
                 mLPAR(); 
 
@@ -1092,7 +1092,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 17 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:108: RPAR
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:108: RPAR
                 {
                 mRPAR(); 
 
@@ -1100,7 +1100,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 18 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:113: IMPL
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:113: IMPL
                 {
                 mIMPL(); 
 
@@ -1108,7 +1108,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 19 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:118: IMPL_BY
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:118: IMPL_BY
                 {
                 mIMPL_BY(); 
 
@@ -1116,7 +1116,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 20 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:126: OR
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:126: OR
                 {
                 mOR(); 
 
@@ -1124,7 +1124,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 21 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:129: NOT
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:129: NOT
                 {
                 mNOT(); 
 
@@ -1132,7 +1132,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 22 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:133: QUOTE
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:133: QUOTE
                 {
                 mQUOTE(); 
 
@@ -1140,7 +1140,7 @@ public class FormulaLexer extends Lexer {
                 }
                 break;
             case 23 :
-                // D:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:139: WS
+                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:1:139: WS
                 {
                 mWS(); 
 

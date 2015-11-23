@@ -59,8 +59,7 @@ public class AnyTest {
             sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
             GTS lts = new GTS(sgv.toGrammar());
 
-            Exploration exploration = new Exploration();
-            exploration.play(lts, null);
+            Exploration exploration = Exploration.explore(lts);
 
             assertFalse(exploration.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());

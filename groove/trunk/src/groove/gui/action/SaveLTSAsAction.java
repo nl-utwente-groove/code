@@ -74,7 +74,7 @@ public class SaveLTSAsAction extends SimulatorAction {
             export = gts.getFinalStates();
             break;
         case RESULT:
-            export = getSimulatorModel().getResult();
+            export = getSimulatorModel().getExploreResult();
             break;
         default:
             assert exportStates == StateExport.NONE;
@@ -87,7 +87,7 @@ public class SaveLTSAsAction extends SimulatorAction {
                 new File(dir, ltsPattern).toString(),
                 flags,
                 filter,
-                getSimulatorModel().getResult());
+                getSimulatorModel().getExploreResult());
             for (GraphState state : export) {
                 StateReporter.exportState(state, new File(dir, statePattern).toString());
             }

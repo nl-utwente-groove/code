@@ -71,8 +71,7 @@ public class DynamicConstraintTest {
         try {
             GTS lts = loadGTS(grammarName, startGraphName);
 
-            Exploration exploration = new Exploration();
-            exploration.play(lts, null);
+            Exploration exploration = Exploration.explore(lts);
             assertFalse(exploration.isInterrupted());
 
             assertEquals(nodeCount, lts.nodeCount());

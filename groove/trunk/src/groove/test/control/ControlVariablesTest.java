@@ -75,15 +75,14 @@ public class ControlVariablesTest {
     }
 
     private void explore(String control, int controlStates, int controlTransitions,
-            int expectedNodes, int expectedEdges) {
+        int expectedNodes, int expectedEdges) {
         try {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
             GTS lts = new GTS(sgv.toGrammar());
-            Exploration scenario = new Exploration();
-            scenario.play(lts, lts.startState());
+            Exploration exploration = Exploration.explore(lts);
 
-            assertFalse(scenario.isInterrupted());
+            assertFalse(exploration.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
         } catch (IOException e) {

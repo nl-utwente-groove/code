@@ -17,7 +17,7 @@
 package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
-import groove.explore.Exploration;
+import groove.explore.ExploreType;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.RuleModel;
@@ -150,7 +150,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * Exploration strategy description.
      */
     EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
-        Exploration.parser(), ExplorationChecker.instance),
+        ExploreType.parser(), ExplorationChecker.instance),
 
     /**
      * Space-separated list of control labels of a graph grammar. The

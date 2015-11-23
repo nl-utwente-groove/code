@@ -38,15 +38,16 @@ public class CheckCTLAction extends SimulatorAction {
         if (property != null) {
             boolean doCheck = true;
             GTS gts = getSimulatorModel().getGTS();
-            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGTS()) {
+            // completely re-explore if the GTS has open states
+            if (gts.hasOpenStates() && this.full && getSimulatorModel().resetGTS()) {
                 getActions().getExploreAction()
-                    .explore(getSimulatorModel().getExploration(), false);
+                    .explore(getSimulatorModel().getExploreType(), false);
                 gts = getSimulatorModel().getGTS();
                 doCheck = !gts.hasOpenStates();
             }
             if (doCheck) {
                 try {
-                    doCheckProperty(getSimulatorModel().getResult(), property);
+                    doCheckProperty(getSimulatorModel().getExploreResult(), property);
                 } catch (FormatException e) {
                     // the property has already been parsed by the dialog
                     assert false;
