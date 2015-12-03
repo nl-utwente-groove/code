@@ -1,20 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.graph.iso;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
@@ -24,9 +27,6 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.util.collect.TreeHashSet;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Implements an algorithm to partition a given graph into sets of symmetric
@@ -118,9 +118,10 @@ public class PartitionRefiner extends CertificateStrategy {
         } while (goOn);
         recordIterateCount(this.iterateCount);
         if (TRACE) {
-            System.out.printf(
-                "First iteration done; %d partitions for %d nodes in %d iterations%n",
-                this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+            System.out.printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
+                this.nodePartitionCount,
+                this.nodeCertCount,
+                this.iterateCount);
         }
     }
 
@@ -137,6 +138,9 @@ public class PartitionRefiner extends CertificateStrategy {
                     if (TRACE) {
                         System.out.printf("All duplicate certificates broken%n");
                     }
+                    // EZ: Need to increase the count here, otherwise this
+                    // counter is always zero.
+                    totalSymmetryBreakCount++;
                     break;
                 }
                 checkpointCertificates();
@@ -156,7 +160,9 @@ public class PartitionRefiner extends CertificateStrategy {
                 if (TRACE) {
                     System.out.printf(
                         "Next iteration done; %d partitions for %d nodes in %d iterations%n",
-                        this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+                        this.nodePartitionCount,
+                        this.nodeCertCount,
+                        this.iterateCount);
                 }
             } while (true);// this.nodePartitionCount < this.nodeCertCount &&
             // this.nodePartitionCount > oldPartitionCount);
@@ -336,22 +342,22 @@ public class PartitionRefiner extends CertificateStrategy {
     /**
      * Store for node certificates, to count the number of partitions
      */
-    static private final TreeHashSet<MyNodeCert> certStore = new TreeHashSet<MyNodeCert>(
-        TREE_RESOLUTION) {
-        /**
-         * For the purpose of this set, only the certificate value is of
-         * importance.
-         */
-        @Override
-        protected boolean allEqual() {
-            return true;
-        }
+    static private final TreeHashSet<MyNodeCert> certStore =
+        new TreeHashSet<MyNodeCert>(TREE_RESOLUTION) {
+            /**
+             * For the purpose of this set, only the certificate value is of
+             * importance.
+             */
+            @Override
+            protected boolean allEqual() {
+                return true;
+            }
 
-        @Override
-        protected int getCode(MyNodeCert key) {
-            return key.getValue();
-        }
-    };
+            @Override
+            protected int getCode(MyNodeCert key) {
+                return key.getValue();
+            }
+        };
     /** Temporary storage for node certificates. */
     static private int[] tmpCertIxs = new int[100];
 
@@ -363,8 +369,8 @@ public class PartitionRefiner extends CertificateStrategy {
     /**
      * Superclass of graph element certificates.
      */
-    public static abstract class MyCert<E extends Element> implements
-            CertificateStrategy.ElementCertificate<E> {
+    public static abstract class MyCert<E extends Element>
+        implements CertificateStrategy.ElementCertificate<E> {
         /** Constructs a certificate for a given graph element. */
         MyCert(E element) {
             this.element = element;
@@ -477,7 +483,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static class MyNodeCert extends MyCert<Node> implements CertificateStrategy.NodeCertificate {
+    static class MyNodeCert extends MyCert<Node>implements CertificateStrategy.NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -632,7 +638,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static class MyEdge2Cert extends MyCert<Edge> implements EdgeCertificate {
+    static class MyEdge2Cert extends MyCert<Edge>implements EdgeCertificate {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
@@ -688,10 +694,8 @@ public class PartitionRefiner extends CertificateStrategy {
             int targetShift = (this.initValue & 0xf) + 1;
             int sourceHashCode = this.source.value;
             int targetHashCode = this.target.value;
-            int result =
-                ((sourceHashCode << 8) | (sourceHashCode >>> 24))
-                    + ((targetHashCode << targetShift) | (targetHashCode >>> targetShift))
-                    + this.value;
+            int result = ((sourceHashCode << 8) | (sourceHashCode >>> 24))
+                + ((targetHashCode << targetShift) | (targetHashCode >>> targetShift)) + this.value;
             this.source.nextValue += 2 * result;
             this.target.nextValue -= 3 * result;
             return result;
@@ -714,7 +718,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static class MyEdge1Cert extends MyCert<Edge> implements EdgeCertificate {
+    static class MyEdge1Cert extends MyCert<Edge>implements EdgeCertificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public MyEdge1Cert(Edge edge, MyNodeCert source) {
             super(edge);
