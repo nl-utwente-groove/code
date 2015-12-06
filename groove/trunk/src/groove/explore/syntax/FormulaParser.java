@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g 2015-11-23 22:05:21
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g 2015-12-06 12:07:15
 
 package groove.explore.syntax;
 import groove.util.parse.FormatErrorSet;
