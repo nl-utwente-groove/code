@@ -31,7 +31,7 @@ public class ExploreStateStrategy extends ClosingStrategy {
      * The acceptor is initialised to {@link NoStateAcceptor}.
      */
     public ExploreStateStrategy() {
-        setAcceptor(NoStateAcceptor.INSTANCE);
+        setAcceptor(NoStateAcceptor.INSTANCE.newAcceptor(0));
     }
 
     @Override

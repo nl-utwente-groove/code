@@ -1,5 +1,9 @@
 package groove.explore;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+
 import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
@@ -47,10 +51,6 @@ import groove.explore.strategy.Strategy;
 import groove.grammar.Rule;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.type.TypeLabel;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
 
 /** Symbolic values for the implemented strategies. */
 public enum StrategyValue implements ParsableValue {
@@ -157,9 +157,8 @@ public enum StrategyValue implements ParsableValue {
     @Override
     public boolean isDefault(GrammarModel grammar) {
         ExploreType exploration = grammar.getDefaultExploreType();
-        return exploration == null ? this == BFS : exploration.getStrategy()
-            .getKeyword()
-            .equals(getKeyword());
+        return exploration == null ? this == BFS
+            : exploration.getStrategy().getKeyword().equals(getKeyword());
     }
 
     /** Creates the appropriate template for this strategy. */
@@ -231,8 +230,10 @@ public enum StrategyValue implements ParsableValue {
             };
 
         case CONDITIONAL:
-            return new MyTemplate2<Rule,Boolean>(new PSequence(new POptional("!", "mode",
-                EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE), new PIdentifier("rule")),
+            return new MyTemplate2<Rule,Boolean>(
+                new PSequence(
+                    new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
+                    new PIdentifier("rule")),
                 "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
 
                 @Override
@@ -259,10 +260,10 @@ public enum StrategyValue implements ParsableValue {
             };
 
         case CONDITIONAL_EDGE_BOUND:
-            return new MyTemplate1<Map<TypeLabel,Integer>>(new PSeparated(new PSequence(
-                new PIdentifier("edge-bound"), new PLiteral(">", "edge-bound"), new PNumber(
-                    "edge-bound")), new PLiteral(",", "edge-bound")), "edge-bound",
-                new EncodedEdgeMap()) {
+            return new MyTemplate1<Map<TypeLabel,Integer>>(
+                new PSeparated(new PSequence(new PIdentifier("edge-bound"),
+                    new PLiteral(">", "edge-bound"), new PNumber("edge-bound")),
+                new PLiteral(",", "edge-bound")), "edge-bound", new EncodedEdgeMap()) {
 
                 @Override
                 public Strategy create(Map<TypeLabel,Integer> bounds) {
@@ -302,9 +303,8 @@ public enum StrategyValue implements ParsableValue {
             };
 
         case LTL_POCKET:
-            boundParser =
-                new PSeparated(new PChoice(new PIdentifier("rule"), new PNumber("value")),
-                    new PLiteral(",", "comma"));
+            boundParser = new PSeparated(new PChoice(new PIdentifier("rule"), new PNumber("value")),
+                new PLiteral(",", "comma"));
             parser = new PSequence(boundParser, new PLiteral(";", "semi"), new PAll("prop"));
             return new MyTemplate2<String,Boundary>(parser, "prop", new EncodedLtlProperty(),
                 "bound", new EncodedBoundary()) {
@@ -327,17 +327,18 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
         case MINIMAX:
-            return new MyTemplate5<Integer,Integer,List<Rule>,Rule,Integer>(new PSequence(
-                new PNumber("heuristic-parameter-index"), new PLiteral(","), new PNumber(
-                    "maximum-search-depth"), new PLiteral(","), new PSeparated(new PIdentifier(
-                    "enabled-rule-names"), /*delimiter*/
-                new PLiteral(";", "enabled-rule-names")), new PLiteral(","), new PIdentifier(
-                    "start-max"), new PLiteral(","), new PIdentifier("minmax-rule"), new PLiteral(
-                    ","), new PNumber("minmax-rule-parameter-index")), "heuristic-parameter-index",
-                new EncodedInt(0, Integer.MAX_VALUE), "maximum-search-depth", new EncodedInt(0,
-                    Integer.MAX_VALUE), "enabled-rule-names", new EncodedRuleList(), "minmax-rule",
-                new EncodedEnabledRule(), "minmax-rule-parameter-index", new EncodedInt(0,
-                    Integer.MAX_VALUE)) {
+            return new MyTemplate5<Integer,Integer,List<Rule>,Rule,Integer>(
+                new PSequence(new PNumber("heuristic-parameter-index"), new PLiteral(","),
+                    new PNumber("maximum-search-depth"), new PLiteral(","),
+                    new PSeparated(new PIdentifier("enabled-rule-names"), /*delimiter*/
+                        new PLiteral(";", "enabled-rule-names")),
+                    new PLiteral(","), new PIdentifier("start-max"), new PLiteral(","),
+                    new PIdentifier("minmax-rule"), new PLiteral(","),
+                    new PNumber("minmax-rule-parameter-index")),
+                "heuristic-parameter-index", new EncodedInt(0, Integer.MAX_VALUE),
+                "maximum-search-depth", new EncodedInt(0, Integer.MAX_VALUE), "enabled-rule-names",
+                new EncodedRuleList(), "minmax-rule", new EncodedEnabledRule(),
+                "minmax-rule-parameter-index", new EncodedInt(0, Integer.MAX_VALUE)) {
 
                 @Override
                 public Strategy create(Object[] arguments) {
@@ -363,16 +364,14 @@ public enum StrategyValue implements ParsableValue {
     private final String description;
 
     /** Set of model checking strategies. */
-    public final static EnumSet<StrategyValue> LTL_STRATEGIES = EnumSet.of(LTL,
-        LTL_BOUNDED,
-        LTL_POCKET);
+    public final static EnumSet<StrategyValue> LTL_STRATEGIES =
+        EnumSet.of(LTL, LTL_BOUNDED, LTL_POCKET);
     /** Set of strategies that can be selected from the exploration dialog. */
     public final static EnumSet<StrategyValue> DIALOG_STRATEGIES;
     /** Special mask for development strategies only. Treated specially. */
-    public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES = EnumSet.of(RETE,
-        RETE_LINEAR,
-        RETE_RANDOM,
-        MINIMAX);
+    public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
+        EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, MINIMAX);
+
     static {
         DIALOG_STRATEGIES = EnumSet.complementOf(LTL_STRATEGIES);
         DIALOG_STRATEGIES.remove(STATE);
@@ -402,11 +401,10 @@ public enum StrategyValue implements ParsableValue {
 
     /** Specialised 5-parameter template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate5<T1,T2,T3,T4,T5> extends TemplateN<Strategy> {
-        @SuppressWarnings("unchecked")
-        //cast to Object won't go wrong
         public MyTemplate5(SerializedParser parser, String name1, EncodedType<T1,String> type1,
             String name2, EncodedType<T2,String> type2, String name3, EncodedType<T3,String> type3,
-            String name4, EncodedType<T4,String> type4, String name5, EncodedType<T5,String> type5) {
+            String name4, EncodedType<T4,String> type4, String name5,
+            EncodedType<T5,String> type5) {
             super(StrategyValue.this, parser, new String[] {name1, name2, name3, name4, name5},
                 type1, type2, type3, type4, type5);
 
