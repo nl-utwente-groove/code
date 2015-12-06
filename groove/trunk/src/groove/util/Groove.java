@@ -19,11 +19,6 @@ package groove.util;
 import static groove.io.FileType.GRAMMAR;
 import static groove.io.FileType.GXL;
 import static groove.io.FileType.STATE;
-import groove.grammar.model.GrammarModel;
-import groove.graph.Graph;
-import groove.graph.plain.PlainGraph;
-import groove.io.FileType;
-import groove.io.graph.GxlIO;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -41,6 +36,12 @@ import java.util.StringTokenizer;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.KeyStroke;
+
+import groove.grammar.model.GrammarModel;
+import groove.graph.Graph;
+import groove.graph.plain.PlainGraph;
+import groove.io.FileType;
+import groove.io.graph.GxlIO;
 
 /**
  * Globals and convenience methods.
@@ -66,8 +67,8 @@ public class Groove {
     public static final String PROPERTY_NAME = "system";
 
     /** File name for XML properties. */
-    public static final String XML_PROPERTIES_FILE = "groove.xml"
-        + FileType.PROPERTY.getExtension();
+    public static final String XML_PROPERTIES_FILE =
+        "groove.xml" + FileType.PROPERTY.getExtension();
 
     /**
      * Flag to indicate if various types of statistics should be computed. This
@@ -343,8 +344,8 @@ public class Groove {
         try {
             url = file.toURI().toURL();
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' cannot be converted to URL", file));
+            throw new IllegalArgumentException(
+                String.format("File '%s' cannot be converted to URL", file));
         }
         return url;
     }
@@ -448,5 +449,9 @@ public class Groove {
     static {
         /** Make sure default action names are all in English. */
         Locale.setDefault(Locale.ENGLISH);
+    }
+
+    private Groove() {
+        // private constructor to prevent instantiation of this class
     }
 }
