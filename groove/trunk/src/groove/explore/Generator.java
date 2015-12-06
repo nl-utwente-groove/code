@@ -16,6 +16,21 @@
  */
 package groove.explore;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.MapOptionHandler;
+import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
+import org.kohsuke.args4j.spi.Setter;
+
 import groove.explore.encode.Serialized;
 import groove.explore.util.CompositeReporter;
 import groove.explore.util.ExplorationReporter;
@@ -32,21 +47,6 @@ import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.MapOptionHandler;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.Setter;
 
 /**
  * New command-line Generator class, using the Agrs4J library.
@@ -83,7 +83,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return new GrooveCmdLineParser(appName, this) {
             @Override
             public String getUsageLine() {
-                return String.format("%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
+                return String.format(
+                    "%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
                     super.getUsageLine(),
                     SOFT_REF_POLICY_NAME);
             }
@@ -188,11 +189,11 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.grammarProperties;
     }
 
-    @Option(name = "-D", metaVar = "key=val", usage = ""
-        + "Set grammar property <key> to <val>. Legal settings are:\n"
-        + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
-        + "  - controlProgram=names - set the control program(s) to be used\n"
-        + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
+    @Option(name = "-D", metaVar = "key=val",
+        usage = "" + "Set grammar property <key> to <val>. Legal settings are:\n"
+            + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
+            + "  - controlProgram=names - set the control program(s) to be used\n"
+            + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
         handler = PropertiesHandler.class)
     private Map<GrammarKey,String> grammarProperties;
 
@@ -203,15 +204,15 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.ltsLabels;
     }
 
-    @Option(name = "-ef", metaVar = "flags", depends = "-o", usage = ""
-        + "Flags for the \"-o\" option. Legal values are:\n" //
-        + "  s - label start state (default: 'start')\n" //
-        + "  f - label final states (default: 'final')\n" //
-        + "  o - label open states (default: 'open')\n" //
-        + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
-        + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
-        + "  r - result state label (default: 'result')\n" //
-        + "Specify label to be used by appending flag with 'label' (single-quoted)",
+    @Option(name = "-ef", metaVar = "flags", depends = "-o",
+        usage = "" + "Flags for the \"-o\" option. Legal values are:\n" //
+            + "  s - label start state (default: 'start')\n" //
+            + "  f - label final states (default: 'final')\n" //
+            + "  o - label open states (default: 'open')\n" //
+            + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
+            + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
+            + "  r - result state label (default: 'result')\n" //
+            + "Specify label to be used by appending flag with 'label' (single-quoted)",
         handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
@@ -375,24 +376,20 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /** Meta-variable name for the strategy option. */
     public final static String STRATEGY_VAR = "strgy";
     /** Usage message for the strategy option. */
-    public final static String STRATEGY_USAGE = ""
-        + "Set the exploration strategy to <strgy>. Legal values are:\n"
-        + "  bfs         - Breadth-first Exploration\n"
-        + "  dfs         - Depth-first Exploration\n"
-        + "  linear      - Linear\n" //
-        + "  random      - Random linear\n"
-        + "  state       - Single-State\n" //
-        + "  rete        - Rete-based DFS\n"
-        + "  retelinear  - Rete-based Linear\n"
-        + "  reterandom  - Rete-based Random Linear\n"
-        + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n"
-        + "  cnbound:n   - Conditional: up to <n> nodes\n"
-        + "  cebound:id>n,...\n"
-        + "              - Conditional: up to <n> edges labelled <id>\n"
-        + "  ltl:prop    - LTL Model Checking\n" //
-        + "  ltlbounded:idn,...;prop\n" + "              - Bounded LTL Model Checking\n"
-        + "  ltlpocket:idn,...;prop\n" + "              - Pocket LTL Model Checking\n"
-        + "  remote:host - Remote";
+    public final static String STRATEGY_USAGE =
+        "" + "Set the exploration strategy to <strgy>. Legal values are:\n"
+            + "  bfs         - Breadth-first Exploration\n"
+            + "  dfs         - Depth-first Exploration\n" + "  linear      - Linear\n" //
+            + "  random      - Random linear\n" + "  state       - Single-State\n" //
+            + "  rete        - Rete-based DFS\n" + "  retelinear  - Rete-based Linear\n"
+            + "  reterandom  - Rete-based Random Linear\n"
+            + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n"
+            + "  cnbound:n   - Conditional: up to <n> nodes\n" + "  cebound:id>n,...\n"
+            + "              - Conditional: up to <n> edges labelled <id>\n"
+            + "  ltl:prop    - LTL Model Checking\n" //
+            + "  ltlbounded:idn,...;prop\n" + "              - Bounded LTL Model Checking\n"
+            + "  ltlpocket:idn,...;prop\n" + "              - Pocket LTL Model Checking\n"
+            + "  remote:host - Remote";
 
     /**
      * Attempts to load a graph grammar from a given location provided as a
@@ -412,7 +409,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
      * @return the generated transition system
      * @throws Exception if any error occurred that prevented the GTS from being fully generated
      */
-    static public ExploreResult execute(String[] args) throws Exception {
+    static public ExploreResult execute(String... args) throws Exception {
         staticResult = new Generator(args).start();
         return staticResult;
     }

@@ -16,10 +16,13 @@
  */
 package groove.verify;
 
+import static groove.explore.Verbosity.LOW;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,14 +115,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         long genStartTime = System.currentTimeMillis();
         Model model;
         if (genArgs != null) {
-            try {
-                model = new GTSModel(Generator.execute(genArgs));
-            } catch (Exception e) {
-                throw new Exception("Error while invoking Generator\n" + e.getMessage(), e);
-            }
+            model = generateModel(genArgs);
         } else if (this.modelGraph == null) {
             throw new Exception(
                 "Either generator argument -g or model file name should be provided");
+        } else if (this.modelGraph.isDirectory()) {
+            // we have to generate the transition system
+            model = generateModel(this.modelGraph.getPath());
         } else {
             emit("Model: %s%n", this.modelGraph);
             model = new GraphModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
@@ -127,14 +129,16 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         long mcStartTime = System.currentTimeMillis();
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
-        for (Formula property : this.properties) {
+        for (Formula property : this.ctlProps) {
             maxWidth = Math.max(maxWidth, property.getParseString().length());
             CTLMarker marker = new CTLMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
-        emit("%nModel checking outcome (for the initial state of the model):%n");
-        for (Formula property : this.properties) {
-            emit("    %-" + maxWidth + "s : %s%n",
+        emit("%n");
+        emit(LOW, "Model checking outcome (for the initial state of the model):%n");
+        for (Formula property : this.ctlProps) {
+            emit(LOW,
+                "    %-" + maxWidth + "s : %s%n",
                 property.getParseString(),
                 outcome.get(property) ? "satisfied" : "violated");
         }
@@ -144,26 +148,47 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
     }
 
+    /**
+     * Generates a model by invoking the Generator with a given list of arguments.
+     */
+    private Model generateModel(String... genArgs) throws Exception {
+        List<String> args = new ArrayList<>();
+        args.add("-v");
+        args.add("" + getVerbosity().getLevel());
+        args.addAll(Arrays.asList(genArgs));
+        try {
+            return new GTSModel(Generator.execute(args.toArray(new String[] {})));
+        } catch (Exception e) {
+            throw new Exception("Error in state space generation:\n" + e.getMessage(), e);
+        }
+    }
+
     @Option(name = "-ef", metaVar = "flags",
         usage = "" + "Special GTS labels. Legal values are:\n" //
             + "  s - start state label (default: 'start')\n" //
             + "  f - final states label (default: 'final')\n" //
             + "  o - open states label (default: 'open')\n" //
-            + "  r - result state label (default: 'result')" //
-            + "Specify label to be used by appending flag with 'label' (single-quoted)",
+            + "  r - result state label (default: 'result')\n" //
+            + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
+            + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
         handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
-    @Option(name = "-ctl", metaVar = "form",
-        usage = "Check the CTL formula <form> (multiple allowed)", handler = FormulaHandler.class,
-        required = true)
-    private List<Formula> properties;
+    @Option(name = "-ltl", metaVar = "prop",
+        usage = "Check the LTL property <prop> (multiple allowed)",
+        handler = CLTFormulaHandler.class)
+    private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
+    @Option(name = "-ctl", metaVar = "prop",
+        usage = "Check the CTL property <prop> (multiple allowed)",
+        handler = CLTFormulaHandler.class)
+    private List<Formula> ctlProps;
     @Option(name = "-g", metaVar = "args",
         usage = "Invoke the generator using <args> as options + arguments",
         handler = GeneratorHandler.class)
     private GeneratorArgs genArgs;
 
-    @Argument(metaVar = "graph", usage = "File name of graph to be checked",
+    @Argument(metaVar = "model",
+        usage = "File name of GXL graph or production system to be checked",
         handler = FileOptionHandler.class)
     private File modelGraph;
 
@@ -186,11 +211,11 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     }
 
     /** Option handler for CTL formulas. */
-    public static class FormulaHandler extends OneArgumentOptionHandler<Formula> {
+    public static class CLTFormulaHandler extends OneArgumentOptionHandler<Formula> {
         /**
          * Required constructor.
          */
-        public FormulaHandler(CmdLineParser parser, OptionDef option,
+        public CLTFormulaHandler(CmdLineParser parser, OptionDef option,
             Setter<? super Formula> setter) {
             super(parser, option, setter);
         }
@@ -199,6 +224,28 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         protected Formula parse(String argument) throws CmdLineException {
             try {
                 return Formula.parse(Logic.CTL, argument).toCtlFormula();
+            } catch (FormatException e) {
+                throw new CmdLineException(this.owner, e);
+            }
+        }
+    }
+
+    /** Option handler for LTL formulas. */
+    public static class LTLFormulaHandler
+        extends OneArgumentOptionHandler<gov.nasa.ltl.trans.Formula<String>> {
+        /**
+         * Required constructor.
+         */
+        public LTLFormulaHandler(CmdLineParser parser, OptionDef option,
+            Setter<? super gov.nasa.ltl.trans.Formula<String>> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        protected gov.nasa.ltl.trans.Formula<String> parse(String argument)
+            throws CmdLineException {
+            try {
+                return Formula.parse(Logic.LTL, argument).toLtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }

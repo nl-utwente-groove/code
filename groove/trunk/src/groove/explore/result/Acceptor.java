@@ -66,6 +66,14 @@ public abstract class Acceptor extends GTSAdapter {
     private final int bound;
 
     /**
+     * Indicates whether this acceptor is a prototype object.
+     * If so, it should only be used to invoke {@link #newAcceptor(int)}.
+     */
+    public boolean isPrototype() {
+        return this.prototype;
+    }
+
+    /**
      * Flag indicating that this is a prototype acceptor.
      * For a prototype acceptor, {@link #prepare(GTS)} should not be invoked.
      */
@@ -76,7 +84,7 @@ public abstract class Acceptor extends GTSAdapter {
      * @param gts the GTS of the new exploration
      */
     public void prepare(GTS gts) {
-        assert !this.prototype : "Using a prototype acceptor";
+        assert!this.prototype : "Using a prototype acceptor";
         this.result = createResult(gts);
     }
 

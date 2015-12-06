@@ -17,6 +17,10 @@
 
 package groove.explore.result;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import groove.explore.ExploreResult;
 import groove.explore.strategy.LTLStrategy;
 import groove.lts.GTS;
@@ -29,10 +33,6 @@ import groove.verify.ProductListener;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Acceptor that is notified on closing a Buchi graph-state in a
@@ -132,7 +132,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         if (getResult().isEmpty()) {
             result = "No counterexample found for " + property;
         } else {
-            result = property + " is violated; counterexample: " + getResult();
+            result = property + " is violated; counterexample: " + getResult().getStates();
         }
         return result;
     }
