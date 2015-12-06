@@ -35,6 +35,7 @@ import static groove.verify.LogicOp.S_RELEASE;
 import static groove.verify.LogicOp.TRUE;
 import static groove.verify.LogicOp.UNTIL;
 import static groove.verify.LogicOp.W_UNTIL;
+
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.util.line.Line;
@@ -73,67 +74,86 @@ public class Formula extends TermTree<LogicOp,Formula> {
         assert operator.getArity() == 1;
     }
 
-    //    @Override
-    //    public String toString() {
-    //        StringBuffer result = new StringBuffer();
-    //        toString(result);
-    //        return result.toString();
-    //    }
-
     /** Appends a given string buffer with a string description of this formula. */
-    private void toString(StringBuffer b) {
+    private void toString(StringBuilder b) {
         switch (getOp().getArity()) {
         case 0:
-            if (getOp() == PROP) {
-                if (hasId()) {
-                    b.append(getId().getName());
-                } else {
-                    b.append(getConstant().getSymbol());
-                }
-            } else {
-                b.append(getOp());
-            }
+            toString0(b);
             break;
         case 1:
-            b.append(getOp());
-            if (getArg1().getOp().getPriority() < getOp().getPriority()) {
-                getArg1().toParString(b);
-            } else {
-                if (Character.isLetter(getOp().toString().charAt(0))) {
-                    b.append(' ');
-                }
-                getArg1().toString(b);
-            }
+            toString1(b);
+            break;
+        case 2:
+            toString2(b);
             break;
         default:
-            boolean arg1Par = getArg1().getOp().getPriority() <= getOp().getPriority();
-            boolean arg2Par = getArg2().getOp().getPriority() < getOp().getPriority();
-            boolean opLetter = Character.isLetter(getOp().toString().charAt(0));
-            if (arg1Par) {
-                getArg1().toParString(b);
-            } else {
-                getArg1().toString(b);
-            }
-            if (opLetter && !arg1Par) {
-                b.append(' ');
-            }
-            b.append(getOp());
-            if (opLetter && !arg2Par) {
-                b.append(' ');
-            }
-            if (arg2Par) {
-                getArg2().toParString(b);
-            } else {
-                getArg2().toString(b);
-            }
+            assert false : String.format("Arity %d of operator %s not supported",
+                getOp().getArity(),
+                getOp());
         }
     }
 
     /**
-     * Appends a given string buffer with a string description of this formula,
+     * Appends a given string builder with a string description of this nullary formula.
+     */
+    private void toString2(StringBuilder b) {
+        boolean arg1Par = getArg1().getOp().getPriority() <= getOp().getPriority();
+        boolean arg2Par = getArg2().getOp().getPriority() < getOp().getPriority();
+        boolean opLetter = Character.isLetter(getOp().toString().charAt(0));
+        if (arg1Par) {
+            getArg1().toParString(b);
+        } else {
+            getArg1().toString(b);
+        }
+        if (opLetter && !arg1Par) {
+            b.append(' ');
+        }
+        b.append(getOp());
+        if (opLetter && !arg2Par) {
+            b.append(' ');
+        }
+        if (arg2Par) {
+            getArg2().toParString(b);
+        } else {
+            getArg2().toString(b);
+        }
+    }
+
+    /**
+     * Appends a given string builder with a string description of this nullary formula.
+     */
+    private void toString0(StringBuilder b) {
+        if (getOp() == PROP) {
+            if (hasId()) {
+                b.append(getId().getName());
+            } else {
+                b.append(getConstant().getSymbol());
+            }
+        } else {
+            b.append(getOp());
+        }
+    }
+
+    /**
+     * Appends a given string builder with a string description of this unary formula.
+     */
+    private void toString1(StringBuilder b) {
+        b.append(getOp());
+        if (getArg1().getOp().getPriority() < getOp().getPriority()) {
+            getArg1().toParString(b);
+        } else {
+            if (Character.isLetter(getOp().toString().charAt(0))) {
+                b.append(' ');
+            }
+            getArg1().toString(b);
+        }
+    }
+
+    /**
+     * Appends a given string builder with a string description of this formula,
      * surrounded by parentheses.
      */
-    private void toParString(StringBuffer b) {
+    private void toParString(StringBuilder b) {
         b.append('(');
         toString(b);
         b.append(')');
@@ -151,7 +171,8 @@ public class Formula extends TermTree<LogicOp,Formula> {
 
     @Override
     public void setConstant(Constant constant) {
-        if (getOp() == PROP && constant.getSort() == Sort.STRING && isId(constant.getStringRepr())) {
+        if (getOp() == PROP && constant.getSort() == Sort.STRING
+            && isId(constant.getStringRepr())) {
             super.setId(new Id(constant.getStringRepr()));
         } else {
             super.setConstant(constant);
@@ -175,6 +196,9 @@ public class Formula extends TermTree<LogicOp,Formula> {
             case UNTIL:
             case W_UNTIL:
                 result = Line.atom(" " + getOp().getSymbol() + " ");
+                break;
+            default:
+                assert false : "Unknown operator " + getOp();
             }
         }
         if (result == null) {

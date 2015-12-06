@@ -16,21 +16,6 @@
  */
 package groove.verify;
 
-import groove.explore.ExploreResult;
-import groove.explore.Generator;
-import groove.explore.Generator.LTSLabelsHandler;
-import groove.explore.util.LTSLabels;
-import groove.explore.util.LTSLabels.Flag;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Node;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.util.Groove;
-import groove.util.cli.GrooveCmdLineParser;
-import groove.util.cli.GrooveCmdLineTool;
-import groove.util.parse.FormatException;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -51,6 +36,21 @@ import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
+
+import groove.explore.ExploreResult;
+import groove.explore.Generator;
+import groove.explore.Generator.LTSLabelsHandler;
+import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSLabels.Flag;
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Node;
+import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.util.Groove;
+import groove.util.cli.GrooveCmdLineParser;
+import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 /**
  * Command-line tool directing the model checking process.
@@ -117,6 +117,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             } catch (Exception e) {
                 throw new Exception("Error while invoking Generator\n" + e.getMessage(), e);
             }
+        } else if (this.modelGraph == null) {
+            throw new Exception(
+                "Either generator argument -g or model file name should be provided");
         } else {
             emit("Model: %s%n", this.modelGraph);
             model = new GraphModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
@@ -129,10 +132,11 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             CTLMarker marker = new CTLMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
-        emit("%nModel checking outcome:%n");
+        emit("%nModel checking outcome (for the initial state of the model):%n");
         for (Formula property : this.properties) {
-            emit("    %-" + maxWidth + "s : %s%n", property.getParseString(), outcome.get(property)
-                ? "satisfied" : "violated");
+            emit("    %-" + maxWidth + "s : %s%n",
+                property.getParseString(),
+                outcome.get(property) ? "satisfied" : "violated");
         }
         long endTime = System.currentTimeMillis();
 
@@ -140,17 +144,19 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
     }
 
-    @Option(name = "-ef", metaVar = "flags", usage = "" + "Special GTS labels. Legal values are:\n" //
-        + "  s - start state label (default: 'start')\n" //
-        + "  f - final states label (default: 'final')\n" //
-        + "  o - open states label (default: 'open')\n" //
-        + "  r - result state label (default: 'result')" //
-        + "Specify label to be used by appending flag with 'label' (single-quoted)",
+    @Option(name = "-ef", metaVar = "flags",
+        usage = "" + "Special GTS labels. Legal values are:\n" //
+            + "  s - start state label (default: 'start')\n" //
+            + "  f - final states label (default: 'final')\n" //
+            + "  o - open states label (default: 'open')\n" //
+            + "  r - result state label (default: 'result')" //
+            + "Specify label to be used by appending flag with 'label' (single-quoted)",
         handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
-    @Option(name = "-ctl", metaVar = "form", usage = "Check the formula <form> (multiple allowed)",
-        handler = FormulaHandler.class, required = true)
+    @Option(name = "-ctl", metaVar = "form",
+        usage = "Check the CTL formula <form> (multiple allowed)", handler = FormulaHandler.class,
+        required = true)
     private List<Formula> properties;
     @Option(name = "-g", metaVar = "args",
         usage = "Invoke the generator using <args> as options + arguments",
@@ -184,7 +190,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         /**
          * Required constructor.
          */
-        public FormulaHandler(CmdLineParser parser, OptionDef option, Setter<? super Formula> setter) {
+        public FormulaHandler(CmdLineParser parser, OptionDef option,
+            Setter<? super Formula> setter) {
             super(parser, option, setter);
         }
 
