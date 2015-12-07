@@ -181,25 +181,30 @@ public class Formula extends TermTree<LogicOp,Formula> {
     protected Line getOpLine(boolean addSpaces) {
         Line result;
         if (addSpaces) {
-            switch (getOp()) {
-            case ALWAYS:
-            case EVENTUALLY:
-            case EXISTS:
-            case FORALL:
-            case NEXT:
-                result = Line.atom(getOp().getSymbol() + " ");
+            // spaces are already added; no need to do wnything extra
+            result = super.getOpLine(addSpaces);
+        } else {
+            // for temporal operators, spaces are required to maintain parsability
+            int priority = getOp().getPriority();
+            switch (getOp().getKind()) {
+            case TEMP_PREFIX:
+                if (getArg1().getOp().getPriority() <= priority) {
+                    // operand has lower priority and hence parentheses are inserted
+                    // or operand is another temporal prefix
+                    // so no extra spaces are needed
+                    result = super.getOpLine(addSpaces);
+                } else {
+                    result = Line.atom(getOp().getSymbol() + " ");
+                }
                 break;
-            case RELEASE:
-            case S_RELEASE:
-            case UNTIL:
-            case W_UNTIL:
-                result = Line.atom(" " + getOp().getSymbol() + " ");
+            case TEMP_INFIX:
+                String left = getArg1().getOp().getPriority() <= priority ? "" : " ";
+                String right = getArg2().getOp().getPriority() <= priority ? "" : " ";
+                result = Line.atom(left + getOp().getSymbol() + right);
                 break;
             default:
                 result = super.getOpLine(addSpaces);
             }
-        } else {
-            result = super.getOpLine(addSpaces);
         }
         return result;
     }
