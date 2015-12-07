@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 
@@ -136,20 +136,20 @@ public class FormulaTest {
         testEquals("a<->b->c", Equiv(a, Implies(b, c)));
         testEquals("(a<->b)->c", Implies(Equiv(a, b), c));
         // next/always/eventually
-        testEquals("X X a", Next(Next(a)));
-        testEquals("F G a", Eventually(Always(a)));
+        testEquals("XX a", Next(Next(a)));
+        testEquals("FG a", Eventually(Always(a)));
         // until/release
         testEquals("a R b", Release(a, b));
         testEquals("a M b", SRelease(a, b));
         testEquals("a U b", Until(a, b));
         testEquals("a W b", WUntil(a, b));
-        testEquals("(a->b) U c", Until(Implies(a, b), c));
+        testEquals("(a->b)U c", Until(Implies(a, b), c));
         testEquals("a->b U c", Implies(a, Until(b, c)));
         // forall/exists
         testEquals("A true", Forall(True()));
-        testEquals("E F a", Exists(Eventually(a)));
+        testEquals("EF a", Exists(Eventually(a)));
         testEquals("A a U b", Forall(Until(a, b)));
-        testEquals("(A a) U b", Until(Forall(a), b));
+        testEquals("(A a)U b", Until(Forall(a), b));
     }
 
     private void testEquals(String s, Formula f) {

@@ -97,7 +97,7 @@ public enum LogicOp implements Op {
     @Syntax("NEXT form")
     @ToolTipHeader("Next")
     @ToolTipBody({"In the next state of the current path, %s holds."})
-    NEXT("X", OpKind.UNARY),
+    NEXT("X", OpKind.TEMP_PREFIX),
 
     /** Temporal until. */
     @Syntax("first UNTIL second")
@@ -194,7 +194,7 @@ public enum LogicOp implements Op {
     private final OpKind kind;
 
     /** Returns the priority of the operator. */
-    int getPriority() {
+    public int getPriority() {
         return this.priority;
     }
 
