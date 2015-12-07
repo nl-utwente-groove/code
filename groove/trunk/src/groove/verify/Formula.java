@@ -35,7 +35,6 @@ import static groove.verify.LogicOp.S_RELEASE;
 import static groove.verify.LogicOp.TRUE;
 import static groove.verify.LogicOp.UNTIL;
 import static groove.verify.LogicOp.W_UNTIL;
-
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.util.line.Line;
@@ -171,8 +170,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
 
     @Override
     public void setConstant(Constant constant) {
-        if (getOp() == PROP && constant.getSort() == Sort.STRING
-            && isId(constant.getStringRepr())) {
+        if (getOp() == PROP && constant.getSort() == Sort.STRING && isId(constant.getStringRepr())) {
             super.setId(new Id(constant.getStringRepr()));
         } else {
             super.setConstant(constant);
@@ -181,8 +179,8 @@ public class Formula extends TermTree<LogicOp,Formula> {
 
     @Override
     protected Line getOpLine(boolean addSpaces) {
-        Line result = null;
-        if (!addSpaces) {
+        Line result;
+        if (addSpaces) {
             switch (getOp()) {
             case ALWAYS:
             case EVENTUALLY:
@@ -198,10 +196,9 @@ public class Formula extends TermTree<LogicOp,Formula> {
                 result = Line.atom(" " + getOp().getSymbol() + " ");
                 break;
             default:
-                assert false : "Unknown operator " + getOp();
+                result = super.getOpLine(addSpaces);
             }
-        }
-        if (result == null) {
+        } else {
             result = super.getOpLine(addSpaces);
         }
         return result;
