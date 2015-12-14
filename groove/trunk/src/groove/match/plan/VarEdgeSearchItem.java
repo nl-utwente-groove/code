@@ -1,20 +1,24 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
@@ -25,10 +29,6 @@ import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.match.plan.PlanSearchStrategy.Search;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * A search item that searches an image for an edge.
@@ -41,14 +41,13 @@ class VarEdgeSearchItem extends Edge2SearchItem {
      * Constructs a new search item. The item will match any edge between the
      * end images, and record the edge label as value of the wildcard variable.
      */
-    public VarEdgeSearchItem(RuleEdge edge) {
-        super(edge);
+    public VarEdgeSearchItem(RuleEdge edge, boolean simple) {
+        super(edge, simple);
         this.guard = edge.label().getWildcardGuard();
         this.var = this.guard.getVar();
         this.boundVars = Collections.singleton(this.var);
         this.boundEdges = Collections.singleton(edge);
-        assert this.var != null : String.format(
-            "Edge %s is not a variable edge", edge);
+        assert this.var != null : String.format("Edge %s is not a variable edge", edge);
     }
 
     @Override
@@ -84,15 +83,14 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
     @Override
     SingularRecord createSingularRecord(Search search) {
-        return new VarEdgeSingularRecord(search, this.edgeIx, this.sourceIx,
-            this.targetIx, this.varIx);
+        return new VarEdgeSingularRecord(search, this.edgeIx, this.sourceIx, this.targetIx,
+            this.varIx);
     }
 
     @Override
     MultipleRecord<HostEdge> createMultipleRecord(Search search) {
-        return new VarEdgeMultipleRecord(search, this.edgeIx, this.sourceIx,
-            this.targetIx, this.varIx, this.sourceFound, this.targetFound,
-            this.varFound);
+        return new VarEdgeMultipleRecord(search, this.edgeIx, this.sourceIx, this.targetIx,
+            this.varIx, this.sourceFound, this.targetFound, this.varFound);
     }
 
     boolean isGuardSatisfied(TypeElement type) {
@@ -120,8 +118,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
          * Constructs a record from a given search, and (possibly
          * <code>null</code>) pre-matched end node and variable images.
          */
-        VarEdgeSingularRecord(Search search, int edgeIx, int sourceIx,
-                int targetIx, int varIx) {
+        VarEdgeSingularRecord(Search search, int edgeIx, int sourceIx, int targetIx, int varIx) {
             super(search, edgeIx, sourceIx, targetIx);
             this.varIx = varIx;
         }
@@ -145,8 +142,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /** Tests the label constraint, in addition to calling the super method. */
         @Override
         boolean isImageCorrect(HostEdge image) {
-            return isGuardSatisfied(image.getType())
-                && super.isImageCorrect(image);
+            return isGuardSatisfied(image.getType()) && super.isImageCorrect(image);
         }
 
         private TypeEdge varSeed;
@@ -157,9 +153,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     /** Record for this type of search item. */
     private class VarEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        VarEdgeMultipleRecord(Search search, int edgeIx, int sourceIx,
-                int targetIx, int varIx, boolean sourceFound,
-                boolean targetFound, boolean varFound) {
+        VarEdgeMultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx, int varIx,
+            boolean sourceFound, boolean targetFound, boolean varFound) {
             super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
             this.varFound = varFound;
             this.varIx = varIx;
@@ -192,8 +187,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                     edgeSet = EMPTY_IMAGE_SET;
                 }
             } else {
-                // take the incident edges of the pre-matched source or target,
-                // if any
+                // take the incident edges of the pre-matched source or target, if any
                 // otherwise, the set of all edges
                 if (this.sourceFind != null) {
                     edgeSet = this.host.outEdgeSet(this.sourceFind);
@@ -203,13 +197,12 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                     edgeSet = this.host.edgeSet();
                 }
             }
-            initImages(edgeSet);
+            this.imageIter = edgeSet.iterator();
         }
 
         @Override
         boolean write(HostEdge image) {
-            boolean result =
-                isGuardSatisfied(image.getType()) && super.write(image);
+            boolean result = isGuardSatisfied(image.getType()) && super.write(image);
             if (result && this.varFind == null && this.varIx >= 0) {
                 result = this.search.putVar(this.varIx, image.getType());
             }

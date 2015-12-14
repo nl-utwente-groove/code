@@ -19,6 +19,23 @@ package groove.lts;
 import static groove.lts.GTS.CollapseMode.COLLAPSE_EQUAL;
 import static groove.lts.GTS.CollapseMode.COLLAPSE_ISO_STRONG;
 import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
+
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
 import groove.algebra.AlgebraFamily;
 import groove.control.Valuator;
 import groove.control.instance.Frame;
@@ -49,29 +66,13 @@ import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-
 /**
  * Implements an LTS of which the states are {@link GraphState}s and the
  * transitions {@link RuleTransition}s. A GTS stores a fixed rule system.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable {
+public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**
@@ -101,6 +102,11 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
+    }
+
+    /** Indicates if the grammar works with simple or multi-graphs. */
+    public boolean isSimple() {
+        return getGrammar().getStartGraph().isSimple();
     }
 
     /**
@@ -331,8 +337,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return result;
     }
 
-    private final Map<Flag,List<GraphState>> statesMap = new EnumMap<Status.Flag,List<GraphState>>(
-        Flag.class);
+    private final Map<Flag,List<GraphState>> statesMap =
+        new EnumMap<Status.Flag,List<GraphState>>(Flag.class);
 
     /**
      * Indicates if there are states with a given flag.
@@ -639,15 +645,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result.addEdge(image, label, image);
             }
             if (flags.showTransience() && state.isTransient()) {
-                String label =
-                    flags.getTransienceLabel().replaceAll("#",
-                        "" + state.getActualFrame().getTransience());
+                String label = flags.getTransienceLabel().replaceAll("#",
+                    "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
-                String label =
-                    flags.getRecipeLabel().replaceAll("#",
-                        "" + state.getActualFrame().getRecipe().getFullName());
+                String label = flags.getRecipeLabel().replaceAll("#",
+                    "" + state.getActualFrame().getRecipe().getFullName());
                 result.addEdge(image, label, image);
             }
         }

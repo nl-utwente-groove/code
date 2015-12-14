@@ -52,6 +52,11 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
      */
     public HostGraph retype(TypeGraph typeGraph) throws FormatException;
 
+    /** Indicates if this is a simple or multi-graph. */
+    default public boolean isSimple() {
+        return getFactory().isSimple();
+    }
+
     /**
      * Checks the graph for type constraints that cannot be
      * prevented statically: in particular, multiplicity and containment

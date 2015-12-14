@@ -1,20 +1,25 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
@@ -27,11 +32,6 @@ import groove.grammar.type.TypeNode;
 import groove.graph.NodeComparator;
 import groove.match.plan.PlanSearchStrategy.Search;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
@@ -42,12 +42,13 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Creates a search item for a given binary edge.
      * @param edge the edge to be matched
      */
-    public Edge2SearchItem(RuleEdge edge) {
+    public Edge2SearchItem(RuleEdge edge, boolean simple) {
         // as this is subclassed by VarEdgeSearchItem,
         // the label may actually be an arbitrary regular expression
         assert edge.label().isSharp() || edge.label().isAtom() || edge.label().isWildcard();
         assert edge.getType() != null || edge.label().isWildcard();
         this.edge = edge;
+        this.simple = simple;
         this.type = edge.getType();
         this.source = edge.source();
         TypeNode sourceType = this.source.getType();
@@ -180,7 +181,7 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Indicates if the edge has a singular image in the search. */
     boolean isSingular(Search search) {
-        return this.sourceFound && this.targetFound;
+        return this.sourceFound && this.targetFound && !this.simple;
     }
 
     /** Creates a record for the case the image is singular. */
@@ -215,6 +216,8 @@ class Edge2SearchItem extends AbstractSearchItem {
      * The edge for which this search item is to find an image.
      */
     final RuleEdge edge;
+    /** Indicates if we are looking for a simple edge. */
+    final boolean simple;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final TypeEdge type;
     /**
@@ -223,7 +226,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     final RuleNode source;
     /**
      * The type of {@link #source}, if this has to be checked explicitly
-     * (which is the case if it is a sharp type, or a proper subtype of 
+     * (which is the case if it is a sharp type, or a proper subtype of
      * {@code type.source()}).
      */
     final TypeNode sourceType;
@@ -233,7 +236,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     final RuleNode target;
     /**
      * The type of {@link #target}, if this has to be checked explicitly
-     * (which is the case if it is a sharp type, or a proper subtype of 
+     * (which is the case if it is a sharp type, or a proper subtype of
      * {@code type.target()}).
      */
     final TypeNode targetType;
@@ -361,7 +364,7 @@ class Edge2SearchItem extends AbstractSearchItem {
          * Creates a record based on a given search.
          */
         Edge2MultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx,
-                boolean sourceFound, boolean targetFound) {
+            boolean sourceFound, boolean targetFound) {
             super(search);
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
@@ -369,7 +372,8 @@ class Edge2SearchItem extends AbstractSearchItem {
             this.sourceFound = sourceFound;
             this.targetFound = targetFound;
             assert search.getEdge(edgeIx) == null : String.format("Edge %s already in %s",
-                Edge2SearchItem.this.edge, search);
+                Edge2SearchItem.this.edge,
+                search);
         }
 
         @Override
@@ -502,8 +506,8 @@ class Edge2SearchItem extends AbstractSearchItem {
             } else if (this.targetFind != null) {
                 Set<? extends HostEdge> nodeEdgeSet = this.host.edgeSet(this.targetFind);
                 if (nodeEdgeSet == null) {
-                    assert this.targetFind instanceof ValueNode : String.format(
-                        "Host graph does not contain edges for node %s", this.targetFind);
+                    assert this.targetFind instanceof ValueNode : String
+                        .format("Host graph does not contain edges for node %s", this.targetFind);
                     result = Collections.emptySet();
                 } else if (nodeEdgeSet.size() < labelEdgeSet.size()) {
                     result = nodeEdgeSet;
@@ -512,17 +516,7 @@ class Edge2SearchItem extends AbstractSearchItem {
             if (result == null) {
                 result = labelEdgeSet;
             }
-            initImages(result);
-        }
-
-        /**
-         * Callback method to set the iterator over potential images. Also sets
-         * flags indicating whether potential images still have to be checked
-         * for correctness of the source, target or label parts.
-         * @param imageSet the iterator over potential images
-         */
-        final void initImages(Set<? extends HostEdge> imageSet) {
-            this.imageIter = imageSet.iterator();
+            this.imageIter = result.iterator();
         }
 
         @Override

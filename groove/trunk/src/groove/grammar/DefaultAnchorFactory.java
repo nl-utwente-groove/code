@@ -16,6 +16,13 @@
  */
 package groove.grammar;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import groove.control.CtrlPar;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
@@ -23,13 +30,6 @@ import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleNode;
 import groove.util.collect.CollectionOfCollections;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * In this implementation, the anchors are the minimal set of nodes and edges
@@ -93,9 +93,9 @@ public class DefaultAnchorFactory implements AnchorFactory {
     }
 
     /** Returns the collection of all potential anchor keys in a given rule graph. */
-    @SuppressWarnings("unchecked")
     private Collection<Object> getAnchorKeys(RuleGraph graph) {
-        return new CollectionOfCollections<Object>(graph.nodeSet(), graph.edgeSet(), graph.varSet());
+        return new CollectionOfCollections<Object>(graph.nodeSet(), graph.edgeSet(),
+            graph.varSet());
     }
 
     /**

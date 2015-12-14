@@ -16,6 +16,22 @@
  */
 package groove.match.plan;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
+import java.util.TreeSet;
+
 import groove.algebra.AlgebraFamily;
 import groove.automaton.RegExpr;
 import groove.grammar.Condition;
@@ -42,22 +58,6 @@ import groove.match.ValueOracle;
 import groove.util.collect.Bag;
 import groove.util.collect.HashBag;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
-import java.util.TreeSet;
-
 /**
  * Factory that adds to a graph search plan the following items the search items
  * for the simple negative conditions (edge and merge embargoes).
@@ -67,10 +67,10 @@ import java.util.TreeSet;
 public class PlanSearchEngine extends SearchEngine {
     /**
      * Private constructor. Get the instance through
-     * {@link #getInstance()}.
+     * {@link #instance(boolean)}.
      */
-    private PlanSearchEngine() {
-        // empty
+    private PlanSearchEngine(boolean simple) {
+        this.simple = simple;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class PlanSearchEngine extends SearchEngine {
         if (condition.hasRule()) {
             anchorKeys.addAll(condition.getRule().getAnchor());
         }
-        PlanData planData = new PlanData(condition);
+        PlanData planData = new PlanData(condition, this.simple);
         if (seed == null) {
             seed = new Anchor();
         }
@@ -93,9 +93,8 @@ public class PlanSearchEngine extends SearchEngine {
             // universal conditions may result in a tree match that does
             // not have any proof; therefore they must be considered relevant
             // in order not to miss matches
-            relevant |=
-                item instanceof ConditionSearchItem
-                    && ((ConditionSearchItem) item).getCondition().getOp() == Op.FORALL;
+            relevant |= item instanceof ConditionSearchItem
+                && ((ConditionSearchItem) item).getCondition().getOp() == Op.FORALL;
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan, oracle);
@@ -120,13 +119,27 @@ public class PlanSearchEngine extends SearchEngine {
         return result;
     }
 
-    static private PlanSearchEngine instance = new PlanSearchEngine();
+    /** Flag indicating if this engine matches simple or multi-graphs. */
+    final boolean simple;
 
     /** Returns an instance of this factory class.
      */
-    static public PlanSearchEngine getInstance() {
-        return instance;
+    static public PlanSearchEngine instance(boolean simple) {
+        PlanSearchEngine result = simple ? simpleInstance : multiInstance;
+        if (result == null) {
+            if (simple) {
+                result = simpleInstance = new PlanSearchEngine(true);
+            } else {
+                result = multiInstance = new PlanSearchEngine(false);
+            }
+        }
+        return result;
     }
+
+    /** Matcher factory instance for simple graphs. */
+    private static PlanSearchEngine simpleInstance;
+    /** Matcher factory instance for multi-graphs. */
+    private static PlanSearchEngine multiInstance;
 
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;
@@ -144,8 +157,9 @@ public class PlanSearchEngine extends SearchEngine {
          * @param condition the graph condition for which we develop the search
          *        plan
          */
-        PlanData(Condition condition) {
+        PlanData(Condition condition, boolean simple) {
             this.condition = condition;
+            this.simple = simple;
             this.typeGraph = condition.getTypeGraph();
             this.remainingNodes = new LinkedHashSet<RuleNode>();
             this.remainingEdges = new LinkedHashSet<RuleEdge>();
@@ -238,7 +252,7 @@ public class PlanSearchEngine extends SearchEngine {
                 if (subCondition instanceof EdgeEmbargo) {
                     item = createEdgeEmbargoItem((EdgeEmbargo) subCondition);
                 } else {
-                    item = new ConditionSearchItem(subCondition);
+                    item = new ConditionSearchItem(subCondition, this.simple);
                 }
                 if (item != null) {
                     result.add(item);
@@ -329,10 +343,10 @@ public class PlanSearchEngine extends SearchEngine {
             for (RuleNode node : unmatchedNodes.keySet()) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
-                    assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet().contains(node) : String.format("Variable node '%s' should be among anchors %s",
-                        node,
-                        seed);
+                    assert!(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
+                        || this.algebraFamily.supportsSymbolic()
+                        || seed.nodeSet().contains(node) : String
+                            .format("Variable node '%s' should be among anchors %s", node, seed);
                     result.add(nodeItem);
                 }
             }
@@ -404,12 +418,12 @@ public class PlanSearchEngine extends SearchEngine {
                 result = createNegatedSearchItem(negatedItem);
                 this.remainingEdges.remove(edge);
             } else if (label.getWildcardGuard() != null) {
-                assert !this.typeGraph.isNodeType(edge);
-                result = new VarEdgeSearchItem(edge);
+                assert!this.typeGraph.isNodeType(edge);
+                result = new VarEdgeSearchItem(edge, this.simple);
             } else if (label.isEmpty()) {
                 result = new EqualitySearchItem(edge, true);
             } else if (label.isSharp() || label.isAtom()) {
-                result = new Edge2SearchItem(edge);
+                result = new Edge2SearchItem(edge, this.simple);
             } else {
                 result = new RegExprEdgeSearchItem(edge, this.typeGraph);
             }
@@ -478,6 +492,8 @@ public class PlanSearchEngine extends SearchEngine {
         private boolean used;
         /** The graph condition for which we develop the plan. */
         private final Condition condition;
+        /** Flag indicating if we are matching simple or multi-graphs. */
+        private final boolean simple;
     }
 
     /**
@@ -852,8 +868,8 @@ public class PlanSearchEngine extends SearchEngine {
             if (compClass == IndegreeComparator.class) {
                 return result;
             }
-            throw new IllegalArgumentException(String.format("Unknown comparator class %s",
-                compClass));
+            throw new IllegalArgumentException(
+                String.format("Unknown comparator class %s", compClass));
         }
     }
 }

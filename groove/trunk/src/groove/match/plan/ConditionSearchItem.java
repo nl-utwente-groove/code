@@ -1,20 +1,27 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
@@ -34,13 +41,6 @@ import groove.match.MatcherFactory;
 import groove.match.TreeMatch;
 import groove.match.plan.PlanSearchStrategy.Search;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Search item to test for the satisfaction of a graph condition.
  * @author Arend Rensink
@@ -51,10 +51,10 @@ class ConditionSearchItem extends AbstractSearchItem {
      * Constructs a search item for a given condition.
      * @param condition the condition to be matched
      */
-    public ConditionSearchItem(Condition condition) {
+    public ConditionSearchItem(Condition condition, boolean simple) {
         this.condition = condition;
         GrammarProperties properties = condition.getGrammarProperties();
-        this.matcher = MatcherFactory.instance().createMatcher(condition);
+        this.matcher = MatcherFactory.instance(simple).createMatcher(condition);
         if (condition.hasPattern()) {
             this.intAlgebra = properties.getAlgebraFamily().getAlgebra(Sort.INT);
             this.rootGraph = condition.getRoot();
@@ -62,9 +62,8 @@ class ConditionSearchItem extends AbstractSearchItem {
             this.neededVars = this.rootGraph.varSet();
             this.positive = condition.isPositive();
             this.countNode = condition.getCountNode();
-            this.boundNodes =
-                this.countNode == null ? Collections.<RuleNode>emptySet()
-                        : Collections.singleton(this.countNode);
+            this.boundNodes = this.countNode == null ? Collections.<RuleNode>emptySet()
+                : Collections.singleton(this.countNode);
         } else {
             this.intAlgebra = null;
             this.rootGraph = null;
@@ -187,7 +186,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("%s %s: %s", this.condition.getOp().getName(),
+        return String.format("%s %s: %s",
+            this.condition.getOp().getName(),
             this.condition.getName(),
             ((PlanSearchStrategy) this.matcher.getSearchStrategy()).getPlan());
     }
@@ -270,8 +270,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
         @Override
         boolean write() {
-            this.search.putSubMatch(ConditionSearchItem.this.condIx, new TreeMatch(
-                ConditionSearchItem.this.condition, null));
+            this.search.putSubMatch(ConditionSearchItem.this.condIx,
+                new TreeMatch(ConditionSearchItem.this.condition, null));
             return true;
         }
 
@@ -301,13 +301,16 @@ class ConditionSearchItem extends AbstractSearchItem {
          */
         final RuleToHostMap createContextMap() {
             RuleToHostMap result = this.host.getFactory().createRuleToHostMap();
-            for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
+            for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap
+                .entrySet()) {
                 result.putNode(nodeIxEntry.getKey(), this.search.getNode(nodeIxEntry.getValue()));
             }
-            for (Map.Entry<RuleEdge,Integer> edgeIxEntry : ConditionSearchItem.this.edgeIxMap.entrySet()) {
+            for (Map.Entry<RuleEdge,Integer> edgeIxEntry : ConditionSearchItem.this.edgeIxMap
+                .entrySet()) {
                 result.putEdge(edgeIxEntry.getKey(), this.search.getEdge(edgeIxEntry.getValue()));
             }
-            for (Map.Entry<LabelVar,Integer> varIxEntry : ConditionSearchItem.this.varIxMap.entrySet()) {
+            for (Map.Entry<LabelVar,Integer> varIxEntry : ConditionSearchItem.this.varIxMap
+                .entrySet()) {
                 result.putVar(varIxEntry.getKey(), this.search.getVar(varIxEntry.getValue()));
             }
             return result;
@@ -341,9 +344,8 @@ class ConditionSearchItem extends AbstractSearchItem {
                 result = matches.size() == this.preCount;
             } else if (ConditionSearchItem.this.countNode != null) {
                 Algebra<?> intAlgebra = ConditionSearchItem.this.intAlgebra;
-                this.countImage =
-                    this.host.getFactory().createNode(intAlgebra,
-                        intAlgebra.toValueFromJava(matches.size()));
+                this.countImage = this.host.getFactory().createNode(intAlgebra,
+                    intAlgebra.toValueFromJava(matches.size()));
             }
             if (result) {
                 this.match = createMatch(matches);

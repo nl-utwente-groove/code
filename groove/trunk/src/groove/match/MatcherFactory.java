@@ -32,8 +32,8 @@ import groove.match.plan.PlanSearchEngine;
  * @version $Revision $
  */
 public class MatcherFactory {
-    private MatcherFactory() {
-        this.engine = defaultEngine;
+    private MatcherFactory(boolean simple) {
+        this.engine = this.defaultEngine = PlanSearchEngine.instance(simple);
         this.oracle = DefaultValueOracle.instance();
     }
 
@@ -63,7 +63,7 @@ public class MatcherFactory {
 
     /** Sets the search engine to the default. */
     public void setDefaultEngine() {
-        setEngine(defaultEngine);
+        setEngine(this.defaultEngine);
     }
 
     /** Returns the currently set search engine. */
@@ -87,14 +87,26 @@ public class MatcherFactory {
     /** Oracle for matching value nodes. */
     private ValueOracle oracle;
 
-    /** Returns the singleton instance of the factory. */
-    public static MatcherFactory instance() {
-        if (instance == null) {
-            instance = new MatcherFactory();
+    /** The default engine of this matcher factory. */
+    private final SearchEngine defaultEngine;
+
+    /** Returns the instance of the factory matching
+     * simple or multi-graphs. */
+    public static MatcherFactory instance(boolean simple) {
+        MatcherFactory result = simple ? simpleInstance : multiInstance;
+        if (result == null) {
+            result = new MatcherFactory(simple);
+            if (simple) {
+                simpleInstance = result;
+            } else {
+                multiInstance = result;
+            }
         }
-        return instance;
+        return result;
     }
 
-    private static MatcherFactory instance;
-    private static SearchEngine defaultEngine = PlanSearchEngine.getInstance();
+    /** Matcher factory instance for simple graphs. */
+    private static MatcherFactory simpleInstance;
+    /** Matcher factory instance for multi-graphs. */
+    private static MatcherFactory multiInstance;
 }

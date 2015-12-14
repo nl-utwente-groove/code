@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2010
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.explore.strategy;
@@ -30,7 +30,7 @@ import groove.transform.DeltaStore;
  * abstract simulation, this implementation will prefer going along a path then
  * stopping exploration when a loop is met.
  * @author Amir Hossein Ghamarian
- * 
+ *
  */
 public class ReteLinearStrategy extends LinearStrategy {
     /**
@@ -56,8 +56,8 @@ public class ReteLinearStrategy extends LinearStrategy {
         super.prepare(gts, state, acceptor);
         // initialise the RETE network
         this.rete = new ReteSearchEngine(getGTS().getGrammar());
-        this.oldEngine = MatcherFactory.instance().getEngine();
-        MatcherFactory.instance().setEngine(this.rete);
+        this.oldEngine = MatcherFactory.instance(gts.isSimple()).getEngine();
+        MatcherFactory.instance(gts.isSimple()).setEngine(this.rete);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class ReteLinearStrategy extends LinearStrategy {
      */
     @Override
     public void finish() {
-        MatcherFactory.instance().setEngine(this.oldEngine);
+        MatcherFactory.instance(getGTS().isSimple()).setEngine(this.oldEngine);
         super.finish();
     }
 
