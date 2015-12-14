@@ -62,7 +62,7 @@ public class Formula extends TermTree<LogicOp,Formula> {
         }
     }
 
-    /** Constructor for a logical constant (not an atom). */
+    /** Constructor for an atom (proposition, call or constant). */
     Formula(LogicOp op) {
         this(op, null, null);
     }
