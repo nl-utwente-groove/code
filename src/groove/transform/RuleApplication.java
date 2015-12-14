@@ -16,6 +16,11 @@
  */
 package groove.transform;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
@@ -32,18 +37,13 @@ import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Class representing a particular application of a {@link groove.grammar.Rule} and a
  * graph. This is essentially the combination of a {@link RuleEvent}, the host graph,
  * and the created nodes.
  * <p>
  * The main functionality of objects of this class is to apply the rule event's changes
- * to an arbitrary {@link DeltaTarget}, and to construct the target graph as well as a 
+ * to an arbitrary {@link DeltaTarget}, and to construct the target graph as well as a
  * morphism from host to target.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-06 17:04:38 $
@@ -73,7 +73,8 @@ public class RuleApplication implements DeltaApplier {
         this.rule = event.getRule();
         this.source = source;
         this.addedNodes = coanchorImage;
-        assert testEvent(event, source) : String.format("Event error for %s applied to %s", event,
+        assert testEvent(event, source) : String.format("Event error for %s applied to %s",
+            event,
             source);
     }
 
@@ -87,7 +88,7 @@ public class RuleApplication implements DeltaApplier {
      *        computed from the source graph.
      */
     public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
-            HostNode[] coanchorImage) {
+        HostNode[] coanchorImage) {
         this(event, source, coanchorImage);
         this.target = target;
     }
@@ -110,8 +111,9 @@ public class RuleApplication implements DeltaApplier {
             }
         };
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
-        boolean result =
-            getRule().getEventMatcher().traverse(source, event.getAnchorMap(), matchFinder) != null;
+        boolean result = getRule().getEventMatcher(source.isSimple()).traverse(source,
+            event.getAnchorMap(),
+            matchFinder) != null;
         eventFinder.dispose();
         matchFinder.dispose();
         return result;
@@ -363,7 +365,7 @@ public class RuleApplication implements DeltaApplier {
 
     /**
      * Adds nodes to the target graph, as dictated by the rule's RHS.
-     * 
+     *
      * @param target the target to which to apply the changes
      */
     private void addNodes(RuleEffect record, DeltaTarget target) {
@@ -538,7 +540,8 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode, HostNode hostNode) {
+    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode,
+        HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
         if (image == null) {

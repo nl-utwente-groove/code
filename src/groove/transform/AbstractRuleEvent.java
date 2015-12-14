@@ -17,6 +17,9 @@
 package groove.transform;
 
 import static groove.transform.RuleEvent.Reuse.EVENT;
+
+import java.util.Iterator;
+
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
@@ -30,15 +33,13 @@ import groove.util.Visitor;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
 
-import java.util.Iterator;
-
 /**
  * Abstract class providing basic rule event functionality.
  * @author Arend Rensink
  * @version $Revision $
  */
 public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
-        extends AbstractCacheHolder<C> implements RuleEvent {
+    extends AbstractCacheHolder<C>implements RuleEvent {
     /** Constructs an event for a given rule. */
     protected AbstractRuleEvent(CacheReference<C> template, R rule) {
         super(template);
@@ -107,7 +108,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         if (other.getReuse() != EVENT) {
             return other.equalsEvent(this);
         }
-        assert !equalsEvent(other);
+        assert!equalsEvent(other);
         return false;
     }
 
@@ -180,7 +181,9 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
                 return !hasResult();
             }
         };
-        Proof result = getRule().getEventMatcher().traverse(source, getAnchorMap(), matchVisitor);
+        Proof result = getRule().getEventMatcher(source.isSimple()).traverse(source,
+            getAnchorMap(),
+            matchVisitor);
         return result;
     }
 

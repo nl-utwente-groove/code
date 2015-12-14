@@ -16,6 +16,19 @@
  */
 package groove.grammar;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.control.CtrlPar;
@@ -46,19 +59,6 @@ import groove.transform.Proof;
 import groove.util.Fixable;
 import groove.util.Visitor;
 import groove.util.parse.FormatException;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Type of a production rule. The rule essentially consists of a left hand
@@ -133,8 +133,10 @@ public class Rule implements Action, Fixable {
             "Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
         if (parent != null) {
             assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String.format(
-                "Rule '%s': Parent nodes %s do not contain all co-roots %s", getFullName(),
-                parent.rhs().nodeSet(), getCoRoot().nodeSet());
+                "Rule '%s': Parent nodes %s do not contain all co-roots %s",
+                getFullName(),
+                parent.rhs().nodeSet(),
+                getCoRoot().nodeSet());
         }
         this.parent = parent;
     }
@@ -235,7 +237,7 @@ public class Rule implements Action, Fixable {
      * @param subRule the new sub-rule
      */
     public void addSubRule(Rule subRule) {
-        assert !isFixed();
+        assert!isFixed();
         assert subRule.isFixed();
         getSubRules().add(subRule);
     }
@@ -266,7 +268,7 @@ public class Rule implements Action, Fixable {
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
     public void setSignature(List<CtrlPar.Var> sig, Set<RuleNode> hiddenPars) {
-        assert !isFixed();
+        assert!isFixed();
         this.sig = sig;
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
@@ -289,8 +291,8 @@ public class Rule implements Action, Fixable {
             }
             derivedSig.add(par);
         }
-        assert derivedSig.equals(sig) : String.format(
-            "Declared signature %s differs from derived signature %s", sig, derivedSig);
+        assert derivedSig.equals(sig) : String
+            .format("Declared signature %s differs from derived signature %s", sig, derivedSig);
     }
 
     /** Returns the signature of the rule. */
@@ -363,14 +365,14 @@ public class Rule implements Action, Fixable {
 
     /** Sets the action role of this rule. */
     public void setRole(Role role) {
-        assert !isFixed();
+        assert!isFixed();
         assert this.role == null && role != null;
         this.role = role;
     }
 
     @Override
     public Role getRole() {
-        assert !this.role.isProperty() || isPropertyLike();
+        assert!this.role.isProperty() || isPropertyLike();
         return this.role;
     }
 
@@ -478,9 +480,9 @@ public class Rule implements Action, Fixable {
      * contrast with the normal (condition) matcher, which is based on the
      * images of the root map.
      */
-    public Matcher getEventMatcher() {
+    public Matcher getEventMatcher(boolean simple) {
         if (this.eventMatcher == null) {
-            this.eventMatcher = createMatcher(getAnchor());
+            this.eventMatcher = createMatcher(getAnchor(), simple);
         }
         return this.eventMatcher;
     }
@@ -488,16 +490,17 @@ public class Rule implements Action, Fixable {
     /**
      * Returns the match strategy for the target
      * pattern. First creates the strategy using
-     * {@link #createMatcher(Anchor)} if that
+     * {@link #createMatcher(Anchor, boolean)} if that
      * has not been done.
      *
      * @param seedMap mapping from the seed elements to a host graph.
      *
-     * @see #createMatcher(Anchor)
+     * @see #createMatcher(Anchor, boolean)
      */
     private SearchStrategy getMatcher(RuleToHostMap seedMap) {
         assert isTop();
         Matcher result;
+        boolean simple = seedMap.getFactory().isSimple();
         if (getSignature().size() > 0) {
             int sigSize = getSignature().size();
             BitSet initPars = new BitSet(sigSize);
@@ -509,10 +512,10 @@ public class Rule implements Action, Fixable {
             result = this.matcherMap.get(initPars);
             if (result == null) {
                 Anchor seed = new Anchor(seedMap.nodeMap().keySet());
-                this.matcherMap.put(initPars, result = createMatcher(seed));
+                this.matcherMap.put(initPars, result = createMatcher(seed, simple));
             }
         } else {
-            result = getMatcher();
+            result = getMatcher(simple);
         }
         return result;
     }
@@ -520,29 +523,51 @@ public class Rule implements Action, Fixable {
     /**
      * Returns a (precomputed) match strategy for the target
      * pattern, based on the rule seed.
-     * @see #createMatcher(Anchor)
+     * @param simple indicates if the host graphs are simple or multi-graphs
+     * @see #createMatcher(Anchor, boolean)
      */
-    public Matcher getMatcher() {
-        if (this.matcher == null) {
-            this.matcher = createMatcher(getSeed());
+    public Matcher getMatcher(boolean simple) {
+        Matcher result = simple ? this.simpleMatcher : this.multiMatcher;
+        if (result == null) {
+            result = createMatcher(getSeed(), simple);
+            if (simple) {
+                this.simpleMatcher = result;
+            } else {
+                this.multiMatcher = result;
+            }
         }
-        return this.matcher;
+        return result;
     }
 
     /**
-     * Callback method to create a match strategy. Typically invoked once, at
-     * the first invocation of {@link #getMatcher()}. This implementation
-     * retrieves its value from {@link #getMatcherFactory()}.
-     * @param seed the pre-matched subgraph
+     * The fixed simple matching strategy for this graph rule. Initially
+     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
+     * invocation.
      */
-    private Matcher createMatcher(Anchor seed) {
+    private Matcher simpleMatcher;
+
+    /**
+     * The fixed multi-graph matching strategy for this graph rule. Initially
+     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
+     * invocation.
+     */
+    private Matcher multiMatcher;
+
+    /**
+     * Callback method to create a match strategy. Typically invoked once, at
+     * the first invocation of {@link #getMatcher(boolean)}. This implementation
+     * retrieves its value from {@link #getMatcherFactory(boolean)}.
+     * @param seed the pre-matched subgraph
+     * @param simple indicates if the host graphs are simple or multi-graphs
+     */
+    private Matcher createMatcher(Anchor seed, boolean simple) {
         testFixed(true);
-        return getMatcherFactory().createMatcher(getCondition(), seed);
+        return getMatcherFactory(simple).createMatcher(getCondition(), seed);
     }
 
-    /** Returns a matcher factory, tuned to the properties of this condition. */
-    private MatcherFactory getMatcherFactory() {
-        return MatcherFactory.instance();
+    /** Returns a matcher factory, tuned to the properties of this rule. */
+    private MatcherFactory getMatcherFactory(boolean simple) {
+        return MatcherFactory.instance(simple);
     }
 
     /**
@@ -574,7 +599,8 @@ public class Rule implements Action, Fixable {
             for (RuleEdge eraserEdge : lhs().edgeSet(eraserNode)) {
                 boolean removed = danglingEdges.remove(match.getEdge(eraserEdge));
                 assert removed : String.format("Match %s not present in incident edges %s",
-                    match.getEdge(eraserEdge), host.edgeSet(erasedNode));
+                    match.getEdge(eraserEdge),
+                    host.edgeSet(erasedNode));
             }
             if (!danglingEdges.isEmpty()) {
                 result = false;
@@ -774,9 +800,8 @@ public class Rule implements Action, Fixable {
      * Computes if the rule is modifying or not.
      */
     private boolean computeIsModifying() {
-        boolean result =
-            getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
-                || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
+        boolean result = getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
+            || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.isModifying();
@@ -1043,7 +1068,8 @@ public class Rule implements Action, Fixable {
         // iterate over all creator edges
         for (RuleEdge edge : getCreatorEdges()) {
             // determine if this edge is simple
-            if (nonCreatorNodes.contains(edge.source()) && nonCreatorNodes.contains(edge.target())) {
+            if (nonCreatorNodes.contains(edge.source())
+                && nonCreatorNodes.contains(edge.target())) {
                 result.add(edge);
             }
         }
@@ -1447,13 +1473,6 @@ public class Rule implements Action, Fixable {
      * Set of anonymous (unnumbered) parameters.
      */
     private Set<RuleNode> hiddenPars;
-
-    /**
-     * The fixed matching strategy for this graph condition. Initially
-     * <code>null</code>; set by {@link #getMatcher()} upon its first
-     * invocation.
-     */
-    private Matcher matcher;
 
     /**
      * Mapping from sets of initialised parameters to match strategies.

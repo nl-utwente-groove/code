@@ -1,20 +1,24 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.explore.strategy;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Stack;
 
 import groove.explore.result.Acceptor;
 import groove.lts.DefaultGraphNextState;
@@ -29,12 +33,8 @@ import groove.match.rete.ReteSearchEngine;
 import groove.transform.DeltaStore;
 import groove.util.Reporter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Stack;
-
 /**
- * @author Amir Hossein Ghamarian 
+ * @author Amir Hossein Ghamarian
  * @version $Revision $
  */
 public class ReteStrategy extends GTSStrategy {
@@ -47,8 +47,8 @@ public class ReteStrategy extends GTSStrategy {
         this.newStates.clear();
         // initialise the rete network
         this.rete = new ReteSearchEngine(gts.getGrammar());
-        this.oldEngine = MatcherFactory.instance().getEngine();
-        MatcherFactory.instance().setEngine(this.rete);
+        this.oldEngine = MatcherFactory.instance(gts.isSimple()).getEngine();
+        MatcherFactory.instance(gts.isSimple()).setEngine(this.rete);
         //this.rete.getNetwork().save("e:\\temp\\reg-exp.gst", "reg-exp");
     }
 
@@ -57,8 +57,7 @@ public class ReteStrategy extends GTSStrategy {
         GraphState state = getNextState();
         ReteStrategyNextReporter.start();
         Collection<? extends MatchResult> ruleMatches = state.getMatches();
-        Collection<GraphState> outTransitions =
-            new ArrayList<GraphState>(ruleMatches.size());
+        Collection<GraphState> outTransitions = new ArrayList<GraphState>(ruleMatches.size());
 
         for (MatchResult nextMatch : ruleMatches) {
             RuleTransition trans = getNextState().applyMatch(nextMatch);
@@ -75,7 +74,7 @@ public class ReteStrategy extends GTSStrategy {
     @Override
     public void finish() {
         super.finish();
-        MatcherFactory.instance().setEngine(this.oldEngine);
+        MatcherFactory.instance(getGTS().isSimple()).setEngine(this.oldEngine);
         getGTS().removeLTSListener(this.exploreListener);
     }
 
@@ -88,19 +87,18 @@ public class ReteStrategy extends GTSStrategy {
         }
         if (getNextState() == result) {
             do {
-                ((DefaultGraphNextState) result).getDelta().applyDelta(
-                    this.deltaAccumulator);
+                ((DefaultGraphNextState) result).getDelta().applyDelta(this.deltaAccumulator);
                 triedState = result;
                 popPool();
                 result = topOfPool();
                 if (result == null) {
                     return result;
                 }
-            } while (((DefaultGraphNextState) result).source() != ((DefaultGraphNextState) triedState).source());
+            } while (((DefaultGraphNextState) result)
+                .source() != ((DefaultGraphNextState) triedState).source());
         }
         this.deltaAccumulator = this.deltaAccumulator.invert();
-        ((DefaultGraphNextState) result).getDelta().applyDelta(
-            this.deltaAccumulator);
+        ((DefaultGraphNextState) result).getDelta().applyDelta(this.deltaAccumulator);
         this.rete.transitionOccurred(result.getGraph(), this.deltaAccumulator);
         return result;
     }
@@ -137,8 +135,7 @@ public class ReteStrategy extends GTSStrategy {
     /** Internal store of newly generated state. */
 
     /** Internal store of newly generated states. */
-    private final Collection<GraphState> newStates =
-        new ArrayList<GraphState>();
+    private final Collection<GraphState> newStates = new ArrayList<GraphState>();
 
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();
@@ -162,10 +159,8 @@ public class ReteStrategy extends GTSStrategy {
     /**
      * The reporter object
      */
-    static public final Reporter reporter =
-        Reporter.register(ReteStrategy.class);
+    static public final Reporter reporter = Reporter.register(ReteStrategy.class);
     /** Handle for profiling {@link #doNext()}. */
-    static public final Reporter ReteStrategyNextReporter =
-        reporter.register("ReteOptimized()");
+    static public final Reporter ReteStrategyNextReporter = reporter.register("ReteOptimized()");
 
 }

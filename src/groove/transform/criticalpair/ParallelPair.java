@@ -1,20 +1,31 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2014 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.transform.criticalpair;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
@@ -38,20 +49,9 @@ import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
 import groove.graph.NodeFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-
 /**
  * Class that models combinations of ruleNodes for two rules. Used for generation of critical pairs
- * 
+ *
  * @author Ruud Welling
  */
 class ParallelPair {
@@ -124,7 +124,7 @@ class ParallelPair {
     /**
      * Creates a new ParallelPair which is similar to other in the sense that the rules are the same
      * and the nodeMatches have the same contents (but they are different sets)
-     * @param other the ParallelPair that will be copied 
+     * @param other the ParallelPair that will be copied
      */
     private ParallelPair(ParallelPair other) {
         this.nodeMatch1 = copyMatch(other.nodeMatch1);
@@ -215,9 +215,8 @@ class ParallelPair {
      */
     CriticalPair getCriticalPair() {
         if (!this.criticalPairComputed) {
-            DefaultHostGraph host =
-                new DefaultHostGraph("target",
-                    HostFactory.newInstance(this.rule1.getTypeGraph().getFactory()));
+            DefaultHostGraph host = new DefaultHostGraph("target",
+                HostFactory.newInstance(this.rule1.getTypeGraph().getFactory(), true));
             RuleToHostMap match1 = createRuleToHostMap(this.nodeMatch1, host, this.rule1.lhs());
             RuleToHostMap match2 = createRuleToHostMap(this.nodeMatch2, host, this.rule2.lhs());
 
@@ -245,7 +244,7 @@ class ParallelPair {
      * In this process the graph host is constructed as well
      */
     private RuleToHostMap createRuleToHostMap(Map<Long,Set<RuleNode>> nodeMatch,
-            DefaultHostGraph host, RuleGraph ruleGraph) {
+        DefaultHostGraph host, RuleGraph ruleGraph) {
         if (this.hostNodes == null) {
             this.hostNodes = new LinkedHashMap<Long,HostNode>();
         }
@@ -276,15 +275,14 @@ class ParallelPair {
                     //in the algebra of the rule is the same
                     Constant constant = getFirstConstant(getCombination(entry.getKey()));
                     if (constant == null) {
-                        target =
-                            host.getFactory().createNode(alg,
-                                new Variable("x" + variableCounter++, varNode.getSignature()));
+                        target = host.getFactory().createNode(alg,
+                            new Variable("x" + variableCounter++, varNode.getSignature()));
                     } else {
                         target = host.getFactory().createNode(alg, constant);
                     }
                 } else {
-                    throw new UnsupportedOperationException("Unknown type for RuleNode "
-                        + firstNode);
+                    throw new UnsupportedOperationException(
+                        "Unknown type for RuleNode " + firstNode);
                 }
 
                 //Add the target node to the hostgraph (this does nothing if if was already added)

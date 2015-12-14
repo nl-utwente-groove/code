@@ -17,6 +17,7 @@
 package groove.grammar.host;
 
 import static groove.graph.GraphRole.HOST;
+
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.type.TypeGraph;
@@ -35,13 +36,22 @@ import groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> implements HostGraph {
+public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>implements HostGraph {
     /**
-     * Constructs an empty host graph.
+     * Constructs an empty simple host graph.
      * @param name name of the new host graph.
      */
     public DefaultHostGraph(String name) {
-        this(name, HostFactory.newInstance());
+        this(name, true);
+    }
+
+    /**
+     * Constructs an empty (simple or multi-) host graph.
+     * @param name name of the new host graph.
+     * @param simple indicates if the new graph is to be a simple or multi-graph
+     */
+    public DefaultHostGraph(String name, boolean simple) {
+        this(name, HostFactory.newInstance(simple));
     }
 
     /**
@@ -69,9 +79,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
             HostNode tn;
             if (sn instanceof ValueNode && family != null) {
                 ValueNode vn = (ValueNode) sn;
-                tn =
-                    getFactory().createNode(family.getAlgebra(vn.getSignature()),
-                        family.toValue(vn.getTerm()));
+                tn = getFactory().createNode(family.getAlgebra(vn.getSignature()),
+                    family.toValue(vn.getTerm()));
             } else {
                 tn = sn;
             }
@@ -84,11 +93,11 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
     }
 
     /**
-     * Turns a given graph into a host graph,
+     * Turns a given graph into a simple host graph,
      * by creating the appropriate types of nodes and edges.
      */
     public DefaultHostGraph(Graph graph) {
-        this(graph.getName());
+        this(graph.getName(), true);
         AElementMap<Node,Edge,HostNode,HostEdge> map =
             new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
                 // empty

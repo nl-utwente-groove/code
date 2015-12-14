@@ -17,6 +17,10 @@
  */
 package groove.explore.strategy;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+
 import gov.nasa.ltl.trans.Formula;
 import groove.explore.ExploreResult;
 import groove.explore.result.Acceptor;
@@ -37,10 +41,6 @@ import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
-
 /**
  * This class provides some default implementations for the methods that are
  * required for strategies that perform model checking activities.
@@ -52,7 +52,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
-        MatcherFactory.instance().setDefaultEngine();
+        MatcherFactory.instance(gts.isSimple()).setDefaultEngine();
         this.stateSet = new ProductStateSet();
         this.stateSet.addListener(this.collector);
         this.acceptor = (CycleAcceptor) acceptor;
@@ -60,7 +60,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         this.result = acceptor.getResult();
         this.stateSet.addListener(this.acceptor);
         this.stateStack = new Stack<ProductState>();
-        assert (this.startLocation != null) : "The property automaton should have an initial state";
+        assert(this.startLocation != null) : "The property automaton should have an initial state";
         ProductState startState = createState(gts.startState(), null, this.startLocation);
         this.startState = startState;
         this.nextState = startState;
@@ -242,10 +242,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @return {@code true} if a counterexample was found
      */
     protected final boolean findCounterExample(ProductState source, ProductState target) {
-        boolean result =
-            (target.colour() == getRecord().cyan())
-                && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation()
-                    .isAccepting());
+        boolean result = (target.colour() == getRecord().cyan())
+            && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
         if (result) {
             // notify counter-example
             for (ProductState state : getStateStack()) {
@@ -328,7 +326,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
                 // no isomorphic state found
                 result = createProductTransition(source, transition, target);
             } else {
-                assert (isoTarget.iteration() <= getRecord().getIteration()) : "This state belongs to the next iteration and should not be explored now.";
+                assert(isoTarget.iteration() <= getRecord()
+                    .getIteration()) : "This state belongs to the next iteration and should not be explored now.";
                 result = createProductTransition(source, transition, isoTarget);
             }
             source.addTransition(result);
