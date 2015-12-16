@@ -16,11 +16,6 @@
  */
 package groove.match.plan;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -31,6 +26,11 @@ import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeNode;
 import groove.graph.NodeComparator;
 import groove.match.plan.PlanSearchStrategy.Search;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A search item that searches an image for an edge.
@@ -54,12 +54,12 @@ class Edge2SearchItem extends AbstractSearchItem {
         TypeNode sourceType = this.source.getType();
         this.sourceType =
             this.source.isSharp() || this.type == null || sourceType != this.type.source()
-                    ? sourceType : null;
+                ? sourceType : null;
         this.target = edge.target();
         TypeNode targetType = this.target.getType();
         this.targetType =
             this.target.isSharp() || this.type == null || targetType != this.type.target()
-                    ? targetType : null;
+                ? targetType : null;
         this.selfEdge = this.source == this.target;
         this.boundNodes = new HashSet<RuleNode>();
         this.boundNodes.add(this.source);
@@ -181,7 +181,7 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Indicates if the edge has a singular image in the search. */
     boolean isSingular(Search search) {
-        return this.sourceFound && this.targetFound && !this.simple;
+        return this.sourceFound && this.targetFound && this.simple;
     }
 
     /** Creates a record for the case the image is singular. */
@@ -506,8 +506,8 @@ class Edge2SearchItem extends AbstractSearchItem {
             } else if (this.targetFind != null) {
                 Set<? extends HostEdge> nodeEdgeSet = this.host.edgeSet(this.targetFind);
                 if (nodeEdgeSet == null) {
-                    assert this.targetFind instanceof ValueNode : String
-                        .format("Host graph does not contain edges for node %s", this.targetFind);
+                    assert this.targetFind instanceof ValueNode : String.format("Host graph does not contain edges for node %s",
+                        this.targetFind);
                     result = Collections.emptySet();
                 } else if (nodeEdgeSet.size() < labelEdgeSet.size()) {
                     result = nodeEdgeSet;
