@@ -21,6 +21,24 @@ import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.PROLOG;
 import static groove.grammar.model.ResourceKind.RULE;
 import static groove.grammar.model.ResourceKind.TYPE;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import groove.explore.ExploreType;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarKey;
@@ -43,23 +61,6 @@ import groove.util.Version;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Grammar model based on a backing system store.
@@ -93,8 +94,8 @@ public class GrammarModel implements Observer {
      * The ID is composed from grammar name and start graph name(s);
      */
     public String getId() {
-        return Grammar.buildId(getName(), getStartGraphModel() == null ? null
-            : getStartGraphModel().getFullName());
+        return Grammar.buildId(getName(),
+            getStartGraphModel() == null ? null : getStartGraphModel().getFullName());
     }
 
     /** Returns the backing system store. */
@@ -420,8 +421,8 @@ public class GrammarModel implements Observer {
         for (ResourceKind kind : ResourceKind.all(false)) {
             for (ResourceModel<?> model : getResourceSet(kind)) {
                 if (!QualName.isValid(model.getFullName(), null, null)) {
-                    this.errors.add(new FormatError(kind.getName() + " name '"
-                        + model.getFullName() + "' " + "is an illegal identifier", model));
+                    this.errors.add(new FormatError(kind.getName() + " name '" + model.getFullName()
+                        + "' " + "is an illegal identifier", model));
                 }
             }
         }
@@ -492,7 +493,7 @@ public class GrammarModel implements Observer {
                 startGraphErrors = exc.getErrors();
             }
             for (FormatError error : startGraphErrors) {
-                errors.add("Error in start graph: %s", error, getStartGraphModel().getSource());
+                errors.add(error, getStartGraphModel().getSource());
             }
         }
         // Set the Prolog environment.
@@ -704,6 +705,7 @@ public class GrammarModel implements Observer {
     private CompositeTypeModel typeModel;
     /** The control model composed from the individual control programs. */
     private CompositeControlModel controlModel;
+
     {
         for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
@@ -758,8 +760,8 @@ public class GrammarModel implements Observer {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public GrammarModel newInstance(String location) throws IllegalArgumentException,
-        IOException {
+    static public GrammarModel newInstance(String location)
+        throws IllegalArgumentException, IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {
@@ -792,7 +794,8 @@ public class GrammarModel implements Observer {
          * Apply a manipulation action. The boolean return value indicates if
          * the set was changed as a result of this operation.
          */
-        public static boolean apply(Set<String> set, Manipulation manipulation, Set<String> selected) {
+        public static boolean apply(Set<String> set, Manipulation manipulation,
+            Set<String> selected) {
             switch (manipulation) {
             case ADD:
                 return set.addAll(selected);

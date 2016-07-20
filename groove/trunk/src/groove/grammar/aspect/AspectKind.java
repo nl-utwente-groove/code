@@ -18,6 +18,17 @@ package groove.grammar.aspect;
 
 import static groove.grammar.aspect.AspectParser.ASSIGN;
 import static groove.grammar.aspect.AspectParser.SEPARATOR;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
@@ -35,16 +46,6 @@ import groove.util.Colors;
 import groove.util.Keywords;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Distinguishes the aspects that can be found in a plain graph representation
@@ -321,8 +322,8 @@ public enum AspectKind {
 
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
-        return this.contentKind != ContentKind.LEVEL
-            && this.contentKind != ContentKind.MULTIPLICITY && this != COMPOSITE;
+        return this.contentKind != ContentKind.LEVEL && this.contentKind != ContentKind.MULTIPLICITY
+            && this != COMPOSITE;
     }
 
     private final ContentKind contentKind;
@@ -433,7 +434,8 @@ public enum AspectKind {
                 s = "%s.COLON.label";
                 h = "Abstract edge type";
                 b.add("Declares an abstract %s-edge between node types.");
-                b.add("The edge can only occur between subtypes where it is redeclared concretely.");
+                b.add(
+                    "The edge can only occur between subtypes where it is redeclared concretely.");
                 p.add(edgePar);
             } else if (withLabel) {
                 s = "%s.COLON.flag";
@@ -735,7 +737,8 @@ public enum AspectKind {
                 s = "%s.COLON.nr";
                 h = "Bidirectional rule parameter";
                 b.add("Declares bidirectional rule parameter %1$s (ranging from 0).");
-                b.add("When used from a control program this parameter may be instantiated with a concrete value,");
+                b.add(
+                    "When used from a control program this parameter may be instantiated with a concrete value,");
                 b.add("or be used as an output parameter, in which case the value");
                 b.add("is determined by the matching.");
                 p.add("the parameter number, ranging from 0");
@@ -940,12 +943,8 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static final Set<AspectKind> roles = EnumSet.of(ERASER,
-        ADDER,
-        CREATOR,
-        READER,
-        EMBARGO,
-        CONNECT);
+    public static final Set<AspectKind> roles =
+        EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO, CONNECT);
     /** Set of role aspects appearing (only) in NACs. */
     public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
     /** Set of role aspects appearing in LHSs. */
@@ -953,13 +952,8 @@ public enum AspectKind {
     /** Set of role aspects appearing in RHSs. */
     public static final Set<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> meta = EnumSet.of(FORALL,
-        FORALL_POS,
-        EXISTS,
-        EXISTS_OPT,
-        NESTED,
-        REMARK,
-        CONNECT);
+    public static final Set<AspectKind> meta =
+        EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
     public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT);
     /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
@@ -967,13 +961,8 @@ public enum AspectKind {
     /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL, FORALL_POS);
     /** Set of attribute-related aspects. */
-    public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
-        ARGUMENT,
-        STRING,
-        INT,
-        BOOL,
-        REAL,
-        TEST);
+    public static final Set<AspectKind> attributers =
+        EnumSet.of(PRODUCT, ARGUMENT, STRING, INT, BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
@@ -991,76 +980,72 @@ public enum AspectKind {
                 edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
                 break;
             case RULE:
-                nodeKinds =
-                    EnumSet.of(REMARK,
-                        READER,
-                        ERASER,
-                        CREATOR,
-                        ADDER,
-                        EMBARGO,
-                        BOOL,
-                        INT,
-                        REAL,
-                        STRING,
-                        PRODUCT,
-                        PARAM_BI,
-                        PARAM_IN,
-                        PARAM_OUT,
-                        FORALL,
-                        FORALL_POS,
-                        EXISTS,
-                        EXISTS_OPT,
-                        ID,
-                        COLOR);
-                edgeKinds =
-                    EnumSet.of(REMARK,
-                        READER,
-                        ERASER,
-                        CREATOR,
-                        ADDER,
-                        EMBARGO,
-                        CONNECT,
-                        BOOL,
-                        INT,
-                        REAL,
-                        STRING,
-                        ARGUMENT,
-                        PATH,
-                        LITERAL,
-                        FORALL,
-                        FORALL_POS,
-                        EXISTS,
-                        EXISTS_OPT,
-                        NESTED,
-                        LET,
-                        TEST);
+                nodeKinds = EnumSet.of(REMARK,
+                    READER,
+                    ERASER,
+                    CREATOR,
+                    ADDER,
+                    EMBARGO,
+                    BOOL,
+                    INT,
+                    REAL,
+                    STRING,
+                    PRODUCT,
+                    PARAM_BI,
+                    PARAM_IN,
+                    PARAM_OUT,
+                    FORALL,
+                    FORALL_POS,
+                    EXISTS,
+                    EXISTS_OPT,
+                    ID,
+                    COLOR);
+                edgeKinds = EnumSet.of(REMARK,
+                    READER,
+                    ERASER,
+                    CREATOR,
+                    ADDER,
+                    EMBARGO,
+                    CONNECT,
+                    BOOL,
+                    INT,
+                    REAL,
+                    STRING,
+                    ARGUMENT,
+                    PATH,
+                    LITERAL,
+                    FORALL,
+                    FORALL_POS,
+                    EXISTS,
+                    EXISTS_OPT,
+                    NESTED,
+                    LET,
+                    TEST);
                 break;
             case TYPE:
-                nodeKinds =
-                    EnumSet.of(DEFAULT,
-                        REMARK,
-                        INT,
-                        BOOL,
-                        REAL,
-                        STRING,
-                        ABSTRACT,
-                        IMPORT,
-                        COLOR,
-                        EDGE);
-                edgeKinds =
-                    EnumSet.of(REMARK,
-                        INT,
-                        BOOL,
-                        REAL,
-                        STRING,
-                        ABSTRACT,
-                        SUBTYPE,
-                        MULT_IN,
-                        MULT_OUT,
-                        COMPOSITE);
+                nodeKinds = EnumSet.of(DEFAULT,
+                    REMARK,
+                    INT,
+                    BOOL,
+                    REAL,
+                    STRING,
+                    ABSTRACT,
+                    IMPORT,
+                    COLOR,
+                    EDGE);
+                edgeKinds = EnumSet.of(REMARK,
+                    INT,
+                    BOOL,
+                    REAL,
+                    STRING,
+                    ABSTRACT,
+                    SUBTYPE,
+                    MULT_IN,
+                    MULT_OUT,
+                    COMPOSITE);
                 break;
             default:
-                assert !role.inGrammar();
+                assert!role.inGrammar();
                 nodeKinds = EnumSet.noneOf(AspectKind.class);
                 edgeKinds = EnumSet.noneOf(AspectKind.class);
             }
@@ -1076,8 +1061,8 @@ public enum AspectKind {
             @Override
             Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Suffix '%s' not allowed", text.substring(pos,
-                        text.indexOf(SEPARATOR)));
+                    throw new FormatException("Suffix '%s' not allowed",
+                        text.substring(pos, text.indexOf(SEPARATOR)));
                 }
                 return new Pair<Object,String>(null, text.substring(pos + 1));
             }
@@ -1093,8 +1078,8 @@ public enum AspectKind {
             @Override
             Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Suffix '%s' not allowed", text.substring(pos,
-                        text.indexOf(SEPARATOR)));
+                    throw new FormatException("Suffix '%s' not allowed",
+                        text.substring(pos, text.indexOf(SEPARATOR)));
                 }
                 if (pos < text.length() - 1) {
                     throw new FormatException("Label text '%s' not allowed",
@@ -1196,12 +1181,12 @@ public enum AspectKind {
                     break;
                 case ASSIGN:
                     if (text.charAt(pos + 1) != PARAM_START_CHAR) {
-                        throw new FormatException("Parameter number should start with '%s'", ""
-                            + PARAM_START_CHAR);
+                        throw new FormatException("Parameter number should start with '%s'",
+                            "" + PARAM_START_CHAR);
                     }
                     if (text.charAt(text.length() - 1) != SEPARATOR) {
-                        throw new FormatException("Parameter line should end with '%s'", ""
-                            + SEPARATOR);
+                        throw new FormatException("Parameter line should end with '%s'",
+                            "" + SEPARATOR);
                     }
                     nrText = text.substring(pos + 2, text.length() - 1);
                     if (nrText.length() == 0) {
@@ -1467,12 +1452,18 @@ public enum AspectKind {
                     isIdent = Character.isJavaIdentifierPart(text.charAt(i));
                 }
                 if (!isIdent) {
-                    throw new FormatException("Attributes field '%s' must be identifier", text);
+                    throw new FormatException("Attribute field '%s' must be identifier", text);
                 }
                 result = text;
             } else if (role == GraphRole.HOST) {
                 // in a host graph, this is a term
-                result = Expression.parse(text);
+                Expression expr = Expression.parse(text);
+                if (expr.getSort() != this.signature) {
+                    throw new FormatException(
+                        "Expression '%s' has type '%s' instead of expected type '%s'", text,
+                        expr.getSort(), this.signature);
+                }
+                result = expr;
             } else {
                 try {
                     result = this.signature.createConstant(text);

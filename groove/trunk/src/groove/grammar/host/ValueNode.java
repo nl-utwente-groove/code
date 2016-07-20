@@ -53,7 +53,7 @@ public class ValueNode extends ANode implements HostNode {
         this.signature = algebra.getSort();
         this.value = value;
         this.type = type;
-        assert algebra != null && value != null && type != null;
+        assert algebra != null && value != null && type != null && algebra.isValue(value);
     }
 
     /**
