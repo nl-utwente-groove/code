@@ -1,0 +1,73 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
+package groove.test.control;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import groove.explore.Exploration;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.lts.GTS;
+import groove.util.Groove;
+import groove.util.parse.FormatException;
+
+import java.io.IOException;
+
+import org.junit.Test;
+
+/**
+ * Tests the qualified any construct.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+@SuppressWarnings("all")
+public class AnyTest {
+    static private final String DIRECTORY = "junit/control/any.gps";
+
+    @Test
+    public void testDefault() {
+        explore("any", 2, 2, 3, 4);
+        explore("sub1-any", 2, 1, 2, 1);
+        explore("sub1-star-any", 2, 2, 2, 2);
+    }
+
+    @Test
+    public void testSub1() {
+        explore("sub1.any", 2, 2, 2, 3);
+        explore("sub1.star-any", 2, 5, 2, 6);
+        explore("sub1.sub1-any", 2, 1, 2, 1);
+    }
+
+    private void explore(String control, int controlStates, int controlTransitions,
+        int expectedNodes, int expectedEdges) {
+        try {
+            GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
+            sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
+            GTS lts = new GTS(sgv.toGrammar());
+
+            Exploration exploration = Exploration.explore(lts);
+
+            assertFalse(exploration.isInterrupted());
+            assertEquals(expectedNodes, lts.nodeCount());
+            assertEquals(expectedEdges, lts.edgeCount());
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } catch (FormatException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+}
