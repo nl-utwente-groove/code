@@ -16,19 +16,16 @@
  */
 package groove.verify;
 
-import static groove.verify.LogicOp.FALSE;
 import static groove.verify.LogicOp.NOT;
-import static groove.verify.LogicOp.TRUE;
-import groove.explore.util.LTSLabels;
-import groove.explore.util.LTSLabels.Flag;
-import groove.graph.Edge;
-import groove.graph.Node;
-import groove.lts.GTS;
+import static groove.verify.Proposition.Kind.CALL;
+import static groove.verify.Proposition.Kind.ID;
+import static groove.verify.Proposition.Kind.LABEL;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +33,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
+
+import groove.explore.util.LTSLabels.Flag;
+import groove.graph.Edge;
+import groove.graph.Node;
+import groove.lts.GTS;
+import groove.util.parse.Id;
 
 /**
  * Implementation of the CTL model checking algorithm.
@@ -63,11 +66,11 @@ public class CTLMarker {
     private void init() {
         // initialise the formula numbering
         registerFormula(this.formula);
-        registerFormula(START_ATOM);
+        registerFormula(Formula.atom(START_ATOM));
         // initialise the markings array
         int nodeCount = this.nodeCount = this.model.nodeCount();
         this.marking = new BitSet[this.formulaNr.size()];
-        for (int i : this.atoms.values()) {
+        for (int i : this.propNr.values()) {
             this.marking[i] = new BitSet(nodeCount);
         }
         // initialise the forward count and backward structure
@@ -80,11 +83,12 @@ public class CTLMarker {
         // collect the special flag labels used in the formula
         Map<Flag,Integer> flagNrs = new EnumMap<Flag,Integer>(Flag.class);
         for (Flag flag : Flag.values()) {
-            Integer flagIx = this.atoms.get(flagText.get(flag));
+            Integer flagIx = this.propNr.get(flagProps.get(flag));
             if (flagIx != null) {
                 flagNrs.put(flag, flagIx);
             }
         }
+        // build the backward reachability matrix and mark the atomic propositions
         for (Node node : this.model.nodeSet()) {
             Set<? extends Edge> outEdges = this.model.outEdgeSet(node);
             // EZ says: change for SF bug #442.
@@ -93,7 +97,8 @@ public class CTLMarker {
             this.states[nodeNr] = node;
             int specialEdgeCount = 0;
             for (Edge outEdge : outEdges) {
-                String label = outEdge.label().text();
+                String label = outEdge.label()
+                    .text();
                 Flag flag = this.model.getFlag(label);
                 if (flag == null) {
                     Node target = outEdge.target();
@@ -104,11 +109,11 @@ public class CTLMarker {
                         backward[targetNr] = new ArrayList<Integer>();
                     }
                     backward[targetNr].add(nodeNr);
-                    setAtom(nodeNr, label);
+                    markAtom(nodeNr, label);
                 } else {
-                    assert outEdge.isLoop() : String.format("Special state marker '%s' occurs as edge label in model",
-                        outEdge.label());
-                    setAtom(nodeNr, flagText.get(flag));
+                    assert outEdge.isLoop() : String.format(
+                        "Special state marker '%s' occurs as edge label in model", outEdge.label());
+                    markSpecialAtom(nodeNr, flag);
                     specialEdgeCount++;
                 }
             }
@@ -135,34 +140,19 @@ public class CTLMarker {
     }
 
     /**
-     * Marks a given node as satisfying an atomic proposition,
-     * if the proposition occurs in the formula.
-     * @param nodeNr the node to be marked
-     * @param atom the proposition text
-     */
-    private void setAtom(int nodeNr, String atom) {
-        Integer atomIx = this.atoms.get(atom);
-        if (atomIx != null) {
-            this.marking[atomIx].set(nodeNr);
-        }
-    }
-
-    /**
      * Registers a formula and all its subformulas
-     * into the {@link #formulaNr} and {@link #atoms} maps.
+     * into the {@link #formulaNr} and {@link #propNr} maps.
      */
     private void registerFormula(Formula formula) {
         if (!this.formulaNr.containsKey(formula)) {
             Integer index = this.formulaNr.size();
             this.formulaNr.put(formula, index);
-            switch (formula.getOp().getArity()) {
+            switch (formula.getOp()
+                .getArity()) {
             case 0:
-                if (formula.getOp() == TRUE || formula.getOp() == FALSE) {
-                    break;
+                if (formula.getOp() == LogicOp.PROP) {
+                    registerProposition(formula.getProp(), index);
                 }
-                String prop = formula.getProp();
-                assert prop != null;
-                this.atoms.put(prop, index);
                 break;
             case 1:
                 registerFormula(formula.getArg1());
@@ -178,11 +168,68 @@ public class CTLMarker {
     }
 
     /**
+     * Registers a proposition.
+     */
+    private void registerProposition(Proposition prop, Integer index) {
+        this.propNr.put(prop, index);
+        if (prop.getKind() == CALL || prop.getKind() == ID) {
+            Id callId = prop.getId();
+            Set<Proposition> callsForId = this.calls.get(callId);
+            if (callsForId == null) {
+                this.calls.put(callId, callsForId = new HashSet<>());
+            }
+            callsForId.add(prop);
+        }
+    }
+
+    /**
      * Verifies the top-level property.
      */
     private void verify() {
         mark(this.formula);
         setVerified();
+    }
+
+    /**
+     * Marks a given node as satisfying the atomic proposition(s) corresponding
+     * to a given label text.
+     * @param nodeNr the node to be marked
+     * @param label the proposition text
+     */
+    private void markAtom(int nodeNr, String label) {
+        // First look up the label as a complete proposition
+        Integer propIx = this.propNr.get(new Proposition(label));
+        if (propIx != null) {
+            this.marking[propIx].set(nodeNr);
+        }
+        // Additionally try the label as a parsable ID or CALL
+        Proposition prop = FormulaParser.instance()
+            .parse(label)
+            .getProp();
+        if (prop != null && prop.getKind() != LABEL) {
+            // retrieve the action name being called
+            Id callId = prop.getId();
+            if (this.calls.containsKey(callId)) {
+                this.calls.get(callId)
+                    .stream()
+                    .filter(c -> c.matches(prop))
+                    .forEach(c -> this.marking[this.propNr.get(c)].set(nodeNr));
+            }
+        }
+    }
+
+    /**
+     * Marks a given node as satisfying the atomic proposition corresponding
+     * to a given special LTS flag.
+     * @param nodeNr the node to be marked
+     * @param flag the proposition text
+     */
+    private void markSpecialAtom(int nodeNr, Flag flag) {
+        Integer atomIx = this.propNr.get(flagProps.get(flag));
+        // possibly the flag does not occur in the formula, in which case nothing needs to be done
+        if (atomIx != null) {
+            this.marking[atomIx].set(nodeNr);
+        }
     }
 
     /**
@@ -483,7 +530,7 @@ public class CTLMarker {
 
     /** Indicates if the model has an unambiguous root. */
     private boolean hasRoot() {
-        return this.marking[this.formulaNr.get(START_ATOM)].cardinality() == 1;
+        return this.marking[this.propNr.get(START_ATOM)].cardinality() == 1;
     }
 
     /** Returns the (unambiguous) root node of the model, if there is any.
@@ -493,7 +540,7 @@ public class CTLMarker {
         if (this.model instanceof GTS) {
             result = ((GTS) this.model).startState();
         } else {
-            BitSet startNodes = this.marking[this.formulaNr.get(START_ATOM)];
+            BitSet startNodes = this.marking[this.propNr.get(START_ATOM)];
             if (startNodes.cardinality() == 1) {
                 result = this.states[startNodes.nextSetBit(0)];
             }
@@ -549,9 +596,8 @@ public class CTLMarker {
                             throw new NoSuchElementException();
                         }
                         Node result = CTLMarker.this.states[this.stateIx];
-                        this.stateIx =
-                            value ? sat.nextSetBit(this.stateIx + 1)
-                                : sat.nextClearBit(this.stateIx + 1);
+                        this.stateIx = value ? sat.nextSetBit(this.stateIx + 1)
+                            : sat.nextClearBit(this.stateIx + 1);
                         return result;
                     }
 
@@ -573,14 +619,17 @@ public class CTLMarker {
     /**
      * Mapping from subformulas to (consecutive) numbers
      */
-    private final Map<Formula,Integer> formulaNr = new HashMap<Formula,Integer>();
-    /** Mapping from atomic propositions (as literal strings) to formula numbers. */
-    private final Map<String,Integer> atoms = new HashMap<String,Integer>();
+    private final Map<Formula,Integer> formulaNr = new HashMap<>();
+    /** Mapping from propositions (as literal strings) to formula numbers. */
+    private final Map<Proposition,Integer> propNr = new HashMap<>();
+    /** Mapping from called action {@link Id}s to sets of propositions occurring in the formula
+     * that potentially match a call of that {@link Id}. */
+    private final Map<Id,Set<Proposition>> calls = new HashMap<>();
     /** Marking matrix: 1st dimension = state, 2nd dimension = formula. */
     private BitSet[] marking;
     /** Backward reachability matrix. */
     private int[][] backward;
-    /** Backward reachability matrix. */
+    /** Number of outgoing non-special-label edges. */
     private int[] outCount;
     /** State number-indexed array of states in the GTS. */
     private Node[] states;
@@ -598,19 +647,20 @@ public class CTLMarker {
     }
 
     private boolean verified;
-    /** Mapping from flags to the text of the corresponding atomic proposition. */
-    static final Map<Flag,String> flagText = new EnumMap<LTSLabels.Flag,String>(Flag.class);
-    /** Mapping from flags to the corresponding atomic formula. */
+    /** Mapping from flags to the corresponding proposition. */
+    static final Map<Flag,Proposition> flagProps = new EnumMap<>(Flag.class);
     /** Mapping from special atomic formulae to the corresponding flags. */
-    static final Map<Formula,Flag> formulaFlag = new HashMap<Formula,Flag>();
+    static final Map<Formula,Flag> formulaFlag = new HashMap<>();
+
     static {
         for (Flag flag : Flag.values()) {
             String text = "$" + flag.getDefault();
-            flagText.put(flag, text);
-            Formula atom = Formula.Prop(text);
+            Formula atom = Formula.atom(new Id(text));
+            flagProps.put(flag, atom.getProp());
             formulaFlag.put(atom, flag);
         }
     }
+
     /** Proposition text expressing that a node is the start state of the GTS. */
-    static public final Formula START_ATOM = Formula.Prop(flagText.get(Flag.START));
+    static public final Proposition START_ATOM = flagProps.get(Flag.START);
 }

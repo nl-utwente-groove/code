@@ -16,33 +16,35 @@
  */
 package groove.util.parse;
 
-import groove.algebra.Constant;
-import groove.util.DefaultFixable;
-import groove.util.Pair;
-import groove.util.line.Line;
-import groove.util.parse.OpKind.Direction;
-import groove.util.parse.OpKind.Placement;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import groove.util.DefaultFixable;
+import groove.util.Pair;
+import groove.util.line.Line;
+import groove.util.parse.OpKind.Direction;
+import groove.util.parse.OpKind.Placement;
+
 /**
- * General expression type.
+ * General abstract term tree type, parameterised by the operator type.
+ * The type does not offer support for structured atoms; this should
+ * be dealt with by subtypes.
  * @param <O> the type for the operators
+ * @param <T> the tree type itself
  * @author Arend Rensink
  * @version $Id$
  */
-abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends DefaultFixable
+abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends DefaultFixable
     implements Fallible {
     /**
      * Constructs an initially argument- and content-free expression
      * with a given top-level operator.
      */
-    protected TermTree(O op) {
-        assert op != null;
+    protected ATermTree(O op) {
+        assert op != null && op.getKind() != OpKind.NONE;
         this.op = op;
         this.args = new ArrayList<T>();
         this.errors = new FormatErrorSet();
@@ -53,62 +55,12 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         return this.op;
     }
 
-    private final O op;
-
-    /** Sets a top-level constant for this expression. */
-    public void setConstant(Constant constant) {
-        assert !isFixed();
-        assert this.op.getKind() == OpKind.ATOM;
-        assert !hasId();
-        this.constant = constant;
-    }
-
-    /** Indicates if this expression contains constant content. */
-    public boolean hasConstant() {
-        return getConstant() != null;
-    }
-
-    /** Returns the constant wrapped in this expression, if any. */
-    public Constant getConstant() {
-        return this.constant;
-    }
-
-    private Constant constant;
-
-    /** Sets a top-level identifier for this expression. */
-    public void setId(Id id) {
-        assert !isFixed();
-        assert this.op.getKind() == OpKind.ATOM || this.op.getKind() == OpKind.CALL;
-        assert !hasConstant();
-        this.id = id;
-    }
-
-    /** Indicates if this expression contains a top-level identifier. */
-    public boolean hasId() {
-        return getId() != null;
-    }
-
-    /** Returns the identifier wrapped in this expression, if any. */
-    public Id getId() {
-        return this.id;
-    }
-
-    private Id id;
-
-    /** Returns a string representation of the top-level content of this tree. */
-    public String getContentString() {
-        if (hasConstant()) {
-            return getConstant().getSymbol();
-        } else if (hasId()) {
-            return getId().getName();
-        } else {
-            return "";
-        }
-    }
+    /** Operator of this term tree node. */
+    protected final O op;
 
     /** Adds an argument to this expression. */
     public void addArg(T arg) {
-        assert !isFixed();
+        assert!isFixed();
         this.args.add(arg);
     }
 
@@ -118,7 +70,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
     }
 
     /** Returns the argument at a given position, upcast to the {@code TermTree} supertype. */
-    private TermTree<O,T> getUpArg(int index) {
+    private ATermTree<O,T> getUpArg(int index) {
         return getArg(index);
     }
 
@@ -184,7 +136,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
 
     private final void toTree(Stack<Pair<Integer,Boolean>> indent, StringBuilder result) {
         if (getArgs().size() > 0) {
-            String symbol = getOp().hasSymbol() ? getOp().getSymbol() : getId().getName();
+            String symbol = getOp().getSymbol();
             result.append(symbol);
             result.append(getArgs().size() == 1 ? " --- " : " +-- ");
             int i;
@@ -199,7 +151,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
             getUpArg(i).toTree(indent, result);
             indent.pop();
         } else if (getOp().getKind() == OpKind.ATOM) {
-            result.append(getContentString());
+            result.append(toAtomString());
         }
     }
 
@@ -226,7 +178,7 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
      */
     public Line toLine(boolean spaces) {
         assert isFixed();
-        return toLine(OpKind.NONE, spaces);
+        return hasErrors() ? Line.atom(toString()) : toLine(OpKind.NONE, spaces);
     }
 
     /**
@@ -239,15 +191,23 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         if (getOp().getKind() == OpKind.CALL) {
             result = toCallLine(spaces);
         } else if (getOp().getKind() == OpKind.ATOM) {
-            if (getOp().hasSymbol()) {
-                result = Line.atom(getOp().getSymbol());
-            } else if (hasId()) {
-                result = getId().toLine();
-            } else {
-                result = Line.atom(getConstant().toDisplayString());
-            }
+            result = toAtomLine(spaces);
         } else {
             result = toFixLine(context, spaces);
+        }
+        return result;
+    }
+
+    /** Callback method to build the display string for this atomic term.
+      * @param spaces flag indicating if spaces should be used for layout.
+      */
+    protected Line toAtomLine(boolean spaces) {
+        assert getOp().getKind() == OpKind.ATOM;
+        Line result;
+        if (getOp().hasSymbol()) {
+            result = Line.atom(getOp().getSymbol());
+        } else {
+            result = Line.atom(toAtomString());
         }
         return result;
     }
@@ -255,11 +215,12 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
     /** Builds a display string for an operator without symbol.
      * @param spaces if {@code true}, spaces are introduced for readability */
     private Line toCallLine(boolean spaces) {
+        assert getOp().getKind() == OpKind.CALL;
         List<Line> result = new ArrayList<Line>();
-        result.add(hasId() ? getId().toLine() : Line.atom(getOp().getSymbol()));
+        result.add(Line.atom(getOp().getSymbol()));
         result.add(Line.atom("("));
         boolean firstArg = true;
-        for (TermTree<O,T> arg : getArgs()) {
+        for (ATermTree<O,T> arg : getArgs()) {
             if (!firstArg) {
                 result.add(Line.atom(spaces ? ", " : ","));
 
@@ -285,23 +246,21 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         }
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
-            result.add(getUpArg(nextArgIx).toLine(me.getDirection() == Direction.LEFT ? me
-                : me.increase(),
-                spaces));
+            result.add(getUpArg(nextArgIx)
+                .toLine(me.getDirection() == Direction.LEFT ? me : me.increase(), spaces));
             nextArgIx++;
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
         }
-        result.add(getOpLine(addSpaces));
+        result.add(toOpLine(addSpaces));
         if (me.getPlace() != Placement.POSTFIX) {
             // add left argument
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
-            result.add(getUpArg(nextArgIx).toLine(me.getDirection() == Direction.RIGHT ? me
-                : me.increase(),
-                spaces));
+            result.add(getUpArg(nextArgIx)
+                .toLine(me.getDirection() == Direction.RIGHT ? me : me.increase(), spaces));
             nextArgIx++;
         }
         if (addPars) {
@@ -311,10 +270,10 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
     }
 
     /** Returns the display line for the top-level operator of this tree.
-     * @param addSpaces if {@code true}, additional space may already have been
+     * @param spaces if {@code true}, additional space may already have been
      * added to the left and/or right of the operator.
      */
-    protected Line getOpLine(boolean addSpaces) {
+    protected Line toOpLine(boolean spaces) {
         return Line.atom(getOp().getSymbol());
     }
 
@@ -341,11 +300,9 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
     @Override
     public T clone() {
         T result = createTree(getOp());
-        TermTree<O,T> upcast = result;
+        ATermTree<O,T> upcast = result;
         upcast.args.addAll(this.args);
         upcast.errors.addAll(this.errors);
-        upcast.constant = this.constant;
-        upcast.id = this.id;
         return result;
     }
 
@@ -359,8 +316,6 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         result = prime * result + this.op.hashCode();
         result = prime * result + this.args.hashCode();
         result = prime * result + this.errors.hashCode();
-        result = prime * result + ((this.constant == null) ? 0 : this.constant.hashCode());
-        result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
         return result;
     }
 
@@ -369,10 +324,10 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof TermTree)) {
+        if (!(obj instanceof ATermTree)) {
             return false;
         }
-        TermTree<?,?> other = (TermTree<?,?>) obj;
+        ATermTree<?,?> other = (ATermTree<?,?>) obj;
         if (!this.op.equals(other.op)) {
             return false;
         }
@@ -382,32 +337,29 @@ abstract public class TermTree<O extends Op,T extends TermTree<O,T>> extends Def
         if (!this.errors.equals(other.errors)) {
             return false;
         }
-        if (this.constant == null) {
-            if (other.constant != null) {
-                return false;
-            }
-        } else if (!this.constant.equals(other.constant)) {
-            return false;
-        }
-        if (this.id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!this.id.equals(other.id)) {
-            return false;
-        }
         return true;
     }
 
     @Override
     public String toString() {
-        String result = this.op.toString();
-        if (hasId()) {
-            result += getId().getName();
-        } else if (hasConstant()) {
-            result += "<" + getConstant() + ">";
+        String result;
+        if (hasErrors()) {
+            result =
+                String.format("Parse errors in '%s': %s", getParseString(), getErrors().toString());
+        } else if (getOp().getKind() == OpKind.ATOM) {
+            result = getOp().hasSymbol() ? getOp().getSymbol() : toAtomString();
+        } else {
+            result = this.op.toString();
+            List<T> args = getArgs();
+            return result + (args.isEmpty() ? "" : args);
         }
-        List<T> args = getArgs();
-        return result + (args.isEmpty() ? "" : args);
+        return result;
+    }
+
+    /** Returns a string representation of this tree, assuming it is an atom without symbol. */
+    protected String toAtomString() {
+        assert getOp().getKind() == OpKind.ATOM && !getOp().hasSymbol();
+        throw new UnsupportedOperationException(
+            "This tree type does not support atoms without symbol");
     }
 }

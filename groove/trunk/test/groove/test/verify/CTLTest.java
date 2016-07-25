@@ -19,6 +19,14 @@ package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Test;
+
 import groove.explore.ExploreResult;
 import groove.explore.Generator;
 import groove.explore.util.LTSLabels;
@@ -27,15 +35,7 @@ import groove.util.Groove;
 import groove.verify.CTLMarker;
 import groove.verify.CTLModelChecker;
 import groove.verify.Formula;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import junit.framework.Assert;
-
-import org.junit.Test;
 
 /**
  * Tests the CTLStarFormula class.
@@ -73,6 +73,41 @@ public class CTLTest {
         testFormula("AXEG p", 0);
         testFormula("AG(p|q)", 3);
         testFormula("AG p", 0);
+    }
+
+    /** Test the treatment of parameters in propositions. */
+    @Test
+    public void testParameters() {
+        setGTS("attributes", "start");
+        // real parameter
+        testFormula("EF 'set_gravity(9.81)'", 1);
+        testFormula("EF set_gravity(_)", 1);
+        testFormula("EF set_gravity", 1);
+        testFormula("EF set_gravity(9)", 0);
+        testFormula("EF set_gravity()", 0);
+        testFormula("EF set_gravity('text')", 0);
+        // text parameter
+        testFormula("EX 'set_name(\"attributes test\")'", 1);
+        testFormula("EX set_name(\"attributes test\")", 1);
+        testFormula("EX set_name( 'attributes test' )", 1);
+        testFormula("EX set_name(_)", 1);
+        testFormula("EX set_name", 1);
+        testFormula("EX set_name( 'attributes  test' )", 0);
+        testFormula("EX 'set_name(_)'", 0);
+        testFormula("EX 'set_name'", 0);
+        testFormula("EX set_name()", 0);
+        testFormula("EX set_name(test)", 0);
+        // two parameters
+        testFormula("EXEX add_score(n0, 100)", 2);
+        testFormula("EXEX add_score(_, 100)", 2);
+        testFormula("EXEX add_score(n0, _)", 2);
+        testFormula("EXEX add_score(_, _)", 2);
+        testFormula("EXEX add_score", 2);
+        testFormula("EXEX add_score(n1, _)", 0);
+        testFormula("EXEX add_score(_)", 0);
+        testFormula("EXEX add_score()", 0);
+        testFormula("EXEX add_score('n0',100)", 0);
+        testFormula("EXEX add_score(n0,'100')", 0);
     }
 
     /** Test on a specially designed transition system. */
@@ -122,7 +157,8 @@ public class CTLTest {
     private void testFormula(String formula, int stateCount) {
         try {
             // all states satisfy the following property
-            Formula property = Formula.parse(formula).toCtlFormula();
+            Formula property = Formula.parse(formula)
+                .toCtlFormula();
             CTLMarker marker = new CTLMarker(property, CTLModelChecker.newModel(this.result));
             assertEquals(stateCount, marker.getCount(true));
             marker =

@@ -18,17 +18,11 @@
  */
 package groove.verify;
 
-import static groove.util.parse.TermTreeParser.TokenClaz.CONST;
-import static groove.util.parse.TermTreeParser.TokenClaz.LPAR;
-import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
-import static groove.util.parse.TermTreeParser.TokenClaz.RPAR;
-import groove.algebra.Constant;
-import groove.algebra.Sort;
-import groove.annotation.Help;
-import groove.util.parse.FormatException;
-import groove.util.parse.Id;
-import groove.util.parse.OpKind;
-import groove.util.parse.TermTreeParser;
+import static groove.util.parse.ATermTreeParser.TokenClaz.CONST;
+import static groove.util.parse.ATermTreeParser.TokenClaz.LPAR;
+import static groove.util.parse.ATermTreeParser.TokenClaz.NAME;
+import static groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
+import static groove.util.parse.ATermTreeParser.TokenClaz.UNDER;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -38,12 +32,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import groove.algebra.Sort;
+import groove.annotation.Help;
+import groove.util.parse.ATermTreeParser;
+import groove.util.parse.FormatException;
+import groove.util.parse.Id;
+import groove.util.parse.OpKind;
+
 /**
  * Parser for temporal formulas, following the {@code groove.util.parse} architecture.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
+public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     /**
      * Constructs a new parser.
      */
@@ -62,18 +63,22 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
         List<LogicOp> prefixOps = findPrefixOps(firstToken.substring());
         if (prefixOps == null) {
             Id id = parseId();
-            result = createTree(has(LPAR) ? LogicOp.CALL : LogicOp.PROP);
-            result.setId(id);
-            if (consume(LPAR) != null) {
+            if (consume(LPAR) == null) {
+                // it's an (unquoted) string constant: create an atomic proposition
+                result = Formula.atom(id);
+            } else {
+                result = createTree(LogicOp.PROP);
+                List<Proposition.Arg> args = new ArrayList<>();
                 if (consume(RPAR) == null) {
-                    result.addArg(parseArg());
+                    args.add(parseArg());
                     while (consume(TokenClaz.COMMA) != null) {
-                        result.addArg(parseArg());
+                        args.add(parseArg());
                     }
                     if (consume(RPAR) == null) {
                         throw expectedToken(RPAR, next());
                     }
                 }
+                result.setProp(new Proposition(id, args));
             }
         } else {
             consume(NAME);
@@ -88,46 +93,48 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
         return result;
     }
 
-    /** Attempts to parse the input as an atomic formula:
-     * a constant or simple name.
-     */
-    private Formula parseArg() throws FormatException {
-        Formula result = createTree(LogicOp.ARG);
+    /** Attempts to parse the input as a call argument. */
+    private Proposition.Arg parseArg() throws FormatException {
+        Proposition.Arg result;
         Token atomToken = next();
         if (atomToken.has(TokenClaz.CONST)) {
             consume(CONST);
-            result.setConstant(Constant.instance(atomToken.substring()));
+            result = new Proposition.Arg(atomToken.createConstant());
         } else if (atomToken.has(NAME)) {
             Id id = parseId();
             if (id.size() > 1) {
                 throw invalidArg(id.getName(), atomToken);
             }
-            result.setId(id);
+            result = new Proposition.Arg(id);
+        } else if (atomToken.has(UNDER)) {
+            consume(UNDER);
+            result = Proposition.Arg.WILD_ARG;
         } else {
             throw unexpectedToken(atomToken);
         }
-        setParseString(result, atomToken);
-        return result;
-    }
-
-    /** Converts all constants into strings. */
-    @Override
-    protected Formula parseConst() throws FormatException {
-        Formula result = createTree(getAtomOp());
-        Token constToken = consume(CONST);
-        Constant constant;
-        if (constToken.type(CONST).sort() == Sort.STRING) {
-            constant = constToken.createConstant();
-        } else {
-            constant = Constant.instance(constToken.substring());
-        }
-        result.setConstant(constant);
-        setParseString(result, constToken);
         return result;
     }
 
     private FormatException invalidArg(String arg, Token token) {
-        return new FormatException("Invalide call argument '%s' at index '%s'", arg, token.start());
+        return new FormatException("Invalid call argument '%s' at index '%s'", arg, token.start());
+    }
+
+    /* Converts string constants into label propositions. */
+    @Override
+    protected Formula parseConst() throws FormatException {
+        Formula result = createTree(LogicOp.PROP);
+        Token constToken = consume(CONST);
+        Sort sort = constToken.type(CONST)
+            .sort();
+        if (sort != Sort.STRING) {
+            throw new FormatException("Can't parse '%s' constant as formula at index '%s'", sort,
+                constToken.start());
+        }
+        String label = constToken.createConstant()
+            .getStringRepr();
+        result = Formula.atom(label);
+        setParseString(result, constToken);
+        return result;
     }
 
     /** Returns an inversely ordered list of single-character prefix operators
@@ -167,7 +174,8 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
         for (Field field : LogicOp.class.getFields()) {
             if (field.isEnumConstant()) {
                 LogicOp token = nameToTokenMap.get(field.getName());
-                if (logic.getOps().contains(token)) {
+                if (logic.getOps()
+                    .contains(token)) {
                     Help help = Help.createHelp(field, nameToSymbolMap);
                     if (help != null) {
                         result.put(help.getItem(), help.getTip());
@@ -182,8 +190,8 @@ public class FormulaParser extends TermTreeParser<LogicOp,Formula> {
     private static Map<String,LogicOp> nameToTokenMap = new HashMap<String,LogicOp>();
     /** Mapping from token symbols to token values. */
     private static Map<String,String> nameToSymbolMap = new HashMap<String,String>();
-    private static Map<Logic,Map<String,String>> docMapMap = new EnumMap<Logic,Map<String,String>>(
-        Logic.class);
+    private static Map<Logic,Map<String,String>> docMapMap =
+        new EnumMap<Logic,Map<String,String>>(Logic.class);
 
     static {
         for (LogicOp token : LogicOp.values()) {

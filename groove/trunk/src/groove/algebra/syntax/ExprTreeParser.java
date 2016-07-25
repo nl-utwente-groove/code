@@ -1,23 +1,31 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.algebra.syntax;
 
-import static groove.util.parse.TermTreeParser.TokenClaz.ASSIGN;
-import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
+import static groove.util.parse.ATermTreeParser.TokenClaz.ASSIGN;
+import static groove.util.parse.ATermTreeParser.TokenClaz.CONST;
+import static groove.util.parse.ATermTreeParser.TokenClaz.NAME;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.algebra.syntax.ExprTree.ExprOp;
@@ -27,29 +35,23 @@ import groove.util.parse.FormatException;
 import groove.util.parse.Id;
 import groove.util.parse.OpKind;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * Parser specialisation that also parses optional sort prefixes,
  * and returns {@link ExprTree} objects.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.ExprOp,ExprTree> {
+public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.ExprOp,ExprTree> {
     /** Constructs a parser, with optional flags for assignment and test mode.
      * {@code assign} and {@code test} may not be simultaneously true
      * @param assign if {@code true}, the parser expects a top-level assignment
      * @param test if {@code true}, the parser allows legacy test expressions
-     * (having a "=" on the top level), which is converted to  
+     * (having a "=" on the top level), which is converted to
      */
     private ExprTreeParser(boolean assign, boolean test) {
         super(new ExprTree(getAtom()), getOpList());
         super.setQualIds(true);
-        assert !assign || !test;
+        assert!assign || !test;
         this.assign = assign;
         this.test = test;
     }
@@ -103,7 +105,7 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
                 rollBack();
             } else {
                 // replace the top-level "=" by "=="
-                ExprTree lhs = createTree(getAtomOp());
+                ExprTree lhs = createTree(ExprOp.atom());
                 lhs.setId(new Id(nameToken.substring()));
                 result = createTree(getEquality());
                 result.addArg(lhs);
@@ -129,7 +131,7 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
         } else if (consume(ASSIGN) == null) {
             throw expectedToken(ASSIGN, next());
         } else {
-            ExprTree lhs = createTree(getAtomOp());
+            ExprTree lhs = createTree(ExprOp.atom());
             lhs.setId(new Id(nameToken.substring()));
             result = createTree(ExprTree.ASSIGN);
             result.addArg(lhs);
@@ -141,16 +143,26 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
 
     @Override
     protected ExprTree parseName() throws FormatException {
+        assert has(NAME);
         ExprTree result;
         Token firstToken = next();
+        // check if the name is a sort name
         Sort sort = parseSortPrefix();
         if (sort == null) {
-            result = super.parseName();
+            // no, it's a simple name: create an ID expression
+            result = createTree(ExprOp.atom());
+            Id id = parseId();
+            result.setId(id);
         } else {
+            // yes, it's a sort-prefixed expression: parse the sorted sub-expression
             result = super.parse(OpKind.ATOM);
+            if (result.hasSort()) {
+                throw new FormatException("Repeated sort prefix '%s' and '%s' at index '%s'", sort,
+                    result.getSort(), firstToken.start());
+            }
             result.setSort(sort);
-            setParseString(result, firstToken);
         }
+        setParseString(result, firstToken);
         return result;
     }
 
@@ -166,9 +178,19 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
                 // this wasn't meant to be a sort prefix after all
                 rollBack();
             } else {
-                result = sortToken.type(TokenClaz.SORT).sort();
+                result = sortToken.type(TokenClaz.SORT)
+                    .sort();
             }
         }
+        return result;
+    }
+
+    @Override
+    protected ExprTree parseConst() throws FormatException {
+        ExprTree result = createTree(ExprOp.atom());
+        Token constToken = consume(CONST);
+        result.setConstant(constToken.createConstant());
+        setParseString(result, constToken);
         return result;
     }
 
@@ -201,7 +223,7 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
             }
             registerOp(opMapMap, result, sortOp, opKind, opSymbol);
         }
-        result.add(new ExprOp(OpKind.ATOM, null));
+        result.add(ExprOp.atom());
         return result;
     }
 
@@ -226,14 +248,14 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
         return parse(ASSIGN_PARSER, input);
     }
 
-    /** Parses a given input as an expression, with or without legacy test syntax. 
+    /** Parses a given input as an expression, with or without legacy test syntax.
      * @throws FormatException if there is a parse error.
      */
     static public ExprTree parseExpr(String input, boolean test) throws FormatException {
         return parse(test ? TEST_PARSER : EXPR_PARSER, input);
     }
 
-    /** Parses a given input with a given parser. 
+    /** Parses a given input with a given parser.
      * @throws FormatException if there is a parse error.
      */
     static private ExprTree parse(ExprTreeParser parser, String input) throws FormatException {
@@ -270,8 +292,8 @@ public class ExprTreeParser extends groove.util.parse.TermTreeParser<ExprTree.Ex
     private static ExprOp getEquality() {
         ExprOp result = null;
         for (ExprOp op : getOpList()) {
-            if (op.getKind() == OpKind.EQUAL && op.getSymbol().equals(EQUALS_SYMBOL)
-                && op.getArity() == 2) {
+            if (op.getKind() == OpKind.EQUAL && op.getSymbol()
+                .equals(EQUALS_SYMBOL) && op.getArity() == 2) {
                 result = op;
                 break;
             }

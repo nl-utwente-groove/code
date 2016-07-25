@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An identifier as can appear in the payload of an atomic {@link TermTree} object.
+ * An identifier as can appear in the payload of an atomic {@link ATermTree} object.
  * An identifier consists of an optional prefix and a list of names.
  * @author Arend Rensink
  * @version $Id$

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -19,12 +19,13 @@ package groove.test.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import groove.util.parse.Op;
-import groove.util.parse.OpKind;
-import groove.util.parse.TermTree;
-import groove.util.parse.TermTreeParser;
 
 import org.junit.Test;
+
+import groove.util.parse.AExprTree;
+import groove.util.parse.AExprTreeParser;
+import groove.util.parse.Op;
+import groove.util.parse.OpKind;
 
 /**
  * @author Arend Rensink
@@ -104,7 +105,8 @@ public class ExprParseTest {
     /** Asserts that parsing a string and converting at back results in the same string. */
     private void roundtrip(String text) {
         MyTree expr = parse(text);
-        assertEquals(text, expr.toLine().toFlatString());
+        assertEquals(text, expr.toLine()
+            .toFlatString());
     }
 
     private void parseToEqual(String one, String two) {
@@ -122,21 +124,25 @@ public class ExprParseTest {
     }
 
     private void parseError(String text) {
-        assertTrue(parser.parse(text).hasErrors());
+        assertTrue(parser.parse(text)
+            .hasErrors());
     }
 
     /** Main method: prints all its arguments and writes the result to stdout. */
     public static void main(String[] args) {
         for (String arg : args) {
             MyTree expr = parser.parse(arg);
-            String error = expr.hasErrors() ? " with errors " + expr.getErrors().toString() : "";
-            System.out.printf("%s parsed to %s%s%n -> %s", arg, expr, error,
-                expr.toLine().toFlatString());
+            String error = expr.hasErrors() ? " with errors " + expr.getErrors()
+                .toString() : "";
+            System.out.printf("%s parsed to %s%s%n -> %s", arg, expr, error, expr.toLine()
+                .toFlatString());
         }
     }
 
-    static TermTreeParser<MyOp,MyTree> parser = new TermTreeParser<MyOp,MyTree>(new MyTree(
-        MyOp.ATOM));
+    static AExprTreeParser<MyOp,MyTree> parser =
+        new AExprTreeParser<MyOp,MyTree>(new MyTree(MyOp.ATOM)) {
+            // empty
+        };
 
     static {
         parser.setQualIds(true);
@@ -154,12 +160,11 @@ public class ExprParseTest {
         AND(OpKind.AND, "&"),
         EQ(OpKind.EQUAL, "="),
         IMPL(OpKind.COMPARE, "->"),
-        CALL(OpKind.CALL, -1),
         ATOM(OpKind.ATOM, 0),
-        GE(OpKind.CALL, "ge", 2), ;
+        GE(OpKind.CALL, "ge", 2),;
 
         private MyOp(OpKind kind, int arity) {
-            this(kind, null, arity);
+            this(kind, "", arity);
         }
 
         private MyOp(OpKind kind, String symbol) {
@@ -170,11 +175,6 @@ public class ExprParseTest {
             this.kind = kind;
             this.symbol = symbol;
             this.arity = arity;
-        }
-
-        @Override
-        public boolean hasSymbol() {
-            return getSymbol() != null;
         }
 
         @Override
@@ -199,7 +199,7 @@ public class ExprParseTest {
         private final int arity;
     }
 
-    public static class MyTree extends TermTree<MyOp,MyTree> {
+    public static class MyTree extends AExprTree<MyOp,MyTree> {
         /**
          * Constructs a tree with a given top-level operator.
          */

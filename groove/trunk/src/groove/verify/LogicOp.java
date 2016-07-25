@@ -16,33 +16,23 @@
  */
 package groove.verify;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 import groove.util.parse.Op;
 import groove.util.parse.OpKind;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /** The kind (i.e., top level operator) of a formula. */
 public enum LogicOp implements Op {
-    /** Atomic proposition. */
-    @Syntax("rule")
-    @ToolTipHeader("Atomic proposition")
+    /** Proposition, wrapped in an object of type {@link Proposition}. */
+    @Syntax("rule [LPAR arg_list RPAR] | string_constant")
+    @ToolTipHeader("Atomic or rule call proposition")
     @ToolTipBody({"Holds if %s is enabled in the current state.",
         "Note that this does <i>not</i> mean that %1$s has just been executed."})
     PROP("", OpKind.ATOM),
-
-    /** Rule call. */
-    @Syntax("call LPAR arg_list RPAR")
-    @ToolTipHeader("Rule call")
-    @ToolTipBody({"Holds if %s is enabled in the current state, with arguments %s.",
-        "Note that this does <i>not</i> mean that %1$s has just been executed."})
-    CALL("", OpKind.CALL),
-
-    /** Rule argument. */
-    ARG("", OpKind.ATOM),
 
     /** True. */
     @Syntax("TRUE")
@@ -52,7 +42,7 @@ public enum LogicOp implements Op {
 
     /** False. */
     @Syntax("FALSE")
-    @ToolTipHeader("FALSE")
+    @ToolTipHeader("False")
     @ToolTipBody("Always fails to hold.")
     FALSE("false", OpKind.ATOM),
 
@@ -153,6 +143,7 @@ public enum LogicOp implements Op {
 
     /** Private constructor for an operator token. */
     private LogicOp(String symbol, OpKind kind) {
+        assert symbol != null;
         this.symbol = symbol;
         this.arity = kind.getArity();
         this.kind = kind;
@@ -162,11 +153,6 @@ public enum LogicOp implements Op {
     @Override
     public String toString() {
         return getSymbol();
-    }
-
-    @Override
-    public boolean hasSymbol() {
-        return getSymbol() != null && !getSymbol().isEmpty();
     }
 
     @Override

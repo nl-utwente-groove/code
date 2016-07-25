@@ -16,9 +16,6 @@
  */
 package groove.util.parse;
 
-import groove.io.HTMLConverter;
-import groove.util.Groove;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +24,9 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import groove.io.HTMLConverter;
+import groove.util.Groove;
 
 /**
  * Interface for basic parser functionality.
@@ -52,8 +52,10 @@ abstract public interface Parser<T> {
      * type of this parser.
      * Will return the default value on {@code null} or the empty string, if
      * the parser has a default value.
-     * @param input the text to be parsed; if {@code null} or empty,
-     * @return a value corresponding to {@code text}
+     * @param input the text to be parsed
+     * @return a value corresponding to {@code text}. If {@code text} is {@code null} or
+     * empty, returns the default value if any.
+     * @throws FormatException if the input string cannot be parsed
      */
     public T parse(String input) throws FormatException;
 
