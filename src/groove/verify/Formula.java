@@ -35,20 +35,26 @@ import static groove.verify.LogicOp.S_RELEASE;
 import static groove.verify.LogicOp.TRUE;
 import static groove.verify.LogicOp.UNTIL;
 import static groove.verify.LogicOp.W_UNTIL;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import groove.algebra.Constant;
-import groove.algebra.Sort;
+import groove.util.Exceptions;
 import groove.util.line.Line;
+import groove.util.parse.ATermTree;
 import groove.util.parse.FormatException;
 import groove.util.parse.Id;
 import groove.util.parse.IdValidator;
-import groove.util.parse.TermTree;
+import groove.verify.Proposition.Arg;
+import groove.verify.Proposition.Kind;
 
 /**
  * Data structure for temporal formulae.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-28 05:58:22 $
  */
-public class Formula extends TermTree<LogicOp,Formula> {
+public class Formula extends ATermTree<LogicOp,Formula> {
     /** Default constructor filling all fields. */
     Formula(LogicOp op, Formula arg1, Formula arg2) {
         super(op);
@@ -62,16 +68,31 @@ public class Formula extends TermTree<LogicOp,Formula> {
         }
     }
 
-    /** Constructor for an atom (proposition, call or constant). */
-    Formula(LogicOp op) {
-        this(op, null, null);
-    }
-
     /** Constructor for a unary operator. */
     Formula(LogicOp operator, Formula arg) {
         this(operator, arg, null);
         assert operator.getArity() == 1;
     }
+
+    /** Constructor for an initially empty tree. */
+    Formula(LogicOp op) {
+        this(op, null, null);
+    }
+
+    /** Returns the optional proposition in this formula. */
+    public Proposition getProp() {
+        return this.prop;
+    }
+
+    void setProp(Proposition prop) {
+        assert!isFixed();
+        this.prop = prop;
+    }
+
+    /** The optional proposition in this formula.
+     * The field is non-final to allow cloning to work properly.
+     */
+    private Proposition prop;
 
     /** Appends a given string buffer with a string description of this formula. */
     private void toString(StringBuilder b) {
@@ -96,9 +117,12 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * Appends a given string builder with a string description of this nullary formula.
      */
     private void toString2(StringBuilder b) {
-        boolean arg1Par = getArg1().getOp().getPriority() <= getOp().getPriority();
-        boolean arg2Par = getArg2().getOp().getPriority() < getOp().getPriority();
-        boolean opLetter = Character.isLetter(getOp().toString().charAt(0));
+        boolean arg1Par = getArg1().getOp()
+            .getPriority() <= getOp().getPriority();
+        boolean arg2Par = getArg2().getOp()
+            .getPriority() < getOp().getPriority();
+        boolean opLetter = Character.isLetter(getOp().toString()
+            .charAt(0));
         if (arg1Par) {
             getArg1().toParString(b);
         } else {
@@ -122,14 +146,16 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * Appends a given string builder with a string description of this nullary formula.
      */
     private void toString0(StringBuilder b) {
-        if (getOp() == PROP) {
-            if (hasId()) {
-                b.append(getId().getName());
-            } else {
-                b.append(getConstant().getSymbol());
-            }
-        } else {
-            b.append(getOp());
+        switch (getOp()) {
+        case TRUE:
+        case FALSE:
+            b.append(getOp().getSymbol());
+            break;
+        case PROP:
+            b.append(getProp().toString());
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -138,10 +164,12 @@ public class Formula extends TermTree<LogicOp,Formula> {
      */
     private void toString1(StringBuilder b) {
         b.append(getOp());
-        if (getArg1().getOp().getPriority() < getOp().getPriority()) {
+        if (getArg1().getOp()
+            .getPriority() < getOp().getPriority()) {
             getArg1().toParString(b);
         } else {
-            if (Character.isLetter(getOp().toString().charAt(0))) {
+            if (Character.isLetter(getOp().toString()
+                .charAt(0))) {
                 b.append(' ');
             }
             getArg1().toString(b);
@@ -168,61 +196,8 @@ public class Formula extends TermTree<LogicOp,Formula> {
         return getArgs().size() >= 2 ? getArg(1) : null;
     }
 
-    @Override
-    public void setConstant(Constant constant) {
-        if (getOp() == PROP && constant.getSort() == Sort.STRING && isId(constant.getStringRepr())) {
-            super.setId(new Id(constant.getStringRepr()));
-        } else {
-            super.setConstant(constant);
-        }
-    }
-
-    @Override
-    protected Line getOpLine(boolean addSpaces) {
-        Line result;
-        if (addSpaces) {
-            // spaces are already added; no need to do wnything extra
-            result = super.getOpLine(addSpaces);
-        } else {
-            // for temporal operators, spaces are required to maintain parsability
-            int priority = getOp().getPriority();
-            switch (getOp().getKind()) {
-            case TEMP_PREFIX:
-                if (getArg1().getOp().getPriority() <= priority) {
-                    // operand has lower priority and hence parentheses are inserted
-                    // or operand is another temporal prefix
-                    // so no extra spaces are needed
-                    result = super.getOpLine(addSpaces);
-                } else {
-                    result = Line.atom(getOp().getSymbol() + " ");
-                }
-                break;
-            case TEMP_INFIX:
-                String left = getArg1().getOp().getPriority() <= priority ? "" : " ";
-                String right = getArg2().getOp().getPriority() <= priority ? "" : " ";
-                result = Line.atom(left + getOp().getSymbol() + right);
-                break;
-            default:
-                result = super.getOpLine(addSpaces);
-            }
-        }
-        return result;
-    }
-
-    /** Returns the proposition wrapped in this formula, if any. */
-    public String getProp() {
-        if (hasConstant()) {
-            assert getConstant().getSort() == Sort.STRING;
-            return getConstant().getStringRepr();
-        } else if (hasId()) {
-            return getId().getName();
-        } else {
-            return "";
-        }
-    }
-
     /**
-     * Returns the particular logic of this formula, if any.
+     * Indicates if this formula has a logic value set.
      * Convenience method for {@code getLogic() != null}.
      * @see #getLogic()
      */
@@ -303,15 +278,8 @@ public class Formula extends TermTree<LogicOp,Formula> {
         case FALSE:
             result = this;
             break;
-        case CALL:
-            throw new FormatException("Rule call of '%s' not yet supported in CTL",
-                getId().getName());
-        case ARG:
-            // this is called recursively but can be ignored
-            result = null;
-            break;
         case NOT:
-            result = Not(getArg1().toCtlFormula());
+            result = not(getArg1().toCtlFormula());
             break;
         case OR:
         case AND:
@@ -338,18 +306,18 @@ public class Formula extends TermTree<LogicOp,Formula> {
             Formula subArg2 = getArg1().getArg2();
             switch (subKind) {
             case NEXT:
-                result = new Formula(getOp(), Next(subArg1.toCtlFormula()));
+                result = new Formula(getOp(), next(subArg1.toCtlFormula()));
                 break;
             case ALWAYS:
                 LogicOp dual = getOp() == EXISTS ? FORALL : EXISTS;
-                result = Not(new Formula(dual, Until(True(), Not(subArg1.toCtlFormula()))));
+                result = not(new Formula(dual, until(tt(), not(subArg1.toCtlFormula()))));
                 break;
             case EVENTUALLY:
-                result = new Formula(getOp(), Until(True(), subArg1.toCtlFormula()));
+                result = new Formula(getOp(), until(tt(), subArg1.toCtlFormula()));
                 break;
             case UNTIL:
                 result =
-                    new Formula(getOp(), Until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                    new Formula(getOp(), until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
                 break;
             case W_UNTIL:
             case RELEASE:
@@ -416,7 +384,12 @@ public class Formula extends TermTree<LogicOp,Formula> {
         case EXISTS:
             throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getOp());
         case PROP:
-            return gov.nasa.ltl.trans.Formula.Proposition(getProp());
+            Proposition prop = getProp();
+            if (prop.getKind() == Kind.CALL) {
+                throw new FormatException("Rule call of '%s' not yet supported in LTL", prop.getId()
+                    .getName());
+            }
+            return gov.nasa.ltl.trans.Formula.Proposition(getProp().toString());
         case TRUE:
             return gov.nasa.ltl.trans.Formula.True();
         case FALSE:
@@ -442,17 +415,11 @@ public class Formula extends TermTree<LogicOp,Formula> {
         case EVENTUALLY:
             return gov.nasa.ltl.trans.Formula.Eventually(arg1);
         case EQUIV:
-            return And(Implies(getArg1(), getArg2()), Follows(getArg1(), getArg2())).toLtlFormula();
+            return and(implies(getArg1(), getArg2()), follows(getArg1(), getArg2())).toLtlFormula();
         case FOLLOWS:
-            return Or(getArg1(), Not(getArg2())).toLtlFormula();
+            return or(getArg1(), not(getArg2())).toLtlFormula();
         case IMPLIES:
-            return Or(Not(getArg1()), getArg2()).toLtlFormula();
-        case CALL:
-            throw new FormatException("Rule call of '%s' not yet supported in LTL",
-                getId().getName());
-        case ARG:
-            // this is called recursively but can be ignored
-            return null;
+            return or(not(getArg1()), getArg2()).toLtlFormula();
         }
         throw new FormatException("Unknown temporal operator %s", getOp());
     }
@@ -460,6 +427,100 @@ public class Formula extends TermTree<LogicOp,Formula> {
     @Override
     public Formula createTree(LogicOp op) {
         return new Formula(op);
+    }
+
+    @Override
+    public Formula clone() {
+        Formula result = super.clone();
+        result.prop = this.prop;
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        if (getOp() == LogicOp.PROP) {
+            result = prime * result + this.prop.hashCode();
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!(obj instanceof Formula)) {
+            return false;
+        }
+        Formula other = (Formula) obj;
+        if (getOp() == PROP && !this.prop.equals(other.prop)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected Line toOpLine(boolean addSpaces) {
+        Line result;
+        if (addSpaces) {
+            // spaces are already added; no need to do wnything extra
+            result = super.toOpLine(addSpaces);
+        } else {
+            // for temporal operators, spaces are required to maintain parsability
+            int priority = getOp().getPriority();
+            switch (getOp().getKind()) {
+            case TEMP_PREFIX:
+                if (getArg1().getOp()
+                    .getPriority() <= priority) {
+                    // operand has lower priority and hence parentheses are inserted
+                    // or operand is another temporal prefix
+                    // so no extra spaces are needed
+                    result = super.toOpLine(addSpaces);
+                } else {
+                    result = Line.atom(getOp().getSymbol() + " ");
+                }
+                break;
+            case TEMP_INFIX:
+                String left = getArg1().getOp()
+                    .getPriority() <= priority ? "" : " ";
+                String right = getArg2().getOp()
+                    .getPriority() <= priority ? "" : " ";
+                result = Line.atom(left + getOp().getSymbol() + right);
+                break;
+            default:
+                result = super.toOpLine(addSpaces);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected Line toAtomLine(boolean spaces) {
+        Line result;
+        switch (getOp()) {
+        case TRUE:
+        case FALSE:
+            result = Line.atom(getOp().getSymbol());
+            break;
+        case PROP:
+            result = getProp().toLine(spaces);
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
+        return result;
+    }
+
+    /* Atoms without symbols must be propositions. */
+    @Override
+    protected String toAtomString() {
+        assert getOp() == PROP;
+        return getProp().toString();
     }
 
     /** Tests if a given string can be understood as an atom without
@@ -472,153 +533,164 @@ public class Formula extends TermTree<LogicOp,Formula> {
         return IdValidator.JAVA_ID.isValid(text);
     }
 
-    /** Factory method for an atomic formula testing for a string constant. */
-    public static Formula Prop(String prop) {
-        Formula result = new Formula(PROP);
-        result.setConstant(Constant.instance(prop));
-        result.setFixed();
-        return result;
+    /** Factory method for an atomic proposition testing for a label constant. */
+    public static Formula atom(String label) {
+        return atom(new Proposition(label));
     }
 
-    /** Factory method for an atomic formula testing for an identifier. */
-    public static Formula Prop(Id id) {
-        Formula result = new Formula(PROP);
-        result.setId(id);
-        result.setFixed();
-        return result;
+    /** Factory method for an atomic proposition testing for an identifier. */
+    public static Formula atom(Id id) {
+        return atom(new Proposition(id));
     }
 
-    /** Factory method for a propositional formula consisting of a rule call. */
-    public static Formula Call(Id id, String... args) {
-        Formula result = new Formula(LogicOp.CALL);
-        result.setId(id);
-        for (String arg : args) {
-            Formula f = new Formula(LogicOp.ARG);
-            if (isId(arg)) {
-                f.setId(Id.id(arg));
+    /** Factory method for a propositional formula consisting of a rule call.
+     * The arguments are parsed into identifiers or constants.
+     * @param args list of arguments: Either {@link String} values to be interpreted
+     * as {@link Id} or as
+     */
+    public static Formula call(Id id, Object... args) {
+        List<Arg> callArgs = new ArrayList<>();
+        for (Object arg : args) {
+            Arg callArg;
+            if (arg instanceof String) {
+                String stringArg = (String) arg;
+                if (isId(stringArg)) {
+                    callArg = new Arg(Id.id(stringArg));
+                } else if (arg.equals(Arg.WILD_TEXT)) {
+                    callArg = Arg.WILD_ARG;
+                } else {
+                    throw Exceptions.illegalArg("Illegal call argument '%s'", arg);
+                }
             } else {
-                f.setConstant(Constant.instance(arg));
+                callArg = new Arg((Constant) arg);
             }
-            result.addArg(f);
+            callArgs.add(callArg);
         }
+        return atom(new Proposition(id, callArgs));
+    }
+
+    /** Factory method for an atomic formula wrapping a given proposition. */
+    public static Formula atom(Proposition prop) {
+        Formula result = new Formula(PROP);
+        result.setProp(prop);
         result.setFixed();
         return result;
     }
 
     /** The constant formula for true. */
-    public static final Formula True() {
+    public static final Formula tt() {
         Formula result = new Formula(TRUE);
         result.setFixed();
         return result;
     }
 
     /** The constant formula for false. */
-    public static final Formula False() {
+    public static final Formula ff() {
         Formula result = new Formula(FALSE);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a negation. */
-    public static Formula Not(Formula f) {
+    public static Formula not(Formula f) {
         Formula result = new Formula(NOT, f);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a conjunction. */
-    public static Formula And(Formula f1, Formula f2) {
+    public static Formula and(Formula f1, Formula f2) {
         Formula result = new Formula(AND, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a disjunction. */
-    public static Formula Or(Formula f1, Formula f2) {
+    public static Formula or(Formula f1, Formula f2) {
         Formula result = new Formula(OR, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an implication. */
-    public static Formula Implies(Formula f1, Formula f2) {
+    public static Formula implies(Formula f1, Formula f2) {
         Formula result = new Formula(IMPLIES, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an inverse implication. */
-    public static Formula Follows(Formula f1, Formula f2) {
+    public static Formula follows(Formula f1, Formula f2) {
         Formula result = new Formula(FOLLOWS, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an equivalence. */
-    public static Formula Equiv(Formula f1, Formula f2) {
+    public static Formula equiv(Formula f1, Formula f2) {
         Formula result = new Formula(EQUIV, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an until formula. */
-    public static Formula Until(Formula f1, Formula f2) {
+    public static Formula until(Formula f1, Formula f2) {
         Formula result = new Formula(UNTIL, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an until formula. */
-    public static Formula Next(Formula f) {
+    public static Formula next(Formula f) {
         Formula result = new Formula(NEXT, f);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a release formula. */
-    public static Formula Release(Formula f1, Formula f2) {
+    public static Formula release(Formula f1, Formula f2) {
         Formula result = new Formula(RELEASE, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a weak until formula. */
-    public static Formula WUntil(Formula f1, Formula f2) {
+    public static Formula wUntil(Formula f1, Formula f2) {
         Formula result = new Formula(W_UNTIL, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a strong release formula. */
-    public static Formula SRelease(Formula f1, Formula f2) {
+    public static Formula sRelease(Formula f1, Formula f2) {
         Formula result = new Formula(S_RELEASE, f1, f2);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an always-true formula. */
-    public static Formula Always(Formula f) {
+    public static Formula always(Formula f) {
         Formula result = new Formula(ALWAYS, f);
         result.setFixed();
         return result;
     }
 
     /** Creator method for an eventually-true formula. */
-    public static Formula Eventually(Formula f) {
+    public static Formula eventually(Formula f) {
         Formula result = new Formula(EVENTUALLY, f);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a for-all-paths formula. */
-    public static Formula Forall(Formula f) {
+    public static Formula forall(Formula f) {
         Formula result = new Formula(FORALL, f);
         result.setFixed();
         return result;
     }
 
     /** Creator method for a for-some-path formula. */
-    public static Formula Exists(Formula f) {
+    public static Formula exists(Formula f) {
         Formula result = new Formula(EXISTS, f);
         result.setFixed();
         return result;
@@ -630,8 +702,10 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * @throws FormatException if there were parse errors
      */
     public static Formula parse(String input) throws FormatException {
-        Formula result = FormulaParser.instance().parse(input);
-        result.getErrors().throwException();
+        Formula result = FormulaParser.instance()
+            .parse(input);
+        result.getErrors()
+            .throwException();
         return result;
     }
 
@@ -642,8 +716,10 @@ public class Formula extends TermTree<LogicOp,Formula> {
      * @throws FormatException if there were parse errors
      */
     public static Formula parse(Logic logic, String input) throws FormatException {
-        Formula result = FormulaParser.instance(logic).parse(input);
-        result.getErrors().throwException();
+        Formula result = FormulaParser.instance(logic)
+            .parse(input);
+        result.getErrors()
+            .throwException();
         return result;
     }
 }

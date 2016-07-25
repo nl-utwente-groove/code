@@ -16,19 +16,6 @@
  */
 package groove.algebra.syntax;
 
-import groove.algebra.Constant;
-import groove.algebra.IntSignature;
-import groove.algebra.Operator;
-import groove.algebra.RealSignature;
-import groove.algebra.Signature.OpValue;
-import groove.algebra.Sort;
-import groove.util.parse.DefaultOp;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatException;
-import groove.util.parse.Id;
-import groove.util.parse.OpKind;
-import groove.util.parse.TermTree;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,12 +23,25 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import groove.algebra.Constant;
+import groove.algebra.IntSignature;
+import groove.algebra.Operator;
+import groove.algebra.RealSignature;
+import groove.algebra.Signature.OpValue;
+import groove.algebra.Sort;
+import groove.util.parse.AExprTree;
+import groove.util.parse.DefaultOp;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatException;
+import groove.util.parse.Id;
+import groove.util.parse.OpKind;
+
 /**
  * Expression tree, with functionality to convert to an {@link Expression} or {@link Assignment}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
+public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     /**
      * Constructs a new expression with a given top-level operator.
      */
@@ -52,7 +52,7 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
 
     /** Sets an explicit (non-{@code null}) sort declaration for this expression. */
     public void setSort(Sort sort) {
-        assert !isFixed();
+        assert!isFixed();
         assert sort != null;
         this.sort = sort;
         if (hasConstant() && sort != getConstant().getSort()) {
@@ -82,7 +82,8 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
         if (getOp() != ASSIGN) {
             throw new FormatException("'%s' is not an assignment", getParseString());
         }
-        String lhs = getArg(0).getId().getName();
+        String lhs = getArg(0).getId()
+            .getName();
         Expression rhs = getArg(1).toExpression();
         Assignment result = new Assignment(lhs, rhs);
         result.setParseString(getParseString());
@@ -111,7 +112,9 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
             throw new FormatException("Can't derive type of '%s': add type prefix",
                 getParseString());
         }
-        Expression result = choice.values().iterator().next();
+        Expression result = choice.values()
+            .iterator()
+            .next();
         result.setParseString(getParseString());
         return result;
     }
@@ -271,7 +274,8 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
         List<Sort> parTypes = op.getParamTypes();
         List<Expression> selectedArgs = new ArrayList<Expression>();
         for (int i = 0; i < args.size(); i++) {
-            Expression arg = args.get(i).get(parTypes.get(i));
+            Expression arg = args.get(i)
+                .get(parTypes.get(i));
             if (arg == null) {
                 throw new FormatException("Parameter %s of '%s' should have type %s", i,
                     getParseString(), parTypes.get(i));
@@ -283,18 +287,12 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
         OpValue opValue = op.getOpValue();
         if ((opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG)
             && selectedArgs.get(0) instanceof Constant) {
-            return op.getResultType().createConstant(op.getSymbol()
-                + selectedArgs.get(0).toDisplayString());
+            return op.getResultType()
+                .createConstant(op.getSymbol() + selectedArgs.get(0)
+                    .toDisplayString());
         } else {
             return new CallExpr(hasSort(), op, selectedArgs);
         }
-    }
-
-    @Override
-    public ExprTree clone() {
-        ExprTree result = super.clone();
-        result.sort = this.sort;
-        return result;
     }
 
     @Override
@@ -361,11 +359,10 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
      */
     static class ExprOp extends DefaultOp {
         /**
-         * Constructs an operator with a given kind and symbol.
-         * The arity is derived from the kind.
+         * Constructs the unique atomic operator, with empty symbol.
          */
-        public ExprOp(OpKind kind, String symbol) {
-            super(kind, symbol);
+        private ExprOp() {
+            super();
         }
 
         /**
@@ -402,5 +399,12 @@ public class ExprTree extends TermTree<ExprTree.ExprOp,ExprTree> {
         public String toString() {
             return "ExprOp[" + this.sortOps + "]";
         }
+
+        /** Returns the unique atom operator. */
+        public static ExprOp atom() {
+            return ATOM;
+        }
+
+        private static ExprOp ATOM = new ExprOp();
     }
 }

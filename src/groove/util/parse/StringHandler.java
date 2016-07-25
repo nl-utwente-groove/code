@@ -16,8 +16,6 @@
  */
 package groove.util.parse;
 
-import groove.util.Pair;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+
+import groove.util.Pair;
 
 /**
  * A class that helps parse an expression.
@@ -309,8 +309,8 @@ public class StringHandler {
             }
             for (int i = 0; i < result.length; i++) {
                 if (result[i].length() == 0) {
-                    throw new FormatException("Infix operator '" + oper
-                        + "' has empty operand nr. " + i + " in \"" + expr + "\"");
+                    throw new FormatException("Infix operator '" + oper + "' has empty operand nr. "
+                        + i + " in \"" + expr + "\"");
                 }
             }
             return result;
@@ -322,11 +322,11 @@ public class StringHandler {
             if (operIndex < 0) {
                 return null;
             } else if (operIndex > 0) {
-                throw new FormatException("Prefix operator '" + oper
-                    + "' occurs in wrong position in \"" + expr + "\"");
+                throw new FormatException(
+                    "Prefix operator '" + oper + "' occurs in wrong position in \"" + expr + "\"");
             } else if (expr.length() == oper.length()) {
-                throw new FormatException("Prefix operator '" + oper + "' has empty operand in \""
-                    + expr + "\"");
+                throw new FormatException(
+                    "Prefix operator '" + oper + "' has empty operand in \"" + expr + "\"");
             } else {
                 return new String[] {unparse(parsedBasis.substring(oper.length()), replacements)};
             }
@@ -338,18 +338,18 @@ public class StringHandler {
             if (operIndex < 0) {
                 return null;
             } else if (operIndex < parsedBasis.length() - oper.length()) {
-                throw new FormatException("Postfix operator '" + oper
-                    + "' occurs in wrong position in \"" + expr + "\"");
+                throw new FormatException(
+                    "Postfix operator '" + oper + "' occurs in wrong position in \"" + expr + "\"");
             } else if (operIndex == 0) {
-                throw new FormatException("Postfix operator '" + oper + "' has empty operand in \""
-                    + expr + "\"");
+                throw new FormatException(
+                    "Postfix operator '" + oper + "' has empty operand in \"" + expr + "\"");
             } else {
                 return new String[] {unparse(parsedBasis.substring(0, operIndex), replacements)};
             }
         default:
             // this case should not occur
-            throw new IllegalArgumentException("Illegal position parameter value '" + position
-                + "'");
+            throw new IllegalArgumentException(
+                "Illegal position parameter value '" + position + "'");
         }
     }
 
@@ -860,8 +860,8 @@ public class StringHandler {
     static private void testSplit(String expr, String oper, int position) {
         try {
             System.out.print("Splitting: \"" + expr + "\" according to ");
-            System.out.print(position == INFIX_POSITION ? "infix" : position == PREFIX_POSITION
-                ? "prefix" : "postfix");
+            System.out.print(position == INFIX_POSITION ? "infix"
+                : position == PREFIX_POSITION ? "prefix" : "postfix");
             System.out.println(" operator \"" + oper + "\"");
             String[] result = splitExpr(expr, oper, position);
             System.out.print("Result: ");
@@ -884,8 +884,8 @@ public class StringHandler {
     }
 
     static private void testTrim(String expr, char open, char close) {
-        System.out.println("Trimming bracket pair '" + open + "', '" + close + "' from \"" + expr
-            + "\"");
+        System.out
+            .println("Trimming bracket pair '" + open + "', '" + close + "' from \"" + expr + "\"");
         String result;
         try {
             result = toTrimmed(expr.trim(), open, close);
@@ -914,12 +914,16 @@ public class StringHandler {
     };
 
     /**
+     * Tests whether a given string is a valid identifier.
      * Invokes {@link IdValidator#isValid(String)} on {@link #ID_VALIDATOR}.
      */
     static public boolean isIdentifier(String text) {
         return ID_VALIDATOR.isValid(text);
     }
 
+    /** The underscore character. This is allowed as part of an identifier, as long
+     * as the identifier also contains alphanumeric characters. */
+    static public final char UNDER = '_';
     /** The hyphen character. This is allowed as part of an identifier. */
     static public final char HYPHEN = '-';
     /** The single quote character, to control parsing. */
@@ -988,8 +992,8 @@ public class StringHandler {
      * {@link #ANGLE_BRACKETS}, {@link #CURLY_BRACKETS} and
      * {@link #SQUARE_BRACKETS}.
      */
-    static private final char[][] DEFAULT_BRACKETS = {ROUND_BRACKETS, ANGLE_BRACKETS,
-        CURLY_BRACKETS, SQUARE_BRACKETS};
+    static private final char[][] DEFAULT_BRACKETS =
+        {ROUND_BRACKETS, ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS};
     /** The default character to use as a placeholder in the parse result. */
     static public final char PLACEHOLDER = '\uFFFF';
 

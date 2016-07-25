@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g 2015-12-06 12:07:15
+// $ANTLR 3.4 E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g 2016-06-29 23:28:21
 
 package groove.explore.syntax;
 import groove.util.parse.FormatErrorSet;
@@ -79,7 +79,7 @@ public TreeAdaptor getTreeAdaptor() {
     return adaptor;
 }
     public String[] getTokenNames() { return FormulaParser.tokenNames; }
-    public String getGrammarFileName() { return "E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g"; }
+    public String getGrammarFileName() { return "E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g"; }
 
 
         private FormatErrorSet errors = new FormatErrorSet();
@@ -103,7 +103,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "formula"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:45:1: formula : or_expr EOF !;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:45:1: formula : or_expr EOF !;
     public final FormulaParser.formula_return formula() throws RecognitionException {
         FormulaParser.formula_return retval = new FormulaParser.formula_return();
         retval.start = input.LT(1);
@@ -118,8 +118,8 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree EOF2_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:46:3: ( or_expr EOF !)
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:46:5: or_expr EOF !
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:46:3: ( or_expr EOF !)
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:46:5: or_expr EOF !
             {
             root_0 = (FormulaTree)adaptor.nil();
 
@@ -164,7 +164,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "or_expr"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:50:1: or_expr : and_expr ( ( BAR | OR ) ^ and_expr )* ;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:50:1: or_expr : and_expr ( ( BAR | OR ) ^ and_expr )* ;
     public final FormulaParser.or_expr_return or_expr() throws RecognitionException {
         FormulaParser.or_expr_return retval = new FormulaParser.or_expr_return();
         retval.start = input.LT(1);
@@ -181,8 +181,8 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree set4_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:51:3: ( and_expr ( ( BAR | OR ) ^ and_expr )* )
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:51:5: and_expr ( ( BAR | OR ) ^ and_expr )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:51:3: ( and_expr ( ( BAR | OR ) ^ and_expr )* )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:51:5: and_expr ( ( BAR | OR ) ^ and_expr )*
             {
             root_0 = (FormulaTree)adaptor.nil();
 
@@ -194,7 +194,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, and_expr3.getTree());
 
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:51:14: ( ( BAR | OR ) ^ and_expr )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:51:14: ( ( BAR | OR ) ^ and_expr )*
             loop1:
             do {
                 int alt1=2;
@@ -207,7 +207,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt1) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:51:15: ( BAR | OR ) ^ and_expr
+            	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:51:15: ( BAR | OR ) ^ and_expr
             	    {
             	    set4=(Token)input.LT(1);
 
@@ -273,7 +273,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "and_expr"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:55:1: and_expr : impl_expr ( ( AMP | AND ) ^ impl_expr )* ;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:55:1: and_expr : impl_expr ( ( AMP | AND ) ^ impl_expr )* ;
     public final FormulaParser.and_expr_return and_expr() throws RecognitionException {
         FormulaParser.and_expr_return retval = new FormulaParser.and_expr_return();
         retval.start = input.LT(1);
@@ -290,8 +290,8 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree set7_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:56:3: ( impl_expr ( ( AMP | AND ) ^ impl_expr )* )
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:56:5: impl_expr ( ( AMP | AND ) ^ impl_expr )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:56:3: ( impl_expr ( ( AMP | AND ) ^ impl_expr )* )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:56:5: impl_expr ( ( AMP | AND ) ^ impl_expr )*
             {
             root_0 = (FormulaTree)adaptor.nil();
 
@@ -303,7 +303,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, impl_expr6.getTree());
 
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:56:15: ( ( AMP | AND ) ^ impl_expr )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:56:15: ( ( AMP | AND ) ^ impl_expr )*
             loop2:
             do {
                 int alt2=2;
@@ -316,7 +316,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt2) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:56:16: ( AMP | AND ) ^ impl_expr
+            	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:56:16: ( AMP | AND ) ^ impl_expr
             	    {
             	    set7=(Token)input.LT(1);
 
@@ -382,7 +382,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "impl_expr"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:60:1: impl_expr : not_expr ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )* ;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:60:1: impl_expr : not_expr ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )* ;
     public final FormulaParser.impl_expr_return impl_expr() throws RecognitionException {
         FormulaParser.impl_expr_return retval = new FormulaParser.impl_expr_return();
         retval.start = input.LT(1);
@@ -399,8 +399,8 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree set10_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:61:3: ( not_expr ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )* )
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:61:5: not_expr ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:61:3: ( not_expr ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )* )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:61:5: not_expr ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )*
             {
             root_0 = (FormulaTree)adaptor.nil();
 
@@ -412,7 +412,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             adaptor.addChild(root_0, not_expr9.getTree());
 
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:61:14: ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:61:14: ( ( IMPL | IMPL_BY | EQUIV ) ^ not_expr )*
             loop3:
             do {
                 int alt3=2;
@@ -425,7 +425,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt3) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:61:15: ( IMPL | IMPL_BY | EQUIV ) ^ not_expr
+            	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:61:15: ( IMPL | IMPL_BY | EQUIV ) ^ not_expr
             	    {
             	    set10=(Token)input.LT(1);
 
@@ -491,7 +491,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "not_expr"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:65:1: not_expr : ( NOT ^ not_expr | atom_expr );
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:65:1: not_expr : ( NOT ^ not_expr | atom_expr );
     public final FormulaParser.not_expr_return not_expr() throws RecognitionException {
         FormulaParser.not_expr_return retval = new FormulaParser.not_expr_return();
         retval.start = input.LT(1);
@@ -508,7 +508,7 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree NOT12_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:66:3: ( NOT ^ not_expr | atom_expr )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:66:3: ( NOT ^ not_expr | atom_expr )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -527,7 +527,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt4) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:66:5: NOT ^ not_expr
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:66:5: NOT ^ not_expr
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -549,7 +549,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:67:5: atom_expr
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:67:5: atom_expr
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -594,7 +594,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "atom_expr"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:70:1: atom_expr : ( TRUE | FALSE | call | par_expr );
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:70:1: atom_expr : ( TRUE | FALSE | call | par_expr );
     public final FormulaParser.atom_expr_return atom_expr() throws RecognitionException {
         FormulaParser.atom_expr_return retval = new FormulaParser.atom_expr_return();
         retval.start = input.LT(1);
@@ -613,7 +613,7 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree FALSE16_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:71:3: ( TRUE | FALSE | call | par_expr )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:71:3: ( TRUE | FALSE | call | par_expr )
             int alt5=4;
             switch ( input.LA(1) ) {
             case TRUE:
@@ -646,7 +646,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             switch (alt5) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:71:5: TRUE
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:71:5: TRUE
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -661,7 +661,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:72:5: FALSE
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:72:5: FALSE
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -676,7 +676,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:73:5: call
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:73:5: call
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -691,7 +691,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 4 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:74:5: par_expr
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:74:5: par_expr
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -736,7 +736,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "par_expr"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:78:1: par_expr : LPAR ^ or_expr RPAR ;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:78:1: par_expr : LPAR ^ or_expr RPAR ;
     public final FormulaParser.par_expr_return par_expr() throws RecognitionException {
         FormulaParser.par_expr_return retval = new FormulaParser.par_expr_return();
         retval.start = input.LT(1);
@@ -753,8 +753,8 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree RPAR21_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:79:3: ( LPAR ^ or_expr RPAR )
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:79:5: LPAR ^ or_expr RPAR
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:79:3: ( LPAR ^ or_expr RPAR )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:79:5: LPAR ^ or_expr RPAR
             {
             root_0 = (FormulaTree)adaptor.nil();
 
@@ -811,7 +811,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "call"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:82:1: call : qual_name LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( CALL qual_name ( arg )* RPAR[$close,\"\"] ) ;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:82:1: call : qual_name LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( CALL qual_name ( arg )* RPAR[$close,\"\"] ) ;
     public final FormulaParser.call_return call() throws RecognitionException {
         FormulaParser.call_return retval = new FormulaParser.call_return();
         retval.start = input.LT(1);
@@ -838,8 +838,8 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleSubtreeStream stream_arg=new RewriteRuleSubtreeStream(adaptor,"rule arg");
         RewriteRuleSubtreeStream stream_qual_name=new RewriteRuleSubtreeStream(adaptor,"rule qual_name");
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:83:3: ( qual_name LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( CALL qual_name ( arg )* RPAR[$close,\"\"] ) )
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:83:5: qual_name LPAR ( arg ( COMMA arg )* )? close= RPAR
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:83:3: ( qual_name LPAR ( arg ( COMMA arg )* )? close= RPAR -> ^( CALL qual_name ( arg )* RPAR[$close,\"\"] ) )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:83:5: qual_name LPAR ( arg ( COMMA arg )* )? close= RPAR
             {
             pushFollow(FOLLOW_qual_name_in_call297);
             qual_name22=qual_name();
@@ -852,7 +852,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_LPAR.add(LPAR23);
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:83:20: ( arg ( COMMA arg )* )?
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:83:20: ( arg ( COMMA arg )* )?
             int alt7=2;
             int LA7_0 = input.LA(1);
 
@@ -861,7 +861,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
             switch (alt7) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:83:21: arg ( COMMA arg )*
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:83:21: arg ( COMMA arg )*
                     {
                     pushFollow(FOLLOW_arg_in_call302);
                     arg24=arg();
@@ -870,7 +870,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                     stream_arg.add(arg24.getTree());
 
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:83:25: ( COMMA arg )*
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:83:25: ( COMMA arg )*
                     loop6:
                     do {
                         int alt6=2;
@@ -883,7 +883,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:83:26: COMMA arg
+                    	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:83:26: COMMA arg
                     	    {
                     	    COMMA25=(Token)match(input,COMMA,FOLLOW_COMMA_in_call305);  
                     	    stream_COMMA.add(COMMA25);
@@ -916,7 +916,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: RPAR, qual_name, arg
+            // elements: RPAR, arg, qual_name
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -928,7 +928,7 @@ public TreeAdaptor getTreeAdaptor() {
             root_0 = (FormulaTree)adaptor.nil();
             // 84:4: -> ^( CALL qual_name ( arg )* RPAR[$close,\"\"] )
             {
-                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:84:7: ^( CALL qual_name ( arg )* RPAR[$close,\"\"] )
+                // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:84:7: ^( CALL qual_name ( arg )* RPAR[$close,\"\"] )
                 {
                 FormulaTree root_1 = (FormulaTree)adaptor.nil();
                 root_1 = (FormulaTree)adaptor.becomeRoot(
@@ -937,7 +937,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 adaptor.addChild(root_1, stream_qual_name.nextTree());
 
-                // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:84:24: ( arg )*
+                // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:84:24: ( arg )*
                 while ( stream_arg.hasNext() ) {
                     adaptor.addChild(root_1, stream_arg.nextTree());
 
@@ -987,7 +987,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "qual_name"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:87:1: qual_name : ID ( DOT ^ ID )* ;
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:87:1: qual_name : ID ( DOT ^ ID )* ;
     public final FormulaParser.qual_name_return qual_name() throws RecognitionException {
         FormulaParser.qual_name_return retval = new FormulaParser.qual_name_return();
         retval.start = input.LT(1);
@@ -1004,8 +1004,8 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree ID29_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:88:3: ( ID ( DOT ^ ID )* )
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:88:5: ID ( DOT ^ ID )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:88:3: ( ID ( DOT ^ ID )* )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:88:5: ID ( DOT ^ ID )*
             {
             root_0 = (FormulaTree)adaptor.nil();
 
@@ -1017,7 +1017,7 @@ public TreeAdaptor getTreeAdaptor() {
             adaptor.addChild(root_0, ID27_tree);
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:88:8: ( DOT ^ ID )*
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:88:8: ( DOT ^ ID )*
             loop8:
             do {
                 int alt8=2;
@@ -1030,7 +1030,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt8) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:88:9: DOT ^ ID
+            	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:88:9: DOT ^ ID
             	    {
             	    DOT28=(Token)match(input,DOT,FOLLOW_DOT_in_qual_name348); 
             	    DOT28_tree = 
@@ -1086,7 +1086,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "arg"
-    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:92:1: arg : ( DONT_CARE | STRING_LIT | ( MINUS )? NAT_LIT ^| ( MINUS )? REAL_LIT ^| TRUE | FALSE | ID );
+    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:92:1: arg : ( DONT_CARE | STRING_LIT | ( MINUS )? NAT_LIT ^| ( MINUS )? REAL_LIT ^| TRUE | FALSE | ID );
     public final FormulaParser.arg_return arg() throws RecognitionException {
         FormulaParser.arg_return retval = new FormulaParser.arg_return();
         retval.start = input.LT(1);
@@ -1115,7 +1115,7 @@ public TreeAdaptor getTreeAdaptor() {
         FormulaTree ID38_tree=null;
 
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:93:3: ( DONT_CARE | STRING_LIT | ( MINUS )? NAT_LIT ^| ( MINUS )? REAL_LIT ^| TRUE | FALSE | ID )
+            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:93:3: ( DONT_CARE | STRING_LIT | ( MINUS )? NAT_LIT ^| ( MINUS )? REAL_LIT ^| TRUE | FALSE | ID )
             int alt11=7;
             switch ( input.LA(1) ) {
             case DONT_CARE:
@@ -1182,7 +1182,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             switch (alt11) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:93:5: DONT_CARE
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:93:5: DONT_CARE
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -1197,7 +1197,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:94:5: STRING_LIT
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:94:5: STRING_LIT
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -1212,12 +1212,12 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:95:5: ( MINUS )? NAT_LIT ^
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:95:5: ( MINUS )? NAT_LIT ^
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
 
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:95:5: ( MINUS )?
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:95:5: ( MINUS )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -1226,7 +1226,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     switch (alt9) {
                         case 1 :
-                            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:95:5: MINUS
+                            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:95:5: MINUS
                             {
                             MINUS32=(Token)match(input,MINUS,FOLLOW_MINUS_in_arg380); 
                             MINUS32_tree = 
@@ -1251,12 +1251,12 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 4 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:96:5: ( MINUS )? REAL_LIT ^
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:96:5: ( MINUS )? REAL_LIT ^
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
 
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:96:5: ( MINUS )?
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:96:5: ( MINUS )?
                     int alt10=2;
                     int LA10_0 = input.LA(1);
 
@@ -1265,7 +1265,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     switch (alt10) {
                         case 1 :
-                            // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:96:5: MINUS
+                            // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:96:5: MINUS
                             {
                             MINUS34=(Token)match(input,MINUS,FOLLOW_MINUS_in_arg390); 
                             MINUS34_tree = 
@@ -1290,7 +1290,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 5 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:97:5: TRUE
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:97:5: TRUE
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -1305,7 +1305,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 6 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:98:5: FALSE
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:98:5: FALSE
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 
@@ -1320,7 +1320,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 7 :
-                    // E:\\Eclipse\\groove\\src\\groove\\explore\\syntax\\Formula.g:99:5: ID
+                    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:99:5: ID
                     {
                     root_0 = (FormulaTree)adaptor.nil();
 

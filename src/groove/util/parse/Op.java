@@ -22,10 +22,18 @@ package groove.util.parse;
  * @version $Id$
  */
 public interface Op {
-    /** Indicates if this operator has a dedicated symbol. */
-    public boolean hasSymbol();
+    /** Indicates if this operator has a dedicated, non-empty symbol.
+     * Only operators of kind {@link OpKind#ATOM} may have an empty symbol.
+     */
+    default public boolean hasSymbol() {
+        boolean result = !getSymbol().isEmpty();
+        assert result || getKind() == OpKind.ATOM;
+        return result;
+    }
 
-    /** Returns the optional symbol for this operator. */
+    /** Returns the potentially empty symbol for this operator.
+     * @return the symbol for this operator; possibly empty but non-{@code null}
+     */
     public String getSymbol();
 
     /** Returns the operator precedence. */

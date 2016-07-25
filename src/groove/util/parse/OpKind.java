@@ -13,7 +13,8 @@ import static groove.util.parse.OpKind.Placement.PREFIX;
  */
 public enum OpKind {
     /** Dummy value used for lowest-level context of an expression.
-     * Operators of this kind will be ignored by the parser.
+     * Operators of this kind will be ignored by the parser, and so
+     * are guaranteed to never end up in a term tree.
      */
     NONE(PREFIX, NEITHER, 0),
     /** (In)equivalence. */
@@ -44,12 +45,14 @@ public enum OpKind {
     MULT(LEFT),
     /** Unary operator: unary minus. */
     UNARY(PREFIX),
-    /** Field expressions. */
+    /** Field operator. */
     FIELD(LEFT),
-    /** Call expressions. */
+    /** Call-type operator. */
     CALL(PREFIX, RIGHT, -1),
-    /** Atomic expressions: variable names and constants. */
-    ATOM(PREFIX, NEITHER, 0), ;
+    /** Atom, e.g., variable name or constant.
+     * This is the only non-dummy operator kind (e.g., not {@link #NONE}) with arity 0.
+     */
+    ATOM(PREFIX, NEITHER, 0),;
 
     private OpKind(Placement place, Direction direction, int arity) {
         this.direction = direction;
@@ -83,7 +86,7 @@ public enum OpKind {
     private final Placement place;
 
     /** Returns the number of arguments an operator of this kind expects,
-     * or -1 if the number of arguments is not fixed or unknwon.
+     * or -1 if the number of arguments is not fixed by the operator kind.
      */
     public int getArity() {
         return this.arity;
@@ -104,7 +107,7 @@ public enum OpKind {
         /** Left associative. */
         RIGHT,
         /** Not associative. */
-        NEITHER, ;
+        NEITHER,;
     }
 
     /** Operator placement. */
@@ -114,6 +117,6 @@ public enum OpKind {
         /** Postfix operator. */
         POSTFIX,
         /** Infix operator. */
-        INFIX, ;
+        INFIX,;
     }
 }

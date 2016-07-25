@@ -18,21 +18,13 @@ package groove.util.parse;
 
 import static groove.algebra.Sort.INT;
 import static groove.algebra.Sort.REAL;
-import static groove.util.parse.TermTreeParser.TokenClaz.CONST;
-import static groove.util.parse.TermTreeParser.TokenClaz.EOT;
-import static groove.util.parse.TermTreeParser.TokenClaz.LATE_OP;
-import static groove.util.parse.TermTreeParser.TokenClaz.LPAR;
-import static groove.util.parse.TermTreeParser.TokenClaz.NAME;
-import static groove.util.parse.TermTreeParser.TokenClaz.PRE_OP;
-import static groove.util.parse.TermTreeParser.TokenClaz.RPAR;
-import groove.algebra.Constant;
-import groove.algebra.Sort;
-import groove.io.Util;
-import groove.util.Duo;
-import groove.util.Pair;
-import groove.util.Triple;
-import groove.util.parse.OpKind.Direction;
-import groove.util.parse.OpKind.Placement;
+import static groove.util.parse.ATermTreeParser.TokenClaz.CONST;
+import static groove.util.parse.ATermTreeParser.TokenClaz.EOT;
+import static groove.util.parse.ATermTreeParser.TokenClaz.LATE_OP;
+import static groove.util.parse.ATermTreeParser.TokenClaz.LPAR;
+import static groove.util.parse.ATermTreeParser.TokenClaz.NAME;
+import static groove.util.parse.ATermTreeParser.TokenClaz.PRE_OP;
+import static groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +35,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import groove.algebra.Constant;
+import groove.algebra.Sort;
+import groove.io.Util;
+import groove.util.Duo;
+import groove.util.Pair;
+import groove.util.Triple;
+import groove.util.parse.OpKind.Direction;
+import groove.util.parse.OpKind.Placement;
 
 /**
  * General expression parser, parameterised with the type of operators to be recognised.
@@ -66,7 +67,7 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Id$
  */
-public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Parser<X> {
+abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> implements Parser<X> {
     /**
      * Constructs a parser recognising a given enumeration of operators.
      * Neither sort declarations nor qualified identifiers are recognised
@@ -76,14 +77,10 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * kind to be {@link OpKind#ATOM}; this kind will be used to construct
      * term instances for atomic terms
      */
-    public TermTreeParser(X prototype) {
-        this.prototype = prototype;
-        this.atomOp = prototype.getOp();
-        assert prototype.getOp().getKind() == OpKind.ATOM;
-        assert prototype.getOp() instanceof Enum;
-        @SuppressWarnings("unchecked")
-        Class<? extends O> oType = (Class<? extends O>) prototype.getOp().getClass();
-        this.ops = computeParsableOps(Arrays.asList(oType.getEnumConstants()));
+    @SuppressWarnings("unchecked")
+    protected ATermTreeParser(X prototype) {
+        this(prototype, Arrays.asList(((Class<? extends O>) prototype.getOp()
+            .getClass()).getEnumConstants()));
     }
 
     /**
@@ -97,10 +94,10 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * @param ops collection of operators to be recognised by this parser;
      * should contain exactly one instance of type {@link OpKind#ATOM}
      */
-    public TermTreeParser(X prototype, Collection<? extends O> ops) {
+    protected ATermTreeParser(X prototype, Collection<? extends O> ops) {
         this.prototype = prototype;
         this.atomOp = prototype.getOp();
-        assert prototype.getOp().getKind() == OpKind.ATOM;
+        assert!this.atomOp.hasSymbol();
         this.ops = computeParsableOps(ops);
     }
 
@@ -121,12 +118,6 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
 
     private final List<? extends O> ops;
 
-    /** Returns the type of expression operators that this parser handles. */
-    @SuppressWarnings("unchecked")
-    private Class<? extends O> getOpType() {
-        return (Class<? extends O>) getAtomOp().getClass();
-    }
-
     /** Sets the ability to recognise qualified identifiers. */
     public void setQualIds(boolean qualIds) {
         this.qualIds = qualIds;
@@ -141,7 +132,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
 
     /** Returns the (supposedly unique) atom operator used by this parser. */
     protected O getAtomOp() {
-        return this.atomOp;
+        return this.prototype.getOp();
     }
 
     private final O atomOp;
@@ -197,23 +188,18 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
 
     @Override
     public String toParsableString(Object value) {
-        return ((TermTree<?,?>) value).getParseString();
+        return ((ATermTree<?,?>) value).getParseString();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Class<X> getValueType() {
-        return (Class<X>) TermTree.class;
+        return (Class<X>) ATermTree.class;
     }
 
     @Override
     public boolean isValue(Object value) {
-        boolean result = value instanceof TermTree;
-        if (result) {
-            TermTree<?,?> expr = (TermTree<?,?>) value;
-            result = getOpType().equals(expr.getOp().getClass());
-        }
-        return result;
+        return value.getClass() == this.prototype.getClass();
     }
 
     @Override
@@ -354,11 +340,12 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     /**
      * Parses the string with which this instance was initialised,
      * in the context of an operator of a certain kind.
+     * @param context the priority level and association direction within which parsing takes place
      */
     protected X parse(OpKind context) throws FormatException {
         X result = null;
         Token nextToken = next();
-        // first parse for prefix operators to accomodate casts
+        // first parse for prefix operators to accommodate casts
         if (nextToken.has(PRE_OP)) {
             result = parsePrefixed();
         } else if (nextToken.has(LPAR)) {
@@ -403,13 +390,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * Attempts to parse the string as a constant expression.
      * The next token is known to be a constant token.
      */
-    protected X parseConst() throws FormatException {
-        X result = createTree(getAtomOp());
-        Token constToken = consume(CONST);
-        result.setConstant(constToken.createConstant());
-        setParseString(result, constToken);
-        return result;
-    }
+    abstract protected X parseConst() throws FormatException;
 
     /**
      * Attempts to parse the string as a bracketed expression.
@@ -452,7 +433,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * guaranteed to contain a prefix operator
      */
     protected X parsePrefixed(Token opToken) throws FormatException {
-        O op = opToken.type(TokenClaz.PRE_OP).op();
+        O op = opToken.type(TokenClaz.PRE_OP)
+            .op();
         X result = createTree(op);
         if (op.getKind() == OpKind.CALL) {
             if (consume(LPAR) == null) {
@@ -466,15 +448,17 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
                 if (consume(RPAR) == null) {
                     throw expectedToken(RPAR, next());
                 }
-                if (result.getArgs().size() != op.getArity()) {
-                    throw argumentMismatch(op, result.getArgs().size(), opToken);
+                if (result.getArgs()
+                    .size() != op.getArity()) {
+                    throw argumentMismatch(op, result.getArgs()
+                        .size(), opToken);
                 }
             }
         } else if (op.getArity() == 1) {
             result.addArg(parse(op.getKind()));
         } else {
-            assert op.getKind() == OpKind.ATOM : String.format("Encountered '%s' in prefix position",
-                op);
+            assert op.getKind() == OpKind.ATOM : String
+                .format("Encountered '%s' in prefix position", op);
         }
         setParseString(result, opToken);
         return result;
@@ -485,15 +469,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
      * The name is guaranteed to be the start of an identifier,
      * and does not have to be investigated as operator.
      */
-    protected X parseName() throws FormatException {
-        assert has(NAME);
-        X result = createTree(getAtomOp());
-        Token firstToken = next();
-        Id id = parseId();
-        result.setId(id);
-        setParseString(result, firstToken);
-        return result;
-    }
+    abstract protected X parseName() throws FormatException;
 
     /**
      * Parses the input as an identifier.
@@ -698,8 +674,9 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     }
 
     /**
-     * Scans a name token.
-     * The current character is guaranteed to be an identifier start.
+     * Scans a name token and returns it.
+     * At call time, the current character is expected to be a valid identifier start.
+     * @return the scanned name, or {@code null} if no valid name can be constructed
      */
     private Token scanName() {
         IdValidator validator = getIdValidator();
@@ -717,11 +694,16 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         String symbol = fragment.substring();
         TokenFamily family = getTokenFamily(symbol);
         if (family == null) {
-            TokenType type =
-                Sort.BOOL.denotesConstant(symbol) ? getConstTokenType(Sort.BOOL) : NAME.type();
-            family = getTokenFamily(type);
+            if (Sort.BOOL.denotesConstant(symbol)) {
+                family = getTokenFamily(getConstTokenType(Sort.BOOL));
+            } else if (validator.isValid(symbol)) {
+                family = getTokenFamily(NAME.type());
+            } else {
+                // roll back until the beginning of this token
+                decChar(symbol.length());
+            }
         }
-        return createFamilyToken(family, start, this.ix);
+        return family == null ? null : createFamilyToken(family, start, this.ix);
     }
 
     private Token scanString() throws ScanException {
@@ -766,6 +748,11 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
     /** Decrements the character position. */
     private void decChar() {
         this.ix--;
+    }
+
+    /** Decrements the character position. */
+    private void decChar(int length) {
+        this.ix -= length;
     }
 
     /** Returns the character just before the current position. */
@@ -817,7 +804,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         if (token.has(EOT)) {
             message += "end of input";
         } else {
-            message += "token '%s' at index %s";
+            message += "'%s' at index %s";
         }
         return new ParseException(message, token.substring(), token.start());
     }
@@ -974,7 +961,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
                 result = sort.createConstant(symbol);
                 result.setParseString(symbol);
             } catch (FormatException exc) {
-                assert false : String.format("'%s' has been scanned as a token; how can it fail to be one? (%s)",
+                assert false : String.format(
+                    "'%s' has been scanned as a token; how can it fail to be one? (%s)",
                     substring(),
                     exc.getMessage());
             }
@@ -1011,7 +999,7 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
             if (this.symbol == null) {
                 this.symbol = type.symbol();
             } else {
-                assert !type.parsable() || this.symbol.equals(type.symbol());
+                assert!type.parsable() || this.symbol.equals(type.symbol());
             }
         }
 
@@ -1035,13 +1023,15 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         /** Adds an operator to this family. */
         public void add(O value) {
             O oldValue;
-            if (value.getKind().getPlace() == Placement.PREFIX) {
+            if (value.getKind()
+                .getPlace() == Placement.PREFIX) {
                 oldValue = setOne(value);
             } else {
                 oldValue = setTwo(value);
             }
             assert oldValue == null;
-            assert value.getSymbol().equals(symbol());
+            assert value.getSymbol()
+                .equals(symbol());
         }
 
         /** Indicates if there is a prefix operator in this family. */
@@ -1126,7 +1116,8 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
          * @param op the (non-{@code null}) associated operator.
          */
         public TokenType(Op op) {
-            super(getClaz(op.getKind().getPlace()), op);
+            super(getClaz(op.getKind()
+                .getPlace()), op);
         }
 
         /**
@@ -1234,8 +1225,10 @@ public class TermTreeParser<O extends Op,X extends TermTree<O,X>> implements Par
         RPAR(")"),
         /** A static token, representing a comma. */
         COMMA(","),
+        /** A static token, representing an underscore. */
+        UNDER("_"),
         /** A static token, representing the end of the input text. */
-        EOT("" + Util.EOT), ;
+        EOT("" + Util.EOT),;
 
         /**
          * Constructs a token kind instance.
