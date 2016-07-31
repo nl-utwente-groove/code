@@ -22,7 +22,6 @@ import groove.graph.GGraph;
 import groove.graph.GraphInfo;
 import groove.transform.DeltaTarget;
 import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
 
 /**
  * Graph type used for graphs under transformation.
@@ -45,12 +44,6 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
 
     /** Returns the type graph for this host graph, if any. */
     public TypeGraph getTypeGraph();
-
-    /**
-     * Returns a copy of this graph, typed against a given type graph.
-     * @throws FormatException if there are typing errors in the graph
-     */
-    public HostGraph retype(TypeGraph typeGraph) throws FormatException;
 
     /** Indicates if this is a simple or multi-graph. */
     default public boolean isSimple() {

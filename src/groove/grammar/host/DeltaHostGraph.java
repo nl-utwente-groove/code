@@ -17,6 +17,15 @@
 package groove.grammar.host;
 
 import static groove.graph.GraphRole.HOST;
+
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import groove.algebra.AlgebraFamily;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -32,15 +41,6 @@ import groove.transform.DeltaTarget;
 import groove.transform.FrozenDeltaApplier;
 import groove.transform.StoredDeltaApplier;
 import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
-
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ConcurrentModificationException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 
 /**
  * Class to serve to capture the graphs associated with graph states. These have
@@ -49,7 +49,7 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements HostGraph, Cloneable {
+public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements HostGraph, Cloneable {
     /**
      * Constructs a graph with an empty basis and a delta determining
      * the elements of the graph.
@@ -59,7 +59,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
-    private DeltaHostGraph(String name, HostElement[] delta, HostFactory factory, boolean copyData) {
+    private DeltaHostGraph(String name, HostElement[] delta, HostFactory factory,
+        boolean copyData) {
         super(name);
         this.factory = factory;
         this.basis = null;
@@ -77,7 +78,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
      *        copied from one graph to the next; otherwise, they will be reused
      */
     private DeltaHostGraph(String name, final DeltaHostGraph basis, final DeltaApplier delta,
-            boolean copyData) {
+        boolean copyData) {
         super(name);
         this.basis = basis;
         this.factory = basis.getFactory();
@@ -453,11 +454,6 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         return getFactory().getTypeFactory().getGraph();
     }
 
-    @Override
-    public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        return typeGraph.analyzeHost(this).createImage(getName());
-    }
-
     /** The fixed (possibly <code>null</code> basis of this graph. */
     DeltaHostGraph basis;
     /** The fixed delta of this graph. */
@@ -496,11 +492,11 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class, in which data is copied. */
-    static private final DeltaHostGraph copyInstance = new DeltaHostGraph("copy prototype",
-        (HostElement[]) null, null, true);
+    static private final DeltaHostGraph copyInstance =
+        new DeltaHostGraph("copy prototype", (HostElement[]) null, null, true);
     /** Factory instance of this class, in which data is aliased. */
-    static private final DeltaHostGraph swingInstance = new DeltaHostGraph("swing prototype",
-        (HostElement[]) null, null, false);
+    static private final DeltaHostGraph swingInstance =
+        new DeltaHostGraph("swing prototype", (HostElement[]) null, null, false);
 
     /**
      * Returns a fixed factory instance of the {@link DeltaHostGraph} class,
@@ -558,7 +554,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
         public boolean removeNode(HostNode node) {
             HostEdgeSet edges = removeKeyFromStore(this.nodeEdgeStore, node);
             assert edges != null : String.format("Node %s did not occur in graph", node);
-            assert edges.isEmpty() : String.format("Node %s still had incident edges %s", node,
+            assert edges.isEmpty() : String.format("Node %s still had incident edges %s",
+                node,
                 edges);
             removeKeyFromStore(this.nodeOutEdgeStore, node);
             removeKeyFromStore(this.nodeInEdgeStore, node);
@@ -570,7 +567,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
          * if they are not {@code null}.
          */
         final boolean addEdge(HostEdge edge, boolean refreshSource, boolean refreshTarget,
-                boolean refreshLabel) {
+            boolean refreshLabel) {
             boolean result = this.edgeSet.add(edge);
             assert result : String.format("Edge %s already occured in graph", edge);
             // adapt node-edge map
@@ -594,7 +591,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
          * in the map should be copied upon modification.
          */
         final boolean removeEdge(HostEdge edge, boolean refreshSource, boolean refreshTarget,
-                boolean refreshLabel) {
+            boolean refreshLabel) {
             boolean result = this.edgeSet.remove(edge);
             assert result : String.format("Edge %s did not occur in graph", edge);
             // adapt node-edge map
@@ -647,7 +644,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
          * @return the edgeset for the key, if the map was not {@code null}
          */
         private <T> HostEdgeSet addToEdgeToStore(HostEdgeStore<T> map, T key, HostEdge edge,
-                boolean refresh) {
+            boolean refresh) {
             HostEdgeSet result = null;
             if (map != null) {
                 result = map.addEdge(key, edge, refresh);
@@ -659,7 +656,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements H
          * if the mapping is not {@code null}.
          */
         private <T> HostEdgeSet removeEdgeFromStore(HostEdgeStore<T> store, T key, HostEdge edge,
-                boolean refresh) {
+            boolean refresh) {
             HostEdgeSet result = null;
             if (store != null) {
                 result = store.removeEdge(key, edge, refresh);

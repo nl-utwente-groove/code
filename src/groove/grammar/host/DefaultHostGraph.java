@@ -29,7 +29,6 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.
@@ -166,11 +165,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
     @Override
     public TypeGraph getTypeGraph() {
         return getFactory().getTypeFactory().getGraph();
-    }
-
-    @Override
-    public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        return typeGraph.analyzeHost(this).createImage(getName());
     }
 
     @Override
