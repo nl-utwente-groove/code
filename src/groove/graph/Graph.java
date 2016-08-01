@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.graph;
@@ -40,7 +40,9 @@ public interface Graph {
      * @return the number of nodes in this graph
      * @ensure <tt>result == nodeSet().size()</tt>
      */
-    int nodeCount();
+    default int nodeCount() {
+        return nodeSet().size();
+    }
 
     /**
      * Returns the set of Edges of this Graph. The return value is an
@@ -57,7 +59,9 @@ public interface Graph {
      * @return the number of edges in this graph
      * @ensure <tt>result == edgeSet().size()</tt>
      */
-    int edgeCount();
+    default int edgeCount() {
+        return edgeSet().size();
+    }
 
     /**
      * Returns the set of all incident edges of a given node of this graph.
@@ -94,13 +98,17 @@ public interface Graph {
      * Returns the total number of elements (nodes plus edges) in this graph.
      * @ensure <tt>result == nodeCount() + edgeCount()</tt>
      */
-    int size();
+    default int size() {
+        return nodeCount() + edgeCount();
+    }
 
     /**
      * Tests whether this Graph is empty (i.e., contains no Nodes or Edges).
      * @return <tt>result == nodeSet().isEmpty()</tt>
      */
-    boolean isEmpty();
+    default boolean isEmpty() {
+        return nodeCount() == 0;
+    }
 
     /**
      * Indicates whether the graph is modifiable, i.e., if the <tt>add</tt> and
