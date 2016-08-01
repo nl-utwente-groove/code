@@ -30,7 +30,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class NodeSetEdgeSetGraph<N extends Node,E extends GEdge<N>> extends AGraph<N,E> implements
-        Cloneable {
+    Cloneable {
     /**
      * Creates a new, named empty graph.
      * @param name name of the new graph
@@ -63,46 +63,10 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends GEdge<N>> extends AGra
         return result;
     }
 
-    /**
-     * Improved implementation taking advantage of the edge set.
-     */
-    @Override
-    public boolean removeNodeContext(N node) {
-        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
-        boolean removed = this.graphNodeSet.contains(node);
-        if (removed) {
-            Iterator<E> edgeIter = this.graphEdgeSet.iterator();
-            while (edgeIter.hasNext()) {
-                E edge = edgeIter.next();
-                if (edge.source().equals(node) || edge.target().equals(node)) {
-                    edgeIter.remove();
-                }
-            }
-            removeNode(node);
-        }
-        return removed;
-    }
-
     @Override
     public boolean removeEdge(E edge) {
         assert !isFixed() : "Trying to remove " + edge + " from unmodifiable graph";
         return this.graphEdgeSet.remove(edge);
-    }
-
-    @Override
-    public boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
-        boolean result;
-        // first remove edges that depend on a node to be removed
-        Iterator<E> edgeIter = this.graphEdgeSet.iterator();
-        while (edgeIter.hasNext()) {
-            E other = edgeIter.next();
-            if (nodeSet.contains(other.source()) || nodeSet.contains(other.target())) {
-                edgeIter.remove();
-            }
-        }
-        // now remove the nodes
-        result = removeNodeSet(nodeSet);
-        return result;
     }
 
     // -------------------- PackageGraph methods ---------------------
