@@ -66,7 +66,6 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
 
     /**
      * Generates a fresh node and adds it to this graph.
-     * Convenience method; equivalent to {@code addNode(getFactory().createNode())}
      * @return the new node; non-{@code null}
      */
     N addNode();
@@ -76,7 +75,14 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * The node is required to be fresh within the graph.
      * @return the new node
      */
-    N addNode(int nr);
+    default N addNode(int nr) {
+        N freshNode = getFactory().createNode(nr);
+        assert !nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
+            freshNode,
+            nodeSet());
+        addNode(freshNode);
+        return freshNode;
+    }
 
     /**
      * Adds a node to this graph. This is allowed only if the graph is not
@@ -104,7 +110,9 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      *         labelled <tt>label</tt>
      * @see GGraph#addEdge
      */
-    E addEdge(N source, String label, N target);
+    default E addEdge(N source, String label, N target) {
+        return addEdge(source, getFactory().createLabel(label), target);
+    }
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
@@ -119,7 +127,13 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      *         labelled <tt>label</tt>
      * @see GGraph#addEdge
      */
-    E addEdge(N source, Label label, N target);
+    default E addEdge(N source, Label label, N target) {
+        assert containsNode(source);
+        assert containsNode(target);
+        E result = getFactory().createEdge(source, label, target);
+        addEdge(result);
+        return result;
+    }
 
     /**
      * Adds an edge to the graph.
@@ -130,6 +144,23 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
     boolean addEdge(E edge);
 
     /**
+     * Convenience method to add a set of edges.
+     * The end nodes are assumed to be in the graph already.
+     * The effect is equivalent to calling {@link #addEdge} for
+     * every element of {@code edgeSet}.
+     * @param edgeSet the (non-{@code null}) set of edges to be added
+     * @return <tt>true</tt> if the graph changed as a result of this call
+     * @see #addEdge
+     */
+    default boolean addEdgeSet(Collection<? extends E> edgeSet) {
+        boolean added = false;
+        for (E edge : edgeSet) {
+            added |= addEdge(edge);
+        }
+        return added;
+    }
+
+    /**
      * Convenience method to add an edge and its end nodes to this graph.
      * The effect is equivalent to calling {@code addNod(edge.source())},
      * {@code addNode(edge.target()} and {@code addEdge(edge)} in succession.
@@ -138,7 +169,16 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #addNode(Node)
      */
-    boolean addEdgeContext(E edge);
+    default boolean addEdgeContext(E edge) {
+        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
+        boolean added = !containsEdge(edge);
+        if (added) {
+            addNode(edge.source());
+            addNode(edge.target());
+            addEdge(edge);
+        }
+        return added;
+    }
 
     /**
      * Adds a set of nodes to this graph. This is allowed only if the graph is
@@ -149,18 +189,13 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #addNode(Node)
      */
-    boolean addNodeSet(Collection<? extends N> nodeSet);
-
-    /**
-     * Convenience method to add a set of edges and their end nodes to this graph.
-     * The effect is equivalent to calling {@link #addEdgeContext} for
-     * every element of {@code edgeSet}.
-     * @param edgeSet the (non-{@code null}) set of edges to be added, together
-     * with their end nodes
-     * @return <tt>true</tt> if the graph changed as a result of this call
-     * @see #addEdgeContext
-     */
-    boolean addEdgeSetContext(Collection<? extends E> edgeSet);
+    default boolean addNodeSet(Collection<? extends N> nodeSet) {
+        boolean added = false;
+        for (N node : nodeSet) {
+            added |= addNode(node);
+        }
+        return added;
+    }
 
     /**
      * Removes a given edge from this graph, if it was in the graph to start
@@ -184,7 +219,13 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #removeNodeContext(Node)
      */
-    boolean removeNodeSetContext(Collection<? extends N> nodeSet);
+    default boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
+        boolean removed = false;
+        for (N node : nodeSet) {
+            removed |= removeNodeContext(node);
+        }
+        return removed;
+    }
 
     /**
      * Convenience method to remove both a node and its incident edges.
@@ -194,7 +235,17 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * together with its incident edges
      * @return <tt>true</tt> if the graph changed as a result of this call
      */
-    boolean removeNodeContext(N node);
+    default boolean removeNodeContext(N node) {
+        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
+        boolean removed = containsNode(node);
+        if (removed) {
+            for (E edge : edgeSet(node)) {
+                removeEdge(edge);
+            }
+            removeNode(node);
+        }
+        return removed;
+    }
 
     /**
      * Removes a set of edges from this graph, if they were in the graph to
@@ -207,7 +258,13 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @see #removeEdge
      * @see #removeNodeSetContext(Collection)
      */
-    boolean removeEdgeSet(Collection<? extends E> edgeSet);
+    default boolean removeEdgeSet(Collection<? extends E> edgeSet) {
+        boolean removed = false;
+        for (E edge : edgeSet) {
+            removed |= removeEdge(edge);
+        }
+        return removed;
+    }
 
     /**
      * Removes a node from the graph.
@@ -227,7 +284,13 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #removeNodeSetContext(Collection)
      */
-    boolean removeNodeSet(Collection<? extends N> nodeSet);
+    default boolean removeNodeSet(Collection<? extends N> nodeSet) {
+        boolean removed = false;
+        for (N node : nodeSet) {
+            removed |= removeNode(node);
+        }
+        return removed;
+    }
 
     /* Specialises the return type. */
     @Override
