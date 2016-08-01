@@ -16,11 +16,6 @@
  */
 package groove.transform;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
@@ -36,6 +31,11 @@ import groove.match.TreeMatch;
 import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class representing a particular application of a {@link groove.grammar.Rule} and a
@@ -100,7 +100,8 @@ public class RuleApplication implements DeltaApplier {
         final Property<Proof> proofContainsEvent = new Property<Proof>() {
             @Override
             public boolean isSatisfied(Proof proof) {
-                return event.createEvent(proof).equals(event);
+                return event.createEvent(proof)
+                    .equals(event);
             }
         };
         final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);
@@ -111,9 +112,8 @@ public class RuleApplication implements DeltaApplier {
             }
         };
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
-        boolean result = getRule().getEventMatcher(source.isSimple()).traverse(source,
-            event.getAnchorMap(),
-            matchFinder) != null;
+        boolean result = getRule().getEventMatcher(source.isSimple())
+            .traverse(source, event.getAnchorMap(), matchFinder) != null;
         eventFinder.dispose();
         matchFinder.dispose();
         return result;
@@ -263,7 +263,8 @@ public class RuleApplication implements DeltaApplier {
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
     private HostGraphMorphism createMorphism() {
-        return getSource().getFactory().createMorphism();
+        return getSource().getFactory()
+            .createMorphism();
     }
 
     /**
@@ -305,15 +306,6 @@ public class RuleApplication implements DeltaApplier {
             addEdges(record, target);
             removeIsolatedValueNodes(target);
         }
-    }
-
-    /**
-     * Wraps <code>target</code> into a {@link FilteredDeltaTarget} and then
-     * calls {@link #applyDelta(DeltaTarget)}.
-     */
-    @Override
-    public void applyDelta(DeltaTarget target, int mode) {
-        applyDelta(new FilteredDeltaTarget(target, mode));
     }
 
     /**
@@ -540,8 +532,7 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode,
-        HostNode hostNode) {
+    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode, HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
         if (image == null) {

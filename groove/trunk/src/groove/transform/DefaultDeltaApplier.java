@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.transform;
@@ -38,7 +38,7 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * The sets are copied.
      */
     protected DefaultDeltaApplier(HostNodeSet addedNodeSet, HostNodeSet removedNodeSet,
-            HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet) {
+        HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet) {
         this.addedNodeSet = createNodeSet(addedNodeSet);
         this.removedNodeSet = createNodeSet(removedNodeSet);
         this.addedEdgeSet = createEdgeSet(addedEdgeSet);
@@ -50,43 +50,29 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * further parameter controls if the sets are copied or shared.
      */
     protected DefaultDeltaApplier(HostNodeSet addedNodeSet, HostNodeSet removedNodeSet,
-            HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet, boolean share) {
+        HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet, boolean share) {
         this.addedNodeSet = share ? addedNodeSet : createNodeSet(addedNodeSet);
         this.removedNodeSet = share ? removedNodeSet : createNodeSet(removedNodeSet);
         this.addedEdgeSet = share ? addedEdgeSet : createEdgeSet(addedEdgeSet);
         this.removedEdgeSet = share ? removedEdgeSet : createEdgeSet(removedEdgeSet);
     }
 
-    /**
-     * Processes the delta based on the cached information.
-     */
-    @Override
-    public void applyDelta(DeltaTarget target, int mode) {
-        // process the added and removed sets
-        if (mode != EDGES_ONLY) {
-            for (HostNode addedNode : this.addedNodeSet) {
-                target.addNode(addedNode);
-            }
-        }
-        if (mode != NODES_ONLY) {
-            for (HostEdge addedEdge : this.addedEdgeSet) {
-                target.addEdge(addedEdge);
-            }
-            for (HostEdge removedEdge : this.removedEdgeSet) {
-                target.removeEdge(removedEdge);
-            }
-        }
-        // remove nodes only after the edges
-        if (mode != EDGES_ONLY) {
-            for (HostNode removedNode : this.removedNodeSet) {
-                target.removeNode(removedNode);
-            }
-        }
-    }
-
     @Override
     public void applyDelta(DeltaTarget target) {
-        applyDelta(target, ALL_ELEMENTS);
+        // process the added and removed sets
+        for (HostNode addedNode : this.addedNodeSet) {
+            target.addNode(addedNode);
+        }
+        for (HostEdge addedEdge : this.addedEdgeSet) {
+            target.addEdge(addedEdge);
+        }
+        for (HostEdge removedEdge : this.removedEdgeSet) {
+            target.removeEdge(removedEdge);
+        }
+        // remove nodes only after the edges
+        for (HostNode removedNode : this.removedNodeSet) {
+            target.removeNode(removedNode);
+        }
     }
 
     /** Returns an alias of the set of added nodes of this delta. */
@@ -169,7 +155,7 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Callback factory method for creating a new delta set.
      */
     protected <E extends HostElement> DeltaSet<E> createDeltaSet(Set<E> lower, Set<E> added,
-            Set<E> removed) {
+        Set<E> removed) {
         return new DeltaSet<E>(lower, added, removed);
     }
 
@@ -177,7 +163,7 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Callback factory method for creating a new stacked set.
      */
     protected <E extends HostElement> StackedSet<E> createStackedSet(Set<? extends E> lower,
-            Set<E> added, Set<E> removed) {
+        Set<E> added, Set<E> removed) {
         return new StackedSet<E>(lower, added, removed);
     }
 
