@@ -17,7 +17,6 @@
 package groove.graph;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -30,7 +29,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
 abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AGraph<N,E> implements
-Cloneable {
+    Cloneable {
     /**
      * Constructs a new, empty Graph with a given graph role.
      * @param name the (non-{@code null}) name of the graph.
@@ -118,33 +117,6 @@ Cloneable {
             fireRemoveEdge(edge);
         }
         return removed;
-    }
-
-    /** Reimplementation to improve performance. */
-    @Override
-    public boolean removeNodeContext(N node) {
-        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
-        boolean result = false;
-        Set<E> outEdges = this.edgeMap.remove(node);
-        if (outEdges != null) {
-            result = true;
-            for (E outEdge : outEdges) {
-                fireRemoveEdge(outEdge);
-            }
-            for (Set<E> edgeSet : this.edgeMap.values()) {
-                Iterator<E> edgeIter = edgeSet.iterator();
-                while (edgeIter.hasNext()) {
-                    E edge = edgeIter.next();
-                    if (edge.source().equals(node) || edge.target().equals(node)) {
-                        // remove and notify observers
-                        edgeIter.remove();
-                        fireRemoveEdge(edge);
-                    }
-                }
-            }
-            fireRemoveNode(node);
-        }
-        return result;
     }
 
     @Override

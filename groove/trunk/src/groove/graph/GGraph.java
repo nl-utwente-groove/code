@@ -212,42 +212,6 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
     boolean removeEdge(E edge);
 
     /**
-     * Convenience method to remove a set of nodes together with
-     * their incident edges. This method is equivalent to a call
-     * of {{@link #removeNodeContext(Node)} for every node in {@code nodeSet}.
-     * @param nodeSet the (non-{@code null}) collection of nodes to be removed from the graph
-     * @return <tt>true</tt> if the graph changed as a result of this call
-     * @see #removeNodeContext(Node)
-     */
-    default boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
-        boolean removed = false;
-        for (N node : nodeSet) {
-            removed |= removeNodeContext(node);
-        }
-        return removed;
-    }
-
-    /**
-     * Convenience method to remove both a node and its incident edges.
-     * Equivalent to a call of {@code removeEdgeSet(edgeSet(node))} followed
-     * by a call of {@code removeNode(node)}.
-     * @param node the (non-{@code null}) node to be removed from the graph,
-     * together with its incident edges
-     * @return <tt>true</tt> if the graph changed as a result of this call
-     */
-    default boolean removeNodeContext(N node) {
-        assert !isFixed() : "Trying to remove " + node + " from unmodifiable graph";
-        boolean removed = containsNode(node);
-        if (removed) {
-            for (E edge : edgeSet(node)) {
-                removeEdge(edge);
-            }
-            removeNode(node);
-        }
-        return removed;
-    }
-
-    /**
      * Removes a set of edges from this graph, if they were in the graph to
      * start with. This method is allowed only if the graph is modifiable. The
      * method has no effect if none of the edges are in this graph. All

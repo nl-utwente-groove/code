@@ -51,7 +51,8 @@ public class GraphCreationTest extends TestCase {
         this.g = new PlainGraph("g", GraphRole.NONE);
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
-            this.n[i] = this.g.getFactory().createNode();
+            this.n[i] = this.g.getFactory()
+                .createNode();
         }
 
         this.e[0] = PlainEdge.createEdge(this.n[0], "a", this.n[1]);
@@ -90,15 +91,15 @@ public class GraphCreationTest extends TestCase {
 
     /*
      * public void testCopyAndCompare() { Graph g2 = new DefaultGraph();
-     * 
+     *
      * NodeIterator nodeIter = g.nodeSet().iterator(); while
      * (nodeIter.hasNext()) { assertTrue(! g.equals(g2)); if
      * (nodeIter.hasNext()) g2.add((Node) nodeIter.next().clone()); }
-     * 
+     *
      * EdgeIterator edgeIter = g.edgeIterator(); while (edgeIter.hasNext()) {
      * assertTrue(! g.equals(g2)); if (edgeIter.hasNext()) g2.add((BinaryEdge)
      * edgeIter.next().clone()); }
-     * 
+     *
      * assertEquals(g,g2); assertEquals(g2,g); }
      */
 
@@ -114,7 +115,7 @@ public class GraphCreationTest extends TestCase {
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
             assertTrue(this.g.containsNode(this.n[i]));
-            this.g.removeNodeContext(this.n[i]);
+            this.g.removeNode(this.n[i]);
             assertTrue(!this.g.containsNode(this.n[i]));
             this.g.addNode(this.n[i]);
         }
@@ -138,11 +139,12 @@ public class GraphCreationTest extends TestCase {
         }
         assertTrue(outEdges.isEmpty());
 
-        Iterator<? extends PlainEdge> edgeIter =
-            this.g.outEdgeSet(this.n[2]).iterator();
+        Iterator<? extends PlainEdge> edgeIter = this.g.outEdgeSet(this.n[2])
+            .iterator();
         assertTrue(!edgeIter.hasNext());
 
-        edgeIter = this.g.outEdgeSet(this.n[8]).iterator();
+        edgeIter = this.g.outEdgeSet(this.n[8])
+            .iterator();
         assertEquals(edgeIter.next(), this.e[6]);
         assertTrue(!edgeIter.hasNext());
     }
@@ -171,8 +173,7 @@ public class GraphCreationTest extends TestCase {
         edges.add(this.e[2]);
         edges.add(this.e[5]);
 
-        for (PlainEdge edge : labelEdgeSet(this.g,
-            PlainLabel.parseLabel(new String("a")))) {
+        for (PlainEdge edge : labelEdgeSet(this.g, PlainLabel.parseLabel(new String("a")))) {
             assertTrue(edges.contains(edge));
             edges.remove(edge);
         }
@@ -184,7 +185,8 @@ public class GraphCreationTest extends TestCase {
     private Set<PlainEdge> labelEdgeSet(PlainGraph g, Label label) {
         Set<PlainEdge> labelEdges = new HashSet<PlainEdge>();
         for (PlainEdge edge : g.edgeSet()) {
-            if (edge.label().equals(label)) {
+            if (edge.label()
+                .equals(label)) {
                 labelEdges.add(edge);
             }
         }
@@ -194,7 +196,8 @@ public class GraphCreationTest extends TestCase {
     private Set<PlainEdge> inEdgeSet(PlainGraph g, PlainNode target) {
         Set<PlainEdge> inEdges = new HashSet<PlainEdge>();
         for (PlainEdge edge : g.edgeSet()) {
-            if (edge.target().equals(target)) {
+            if (edge.target()
+                .equals(target)) {
                 inEdges.add(edge);
             }
         }

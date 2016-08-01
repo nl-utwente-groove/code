@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.automaton;
@@ -148,7 +148,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
             RegAut next = argIter.next();
             // add the elements of next to result
             result.addNodeSet(next.nodeSet());
-            result.addEdgeSetContext(next.edgeSet());
+            result.addEdgeSet(next.edgeSet());
             if (result.isAcceptsEmptyWord()) {
                 // add initial edges for all the initial edges of next
                 for (RegEdge nextInitEdge : next.outEdgeSet(next.getStartNode())) {
@@ -186,7 +186,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
         while (argIter.hasNext()) {
             RegAut next = argIter.next();
             result.addNodeSet(next.nodeSet());
-            result.addEdgeSetContext(next.edgeSet());
+            result.addEdgeSet(next.edgeSet());
             result.mergeNodes(next.getStartNode(), result.getStartNode());
             result.mergeNodes(next.getEndNode(), result.getEndNode());
             if (next.isAcceptsEmptyWord()) {
@@ -205,7 +205,8 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     public RegAut computeAtom(Atom expr) {
         RegAut result = createAutomaton();
         // if this is an unknown label, don't add the edge
-        if (!this.typeGraph.getTypes(expr.toTypeLabel()).isEmpty()) {
+        if (!this.typeGraph.getTypes(expr.toTypeLabel())
+            .isEmpty()) {
             result.addEdge(result.getStartNode(), expr.toLabel(), result.getEndNode());
         }
         return result;
@@ -263,7 +264,9 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
         RuleLabel result;
         RuleLabel invLabel = label.getInvLabel();
         if (invLabel == null) {
-            result = label.getMatchExpr().inv().toLabel();
+            result = label.getMatchExpr()
+                .inv()
+                .toLabel();
         } else {
             result = invLabel;
         }
@@ -272,7 +275,8 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
 
     /** Factory method for a fresh automaton node. */
     private RegNode createNode() {
-        return RegFactory.instance().createNode(this.nodeDispenser.getNext());
+        return RegFactory.instance()
+            .createNode(this.nodeDispenser.getNext());
     }
 
     /** Prototype automaton to create new automata from. */

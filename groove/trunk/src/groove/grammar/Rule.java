@@ -16,19 +16,6 @@
  */
 package groove.grammar;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.control.CtrlPar;
@@ -60,6 +47,19 @@ import groove.util.Fixable;
 import groove.util.Visitor;
 import groove.util.parse.FormatException;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Type of a production rule. The rule essentially consists of a left hand
  * side graph, a right hand side graph, a rule morphism and a set of NACs.
@@ -75,14 +75,17 @@ public class Rule implements Action, Fixable {
      *        of this rule
      */
     public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
-        assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
-            && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
+        assert condition.getTypeGraph()
+            .getFactory() == rhs.getFactory()
+            .getTypeFactory() && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
         this.rhs = rhs;
-        assert coRoot == null || rhs().nodeSet().containsAll(coRoot.nodeSet()) : String.format(
-            "RHS nodes %s do not contain all co-root values %s", rhs().nodeSet(), coRoot.nodeSet());
+        assert coRoot == null || rhs().nodeSet()
+            .containsAll(coRoot.nodeSet()) : String.format("RHS nodes %s do not contain all co-root values %s",
+            rhs().nodeSet(),
+            coRoot.nodeSet());
     }
 
     /** Returns the condition with which this rule is associated. */
@@ -129,13 +132,15 @@ public class Rule implements Action, Fixable {
      */
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
-        assert getCoRoot() != null : String.format(
-            "Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
+        assert getCoRoot() != null : String.format("Sub-rule at level %s must have a non-trivial co-root map",
+            Arrays.toString(level));
         if (parent != null) {
-            assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String.format(
-                "Rule '%s': Parent nodes %s do not contain all co-roots %s",
+            assert parent.rhs()
+                .nodeSet()
+                .containsAll(getCoRoot().nodeSet()) : String.format("Rule '%s': Parent nodes %s do not contain all co-roots %s",
                 getFullName(),
-                parent.rhs().nodeSet(),
+                parent.rhs()
+                    .nodeSet(),
                 getCoRoot().nodeSet());
         }
         this.parent = parent;
@@ -237,7 +242,7 @@ public class Rule implements Action, Fixable {
      * @param subRule the new sub-rule
      */
     public void addSubRule(Rule subRule) {
-        assert!isFixed();
+        assert !isFixed();
         assert subRule.isFixed();
         getSubRules().add(subRule);
     }
@@ -268,22 +273,27 @@ public class Rule implements Action, Fixable {
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
     public void setSignature(List<CtrlPar.Var> sig, Set<RuleNode> hiddenPars) {
-        assert!isFixed();
+        assert !isFixed();
         this.sig = sig;
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
         for (int i = 0; i < sig.size(); i++) {
             // add the LHS parameters to the root graph
-            RuleNode parNode = sig.get(i).getRuleNode();
+            RuleNode parNode = sig.get(i)
+                .getRuleNode();
             if (this.lhs.containsNode(parNode)) {
-                this.condition.getRoot().addNode(parNode);
+                this.condition.getRoot()
+                    .addNode(parNode);
             }
             String parName = "arg" + i;
-            CtrlType parType = sig.get(i).getType();
+            CtrlType parType = sig.get(i)
+                .getType();
             CtrlVar var = new CtrlVar(null, parName, parType);
             CtrlPar.Var par;
-            boolean inOnly = sig.get(i).isInOnly();
-            boolean outOnly = sig.get(i).isOutOnly();
+            boolean inOnly = sig.get(i)
+                .isInOnly();
+            boolean outOnly = sig.get(i)
+                .isOutOnly();
             if (!inOnly && !outOnly) {
                 par = new CtrlPar.Var(var);
             } else {
@@ -291,8 +301,9 @@ public class Rule implements Action, Fixable {
             }
             derivedSig.add(par);
         }
-        assert derivedSig.equals(sig) : String
-            .format("Declared signature %s differs from derived signature %s", sig, derivedSig);
+        assert derivedSig.equals(sig) : String.format("Declared signature %s differs from derived signature %s",
+            sig,
+            derivedSig);
     }
 
     /** Returns the signature of the rule. */
@@ -365,14 +376,14 @@ public class Rule implements Action, Fixable {
 
     /** Sets the action role of this rule. */
     public void setRole(Role role) {
-        assert!isFixed();
+        assert !isFixed();
         assert this.role == null && role != null;
         this.role = role;
     }
 
     @Override
     public Role getRole() {
-        assert!this.role.isProperty() || isPropertyLike();
+        assert !this.role.isProperty() || isPropertyLike();
         return this.role;
     }
 
@@ -380,7 +391,8 @@ public class Rule implements Action, Fixable {
 
     @Override
     public CheckPolicy getPolicy() {
-        CheckPolicy result = getGrammarProperties().getRulePolicy().get(getFullName());
+        CheckPolicy result = getGrammarProperties().getRulePolicy()
+            .get(getFullName());
         if (result == null) {
             result = CheckPolicy.ERROR;
         }
@@ -459,8 +471,8 @@ public class Rule implements Action, Fixable {
     public <R> R traverseMatches(final HostGraph host, RuleToHostMap contextMap,
         final Visitor<Proof,R> visitor) {
         assert isFixed();
-        RuleToHostMap seedMap =
-            contextMap == null ? host.getFactory().createRuleToHostMap() : contextMap;
+        RuleToHostMap seedMap = contextMap == null ? host.getFactory()
+            .createRuleToHostMap() : contextMap;
         getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
             @Override
             protected boolean process(TreeMatch match) {
@@ -500,18 +512,22 @@ public class Rule implements Action, Fixable {
     private SearchStrategy getMatcher(RuleToHostMap seedMap) {
         assert isTop();
         Matcher result;
-        boolean simple = seedMap.getFactory().isSimple();
+        boolean simple = seedMap.getFactory()
+            .isSimple();
         if (getSignature().size() > 0) {
             int sigSize = getSignature().size();
             BitSet initPars = new BitSet(sigSize);
             for (int i = 0; i < sigSize; i++) {
                 // set initPars if the seed map contains a value
                 // for this parameter
-                initPars.set(i, seedMap.nodeMap().containsKey(getSignature().get(i).getRuleNode()));
+                initPars.set(i, seedMap.nodeMap()
+                    .containsKey(getSignature().get(i)
+                        .getRuleNode()));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
-                Anchor seed = new Anchor(seedMap.nodeMap().keySet());
+                Anchor seed = new Anchor(seedMap.nodeMap()
+                    .keySet());
                 this.matcherMap.put(initPars, result = createMatcher(seed, simple));
             }
         } else {
@@ -691,7 +707,8 @@ public class Rule implements Action, Fixable {
             // push the colour map to the top rule
             Rule parent = this.parent;
             while (parent != null && parent != this) {
-                parent.getColorMap().putAll(getColorMap());
+                parent.getColorMap()
+                    .putAll(getColorMap());
                 parent = parent == parent.parent ? null : parent.parent;
             }
             this.fixing = false;
@@ -748,11 +765,13 @@ public class Rule implements Action, Fixable {
         testFixed(true);
         Set<RuleNode> result = new HashSet<RuleNode>();
         for (RuleNode node : lhs().nodeSet()) {
-            if (lhs().edgeSet(node).isEmpty()) {
+            if (lhs().edgeSet(node)
+                .isEmpty()) {
                 result.add(node);
             }
         }
-        result.removeAll(this.condition.getRoot().nodeSet());
+        result.removeAll(this.condition.getRoot()
+            .nodeSet());
         return result.toArray(new RuleNode[result.size()]);
     }
 
@@ -800,8 +819,9 @@ public class Rule implements Action, Fixable {
      * Computes if the rule is modifying or not.
      */
     private boolean computeIsModifying() {
-        boolean result = getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
-            || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
+        boolean result =
+            getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
+                || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.isModifying();
@@ -1025,7 +1045,8 @@ public class Rule implements Action, Fixable {
         Set<LabelVar> result = new HashSet<LabelVar>();
         // add the variables of creators
         for (RuleEdge edge : getCreatorGraph().edgeSet()) {
-            result.addAll(edge.label().allVarSet());
+            result.addAll(edge.label()
+                .allVarSet());
         }
         for (RuleNode node : getCreatorGraph().nodeSet()) {
             for (TypeGuard guard : node.getTypeGuards()) {
@@ -1039,7 +1060,8 @@ public class Rule implements Action, Fixable {
             }
         }
         for (RuleEdge eraser : getEraserEdges()) {
-            result.addAll(eraser.label().allVarSet());
+            result.addAll(eraser.label()
+                .allVarSet());
         }
         return result;
     }
@@ -1068,8 +1090,7 @@ public class Rule implements Action, Fixable {
         // iterate over all creator edges
         for (RuleEdge edge : getCreatorEdges()) {
             // determine if this edge is simple
-            if (nonCreatorNodes.contains(edge.source())
-                && nonCreatorNodes.contains(edge.target())) {
+            if (nonCreatorNodes.contains(edge.source()) && nonCreatorNodes.contains(edge.target())) {
                 result.add(edge);
             }
         }
@@ -1113,7 +1134,8 @@ public class Rule implements Action, Fixable {
         result.removeAll(lhs().edgeSet());
         Rule parent = getParent();
         if (parent != null && parent != this) {
-            result.removeAll(parent.rhs().edgeSet());
+            result.removeAll(parent.rhs()
+                .edgeSet());
         }
         result.removeAll(getLhsMergers());
         result.removeAll(getRhsMergers());
@@ -1138,7 +1160,8 @@ public class Rule implements Action, Fixable {
         result.removeAll(lhs().nodeSet());
         Rule parent = getParent();
         if (parent != null && parent != this) {
-            result.removeAll(parent.rhs().nodeSet());
+            result.removeAll(parent.rhs()
+                .nodeSet());
         }
         return result.toArray(new RuleNode[result.size()]);
     }
@@ -1192,7 +1215,7 @@ public class Rule implements Action, Fixable {
     private RuleGraph computeCreatorGraph() {
         RuleGraph result = rhs().newGraph(getFullName() + "(creators)");
         result.addNodeSet(Arrays.asList(getCreatorNodes()));
-        result.addEdgeSetContext(Arrays.asList(getCreatorEdges()));
+        result.addEdgeSet(Arrays.asList(getCreatorEdges()));
         return result;
     }
 
@@ -1234,7 +1257,8 @@ public class Rule implements Action, Fixable {
         this.lhsMergeMap = new HashMap<RuleNode,RuleNode>();
         this.rhsMergeMap = new HashMap<RuleNode,RuleNode>();
         for (RuleEdge rhsEdge : rhs().edgeSet()) {
-            if (rhsEdge.label().isEmpty() && !this.lhs.containsEdge(rhsEdge)) {
+            if (rhsEdge.label()
+                .isEmpty() && !this.lhs.containsEdge(rhsEdge)) {
                 RuleNode source = rhsEdge.source();
                 RuleNode target = rhsEdge.target();
                 if (lhs().containsNode(source) && lhs().containsNode(target)) {
