@@ -35,10 +35,6 @@ import static groove.verify.LogicOp.S_RELEASE;
 import static groove.verify.LogicOp.TRUE;
 import static groove.verify.LogicOp.UNTIL;
 import static groove.verify.LogicOp.W_UNTIL;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import groove.algebra.syntax.Expression;
 import groove.grammar.QualName;
 import groove.util.Exceptions;
@@ -47,7 +43,9 @@ import groove.util.parse.ATermTree;
 import groove.util.parse.FormatException;
 import groove.util.parse.IdValidator;
 import groove.verify.Proposition.Arg;
-import groove.verify.Proposition.Kind;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Data structure for temporal formulae.
@@ -85,7 +83,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     }
 
     void setProp(Proposition prop) {
-        assert!isFixed();
+        assert !isFixed();
         this.prop = prop;
     }
 
@@ -384,11 +382,6 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         case EXISTS:
             throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getOp());
         case PROP:
-            Proposition prop = getProp();
-            if (prop.getKind() == Kind.CALL) {
-                throw new FormatException("Rule call of '%s' not yet supported in LTL",
-                    prop.getId());
-            }
             return gov.nasa.ltl.trans.Formula.Proposition(getProp());
         case TRUE:
             return gov.nasa.ltl.trans.Formula.True();

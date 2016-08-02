@@ -16,9 +16,9 @@
  */
 package groove.verify;
 
-import java.util.Set;
-
 import groove.graph.AEdge;
+
+import java.util.Set;
 
 /**
  * @author Harmen Kastenberg
@@ -40,14 +40,14 @@ public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {
     /**
      * Determines whether the transition is enabled based on the given set of names of applicable rules.
      *
-     * @param applicableRules
-     *          the set of names of applicable rules
-     * @return <code>true</code> if the set of applicable rules enable the transition, <code>false</code> otherwise.
+     * @param satisfiedProps
+     *          the set of propositions satisfied in a given state
+     * @return <code>true</code> if the set of propositions enable the transition, <code>false</code> otherwise.
      */
-    public boolean isEnabled(Set<Proposition> applicableRules) {
+    public boolean isEnabled(Set<Proposition> satisfiedProps) {
         return label().guard()
             .stream()
-            .allMatch(a -> a.isNegated() == !applicableRules.stream()
+            .allMatch(a -> a.isNegated() == !satisfiedProps.stream()
                 .anyMatch(r -> a.getAtom()
                     .matches(r)));
     }

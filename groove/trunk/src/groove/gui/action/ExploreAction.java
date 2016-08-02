@@ -131,7 +131,8 @@ public class ExploreAction extends SimulatorAction {
             grammar != null && grammar.getStartGraphModel() != null && !grammar.hasErrors()
                 && grammar.hasRules();
         FormatException compatibilityError = null;
-        if (enabled) {
+        if (enabled && !isEnabled()) {
+            // enabling changed from false to true
             assert grammar != null; // implied by enabled
             try {
                 exploreType.test(grammar.toGrammar());
