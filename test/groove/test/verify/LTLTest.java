@@ -74,6 +74,26 @@ public class LTLTest {
         testMC();
     }
 
+    /** Test the proper handling of attributes. */
+    @Test
+    public void testAttributes() {
+        prepare(StrategyValue.LTL);
+        prepare("attributes");
+        testFormula("F set_finished", true);
+        testFormula("F set_finished(true)", true);
+        testFormula("F set_finished( false )", false);
+        testFormula("F 'set_finished(true)'", true);
+        testFormula("F 'set_finished( true)'", false);
+        testFormula("F set_finished()", false);
+        testFormula("F set_finished(_)", true);
+
+        testFormula("F set_score", true);
+        testFormula("F set_score(n0, 1000)", true);
+        testFormula("F set_score(n0, 100)", false);
+        testFormula("F set_score(n0, _)", true);
+        testFormula("F set_score(_, 100)", false);
+    }
+
     /** Test on a specially designed transition system. */
     private void testMC() {
         prepare("mc");
@@ -101,7 +121,8 @@ public class LTLTest {
     private void prepare(String grammarName) {
         try {
             Generator generator = new Generator("-v", "0", "junit/samples/" + grammarName);
-            this.gts = generator.start().getGTS();
+            this.gts = generator.start()
+                .getGTS();
         } catch (Exception e) {
             Assert.fail(e.toString());
         }
@@ -123,7 +144,8 @@ public class LTLTest {
         try {
             Exploration exploration = exploreType.newExploration(this.gts, this.gts.startState());
             exploration.play();
-            assertEquals(succeed, exploration.getResult().isEmpty());
+            assertEquals(succeed, exploration.getResult()
+                .isEmpty());
         } catch (FormatException e) {
             Assert.fail();
         }

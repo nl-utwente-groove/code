@@ -19,14 +19,13 @@ package groove.verify;
 import static groove.verify.Proposition.Kind.CALL;
 import static groove.verify.Proposition.Kind.ID;
 import static groove.verify.Proposition.Kind.LABEL;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import groove.algebra.syntax.Expression;
 import groove.grammar.QualName;
 import groove.util.Exceptions;
 import groove.util.line.Line;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Proposition, wrapped inside a formula of type {@link LogicOp#PROP}. */
 public class Proposition {
@@ -123,7 +122,7 @@ public class Proposition {
         switch (getKind()) {
         case CALL:
             if (other.getKind() == CALL) {
-                result = other.arity() == arity();
+                result = getId().equals(other.getId()) && other.arity() == arity();
                 for (int i = 0; result && i < arity(); i++) {
                     result = getArgs().get(i)
                         .matches(other.getArgs()
@@ -141,7 +140,7 @@ public class Proposition {
             }
             break;
         case LABEL:
-            result = equals(other);
+            result = getLabel().equals(other.toString());
             break;
         default:
             throw Exceptions.UNREACHABLE;
@@ -375,7 +374,7 @@ public class Proposition {
             case NAME:
                 return this.name;
             case CONST:
-                return this.expr.toString();
+                return this.expr.toDisplayString();
             case WILD:
                 return WILD_TEXT;
             default:
