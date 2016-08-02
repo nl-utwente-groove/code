@@ -106,7 +106,8 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
 
     /** Indicates if the grammar works with simple or multi-graphs. */
     public boolean isSimple() {
-        return getGrammar().getStartGraph().isSimple();
+        return getGrammar().getStartGraph()
+            .isSimple();
     }
 
     /**
@@ -115,7 +116,9 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
     public GraphState startState() {
         if (this.startState == null) {
             this.startState = createStartState();
-            getGrammar().getControl().initialise(this.startState.getGraph().getFactory());
+            getGrammar().getControl()
+                .initialise(this.startState.getGraph()
+                    .getFactory());
             addState(this.startState);
         }
         return this.startState;
@@ -126,7 +129,8 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
      * cloning a given host graph.
      */
     protected HostGraph createStartGraph() {
-        HostGraph result = getGrammar().getStartGraph().clone(getAlgebraFamily());
+        HostGraph result = getGrammar().getStartGraph()
+            .clone(getAlgebraFamily());
         result.setFixed();
         return result;
     }
@@ -151,14 +155,16 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
      */
     public HostFactory getHostFactory() {
         if (this.hostFactory == null) {
-            this.hostFactory = this.grammar.getStartGraph().getFactory();
+            this.hostFactory = this.grammar.getStartGraph()
+                .getFactory();
         }
         return this.hostFactory;
     }
 
     /** Returns the algebra family of the GTS. */
     public AlgebraFamily getAlgebraFamily() {
-        return getGrammar().getProperties().getAlgebraFamily();
+        return getGrammar().getProperties()
+            .getAlgebraFamily();
     }
 
     // ----------------------- OBJECT OVERRIDES ------------------------
@@ -187,12 +193,14 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
 
     /** Returns the policy for type checking. */
     public CheckPolicy getTypePolicy() {
-        return getGrammar().getProperties().getTypePolicy();
+        return getGrammar().getProperties()
+            .getTypePolicy();
     }
 
     /** Indicates if deadlock errors should be checked on all graphs. */
     public boolean isCheckDeadlock() {
-        return getGrammar().getProperties().getDeadPolicy() == CheckPolicy.ERROR;
+        return getGrammar().getProperties()
+            .getDeadPolicy() == CheckPolicy.ERROR;
     }
 
     @Override
@@ -381,7 +389,8 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
      */
     public void addTransition(GraphTransition trans) {
         // add (possibly isomorphically modified) edge to LTS
-        if (trans.source().addTransition(trans)) {
+        if (trans.source()
+            .addTransition(trans)) {
             fireAddEdge(trans);
         } else {
             spuriousTransitionCount++;
@@ -548,13 +557,15 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
                 if (!had) {
                     this.stateCounts[index]++;
                     if (this.statesMap.containsKey(recorded)) {
-                        this.statesMap.get(recorded).add(state);
+                        this.statesMap.get(recorded)
+                            .add(state);
                     }
                 }
             } else if (had) {
                 this.stateCounts[index]--;
                 if (this.statesMap.containsKey(recorded)) {
-                    this.statesMap.get(recorded).remove(state);
+                    this.statesMap.get(recorded)
+                        .remove(state);
                 }
             }
         }
@@ -641,17 +652,21 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
                 result.addEdge(image, flags.getOpenLabel(), image);
             }
             if (flags.showNumber()) {
-                String label = flags.getNumberLabel().replaceAll("#", "" + state.getNumber());
+                String label = flags.getNumberLabel()
+                    .replaceAll("#", "" + state.getNumber());
                 result.addEdge(image, label, image);
             }
             if (flags.showTransience() && state.isTransient()) {
-                String label = flags.getTransienceLabel().replaceAll("#",
-                    "" + state.getActualFrame().getTransience());
+                String label = flags.getTransienceLabel()
+                    .replaceAll("#", "" + state.getActualFrame()
+                        .getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
-                String label = flags.getRecipeLabel().replaceAll("#",
-                    "" + state.getActualFrame().getRecipe().getFullName());
+                String label = flags.getRecipeLabel()
+                    .replaceAll("#", "" + state.getActualFrame()
+                        .getRecipe()
+                        .getQualName());
                 result.addEdge(image, label, image);
             }
         }
@@ -662,7 +677,8 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
             }
             MultiNode sourceImage = nodeMap.get(transition.source());
             MultiNode targetImage = nodeMap.get(transition.target());
-            result.addEdge(sourceImage, transition.label().text(), targetImage);
+            result.addEdge(sourceImage, transition.label()
+                .text(), targetImage);
         }
         return result;
     }
@@ -899,7 +915,10 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
                 result = System.identityHashCode(stateKey);
             } else if (this.collapse == COLLAPSE_EQUAL) {
                 HostGraph graph = stateKey.getGraph();
-                result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+                result = graph.nodeSet()
+                    .hashCode()
+                    + graph.edgeSet()
+                        .hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();

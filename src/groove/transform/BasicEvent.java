@@ -18,6 +18,15 @@ package groove.transform;
 
 import static groove.transform.RuleEvent.Reuse.EVENT;
 import static groove.transform.RuleEvent.Reuse.NONE;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -40,14 +49,6 @@ import groove.transform.RuleEffect.Fragment;
 import groove.util.Groove;
 import groove.util.cache.CacheReference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Class representing an instance of an {@link Rule} for a given anchor map.
  * @author Arend Rensink
@@ -66,7 +67,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     public BasicEvent(Rule rule, RuleToHostMap anchorMap, Reuse reuse) {
         super(reference, rule);
         assert anchorMap != null : String.format("Can't produce event for %s with null anchor map",
-            rule.getFullName());
+            rule.getQualName());
         rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
         this.hostFactory = anchorMap.getFactory();
@@ -322,7 +323,10 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                 if (getRule().getEraserNodes().length > 0) {
                     recordErasedNodes(record);
                 }
-                if (!getRule().getLhsMergeMap().isEmpty() || !getRule().getRhsMergeMap().isEmpty()) {
+                if (!getRule().getLhsMergeMap()
+                    .isEmpty()
+                    || !getRule().getRhsMergeMap()
+                        .isEmpty()) {
                     recordMergeMap(record);
                 }
             }
@@ -351,8 +355,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         if (record.isNodesPredefined()) {
             record.addCreatorNodes(creatorNodes);
         } else {
-            HostNode[] createdNodes =
-                getCreatedNodes(record.getSource().nodeSet(), record.getCreatedNodeMap());
+            HostNode[] createdNodes = getCreatedNodes(record.getSource()
+                .nodeSet(), record.getCreatedNodeMap());
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
     }
@@ -383,10 +387,9 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                     this,
                     target);
             }
-            HostEdge image =
-                getHostFactory().createEdge(sourceImage,
-                    anchorMap.mapLabel(edge.label()),
-                    targetImage);
+            HostEdge image = getHostFactory().createEdge(sourceImage,
+                anchorMap.mapLabel(edge.label()),
+                targetImage);
             record.addCreatedEdge(image);
         }
     }
@@ -511,14 +514,14 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             Set<HostNode> current = null;
             for (int i = 0; i < count; i++) {
                 TypeNode type;
-                if (creatorNodes[i].getTypeGuards().isEmpty()) {
+                if (creatorNodes[i].getTypeGuards()
+                    .isEmpty()) {
                     type = creatorNodes[i].getType();
                 } else {
                     // get the type from the image of the first label variable
-                    type =
-                        (TypeNode) getCoanchorMap().getVar(creatorNodes[i].getTypeGuards()
-                            .get(0)
-                            .getVar());
+                    type = (TypeNode) getCoanchorMap().getVar(creatorNodes[i].getTypeGuards()
+                        .get(0)
+                        .getVar());
                 }
                 result[i] = createNode(i, type, sourceNodes, current);
             }
@@ -588,7 +591,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     private HostNode createNode(TypeNode type) {
         BasicEvent.freshNodeCount++;
         HostFactory record = getHostFactory();
-        return record.nodes(type).createNode();
+        return record.nodes(type)
+            .createNode();
     }
 
     /**
@@ -670,9 +674,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             // add the eraser edges
             for (RuleEdge eraserEdge : getRule().getEraserNonAnchorEdges()) {
                 HostEdge eraserImage = result.mapEdge(eraserEdge);
-                assert eraserImage != null : String.format("Eraser edge %s has no image in anchor map %s",
-                    eraserEdge,
-                    result);
+                assert eraserImage != null : String
+                    .format("Eraser edge %s has no image in anchor map %s", eraserEdge, result);
                 // result.putEdge(eraserEdge, eraserImage);
             }
             return result;
@@ -689,8 +692,10 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         Set<AnchorValue> getAnchorImageSet() {
             if (this.anchorImageSet == null) {
                 RuleToHostMap anchorMap = getAnchorMap();
-                this.anchorImageSet = new HashSet<AnchorValue>(anchorMap.nodeMap().values());
-                this.anchorImageSet.addAll(anchorMap.edgeMap().values());
+                this.anchorImageSet = new HashSet<AnchorValue>(anchorMap.nodeMap()
+                    .values());
+                this.anchorImageSet.addAll(anchorMap.edgeMap()
+                    .values());
             }
             return this.anchorImageSet;
         }
@@ -728,7 +733,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                         BasicEvent.this.hostFactory.createNode(node.getAlgebra(), node.getValue());
                 } else {
                     createdValue = anchorMap.getNode(creatorEnd);
-                    assert creatorEnd != null : String.format("Event '%s': No coanchor image for '%s' in %s",
+                    assert creatorEnd != null : String.format(
+                        "Event '%s': No coanchor image for '%s' in %s",
                         BasicEvent.this,
                         creatorEnd,
                         anchorMap);

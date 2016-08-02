@@ -16,26 +16,6 @@
  */
 package groove.gui.display;
 
-import groove.grammar.Action;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
-import groove.grammar.model.RuleModel;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.SimulatorListener;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.action.CancelEditAction;
-import groove.gui.action.CopyAction;
-import groove.gui.action.EnableUniqueAction;
-import groove.gui.action.SaveAction;
-import groove.gui.action.SimulatorAction;
-import groove.gui.tree.ResourceTree;
-import groove.io.HTMLConverter;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -60,6 +40,28 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
+
+import groove.grammar.Action;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.NamedResourceModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.RuleModel;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.action.CancelEditAction;
+import groove.gui.action.CopyAction;
+import groove.gui.action.EnableUniqueAction;
+import groove.gui.action.SaveAction;
+import groove.gui.action.SimulatorAction;
+import groove.gui.tree.ResourceTree;
+import groove.io.HTMLConverter;
 
 /**
  * Resource display class that includes a tabbed pane,
@@ -330,7 +332,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Adds an editor panel for the given resource, or selects the
      * one that already exists.
      */
-    public void startEditResource(String name) {
+    public void startEditResource(QualName name) {
         ResourceTab result = getEditors().get(name);
         if (result == null) {
             result = createEditorTab(name);
@@ -357,16 +359,19 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Callback method to create an editor tab for a given named resource. */
-    protected ResourceTab createEditorTab(String name) {
+    protected ResourceTab createEditorTab(QualName name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
+            AspectGraph graph = getSimulatorModel().getStore()
+                .getGraphs(getResourceKind())
+                .get(name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
         } else {
-            String program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+            String program = getSimulatorModel().getStore()
+                .getTexts(getResourceKind())
+                .get(name);
             return new TextTab(this, name, program);
         }
     }
@@ -379,7 +384,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * (unless the action is cancelled)
      * @return {@code true} if the action was not cancelled
      */
-    public boolean saveEditor(String name, boolean confirm, boolean dispose) {
+    public boolean saveEditor(QualName name, boolean confirm, boolean dispose) {
         boolean result = true;
         ResourceTab editor = getEditors().get(name);
         if (editor != null) {
@@ -389,12 +394,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns a list of all editor panels currently displayed. */
-    protected final Map<String,ResourceTab> getEditors() {
+    protected final Map<QualName,ResourceTab> getEditors() {
         return this.editorMap;
     }
 
     /** Indicates if the resource with a given name is currently being edited. */
-    protected final boolean isEdited(String name) {
+    protected final boolean isEdited(QualName name) {
         return getEditors().containsKey(name);
     }
 
@@ -418,7 +423,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns the editor for a resource with a given name, if any. */
-    public ResourceTab getEditor(String name) {
+    public ResourceTab getEditor(QualName name) {
         return getEditors().get(name);
     }
 
@@ -433,7 +438,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             if (changes.contains(Change.GRAMMAR)) {
                 updateGrammar(source.getGrammar(), source.getGrammar() != oldModel.getGrammar());
             }
-            ResourceModel<?> resourceModel = source.getResource(getResourceKind());
+            NamedResourceModel<?> resourceModel = source.getResource(getResourceKind());
             getEnableButton().setSelected(resourceModel != null && resourceModel.isEnabled());
             selectResource(source.getSelected(getResourceKind()));
             buildInfoPanel();
@@ -556,7 +561,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected void selectionChanged() {
         if (suspendListening()) {
             Component selection = getTabPane().getSelectedComponent();
-            String name = selection == null ? null : selection.getName();
+            QualName name = selection == null ? null : QualName.parse(selection.getName());
             getSimulatorModel().doSelect(getResourceKind(), name);
             buildInfoPanel();
             activateListening();
@@ -568,7 +573,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * either in an open editor or in the main tab.
      * @return the tab in which the resource is shown
      */
-    public ResourceTab selectResource(String name) {
+    public ResourceTab selectResource(QualName name) {
         ResourceTab result;
         if (name == null) {
             removeMainTab();
@@ -598,7 +603,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /**
      * Sets the main panel  to a given (named) graph.
      */
-    protected void selectMainTab(String name) {
+    protected void selectMainTab(QualName name) {
         if (getMainTab().setResource(name)) {
             TabLabel tabLabel = getMainTab().getTabLabel();
             int index = getTabPane().indexOfComponent(getMainTab());
@@ -619,7 +624,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method to construct the label for a given (named) graph
      * that should be used in the label list.
      */
-    final public Icon getListIcon(String name) {
+    final public Icon getListIcon(QualName name) {
         Icon result;
         if (this.editorMap.containsKey(name)) {
             result = Icons.getListEditIcon(getResourceKind());
@@ -634,31 +639,33 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * given (named) resource that should be used in the label list and
      * tab component.
      */
-    public final String getLabelText(String name) {
+    public final String getLabelText(QualName name) {
         return getLabelText(name, "", getResource(name).isEnabled());
     }
 
     /**
      * Adds HTML formatting to the label text for the main display.
-     * Callback method from {@link #getLabelText(String)}.
+     * Callback method from {@link #getLabelText(QualName)}.
      * @param name the name of the displayed object. This determines the
      * decoration
      * @param suffix text to appear after the name
      * @param enabled flag indicating if the name should be shown as enabled
      */
-    public String getLabelText(String name, String suffix, boolean enabled) {
-        ResourceModel<?> model = getResource(name);
+    public String getLabelText(QualName name, String suffix, boolean enabled) {
+        NamedResourceModel<?> model = getResource(name);
         StringBuilder result = new StringBuilder(model.getLastName());
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);
             Action.Role actionRole = ((RuleModel) model).getRole();
             if (actionRole.hasColor()) {
-                HTMLConverter.createColorTag(actionRole.getColor()).on(result);
+                HTMLConverter.createColorTag(actionRole.getColor())
+                    .on(result);
             }
         }
         result.append(suffix);
         if (isEdited(name)) {
-            getEditors().get(name).decorateText(result);
+            getEditors().get(name)
+                .decorateText(result);
         }
         if (enabled) {
             if (getKind() != DisplayKind.RULE) {
@@ -675,21 +682,20 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method to construct the tool tip for a given
      * resource.
      */
-    protected String getToolTip(String name) {
-        ResourceModel<?> model = getResource(name);
+    protected String getToolTip(QualName name) {
+        NamedResourceModel<?> model = getResource(name);
         boolean enabled = model != null && model.isEnabled();
         return getToolTip(name, enabled);
     }
 
     /** Returns the tool tip text for a resource, depending on its enabling. */
-    private String getToolTip(String name, boolean enabled) {
+    private String getToolTip(QualName name, boolean enabled) {
         String result = enabled ? this.enabledText : this.disabledText;
         if (result == null) {
-            this.enabledText =
-                String.format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
-            this.disabledText =
-                String.format("Disabled %s; doubleclick to edit",
-                    getResourceKind().getDescription());
+            this.enabledText = String.format("Enabled %s; doubleclick to edit",
+                getResourceKind().getDescription());
+            this.disabledText = String.format("Disabled %s; doubleclick to edit",
+                getResourceKind().getDescription());
             result = enabled ? this.enabledText : this.disabledText;
         }
         return result;
@@ -701,10 +707,11 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Indicates if a given (named) resource has errors. */
-    final public boolean hasError(String name) {
+    final public boolean hasError(QualName name) {
         boolean result;
         if (this.editorMap.containsKey(name)) {
-            result = this.editorMap.get(name).hasErrors();
+            result = this.editorMap.get(name)
+                .hasErrors();
         } else {
             ResourceModel<?> model = getResource(name);
             result = model != null && model.hasErrors();
@@ -713,8 +720,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Retrieves the resource model for a given name from the grammar. */
-    public final ResourceModel<?> getResource(String name) {
-        return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
+    public final NamedResourceModel<?> getResource(QualName name) {
+        return getSimulatorModel().getGrammar()
+            .getResource(getResourceKind(), name);
     }
 
     private JTabbedPane tabPane;
@@ -728,7 +736,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /** Index of the selected tab at the lower info panel. */
     private int lowerInfoTabIndex;
     /** Mapping from graph names to editors for those graphs. */
-    private final Map<String,ResourceTab> editorMap = new HashMap<String,ResourceTab>();
+    private final Map<QualName,ResourceTab> editorMap = new HashMap<>();
 
     /** Flag indicating that the listeners are currently active. */
     private boolean listening;
@@ -751,10 +759,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         public void removeTabAt(int index) {
             // removes the editor panel from the map
             boolean isIndexSelected = getSelectedIndex() == index;
-            Component panel = getComponentAt(index);
+            ResourceTab panel = (ResourceTab) getComponentAt(index);
             super.removeTabAt(index);
             // set this resource as the main tab
-            String name = panel.getName();
+            QualName name = panel.getQualName();
             if (getEditors().remove(name) != null && isIndexSelected) {
                 selectMainTab(name);
             }

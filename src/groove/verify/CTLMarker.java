@@ -35,10 +35,10 @@ import java.util.Queue;
 import java.util.Set;
 
 import groove.explore.util.LTSLabels.Flag;
+import groove.grammar.QualName;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.lts.GTS;
-import groove.util.parse.Id;
 
 /**
  * Implementation of the CTL model checking algorithm.
@@ -173,7 +173,7 @@ public class CTLMarker {
     private void registerProposition(Proposition prop, Integer index) {
         this.propNr.put(prop, index);
         if (prop.getKind() == CALL || prop.getKind() == ID) {
-            Id callId = prop.getId();
+            QualName callId = prop.getId();
             Set<Proposition> callsForId = this.calls.get(callId);
             if (callsForId == null) {
                 this.calls.put(callId, callsForId = new HashSet<>());
@@ -208,7 +208,7 @@ public class CTLMarker {
             .getProp();
         if (prop != null && prop.getKind() != LABEL) {
             // retrieve the action name being called
-            Id callId = prop.getId();
+            QualName callId = prop.getId();
             if (this.calls.containsKey(callId)) {
                 this.calls.get(callId)
                     .stream()
@@ -622,9 +622,9 @@ public class CTLMarker {
     private final Map<Formula,Integer> formulaNr = new HashMap<>();
     /** Mapping from propositions (as literal strings) to formula numbers. */
     private final Map<Proposition,Integer> propNr = new HashMap<>();
-    /** Mapping from called action {@link Id}s to sets of propositions occurring in the formula
-     * that potentially match a call of that {@link Id}. */
-    private final Map<Id,Set<Proposition>> calls = new HashMap<>();
+    /** Mapping from called action names to sets of propositions occurring in the formula
+     * that potentially match a call of that action. */
+    private final Map<QualName,Set<Proposition>> calls = new HashMap<>();
     /** Marking matrix: 1st dimension = state, 2nd dimension = formula. */
     private BitSet[] marking;
     /** Backward reachability matrix. */
@@ -655,7 +655,7 @@ public class CTLMarker {
     static {
         for (Flag flag : Flag.values()) {
             String text = "$" + flag.getDefault();
-            Formula atom = Formula.atom(new Id(text));
+            Formula atom = Formula.atom(QualName.name(text));
             flagProps.put(flag, atom.getProp());
             formulaFlag.put(atom, flag);
         }

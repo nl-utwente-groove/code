@@ -16,6 +16,14 @@
  */
 package groove.io.external;
 
+import java.awt.Component;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
@@ -32,14 +40,6 @@ import groove.io.external.format.RasterExporter;
 import groove.io.external.format.TikzExporter;
 import groove.io.external.format.VectorExporter;
 import groove.util.Pair;
-
-import java.awt.Component;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Class used to export various resources and graphs to external formats.
@@ -62,10 +62,11 @@ public class Exporters {
                 exporters.put(fileType, exporter);
             }
         }
-        assert !exporters.isEmpty();
+        assert!exporters.isEmpty();
         // choose a file and exporter
         GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
-        chooser.setSelectedFile(new File(exportable.getName()));
+        chooser.setSelectedFile(exportable.getQualName()
+            .toFile());
         File selectedFile =
             SaveDialog.show(chooser, simulator == null ? null : simulator.getFrame(), null);
         // now save, if so required
@@ -100,7 +101,8 @@ public class Exporters {
     static public Pair<FileType,Exporter> getAcceptingFormat(String filename) {
         Pair<FileType,Exporter> result = null;
         outer: for (Exporter exporter : getExporters()) {
-            if (!exporter.getFormatKinds().contains(Kind.GRAPH)) {
+            if (!exporter.getFormatKinds()
+                .contains(Kind.GRAPH)) {
                 continue;
             }
             for (FileType fileType : exporter.getSupportedFileTypes()) {

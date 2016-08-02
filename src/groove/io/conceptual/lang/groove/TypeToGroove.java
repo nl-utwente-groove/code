@@ -1,5 +1,8 @@
 package groove.io.conceptual.lang.groove;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import groove.graph.GraphRole;
 import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
@@ -31,9 +34,6 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.Object;
 import groove.io.external.PortException;
 
-import java.util.HashSet;
-import java.util.Set;
-
 //separate different graphs for various elements where applicable.
 public class TypeToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
@@ -49,15 +49,14 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
         int timer = Timer.start("TM to GROOVE");
-        this.m_currentGraph =
-            this.m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()),
-                GraphRole.TYPE);
+        this.m_currentGraph = this.m_grooveResource.getGraph(typeModel.getQualName()
+            .toValidName(), GraphRole.TYPE);
         this.m_properties.clear();
         visitTypeModel(typeModel, this.m_cfg);
 
         // Prefetch? Uncomment for more accurate timings
-        this.m_currentGraph.getGraph().toAspectGraph(this.m_currentGraph.getGraphName(),
-            this.m_currentGraph.getGraphRole());
+        this.m_currentGraph.getGraph()
+            .toAspectGraph();
 
         Timer.stop(timer);
     }
@@ -88,7 +87,9 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
 
         // If not using the nullable/proper class system, don't instantiate nullable classes
-        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+        if (this.m_cfg.getConfig()
+            .getGlobal()
+            .getNullable() == NullableType.NONE) {
             if (!c.isProper()) {
                 // Simply revert to the proper instance
                 AbsNode classNode = getElement(c.getProperClass());
@@ -128,7 +129,9 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             int lowerBound = f.getLowerBound();
             if (lowerBound == 0 && f.getUpperBound() == 1 && f.getType() instanceof Class) {
                 // Nullable, but in GROOVE always Nil value (unless turned off)
-                if (this.m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE) {
+                if (this.m_cfg.getConfig()
+                    .getGlobal()
+                    .getNullable() != NullableType.NONE) {
                     lowerBound = 1;
                 }
             }
@@ -151,12 +154,14 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
                 }
                 edgeLabel += ":";
             }
-            /*AbsEdge fieldEdge = */new AbsEdge(classNode, fieldNode, edgeLabel
-                + f.getName().toString());
+            /*AbsEdge fieldEdge = */new AbsEdge(classNode, fieldNode, edgeLabel + f.getName()
+                .toString());
         }
 
         // If all nullable classes, get node of nullable version too
-        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
+        if (this.m_cfg.getConfig()
+            .getGlobal()
+            .getNullable() == NullableType.ALL) {
             getElement(c.getNullableClass());
         }
     }
@@ -180,7 +185,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
                 fieldNode = getElement(field.getType());
             }
             if (this.m_cfg.useIntermediate(field)) {
-                String valName = this.m_cfg.getStrings().getValueEdge();
+                String valName = this.m_cfg.getStrings()
+                    .getValueEdge();
                 AbsNode interNode = new AbsNode(this.m_cfg.getName(field));
                 interNode.addName("edge:\"" + field.getName() + "\"");
                 String out = isNullable ? "out=0..1:" : "out=1:";
@@ -199,7 +205,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
 
         if (dt instanceof CustomDataType) {
-            String valueName = this.m_cfg.getStrings().getDataValue();
+            String valueName = this.m_cfg.getStrings()
+                .getDataValue();
             AbsNode dataNode = new AbsNode(this.m_cfg.getName(dt), "string:" + valueName);
             setElement(dt, dataNode);
         } else {
@@ -214,8 +221,12 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             return;
         }
 
-        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
+        if (this.m_cfg.getConfig()
+            .getTypeModel()
+            .getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getConfig()
+                .getGlobal()
+                .getIdSeparator();
             AbsNode enumNode = new AbsNode(this.m_cfg.getName(e), "abs:");
             setElement(e, enumNode);
 
@@ -252,13 +263,12 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
 
         boolean useIndex = this.m_cfg.useIndex(c);
-        boolean indexValue =
-            (this.m_cfg.getConfig()
-                .getTypeModel()
-                .getFields()
-                .getContainers()
-                .getOrdering()
-                .getType() == OrderType.INDEX);
+        boolean indexValue = (this.m_cfg.getConfig()
+            .getTypeModel()
+            .getFields()
+            .getContainers()
+            .getOrdering()
+            .getType() == OrderType.INDEX);
 
         AbsNode containerNode = null;
         if (this.m_cfg.useIntermediate(c)) {
@@ -266,21 +276,25 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             containerNode = new AbsNode(param + this.m_cfg.getContainerPostfix(c));
 
             // Use just the last part of the container id as the edge name
-            int lastIndex = param.lastIndexOf(this.m_cfg.getConfig().getGlobal().getIdSeparator());
+            int lastIndex = param.lastIndexOf(this.m_cfg.getConfig()
+                .getGlobal()
+                .getIdSeparator());
             String edgeName = param;
             if (lastIndex != -1) {
                 edgeName = param.substring(lastIndex + 1);
             }
 
             if (useIndex && indexValue) {
-                String indexName = this.m_cfg.getStrings().getIndexEdge();
+                String indexName = this.m_cfg.getStrings()
+                    .getIndexEdge();
                 containerNode.addName("edge:\"" + edgeName + " %s\"," + indexName);
             } else {
                 containerNode.addName("edge:\"" + edgeName + "\"");
             }
 
             // If subtype is another container, allow more nodes. Otherwise, just one
-            String valName = /*"in=1:" + */this.m_cfg.getStrings().getValueEdge();
+            String valName = /*"in=1:" + */this.m_cfg.getStrings()
+                .getValueEdge();
             if (c.getType() instanceof Container) {
                 valName = "out=1..*:" + valName;
             } else {
@@ -293,12 +307,14 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
 
         if (useIndex) {
             if (indexValue) {
-                String indexName = this.m_cfg.getStrings().getIndexEdge();
+                String indexName = this.m_cfg.getStrings()
+                    .getIndexEdge();
                 containerNode.addName("out=1:int:" + indexName);
             } else {
-                String nextName = this.m_cfg.getStrings().getNextEdge();
-                /*AbsEdge nextEdge = */new AbsEdge(containerNode, containerNode, "out=0..1:"
-                    + nextName);
+                String nextName = this.m_cfg.getStrings()
+                    .getNextEdge();
+                /*AbsEdge nextEdge = */new AbsEdge(containerNode, containerNode,
+                    "out=0..1:" + nextName);
 
                 if (this.m_cfg.getConfig()
                     .getTypeModel()
@@ -306,7 +322,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
                     .getContainers()
                     .getOrdering()
                     .isUsePrevEdge()) {
-                    String prevName = this.m_cfg.getStrings().getPrevEdge();
+                    String prevName = this.m_cfg.getStrings()
+                        .getPrevEdge();
                     new AbsEdge(containerNode, containerNode, "out=0..1:" + prevName);
                 }
             }
@@ -345,7 +362,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             throw new IllegalArgumentException("Cannot create object node in type model");
         }
 
-        String name = this.m_cfg.getStrings().getNilName();
+        String name = this.m_cfg.getStrings()
+            .getNilName();
         AbsNode nilNode = new AbsNode("type:" + name);
         setElement(object, nilNode);
     }
@@ -357,11 +375,15 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(abstractProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseAbstract()) {
+        if (!this.m_cfg.getConfig()
+            .getTypeModel()
+            .getProperties()
+            .isUseAbstract()) {
             return;
         }
 
-        AbsNode classNode = getElement(abstractProperty.getAbstractClass().getProperClass());
+        AbsNode classNode = getElement(abstractProperty.getAbstractClass()
+            .getProperClass());
         classNode.addName("abs:");
     }
 
@@ -372,26 +394,34 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(containmentProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseContainment()) {
+        if (!this.m_cfg.getConfig()
+            .getTypeModel()
+            .getProperties()
+            .isUseContainment()) {
             return;
         }
 
         // Add containment to field edge
-        String edgeName = containmentProperty.getField().getName().toString();
+        String edgeName = containmentProperty.getField()
+            .getName()
+            .toString();
         AbsNode containmentNode = getElement(containmentProperty.getContainerClass());
         for (AbsEdge edge : containmentNode.getEdges()) {
-            if (edge.getName().endsWith(edgeName)) {
+            if (edge.getName()
+                .endsWith(edgeName)) {
                 edge.setName("part:" + edge.getName());
             }
         }
 
         // Add to intermediate node as well if required
         if (this.m_cfg.useIntermediate(containmentProperty.getField())) {
-            edgeName = this.m_cfg.getStrings().getValueEdge();
+            edgeName = this.m_cfg.getStrings()
+                .getValueEdge();
             containmentNode = getElement(containmentProperty.getField());
 
             for (AbsEdge edge : containmentNode.getEdges()) {
-                if (edge.getName().endsWith(edgeName)) {
+                if (edge.getName()
+                    .endsWith(edgeName)) {
                     edge.setName("part:" + edge.getName());
                 }
             }
@@ -428,11 +458,17 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         }
         setPropertyVisited(oppositeProperty);
 
-        if (!this.m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
+        if (!this.m_cfg.getConfig()
+            .getTypeModel()
+            .getProperties()
+            .isUseOpposite()) {
             return;
         }
 
-        boolean useOpposites = this.m_cfg.getConfig().getTypeModel().getFields().isOpposites();
+        boolean useOpposites = this.m_cfg.getConfig()
+            .getTypeModel()
+            .getFields()
+            .isOpposites();
         if (!useOpposites) {
             return;
         }
@@ -449,7 +485,8 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
         AbsNode target =
             this.m_cfg.useIntermediate(oppositeProperty.getField2()) ? field2Node : class2Node;
 
-        String oppositeName = this.m_cfg.getStrings().getOppositeEdge();
+        String oppositeName = this.m_cfg.getStrings()
+            .getOppositeEdge();
         /*AbsEdge oppositeEdge = */new AbsEdge(source, target, "out=1:" + oppositeName);
     }
 

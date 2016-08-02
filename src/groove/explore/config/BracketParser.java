@@ -61,21 +61,6 @@ public class BracketParser<V> implements Parser<V> {
     }
 
     @Override
-    public boolean accepts(String text) {
-        if (text == null || text.length() == 0) {
-            return this.allowsEmpty && this.inner.accepts(text);
-        }
-        if (text.charAt(0) != this.start) {
-            return false;
-        }
-        int last = text.length() - 1;
-        if (text.charAt(last) != this.end) {
-            return false;
-        }
-        return this.inner.accepts(text.substring(1, last));
-    }
-
-    @Override
     public V parse(String input) throws FormatException {
         if (input == null || input.length() == 0) {
             if (this.allowsEmpty) {
@@ -83,10 +68,15 @@ public class BracketParser<V> implements Parser<V> {
             } else {
                 throw new FormatException("Empty string not allowed");
             }
-        } else {
-            int last = input.length() - 1;
-            return this.inner.parse(input.substring(1, last));
         }
+        if (input.charAt(0) != this.start) {
+            throw new FormatException("Expected input '%s' to start with '%s'", input, this.start);
+        }
+        int last = input.length() - 1;
+        if (input.charAt(last) != this.end) {
+            throw new FormatException("Expected input '%s' to end with '%s'", input, this.end);
+        }
+        return this.inner.parse(input.substring(1, last));
     }
 
     @Override
@@ -103,11 +93,6 @@ public class BracketParser<V> implements Parser<V> {
     @Override
     public boolean isValue(Object value) {
         return this.inner.isValue(value);
-    }
-
-    @Override
-    public boolean hasDefault() {
-        return this.inner.hasDefault();
     }
 
     @Override

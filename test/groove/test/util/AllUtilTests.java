@@ -24,7 +24,8 @@ import org.junit.runners.Suite;
  * @version $Revision: 5479 $
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({HashBagTest.class, TreeHashSetTest.class, ExprParseTest.class})
+@Suite.SuiteClasses({HashBagTest.class, TreeHashSetTest.class, ExprParseTest.class,
+    IdValidatorTest.class})
 public class AllUtilTests {
     // Empty by design.
 }

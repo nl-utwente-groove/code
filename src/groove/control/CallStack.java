@@ -16,11 +16,11 @@
  */
 package groove.control;
 
+import java.util.Stack;
+
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-
-import java.util.Stack;
 
 /**
  * Stack of calls.
@@ -102,10 +102,12 @@ public class CallStack extends Stack<Call> {
             if (result.length() > 0) {
                 result.append('/');
             }
-            if (allPars || !call.getArgs().isEmpty()) {
+            if (allPars || !call.getArgs()
+                .isEmpty()) {
                 result.append(call.toString());
             } else {
-                result.append(call.getUnit().getFullName());
+                result.append(call.getUnit()
+                    .getQualName());
             }
         }
         return result.toString();

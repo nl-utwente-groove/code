@@ -60,7 +60,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
         int timer = Timer.start("TM to DOT");
-        Graph typeGraph = this.m_resource.getTypeGraph(typeModel.getName());
+        Graph typeGraph = this.m_resource.getTypeGraph(typeModel.getQualName());
         this.m_typeGraphs.put(typeModel, typeGraph);
         this.m_packageGraphs.put(Id.ROOT, typeGraph);
 

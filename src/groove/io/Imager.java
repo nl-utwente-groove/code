@@ -198,7 +198,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
                     boolean process = element.isDirectory();
                     if (!process) {
                         Pair<ResourceKind,QualName> resource = parse(element);
-                        process = resource != null && resource.one().isGraphBased();
+                        process = resource != null && resource.one()
+                            .isGraphBased();
                     }
                     if (process) {
                         makeImage(grammar, element, new File(outFile, element.getName()));
@@ -232,14 +233,15 @@ public class Imager extends GrooveCmdLineTool<Object> {
             }
             // Determine output file format
             FileType outFileType = getFormatMap().get(getOutFormatExt());
-            final FileType fileType =
-                outFileType == null ? getFormatMap().values().iterator().next() : outFileType;
+            final FileType fileType = outFileType == null ? getFormatMap().values()
+                .iterator()
+                .next() : outFileType;
             final Exporter exporter = Exporters.getExporter(fileType);
             final File exportFile = new File(outParent, fileType.addExtension(outFileName));
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
-                (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two().toString());
+                (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two());
             final Exportable exportable = toExportable(resourceModel, exporter.getFormatKinds());
             // make sure the export happens on the event thread
             Runnable export = new Runnable() {
@@ -264,7 +266,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 } catch (InterruptedException exc) {
                     // do nothing
                 } catch (InvocationTargetException exc) {
-                    throw new IOException(exc.getCause().getCause());
+                    throw new IOException(exc.getCause()
+                        .getCause());
                 }
             }
         }
@@ -282,8 +285,10 @@ public class Imager extends GrooveCmdLineTool<Object> {
         } else {
             assert outFormats.contains(Porter.Kind.JGRAPH);
             Options options = new Options();
-            options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
-            options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
+            options.getItem(Options.SHOW_VALUE_NODES_OPTION)
+                .setSelected(isEditorView());
+            options.getItem(Options.SHOW_ASPECTS_OPTION)
+                .setSelected(isEditorView());
             DisplayKind displayKind =
                 DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
@@ -402,14 +407,16 @@ public class Imager extends GrooveCmdLineTool<Object> {
         ResourceKind kind = null;
         // find out the resource kind
         for (ResourceKind k : ResourceKind.values()) {
-            if (k.isGraphBased() && k.getFileType().hasExtension(file)) {
+            if (k.isGraphBased() && k.getFileType()
+                .hasExtension(file)) {
                 kind = k;
                 break;
             }
         }
         QualName qualName = null;
         if (kind != null) {
-            file = kind.getFileType().stripExtension(file);
+            file = kind.getFileType()
+                .stripExtension(file);
             // break the filename into fragments, up to the containing grammar
             List<String> fragments = new LinkedList<String>();
             while (file != null && !GRAMMAR.hasExtension(file)) {
@@ -419,7 +426,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             // if file == null, there was no containing grammar
             if (file != null) {
                 try {
-                    qualName = new QualName(fragments);
+                    qualName = new QualName(fragments).testValid();
                 } catch (FormatException e) {
                     // do nothing
                 }
@@ -434,7 +441,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (result == null) {
             result = formatMap = new HashMap<String,FileType>();
             for (Exporter exporter : Exporters.getExporters()) {
-                if (exporter.getFormatKinds().contains(Kind.RESOURCE)) {
+                if (exporter.getFormatKinds()
+                    .contains(Kind.RESOURCE)) {
                     continue;
                 }
                 for (FileType fileType : exporter.getSupportedFileTypes()) {
@@ -548,7 +556,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
             this.browseChooser.setSelectedFile(new File(fileField.getText()));
             int answer = this.browseChooser.showOpenDialog(this);
             if (answer == JFileChooser.APPROVE_OPTION) {
-                fileField.setText(this.browseChooser.getSelectedFile().getAbsolutePath());
+                fileField.setText(this.browseChooser.getSelectedFile()
+                    .getAbsolutePath());
             }
         }
 
@@ -747,7 +756,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox<String> formatBox =
-            new JComboBox<String>(Imager.getFormatMap().keySet().toArray(new String[] {}));
+        final JComboBox<String> formatBox = new JComboBox<String>(Imager.getFormatMap()
+            .keySet()
+            .toArray(new String[] {}));
     }
 }

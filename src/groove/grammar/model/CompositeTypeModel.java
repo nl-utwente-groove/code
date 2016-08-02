@@ -4,6 +4,14 @@ import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.grammar.model.ResourceKind.RULE;
 import static groove.grammar.model.ResourceKind.TYPE;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import groove.grammar.QualName;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.type.ImplicitTypeGraph;
 import groove.grammar.type.TypeGraph;
@@ -13,12 +21,6 @@ import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /** Class to store the models that are used to compose the type graph. */
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     /**
@@ -26,8 +28,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      * @param grammar the underlying graph grammar; non-{@code null}
      */
     CompositeTypeModel(GrammarModel grammar) {
-        super(grammar, ResourceKind.TYPE, "Composed type for "
-            + grammar.getName());
+        super(grammar, TYPE);
     }
 
     @Override
@@ -35,12 +36,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         return null;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    /** 
+    /**
      * Returns the constructed composite type graph, or the implicit
      * type graph if there are either no constituent type graph models enabled,
      * or there are errors in the constituent type graph models.
@@ -61,7 +57,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         boolean result = super.isShouldRebuild();
         if (result) {
             result = isStale(TYPE, PROPERTIES);
-            if (getGrammar().getActiveNames(TYPE).isEmpty()) {
+            if (getGrammar().getActiveNames(TYPE)
+                .isEmpty()) {
                 // it's an implicit type graph; look also at the host graphs and rules
                 result |= isStale(HOST, RULE);
             }
@@ -74,13 +71,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         TypeGraph result = null;
         FormatErrorSet errors = createErrors();
         this.typeModelMap.clear();
-        for (String activeTypeName : getGrammar().getActiveNames(TYPE)) {
-            ResourceModel<?> typeModel =
-                getGrammar().getResource(TYPE, activeTypeName);
+        for (QualName activeTypeName : getGrammar().getActiveNames(TYPE)) {
+            ResourceModel<?> typeModel = getGrammar().getResource(TYPE, activeTypeName);
             this.typeModelMap.put(activeTypeName, (TypeModel) typeModel);
             for (FormatError error : typeModel.getErrors()) {
-                errors.add("Error in type '%s': %s", activeTypeName, error,
-                    typeModel.getSource());
+                errors.add("Error in type '%s': %s", activeTypeName, error, typeModel.getSource());
             }
         }
         errors.throwException();
@@ -88,13 +83,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         if (this.typeModelMap.isEmpty()) {
             result = getImplicitTypeGraph();
         } else {
-            result = new TypeGraph("combined type");
+            result = new TypeGraph(QualName.name(NAME));
             // There are no errors in each of the models, try to compose the
             // type graph.
-            Map<TypeNode,TypeNode> importNodes =
-                new HashMap<TypeNode,TypeNode>();
-            Map<TypeNode,TypeModel> importModels =
-                new HashMap<TypeNode,TypeModel>();
+            Map<TypeNode,TypeNode> importNodes = new HashMap<TypeNode,TypeNode>();
+            Map<TypeNode,TypeModel> importModels = new HashMap<TypeNode,TypeModel>();
             for (TypeModel model : this.typeModelMap.values()) {
                 try {
                     TypeGraph graph = model.toResource();
@@ -111,13 +104,15 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             }
             // test that there are no imported types left
             for (Map.Entry<TypeNode,TypeNode> importEntry : importNodes.entrySet()) {
-                if (importEntry.getValue().isImported()) {
+                if (importEntry.getValue()
+                    .isImported()) {
                     TypeNode origNode = importEntry.getKey();
                     TypeModel origModel = importModels.get(origNode);
-                    errors.add(
-                        "Error in type graph '%s': Unresolved type import '%s'",
-                        origModel.getFullName(), origNode.label(),
-                        getInverse(origModel.getMap().nodeMap(), origNode),
+                    errors.add("Error in type graph '%s': Unresolved type import '%s'",
+                        origModel.getQualName(),
+                        origNode.label(),
+                        getInverse(origModel.getMap()
+                            .nodeMap(), origNode),
                         origModel.getSource());
                 }
             }
@@ -166,7 +161,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     private AspectNode getInverse(Map<AspectNode,?> map, TypeNode image) {
         AspectNode result = null;
         for (Map.Entry<AspectNode,?> entry : map.entrySet()) {
-            if (entry.getValue().equals(image)) {
+            if (entry.getValue()
+                .equals(image)) {
                 return entry.getKey();
             }
         }
@@ -174,8 +170,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     }
 
     /** Mapping from active type names to corresponding type models. */
-    private final Map<String,TypeModel> typeModelMap =
-        new HashMap<String,TypeModel>();
+    private final Map<QualName,TypeModel> typeModelMap = new HashMap<>();
     /** The implicit type graph. */
     private TypeGraph implicitTypeGraph;
+
+    /** Fixed name for the composite type model. */
+    static public final String NAME = "composite-type";
 }

@@ -29,10 +29,10 @@ import java.util.TreeMap;
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.algebra.syntax.ExprTree.ExprOp;
+import groove.grammar.QualName;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-import groove.util.parse.Id;
 import groove.util.parse.OpKind;
 
 /**
@@ -106,7 +106,7 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
             } else {
                 // replace the top-level "=" by "=="
                 ExprTree lhs = createTree(ExprOp.atom());
-                lhs.setId(new Id(nameToken.substring()));
+                lhs.setId(QualName.name(nameToken.substring()));
                 result = createTree(getEquality());
                 result.addArg(lhs);
                 result.addArg(super.parse());
@@ -132,7 +132,7 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
             throw expectedToken(ASSIGN, next());
         } else {
             ExprTree lhs = createTree(ExprOp.atom());
-            lhs.setId(new Id(nameToken.substring()));
+            lhs.setId(QualName.name(nameToken.substring()));
             result = createTree(ExprTree.ASSIGN);
             result.addArg(lhs);
             result.addArg(super.parse());
@@ -151,8 +151,7 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
         if (sort == null) {
             // no, it's a simple name: create an ID expression
             result = createTree(ExprOp.atom());
-            Id id = parseId();
-            result.setId(id);
+            result.setId(parseId());
         } else {
             // yes, it's a sort-prefixed expression: parse the sorted sub-expression
             result = super.parse(OpKind.ATOM);

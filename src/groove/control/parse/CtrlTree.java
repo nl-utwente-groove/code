@@ -1,5 +1,16 @@
 package groove.control.parse;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -11,21 +22,11 @@ import groove.grammar.Action;
 import groove.grammar.Callable;
 import groove.grammar.Callable.Kind;
 import groove.grammar.CheckPolicy;
+import groove.grammar.ModuleName;
 import groove.grammar.QualName;
 import groove.util.antlr.ParseTree;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
 
 /**
  * Dedicated tree node for GCL parsing.
@@ -63,19 +64,32 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         return result;
     }
 
+    /** Returns the qualified name stored in this tree node, if any. */
+    public QualName getQualName() {
+        return this.qualName;
+    }
+
+    /** Stores a qualified name in this tree node. */
+    public void setQualName(QualName qualName) {
+        assert qualName != null && !qualName.hasErrors();
+        this.qualName = qualName;
+    }
+
+    private QualName qualName;
+
     /** Returns the control program name stored in this tree node, if any. */
-    public String getControlName() {
+    public QualName getControlName() {
         return this.controlName;
     }
 
-    /** Stores a control variable in this tree node. */
-    public void setControlName(String controlName) {
+    /** Stores a control program name in this tree node. */
+    public void setControlName(QualName controlName) {
         assert getType() == CtrlParser.PROGRAM;
-        assert controlName != null;
+        assert controlName != null && !controlName.hasErrors();
         this.controlName = controlName;
     }
 
-    private String controlName;
+    private QualName controlName;
 
     /** Returns the control variable stored in this tree node, if any. */
     public CtrlVar getCtrlVar() {
@@ -117,18 +131,19 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     private final List<Call> calls;
 
     /** Returns a list of all rule ID tokens in this tree with a given name. */
-    public List<CtrlTree> getRuleIdTokens(String name) {
+    public List<CtrlTree> getRuleIdTokens(QualName name) {
         List<CtrlTree> result = new ArrayList<CtrlTree>();
         collectRuleIdTokens(result, name);
         return result;
     }
 
     /** Recursively collects all rule ID tokens with a given name. */
-    private void collectRuleIdTokens(List<CtrlTree> result, String name) {
+    private void collectRuleIdTokens(List<CtrlTree> result, QualName name) {
         int tokenType = getToken().getType();
         if (tokenType == CtrlLexer.CALL || tokenType == CtrlLexer.IMPORT) {
             CtrlTree id = getChild(0);
-            if (id.getText().equals(name)) {
+            if (id.getText()
+                .equals(name.toString())) {
                 result.add(id);
             }
         } else {
@@ -236,7 +251,8 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.BECOMES:
         case CtrlParser.CALL:
             CtrlTree callTree = getType() == CtrlParser.CALL ? this : getChild(1);
-            if (callTree.getChild(0).getType() == CtrlParser.ID) {
+            if (callTree.getChild(0)
+                .getType() == CtrlParser.ID) {
                 // it's a single call
                 assert getCalls().size() == 1;
                 result = prot.call(getCalls().get(0));
@@ -291,12 +307,11 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      */
     public Program toProgram() throws FormatException {
         assert getType() == CtrlParser.PROGRAM && isChecked();
-        Program result = new Program(getControlName());
+        Program result = new Program();
         CtrlTree body = getChild(4);
-        if (body.getChildCount() == 0) {
-            result.setDead(getInfo().getPrototype());
-        } else {
-            result.setMain(body.toTerm());
+        // set the main if this tree has a body
+        if (body.getChildCount() > 0) {
+            result.setMain(getControlName(), body.toTerm());
         }
         for (CtrlTree funcTree : getProcs(Callable.Kind.FUNCTION).values()) {
             result.addProc(funcTree.toProcedure());
@@ -313,31 +328,38 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * @param procKind either {@link Kind#FUNCTION}
      * or {@link Kind#RECIPE}.
      */
-    public Map<String,CtrlTree> getProcs(Callable.Kind procKind) {
+    public Map<QualName,CtrlTree> getProcs(Callable.Kind procKind) {
         assert getType() == CtrlParser.PROGRAM && isChecked();
-        Map<String,CtrlTree> result = new TreeMap<String,CtrlTree>();
-        String packName = toPackageName();
+        Map<QualName,CtrlTree> result = new TreeMap<>();
+        ModuleName packName = toPackageName();
         CtrlTree parent;
         if (procKind == Callable.Kind.FUNCTION) {
             parent = getChild(2);
-            assert parent.getToken().getType() == CtrlParser.FUNCTIONS;
+            assert parent.getToken()
+                .getType() == CtrlParser.FUNCTIONS;
         } else {
             parent = getChild(3);
-            assert parent.getToken().getType() == CtrlParser.RECIPES;
+            assert parent.getToken()
+                .getType() == CtrlParser.RECIPES;
         }
         for (int i = 0; i < parent.getChildCount(); i++) {
             CtrlTree tree = parent.getChild(i);
-            String name = QualName.extend(packName, tree.getChild(0).getText());
+            QualName name = packName.extend(tree.getChild(0)
+                .getText());
             result.put(name, tree);
         }
         return result;
     }
 
     /** Returns the package name from a top-level control tree. */
-    public String toPackageName() {
+    public ModuleName toPackageName() {
         assert getType() == CtrlParser.PROGRAM;
         CtrlTree pack = getChild(0);
-        return pack == null ? "" : pack.getChild(0).getText();
+        assert pack != null : "Empty package should have been set";
+        ModuleName result = pack.getChild(0)
+            .getQualName();
+        // the empty package has a null module name
+        return result == null ? ModuleName.TOP : result;
     }
 
     /**
@@ -348,8 +370,9 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     public Procedure toProcedure() throws FormatException {
         assert getType() == CtrlParser.FUNCTION || getType() == CtrlParser.RECIPE;
         // look up the package name
-        String packName = getParent().getParent().toPackageName();
-        String name = QualName.extend(packName, getChild(0).getText());
+        ModuleName packName = getParent().getParent()
+            .toPackageName();
+        QualName name = packName.extend(getChild(0).getText());
         Procedure result = (Procedure) getInfo().getCallable(name);
         CtrlTree bodyTree = getChild(getChildCount() - 1);
         Term bodyTerm = bodyTree.toTerm();
@@ -421,8 +444,10 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             try {
                 getInfo().setControlName(getControlName());
                 CtrlChecker checker = createChecker();
-                CtrlTree result = (CtrlTree) checker.program().getTree();
-                getInfo().getErrors().throwException();
+                CtrlTree result = (CtrlTree) checker.program()
+                    .getTree();
+                getInfo().getErrors()
+                    .throwException();
                 result.setControlName(getControlName());
                 result.setChecked();
                 return result;
@@ -443,6 +468,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         this.par = node.par;
         this.var = node.var;
         this.calls.addAll(node.calls);
+        this.qualName = node.qualName;
         this.controlName = node.controlName;
     }
 
@@ -461,8 +487,10 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     static public CtrlTree parse(Namespace namespace, String term) throws FormatException {
         try {
             CtrlParser parser = createParser(namespace, term);
-            CtrlTree result = (CtrlTree) parser.program().getTree();
-            namespace.getErrors().throwException();
+            CtrlTree result = (CtrlTree) parser.program()
+                .getTree();
+            namespace.getErrors()
+                .throwException();
             return result;
         } catch (RecognitionException e) {
             throw new FormatException(e);

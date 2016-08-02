@@ -63,7 +63,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
     @Override
     public void addInstanceModel(InstanceModel instanceModel) throws PortException {
         int timer = Timer.start("IM to DOT");
-        Graph instanceGraph = this.m_resource.getInstanceGraph(instanceModel.getName());
+        Graph instanceGraph = this.m_resource.getInstanceGraph(instanceModel.getQualName());
         this.m_instanceGraphs.put(instanceModel, instanceGraph);
         this.m_packageGraphs.put(Id.ROOT, instanceGraph);
 

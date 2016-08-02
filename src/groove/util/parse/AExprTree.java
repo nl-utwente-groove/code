@@ -17,6 +17,7 @@
 package groove.util.parse;
 
 import groove.algebra.Constant;
+import groove.grammar.QualName;
 
 /**
  * @author rensink
@@ -51,7 +52,7 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
     private Constant constant;
 
     /** Sets a top-level identifier for this expression. */
-    public void setId(Id id) {
+    public void setId(QualName id) {
         assert!isFixed();
         assert this.op.getKind() == OpKind.ATOM || this.op.getKind() == OpKind.CALL;
         assert!hasConstant();
@@ -64,11 +65,11 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
     }
 
     /** Returns the identifier wrapped in this expression, if any. */
-    public Id getId() {
+    public QualName getId() {
         return this.id;
     }
 
-    private Id id;
+    private QualName id;
 
     /** Returns a string representation of the top-level content of this tree. */
     @Override
@@ -76,7 +77,7 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
         if (hasConstant()) {
             return getConstant().getSymbol();
         } else if (hasId()) {
-            return getId().getName();
+            return getId().toString();
         } else {
             return "";
         }

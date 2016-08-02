@@ -1,5 +1,17 @@
 package groove.gui.action;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+
 import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
@@ -15,18 +27,6 @@ import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.util.ThreeValued;
 import groove.util.Version;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 /**
  * Action for loading a new rule system.
@@ -157,10 +157,11 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         final GrammarModel grammar = store.toGrammarModel();
         getSimulatorModel().setGrammar(grammar);
-        grammar.getProperties().setCurrentVersionProperties();
+        grammar.getProperties()
+            .setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {
-            getActions().getSaveGrammarAction().save(newGrammarFile,
-                !newGrammarFile.equals(store.getLocation()));
+            getActions().getSaveGrammarAction()
+                .save(newGrammarFile, !newGrammarFile.equals(store.getLocation()));
         }
         return true;
     }
@@ -202,20 +203,16 @@ public class LoadGrammarAction extends SimulatorAction {
         store.setUndoSuspended(true);
         // loop over all resource kinds
         outer: for (ResourceKind kind : ResourceKind.all(false)) {
-            Set<String> newNames = new HashSet<String>();
+            Set<QualName> newNames = new HashSet<>();
             // collect all resource names of this kind
-            Set<String> oldNames;
-            if (kind.isGraphBased()) {
-                oldNames = store.getGraphs(kind).keySet();
-            } else {
-                oldNames = store.getTexts(kind).keySet();
-            }
-            // loop over all collected names
-            Map<String,String> renameMap = new HashMap<String,String>();
-            for (String name : oldNames) {
-                StringBuilder legal = new StringBuilder();
+            Set<QualName> oldNames =
+                (kind.isGraphBased() ? store.getGraphs(kind) : store.getTexts(kind)).keySet();
+            // loop over all collected names,
+            // construct a renaming of illegal qualified names into safe names
+            Map<QualName,QualName> renameMap = new HashMap<>();
+            for (QualName name : oldNames) {
                 // check if name is valid
-                if (!QualName.isValid(name, legal, null)) {
+                if (name.hasErrors()) {
                     // if not, ask confirmation from the user to continue
                     if (!confirmed && !askReplaceNames()) {
                         result = false;
@@ -223,10 +220,11 @@ public class LoadGrammarAction extends SimulatorAction {
                     }
                     // user confirmed, rename resource
                     confirmed = true;
-                    String newName = legal.toString();
+                    QualName newName = name.toValidName();
                     // make sure the modified name is fresh
                     while (oldNames.contains(newName) || newNames.contains(newName)) {
-                        newName = newName + "_";
+                        newName = newName.parent()
+                            .extend(newName.last() + "_");
                     }
                     newNames.add(newName);
                     renameMap.put(name, newName);
@@ -244,22 +242,22 @@ public class LoadGrammarAction extends SimulatorAction {
         return result;
     }
 
-    private void replaceGraphs(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
-        throws IOException {
-        Map<String,AspectGraph> oldGraphMap = store.getGraphs(kind);
-        List<AspectGraph> newGraphs = new ArrayList<AspectGraph>();
-        for (Map.Entry<String,String> e : renameMap.entrySet()) {
-            String oldName = e.getKey();
-            String newName = e.getValue();
+    private void replaceGraphs(SystemStore store, ResourceKind kind,
+        Map<QualName,QualName> renameMap) throws IOException {
+        Map<QualName,AspectGraph> oldGraphMap = store.getGraphs(kind);
+        List<AspectGraph> newGraphs = new ArrayList<>();
+        for (Map.Entry<QualName,QualName> e : renameMap.entrySet()) {
+            QualName oldName = e.getKey();
+            QualName newName = e.getValue();
             AspectGraph oldGraph = oldGraphMap.get(oldName);
             AspectGraph newGraph = oldGraph.clone();
-            newGraph.setName(newName);
+            newGraph.setName(newName.toString());
             if (kind == ResourceKind.RULE) {
                 // store old name as transition label
                 // if there was no explicit transition label
                 // so the name change does not affect the LTS
                 if (GraphInfo.getTransitionLabel(newGraph) == null) {
-                    GraphInfo.setTransitionLabel(newGraph, oldName);
+                    GraphInfo.setTransitionLabel(newGraph, oldName.toString());
                 }
             }
             newGraph.setFixed();
@@ -269,13 +267,13 @@ public class LoadGrammarAction extends SimulatorAction {
         store.putGraphs(kind, newGraphs, false);
     }
 
-    private void replaceTexts(SystemStore store, ResourceKind kind, Map<String,String> renameMap)
-        throws IOException {
-        Map<String,String> oldTextMap = store.getTexts(kind);
-        Map<String,String> newTextMap = new HashMap<String,String>();
-        for (Map.Entry<String,String> e : renameMap.entrySet()) {
-            String oldName = e.getKey();
-            String newName = e.getValue();
+    private void replaceTexts(SystemStore store, ResourceKind kind,
+        Map<QualName,QualName> renameMap) throws IOException {
+        Map<QualName,String> oldTextMap = store.getTexts(kind);
+        Map<QualName,String> newTextMap = new HashMap<>();
+        for (Map.Entry<QualName,QualName> e : renameMap.entrySet()) {
+            QualName oldName = e.getKey();
+            QualName newName = e.getValue();
             String text = oldTextMap.get(oldName);
             newTextMap.put(newName, text);
         }
@@ -310,7 +308,8 @@ public class LoadGrammarAction extends SimulatorAction {
         // convert numeric value of TRANSITION_PARAMETERS
         GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
         String paramsVal = (String) props.get(paramsKey.getName());
-        if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
+        if (paramsVal != null && !paramsKey.parser()
+            .accepts(paramsVal)) {
             try {
                 int paramsIntVal = Integer.parseInt(paramsVal);
                 props.setUseParameters(paramsIntVal == 0 ? ThreeValued.FALSE : ThreeValued.TRUE);

@@ -1,5 +1,29 @@
 package groove.io.conceptual.lang.ecore;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EEnumLiteral;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+
+import groove.grammar.QualName;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
@@ -26,36 +50,13 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EEnumLiteral;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-
 public class EcoreToType extends TypeImporter {
     // Resource containing Ecore type model
     private Resource r = null;
     private ResourceSet rs = null;
 
     // Name of TypeModel, simply "ecore"
-    private String m_typeName = "ecore";
+    private QualName m_typeName = QualName.name("ecore");
 
     // Map to keep track of Java class names for custom data types. Used when importing instance models
     // Strictly speaking this should be linked to a single TypeModel, but since only one Ecore type model exists per instance of this class, this should be fine.
@@ -68,8 +69,9 @@ public class EcoreToType extends TypeImporter {
     public EcoreToType(String typeModel) throws ImportException {
         // Create new ResourceSet and register an XMI model loader (for all filetypes)
         this.rs = new ResourceSetImpl();
-        this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*",
-            new XMIResourceFactoryImpl());
+        this.rs.getResourceFactoryRegistry()
+            .getExtensionToFactoryMap()
+            .put("*", new XMIResourceFactoryImpl());
 
         // Load the XMI model containing Ecore type model
         try {
@@ -95,7 +97,7 @@ public class EcoreToType extends TypeImporter {
         if (!it.hasNext() || !(topObject = it.next()).eClass().getName().equals("EPackage")) {
             throw new ImportException("Ecore type model has no root package");
         }
-
+        
         m_typeName = ((EPackage) topObject).getName();
         */
 
@@ -113,7 +115,7 @@ public class EcoreToType extends TypeImporter {
     }
 
     @Override
-    public TypeModel getTypeModel(String modelName) {
+    public TypeModel getTypeModel(QualName modelName) {
         return this.m_typeModels.get(modelName);
     }
 
@@ -126,15 +128,23 @@ public class EcoreToType extends TypeImporter {
         // The TypeModel ought to keep track of all elements and return the proper reference if this happens
         while (it.hasNext()) {
             EObject obj = it.next();
-            if (obj.eClass().getName().equals("EClass")) {
+            if (obj.eClass()
+                .getName()
+                .equals("EClass")) {
                 count++;
                 visitClass(tm, (EClass) obj);
-            } else if (obj.eClass().getName().equals("EEnum")) {
+            } else if (obj.eClass()
+                .getName()
+                .equals("EEnum")) {
                 count++;
                 visitEnum(tm, (EEnum) obj);
-            } else if (obj.eClass().getName().equals("EPackage")) {
+            } else if (obj.eClass()
+                .getName()
+                .equals("EPackage")) {
                 visitPackage((EPackage) obj);
-            } else if (obj.eClass().getName().equals("EDataType")) {
+            } else if (obj.eClass()
+                .getName()
+                .equals("EDataType")) {
                 count++;
                 visitDataType(tm, (EDataType) obj);
             }
@@ -177,8 +187,10 @@ public class EcoreToType extends TypeImporter {
 
         // Handle class iD
         if (eClass.getEIDAttribute() != null) {
-            if (eClass.getEIDAttribute().getEContainingClass() == eClass) {
-                Name attrName = Name.getName(eClass.getEIDAttribute().getName());
+            if (eClass.getEIDAttribute()
+                .getEContainingClass() == eClass) {
+                Name attrName = Name.getName(eClass.getEIDAttribute()
+                    .getName());
                 IdentityProperty p = new IdentityProperty(cmClass, attrName);
                 mm.addProperty(p);
             }
@@ -194,7 +206,7 @@ public class EcoreToType extends TypeImporter {
             return visitEnum(mm, (EEnum) eDataType);
         }
         Id dataID = EcoreUtil.idFromClassifier(eDataType);
-        // Check if custom 
+        // Check if custom
         if (mm.hasDatatype(dataID)) {
             return mm.getDatatype(dataID);
         }
@@ -238,8 +250,8 @@ public class EcoreToType extends TypeImporter {
         } else if (eAttribute.getEType() instanceof EDataType) {
             attribType = visitDataType(mm, (EDataType) eAttribute.getEType());
             if (attribType == null) {
-                addMessage(new Message("Unsupported EDataType " + eAttribute.getEType().getName(),
-                    MessageType.ERROR));
+                addMessage(new Message("Unsupported EDataType " + eAttribute.getEType()
+                    .getName(), MessageType.ERROR));
             }
         } else {
             // Cannot handle other types as attribute
@@ -249,7 +261,7 @@ public class EcoreToType extends TypeImporter {
         // Handle container type
         if (eAttribute.getUpperBound() > 1 || eAttribute.getUpperBound() == -1) {
             Kind type = eAttribute.isUnique() ? (eAttribute.isOrdered() ? Kind.ORD : Kind.SET) : // Unique
-                    (eAttribute.isOrdered() ? Kind.SEQ : Kind.BAG); // Non-unique
+                (eAttribute.isOrdered() ? Kind.SEQ : Kind.BAG); // Non-unique
             attribType = new Container(type, attribType);
         }
 
@@ -257,12 +269,14 @@ public class EcoreToType extends TypeImporter {
 
             Object value = eAttribute.getDefaultValue();
             // Ignore default value defined by type
-            if (value != eAttribute.getEType().getDefaultValue()) {
+            if (value != eAttribute.getEType()
+                .getDefaultValue()) {
                 try {
                     Value defaultVal = objectToDataType(mm, attribType, value);
                     if (!attribType.acceptValue(defaultVal)) {
-                        addMessage(new Message("Incorrect value type of default value "
-                            + defaultVal, MessageType.ERROR));
+                        addMessage(
+                            new Message("Incorrect value type of default value " + defaultVal,
+                                MessageType.ERROR));
                     } else {
                         mm.addProperty(new DefaultValueProperty(cmClass, attrName, defaultVal));
                     }
@@ -290,15 +304,15 @@ public class EcoreToType extends TypeImporter {
         }
 
         // Handle keyset
-        if (eReference.getEKeys().size() > 0) {
+        if (eReference.getEKeys()
+            .size() > 0) {
             List<Name> keyNames = new ArrayList<Name>();
             for (EAttribute attr : eReference.getEKeys()) {
                 keyNames.add(Name.getName(attr.getName()));
             }
 
-            KeysetProperty p =
-                new KeysetProperty(cmClass, refName, (Class) fieldType,
-                    keyNames.toArray(new Name[keyNames.size()]));
+            KeysetProperty p = new KeysetProperty(cmClass, refName, (Class) fieldType,
+                keyNames.toArray(new Name[keyNames.size()]));
             mm.addProperty(p);
         }
 
@@ -326,13 +340,13 @@ public class EcoreToType extends TypeImporter {
         // Handle container type
         if (eReference.getUpperBound() > 1 || eReference.getUpperBound() == -1) {
             Kind type = eReference.isUnique() ? (eReference.isOrdered() ? Kind.ORD : Kind.SET) : // Unique
-                    (eReference.isOrdered() ? Kind.SEQ : Kind.BAG); // Non-unique
+                (eReference.isOrdered() ? Kind.SEQ : Kind.BAG); // Non-unique
             fieldType = new Container(type, fieldType);
         }
 
         // Add the reference to the class
-        cmClass.addField(new Field(refName, fieldType, eReference.getLowerBound(),
-            eReference.getUpperBound()));
+        cmClass.addField(
+            new Field(refName, fieldType, eReference.getLowerBound(), eReference.getUpperBound()));
     }
 
     // Inserts the package in the resourceset, so it can be used to load instance models
@@ -345,7 +359,8 @@ public class EcoreToType extends TypeImporter {
         }
 
         // register all packages we find in the ResourceSet
-        this.rs.getPackageRegistry().put(ePackage.getNsURI(), ePackage);
+        this.rs.getPackageRegistry()
+            .put(ePackage.getNsURI(), ePackage);
     }
 
     /**
@@ -374,7 +389,8 @@ public class EcoreToType extends TypeImporter {
             throw new InvalidTypeException("Unsupported value type: Object");
         } else {
             // Most likely a Java object. Try to map it to Ecore, either from the know data types or the custom data types
-            String className = ecoreValue.getClass().getCanonicalName();
+            String className = ecoreValue.getClass()
+                .getCanonicalName();
             if (type instanceof CustomDataType) {
                 if (this.m_customDatatypeInstances.containsKey(className)) {
                     Id dataId = this.m_customDatatypeInstances.get(className);

@@ -16,6 +16,14 @@
  */
 package groove.io.external;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import groove.grammar.ModuleName;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
@@ -28,7 +36,6 @@ import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.JaxFrontDialog;
-import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.ExportException;
 import groove.io.conceptual.lang.ExportableResource;
 import groove.io.conceptual.lang.ImportException;
@@ -36,20 +43,10 @@ import groove.io.conceptual.lang.groove.ConstraintToGroove;
 import groove.io.conceptual.lang.groove.GrammarGraph;
 import groove.io.conceptual.lang.groove.GrammarVisitor;
 import groove.io.conceptual.lang.groove.GrooveResource;
-import groove.io.conceptual.lang.groove.GrooveUtil;
 import groove.io.conceptual.lang.groove.InstanceToGroove;
 import groove.io.conceptual.lang.groove.MetaToGroove;
 import groove.io.conceptual.lang.groove.TypeToGroove;
 import groove.util.Pair;
-import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /** Im- and exporter for conceptual model-based formats. */
 public abstract class ConceptualPorter extends AbstractExporter implements Importer {
@@ -88,11 +85,11 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         GrammarModel grammar) throws ImportException;
 
     /** Reads in type and instance models for a type import. */
-    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(File file, GrammarModel grammar)
-        throws ImportException;
+    abstract protected Pair<TypeModel,InstanceModel> importTypeModel(File file,
+        GrammarModel grammar) throws ImportException;
 
     @Override
-    public Set<Resource> doImport(String name, InputStream stream, FileType fileType,
+    public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
         GrammarModel grammar) throws PortException {
         //TODO: play nice with streams
         throw new UnsupportedOperationException();
@@ -100,13 +97,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        String name = exportable.getName();
-        String namespace = name;
-        try {
-            namespace = new QualName(name).parent();
-        } catch (FormatException e) {
-            throw new PortException(e);
-        }
+        QualName name = exportable.getQualName();
+        ModuleName namespace = name.parent();
 
         ResourceModel<?> model = exportable.getModel();
         GrammarModel grammar = model.getGrammar();
@@ -159,7 +151,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     /** Opens a configuration dialog and returns the resulting configuration object. */
     private Config loadConfig(GrammarModel grammar) {
         JaxFrontDialog dlg = new JaxFrontDialog(getSimulator());
-        String cfg = dlg.getConfig();
+        QualName cfg = dlg.getConfig();
         if (cfg != null) {
             return new Config(grammar, cfg);
         }
@@ -175,7 +167,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @param instanceModel name of the instance model to be extracted; may be {@code null}
      */
     private Pair<TypeModel,InstanceModel> constructModels(Config cfg, GrammarModel grammar,
-        String namespace, String typeModel, String instanceModel) throws PortException {
+        ModuleName namespace, QualName typeModel, QualName instanceModel) throws PortException {
         GrammarVisitor visitor = new GrammarVisitor(cfg, namespace);
         visitor.setFixedType(typeModel);
         visitor.setFixedInstance(instanceModel);
@@ -201,7 +193,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         throws PortException {
         Set<Resource> result = new HashSet<Resource>();
         SimulatorModel simulatorModel = getSimulator() == null ? null : getSimulator().getModel();
-        GrooveResource grooveResource = new GrooveResource(cfg, simulatorModel, "");
+        GrooveResource grooveResource = new GrooveResource(cfg, simulatorModel);
         if (tm != null) {
             TypeToGroove ttg = new TypeToGroove(grooveResource);
             ttg.addTypeModel(tm);
@@ -216,14 +208,14 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             itg.addInstanceModel(im);
         }
 
-        for (Map.Entry<GraphRole,HashMap<String,GrammarGraph>> entry : grooveResource.getGraphs().entrySet()) {
-            GraphRole role = entry.getKey();
-            ResourceKind kind = ResourceKind.toResource(role);
-            for (GrammarGraph graph : entry.getValue().values()) {
-                AbsGraph absGraph = graph.getGraph();
-                String name = GrooveUtil.getSafeResource(graph.getGraphName());
-                AspectGraph aspectGraph = absGraph.toAspectGraph(name, role);
-                Resource resource = new Resource(kind, name, aspectGraph);
+        for (Map.Entry<GraphRole,Map<QualName,GrammarGraph>> entry : grooveResource.getGraphs()
+            .entrySet()) {
+            ResourceKind kind = ResourceKind.toResource(entry.getKey());
+            for (GrammarGraph graph : entry.getValue()
+                .values()) {
+                AspectGraph aspectGraph = graph.getGraph()
+                    .toAspectGraph();
+                Resource resource = new Resource(kind, aspectGraph);
                 result.add(resource);
             }
         }

@@ -16,16 +16,17 @@
  */
 package groove.control;
 
-import groove.algebra.Algebra;
-import groove.grammar.host.HostFactory;
-import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
-import groove.grammar.rule.RuleNode;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
+import groove.algebra.Algebra;
+import groove.grammar.QualName;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleNode;
 
 /**
  * Class representing a control parameter.
@@ -82,21 +83,21 @@ public abstract class CtrlPar {
      * Convenience method to construct a parameter with a given name, type and direction.
      * @param scope defining scope of the variable; possibly {@code null}
      */
-    public static Var var(String scope, String name, CtrlType type, boolean inOnly) {
+    public static Var var(QualName scope, String name, CtrlType type, boolean inOnly) {
         return new Var(new CtrlVar(scope, name, type), inOnly);
     }
 
     /** Convenience method to construct an input parameter with a given name and type.
      * @param scope defining scope of the variable; possibly {@code null}
      */
-    public static Var inVar(String scope, String name, String type) {
+    public static Var inVar(QualName scope, String name, String type) {
         return var(scope, name, CtrlType.getType(type), true);
     }
 
     /** Convenience method to construct an output parameter with a given name and type.
      * @param scope defining scope of the variable; possibly {@code null}
      */
-    public static Var outVar(String scope, String name, String type) {
+    public static Var outVar(QualName scope, String name, String type) {
         return var(scope, name, CtrlType.getType(type), false);
     }
 

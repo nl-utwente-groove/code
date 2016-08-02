@@ -16,11 +16,12 @@
  */
 package groove.control;
 
+import java.util.List;
+
 import groove.control.CtrlPar.Var;
 import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
 import groove.util.Fixable;
-
-import java.util.List;
 
 /**
  * Control program function.
@@ -31,8 +32,8 @@ public class Function extends Procedure implements Fixable {
     /**
      * Constructs a function with the given parameters.
      */
-    public Function(String fullName, List<Var> signature, String controlName, int startLine,
-            GrammarProperties grammarProperties) {
+    public Function(QualName fullName, List<Var> signature, QualName controlName, int startLine,
+        GrammarProperties grammarProperties) {
         super(fullName, Kind.FUNCTION, signature, controlName, startLine, grammarProperties);
     }
 }

@@ -16,24 +16,6 @@
  */
 package groove.control.template;
 
-import groove.control.Call;
-import groove.control.CallStack;
-import groove.control.CtrlVar;
-import groove.control.Position;
-import groove.control.Position.Type;
-import groove.control.Procedure;
-import groove.control.term.Derivation;
-import groove.control.term.DerivationAttempt;
-import groove.control.term.Term;
-import groove.grammar.Action;
-import groove.grammar.CheckPolicy;
-import groove.grammar.Rule;
-import groove.util.Pair;
-import groove.util.Quad;
-import groove.util.ThreadPool;
-import groove.util.Triple;
-import groove.util.collect.NestedIterator;
-
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -47,6 +29,25 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import groove.control.Call;
+import groove.control.CallStack;
+import groove.control.CtrlVar;
+import groove.control.Position;
+import groove.control.Position.Type;
+import groove.control.Procedure;
+import groove.control.term.Derivation;
+import groove.control.term.DerivationAttempt;
+import groove.control.term.Term;
+import groove.grammar.Action;
+import groove.grammar.CheckPolicy;
+import groove.grammar.QualName;
+import groove.grammar.Rule;
+import groove.util.Pair;
+import groove.util.Quad;
+import groove.util.ThreadPool;
+import groove.util.Triple;
+import groove.util.collect.NestedIterator;
 
 /**
  * Class for constructing control automata.
@@ -72,8 +73,9 @@ public class TemplateBuilder {
      * As a side effect, all procedure templates are also constructed.
      */
     public Template build(Program prog) {
-        newBuilder(prog.getName(), null, prog.getMain());
-        for (Procedure proc : prog.getProcs().values()) {
+        newBuilder(prog.getQualName(), null, prog.getMain());
+        for (Procedure proc : prog.getProcs()
+            .values()) {
             Builder builder = newBuilder(null, proc, proc.getTerm());
             proc.setTemplate(builder.getResult());
         }
@@ -110,7 +112,8 @@ public class TemplateBuilder {
             Template key = norm.one();
             Template value = norm.two();
             if (value.hasOwner()) {
-                value.getOwner().setTemplate(value);
+                value.getOwner()
+                    .setTemplate(value);
             } else {
                 result = value;
             }
@@ -118,11 +121,12 @@ public class TemplateBuilder {
             map.putAll(norm.three());
         }
         map.build();
-        ThreadPool.instance().shutdown();
+        ThreadPool.instance()
+            .shutdown();
         return result;
     }
 
-    private Builder newBuilder(String name, Procedure proc, Term init) {
+    private Builder newBuilder(QualName name, Procedure proc, Term init) {
         Builder result = new Builder(name, proc, init);
         this.builderMap.put(result.getResult(), result);
         return result;
@@ -145,7 +149,7 @@ public class TemplateBuilder {
     }
 
     private class Builder {
-        Builder(String name, Procedure proc, Term init) {
+        Builder(QualName name, Procedure proc, Term init) {
             assert init.getTransience() == 0 : "Can't build template from transient term";
             this.result = name == null ? new Template(proc) : new Template(name);
             // set the initial location
@@ -202,8 +206,8 @@ public class TemplateBuilder {
             // start states of procedures are exempt
             boolean isProcStartOrFinal =
                 (loc.isStart() || term.isFinal()) && getResult().hasOwner();
-            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.two().isEmpty()
-                && !getProperties().isEmpty()) {
+            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.two()
+                .isEmpty() && !getProperties().isEmpty()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
@@ -212,7 +216,8 @@ public class TemplateBuilder {
                         switches.add(sw);
                     }
                 }
-                if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
+                if (locType != Type.TRIAL || !term.getAttempt()
+                    .sameVerdict()) {
                     // we need an intermediate location to go to after the property test
                     Location aux = getResult().addLocation(0);
                     SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux);
@@ -268,7 +273,8 @@ public class TemplateBuilder {
             } else {
                 // this is due to a non-verdict transition
                 assert predKey == null;
-                vars = incoming.getOutVars().keySet();
+                vars = incoming.getOutVars()
+                    .keySet();
             }
             TermKey key = new TermKey(term, predTerms, vars);
             Location result = locMap.get(key);
@@ -308,13 +314,15 @@ public class TemplateBuilder {
                 Location target = addLocation(deriv.onFinish(), null, deriv.getCall());
                 result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
                 if (deriv.hasNested()) {
-                    Procedure caller = (Procedure) deriv.getCall().getUnit();
+                    Procedure caller = (Procedure) deriv.getCall()
+                        .getUnit();
                     Template callerTemplate = caller.getTemplate();
                     SwitchStack nested =
                         getExternalSwitch(callerTemplate.getStart(), deriv.getNested());
                     result.addAll(nested);
                 }
-                assert result.getBottom().getSource() == source;
+                assert result.getBottom()
+                    .getSource() == source;
                 switchMap.put(deriv, result);
             }
             return result;
@@ -376,7 +384,8 @@ public class TemplateBuilder {
                 repr = template.getStart();
                 image = result.getStart();
             } else {
-                repr = cell.iterator().next();
+                repr = cell.iterator()
+                    .next();
                 image = result.addLocation(repr.getTransience());
             }
             image.setType(repr.getType());
@@ -443,7 +452,8 @@ public class TemplateBuilder {
         if (loc.isTrial()) {
             SwitchAttempt attempt = loc.getAttempt();
             for (SwitchStack swit : attempt) {
-                targets.add(swit.getBottom().onFinish());
+                targets.add(swit.getBottom()
+                    .onFinish());
             }
             onSuccess = attempt.onSuccess();
             onFailure = attempt.onFailure();
@@ -508,7 +518,8 @@ public class TemplateBuilder {
         private List<Location> getNested(SwitchStack sw) {
             List<Location> result = new ArrayList<Location>(sw.size() - 1);
             for (int i = 1; i < sw.size(); i++) {
-                result.add(sw.get(i).onFinish());
+                result.add(sw.get(i)
+                    .onFinish());
             }
             return result;
         }

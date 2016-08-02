@@ -1,34 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.external;
-
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.io.FileType;
-import groove.io.GrooveFileChooser;
-import groove.io.external.Importer.Resource;
-import groove.io.external.format.AutPorter;
-import groove.io.external.format.ColImporter;
-import groove.io.external.format.DotPorter;
-import groove.io.external.format.EcorePorter;
-import groove.io.external.format.GxlPorter;
-import groove.io.external.format.NativePorter;
 
 import java.awt.Component;
 import java.io.File;
@@ -44,6 +30,21 @@ import java.util.Set;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.io.FileType;
+import groove.io.GrooveFileChooser;
+import groove.io.external.Importer.Resource;
+import groove.io.external.format.AutPorter;
+import groove.io.external.format.ColImporter;
+import groove.io.external.format.DotPorter;
+import groove.io.external.format.EcorePorter;
+import groove.io.external.format.GxlPorter;
+import groove.io.external.format.NativePorter;
 
 /**
  * Utilities for importers.
@@ -77,10 +78,9 @@ public class Importers {
         if (resources != null) {
             Map<ResourceKind,Collection<AspectGraph>> newGraphs =
                 new EnumMap<ResourceKind,Collection<AspectGraph>>(ResourceKind.class);
-            Map<ResourceKind,Map<String,String>> newTexts =
-                new EnumMap<ResourceKind,Map<String,String>>(ResourceKind.class);
+            Map<ResourceKind,Map<QualName,String>> newTexts = new EnumMap<>(ResourceKind.class);
             for (Resource resource : resources) {
-                String name = resource.getName();
+                QualName name = resource.getQualName();
                 ResourceKind kind = resource.getKind();
                 if (grammar.getResource(kind, name) == null
                     || confirmOverwrite(simulator.getFrame(), kind, name)) {
@@ -93,21 +93,23 @@ public class Importers {
                         graphs.add(graph);
                     } else {
                         String text = resource.getTextResource();
-                        Map<String,String> texts = newTexts.get(kind);
+                        Map<QualName,String> texts = newTexts.get(kind);
                         if (texts == null) {
-                            newTexts.put(kind, texts = new HashMap<String,String>());
+                            newTexts.put(kind, texts = new HashMap<>());
                         }
                         texts.put(name, text);
-                        grammar.getStore().putTexts(resource.getKind(),
-                            Collections.singletonMap(name, text));
+                        grammar.getStore()
+                            .putTexts(resource.getKind(), Collections.singletonMap(name, text));
                     }
                 }
             }
             for (Map.Entry<ResourceKind,Collection<AspectGraph>> entry : newGraphs.entrySet()) {
-                grammar.getStore().putGraphs(entry.getKey(), entry.getValue(), true);
+                grammar.getStore()
+                    .putGraphs(entry.getKey(), entry.getValue(), true);
             }
-            for (Map.Entry<ResourceKind,Map<String,String>> entry : newTexts.entrySet()) {
-                grammar.getStore().putTexts(entry.getKey(), entry.getValue());
+            for (Map.Entry<ResourceKind,Map<QualName,String>> entry : newTexts.entrySet()) {
+                grammar.getStore()
+                    .putTexts(entry.getKey(), entry.getValue());
             }
         }
     }
@@ -116,11 +118,12 @@ public class Importers {
      * Asks whether a given existing resource, of a given kind,
      * should be replaced by a newly loaded one.
      */
-    private static boolean confirmOverwrite(Component parent, ResourceKind resource, String name) {
-        int response =
-            JOptionPane.showConfirmDialog(parent,
-                String.format("Replace existing %s '%s'?", resource.getDescription(), name), null,
-                JOptionPane.OK_CANCEL_OPTION);
+    private static boolean confirmOverwrite(Component parent, ResourceKind resource,
+        QualName name) {
+        int response = JOptionPane.showConfirmDialog(parent,
+            String.format("Replace existing %s '%s'?", resource.getDescription(), name),
+            null,
+            JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
 

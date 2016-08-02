@@ -16,19 +16,19 @@
  */
 package groove.test.type;
 
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
-import groove.util.Groove;
-import groove.util.parse.FormatException;
-
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
+
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.NamedResourceModel;
+import groove.grammar.model.ResourceKind;
+import groove.util.Groove;
+import groove.util.parse.FormatException;
+import junit.framework.Assert;
 
 /** Set of tests for graph typing. */
 public class TypeCheckTest {
@@ -77,12 +77,15 @@ public class TypeCheckTest {
     private void test(String grammarName) {
         try {
             GrammarModel grammarView = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.RULE, ResourceKind.HOST,
+            for (ResourceKind kind : EnumSet.of(ResourceKind.RULE,
+                ResourceKind.HOST,
                 ResourceKind.TYPE)) {
-                for (Map.Entry<String,? extends ResourceModel<?>> entry : grammarView.getResourceMap(
-                    kind).entrySet()) {
-                    String name = entry.getKey();
-                    ResourceModel<?> model = entry.getValue();
+                for (Map.Entry<QualName,? extends NamedResourceModel<?>> entry : grammarView
+                    .getResourceMap(kind)
+                    .entrySet()) {
+                    String name = entry.getKey()
+                        .last();
+                    NamedResourceModel<?> model = entry.getValue();
                     if (name.startsWith(OK_PREFIX)) {
                         testCorrect(model);
                     } else if (name.startsWith(ERR_PREFIX)) {
@@ -96,9 +99,10 @@ public class TypeCheckTest {
     }
 
     /** Tests that a given rule has no errors. */
-    private void testCorrect(ResourceModel<?> model) {
-        String kindName = model.getKind().getName();
-        String modelName = model.getFullName();
+    private void testCorrect(NamedResourceModel<?> model) {
+        String kindName = model.getKind()
+            .getName();
+        QualName modelName = model.getQualName();
         try {
             model.toResource();
         } catch (NullPointerException e) {
@@ -109,9 +113,10 @@ public class TypeCheckTest {
     }
 
     /** Tests that a given rule has errors. */
-    private void testErroneous(ResourceModel<?> model) {
-        String kindName = model.getKind().getName();
-        String modelName = model.getFullName();
+    private void testErroneous(NamedResourceModel<?> model) {
+        String kindName = model.getKind()
+            .getName();
+        QualName modelName = model.getQualName();
         try {
             model.toResource();
             Assert.fail(kindName + " " + modelName + " has no errors");

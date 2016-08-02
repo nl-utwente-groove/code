@@ -1,31 +1,30 @@
 package groove.io.conceptual.lang;
 
-import groove.io.conceptual.InstanceModel;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import groove.grammar.QualName;
+import groove.io.conceptual.InstanceModel;
+
 /** Abstract superclass for importers from an external format to the conceptual instance model. */
 public abstract class InstanceImporter implements Messenger {
-    private final Map<String,InstanceModel> m_instanceModels =
-        new HashMap<String,InstanceModel>();
+    private final Map<QualName,InstanceModel> m_instanceModels = new HashMap<>();
     private final List<Message> m_messages = new ArrayList<Message>();
 
     /** Adds an instance model to the set of imported models. */
     protected void addInstanceModel(InstanceModel model) {
-        this.m_instanceModels.put(model.getName(), model);
+        this.m_instanceModels.put(model.getQualName(), model);
     }
 
     /**
      * Returns the instance model associated with the given name. Messages may be generated during this operation.
      * @param modelName The name of the instance model to retrieve.
      * @return The instance model, or null if the model could not be found.
-     * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public InstanceModel getInstanceModel(String modelName) {
+    public InstanceModel getInstanceModel(QualName modelName) {
         return this.m_instanceModels.get(modelName);
     }
 
@@ -35,8 +34,8 @@ public abstract class InstanceImporter implements Messenger {
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
     public InstanceModel getInstanceModel() throws ImportException {
-        Iterator<InstanceModel> iter =
-            this.m_instanceModels.values().iterator();
+        Iterator<InstanceModel> iter = this.m_instanceModels.values()
+            .iterator();
         if (iter.hasNext()) {
             return iter.next();
         }
@@ -48,10 +47,12 @@ public abstract class InstanceImporter implements Messenger {
         this.m_messages.add(m);
     }
 
+    @Override
     public List<Message> getMessages() {
         return this.m_messages;
     }
 
+    @Override
     public void clearMessages() {
         this.m_messages.clear();
     }

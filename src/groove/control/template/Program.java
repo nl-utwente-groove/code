@@ -16,6 +16,18 @@
  */
 package groove.control.template;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import groove.control.Call;
 import groove.control.Procedure;
 import groove.control.term.CallTerm;
@@ -24,6 +36,7 @@ import groove.control.term.DerivationAttempt;
 import groove.control.term.Term;
 import groove.grammar.Action;
 import groove.grammar.Callable;
+import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.util.Duo;
@@ -31,21 +44,11 @@ import groove.util.Fixable;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 /**
- * Control program, consisting of a main template
- * and templates for all procedures.
+ * Control program, consisting of a main term
+ * and a map from procedure names to procedures.
+ * A program can be fixed, after which it has a main template
+ * and a map from procedure names to procedure templates.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -54,71 +57,33 @@ public class Program implements Fixable {
      * Constructs an unnamed, initially empty program.
      */
     public Program() {
-        this.names = new TreeSet<String>();
-        this.properties = new ArrayList<Action>();
+        this.properties = new ArrayList<>();
     }
 
     /**
-     * Constructs a singular, initially empty program.
-     * @param name name of the program fragment; non-{@code null}
+     * Returns the name of this program, which the main name if there is any,
+     * or #NO_MAIN_NAME otherwise.
      */
-    public Program(String name) {
-        this();
-        assert name != null;
-        this.names.add(name);
-    }
-
-    /**
-     * Returns the name of this program, which is the concatenation
-     * of the names of the fragments, alphabetically ordered.
-     */
-    public String getName() {
-        StringBuilder result = new StringBuilder();
-        for (String name : this.names) {
-            if (result.length() > 0) {
-                result.append('+');
-            }
-            result.append(name);
-        }
-        return result.toString();
-    }
-
-    /** Indicates if this program consists of a single fragment. */
-    public boolean isSingular() {
-        return this.names.size() == 1;
-    }
-
-    private final Set<String> names;
-
-    /**
-     * Sets the main body of this program to deadlock.
-     * Should only be invoked on singular programs, i.e., if {@link #isSingular()} holds,
-     * and only if the program is not fixed.
-     * @param prototype prototype term to create the delta term from
-     */
-    public void setDead(Term prototype) {
-        assert !isFixed();
-        assert isSingular();
-        this.main = prototype.delta();
+    public QualName getQualName() {
+        return hasMain() ? getMainName() : QualName.name(NO_MAIN_NAME);
     }
 
     /**
      * Sets the main body of this program to a given term.
-     * Should only be invoked on singular programs, i.e., if {@link #isSingular()} holds,
-     * and only if the program is not fixed.
+     * Should only be invoked if the program is not fixed.
+     * @param name the name of the main body
      * @param main the main (non-{@code null}) body.
      */
-    public void setMain(Term main) {
+    public void setMain(QualName name, Term main) {
         assert main != null && this.main == null;
-        assert !isFixed();
-        assert isSingular();
+        assert!isFixed();
         this.main = main;
-        this.mainName = getName();
+        this.mainName = name;
     }
 
     /** Sets the property actions to be checked at each non-transient state. */
     public void setProperties(Collection<Action> properties) {
-        assert !isFixed();
+        assert!isFixed();
         assert this.properties.isEmpty();
         this.properties.addAll(properties);
     }
@@ -128,6 +93,7 @@ public class Program implements Fixable {
         return this.properties;
     }
 
+    /** The property actions to be checked at each non-transient state. */
     private final List<Action> properties;
 
     /**
@@ -136,7 +102,7 @@ public class Program implements Fixable {
      * not deadlocked.
      */
     public boolean hasMain() {
-        return this.mainName != null;
+        return getMain() != null;
     }
 
     /**
@@ -153,12 +119,12 @@ public class Program implements Fixable {
      * @return the name of the fragment containing the main body, of {@code null} if
      * this program has no (non-trivial) main body
      */
-    public String getMainName() {
+    public QualName getMainName() {
         return this.mainName;
     }
 
     /** The name of the sub-program containing the main body, if any. */
-    private String mainName;
+    private QualName mainName;
     /** The main body of this program, if any. */
     private Term main;
 
@@ -179,10 +145,9 @@ public class Program implements Fixable {
      */
     public void addProc(Procedure proc) throws FormatException {
         assert proc != null;
-        String procName = proc.getFullName();
-        Procedure oldProc = this.procs.put(proc.getFullName(), proc);
+        Procedure oldProc = this.procs.put(proc.getQualName(), proc);
         if (oldProc != null) {
-            throw new FormatException("Duplicate procedure %s in %s and %s", procName,
+            throw new FormatException("Duplicate procedure %s in %s and %s", proc.getQualName(),
                 oldProc.getControlName(), proc.getControlName());
         }
     }
@@ -191,7 +156,7 @@ public class Program implements Fixable {
      * defined in this program.
      * Should only be invoked after the program is fixed.
      */
-    public Map<String,Procedure> getProcs() {
+    public Map<QualName,Procedure> getProcs() {
         assert isFixed();
         return Collections.unmodifiableMap(this.procs);
     }
@@ -199,15 +164,15 @@ public class Program implements Fixable {
     /** Returns the procedure for a given name.
      * Should only be invoked after the program is fixed.
      */
-    public Procedure getProc(String name) {
+    public Procedure getProc(QualName name) {
         assert isFixed();
         return this.procs.get(name);
     }
 
-    private final Map<String,Procedure> procs = new TreeMap<String,Procedure>();
+    private final Map<QualName,Procedure> procs = new LinkedHashMap<>();
 
     /** Returns the (main and procedural) templates defined in a given control program. */
-    public Collection<Template> getTemplates(String controlName) {
+    public Collection<Template> getTemplates(QualName controlName) {
         assert isFixed();
         return getTemplateMap().get(controlName);
     }
@@ -216,12 +181,12 @@ public class Program implements Fixable {
      * Lazily constructs and returns a mapping from control program names
      * to templates defined therein.
      */
-    private Map<String,Collection<Template>> getTemplateMap() {
+    private Map<QualName,Collection<Template>> getTemplateMap() {
         assert isFixed();
         if (this.templateMap == null) {
-            this.templateMap = new HashMap<String,Collection<Template>>();
-            for (String name : this.names) {
-                getTemplateEntry(name).add(getTemplate());
+            this.templateMap = new HashMap<>();
+            if (hasMain()) {
+                getTemplateEntry(getMainName()).add(getTemplate());
             }
             for (Procedure proc : getProcs().values()) {
                 getTemplateEntry(proc.getControlName()).add(proc.getTemplate());
@@ -230,15 +195,15 @@ public class Program implements Fixable {
         return this.templateMap;
     }
 
-    private Collection<Template> getTemplateEntry(String controlName) {
+    private Collection<Template> getTemplateEntry(QualName controlName) {
         Collection<Template> result = this.templateMap.get(controlName);
         if (result == null) {
-            this.templateMap.put(controlName, result = new ArrayList<Template>());
+            this.templateMap.put(controlName, result = new ArrayList<>());
         }
         return result;
     }
 
-    private Map<String,Collection<Template>> templateMap;
+    private Map<QualName,Collection<Template>> templateMap;
 
     /**
      * Adds all procedures of another, disjoint program to this one.
@@ -248,12 +213,11 @@ public class Program implements Fixable {
      * or the defined procedures overlap
      */
     public void add(Program other) throws FormatException {
-        assert !isFixed();
-        this.names.addAll(other.names);
+        assert!isFixed();
         FormatErrorSet errors = new FormatErrorSet();
         if (hasMain()) {
             if (other.hasMain()) {
-                errors.add("Duplicate main in %s and %s", getMainName(), other.getMainName());
+                errors.add("Duplicate main: %s and %s", getMainName(), other.getMainName());
             }
         } else {
             this.mainName = other.mainName;
@@ -266,38 +230,39 @@ public class Program implements Fixable {
                 errors.addAll(exc.getErrors());
             }
         }
+        errors.throwException();
     }
 
     /** Returns the set of procedure names with initial recursion. */
-    public Set<String> getRecursion() {
+    public Set<QualName> getRecursion() {
         if (this.recursion == null) {
             this.recursion = computeRecursion();
         }
         return this.recursion;
     }
 
-    private Set<String> recursion;
+    private Set<QualName> recursion;
 
     /** Computes the set of procedure names with initial recursion. */
-    private Set<String> computeRecursion() {
-        Set<String> result = new TreeSet<String>();
+    private Set<QualName> computeRecursion() {
+        Set<QualName> result = new TreeSet<>();
         // collect the unguarded calls into a map
-        Map<String,Set<String>> calls = new HashMap<String,Set<String>>();
+        Map<QualName,Set<QualName>> calls = new HashMap<>();
         for (Procedure proc : this.procs.values()) {
             proc.setFixed();
-            calls.put(proc.getFullName(), getUnguardedCalls(proc));
+            calls.put(proc.getQualName(), getUnguardedCalls(proc));
         }
-        Set<String> changed = new HashSet<String>(calls.keySet());
+        Set<QualName> changed = new HashSet<>(calls.keySet());
         // iterate until a fixpoint is reached
         do {
-            Set<String> newChanged = new HashSet<String>();
+            Set<QualName> newChanged = new HashSet<>();
             // propagate the changes
-            for (String callee : changed) {
-                Set<String> childCallees = calls.get(callee);
+            for (QualName callee : changed) {
+                Set<QualName> childCallees = calls.get(callee);
                 // add the childcallees to all callers of callee
-                for (Map.Entry<String,Set<String>> callerEntry : calls.entrySet()) {
-                    String caller = callerEntry.getKey();
-                    Set<String> callees = callerEntry.getValue();
+                for (Map.Entry<QualName,Set<QualName>> callerEntry : calls.entrySet()) {
+                    QualName caller = callerEntry.getKey();
+                    Set<QualName> callees = callerEntry.getValue();
                     if (callees.contains(callee) && callees.addAll(childCallees)) {
                         // caller got a new callee
                         newChanged.add(caller);
@@ -314,12 +279,12 @@ public class Program implements Fixable {
     }
 
     /** Returns the set of procedure names that appear on initial call switches. */
-    private Set<String> getUnguardedCalls(Procedure proc) {
-        Set<String> result = new HashSet<String>();
+    private Set<QualName> getUnguardedCalls(Procedure proc) {
+        Set<QualName> result = new HashSet<>();
         for (Call call : getInitCalls(proc.getTerm())) {
             Callable unit = call.getUnit();
             if (unit instanceof Procedure) {
-                result.add(unit.getFullName());
+                result.add(unit.getQualName());
             }
         }
         return result;
@@ -328,7 +293,8 @@ public class Program implements Fixable {
     /** Recursively collects the initial calls of a term, after zero or more verdicts. */
     private Set<Call> getInitCalls(Term term) {
         Set<Call> result = new HashSet<Call>();
-        int arity = term.getOp().getArity();
+        int arity = term.getOp()
+            .getArity();
         Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
         Term arg1 = arity >= 2 ? term.getArgs()[1] : null;
         Term arg2 = arity >= 3 ? term.getArgs()[2] : null;
@@ -395,7 +361,8 @@ public class Program implements Fixable {
     /** Indicates, for a given procedure, if it can potentially
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean mayFinalise(Procedure proc) {
-        return getFinalityMap().get(proc).may();
+        return getFinalityMap().get(proc)
+            .may();
     }
 
     /** Indicates, for a given term, if it can potentially
@@ -407,7 +374,8 @@ public class Program implements Fixable {
     /** Indicates, for a given procedure, if it will certainly
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean willFinalise(Procedure proc) {
-        return getFinalityMap().get(proc).will();
+        return getFinalityMap().get(proc)
+            .will();
     }
 
     /** Returns a mapping from procedures to their potential and certain immediate termination. */
@@ -456,7 +424,8 @@ public class Program implements Fixable {
         Finality result = null;
         boolean may = false;
         boolean will = false;
-        int arity = term.getOp().getArity();
+        int arity = term.getOp()
+            .getArity();
         Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
         Term arg1 = arity >= 2 ? term.getArgs()[1] : null;
         Term arg2 = arity >= 3 ? term.getArgs()[2] : null;
@@ -467,7 +436,8 @@ public class Program implements Fixable {
             will = arg0.isDead();
             break;
         case CALL:
-            Callable unit = ((CallTerm) term).getCall().getUnit();
+            Callable unit = ((CallTerm) term).getCall()
+                .getUnit();
             if (unit instanceof Rule) {
                 may = will = false;
             } else {
@@ -629,7 +599,8 @@ public class Program implements Fixable {
         case STAR:
             return r[0];
         case CALL:
-            Callable unit = ((CallTerm) term).getCall().getUnit();
+            Callable unit = ((CallTerm) term).getCall()
+                .getUnit();
             return unit.getKind() == Callable.Kind.RULE || terminationSet.contains(unit);
         case DELTA:
             return false;
@@ -677,7 +648,8 @@ public class Program implements Fixable {
         case BODY:
             return r[0];
         case CALL:
-            Callable unit = ((CallTerm) term).getCall().getUnit();
+            Callable unit = ((CallTerm) term).getCall()
+                .getUnit();
             return unit.getKind() == Callable.Kind.RULE || terminationSet.contains(unit);
         case DELTA:
             return false;
@@ -724,8 +696,9 @@ public class Program implements Fixable {
             }
             // check that procedure bodies satisfy their requirements
             for (Procedure proc : this.procs.values()) {
-                String name = proc.getFullName();
-                String error = String.format("%s %s", proc.getKind().getName(true), name);
+                QualName name = proc.getQualName();
+                String error = String.format("%s %s", proc.getKind()
+                    .getName(true), name);
                 if (getRecursion().contains(name)) {
                     errors.add(error + " has unguarded recursion", proc);
                 }
@@ -741,7 +714,8 @@ public class Program implements Fixable {
                 }
             }
             errors.throwException();
-            this.template = TemplateBuilder.instance(getProperties()).build(this);
+            this.template = TemplateBuilder.instance(getProperties())
+                .build(this);
         }
         return result;
     }
@@ -759,4 +733,6 @@ public class Program implements Fixable {
     }
 
     private boolean fixed;
+
+    static private final String NO_MAIN_NAME = "composed-control";
 }

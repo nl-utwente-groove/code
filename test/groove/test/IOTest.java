@@ -18,22 +18,23 @@ package groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import groove.explore.Exploration;
-import groove.grammar.Grammar;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.lts.GTS;
-import groove.util.Groove;
-import groove.util.parse.FormatException;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
+
+import groove.explore.Exploration;
+import groove.grammar.Grammar;
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.lts.GTS;
+import groove.util.Groove;
+import groove.util.parse.FormatException;
+import junit.framework.Assert;
 
 /**
  * @author Tom Staijen
@@ -57,8 +58,16 @@ public class IOTest {
         int nodecount = 11;
         int edgecount = 12;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
 
             File file = new File(DIRECTORY);
             URL url = Groove.toURL(file);
@@ -74,9 +83,21 @@ public class IOTest {
                 nodecount,
                 edgecount);
 
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(url),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
+            testControl(GrammarModel.newInstance(url),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
+            testControl(GrammarModel.newInstance(url),
+                DEF_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
 
         } catch (IOException e) {
             Assert.fail(e.toString());
@@ -88,7 +109,11 @@ public class IOTest {
         int nodecount = 12;
         int edgecount = 14;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY), ALT_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY),
+                ALT_START,
+                DEF_CONTROL,
+                nodecount,
+                edgecount);
         } catch (IOException e) {
             Assert.fail(e.toString());
         }
@@ -124,16 +149,19 @@ public class IOTest {
         String controlName, int rulecount, int nodeCount, int edgeCount) {
         try {
             // and also set the start graph directly
-            view.setLocalActiveNames(ResourceKind.CONTROL, controlName);
-            view.setLocalActiveNames(ResourceKind.HOST, startName);
+            view.setLocalActiveNames(ResourceKind.CONTROL, QualName.parse(controlName));
+            view.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startName));
 
             // now instantiate the grammar
             Grammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
-            assertEquals(startName, view.getStartGraphModel().getFullName());
+            assertEquals(startName, view.getStartGraphModel()
+                .getQualName()
+                .toString());
             //            assertEquals(controlName, gg.getCtrlAut().getName());
-            assertEquals(rulecount, gg.getActions().size());
+            assertEquals(rulecount, gg.getActions()
+                .size());
 
             GTS gts = new GTS(gg);
             Exploration exploration = Exploration.explore(gts);
@@ -147,7 +175,7 @@ public class IOTest {
             }
             return gts;
         } catch (FormatException exc) {
-            assertTrue(false);
+            fail(exc.getMessage());
             return null;
         }
     }

@@ -39,12 +39,12 @@ import static groove.verify.LogicOp.W_UNTIL;
 import java.util.ArrayList;
 import java.util.List;
 
-import groove.algebra.Constant;
+import groove.algebra.syntax.Expression;
+import groove.grammar.QualName;
 import groove.util.Exceptions;
 import groove.util.line.Line;
 import groove.util.parse.ATermTree;
 import groove.util.parse.FormatException;
-import groove.util.parse.Id;
 import groove.util.parse.IdValidator;
 import groove.verify.Proposition.Arg;
 import groove.verify.Proposition.Kind;
@@ -251,7 +251,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             try {
                 this.ctlFormula = computeCtlFormula();
             } catch (FormatException exc) {
-                addErrors(exc);
+                getErrors().addAll(exc.getErrors());
                 throw exc;
             }
         }
@@ -345,7 +345,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * @throws FormatException if this formula contains operators
      * that are illegal in LTL.
      */
-    public gov.nasa.ltl.trans.Formula<String> toLtlFormula() throws FormatException {
+    public gov.nasa.ltl.trans.Formula<Proposition> toLtlFormula() throws FormatException {
         getErrors().throwException();
         if (this.ltlFormula == null) {
             if (getLogic() == Logic.CTL) {
@@ -356,7 +356,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             try {
                 this.ltlFormula = computeLtlFormula();
             } catch (FormatException exc) {
-                addErrors(exc);
+                getErrors().addAll(exc.getErrors());
                 throw exc;
             }
         }
@@ -364,7 +364,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     }
 
     /** The LTL formula obtained by converting this formula. */
-    private gov.nasa.ltl.trans.Formula<String> ltlFormula;
+    private gov.nasa.ltl.trans.Formula<Proposition> ltlFormula;
 
     /**
      * Converts this formula to a NASA LTL formula, if possible.
@@ -374,10 +374,10 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * @throws FormatException if this formula contains operators
      * that are illegal in LTL.
      */
-    private gov.nasa.ltl.trans.Formula<String> computeLtlFormula() throws FormatException {
-        gov.nasa.ltl.trans.Formula<String> arg1 =
+    private gov.nasa.ltl.trans.Formula<Proposition> computeLtlFormula() throws FormatException {
+        gov.nasa.ltl.trans.Formula<Proposition> arg1 =
             getArg1() == null ? null : getArg1().toLtlFormula();
-        gov.nasa.ltl.trans.Formula<String> arg2 =
+        gov.nasa.ltl.trans.Formula<Proposition> arg2 =
             getArg2() == null ? null : getArg2().toLtlFormula();
         switch (getOp()) {
         case FORALL:
@@ -386,10 +386,10 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         case PROP:
             Proposition prop = getProp();
             if (prop.getKind() == Kind.CALL) {
-                throw new FormatException("Rule call of '%s' not yet supported in LTL", prop.getId()
-                    .getName());
+                throw new FormatException("Rule call of '%s' not yet supported in LTL",
+                    prop.getId());
             }
-            return gov.nasa.ltl.trans.Formula.Proposition(getProp().toString());
+            return gov.nasa.ltl.trans.Formula.Proposition(getProp());
         case TRUE:
             return gov.nasa.ltl.trans.Formula.True();
         case FALSE:
@@ -539,30 +539,30 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     }
 
     /** Factory method for an atomic proposition testing for an identifier. */
-    public static Formula atom(Id id) {
+    public static Formula atom(QualName id) {
         return atom(new Proposition(id));
     }
 
     /** Factory method for a propositional formula consisting of a rule call.
      * The arguments are parsed into identifiers or constants.
-     * @param args list of arguments: Either {@link String} values to be interpreted
-     * as {@link Id} or as
+     * @param args list of arguments: {@link String} or {@link Expression} values to be interpreted
+     * as {@link Arg}s
      */
-    public static Formula call(Id id, Object... args) {
+    public static Formula call(QualName id, Object... args) {
         List<Arg> callArgs = new ArrayList<>();
         for (Object arg : args) {
             Arg callArg;
             if (arg instanceof String) {
                 String stringArg = (String) arg;
                 if (isId(stringArg)) {
-                    callArg = new Arg(Id.id(stringArg));
+                    callArg = Arg.arg(stringArg);
                 } else if (arg.equals(Arg.WILD_TEXT)) {
                     callArg = Arg.WILD_ARG;
                 } else {
                     throw Exceptions.illegalArg("Illegal call argument '%s'", arg);
                 }
             } else {
-                callArg = new Arg((Constant) arg);
+                callArg = Arg.arg((Expression) arg);
             }
             callArgs.add(callArg);
         }

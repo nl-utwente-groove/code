@@ -20,23 +20,25 @@ package groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.Test;
+
 import groove.control.instance.Automaton;
 import groove.explore.Exploration;
 import groove.explore.ExploreType;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.grammar.Grammar;
+import groove.grammar.QualName;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Viewer;
 import groove.lts.GTS;
 import groove.lts.GTSCounter;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Test;
 
 /**
  * System test class, which explores a number of graph production systems and
@@ -135,7 +137,7 @@ public class RecipeTest {
     private void testExploration(String startGraphName, String control, String strategyDescr) {
         try {
             GrammarModel ggModel = loadGrammar(GRAMMAR, startGraphName);
-            ggModel.setLocalActiveNames(ResourceKind.CONTROL, control);
+            ggModel.setLocalActiveNames(ResourceKind.CONTROL, QualName.name(control));
             Grammar gg = ggModel.toGrammar();
             Automaton a = gg.getControl();
             a.explore();
@@ -165,11 +167,13 @@ public class RecipeTest {
             if (strategyDescr == null) {
                 exploreType = ExploreType.DEFAULT;
             } else {
-                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
+                Serialized strategy = StrategyEnumerator.instance()
+                    .parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploreType = new ExploreType(strategy, acceptor, 0);
             }
-            Exploration exploration = exploreType.newExploration(gts).play();
+            Exploration exploration = exploreType.newExploration(gts)
+                .play();
             assertFalse(exploration.isInterrupted());
         } catch (FormatException exc) {
             fail(exc.toString());
@@ -180,7 +184,7 @@ public class RecipeTest {
         try {
             GrammarModel result = GrammarModel.newInstance(new File(grammarName), false);
             if (startGraphName != null) {
-                result.setLocalActiveNames(ResourceKind.HOST, startGraphName);
+                result.setLocalActiveNames(ResourceKind.HOST, QualName.name(startGraphName));
             }
             return result;
         } catch (IOException exc) {

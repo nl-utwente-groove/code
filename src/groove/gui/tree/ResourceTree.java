@@ -1,37 +1,29 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.tree;
 
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
-import groove.grammar.model.GrammarModel;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.display.DismissDelayer;
-import groove.gui.display.DisplayKind;
-import groove.gui.display.ResourceDisplay;
-import groove.lts.GraphState;
 
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -47,10 +39,22 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import groove.grammar.ModuleName;
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.display.DismissDelayer;
+import groove.gui.display.DisplayKind;
+import groove.gui.display.ResourceDisplay;
+import groove.lts.GraphState;
+
 /**
  * Panel that displays a tree of resources. Each resource is added by means of
- * a list of strings, which corresponds to its full path name in the grammar. 
- *  
+ * a list of strings, which corresponds to its full path name in the grammar.
+ *
  * @author Maarten de Mol
  */
 public class ResourceTree extends AbstractResourceTree {
@@ -60,9 +64,6 @@ public class ResourceTree extends AbstractResourceTree {
 
     // Remembers the previous enabled background color.
     private Color enabledBackground;
-
-    // Used separator character.
-    private static final String SEPARATOR = ".";
 
     /** Creates an instance for a given simulator. */
     public ResourceTree(ResourceDisplay parent) {
@@ -98,7 +99,8 @@ public class ResourceTree extends AbstractResourceTree {
 
         // add tool tips
         installListeners();
-        ToolTipManager.sharedInstance().registerComponent(this);
+        ToolTipManager.sharedInstance()
+            .registerComponent(this);
         addMouseListener(new DismissDelayer(this));
     }
 
@@ -118,12 +120,12 @@ public class ResourceTree extends AbstractResourceTree {
 
         // get all resources, and store them in the sorted FolderTree
         FolderTree ftree = new FolderTree();
-        for (String resource : grammar.getNames(getResourceKind())) {
+        for (QualName resource : grammar.getNames(getResourceKind())) {
             ftree.insert(resource);
         }
 
         // store all FolderTree items in this.root
-        ftree.store(this.root, "", result);
+        ftree.store(this.root, ModuleName.TOP, result);
 
         // return result
         return result;
@@ -134,17 +136,17 @@ public class ResourceTree extends AbstractResourceTree {
         suspendListeners();
         if (changes.contains(GRAMMAR)) {
             // remember the visible and selected resources (+paths)
-            Set<String> visible = new HashSet<String>();
-            Set<String> selected = getSimulatorModel().getSelectSet(getResourceKind());
+            Set<QualName> visible = new HashSet<>();
+            Set<QualName> selected = getSimulatorModel().getSelectSet(getResourceKind());
             for (int i = 0; i < getRowCount(); i++) {
                 TreePath path = getPathForRow(i);
                 TreeNode node = (TreeNode) path.getLastPathComponent();
                 if (node instanceof ResourceTreeNode) {
                     ResourceTreeNode rnode = (ResourceTreeNode) node;
-                    visible.add(rnode.getName());
+                    visible.add(rnode.getQualName());
                 } else if (node instanceof PathNode) {
                     PathNode pnode = (PathNode) node;
-                    visible.add(pnode.getPathName());
+                    visible.add(pnode.getQualName());
                 }
             }
 
@@ -158,11 +160,12 @@ public class ResourceTree extends AbstractResourceTree {
                 // expand/select all the previously expanded/selected nodes
                 for (DisplayTreeNode node : created) {
                     if (node instanceof ResourceTreeNode) {
-                        String name = ((ResourceTreeNode) node).getName();
+                        QualName name = ((ResourceTreeNode) node).getQualName();
                         if (visible.contains(name) || selected.contains(name)) {
                             TreePath path = new TreePath(node.getPath());
                             expandPath(path.getParentPath());
-                            if (getSimulatorModel().getSelectSet(getResourceKind()).contains(name)) {
+                            if (getSimulatorModel().getSelectSet(getResourceKind())
+                                .contains(name)) {
                                 addSelectionPath(path);
                             }
                             if (selected.contains(name)) {
@@ -170,7 +173,7 @@ public class ResourceTree extends AbstractResourceTree {
                             }
                         }
                     } else if (node instanceof PathNode) {
-                        String name = ((PathNode) node).getPathName();
+                        QualName name = ((PathNode) node).getQualName();
                         if (visible.contains(name)) {
                             TreePath path = new TreePath(node.getPath());
                             expandPath(path.getParentPath());
@@ -233,13 +236,13 @@ public class ResourceTree extends AbstractResourceTree {
 
     /**
      * Mouse listener that relays events to {@link ResourceTree#mouseClicked},
-     * {@link ResourceTree#mousePressed} and {@link ResourceTree#createPopupMenu}.  
+     * {@link ResourceTree#mousePressed} and {@link ResourceTree#createPopupMenu}.
      */
     private class MyMouseListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent evt) {
 
-            // find the node that belongs to this event 
+            // find the node that belongs to this event
             TreeNode selected = getMousedNode(evt);
 
             // show popup menu
@@ -255,7 +258,8 @@ public class ResourceTree extends AbstractResourceTree {
 
             // invoke editor, if this was a double click
             if (selected instanceof ResourceTreeNode && evt.getClickCount() > 1) {
-                getActions().getEditAction(getResourceKind()).execute();
+                getActions().getEditAction(getResourceKind())
+                    .execute();
             }
 
             // invoke user actions
@@ -323,19 +327,18 @@ public class ResourceTree extends AbstractResourceTree {
      * to a path in the current grammar.
      */
     class PathNode extends FolderTreeNode {
-
         // The (full) name of the path.
-        private final String pathName;
+        private final QualName qualName;
 
         /** Default constructor. */
-        public PathNode(String fullName, String shortName) {
+        public PathNode(QualName qualName, String shortName) {
             super(shortName);
-            this.pathName = fullName;
+            this.qualName = qualName;
         }
 
         /** Getter for the resource name. */
-        public String getPathName() {
-            return this.pathName;
+        public QualName getQualName() {
+            return this.qualName;
         }
     }
 
@@ -350,7 +353,7 @@ public class ResourceTree extends AbstractResourceTree {
      */
     private class FolderTree {
 
-        // The subfolders of this tree. 
+        // The subfolders of this tree.
         private final TreeMap<String,FolderTree> folders;
 
         // The resources that are stores directly at this level.
@@ -358,61 +361,51 @@ public class ResourceTree extends AbstractResourceTree {
 
         /** Create a new (empty) FolderTree. */
         public FolderTree() {
-            this.folders = new TreeMap<String,FolderTree>();
-            this.resources = new TreeSet<String>();
+            this.folders = new TreeMap<>();
+            this.resources = new TreeSet<>();
         }
 
         /** Insert a new resource in the tree. */
-        public void insert(String resource) {
-            String[] components = resource.split("\\" + SEPARATOR);
-            insert(0, components, resource);
+        public void insert(QualName resource) {
+            insert(0, resource.tokens(), resource);
         }
 
         /** Local indexes insert. */
-        private void insert(int index, String[] components, String resource) {
-            if (index == components.length - 1) {
-                this.resources.add(components[index]);
+        private void insert(int index, List<String> components, QualName resource) {
+            if (index == components.size() - 1) {
+                this.resources.add(components.get(index));
             } else {
-                FolderTree folder = this.folders.get(components[index]);
+                FolderTree folder = this.folders.get(components.get(index));
                 if (folder == null) {
                     folder = new FolderTree();
                 }
                 folder.insert(index + 1, components, resource);
-                this.folders.put(components[index], folder);
+                this.folders.put(components.get(index), folder);
             }
         }
 
-        /** 
+        /**
          * Adds all tree resources to a DefaultMutableTreeNode (with the given
          * path). Also collects the created {@link TreeNode}s.
          */
-        public void store(DisplayTreeNode root, String path, Set<DisplayTreeNode> created) {
+        public void store(DisplayTreeNode root, ModuleName path, Set<DisplayTreeNode> created) {
             for (Map.Entry<String,FolderTree> entry : this.folders.entrySet()) {
-                String subpath = extendPath(path, entry.getKey());
+                QualName subpath = path.extend(entry.getKey());
                 PathNode node = new PathNode(subpath, entry.getKey());
-                entry.getValue().store(node, subpath, created);
+                entry.getValue()
+                    .store(node, subpath, created);
                 created.add(node);
                 //root.add(node);
                 root.insertSorted(node);
             }
             for (String resource : this.resources) {
-                String fullName = extendPath(path, resource);
-                ResourceTreeNode leaf = new ResourceTreeNode(getParentDisplay(), fullName);
+                QualName qualName = path.extend(resource);
+                ResourceTreeNode leaf = new ResourceTreeNode(getParentDisplay(), qualName);
                 created.add(leaf);
                 //root.add(leaf);
                 root.insertSorted(leaf);
             }
         }
-
-        /** Extend a path string with a new subpath. */
-        private String extendPath(String path, String child) {
-            if (path.equals("")) {
-                return child;
-            } else {
-                return path + "." + child;
-            }
-        }
-
     }
 
 }

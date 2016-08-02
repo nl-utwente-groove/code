@@ -1,24 +1,24 @@
 package groove.io.conceptual.lang;
 
-import groove.io.conceptual.TypeModel;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import groove.grammar.QualName;
+import groove.io.conceptual.TypeModel;
+
 public abstract class TypeImporter implements Messenger {
     private List<Message> m_messages = new ArrayList<Message>();
-    protected Map<String,TypeModel> m_typeModels =
-        new HashMap<String,TypeModel>();
+    protected Map<QualName,TypeModel> m_typeModels = new HashMap<>();
 
     /**
-     * Returns a collection of strings representing each loaded type model. Use {@link TypeImporter#getTypeModel(String)} to retrieve the actual associated type
+     * Returns a collection of strings representing each loaded type model. Use {@link TypeImporter#getTypeModel(QualName)} to retrieve the actual associated type
      * model.
      * @return A collection of strings representing each type model
      */
-    public Collection<String> getTypeModelNames() {
+    public Collection<QualName> getTypeModelNames() {
         return this.m_typeModels.keySet();
     }
 
@@ -28,8 +28,7 @@ public abstract class TypeImporter implements Messenger {
      * @return The type model, or null if the model could not be found.
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public abstract TypeModel getTypeModel(String modelName)
-        throws ImportException;
+    public abstract TypeModel getTypeModel(QualName modelName) throws ImportException;
 
     /**
      * Returns the first type model found.
@@ -37,9 +36,10 @@ public abstract class TypeImporter implements Messenger {
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
     public TypeModel getTypeModel() throws ImportException {
-        Collection<String> names = getTypeModelNames();
+        Collection<QualName> names = getTypeModelNames();
         if (names.size() > 0) {
-            return getTypeModel(names.iterator().next());
+            return getTypeModel(names.iterator()
+                .next());
         }
         return null;
     }
@@ -48,10 +48,12 @@ public abstract class TypeImporter implements Messenger {
         this.m_messages.add(m);
     }
 
+    @Override
     public List<Message> getMessages() {
         return this.m_messages;
     }
 
+    @Override
     public void clearMessages() {
         this.m_messages.clear();
     }

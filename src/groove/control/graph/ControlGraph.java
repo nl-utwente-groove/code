@@ -16,18 +16,19 @@
  */
 package groove.control.graph;
 
-import groove.control.Attempt;
-import groove.control.Attempt.Stage;
-import groove.control.Position;
-import groove.control.template.Template;
-import groove.graph.GraphRole;
-import groove.graph.Label;
-import groove.graph.NodeSetEdgeSetGraph;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+
+import groove.control.Attempt;
+import groove.control.Attempt.Stage;
+import groove.control.Position;
+import groove.control.template.Template;
+import groove.grammar.QualName;
+import groove.graph.GraphRole;
+import groove.graph.Label;
+import groove.graph.NodeSetEdgeSetGraph;
 
 /**
  * Graph representation of a control automaton, used for visualisation purposes.
@@ -41,8 +42,13 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
     /**
      * Constructs a new graph with a given name.
      */
-    private ControlGraph(String name) {
-        super(name);
+    private ControlGraph(QualName name) {
+        super(name.toString());
+    }
+
+    /** Returns the qualified name of the control automaton wrapped in this graph. */
+    public QualName getQualName() {
+        return QualName.parse(getName());
     }
 
     @Override
@@ -98,7 +104,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
 
     /** Constructs a control graph for a given template. */
     public static ControlGraph newGraph(Template template, boolean full) {
-        ControlGraph result = newGraph(template.getName(), template.getStart(), full);
+        ControlGraph result = newGraph(template.getQualName(), template.getStart(), full);
         result.setTemplate(template);
         return result;
     }
@@ -108,8 +114,8 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * @param full if {@code true}, the full control structure is generated;
      * otherwise, only the call edges are shown
      */
-    public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(String name,
-        P init, boolean full) {
+    public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(
+        QualName name, P init, boolean full) {
         ControlGraph result = new ControlGraph(name);
         Map<P,ControlNode> nodeMap = new HashMap<P,ControlNode>();
         Queue<P> fresh = new LinkedList<P>();

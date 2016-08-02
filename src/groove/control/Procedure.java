@@ -16,6 +16,10 @@
  */
 package groove.control;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import groove.control.CtrlPar.Var;
 import groove.control.template.Template;
 import groove.control.term.Term;
@@ -25,10 +29,6 @@ import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.util.Fixable;
 import groove.util.Groove;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Control-defined callable unit.
@@ -47,7 +47,7 @@ public abstract class Procedure implements Callable, Fixable {
      * which the unit declaration starts
      * @param grammarProperties grammar properties for this procedure
      */
-    protected Procedure(String fullName, Kind kind, List<Var> signature, String controlName,
+    protected Procedure(QualName fullName, Kind kind, List<Var> signature, QualName controlName,
         int startLine, GrammarProperties grammarProperties) {
         this.fullName = fullName;
         this.signature = signature;
@@ -58,16 +58,11 @@ public abstract class Procedure implements Callable, Fixable {
     }
 
     @Override
-    public String getLastName() {
-        return QualName.lastName(getFullName());
-    }
-
-    @Override
-    public String getFullName() {
+    public QualName getQualName() {
         return this.fullName;
     }
 
-    private final String fullName;
+    private final QualName fullName;
 
     @Override
     public List<Var> getSignature() {
@@ -77,11 +72,11 @@ public abstract class Procedure implements Callable, Fixable {
     private final List<Var> signature;
 
     /** Returns the full name of the control program in which this procedure is declared. */
-    public String getControlName() {
+    public QualName getControlName() {
         return this.controlName;
     }
 
-    private final String controlName;
+    private final QualName controlName;
 
     /** Returns the start line of this procedure's declaration within the control program. */
     public int getStartLine() {
@@ -104,7 +99,7 @@ public abstract class Procedure implements Callable, Fixable {
      */
     public void setTerm(Term body) {
         assert body != null;
-        assert !isFixed();
+        assert!isFixed();
         // make the body atomic if it is a recipe
         this.term = getKind() == Kind.RECIPE ? body.atom() : body;
         setFixed();
@@ -194,8 +189,8 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format("The unit is %sfixed", fixed ? ""
-                : "not "));
+            throw new IllegalStateException(
+                String.format("The unit is %sfixed", fixed ? "" : "not "));
         }
     }
 
@@ -203,13 +198,13 @@ public abstract class Procedure implements Callable, Fixable {
 
     @Override
     public String toString() {
-        return getKind().getName(true) + " " + getFullName()
+        return getKind().getName(true) + " " + getQualName()
             + Groove.toString(getSignature().toArray(), "(", ")", ", ");
     }
 
     @Override
     public int hashCode() {
-        return getFullName().hashCode();
+        return getQualName().hashCode();
     }
 
     @Override
@@ -221,7 +216,7 @@ public abstract class Procedure implements Callable, Fixable {
             return false;
         }
         Procedure other = (Procedure) obj;
-        return getFullName().equals(other.getFullName());
+        return getQualName().equals(other.getQualName());
     }
 
     /**
@@ -236,8 +231,9 @@ public abstract class Procedure implements Callable, Fixable {
      * which the unit declaration starts
      * @param grammarProperties grammar properties for the new procedure
      */
-    public static Procedure newInstance(String fullName, Kind kind, int priority,
-        List<Var> signature, String controlName, int startLine, GrammarProperties grammarProperties) {
+    public static Procedure newInstance(QualName fullName, Kind kind, int priority,
+        List<Var> signature, QualName controlName, int startLine,
+        GrammarProperties grammarProperties) {
         assert kind.isProcedure();
         Procedure result;
         switch (kind) {
@@ -246,8 +242,8 @@ public abstract class Procedure implements Callable, Fixable {
             result = new Function(fullName, signature, controlName, startLine, grammarProperties);
             break;
         case RECIPE:
-            result =
-                new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
+            result = new Recipe(fullName, priority, signature, controlName, startLine,
+                grammarProperties);
             break;
         default:
             assert false;

@@ -1,46 +1,20 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.jgraph;
-
-import groove.grammar.aspect.AspectEdge;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectKind;
-import groove.grammar.aspect.AspectNode;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.GraphBasedModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
-import groove.grammar.model.TypeModel;
-import groove.grammar.type.ImplicitTypeGraph;
-import groove.grammar.type.TypeGraph;
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
-import groove.graph.GraphRole;
-import groove.graph.Node;
-import groove.gui.layout.JEdgeLayout;
-import groove.gui.layout.LayoutMap;
-import groove.gui.look.VisualMap;
-import groove.util.ChangeCount;
-import groove.util.ChangeCount.Derived;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatException;
-import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +39,33 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.TypeModel;
+import groove.grammar.type.ImplicitTypeGraph;
+import groove.grammar.type.TypeGraph;
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
+import groove.graph.Node;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.LayoutMap;
+import groove.gui.look.VisualMap;
+import groove.util.ChangeCount;
+import groove.util.ChangeCount.Derived;
+import groove.util.Groove;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatException;
+
 /**
  * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
  * used to visualise rules and attributed graphs.
@@ -72,7 +73,7 @@ import org.jgraph.graph.ParentMap;
  * @version $Revision$
  */
 final public class AspectJModel extends JModel<AspectGraph> {
-    /** 
+    /**
      * Creates an new model, initially without a graph or grammar loaded.
      * Call {@link #setGrammar(GrammarModel)} to complete construction.
      */
@@ -83,13 +84,12 @@ final public class AspectJModel extends JModel<AspectGraph> {
             @Override
             protected GraphBasedModel<?> computeValue() {
                 GraphBasedModel<?> result;
-                ResourceKind kind =
-                    ResourceKind.toResource(getJGraph().getGraphRole());
+                ResourceKind kind = ResourceKind.toResource(getJGraph().getGraphRole());
                 if (getJGraph().isEditable() || getJGraph().isForState()
-                    || !getGrammar().hasResource(kind, getName())) {
+                    || !getGrammar().hasResource(kind, getQualName())) {
                     result = getGrammar().createGraphModel(getGraph());
                 } else {
-                    result = getGrammar().getGraphResource(kind, getName());
+                    result = getGrammar().getGraphResource(kind, getQualName());
                 }
                 return result;
             }
@@ -103,8 +103,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
                     try {
                         result = ((TypeModel) resourceModel).toResource();
                     } catch (FormatException e) {
-                        result =
-                            ImplicitTypeGraph.newInstance(resourceModel.getLabels());
+                        result = ImplicitTypeGraph.newInstance(resourceModel.getLabels());
                     }
                 } else {
                     result = getGrammar().getTypeGraph();
@@ -134,8 +133,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     /** Sets a grammar model, with respect to which typing is resolved. */
     public void setGrammar(GrammarModel grammar) {
-        assert (this.grammar == null || this.grammar == grammar)
-            && grammar != null;
+        assert(this.grammar == null || this.grammar == grammar) && grammar != null;
         this.grammar = grammar;
     }
 
@@ -176,7 +174,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         setLoading(false);
     }
 
-    /** 
+    /**
      * Clones this model, and initialises the new model with the given
      * argument graph.
      */
@@ -190,11 +188,11 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return result;
     }
 
-    /** 
+    /**
      * Reconstructs the aspect graph on the basis of the current
      * content of the JModel.
      * This method should be called immediately after the changes to
-     * the JModel have been made, but before any graph listeners are 
+     * the JModel have been made, but before any graph listeners are
      * notified.
      */
     public void syncGraph() {
@@ -202,10 +200,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
             return;
         }
         GraphRole role = getGraph().getRole();
-        Map<AspectNode,AspectJVertex> nodeJVertexMap =
-            new HashMap<AspectNode,AspectJVertex>();
-        Map<AspectEdge,AspectJCell> edgeJCellMap =
-            new HashMap<AspectEdge,AspectJCell>();
+        Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<AspectNode,AspectJVertex>();
+        Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<AspectEdge,AspectJCell>();
         AspectGraph graph = new AspectGraph(getName(), role);
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
@@ -241,7 +237,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
             } else {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
                 VisualMap visuals = jEdge.getVisuals();
-                if (!JEdgeLayout.newInstance(visuals).isDefault()) {
+                if (!JEdgeLayout.newInstance(visuals)
+                    .isDefault()) {
                     for (AspectEdge edge : jEdge.getEdges()) {
                         layoutMap.putEdge(edge, visuals);
                     }
@@ -263,7 +260,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         }
     }
 
-    /** 
+    /**
      * Sets the extra-error flags of all the cells, based
      * on the errors in the view.
      */
@@ -272,7 +269,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
             return;
         }
         for (AspectJCell jCell : getRoots()) {
-            jCell.getErrors().clear();
+            jCell.getErrors()
+                .clear();
         }
         this.errorMap.clear();
         for (FormatError error : getResourceModel().getErrors()) {
@@ -283,7 +281,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 }
                 if (errorCell != null) {
                     this.errorMap.put(error, errorCell);
-                    errorCell.getErrors().addError(error, true);
+                    errorCell.getErrors()
+                        .addError(error, true);
                 }
             }
         }
@@ -299,17 +298,22 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return this.typeGraph.getValue();
     }
 
-    /** 
+    /**
      * Returns the mapping from errors to JCells with that error
-     * computed during the last call to {@link #loadGraph(AspectGraph)} 
+     * computed during the last call to {@link #loadGraph(AspectGraph)}
      * or {@link #syncGraph()}.
      */
     public Map<FormatError,AspectJCell> getErrorMap() {
         return this.errorMap;
     }
 
+    /** Returns the name of this aspect model as a qualified name. */
+    public QualName getQualName() {
+        return QualName.parse(getName());
+    }
+
     /** Changes the name of the model (and the underlying graph). */
-    public void setName(String name) {
+    public void setQualName(QualName name) {
         setGraph(getGraph().rename(name));
     }
 
@@ -359,7 +363,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
         for (Object element : roots) {
             if (element instanceof AspectJVertex) {
                 AspectJVertex cell = (AspectJVertex) element;
-                removables.addAll(cell.getPort().getEdges());
+                removables.addAll(cell.getPort()
+                    .getEdges());
             }
         }
         super.remove(removables.toArray());
@@ -367,8 +372,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void insert(Object[] roots, Map attributes, ConnectionSet cs,
-            ParentMap pm, UndoableEdit[] edits) {
+    public void insert(Object[] roots, Map attributes, ConnectionSet cs, ParentMap pm,
+        UndoableEdit[] edits) {
         Set<Object> insertables = new LinkedHashSet<Object>();
         // only copy edges whose source and target ports are connected
         for (Object root : roots) {
@@ -392,8 +397,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         if (cs != null) {
             Iterator it = cs.connections();
             while (it.hasNext()) {
-                ConnectionSet.Connection conn =
-                    (ConnectionSet.Connection) it.next();
+                ConnectionSet.Connection conn = (ConnectionSet.Connection) it.next();
                 if (!insertables.contains(conn.getEdge())) {
                     it.remove();
                 }
@@ -436,7 +440,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.graphModCount.increase();
     }
 
-    /** 
+    /**
      * We override this method to ensure that the aspect graph
      * remains in sync with any changes made to the JModel, <i>before</i>
      * the listeners are notified of the changes.
@@ -450,12 +454,10 @@ final public class AspectJModel extends JModel<AspectGraph> {
         if (!isLoading()) {
             // only reload if the edit changed the graph structure
             // (and not just the layout)
-            boolean changed =
-                edit.getInserted() != null && edit.getInserted().length > 0
-                    || edit.getRemoved() != null
-                    && edit.getRemoved().length > 0
-                    || edit.getConnectionSet() != null
-                    && !edit.getConnectionSet().isEmpty();
+            boolean changed = edit.getInserted() != null && edit.getInserted().length > 0
+                || edit.getRemoved() != null && edit.getRemoved().length > 0
+                || edit.getConnectionSet() != null && !edit.getConnectionSet()
+                    .isEmpty();
             // only user object changes in the attribute should trigger a reload
             if (!changed && edit.getAttributes() != null) {
                 for (Object attrValue : ((Map<?,?>) edit.getAttributes()).values()) {
@@ -489,7 +491,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.loading = loading;
     }
 
-    /** 
+    /**
      * Creates a new aspect node, with a fresh node number and
      * the graph role taken from the editor.
      */
@@ -557,8 +559,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     /** Mapping from errors to affected cells. */
-    private Map<FormatError,AspectJCell> errorMap =
-        new HashMap<FormatError,AspectJCell>();
+    private Map<FormatError,AspectJCell> errorMap = new HashMap<FormatError,AspectJCell>();
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,
@@ -585,16 +586,11 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
         ROLE_DESCRIPTIONS.put(AspectKind.EMBARGO,
             "Must be absent from a graph for this rule to apply");
-        ROLE_DESCRIPTIONS.put(AspectKind.READER,
-            "Must be matched for this rule to apply");
-        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR,
-            "Will be created by applying this rule");
-        ROLE_DESCRIPTIONS.put(
-            AspectKind.ADDER,
+        ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
+        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.ADDER,
             "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.ERASER,
-            "Will be deleted by applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.REMARK,
-            "Has no effect on the execution of the rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
     }
 }

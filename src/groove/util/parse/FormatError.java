@@ -16,7 +16,14 @@
  */
 package groove.util.parse;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 import groove.grammar.GrammarKey;
+import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.aspect.AspectGraph;
@@ -31,12 +38,6 @@ import groove.graph.NodeComparator;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.lts.GraphState;
 import groove.util.Pair;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Class encoding a single message reporting an error in a graph view.
@@ -62,7 +63,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** Sets the resource in which this error occurs. */
-    public void setResource(ResourceKind kind, String name) {
+    public void setResource(ResourceKind kind, QualName name) {
         this.resourceKind = kind;
         this.resourceName = name;
     }
@@ -79,13 +80,14 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             this.state = (GraphState) par;
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
-            setResource(ResourceKind.toResource(this.graph.getRole()), this.graph.getName());
+            setResource(ResourceKind.toResource(this.graph.getRole()),
+                QualName.parse(this.graph.getName()));
         } else if (par instanceof ControlModel) {
             this.control = (ControlModel) par;
-            setResource(ResourceKind.CONTROL, this.control.getFullName());
+            setResource(ResourceKind.CONTROL, this.control.getQualName());
         } else if (par instanceof PrologModel) {
             this.prolog = (PrologModel) par;
-            setResource(ResourceKind.PROLOG, this.prolog.getFullName());
+            setResource(ResourceKind.PROLOG, this.prolog.getQualName());
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
         } else if (par instanceof Integer) {
@@ -95,11 +97,11 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
                 addContext(subpar);
             }
         } else if (par instanceof Rule) {
-            setResource(ResourceKind.RULE, ((Rule) par).getFullName());
+            setResource(ResourceKind.RULE, ((Rule) par).getQualName());
         } else if (par instanceof Recipe) {
             setResource(ResourceKind.CONTROL, ((Recipe) par).getControlName());
         } else if (par instanceof GrammarKey) {
-            setResource(ResourceKind.PROPERTIES, ((GrammarKey) par).getName());
+            setResource(ResourceKind.PROPERTIES, QualName.name(((GrammarKey) par).getName()));
         } else if (par instanceof Resource) {
             setResource(((Resource) par).one(), ((Resource) par).two());
         }
@@ -245,12 +247,12 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
 
     /** Returns the resource kind for which this error occurs. */
     @Override
-    public final String getResourceName() {
+    public final QualName getResourceName() {
         return this.resourceName;
     }
 
     /** The name of the resource on which the error occurs. May be {@code null}. */
-    private String resourceName;
+    private QualName resourceName;
 
     /** Returns a new format error that extends this one with context information. */
     public FormatError extend(Object... par) {
@@ -300,7 +302,10 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     private static int compare(Element o1, Element o2) {
-        int result = o1.getClass().getName().compareTo(o2.getClass().getName());
+        int result = o1.getClass()
+            .getName()
+            .compareTo(o2.getClass()
+                .getName());
         if (result != 0) {
             return result;
         }
@@ -316,19 +321,19 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private static final Comparator<Edge> edgeComparator = EdgeComparator.instance();
 
     /** Constructs a control parameter from a given name. */
-    public static Resource control(String name) {
+    public static Resource control(QualName name) {
         return resource(ResourceKind.CONTROL, name);
     }
 
     /** Constructs a resource parameter from a given resource kind and name. */
-    public static Resource resource(ResourceKind kind, String name) {
+    public static Resource resource(ResourceKind kind, QualName name) {
         return new Resource(kind, name);
     }
 
     /** Resource parameter class. */
-    public static class Resource extends Pair<ResourceKind,String> {
+    public static class Resource extends Pair<ResourceKind,QualName> {
         /** Constructs a resource parameter. */
-        public Resource(ResourceKind one, String two) {
+        public Resource(ResourceKind one, QualName two) {
             super(one, two);
         }
     }

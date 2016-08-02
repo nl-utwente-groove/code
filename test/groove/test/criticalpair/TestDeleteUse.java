@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
@@ -182,8 +183,9 @@ public class TestDeleteUse {
         //first create a match for the rule
         Rule deleteAndAddEdge = getSimpleRule("deleteAndAddEdge", view);
         RuleGraph lhs = deleteAndAddEdge.lhs();
-        DefaultHostGraph host = new DefaultHostGraph("target",
-            HostFactory.newInstance(deleteAndAddEdge.getTypeGraph().getFactory(), true));
+        DefaultHostGraph host =
+            new DefaultHostGraph("target", HostFactory.newInstance(deleteAndAddEdge.getTypeGraph()
+                .getFactory(), true));
         RuleToHostMap match = new RuleToHostMap(host.getFactory());
 
         HostNode hostSource = host.addNode();
@@ -195,7 +197,8 @@ public class TestDeleteUse {
             ruleTarget = re.target();
             match.putNode(re.source(), hostSource);
             match.putNode(re.target(), hostTarget);
-            TypeLabel label = re.label().getTypeLabel();
+            TypeLabel label = re.label()
+                .getTypeLabel();
             HostEdge hostEdge = host.addEdge(hostSource, label, hostTarget);
             match.putEdge(re, hostEdge);
         }
@@ -212,14 +215,16 @@ public class TestDeleteUse {
         BasicEvent ruleEvent = new BasicEvent(deleteAndAddEdge, match, Reuse.NONE);
         RuleApplication app = new RuleApplication(ruleEvent, host);
         HostGraphMorphism transformationMorphism = app.getMorphism();
-        assertTrue(transformationMorphism.edgeMap().isEmpty());
+        assertTrue(transformationMorphism.edgeMap()
+            .isEmpty());
 
     }
 
     private Rule getSimpleRule(String name, GrammarModel view) {
         Rule result = null;
         try {
-            result = view.getRuleModel(name).toResource();
+            result = view.getRuleModel(QualName.name(name))
+                .toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }

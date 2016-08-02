@@ -17,10 +17,6 @@
 package groove.explore.util;
 
 import static groove.explore.Verbosity.HIGH;
-import groove.explore.Exploration;
-import groove.explore.Verbosity;
-import groove.io.FileType;
-import groove.lts.GTS;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,6 +26,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import groove.explore.Exploration;
+import groove.explore.Verbosity;
+import groove.io.FileType;
+import groove.lts.GTS;
 
 /**
  * Reporter that logs the exploration process.
@@ -108,9 +109,11 @@ public class LogReporter extends AExplorationReporter {
                 this.log.append("\n\n");
                 this.log.append(getExploration().getLastMessage());
             }
-            String logId =
-                getGTS().getGrammar().getId() + "-"
-                    + this.startTime.toString().replace(' ', '_').replace(':', '-');
+            String logId = getGTS().getGrammar()
+                .getId() + "-"
+                + this.startTime.toString()
+                    .replace(' ', '_')
+                    .replace(':', '-');
             String logFileName = FileType.LOG.addExtension(logId);
             PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName));
             try {
@@ -143,10 +146,16 @@ public class LogReporter extends AExplorationReporter {
 
     /** Emits the message announcing the parameters of the exploration. */
     protected void emitStartMessage() {
-        emit("Grammar:\t%s%n", getGTS().getGrammar().getName());
-        emit("Start graph:\t%s%n", getGTS().getGrammar().getStartGraph().getName());
-        emit("Control:\t%s%n", getGTS().getGrammar().getControl().getName());
-        emit("Exploration:\t%s%n", getExploration().getType().getIdentifier());
+        emit("Grammar:\t%s%n", getGTS().getGrammar()
+            .getName());
+        emit("Start graph:\t%s%n", getGTS().getGrammar()
+            .getStartGraph()
+            .getName());
+        emit("Control:\t%s%n", getGTS().getGrammar()
+            .getControl()
+            .getQualName());
+        emit("Exploration:\t%s%n", getExploration().getType()
+            .getIdentifier());
         emit("Timestamp:\t%s%n", this.startTime);
     }
 

@@ -29,11 +29,10 @@ import groove.algebra.Operator;
 import groove.algebra.RealSignature;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.Sort;
+import groove.grammar.QualName;
 import groove.util.parse.AExprTree;
 import groove.util.parse.DefaultOp;
-import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
-import groove.util.parse.Id;
 import groove.util.parse.OpKind;
 
 /**
@@ -56,8 +55,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         assert sort != null;
         this.sort = sort;
         if (hasConstant() && sort != getConstant().getSort()) {
-            addError(new FormatError("Invalid sorted expression '%s:%s'", sort.getName(),
-                getConstant().getSymbol()));
+            getErrors().add("Invalid sorted expression '%s:%s'",
+                sort.getName(),
+                getConstant().getSymbol());
         }
     }
 
@@ -83,7 +83,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             throw new FormatException("'%s' is not an assignment", getParseString());
         }
         String lhs = getArg(0).getId()
-            .getName();
+            .toString();
         Expression rhs = getArg(1).toExpression();
         Assignment result = new Assignment(lhs, rhs);
         result.setParseString(getParseString());
@@ -180,9 +180,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     private Expression toAtomExpr(Map<String,Sort> varMap, Sort sort) throws FormatException {
         Expression result;
         assert hasId();
-        Id id = getId();
+        QualName id = getId();
         if (id.size() > 2) {
-            throw new FormatException("Nested field expression '%s' not supported", id.getName());
+            throw new FormatException("Nested field expression '%s' not supported", id);
         } else if (id.size() > 1) {
             result = new FieldExpr(hasSort(), id.get(0), id.get(1), sort);
         } else {

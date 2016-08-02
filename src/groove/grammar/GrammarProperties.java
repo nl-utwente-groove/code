@@ -1,5 +1,14 @@
 package groove.grammar;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import groove.algebra.AlgebraFamily;
 import groove.explore.ExploreType;
 import groove.grammar.CheckPolicy.PolicyMap;
@@ -13,15 +22,6 @@ import groove.util.Version;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Properties class for graph production systems.
@@ -69,8 +69,10 @@ public class GrammarProperties extends Properties {
      * version of the tool. <code>false</code> otherwise.
      */
     public boolean isCurrentVersionProperties() {
-        return this.getGrooveVersion().equals(Version.getCurrentGrooveVersion())
-            && this.getGrammarVersion().equals(Version.getCurrentGrammarVersion());
+        return this.getGrooveVersion()
+            .equals(Version.getCurrentGrooveVersion())
+            && this.getGrammarVersion()
+                .equals(Version.getCurrentGrammarVersion());
     }
 
     /**
@@ -273,7 +275,7 @@ public class GrammarProperties extends Properties {
      * @param kind the resource kind to set the names for
      * @param names the (non-{@code null}, but possible empty) list of names of the active resources
      */
-    public void setActiveNames(ResourceKind kind, Collection<String> names) {
+    public void setActiveNames(ResourceKind kind, Collection<QualName> names) {
         assert kind != ResourceKind.RULE;
         storeProperty(resourceKeyMap.get(kind), names);
     }
@@ -283,14 +285,14 @@ public class GrammarProperties extends Properties {
      * @param kind the queried resource kind
      * @return a (non-{@code null}, but possibly empty) set of active names
      */
-    public Set<String> getActiveNames(ResourceKind kind) {
+    public Set<QualName> getActiveNames(ResourceKind kind) {
         assert kind != ResourceKind.RULE;
         if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY) {
             return Collections.emptySet();
         }
         @SuppressWarnings("unchecked")
-        List<String> names = (List<String>) parseProperty(resourceKeyMap.get(kind));
-        return new TreeSet<String>(names);
+        List<QualName> names = (List<QualName>) parseProperty(resourceKeyMap.get(kind));
+        return new TreeSet<>(names);
     }
 
     /**
@@ -463,6 +465,7 @@ public class GrammarProperties extends Properties {
     /** Mapping from resource kinds to corresponding property keys. */
     static private final Map<ResourceKind,GrammarKey> resourceKeyMap =
         new EnumMap<ResourceKind,GrammarKey>(ResourceKind.class);
+
     static {
         resourceKeyMap.put(ResourceKind.TYPE, GrammarKey.TYPE_NAMES);
         resourceKeyMap.put(ResourceKind.CONTROL, GrammarKey.CONTROL_NAMES);

@@ -16,23 +16,23 @@
  */
 package groove.control;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import groove.grammar.Callable;
 import groove.grammar.Rule;
 import groove.grammar.host.HostFactory;
 import groove.util.Groove;
 import groove.util.Pair;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Call of a callable unit.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comparable<Call> {
+public class Call extends Pair<Callable,List<? extends CtrlPar>>implements Comparable<Call> {
     /**
      * Constructs a call of a given unit, with arguments.
      */
@@ -137,21 +137,28 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
 
     @Override
     public String toString() {
-        return getUnit().getFullName() + Groove.toString(getArgs().toArray(), "(", ")", ", ");
+        return getUnit().getQualName() + Groove.toString(getArgs().toArray(), "(", ")", ", ");
     }
 
     @Override
     public int compareTo(Call o) {
-        int result = getUnit().getFullName().compareTo(o.getUnit().getFullName());
+        int result = getUnit().getQualName()
+            .compareTo(o.getUnit()
+                .getQualName());
         if (result != 0) {
             return result;
         }
-        result = getArgs().size() - o.getArgs().size();
+        result = getArgs().size() - o.getArgs()
+            .size();
         if (result != 0) {
             return result;
         }
         for (int i = 0; i < getArgs().size(); i++) {
-            result = getArgs().get(i).toString().compareTo(o.getArgs().get(i).toString());
+            result = getArgs().get(i)
+                .toString()
+                .compareTo(o.getArgs()
+                    .get(i)
+                    .toString());
             if (result != 0) {
                 return result;
             }

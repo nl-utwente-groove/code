@@ -17,9 +17,11 @@
  */
 package groove.explore.strategy;
 
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import gov.nasa.ltl.trans.Formula;
 import groove.explore.ExploreResult;
@@ -27,6 +29,7 @@ import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
+import groove.grammar.host.ValueNode;
 import groove.graph.EdgeRole;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -40,6 +43,8 @@ import groove.verify.ModelChecking.Record;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
+import groove.verify.Proposition;
+import groove.verify.Proposition.Arg;
 
 /**
  * This class provides some default implementations for the methods that are
@@ -52,7 +57,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
-        MatcherFactory.instance(gts.isSimple()).setDefaultEngine();
+        MatcherFactory.instance(gts.isSimple())
+            .setDefaultEngine();
         this.stateSet = new ProductStateSet();
         this.stateSet.addListener(this.collector);
         this.acceptor = (CycleAcceptor) acceptor;
@@ -106,8 +112,10 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         assert property != null;
         this.property = property;
         try {
-            Formula<String> formula = groove.verify.Formula.parse(property).toLtlFormula();
-            BuchiGraph buchiGraph = BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
+            Formula<Proposition> formula = groove.verify.Formula.parse(property)
+                .toLtlFormula();
+            BuchiGraph buchiGraph = BuchiGraph.getPrototype()
+                .newBuchiGraph(Formula.Not(formula));
             this.startLocation = buchiGraph.getInitial();
         } catch (FormatException e) {
             throw new IllegalStateException(String.format("Error in property '%s'", property), e);
@@ -162,10 +170,12 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      */
     protected boolean exploreState(ProductState prodState) {
         boolean result = false;
-        Set<? extends GraphTransition> outTransitions = prodState.getGraphState().getTransitions();
-        Set<String> applicableRules = getLabels(outTransitions);
-        trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation().outTransitions()) {
-            if (buchiTrans.isEnabled(applicableRules)) {
+        Set<? extends GraphTransition> outTransitions = prodState.getGraphState()
+            .getTransitions();
+        Set<Proposition> satisfiedProps = getProps(outTransitions);
+        trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation()
+            .outTransitions()) {
+            if (buchiTrans.isEnabled(satisfiedProps)) {
                 boolean finalState = true;
                 for (GraphTransition trans : outTransitions) {
                     if (trans.getRole() == EdgeRole.BINARY) {
@@ -242,8 +252,10 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @return {@code true} if a counterexample was found
      */
     protected final boolean findCounterExample(ProductState source, ProductState target) {
-        boolean result = (target.colour() == getRecord().cyan())
-            && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
+        boolean result = (target.colour() == getRecord().cyan()) && (source.getBuchiLocation()
+            .isAccepting()
+            || target.getBuchiLocation()
+                .isAccepting());
         if (result) {
             // notify counter-example
             for (ProductState state : getStateStack()) {
@@ -282,12 +294,20 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * @param transitions a set of graph transitions
      * @return the set of label texts of the transitions in {@code transitions}
      */
-    private Set<String> getLabels(Set<? extends GraphTransition> transitions) {
-        Set<String> result = new HashSet<String>();
-        for (GraphTransition nextTransition : transitions) {
-            result.add(nextTransition.label().text());
-        }
-        return result;
+    private Set<Proposition> getProps(Set<? extends GraphTransition> transitions) {
+        return transitions.stream()
+            .map(t -> toProp(t))
+            .collect(Collectors.toSet());
+    }
+
+    private Proposition toProp(GraphTransition trans) {
+        List<Arg> args = Arrays.stream(trans.label()
+            .getArguments())
+            .map(a -> a instanceof ValueNode ? Arg.arg(((ValueNode) a).toTerm())
+                : Arg.arg(a.toString()))
+            .collect(Collectors.toList());
+        return Proposition.prop(trans.getAction()
+            .getQualName(), args);
     }
 
     /**
@@ -336,8 +356,11 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
             // the product-gts contains all transitions and
             // we do not have to add new transitions.
             for (ProductTransition nextTransition : source.outTransitions()) {
-                if (nextTransition.graphTransition().equals(transition)
-                    && nextTransition.target().getBuchiLocation().equals(targetLocation)) {
+                if (nextTransition.graphTransition()
+                    .equals(transition)
+                    && nextTransition.target()
+                        .getBuchiLocation()
+                        .equals(targetLocation)) {
                     result = nextTransition;
                     break;
                 }

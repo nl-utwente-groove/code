@@ -1,11 +1,5 @@
 package groove.io.conceptual;
 
-import groove.io.conceptual.property.Property;
-import groove.io.conceptual.type.Class;
-import groove.io.conceptual.type.CustomDataType;
-import groove.io.conceptual.type.Enum;
-import groove.io.conceptual.type.Tuple;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,19 +9,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import groove.grammar.QualName;
+import groove.io.conceptual.property.Property;
+import groove.io.conceptual.type.Class;
+import groove.io.conceptual.type.CustomDataType;
+import groove.io.conceptual.type.Enum;
+import groove.io.conceptual.type.Tuple;
+
 /**
  * Class responsible for identifiables, don't create self.
- * 
+ *
  * @author Harold Bruijntjes
  * @version $Revision $
  */
 public class TypeModel implements Serializable {
-    private String m_name;
+    private QualName m_name;
 
     private Map<Id,Class> m_classes = new HashMap<Id,Class>();
     private Map<Id,Enum> m_enums = new HashMap<Id,Enum>();
-    private Map<Id,CustomDataType> m_datatypes =
-        new HashMap<Id,CustomDataType>();
+    private Map<Id,CustomDataType> m_datatypes = new HashMap<Id,CustomDataType>();
     private List<Property> m_properties = new ArrayList<Property>();
     /** Map of tuple to unique name of tuple in type model. This is to help exporting. */
     private Map<Tuple,String> m_tupleNames = new HashMap<Tuple,String>();
@@ -36,13 +36,13 @@ public class TypeModel implements Serializable {
     private Id m_commonPrefix;
 
     /** Constructs a new, named type model. */
-    public TypeModel(String name) {
+    public TypeModel(QualName name) {
         this.m_name = name;
         this.m_commonPrefix = Id.ROOT;
     }
 
     /** Returns the type model name. */
-    public String getName() {
+    public QualName getQualName() {
         return this.m_name;
     }
 

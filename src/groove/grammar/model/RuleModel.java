@@ -24,6 +24,27 @@ import static groove.grammar.aspect.AspectKind.PARAM_BI;
 import static groove.grammar.aspect.AspectKind.PARAM_IN;
 import static groove.grammar.aspect.AspectKind.PARAM_OUT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import javax.swing.SwingUtilities;
+
 import groove.algebra.Constant;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
@@ -37,6 +58,7 @@ import groove.grammar.Condition;
 import groove.grammar.Condition.Op;
 import groove.grammar.EdgeEmbargo;
 import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
@@ -72,26 +94,6 @@ import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.swing.SwingUtilities;
-
 /**
  * Provides a graph-based resource model for a production rule.
  * The nodes and edges are divided
@@ -106,7 +108,7 @@ import javax.swing.SwingUtilities;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleModel> {
+public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleModel> {
     /**
      * Constructs a rule model from an aspect graph. The rule properties are
      * explicitly given.
@@ -135,9 +137,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     /** Returns the set of recipe names in which this rule is called. */
-    public Set<String> getRecipes() {
+
+    public Set<QualName> getRecipes() {
         return getGrammar().getControlModel()
-            .getRecipes(getFullName());
+            .getRecipes(getQualName());
     }
 
     /** Indicates if this rule occurs as subrule in any recipes. */
@@ -169,7 +172,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Returns the policy for dealing with rule matches, set in the grammar properties. */
     public CheckPolicy getPolicy() {
         CheckPolicy result = getGrammarProperties().getRulePolicy()
-            .get(getFullName());
+            .get(getQualName());
         if (result == null) {
             result = getRole().isConstraint() ? CheckPolicy.ERROR : CheckPolicy.SILENT;
         }
@@ -332,14 +335,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     public int compareTo(RuleModel o) {
         int result = getPriority() - o.getPriority();
         if (result == 0) {
-            result = getFullName().compareTo(o.getFullName());
+            result = getQualName().compareTo(o.getQualName());
         }
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("Rule model on '%s'", getFullName());
+        return String.format("Rule model on '%s'", getQualName());
     }
 
     /** Returns the (implicit or explicit) type graph of this grammar. */
@@ -509,7 +512,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param namePrefix name prefix in case there is no level node to determine the name
          */
         public Index(Condition.Op operator, boolean positive, AspectNode levelNode,
-            String namePrefix) {
+            QualName namePrefix) {
             assert levelNode == null || levelNode.getKind()
                 .isQuantifier();
             this.namePrefix = namePrefix;
@@ -661,7 +664,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /** The name prefix of the index (to be followed by the index list). */
-        private final String namePrefix;
+        private final QualName namePrefix;
         /** The model node representing this quantification level. */
         final Condition.Op operator;
         /** Flag indicating that this level has to be matched more than once. */
@@ -807,7 +810,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         private Index createIndex(Condition.Op operator, boolean positive, AspectNode levelNode,
             Map<Index,List<Index>> levelTree) {
-            Index result = new Index(operator, positive, levelNode, getFullName());
+            Index result = new Index(operator, positive, levelNode, getQualName());
             levelTree.put(result, new ArrayList<Index>());
             return result;
         }
@@ -886,11 +889,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = nameVarMap.put(var.getName(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
-                    errors.add("Duplicate variable '%s' for %s and %s labels", var, var.getKind()
-                        .getDescription(false), oldVar.getKind()
-                        .getDescription(false), varEntry.getValue()
-                        .toArray(), modelVarMap.get(oldVar)
-                        .toArray());
+                    errors.add("Duplicate variable '%s' for %s and %s labels",
+                        var,
+                        var.getKind()
+                            .getDescription(false),
+                        oldVar.getKind()
+                            .getDescription(false),
+                        varEntry.getValue()
+                            .toArray(),
+                        modelVarMap.get(oldVar)
+                            .toArray());
                 }
             }
             for (Level1 level : result.values()) {
@@ -916,9 +924,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     nestingNode == null ? this.topLevelIndex : this.metaIndexMap.get(nestingNode);
                 assert index != null : String.format("No valid nesting level found for %s", node);
                 result = level1Map.get(index);
-                assert result != null : String.format("Level map %s does not contain entry for index %s",
-                    level1Map,
-                    index);
+                assert result != null : String
+                    .format("Level map %s does not contain entry for index %s", level1Map, index);
                 getNodeLevelMap().put(node, result);
             }
             return result;
@@ -938,9 +945,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             // if one of the end nodes is a NAC, it must be the max of the two
             if (edge.source()
                 .getKind()
-                .inNAC() && !sourceLevel.equals(result) || edge.target()
-                .getKind()
-                .inNAC() && !targetLevel.equals(result)) {
+                .inNAC() && !sourceLevel.equals(result)
+                || edge.target()
+                    .getKind()
+                    .inNAC() && !targetLevel.equals(result)) {
                 result = null;
             }
             if (result == null) {
@@ -1082,13 +1090,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.parent = parent;
             if (parent != null) {
                 assert index.getParent()
-                    .equals(parent.getIndex()) : String.format("Parent index %s should be parent of %s",
-                    parent.index,
-                    index);
+                    .equals(parent.getIndex()) : String
+                        .format("Parent index %s should be parent of %s", parent.index, index);
                 parent.addChild(this);
             } else {
-                assert index.isTopLevel() : String.format("Level with index %s should have non-null parent",
-                    index);
+                assert index.isTopLevel() : String
+                    .format("Level with index %s should have non-null parent", index);
             }
         }
 
@@ -1165,10 +1172,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private void addNodeToParents(AspectNode modelNode) {
             Level1 ascendingLevel = this;
             while (ascendingLevel.modelNodes.add(modelNode)) {
-                assert !ascendingLevel.index.isTopLevel() : String.format("Node not found at any level");
+                assert!ascendingLevel.index.isTopLevel() : String
+                    .format("Node not found at any level");
                 ascendingLevel = ascendingLevel.parent;
-                assert ascendingLevel.modelNodes != null : String.format("Nodes on level %s not yet initialised",
-                    ascendingLevel.getIndex());
+                assert ascendingLevel.modelNodes != null : String
+                    .format("Nodes on level %s not yet initialised", ascendingLevel.getIndex());
             }
         }
 
@@ -1224,7 +1232,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         @Override
         public String toString() {
-            return String.format("Rule %s, level %s, stage 1", getFullName(), getIndex());
+            return String.format("Rule %s, level %s, stage 1", getQualName(), getIndex());
         }
 
         @Override
@@ -1290,9 +1298,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.modelMap = modelMap;
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
-            this.lhs = createGraph(getFullName() + "-" + index + "-lhs");
-            this.mid = createGraph(getFullName() + "-" + index + "-mid");
-            this.rhs = createGraph(getFullName() + "-" + index + "-rhs");
+            this.lhs = createGraph(getQualName() + "-" + index + "-lhs");
+            this.mid = createGraph(getQualName() + "-" + index + "-mid");
+            this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
             FormatErrorSet errors = createErrors();
             try {
                 if (origin.matchCountNode != null) {
@@ -1400,7 +1408,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException("Node type label %s cannot be deleted",
                             ruleEdge.label()
-                                .text(), modelEdge.source());
+                                .text(),
+                            modelEdge.source());
                     }
                 } else {
                     if (!edgeKind.inRHS()) {
@@ -1417,7 +1426,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
                 if (edgeKind.inRHS()) {
                     // creator edge
-                    if (getType().isNodeType(ruleEdge) && this.lhs.containsNode(ruleEdge.source())) {
+                    if (getType().isNodeType(ruleEdge)
+                        && this.lhs.containsNode(ruleEdge.source())) {
                         throw new FormatException("Node type %s cannot be created",
                             ruleEdge.label(), modelEdge.source());
                     }
@@ -1426,9 +1436,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         this.nacEdgeSet.add(ruleEdge);
                     } else if (isCheckCreatorEdges() && modelEdge.source()
                         .getKind()
-                        .inLHS() && modelEdge.target()
-                        .getKind()
-                        .inLHS()) {
+                        .inLHS()
+                        && modelEdge.target()
+                            .getKind()
+                            .inLHS()) {
                         this.nacEdgeSet.add(ruleEdge);
                     }
                 }
@@ -1464,11 +1475,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 throw new FormatException(
                     "Operation target must exist on the level of the operator edge", operatorEdge);
             }
-            RuleNode opNode =
-                this.factory.createOperatorNode(productNode.getNumber(),
-                    operatorEdge.getOperator(),
-                    arguments,
-                    target);
+            RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
+                operatorEdge.getOperator(),
+                arguments,
+                target);
             if (operatorEdge.getKind()
                 .inNAC()) {
                 this.nacNodeSet.add(opNode);
@@ -1495,8 +1505,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         nac.addNode(((OperatorNode) node).getTarget());
                     }
                 }
-                for (RuleEdge edge: cell.getEdges()) {
-                	nac.addEdgeContext(edge);
+                for (RuleEdge edge : cell.getEdges()) {
+                    nac.addEdgeContext(edge);
                 }
                 result.add(nac);
             }
@@ -1575,7 +1585,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             return new TreeSet<Cell>(result.values());
         }
 
-        private class Cell extends HashSet<RuleElement> implements Comparable<Cell>, Fixable {
+        private class Cell extends HashSet<RuleElement>implements Comparable<Cell>, Fixable {
             public Cell() {
                 // empty
             }
@@ -1750,10 +1760,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = varNames.put(var.getKey(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
-                    errors.add("Duplicate variable '%s' for %s and %s labels", var, var.getKind()
-                        .getDescription(false), oldVar.getKind()
-                        .getDescription(false), varEntry.getValue()
-                        .toArray());
+                    errors.add("Duplicate variable '%s' for %s and %s labels",
+                        var,
+                        var.getKind()
+                            .getDescription(false),
+                        oldVar.getKind()
+                            .getDescription(false),
+                        varEntry.getValue()
+                            .toArray());
                 }
             }
             allVars.keySet()
@@ -1821,9 +1835,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 if (nodeAttr.hasContent()) {
                     term = (Constant) nodeAttr.getContent();
                 } else {
-                    term =
-                        new Variable(VariableNode.TO_STRING_PREFIX + nr,
-                            nodeAttrKind.getSignature());
+                    term = new Variable(VariableNode.TO_STRING_PREFIX + nr,
+                        nodeAttrKind.getSignature());
                 }
                 result = this.factory.createVariableNode(nr, term);
             } else {
@@ -1870,7 +1883,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         @Override
         public String toString() {
-            return String.format("Rule %s, level %s, stage 2", getFullName(), getIndex());
+            return String.format("Rule %s, level %s, stage 2", getQualName(), getIndex());
         }
 
         /** Returns the index of this level. */
@@ -1970,7 +1983,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
-                this.colorMap.put(globalTypeMap.getNode(colorEntry.getKey()), colorEntry.getValue());
+                this.colorMap.put(globalTypeMap.getNode(colorEntry.getKey()),
+                    colorEntry.getValue());
             }
         }
 
@@ -2033,8 +2047,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param parentNodes nodes from a higher quantification level
          * @throws FormatException if there are typing errors
          */
-        private void checkTypeSpecialisation(Set<RuleNode> parentNodes, RuleGraph lhs, RuleGraph rhs)
-            throws FormatException {
+        private void checkTypeSpecialisation(Set<RuleNode> parentNodes, RuleGraph lhs,
+            RuleGraph rhs) throws FormatException {
             FormatErrorSet errors = createErrors();
             for (RuleNode node : rhs.nodeSet()) {
                 TypeNode nodeType = node.getType();
@@ -2069,9 +2083,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                 .text(),
                             edge);
                     } else if (!getType().isSubtype(targetType, sourceType)) {
-                        errors.add("Merged %s-node must be supertype of %s", sourceType.label()
-                            .text(), targetType.label()
-                            .text(), source);
+                        errors.add("Merged %s-node must be supertype of %s",
+                            sourceType.label()
+                                .text(),
+                            targetType.label()
+                                .text(),
+                            source);
                     } else if (source.getType()
                         .isDataType()) {
                         errors.add("Primitive %s-node can't be merged", sourceType.label()
@@ -2099,7 +2116,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         RuleNode target2 = merger2.target();
                         if (!injective(source1, source2) && !target1.equals(target2)
                             && !haveMinType(target1, target2)) {
-                            errors.add("Non-injectively matched mergers have ambiguous target types",
+                            errors.add(
+                                "Non-injectively matched mergers have ambiguous target types",
                                 merger1,
                                 merger2);
                         }
@@ -2133,10 +2151,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     .neg());
                 for (RuleEdge edge : this.lhs.edgeSet(injection)) {
                     if (edge.source()
-                        .equals(n1) && edge.target()
-                        .equals(n2) || edge.source()
-                        .equals(n2) && edge.target()
-                        .equals(n1)) {
+                        .equals(n1)
+                        && edge.target()
+                            .equals(n2)
+                        || edge.source()
+                            .equals(n2)
+                            && edge.target()
+                                .equals(n1)) {
                         result = true;
                         break;
                     }
@@ -2204,8 +2225,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                             continue outer;
                         }
                         if (!one.getSubtypes()
-                            .contains(two) && !one.getSupertypes()
-                            .contains(two)) {
+                            .contains(two)
+                            && !one.getSupertypes()
+                                .contains(two)) {
                             result = false;
                             break outer;
                         }
@@ -2327,7 +2349,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * of this and the parent level.
          */
         private RuleGraph getIntersection(RuleGraph parentGraph, RuleGraph myGraph) {
-            RuleGraph result = parentGraph.newGraph(getFullName() + "-" + getIndex() + "-root");
+            RuleGraph result = parentGraph.newGraph(getQualName() + "-" + getIndex() + "-root");
             for (RuleNode node : parentGraph.nodeSet()) {
                 if (myGraph.containsNode(node)) {
                     result.addNode(node);
@@ -2365,12 +2387,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 RuleEdge embargoEdge = nac.edgeSet()
                     .iterator()
                     .next();
-                Set<RuleNode> ends =
-                    new HashSet<RuleNode>(Arrays.asList(embargoEdge.source(), embargoEdge.target()));
+                Set<RuleNode> ends = new HashSet<RuleNode>(
+                    Arrays.asList(embargoEdge.source(), embargoEdge.target()));
                 if (nac.nodeSet()
-                    .equals(ends) && lhs.nodeSet()
-                    .containsAll(ends) && nac.varSet()
-                    .isEmpty()) {
+                    .equals(ends)
+                    && lhs.nodeSet()
+                        .containsAll(ends)
+                    && nac.varSet()
+                        .isEmpty()) {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);
                 }
@@ -2434,9 +2458,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @return the fresh condition
          */
         private Condition createCondition(RuleGraph root, RuleGraph pattern) {
-            Condition result =
-                new Condition(this.index.getName(), this.index.getOperator(), pattern, root,
-                    getGrammarProperties());
+            Condition result = new Condition(this.index.getName(), this.index.getOperator(),
+                pattern, root, getGrammarProperties());
             result.setTypeGraph(getType());
             if (this.index.isPositive()) {
                 result.setPositive();
@@ -2449,7 +2472,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         @Override
         public String toString() {
-            return String.format("Rule %s, level %s, stage 4", getFullName(), getIndex());
+            return String.format("Rule %s, level %s, stage 4", getQualName(), getIndex());
         }
 
         /** Returns the index of this level. */
@@ -2501,7 +2524,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         // this is an unnumbered parameter,
                         // which serves as an explicit anchor node
                         if (node.getParamKind() != PARAM_BI) {
-                            throw new FormatException("Anchor node cannot be input or output", node);
+                            throw new FormatException("Anchor node cannot be input or output",
+                                node);
                         }
                         if (!node.getKind()
                             .inLHS()) {

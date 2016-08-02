@@ -17,15 +17,16 @@
 package groove.explore.config;
 
 import static groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import groove.util.Duo;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Arend Rensink
@@ -50,24 +51,6 @@ public class MatchHint extends Duo<List<String>> {
         public String getDescription() {
             return "Either empty, or a comma-separated pair of strings <i>rare,common</i>"
                 + "where <i>rare</i> and <i>common</i> are quoted, space-separated lists of labels";
-        }
-
-        @Override
-        public boolean accepts(String text) {
-            boolean result = true;
-            if (text != null && !text.isEmpty()) {
-                try {
-                    String[] split = exprParser.split(text, ",");
-                    if (split.length != 2) {
-                        result = false;
-                    }
-                    toUnquoted(split[0]);
-                    toUnquoted(split[1]);
-                } catch (FormatException exc) {
-                    result = false;
-                }
-            }
-            return result;
         }
 
         @Override
@@ -122,32 +105,11 @@ public class MatchHint extends Duo<List<String>> {
         }
 
         @Override
-        public boolean isValue(Object value) {
-            return value instanceof MatchHint;
-        }
-
-        @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
         public MatchHint getDefaultValue() {
             return this.defaultValue;
         }
 
         private final MatchHint defaultValue = new MatchHint();
-
-        @Override
-        public String getDefaultString() {
-            return "";
-        }
-
-        @Override
-        public boolean isDefault(Object value) {
-            return getDefaultValue().equals(value);
-        }
-
     };
 
     private static final StringHandler exprParser = new StringHandler("\'");

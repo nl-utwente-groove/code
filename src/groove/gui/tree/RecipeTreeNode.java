@@ -16,12 +16,13 @@
  */
 package groove.gui.tree;
 
+import javax.swing.Icon;
+import javax.swing.tree.TreeNode;
+
+import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.gui.Icons;
 import groove.io.HTMLConverter;
-
-import javax.swing.Icon;
-import javax.swing.tree.TreeNode;
 
 /**
  * Recipe nodes of the directory
@@ -52,8 +53,8 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     }
 
     @Override
-    public String getName() {
-        return getRecipe().getFullName();
+    public QualName getQualName() {
+        return getRecipe().getQualName();
     }
 
     @Override
@@ -89,7 +90,7 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     public String getTip() {
         StringBuilder result = new StringBuilder();
         result.append("Recipe ");
-        result.append(HTMLConverter.ITALIC_TAG.on(getName()));
+        result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
         if (!isEnabled()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not scheduled in this state");

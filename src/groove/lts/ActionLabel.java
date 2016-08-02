@@ -35,9 +35,8 @@ public interface ActionLabel extends Label {
 
     /**
      * Returns the arguments for the graph transition.
-     * This is either {@code null} if the underlying control step had no explicit
-     * arguments, or it is an array compatible with the signature of the action,
-     * with {@code null} elements for don't care arguments.
+     * This is an array compatible with the signature of the action,
+     * with {@code null} elements for output nodes that are currently unknown.
      */
     public HostNode[] getArguments();
 }

@@ -1,14 +1,16 @@
 package groove.gui.action;
 
+import java.io.File;
+import java.io.IOException;
+
+import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.io.FileType;
 import groove.io.graph.GxlIO;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Action to save the currently selected state.
@@ -16,15 +18,15 @@ import java.io.IOException;
  * @version $Revision $
  */
 public final class SaveStateAction extends SimulatorAction {
-    /** 
+    /**
      * Creates an instance of the action for a given simulator.
      * @param simulator the editor whose content should be saved
      * @param saveAs flag indicating that the action attempts to save to
      * a file outside the grammar.
      */
     public SaveStateAction(Simulator simulator, boolean saveAs) {
-        super(simulator, Options.getSaveStateActionName(saveAs), saveAs ? Icons.SAVE_AS_ICON
-                : Icons.SAVE_ICON, null, ResourceKind.HOST);
+        super(simulator, Options.getSaveStateActionName(saveAs),
+            saveAs ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON, null, ResourceKind.HOST);
         if (!saveAs) {
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
@@ -47,7 +49,7 @@ public final class SaveStateAction extends SimulatorAction {
      */
     public boolean doSave(AspectGraph graph) {
         boolean result = false;
-        String newName = askNewName(graph.getName(), true);
+        QualName newName = askNewName(graph.getName(), true);
         if (newName != null) {
             try {
                 getSimulatorModel().doAddGraph(getResourceKind(), graph.rename(newName), false);
@@ -59,21 +61,22 @@ public final class SaveStateAction extends SimulatorAction {
         return result;
     }
 
-    /** Attempts to write the graph to an external file. 
+    /** Attempts to write the graph to an external file.
      * @return {@code true} if the graph was saved within the grammar
      */
     public boolean doSaveAs(AspectGraph graph) {
         boolean result = false;
-        File selectedFile = askSaveResource(graph.getName());
+        File selectedFile = askSaveResource(graph.getQualName());
         // now save, if so required
         if (selectedFile != null) {
             try {
-                String nameInGrammar = getNameInGrammar(selectedFile);
+                QualName nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
                     // save in external file
-                    String newName =
-                        getResourceKind().getFileType().stripExtension(selectedFile.getName());
-                    GxlIO.instance().saveGraph(graph.rename(newName).toPlainGraph(), selectedFile);
+                    QualName newName = QualName.name(FileType.getPureName(selectedFile.getName()));
+                    GxlIO.instance()
+                        .saveGraph(graph.rename(newName)
+                            .toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar
                     result = doSave(graph.rename(nameInGrammar));

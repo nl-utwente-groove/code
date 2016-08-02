@@ -1,14 +1,15 @@
 package groove.gui.action;
 
+import java.io.IOException;
+
+import javax.swing.SwingUtilities;
+
+import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
-
-import java.io.IOException;
-
-import javax.swing.SwingUtilities;
 
 /** Action to create and start editing a new control program. */
 public class NewAction extends SimulatorAction {
@@ -20,17 +21,15 @@ public class NewAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        final String newName =
-            askNewName(Options.getNewResourceName(resource), true);
+        final QualName newName = askNewName(Options.getNewResourceName(resource), true);
         if (newName != null) {
             try {
                 if (resource.isGraphBased()) {
                     final AspectGraph newGraph =
-                        AspectGraph.emptyGraph(newName, resource.getGraphRole());
+                        AspectGraph.emptyGraph(newName.toString(), resource.getGraphRole());
                     getSimulatorModel().doAddGraph(resource, newGraph, false);
                 } else {
-                    getSimulatorModel().doAddText(getResourceKind(), newName,
-                        "");
+                    getSimulatorModel().doAddText(getResourceKind(), newName, "");
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -39,15 +38,16 @@ public class NewAction extends SimulatorAction {
                     }
                 });
             } catch (IOException e) {
-                showErrorDialog(e, "Error creating new %s '%s'",
-                    resource.getDescription(), newName);
+                showErrorDialog(e,
+                    "Error creating new %s '%s'",
+                    resource.getDescription(),
+                    newName);
             }
         }
     }
 
     @Override
     public void refresh() {
-        setEnabled(getGrammarStore() != null
-            && getGrammarStore().isModifiable());
+        setEnabled(getGrammarStore() != null && getGrammarStore().isModifiable());
     }
 }

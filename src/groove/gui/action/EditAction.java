@@ -1,6 +1,8 @@
 package groove.gui.action;
 
 import static groove.grammar.model.ResourceKind.HOST;
+
+import groove.grammar.QualName;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -12,7 +14,8 @@ public class EditAction extends SimulatorAction {
     public EditAction(Simulator simulator, ResourceKind resource) {
         super(simulator, EditType.MODIFY, resource);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
-        this.editStateAction = simulator.getActions().getEditStateAction();
+        this.editStateAction = simulator.getActions()
+            .getEditStateAction();
     }
 
     @Override
@@ -20,8 +23,7 @@ public class EditAction extends SimulatorAction {
         if (isForState()) {
             this.editStateAction.execute();
         } else {
-            for (String name : getSimulatorModel().getSelectSet(
-                getResourceKind())) {
+            for (QualName name : getSimulatorModel().getSelectSet(getResourceKind())) {
                 getDisplay().startEditResource(name);
             }
         }
@@ -29,15 +31,12 @@ public class EditAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean enabled =
-            getGrammarModel() != null
-                && getGrammarStore().isModifiable()
-                && (getSimulatorModel().isSelected(getResourceKind()) || isForState());
+        boolean enabled = getGrammarModel() != null && getGrammarStore().isModifiable()
+            && (getSimulatorModel().isSelected(getResourceKind()) || isForState());
         setEnabled(enabled);
         if (getResourceKind() == HOST) {
             String name =
-                isForState() ? (String) this.editStateAction.getValue(NAME)
-                        : getEditActionName();
+                isForState() ? (String) this.editStateAction.getValue(NAME) : getEditActionName();
             putValue(NAME, name);
             putValue(SHORT_DESCRIPTION, name);
         }

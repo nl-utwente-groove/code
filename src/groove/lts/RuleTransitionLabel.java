@@ -16,6 +16,9 @@
  */
 package groove.lts;
 
+import java.util.Arrays;
+import java.util.List;
+
 import groove.control.Binding;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Wild;
@@ -33,14 +36,15 @@ import groove.util.ThreeValued;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
 
-import java.util.Arrays;
-import java.util.List;
-
 /** Class of labels that can appear on rule transitions. */
 public class RuleTransitionLabel extends ALabel implements ActionLabel {
     /**
      * Constructs a new label on the basis of a given match and list
      * of created nodes.
+     * @param source the source graph state of the transition
+     * @param match the rule match on which the transition is based
+     * @param addedNodes the nodes added by the transition; possibly {@code null} if
+     * the added nodes are not specified
      */
     private RuleTransitionLabel(GraphState source, MatchResult match, HostNode[] addedNodes) {
         this.event = match.getEvent();
@@ -72,7 +76,9 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return getStep().getRuleSwitch();
     }
 
-    /** Returns the added nodes of the label. */
+    /** Returns the nodes added by the transition to the target state.
+     * @return the added nodes, or {@code null} if the added nodes are not specified
+     */
     public HostNode[] getAddedNodes() {
         return this.addedNodes;
     }
@@ -82,7 +88,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public HostNode[] getArguments() {
         HostNode[] result;
-        List<? extends CtrlPar> callArgs = getStep().getRuleCall().getArgs();
+        List<? extends CtrlPar> callArgs = getStep().getRuleCall()
+            .getArgs();
         if (callArgs.isEmpty()) {
             result = EMPTY_NODE_ARRAY;
         } else {
@@ -113,8 +120,10 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         Line result = Line.atom(text(false));
         if (getRole() == EdgeRole.FLAG) {
             result = result.style(Style.ITALIC);
-            if (getAction().getRole().hasColor()) {
-                result = result.color(getAction().getRole().getColor());
+            if (getAction().getRole()
+                .hasColor()) {
+                result = result.color(getAction().getRole()
+                    .getColor());
             }
         }
         return result;
@@ -127,9 +136,13 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        for (int i = getStep().getSource().getSwitchStack().size(); i < getStep().getSwitchStack().size() - 1; i++) {
-            Switch sw = getStep().getSwitchStack().get(i);
-            result.append(sw.getName());
+        for (int i = getStep().getSource()
+            .getSwitchStack()
+            .size(); i < getStep().getSwitchStack()
+                .size() - 1; i++) {
+            Switch sw = getStep().getSwitchStack()
+                .get(i);
+            result.append(sw.getQualName());
             result.append('/');
         }
         result.append(getAction().getTransitionLabel());
@@ -183,8 +196,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
-            throw new IllegalArgumentException(String.format("Can't compare %s and %s",
-                this.getClass(), obj.getClass()));
+            throw new IllegalArgumentException(
+                String.format("Can't compare %s and %s", this.getClass(), obj.getClass()));
         }
         int result = super.compareTo(obj);
         if (result != 0) {
@@ -204,14 +217,21 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     static StringBuilder computeParameters(ActionLabel label) {
         StringBuilder result = new StringBuilder();
-        ThreeValued useParameters = label.getAction().getGrammarProperties().isUseParameters();
+        ThreeValued useParameters = label.getAction()
+            .getGrammarProperties()
+            .isUseParameters();
         // also show parameters for properties, unless global property is FALSE
-        if (useParameters.isSome() && label.getAction().isProperty()
-            && !label.getAction().getSignature().isEmpty()) {
+        if (useParameters.isSome() && label.getAction()
+            .isProperty()
+            && !label.getAction()
+                .getSignature()
+                .isEmpty()) {
             useParameters = ThreeValued.TRUE;
         }
         if (!useParameters.isFalse()) {
-            List<? extends CtrlPar> args = label.getSwitch().getCall().getArgs();
+            List<? extends CtrlPar> args = label.getSwitch()
+                .getCall()
+                .getArgs();
             // test if all arguments are wildcards
             boolean allWild = true;
             StringBuilder params = new StringBuilder();
@@ -226,7 +246,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
                 if (arg == null) {
                     params.append('_');
                 } else if (arg instanceof ValueNode) {
-                    params.append(((ValueNode) arg).getTerm().toDisplayString());
+                    params.append(((ValueNode) arg).getTerm()
+                        .toDisplayString());
                 } else {
                     params.append(arg);
                 }
@@ -241,7 +262,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     }
 
     /**
-     * Returns the label text for the rule label consisting of a given source state
+     * Returns the label text for the rule label based on a given source state
      * and event. Optionally, the rule parameters are replaced by anchor images.
      */
     public static final String text(GraphState source, MatchResult match, boolean anchored) {
@@ -251,12 +272,17 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     /**
      * Creates a normalised rule label.
      * @see Record#normaliseLabel(RuleTransitionLabel)
+     * @param source the source graph state of the transition
+     * @param match the rule match on which the transition is based
+     * @param addedNodes the nodes added by the transition; possibly {@code null} if
+     * the added nodes are not specified
      */
     public static final RuleTransitionLabel createLabel(GraphState source, MatchResult match,
         HostNode[] addedNodes) {
         RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
-            Record record = source.getGTS().getRecord();
+            Record record = source.getGTS()
+                .getRecord();
             RuleTransitionLabel newResult = record.normaliseLabel(result);
             result = newResult;
         }

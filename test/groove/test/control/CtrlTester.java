@@ -18,12 +18,14 @@ package groove.test.control;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 import groove.control.CtrlLoader;
 import groove.control.instance.Automaton;
 import groove.control.parse.CtrlTree;
 import groove.control.template.Program;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.graph.Graph;
 import groove.util.Groove;
@@ -60,7 +62,8 @@ abstract public class CtrlTester {
     protected Grammar loadGrammar(String name) {
         Grammar result = null;
         try {
-            result = Groove.loadGrammar(CONTROL_DIR + name).toGrammar();
+            result = Groove.loadGrammar(CONTROL_DIR + name)
+                .toGrammar();
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -133,7 +136,7 @@ abstract public class CtrlTester {
 
     /** Returns the rule with a given name. */
     protected Rule getRule(String name) {
-        return this.testGrammar.getRule(name);
+        return this.testGrammar.getRule(QualName.parse(name));
     }
 
     /**
@@ -144,12 +147,15 @@ abstract public class CtrlTester {
      */
     protected Term buildProcTerm(String program, String procName, boolean function) {
         try {
-            CtrlTree tree =
-                createLoader().parse("dummy", program).check().getChild(function ? 2 : 3);
+            CtrlTree tree = createLoader().parse(DUMMY, program)
+                .check()
+                .getChild(function ? 2 : 3);
             CtrlTree body = null;
             for (int i = 0; i < tree.getChildCount(); i++) {
                 CtrlTree functionTree = tree.getChild(i);
-                if (functionTree.getChild(0).getText().equals(procName)) {
+                if (functionTree.getChild(0)
+                    .getText()
+                    .equals(procName)) {
                     body = functionTree.getChild(2);
                 }
             }
@@ -189,7 +195,8 @@ abstract public class CtrlTester {
      */
     protected CtrlTree buildTree(String program) {
         try {
-            return createLoader().parse("dummy", program).check();
+            return createLoader().parse(DUMMY, program)
+                .check();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
             return null;
@@ -203,4 +210,5 @@ abstract public class CtrlTester {
     }
 
     static private final boolean DEBUG = false;
+    static private final QualName DUMMY = QualName.name("dummy");
 }

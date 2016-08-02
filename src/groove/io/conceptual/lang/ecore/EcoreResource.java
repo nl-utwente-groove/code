@@ -1,23 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.conceptual.lang.ecore;
-
-import groove.io.conceptual.Timer;
-import groove.io.conceptual.lang.ExportException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,12 +30,14 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+import groove.grammar.QualName;
+import groove.io.conceptual.Timer;
+import groove.io.conceptual.lang.ExportException;
+
 public class EcoreResource extends groove.io.conceptual.lang.ExportableResource {
     private ResourceSet m_resourceSet;
-    private Map<String,Resource> m_typeResources =
-        new HashMap<String,Resource>();
-    private Map<String,Resource> m_instanceResources =
-        new HashMap<String,Resource>();
+    private Map<QualName,Resource> m_typeResources = new HashMap<>();
+    private Map<QualName,Resource> m_instanceResources = new HashMap<>();
 
     private File m_typeFile;
     private File m_instanceFile;
@@ -48,8 +47,9 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
     //files allowed null if instance or type not required
     public EcoreResource(File typeTarget, File instanceTarget) {
         this.m_resourceSet = new ResourceSetImpl();
-        this.m_resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
-            "*", new XMIResourceFactoryImpl());
+        this.m_resourceSet.getResourceFactoryRegistry()
+            .getExtensionToFactoryMap()
+            .put("*", new XMIResourceFactoryImpl());
 
         this.m_typeFile = typeTarget;
         this.m_instanceFile = instanceTarget;
@@ -59,9 +59,9 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
             this.relPath = "";
         } else {
             this.relPath =
-                groove.io.Util.getRelativePath(
-                    new File(this.m_instanceFile.getAbsoluteFile().getParent()),
-                    this.m_typeFile.getAbsoluteFile()).toString();
+                groove.io.Util.getRelativePath(new File(this.m_instanceFile.getAbsoluteFile()
+                    .getParent()), this.m_typeFile.getAbsoluteFile())
+                    .toString();
         }
     }
 
@@ -73,44 +73,38 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
         return this.relPath;
     }
 
-    public Resource getTypeResource(String resourceName) {
-        if (this.m_typeFile != null) {
-            resourceName = this.m_typeFile.toString();
+    public Resource getTypeResource(QualName resourceName) {
+        String flatName = this.m_typeFile == null ? resourceName.toFile()
+            .toString() : this.m_typeFile.toString();
+        Resource result = this.m_typeResources.get(flatName);
+        if (result == null) {
+            result = this.m_resourceSet.createResource(URI.createURI(flatName));
+            this.m_typeResources.put(resourceName, result);
         }
-        if (this.m_typeResources.containsKey(resourceName)) {
-            this.m_typeResources.get(resourceName);
-        }
-
-        Resource newResource =
-            this.m_resourceSet.createResource(URI.createURI(resourceName));
-        this.m_typeResources.put(resourceName, newResource);
-
-        return newResource;
+        return result;
     }
 
-    public Resource getInstanceResource(String resourceName) {
-        if (this.m_instanceResources.containsKey(resourceName)) {
-            this.m_instanceResources.get(resourceName);
+    public Resource getInstanceResource(QualName resourceName) {
+        Resource result = this.m_instanceResources.get(resourceName);
+        if (result == null) {
+            result = this.m_resourceSet.createResource(URI.createURI(resourceName.toFile()
+                .toString()));
+            this.m_instanceResources.put(resourceName, result);
         }
-
-        Resource newResource =
-            this.m_resourceSet.createResource(URI.createURI(resourceName));
-        this.m_instanceResources.put(resourceName, newResource);
-
-        return newResource;
+        return result;
     }
 
     @Override
     public boolean export() throws ExportException {
         try {
             if (this.m_typeFile != null) {
-                for (Entry<String,Resource> resourceEntry : this.m_typeResources.entrySet()) {
+                for (Entry<QualName,Resource> resourceEntry : this.m_typeResources.entrySet()) {
 
-                    FileOutputStream out =
-                        new FileOutputStream(this.m_typeFile);
+                    FileOutputStream out = new FileOutputStream(this.m_typeFile);
                     try {
                         int timer = Timer.cont("Ecore save");
-                        resourceEntry.getValue().save(out, null);
+                        resourceEntry.getValue()
+                            .save(out, null);
                         Timer.stop(timer);
                     } finally {
                         out.close();
@@ -119,9 +113,8 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
             }
 
             if (this.m_instanceFile != null) {
-                for (Entry<String,Resource> resourceEntry : this.m_instanceResources.entrySet()) {
-                    FileOutputStream out =
-                        new FileOutputStream(this.m_instanceFile);
+                for (Entry<QualName,Resource> resourceEntry : this.m_instanceResources.entrySet()) {
+                    FileOutputStream out = new FileOutputStream(this.m_instanceFile);
                     try {
                         Map<Object,Object> opts = new HashMap<Object,Object>();
                         if (this.m_typeFile != null) {
@@ -130,7 +123,8 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
                         }
 
                         int timer = Timer.cont("Ecore save");
-                        resourceEntry.getValue().save(out, opts);
+                        resourceEntry.getValue()
+                            .save(out, opts);
                         Timer.stop(timer);
                     } finally {
                         out.close();

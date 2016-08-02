@@ -38,6 +38,7 @@ import java.util.TreeMap;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
+import groove.grammar.QualName;
 import groove.io.Util;
 import groove.util.Duo;
 import groove.util.Pair;
@@ -194,32 +195,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     @SuppressWarnings("unchecked")
     @Override
     public Class<X> getValueType() {
-        return (Class<X>) ATermTree.class;
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return value.getClass() == this.prototype.getClass();
-    }
-
-    @Override
-    public boolean hasDefault() {
-        return false;
-    }
-
-    @Override
-    public boolean isDefault(Object value) {
-        return false;
-    }
-
-    @Override
-    public X getDefaultValue() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getDefaultString() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
+        return (Class<X>) this.prototype.getClass();
     }
 
     /** Returns the list of all token types recognised by this parser. */
@@ -328,8 +304,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
-                result.addError(new FormatError("Unparsed suffix: %s",
-                    this.input.substring(next().start(), this.input.length())));
+                result.getErrors()
+                    .add("Unparsed suffix: %s",
+                        this.input.substring(next().start(), this.input.length()));
             }
         } catch (FormatException exc) {
             result = createErrorTree(exc);
@@ -475,26 +452,27 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * Parses the input as an identifier.
      * Assumes the first token is a {@link TokenClaz#NAME} token.
      */
-    protected Id parseId() throws FormatException {
-        Id result = new Id();
+    protected QualName parseId() throws FormatException {
+        List<String> fragments = new ArrayList<>();
         Token nameToken = consume(NAME);
         assert nameToken != null;
-        result.add(nameToken.substring());
+        fragments.add(nameToken.substring());
         while (hasQualIds() && consume(TokenClaz.QUAL_SEP) != null) {
             nameToken = consume(NAME);
             if (nameToken == null) {
                 throw unexpectedToken(next());
             }
-            result.add(nameToken.substring());
+            fragments.add(nameToken.substring());
         }
-        return result;
+        return new QualName(fragments);
     }
 
     /** Factory method for atomic tree with a given error. */
     protected X createErrorTree(FormatException exc) {
         X result = createTree(getAtomOp());
         result.setParseString(this.input);
-        result.addErrors(exc);
+        result.getErrors()
+            .addAll(exc.getErrors());
         return result;
     }
 

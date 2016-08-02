@@ -1,13 +1,6 @@
 package groove.gui.action;
 
 import static groove.grammar.model.ResourceKind.RULE;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.ResourceModel;
-import groove.grammar.model.RuleModel;
-import groove.graph.GraphInfo;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.Simulator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,6 +13,15 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.RuleModel;
+import groove.graph.GraphInfo;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.Simulator;
+
 /**
  * Action that raises the priority of a selected set of rules.
  */
@@ -29,9 +31,9 @@ public class ShiftPriorityAction extends SimulatorAction {
      * shifted down
      */
     public ShiftPriorityAction(Simulator simulator, boolean up) {
-        super(simulator, up ? Options.RAISE_PRIORITY_ACTION_NAME
-            : Options.LOWER_PRIORITY_ACTION_NAME, up ? Icons.ARROW_SIMPLE_UP_ICON
-            : Icons.ARROW_SIMPLE_DOWN_ICON);
+        super(simulator,
+            up ? Options.RAISE_PRIORITY_ACTION_NAME : Options.LOWER_PRIORITY_ACTION_NAME,
+            up ? Icons.ARROW_SIMPLE_UP_ICON : Icons.ARROW_SIMPLE_DOWN_ICON);
         this.up = up;
     }
 
@@ -44,61 +46,61 @@ public class ShiftPriorityAction extends SimulatorAction {
     @Override
     public void execute() {
         // Collect all properties and subrules (they should remain at priority 0)
-        Set<String> frozen = new HashSet<String>();
+        Set<QualName> frozen = new HashSet<>();
         // collect all rules according to current priority
-        NavigableMap<Integer,Set<String>> rulesMap = new TreeMap<Integer,Set<String>>();
+        NavigableMap<Integer,Set<QualName>> rulesMap = new TreeMap<>();
         for (ResourceModel<?> model : getGrammarModel().getResourceSet(RULE)) {
             RuleModel rule = (RuleModel) model;
             if (rule.isProperty() || rule.hasRecipes()) {
-                frozen.add(rule.getFullName());
+                frozen.add(rule.getQualName());
             } else {
                 int priority = rule.getPriority();
 
-                Set<String> cell = rulesMap.get(priority);
+                Set<QualName> cell = rulesMap.get(priority);
                 if (cell == null) {
-                    rulesMap.put(priority, cell = new HashSet<String>());
+                    rulesMap.put(priority, cell = new HashSet<>());
                 }
-                cell.add(rule.getFullName());
+                cell.add(rule.getQualName());
             }
         }
         if (!this.up) {
             rulesMap = rulesMap.descendingMap();
         }
         // collect the selected rules
-        Set<String> selectedRules = new HashSet<String>(getSimulatorModel().getSelectSet(RULE));
+        Set<QualName> selectedRules = new HashSet<>(getSimulatorModel().getSelectSet(RULE));
         selectedRules.removeAll(frozen);
         // now shift rules to higher or lower priority classes
         List<Integer> priorities = new ArrayList<Integer>();
-        List<Set<String>> remainingRules = new ArrayList<Set<String>>();
-        List<Set<String>> shiftedRules = new ArrayList<Set<String>>();
-        Set<String> oldShifted = Collections.<String>emptySet();
-        for (Map.Entry<Integer,Set<String>> cell : rulesMap.entrySet()) {
+        List<Set<QualName>> remainingRules = new ArrayList<>();
+        List<Set<QualName>> shiftedRules = new ArrayList<>();
+        Set<QualName> oldShifted = Collections.<QualName>emptySet();
+        for (Map.Entry<Integer,Set<QualName>> cell : rulesMap.entrySet()) {
             priorities.add(cell.getKey());
-            Set<String> remaining = new HashSet<String>(cell.getValue());
-            Set<String> shifted = new HashSet<String>(selectedRules);
+            Set<QualName> remaining = new HashSet<>(cell.getValue());
+            Set<QualName> shifted = new HashSet<>(selectedRules);
             shifted.retainAll(remaining);
             remaining.removeAll(shifted);
             boolean allShifted = remaining.isEmpty();
             remaining.addAll(oldShifted);
             remainingRules.add(remaining);
             if (allShifted && priorities.size() < rulesMap.size()) {
-                shiftedRules.add(Collections.<String>emptySet());
+                shiftedRules.add(Collections.<QualName>emptySet());
                 oldShifted = shifted;
             } else {
                 shiftedRules.add(shifted);
-                oldShifted = Collections.<String>emptySet();
+                oldShifted = Collections.<QualName>emptySet();
             }
         }
         // reassign priorities based on remaining and shifted rules
-        List<Integer> newPriorities = new ArrayList<Integer>();
-        List<Set<String>> newCells = new ArrayList<Set<String>>();
+        List<Integer> newPriorities = new ArrayList<>();
+        List<Set<QualName>> newCells = new ArrayList<>();
         int last = start();
         for (int i = 0; i < priorities.size(); i++) {
             int priority = priorities.get(i);
             if (!exceeds(priority, last)) {
                 priority = inc(last);
             }
-            Set<String> cell = remainingRules.get(i);
+            Set<QualName> cell = remainingRules.get(i);
             if (!cell.isEmpty()) {
                 newPriorities.add(priority);
                 newCells.add(cell);
@@ -127,11 +129,12 @@ public class ShiftPriorityAction extends SimulatorAction {
             }
         }
         // Create the new priorities map
-        Map<String,Integer> priorityMap = new HashMap<String,Integer>();
+        Map<QualName,Integer> priorityMap = new HashMap<>();
         for (int i = 0; i < newPriorities.size(); i++) {
             int priority = newPriorities.get(i);
-            for (String ruleName : newCells.get(i)) {
-                AspectGraph ruleGraph = getGrammarStore().getGraphs(RULE).get(ruleName);
+            for (QualName ruleName : newCells.get(i)) {
+                AspectGraph ruleGraph = getGrammarStore().getGraphs(RULE)
+                    .get(ruleName);
                 if (GraphInfo.getPriority(ruleGraph) != priority) {
                     priorityMap.put(ruleName, priority);
                 }

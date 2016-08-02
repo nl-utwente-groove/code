@@ -16,48 +16,47 @@
  */
 package groove.grammar.model;
 
-import groove.control.CtrlLoader;
-import groove.control.template.Program;
-import groove.control.template.Template;
-import groove.util.parse.FormatException;
-
-import java.util.Collection;
 import java.util.Collections;
 
+import groove.control.CtrlLoader;
+import groove.control.template.Program;
+import groove.grammar.QualName;
+import groove.util.parse.FormatException;
+
 /**
- * Bridge between control programs (which are just strings) and control
- * automata.
+ * Bridge between control program texts and control program.
  * @author Arend Rensink
  */
-public class ControlModel extends TextBasedModel<Collection<Template>> {
+public class ControlModel extends TextBasedModel<Program> {
     /**
-     * Constructs a control view from a given control program.
-     * @param grammar the grammar view to which this control view belongs.
-     * Must be non-{@code null} in order to compute the control automation
-     * @param name the name of the control program
-     * @param program the control program; non-null
+     * Constructs a control model from a given control program.
+     * @param grammar the grammar model to which this control view belongs; non-{@code null}
+     * @param name the name of the control program; non-{@code null}
+     * @param program the control program text; non-{@code null}
      */
-    public ControlModel(GrammarModel grammar, String name, String program) {
+    public ControlModel(GrammarModel grammar, QualName name, String program) {
         super(grammar, ResourceKind.CONTROL, name, program);
     }
 
     @Override
-    public Collection<Template> compute() throws FormatException {
-        Program program;
+    public Program compute() throws FormatException {
+        Program result;
         if (isEnabled()) {
             CompositeControlModel model = getGrammar().getControlModel();
             if (model.hasErrors()) {
-                model.getPartErrors(getFullName()).throwException();
+                model.getPartErrors(getQualName())
+                    .throwException();
                 // there were errors in the composite model but not in this particular part
                 throw new FormatException("The composite control model cannot be built");
             } else {
-                program = model.getProgram();
+                result = model.getProgram();
             }
         } else {
-            getLoader().parse(getFullName(), getProgram()).check();
-            program = getLoader().buildProgram(Collections.singleton(getFullName()));
+            getLoader().parse(getQualName(), getProgram())
+                .check();
+            result = getLoader().buildProgram(Collections.singleton(getQualName()));
         }
-        return program.getTemplates(getFullName());
+        return result;
     }
 
     /** Returns the control loader used in this control model. */

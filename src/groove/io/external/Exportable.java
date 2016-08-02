@@ -1,22 +1,26 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.external;
 
+import java.util.EnumSet;
+
+import groove.grammar.QualName;
 import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.NamedResourceModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.graph.GGraph;
@@ -24,8 +28,6 @@ import groove.graph.Graph;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.JGraph;
 import groove.io.external.Porter.Kind;
-
-import java.util.EnumSet;
 
 /**
  * Wrapper class for resources to be exported.
@@ -35,7 +37,7 @@ import java.util.EnumSet;
  */
 public class Exportable {
     private final EnumSet<Porter.Kind> porterKinds;
-    private final String name;
+    private final QualName name;
     private final Graph graph;
     private final JGraph<?> jGraph;
     private final ResourceModel<?> model;
@@ -43,7 +45,7 @@ public class Exportable {
     /** Constructs an exportable for a given {@link Graph}. */
     public Exportable(Graph graph) {
         this.porterKinds = EnumSet.of(Kind.GRAPH);
-        this.name = graph.getName();
+        this.name = QualName.parse(graph.getName());
         this.jGraph = null;
         this.graph = graph;
         this.model = null;
@@ -53,37 +55,39 @@ public class Exportable {
     public Exportable(JGraph<?> jGraph) {
         this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
         this.jGraph = jGraph;
-        this.graph = jGraph.getModel().getGraph();
-        this.model =
-            jGraph instanceof AspectJGraph ? ((AspectJGraph) jGraph).getModel().getResourceModel()
-                    : null;
+        this.graph = jGraph.getModel()
+            .getGraph();
+        this.model = jGraph instanceof AspectJGraph ? ((AspectJGraph) jGraph).getModel()
+            .getResourceModel() : null;
         if (this.model != null) {
             this.porterKinds.add(Kind.RESOURCE);
         }
-        this.name = this.graph.getName();
+        this.name = QualName.parse(this.graph.getName());
     }
 
     /** Constructs an exportable for a given {@link ResourceModel}. */
-    public Exportable(ResourceModel<?> model) {
+    public Exportable(NamedResourceModel<?> model) {
         this.porterKinds = EnumSet.of(Kind.RESOURCE);
-        if (model.getKind().isGraphBased()) {
+        if (model.getKind()
+            .isGraphBased()) {
             this.porterKinds.add(Kind.GRAPH);
             this.graph = ((GraphBasedModel<?>) model).getSource();
         } else {
             this.graph = null;
         }
 
-        this.name = model.getFullName();
+        this.name = model.getQualName();
         this.model = model;
         this.jGraph = null;
     }
 
     /** Constructs an exportable for a given {@link ResourceModel} that is displayed in a {@link JGraph}. */
-    public Exportable(JGraph<?> jGraph, ResourceModel<?> model) {
+    public Exportable(JGraph<?> jGraph, NamedResourceModel<?> model) {
         this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
-        this.name = model.getFullName();
+        this.name = model.getQualName();
         this.jGraph = jGraph;
-        this.graph = jGraph.getModel().getGraph();
+        this.graph = jGraph.getModel()
+            .getGraph();
         this.model = model;
     }
 
@@ -93,7 +97,7 @@ public class Exportable {
     }
 
     /** Returns the name of the object wrapped by this exportable. */
-    public String getName() {
+    public QualName getQualName() {
         return this.name;
     }
 

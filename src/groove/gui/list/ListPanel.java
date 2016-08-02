@@ -36,6 +36,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import groove.grammar.QualName;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Element;
 import groove.gui.look.Values;
@@ -75,8 +76,8 @@ public abstract class ListPanel extends JPanel {
 
     /** Clears all entries from the list. */
     public void clearEntries() {
-        getEntryArea().setListData(
-            Collections.<SelectableListEntry>emptySet().toArray(new SelectableListEntry[] {}));
+        getEntryArea().setListData(Collections.<SelectableListEntry>emptySet()
+            .toArray(new SelectableListEntry[] {}));
         setVisible(false);
     }
 
@@ -132,7 +133,8 @@ public abstract class ListPanel extends JPanel {
     }
 
     private int getContentSize() {
-        return getEntryArea().getModel().getSize();
+        return getEntryArea().getModel()
+            .getSize();
     }
 
     /** Lazily creates and returns the panel. */
@@ -200,7 +202,7 @@ public abstract class ListPanel extends JPanel {
         public ResourceKind getResourceKind();
 
         /** Returns the resource name for which this entry occurs. */
-        public String getResourceName();
+        public QualName getResourceName();
 
         /** Returns the list of elements in which the entry occurs. May be empty. */
         public List<Element> getElements();

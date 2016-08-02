@@ -20,19 +20,6 @@ import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.grammar.model.ResourceKind.RULE;
 import static groove.io.FileType.GRAMMAR;
 import static groove.io.store.EditType.LAYOUT;
-import groove.grammar.GrammarProperties;
-import groove.grammar.QualName;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.type.TypeLabel;
-import groove.gui.Options;
-import groove.io.ExtensionFilter;
-import groove.io.FileType;
-import groove.io.graph.AttrGraph;
-import groove.io.graph.GxlIO;
-import groove.util.Groove;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,6 +48,21 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
+
+import groove.grammar.GrammarProperties;
+import groove.grammar.ModuleName;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
+import groove.gui.Options;
+import groove.io.ExtensionFilter;
+import groove.io.FileType;
+import groove.io.graph.AttrGraph;
+import groove.io.graph.GxlIO;
+import groove.util.Groove;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 /**
  * Implementation based on {@link AspectGraph} representations of the rules and
@@ -93,8 +95,8 @@ public class DefaultFileSystemStore extends SystemStore {
             throw new IllegalArgumentException(String.format("File '%s' is not a directory", file));
         }
         if (!GRAMMAR.hasExtension(file)) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' does not refer to a production system", file));
+            throw new IllegalArgumentException(
+                String.format("File '%s' does not refer to a production system", file));
         }
         this.file = file;
         this.name = GRAMMAR.stripExtension(this.file.getName());
@@ -137,15 +139,15 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,String> getTexts(ResourceKind kind) {
+    public Map<QualName,String> getTexts(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getTextMap(kind));
     }
 
     @Override
-    public Map<String,String> putTexts(ResourceKind kind, Map<String,String> texts)
+    public Map<QualName,String> putTexts(ResourceKind kind, Map<QualName,String> texts)
         throws IOException {
-        Map<String,String> result = null;
+        Map<QualName,String> result = null;
         TextBasedEdit edit = doPutTexts(kind, texts);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -159,13 +161,13 @@ public class DefaultFileSystemStore extends SystemStore {
      * Implements the functionality of {@link #putTexts(ResourceKind, Map)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private TextBasedEdit doPutTexts(ResourceKind kind, Map<String,String> newTexts)
+    private TextBasedEdit doPutTexts(ResourceKind kind, Map<QualName,String> newTexts)
         throws IOException {
         testInit();
-        Map<String,String> oldTexts = new HashMap<String,String>();
-        Set<String> newNames = new HashSet<String>();
-        for (Map.Entry<String,String> entry : newTexts.entrySet()) {
-            String name = entry.getKey();
+        Map<QualName,String> oldTexts = new HashMap<>();
+        Set<QualName> newNames = new HashSet<>();
+        for (Map.Entry<QualName,String> entry : newTexts.entrySet()) {
+            QualName name = entry.getKey();
             String newText = entry.getValue();
             saveText(kind, name, newText);
             String oldText = getTextMap(kind).put(name, newText);
@@ -187,12 +189,12 @@ public class DefaultFileSystemStore extends SystemStore {
      * and no resource of that kind is currently active.
      * @return the new stored) properties, or {@code null} if no change was made
      */
-    private GrammarProperties doEnableDefaultName(ResourceKind kind, Set<String> newNames)
+    private GrammarProperties doEnableDefaultName(ResourceKind kind, Set<QualName> newNames)
         throws IOException {
         GrammarProperties result = null;
-        String defaultName = kind.getDefaultName();
-        if (defaultName != null && getProperties().getActiveNames(kind).isEmpty()
-            && newNames.contains(defaultName)) {
+        QualName defaultName = kind.getDefaultName();
+        if (defaultName != null && getProperties().getActiveNames(kind)
+            .isEmpty() && newNames.contains(defaultName)) {
             result = getProperties().clone();
             result.setActiveNames(kind, Collections.singleton(defaultName));
             doPutProperties(result);
@@ -201,9 +203,9 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,String> deleteTexts(ResourceKind kind, Collection<String> names)
+    public Map<QualName,String> deleteTexts(ResourceKind kind, Collection<QualName> names)
         throws IOException {
-        Map<String,String> result = null;
+        Map<QualName,String> result = null;
         TextBasedEdit deleteEdit = doDeleteTexts(kind, names);
         if (deleteEdit != null) {
             deleteEdit.checkAndSetVersion();
@@ -217,13 +219,13 @@ public class DefaultFileSystemStore extends SystemStore {
      * Implements the functionality of the {@link #deleteTexts(ResourceKind, Collection)}
      * method. Returns a corresponding undoable edit.
      */
-    private TextBasedEdit doDeleteTexts(ResourceKind kind, Collection<String> names)
+    private TextBasedEdit doDeleteTexts(ResourceKind kind, Collection<QualName> names)
         throws IOException {
         testInit();
-        Map<String,String> oldTexts = new HashMap<String,String>();
+        Map<QualName,String> oldTexts = new HashMap<>();
         boolean activeChanged = false;
-        Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
-        for (String name : names) {
+        Set<QualName> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
+        for (QualName name : names) {
             assert name != null;
             String text = getTextMap(kind).remove(name);
             if (text != null) {
@@ -242,14 +244,13 @@ public class DefaultFileSystemStore extends SystemStore {
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.DELETE, oldTexts,
-            Collections.<String,String>emptyMap(), oldProps, newProps);
+            Collections.<QualName,String>emptyMap(), oldProps, newProps);
     }
 
     @Override
-    public void rename(ResourceKind kind, String oldName, String newName) throws IOException {
-        MyEdit edit =
-            kind.isGraphBased() ? doRenameGraph(kind, oldName, newName) : doRenameText(kind,
-                oldName, newName);
+    public void rename(ResourceKind kind, QualName oldName, QualName newName) throws IOException {
+        MyEdit edit = kind.isGraphBased() ? doRenameGraph(kind, oldName, newName)
+            : doRenameText(kind, oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -257,15 +258,15 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /**
-     * Implements the functionality of {@link #rename(ResourceKind, String, String)}
+     * Implements the functionality of {@link #rename(ResourceKind, QualName, QualName)}
      * for text-based resources.
      * Returns an undoable edit wrapping this functionality.
      */
-    private TextBasedEdit doRenameText(ResourceKind kind, String oldName, String newName)
+    private TextBasedEdit doRenameText(ResourceKind kind, QualName oldName, QualName newName)
         throws IOException {
         testInit();
-        Map<String,String> oldTexts = new HashMap<String,String>();
-        Map<String,String> newTexts = new HashMap<String,String>();
+        Map<QualName,String> oldTexts = new HashMap<>();
+        Map<QualName,String> newTexts = new HashMap<>();
         String text = getTextMap(kind).remove(oldName);
         assert text != null;
         oldTexts.put(oldName, text);
@@ -276,7 +277,7 @@ public class DefaultFileSystemStore extends SystemStore {
         // check if this affects the system properties
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
-        Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
+        Set<QualName> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
@@ -288,11 +289,11 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /**
-     * Implements the functionality of {@link #rename(ResourceKind, String, String)}
+     * Implements the functionality of {@link #rename(ResourceKind, QualName, QualName)}
      * for graph-based resources.
      * Returns an undoable edit wrapping this functionality.
      */
-    private GraphBasedEdit doRenameGraph(ResourceKind kind, String oldName, String newName)
+    private GraphBasedEdit doRenameGraph(ResourceKind kind, QualName oldName, QualName newName)
         throws IOException {
         testInit();
         AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
@@ -308,7 +309,7 @@ public class DefaultFileSystemStore extends SystemStore {
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
         if (kind != RULE) {
-            Set<String> activeNames = new TreeSet<String>(getProperties().getActiveNames(kind));
+            Set<QualName> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
             if (activeNames.remove(oldName)) {
                 oldProps = getProperties();
                 newProps = oldProps.clone();
@@ -337,7 +338,7 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
+    public Map<QualName,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getGraphMap(kind));
     }
@@ -364,12 +365,12 @@ public class DefaultFileSystemStore extends SystemStore {
     private GraphBasedEdit doPutGraphs(ResourceKind kind, Collection<AspectGraph> newGraphs,
         boolean layout) throws IOException {
         testInit();
-        Set<String> newNames = new HashSet<String>();
+        Set<QualName> newNames = new HashSet<>();
         // if we're relabelling, it may be that there are already graphs
         // under the names of the new ones
         Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
         for (AspectGraph newGraph : newGraphs) {
-            String name = newGraph.getName();
+            QualName name = newGraph.getQualName();
             this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, name));
             AspectGraph oldGraph = getGraphMap(kind).put(name, newGraph);
             if (oldGraph == null) {
@@ -392,10 +393,10 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<String> name)
+    public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<QualName> names)
         throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
-        GraphBasedEdit edit = doDeleteGraphs(kind, name);
+        GraphBasedEdit edit = doDeleteGraphs(kind, names);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -408,14 +409,14 @@ public class DefaultFileSystemStore extends SystemStore {
      * Implements the functionality of the {@link #deleteGraphs(ResourceKind, Collection)} method.
      * Returns a corresponding undoable edit.
      */
-    private GraphBasedEdit doDeleteGraphs(ResourceKind kind, Collection<String> names)
+    private GraphBasedEdit doDeleteGraphs(ResourceKind kind, Collection<QualName> names)
         throws IOException {
         testInit();
         List<AspectGraph> deletedGraphs = new ArrayList<AspectGraph>(names.size());
-        Set<String> activeNames =
-            kind == RULE ? null : new TreeSet<String>(getProperties().getActiveNames(kind));
+        Set<QualName> activeNames =
+            kind == RULE ? null : new TreeSet<>(getProperties().getActiveNames(kind));
         boolean activeChanged = false;
-        for (String name : names) {
+        for (QualName name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
             assert graph != null;
             File oldFile = createFile(kind, name);
@@ -504,7 +505,8 @@ public class DefaultFileSystemStore extends SystemStore {
             result.addEdit(edit);
         }
         result.end();
-        return result.getChange().isEmpty() ? null : result;
+        return result.getChange()
+            .isEmpty() ? null : result;
     }
 
     /** Renumbers all nodes in the rules and graphs of this grammar
@@ -537,7 +539,8 @@ public class DefaultFileSystemStore extends SystemStore {
             }
         }
         result.end();
-        return result.getChange().isEmpty() ? null : result;
+        return result.getChange()
+            .isEmpty() ? null : result;
     }
 
     @Override
@@ -583,7 +586,8 @@ public class DefaultFileSystemStore extends SystemStore {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof DefaultFileSystemStore)
-            && ((DefaultFileSystemStore) obj).getLocation().equals(getLocation());
+            && ((DefaultFileSystemStore) obj).getLocation()
+                .equals(getLocation());
     }
 
     /**
@@ -616,7 +620,7 @@ public class DefaultFileSystemStore extends SystemStore {
         Map<QualName,File> files;
         try {
             // read in the text files
-            files = collectResources(kind, this.file, null);
+            files = collectResources(kind, this.file, ModuleName.TOP);
         } catch (FormatException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -626,12 +630,14 @@ public class DefaultFileSystemStore extends SystemStore {
 
             // backwards compatibility: set role and name
             xmlGraph.setRole(kind.getGraphRole());
-            xmlGraph.setName(fileEntry.getKey().toString());
+            xmlGraph.setName(fileEntry.getKey()
+                .toString());
 
             // store graph in corresponding map
             AspectGraph graph = xmlGraph.toAspectGraph();
-            Object oldEntry = getGraphMap(kind).put(fileEntry.getKey().toString(), graph);
-            assert oldEntry == null : String.format("Duplicate %s name '%s'", kind.getGraphRole(),
+            Object oldEntry = getGraphMap(kind).put(fileEntry.getKey(), graph);
+            assert oldEntry == null : String.format("Duplicate %s name '%s'",
+                kind.getGraphRole(),
                 fileEntry.getKey());
         }
     }
@@ -645,7 +651,7 @@ public class DefaultFileSystemStore extends SystemStore {
         Map<QualName,File> files;
         try {
             // read in the text files
-            files = collectResources(kind, this.file, null);
+            files = collectResources(kind, this.file, ModuleName.TOP);
         } catch (FormatException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -653,7 +659,7 @@ public class DefaultFileSystemStore extends SystemStore {
             // read the file in as a single string
             String program = groove.io.Util.readFileToString(fileEntry.getValue());
             // insert the string into the resource map
-            getTextMap(kind).put(fileEntry.getKey().toString(), program);
+            getTextMap(kind).put(fileEntry.getKey(), program);
         }
     }
 
@@ -663,38 +669,34 @@ public class DefaultFileSystemStore extends SystemStore {
      * Filenames with embedded separators are automatically renamed to use subdirectories instead
      * @param kind The kind of resource to load, with the {@link ExtensionFilter} of the resource
      * @param path the current path
-     * @param pathName the name of the current path relative to the grammar
+     * @param pathName the name of the current path relative to the grammar; non-{@code null}
      * @return The map of files and their qualified names matching the given filter, not including directories
      * @throws IOException if an error occurs while trying to list the files
      * @throws FormatException if there is a subdirectory name with an error
      */
-    private Map<QualName,File> collectResources(ResourceKind kind, File path, QualName pathName)
+    private Map<QualName,File> collectResources(ResourceKind kind, File path, ModuleName pathName)
         throws IOException, FormatException {
         Map<QualName,File> result = new HashMap<QualName,File>();
         // find all files in the current path
-        File[] curfiles = path.listFiles(kind.getFileType().getFilter());
+        File[] curfiles = path.listFiles(kind.getFileType()
+            .getFilter());
         if (curfiles == null) {
-            throw new IOException(LOAD_ERROR + ": unable to get list of files " + "in path " + path);
+            throw new IOException(
+                LOAD_ERROR + ": unable to get list of files " + "in path " + path);
         }
         // collect errors while loading files
         FormatErrorSet errors = new FormatErrorSet();
         // process all files one by one
         for (File file : curfiles) {
             // get qualified name of file
-            String fileName = kind.getFileType().stripExtension(file.getName());
-
-            int separatorPos = fileName.indexOf(QualName.SEPARATOR);
-            // File contains separator, must be renamed to use subdirectories instead
-            if (separatorPos > 0) {
-                errors.add("File name %s contains separator CHARACTER '%s'", file.getPath(),
-                    QualName.SEPARATOR);
-            } else if (separatorPos < 0) {
-                QualName qualFileName = QualName.extend(pathName, fileName);
-                if (file.isDirectory()) {
-                    result.putAll(collectResources(kind, file, qualFileName));
-                } else {
-                    result.put(qualFileName, file);
-                }
+            String fileName = kind.getFileType()
+                .stripExtension(file.getName());
+            QualName qualFileName = pathName.extend(fileName)
+                .testValid();
+            if (file.isDirectory()) {
+                result.putAll(collectResources(kind, file, qualFileName));
+            } else {
+                result.put(qualFileName, file);
             }
         }
         errors.throwException();
@@ -737,15 +739,17 @@ public class DefaultFileSystemStore extends SystemStore {
 
     /** Returns the file that by default holds the system properties. */
     private File getDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME));
+        return new File(this.file, PROPERTIES.getFileType()
+            .addExtension(Groove.PROPERTY_NAME));
     }
 
     /** Returns the file that held the system properties in the distant past. */
     private File getOldDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType().addExtension(this.name));
+        return new File(this.file, PROPERTIES.getFileType()
+            .addExtension(this.name));
     }
 
-    private void saveText(ResourceKind kind, String name, String program) throws IOException {
+    private void saveText(ResourceKind kind, QualName name, String program) throws IOException {
         File file = createFile(kind, name);
         Writer writer = new FileWriter(file);
         try {
@@ -783,19 +787,15 @@ public class DefaultFileSystemStore extends SystemStore {
     /**
      * Creates a file name for a given resource kind.
      */
-    private File createFile(ResourceKind kind, String name) throws IOException {
-        try {
-            File basis = this.file;
-            QualName qualName = new QualName(name);
-            for (int i = 0; i < qualName.size() - 1; i++) {
-                basis = new File(basis, qualName.get(i));
-                basis.mkdir();
-            }
-            String shortName = qualName.child();
-            return new File(basis, kind.getFileType().addExtension(shortName));
-        } catch (FormatException e) {
-            throw new IOException(e.getMessage());
+    private File createFile(ResourceKind kind, QualName name) {
+        File basis = this.file;
+        for (int i = 0; i < name.size() - 1; i++) {
+            basis = new File(basis, name.get(i));
+            basis.mkdir();
         }
+        String shortName = name.last();
+        return new File(basis, kind.getFileType()
+            .addExtension(shortName));
     }
 
     /** Posts the edit, and also notifies the observers. */
@@ -838,14 +838,14 @@ public class DefaultFileSystemStore extends SystemStore {
     private static File toFile(URL url) throws IllegalArgumentException {
         try {
             // ignore query and reference part of the URL
-            return new File(new URI(url.getProtocol(), url.getAuthority(), url.toURI().getPath(),
-                null, null));
+            return new File(new URI(url.getProtocol(), url.getAuthority(), url.toURI()
+                .getPath(), null, null));
         } catch (URISyntaxException exc) {
-            throw new IllegalArgumentException(String.format(
-                "URL '%s' is not formatted correctly: %s", url, exc.getMessage()));
+            throw new IllegalArgumentException(
+                String.format("URL '%s' is not formatted correctly: %s", url, exc.getMessage()));
         } catch (IllegalArgumentException exc) {
-            throw new IllegalArgumentException(String.format("URL '%s' is not a valid file: %s",
-                url, exc.getMessage()));
+            throw new IllegalArgumentException(
+                String.format("URL '%s' is not a valid file: %s", url, exc.getMessage()));
         }
     }
 
@@ -921,10 +921,10 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** Returns a fresh set consisting of the names of a given set of graphs. */
-        final protected Set<String> getNames(Collection<AspectGraph> graphs) {
-            Set<String> result = new HashSet<String>();
+        final protected Set<QualName> getNames(Collection<AspectGraph> graphs) {
+            Set<QualName> result = new HashSet<>();
             for (AspectGraph graph : graphs) {
-                result.add(graph.getName());
+                result.add(graph.getQualName());
             }
             return result;
         }
@@ -995,8 +995,8 @@ public class DefaultFileSystemStore extends SystemStore {
 
     /** Edit consisting of additions and deletions of text-based resources. */
     private class TextBasedEdit extends MyEdit {
-        public TextBasedEdit(ResourceKind kind, EditType type, Map<String,String> oldTexts,
-            Map<String,String> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
+        public TextBasedEdit(ResourceKind kind, EditType type, Map<QualName,String> oldTexts,
+            Map<QualName,String> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
             super(type, kind);
             this.oldTexts = oldTexts;
             this.newTexts = newTexts;
@@ -1023,7 +1023,7 @@ public class DefaultFileSystemStore extends SystemStore {
         public void redo() throws CannotRedoException {
             super.redo();
             try {
-                Set<String> deleted = new HashSet<String>(this.oldTexts.keySet());
+                Set<QualName> deleted = new HashSet<>(this.oldTexts.keySet());
                 deleted.removeAll(this.newTexts.keySet());
                 doDeleteTexts(getResourceKind(), deleted);
                 if (this.newProps != null) {
@@ -1040,7 +1040,7 @@ public class DefaultFileSystemStore extends SystemStore {
         public void undo() throws CannotUndoException {
             super.undo();
             try {
-                Set<String> deleted = new HashSet<String>(this.newTexts.keySet());
+                Set<QualName> deleted = new HashSet<>(this.newTexts.keySet());
                 deleted.removeAll(this.oldTexts.keySet());
                 doDeleteTexts(getResourceKind(), deleted);
                 if (this.oldProps != null) {
@@ -1054,14 +1054,14 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** Returns the deleted texts. */
-        public final Map<String,String> getOldTexts() {
+        public final Map<QualName,String> getOldTexts() {
             return this.oldTexts;
         }
 
         /** The deleted texts, if any. */
-        private final Map<String,String> oldTexts;
+        private final Map<QualName,String> oldTexts;
         /** The added texts. */
-        private final Map<String,String> newTexts;
+        private final Map<QualName,String> newTexts;
         /** The old system properties; possibly {@code null}. */
         private final GrammarProperties oldProps;
         /** The new system properties; possibly {@code null}. */
@@ -1101,7 +1101,7 @@ public class DefaultFileSystemStore extends SystemStore {
             try {
                 boolean layout = getType() == LAYOUT;
                 if (!layout) {
-                    Set<String> deleted = getNames(this.oldGraphs);
+                    Set<QualName> deleted = getNames(this.oldGraphs);
                     deleted.removeAll(getNames(this.newGraphs));
                     doDeleteGraphs(getResourceKind(), deleted);
                     if (this.newProps != null) {
@@ -1121,7 +1121,7 @@ public class DefaultFileSystemStore extends SystemStore {
             try {
                 boolean layout = getType() == LAYOUT;
                 if (!layout) {
-                    Set<String> deleted = getNames(this.newGraphs);
+                    Set<QualName> deleted = getNames(this.newGraphs);
                     deleted.removeAll(getNames(this.oldGraphs));
                     doDeleteGraphs(getResourceKind(), deleted);
                     if (this.oldProps != null) {
@@ -1154,10 +1154,12 @@ public class DefaultFileSystemStore extends SystemStore {
     private class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG, ResourceKind.TYPE,
-                ResourceKind.HOST, ResourceKind.CONTROL)) {
-                Set<String> oldNames = oldProperties.getActiveNames(kind);
-                Set<String> newNames = newProperties.getActiveNames(kind);
+            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
+                ResourceKind.TYPE,
+                ResourceKind.HOST,
+                ResourceKind.CONTROL)) {
+                Set<QualName> oldNames = oldProperties.getActiveNames(kind);
+                Set<QualName> newNames = newProperties.getActiveNames(kind);
                 if (!oldNames.equals(newNames)) {
                     addChange(kind);
                 }

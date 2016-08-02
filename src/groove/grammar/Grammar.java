@@ -16,15 +16,6 @@
  */
 package groove.grammar;
 
-import groove.control.instance.Automaton;
-import groove.grammar.Action.Role;
-import groove.grammar.host.DefaultHostGraph;
-import groove.grammar.host.HostGraph;
-import groove.grammar.type.TypeGraph;
-import groove.prolog.GrooveEnvironment;
-import groove.util.Fixable;
-import groove.util.parse.FormatException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +27,15 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import groove.control.instance.Automaton;
+import groove.grammar.Action.Role;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostGraph;
+import groove.grammar.type.TypeGraph;
+import groove.prolog.GrooveEnvironment;
+import groove.util.Fixable;
+import groove.util.parse.FormatException;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system and
@@ -68,7 +68,8 @@ public class Grammar {
         getProperties().putAll(other.getProperties());
         this.nameRuleMap.putAll(other.nameRuleMap);
         // the target sets of the priority rule map must be copied, not aliased
-        for (Map.Entry<Integer,Set<Action>> priorityRuleEntry : other.priorityActionMap.entrySet()) {
+        for (Map.Entry<Integer,Set<Action>> priorityRuleEntry : other.priorityActionMap
+            .entrySet()) {
             Set<Action> newRuleSet = createActionSet();
             newRuleSet.addAll(priorityRuleEntry.getValue());
             this.priorityActionMap.put(priorityRuleEntry.getKey(), newRuleSet);
@@ -92,12 +93,12 @@ public class Grammar {
     }
 
     /** Convenience method to return the rule with a given name, if any. */
-    public Rule getRule(String name) {
+    public Rule getRule(QualName name) {
         return this.nameRuleMap.get(name);
     }
 
     /** Convenience method to return the recipe with a given name, if any. */
-    public Recipe getRecipe(String name) {
+    public Recipe getRecipe(QualName name) {
         return this.nameRecipeMap.get(name);
     }
 
@@ -107,7 +108,7 @@ public class Grammar {
     }
 
     /** Convenience method to return the action with a given name, if any. */
-    public Action getAction(String name) {
+    public Action getAction(QualName name) {
         Action result = getRule(name);
         if (result == null) {
             result = getRecipe(name);
@@ -140,7 +141,8 @@ public class Grammar {
                 this.roleActionMap.put(r, new ArrayList<Action>());
             }
             for (Action action : getActions()) {
-                this.roleActionMap.get(action.getRole()).add(action);
+                this.roleActionMap.get(action.getRole())
+                    .add(action);
             }
         }
         return this.roleActionMap.get(role);
@@ -194,7 +196,7 @@ public class Grammar {
     public void add(Action action) {
         testFixed(false);
         assert action instanceof Fixable ? ((Fixable) action).isFixed() : false;
-        String actionName = action.getFullName();
+        QualName actionName = action.getQualName();
         int priority = action.getPriority();
         // add the rule to the priority map
         Set<Action> priorityRuleSet = this.priorityActionMap.get(priority);
@@ -220,7 +222,7 @@ public class Grammar {
             }
             break;
         default:
-            assert false : String.format("'%s' is not a rule or recipe", action.getFullName());
+            assert false : String.format("'%s' is not a rule or recipe", actionName);
         }
     }
 
@@ -230,7 +232,7 @@ public class Grammar {
      * derivations when it is fixed.
      */
     public final boolean isFixed() {
-        assert !this.fixed || this.typeGraph != null;
+        assert!this.fixed || this.typeGraph != null;
         return this.fixed;
     }
 
@@ -376,7 +378,7 @@ public class Grammar {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof Grammar) && getStartGraph().equals(((Grammar) obj).getStartGraph())
-                && super.equals(obj);
+            && super.equals(obj);
     }
 
     /** Combines the hash codes of the rule system and the start graph. */
@@ -404,27 +406,27 @@ public class Grammar {
     /**
      * A mapping from action names to the available rules.
      */
-    private final Map<String,Rule> nameRuleMap = new TreeMap<String,Rule>();
+    private final Map<QualName,Rule> nameRuleMap = new TreeMap<>();
     /**
      * A mapping from action names to the available transactions.
      */
-    private final Map<String,Recipe> nameRecipeMap = new TreeMap<String,Recipe>();
+    private final Map<QualName,Recipe> nameRecipeMap = new TreeMap<>();
     /**
      * A mapping from priorities to sets of rules having that priority. The
      * ordering is from high to low priority.
      */
     private final SortedMap<Integer,Set<Action>> priorityActionMap =
-            new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
+        new TreeMap<>(Action.PRIORITY_COMPARATOR);
     /**
      * Set of all actions, collected separately for purposes of speedup.
      * @see #getActions()
      */
-    private final Set<Action> actions = new TreeSet<Action>(Action.ACTION_COMPARATOR);
+    private final Set<Action> actions = new TreeSet<>(Action.ACTION_COMPARATOR);
     /**
      * Set of all rules, being the union of the top-level action rules
      * and the subrules used in recipes.
      */
-    private final Set<Rule> allRules = new HashSet<Rule>();
+    private final Set<Rule> allRules = new HashSet<>();
     /**
      * The properties bundle of this rule system.
      */

@@ -192,9 +192,8 @@ public class ExploreType {
      * will return an exploration equal to this one.
      */
     public String toParsableString() {
-        String result =
-            StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.bound;
+        String result = StrategyEnumerator.toParsableStrategy(this.strategy) + " "
+            + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.bound;
         return result;
     }
 
@@ -256,23 +255,8 @@ public class ExploreType {
             }
 
             @Override
-            public boolean hasDefault() {
-                return true;
-            }
-
-            @Override
             public ExploreType getDefaultValue() {
                 return null;
-            }
-
-            @Override
-            public String getDefaultString() {
-                return "";
-            }
-
-            @Override
-            public boolean isDefault(Object value) {
-                return value == null;
             }
         };
     }
@@ -293,11 +277,13 @@ public class ExploreType {
         if (parts.length < 2 || parts.length > 3) {
             throw new FormatException(SYNTAX_MESSAGE);
         }
-        Serialized strategy = StrategyEnumerator.instance().parseCommandline(parts[0]);
+        Serialized strategy = StrategyEnumerator.instance()
+            .parseCommandline(parts[0]);
         if (strategy == null) {
             throw new FormatException("Can't parse strategy %s", parts[0]);
         }
-        Serialized acceptor = AcceptorEnumerator.instance().parseCommandline(parts[1]);
+        Serialized acceptor = AcceptorEnumerator.instance()
+            .parseCommandline(parts[1]);
         if (acceptor == null) {
             throw new FormatException("Can't parse acceptor %s", parts[1]);
         }

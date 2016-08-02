@@ -414,7 +414,7 @@ public class RuleApplication implements DeltaApplier {
 
     @Override
     public String toString() {
-        StringBuffer result = new StringBuffer("Application of rule " + getRule().getFullName());
+        StringBuffer result = new StringBuffer("Application of rule " + getRule().getQualName());
         result.append("\nEffect: " + getEffect());
         return result.toString();
     }

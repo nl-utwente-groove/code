@@ -16,16 +16,17 @@
  */
 package groove.control.template;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import groove.control.Binding;
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.grammar.Callable;
+import groove.grammar.QualName;
 import groove.util.Pair;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Transition between control locations, bearing either a call or a verdict.
@@ -44,7 +45,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
         assert onFinish != null;
         this.source = source;
         this.onFinish = onFinish;
-        this.kind = call.getUnit().getKind();
+        this.kind = call.getUnit()
+            .getKind();
         this.call = call;
         this.transience = transience;
     }
@@ -77,8 +79,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * this switch.
      * Only valid if this is a call switch.
      */
-    public String getName() {
-        return getUnit().getFullName();
+    public QualName getQualName() {
+        return getUnit().getQualName();
     }
 
     /**
@@ -241,7 +243,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     @Override
     public int compareTo(Switch o) {
-        int result = onFinish().getNumber() - o.onFinish().getNumber();
+        int result = onFinish().getNumber() - o.onFinish()
+            .getNumber();
         if (result != 0) {
             return result;
         }
@@ -249,7 +252,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
         if (result != 0) {
             return result;
         }
-        result = getKind().ordinal() - o.getKind().ordinal();
+        result = getKind().ordinal() - o.getKind()
+            .ordinal();
         if (result != 0) {
             return result;
         }
@@ -257,7 +261,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
         if (result != 0) {
             return result;
         }
-        result = getSource().getNumber() - o.getSource().getNumber();
+        result = getSource().getNumber() - o.getSource()
+            .getNumber();
         return result;
     }
 

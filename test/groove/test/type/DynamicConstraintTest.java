@@ -18,14 +18,16 @@ package groove.test.type;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import org.junit.Test;
+
 import groove.explore.Exploration;
+import groove.grammar.QualName;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
 import groove.util.Groove;
 import junit.framework.Assert;
-
-import org.junit.Test;
 
 /** Set of tests for dynamic type constraints. */
 public class DynamicConstraintTest {
@@ -85,7 +87,7 @@ public class DynamicConstraintTest {
 
     private GTS loadGTS(String grammarName, String startGraphName) throws Exception {
         GrammarModel model = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-        model.setLocalActiveNames(ResourceKind.HOST, startGraphName);
+        model.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
         return new GTS(model.toGrammar());
     }
 }

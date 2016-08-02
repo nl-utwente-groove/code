@@ -16,17 +16,6 @@
  */
 package groove.test.control;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import groove.explore.Exploration;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.lts.GTS;
-import groove.util.Groove;
-import groove.util.parse.FormatException;
-
-import java.io.IOException;
-
 import org.junit.Test;
 
 /**
@@ -35,31 +24,15 @@ import org.junit.Test;
  * @version $Revision $
  */
 @SuppressWarnings("all")
-public class ArgumentTest {
-    static private final String DIRECTORY = "junit/samples/control.gps";
+public class ArgumentTest extends AControlTest {
+    @Override
+    protected String getDirectory() {
+        return "junit/samples/control.gps";
+    }
 
     /** Regression bug SF #3536820. */
     @Test
     public void testEmpty() {
         explore("empty", 2, 2, 22, 33);
-    }
-
-    private void explore(String control, int controlStates, int controlTransitions,
-        int expectedNodes, int expectedEdges) {
-        try {
-            GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
-            sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
-            GTS gts = new GTS(sgv.toGrammar());
-
-            Exploration exploration = Exploration.explore(gts);
-
-            assertFalse(exploration.isInterrupted());
-            assertEquals(expectedNodes, gts.nodeCount());
-            assertEquals(expectedEdges, gts.edgeCount());
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } catch (FormatException e) {
-            throw new IllegalStateException(e);
-        }
     }
 }
