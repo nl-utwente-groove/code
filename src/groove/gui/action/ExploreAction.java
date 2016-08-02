@@ -109,7 +109,8 @@ public class ExploreAction extends SimulatorAction {
             ltsJModel.setExploring(false);
             simModel.setExploreResult(result.getResult());
             if (emphasise) {
-                Collection<GraphState> states = result.getResult().getStates();
+                Collection<GraphState> states = result.getResult()
+                    .getStates();
                 getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(states), true);
             }
         } catch (FormatException exc) {
@@ -131,6 +132,7 @@ public class ExploreAction extends SimulatorAction {
                 && grammar.hasRules();
         FormatException compatibilityError = null;
         if (enabled) {
+            assert grammar != null; // implied by enabled
             try {
                 exploreType.test(grammar.toGrammar());
             } catch (FormatException exc) {
@@ -287,7 +289,8 @@ public class ExploreAction extends SimulatorAction {
                 throw new IllegalStateException(e.getCause());
             }
             if (isInterrupted()) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread()
+                    .interrupt();
             }
         }
     }
@@ -339,7 +342,8 @@ public class ExploreAction extends SimulatorAction {
                 }
                 Thread.sleep(getPause());
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread()
+                    .interrupt();
             }
         }
 

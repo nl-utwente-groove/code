@@ -16,6 +16,13 @@
  */
 package groove.gui.display;
 
+import groove.grammar.QualName;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
+import groove.gui.action.ActionStore;
+import groove.util.Exceptions;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -26,12 +33,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
-
-import groove.grammar.QualName;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.gui.SimulatorModel;
-import groove.gui.action.ActionStore;
 
 /**
  * Component that can appear on a display tab in the {@link SimulatorModel}.
@@ -222,7 +223,7 @@ abstract public class Display extends JPanel {
             result = new PropertiesDisplay(simulator);
             break;
         default:
-            assert false;
+            throw Exceptions.UNREACHABLE;
         }
         result.buildDisplay();
         result.installListeners();

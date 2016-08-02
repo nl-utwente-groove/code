@@ -78,14 +78,16 @@ public class Util {
         if (srcDir.isDirectory() == false) {
             throw new IOException("Source '" + srcDir + "' exists but is not a directory");
         }
-        if (srcDir.getCanonicalPath().equals(destDir.getCanonicalPath())) {
+        if (srcDir.getCanonicalPath()
+            .equals(destDir.getCanonicalPath())) {
             throw new IOException("Source '" + srcDir + "' and destination '" + destDir
                 + "' are the same");
         }
 
         // Cater for destination being directory within the source directory (see IO-141)
         List<String> exclusionList = null;
-        if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath())) {
+        if (destDir.getCanonicalPath()
+            .startsWith(srcDir.getCanonicalPath())) {
             File[] srcFiles = srcDir.listFiles();
             if (srcFiles != null && srcFiles.length > 0) {
                 exclusionList = new ArrayList<String>(srcFiles.length);
@@ -158,15 +160,10 @@ public class Util {
             throw new IOException("Destination '" + destFile + "' exists but is a directory");
         }
 
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
-        FileChannel input = null;
-        FileChannel output = null;
-        try {
-            fis = new FileInputStream(srcFile);
-            fos = new FileOutputStream(destFile);
-            input = fis.getChannel();
-            output = fos.getChannel();
+        try (FileInputStream fis = new FileInputStream(srcFile);
+            FileOutputStream fos = new FileOutputStream(destFile);
+            FileChannel input = fis.getChannel();
+            FileChannel output = fos.getChannel();) {
             long size = input.size();
             long pos = 0;
             long count = 0;
@@ -174,11 +171,6 @@ public class Util {
                 count = (size - pos) > FIFTY_MB ? FIFTY_MB : (size - pos);
                 pos += output.transferFrom(input, pos, count);
             }
-        } finally {
-            output.close();
-            fos.close();
-            input.close();
-            fis.close();
         }
 
         if (srcFile.length() != destFile.length()) {
@@ -242,8 +234,10 @@ public class Util {
             return null;
         }
 
-        String[] dirParts = currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
-        String[] targetParts = target.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] dirParts = currentDir.toString()
+            .split("\\Q" + File.pathSeparator + "\\E");
+        String[] targetParts = target.toString()
+            .split("\\Q" + File.pathSeparator + "\\E");
 
         int i = 0;
         int max = Math.max(dirParts.length, targetParts.length);
@@ -277,8 +271,8 @@ public class Util {
         List<String[]> result = null;
         try {
             CSVReader reader =
-                new CSVReader(
-                    new InputStreamReader(Groove.getResource(name + ".csv").openStream()), sep);
+                new CSVReader(new InputStreamReader(Groove.getResource(name + ".csv")
+                    .openStream()), sep);
             result = reader.readAll();
             reader.close();
         } catch (IOException e) {

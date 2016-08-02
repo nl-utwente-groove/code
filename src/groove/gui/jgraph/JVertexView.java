@@ -145,10 +145,13 @@ public class JVertexView extends VertexView {
         double cy = bounds.getCenterY();
         // in manhattan line style, we shift the target point so it is
         // in horizontal or vertical reach of the node
-        VisualMap edgeVisuals = ((JEdgeView) edge).getCell().getVisuals();
-        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN && edgeVisuals.getPoints().size() > 2) {
+        VisualMap edgeVisuals = ((JEdgeView) edge).getCell()
+            .getVisuals();
+        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN && edgeVisuals.getPoints()
+            .size() > 2) {
             if ((qx < left || qx > right) && (qy < top || qy > bottom)) {
-                if (this == edge.getSource().getParentView()) {
+                if (this == edge.getSource()
+                    .getParentView()) {
                     // move qy into horizontal reach
                     double dy = qy - cy;
                     double room = bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
@@ -187,6 +190,7 @@ public class JVertexView extends VertexView {
         boolean adorn =
             adornBounds != null && adornBounds.getMaxX() > qx && adornBounds.getMaxY() > qy;
         if (adorn) {
+            assert adornBounds != null;
             double rx = result.getX();
             double ry = result.getY();
             double dx = qx - result.getX();
@@ -241,9 +245,11 @@ public class JVertexView extends VertexView {
         double scale = this.jGraph.getScale();
         newG.scale(scale, scale);
         // paint the border to erase it (we're in XOR mode)
-        this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
+        this.jGraph.getUI()
+            .paintCell(newG, this, getBounds(), true);
         this.armed = true;
-        this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
+        this.jGraph.getUI()
+            .paintCell(newG, this, getBounds(), true);
         this.armed = false;
         newG.dispose();
     }
@@ -302,8 +308,8 @@ public class JVertexView extends VertexView {
         @Override
         public MyRenderer getRendererComponent(org.jgraph.JGraph graph, CellView view, boolean sel,
             boolean focus, boolean preview) {
-            assert view instanceof JVertexView : String.format(
-                "This renderer is only meant for %s", JVertexView.class);
+            assert view instanceof JVertexView : String.format("This renderer is only meant for %s",
+                JVertexView.class);
             this.view = (JVertexView) view;
             this.cell = this.view.getCell();
             VisualMap visuals = this.visuals = this.view.getCellVisuals();
@@ -343,18 +349,20 @@ public class JVertexView extends VertexView {
             if (emph) {
                 float darken = .95f;
                 background =
-                    new Color(Math.max((int) (background.getRed() * darken), 0), Math.max(
-                        (int) (background.getGreen() * darken), 0), Math.max(
-                        (int) (background.getBlue() * darken), 0), background.getAlpha());
+                    new Color(Math.max((int) (background.getRed() * darken), 0),
+                        Math.max((int) (background.getGreen() * darken), 0),
+                        Math.max((int) (background.getBlue() * darken), 0), background.getAlpha());
             }
             if (background == null ? getBackground() != null : !background.equals(getBackground())) {
                 setBackground(background);
             }
-            Font font = Options.getLabelFont().deriveFont(visuals.getFont());
+            Font font = Options.getLabelFont()
+                .deriveFont(visuals.getFont());
             setFont((font != null) ? font : graph.getFont());
             setText(this.view.getText());
             this.error = visuals.isError();
-            this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
+            this.nodeEdge = this.cell.getLooks()
+                .contains(Look.NODIFIED);
             // do this last: it calls getTextSize, which depends on nodeEdge among others
             setBorder(createEmptyBorder());
             return this;
@@ -453,8 +461,9 @@ public class JVertexView extends VertexView {
         private Border createEmptyBorder() {
             Insets i = computeInsets();
             return i == null ? null : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
-                i.left + EXTRA_BORDER_SPACE, i.bottom + EXTRA_BORDER_SPACE, i.right
-                    + EXTRA_BORDER_SPACE);
+                i.left + EXTRA_BORDER_SPACE,
+                i.bottom + EXTRA_BORDER_SPACE,
+                i.right + EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -555,7 +564,8 @@ public class JVertexView extends VertexView {
                     array[i] = '0';
                 }
             }
-            return String.valueOf(array).intern();
+            return String.valueOf(array)
+                .intern();
         }
 
         /**

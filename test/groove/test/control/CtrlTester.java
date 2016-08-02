@@ -18,7 +18,6 @@ package groove.test.control;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-
 import groove.control.CtrlLoader;
 import groove.control.instance.Automaton;
 import groove.control.parse.CtrlTree;
@@ -152,13 +151,16 @@ abstract public class CtrlTester {
                 .getChild(function ? 2 : 3);
             CtrlTree body = null;
             for (int i = 0; i < tree.getChildCount(); i++) {
-                CtrlTree functionTree = tree.getChild(i);
-                if (functionTree.getChild(0)
+                CtrlTree procTree = tree.getChild(i);
+                if (procTree.getChild(0)
                     .getText()
                     .equals(procName)) {
-                    body = functionTree.getChild(2);
+                    body = procTree.getChild(2);
                 }
             }
+            assert body != null : String.format("Invoked procedure '%s' not declared in '%s'",
+                procName,
+                program);
             return body.toTerm();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());

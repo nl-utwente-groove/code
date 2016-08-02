@@ -16,12 +16,6 @@
  */
 package groove.lts;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import groove.control.CallStack;
 import groove.grammar.Action;
 import groove.grammar.Action.Role;
@@ -41,7 +35,12 @@ import groove.util.collect.KeySet;
 import groove.util.collect.SetView;
 import groove.util.collect.TreeHashSet;
 import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Caches information of a state. Cached are the graph, the set of outgoing
@@ -183,9 +182,10 @@ public class StateCache {
         HostElement[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
         if (frozenGraph != null) {
-            result = this.graphFactory.newGraph(getState().toString(),
-                frozenGraph,
-                this.record.getFactory());
+            result =
+                this.graphFactory.newGraph(getState().toString(),
+                    frozenGraph,
+                    this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
                 "Underlying state does not have information to reconstruct the graph");
@@ -217,15 +217,11 @@ public class StateCache {
             }
         }
         if (getState().isDone() && getState().isError()) {
-            FormatErrorSet errors = null;
             if (getState().getGTS()
                 .getTypePolicy() != CheckPolicy.OFF) {
                 // apparently we're reconstructing the graph after the state was already
                 // done and found to be erroneous; so reconstruct the type errors
-                errors = result.checkTypeConstraints();
-            }
-            if (!errors.isEmpty()) {
-                GraphInfo.addErrors(result, errors);
+                GraphInfo.addErrors(result, result.checkTypeConstraints());
             }
             // check the property and deadlock constraints
             GTS gts = getState().getGTS();
@@ -274,9 +270,13 @@ public class StateCache {
         if (actions.isEmpty()) {
             error = new FormatError("Deadlock (no transformer scheduled)");
         } else {
-            error = new FormatError("Deadlock: scheduled transformer%s %s failed to be applicable",
-                actions.size() == 1 ? "" : "s",
-                Groove.toString(actions.toArray(), "'", "'", "', '", "' and '"));
+            error =
+                new FormatError("Deadlock: scheduled transformer%s %s failed to be applicable",
+                    actions.size() == 1 ? "" : "s", Groove.toString(actions.toArray(),
+                        "'",
+                        "'",
+                        "', '",
+                        "' and '"));
         }
         GraphInfo.addError(graph, error);
     }

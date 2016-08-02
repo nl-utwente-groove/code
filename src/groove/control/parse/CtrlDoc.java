@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -45,7 +45,7 @@ import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
 
 /** Class retrieving documentation lines from the Control grammar. */
 public class CtrlDoc {
-    /** 
+    /**
      * Returns a mapping from grammar rules to lists of
      * cases for those rules.
      */
@@ -79,11 +79,11 @@ public class CtrlDoc {
         String grammarText = "";
 
         try {
-            if (FileType.JAR.getExtensionName().equals(url.getProtocol())) {
+            if (FileType.JAR.getExtensionName()
+                .equals(url.getProtocol())) {
                 // We are running from a JAR file so we cannot read the file
                 // directly because it is compressed.
-                JarURLConnection conn =
-                    ((JarURLConnection) url.openConnection());
+                JarURLConnection conn = ((JarURLConnection) url.openConnection());
                 ZipFile zipFile = conn.getJarFile();
                 InputStream in = zipFile.getInputStream(conn.getJarEntry());
                 grammarText = groove.io.Util.readInputStreamToString(in);
@@ -95,27 +95,26 @@ public class CtrlDoc {
                 } catch (FileNotFoundException e) {
                     // we have some weird url, e.g. because Groove is used as an OSGi bundle.
                     //let's try to use the url's stream...
-                    grammarText =
-                        groove.io.Util.readInputStreamToString(url.openStream());
+                    grammarText = groove.io.Util.readInputStreamToString(url.openStream());
                 }
             }
         } catch (IOException e) {
-            throw new IllegalStateException(String.format(
-                "Error while reading grammar file %s: %s", CTRL_GRAMMAR_FILE,
-                e.getMessage()));
+            throw new IllegalStateException(
+                String.format("Error while reading grammar file %s: %s",
+                    CTRL_GRAMMAR_FILE,
+                    e.getMessage()));
         }
 
         return grammarText;
     }
 
-    /** 
+    /**
      * Returns a mapping from the rules in the grammar
-     * to corresponding (multiline) comments, or to {@code null} if there is 
+     * to corresponding (multiline) comments, or to {@code null} if there is
      * no associated comment.
      */
     private Map<ElementRule,ATEToken> getRules(String text) {
-        Map<ElementRule,ATEToken> result =
-            new LinkedHashMap<ElementRule,ATEToken>();
+        Map<ElementRule,ATEToken> result = new LinkedHashMap<ElementRule,ATEToken>();
         GrammarSyntaxLexer lexer = new GrammarSyntaxLexer();
         lexer.tokenize(text);
         GrammarSyntaxParser parser = new GrammarSyntaxParser();
@@ -151,20 +150,21 @@ public class CtrlDoc {
             if (token.type == TOKEN_SINGLE_COMMENT) {
                 String text = token.getAttribute();
                 String syntax = getSuffix(text, SYNTAX_PATTERN);
-                if (syntax != null) {
-                    currentHelp = new Help(this.tokenMap);
-                    // add the new help item to the content for this rule, or
-                    // to the content of rule 'name' if the syntax starts with 'name:'
-                    int colonIx = syntax.indexOf(':');
-                    if (colonIx >= 0) {
-                        String ruleName = syntax.substring(0, colonIx);
-                        syntax = syntax.substring(colonIx + 1);
-                        content.add(Pair.newPair(ruleName, currentHelp));
-                    } else {
-                        content.add(Pair.newPair(rule.name, currentHelp));
-                    }
-                    currentHelp.setSyntax(syntax);
+                if (syntax == null) {
+                    continue;
                 }
+                currentHelp = new Help(this.tokenMap);
+                // add the new help item to the content for this rule, or
+                // to the content of rule 'name' if the syntax starts with 'name:'
+                int colonIx = syntax.indexOf(':');
+                if (colonIx >= 0) {
+                    String ruleName = syntax.substring(0, colonIx);
+                    syntax = syntax.substring(colonIx + 1);
+                    content.add(Pair.newPair(ruleName, currentHelp));
+                } else {
+                    content.add(Pair.newPair(rule.name, currentHelp));
+                }
+                currentHelp.setSyntax(syntax);
                 String header = getSuffix(text, HEADER_PATTERN);
                 if (header != null) {
                     currentHelp.setHeader(header);
@@ -183,15 +183,17 @@ public class CtrlDoc {
         List<Line> entries = new ArrayList<Line>();
         for (Pair<String,Help> help : content) {
             Line line = createLine(help.two());
-            if (help.one().equals(rule.name)) {
+            if (help.one()
+                .equals(rule.name)) {
                 entries.add(line);
             } else {
                 List<Line> otherEntries = this.nameToEntriesMap.get(help.one());
                 if (otherEntries == null) {
                     throw new IllegalStateException(
-                        String.format(
-                            "Reference to non-existent rule '%s' in comment line '%s'",
-                            help.one(), help.two().getItem()));
+                        String.format("Reference to non-existent rule '%s' in comment line '%s'",
+                            help.one(),
+                            help.two()
+                                .getItem()));
                 }
                 otherEntries.add(line);
             }
@@ -213,7 +215,8 @@ public class CtrlDoc {
             remove(text, MULTI_SUFFIX);
             String header = null;
             List<String> body = new ArrayList<String>();
-            for (String line : text.toString().split("\n")) {
+            for (String line : text.toString()
+                .split("\n")) {
                 if (header == null) {
                     header = getSuffix(line, HEADER_PATTERN);
                 }
@@ -270,7 +273,7 @@ public class CtrlDoc {
         }
     }
 
-    /** 
+    /**
      * Creates and returns a line object from the syntax line of a help object.
      * Also adds the tool tip of the help object to the tool tip map.
      */
@@ -289,20 +292,20 @@ public class CtrlDoc {
      * Map from constant token names to token content.
      */
     private final Map<String,String> tokenMap = new HashMap<String,String>();
-    private final Map<String,List<Line>> nameToEntriesMap =
-        new HashMap<String,List<Line>>();
-    private final Map<Line,List<Line>> ruleToEntriesMap =
-        new LinkedHashMap<Line,List<Line>>();
+    private final Map<String,List<Line>> nameToEntriesMap = new HashMap<String,List<Line>>();
+    private final Map<Line,List<Line>> ruleToEntriesMap = new LinkedHashMap<Line,List<Line>>();
     private final Map<Line,String> toolTipMap = new HashMap<Line,String>();
 
     /** Tests the class by printing out the resulting documentation. */
     public static void main(String[] args) {
         CtrlDoc doc = new CtrlDoc();
-        for (Map.Entry<?,? extends List<?>> ruleEntry : doc.getItemTree().entrySet()) {
+        for (Map.Entry<?,? extends List<?>> ruleEntry : doc.getItemTree()
+            .entrySet()) {
             System.out.printf("Nonterminal: %s%n", ruleEntry.getKey());
             for (Object rule : ruleEntry.getValue()) {
                 System.out.printf("* %s%n", rule);
-                String tip = doc.getToolTipMap().get(rule);
+                String tip = doc.getToolTipMap()
+                    .get(rule);
                 if (tip != null) {
                     System.out.printf("  (%s)%n", tip);
                 }
@@ -323,8 +326,7 @@ public class CtrlDoc {
     /** Comment prefix indicating that the comment is a rule syntax definition. */
     public static final String PARS_PATTERN = "@P ";
     /** The name of the grammar file providing the documentation. */
-    public static final String CTRL_GRAMMAR_FILE =
-        "groove/control/parse/Ctrl.g";
+    public static final String CTRL_GRAMMAR_FILE = "groove/control/parse/Ctrl.g";
 
     private class Line {
         public Line(String text) {

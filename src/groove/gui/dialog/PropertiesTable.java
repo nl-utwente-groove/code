@@ -101,8 +101,8 @@ public class PropertiesTable extends JTable {
                 this.properties.put(keyword, value);
             }
         }
-        setPreferredScrollableViewportSize(new Dimension(300, Math.max(
-            (getModel().getRowCount() + 2) * ROW_HEIGHT, 80)));
+        setPreferredScrollableViewportSize(new Dimension(300,
+            Math.max((getModel().getRowCount() + 2) * ROW_HEIGHT, 80)));
         setEnabled(true);
         getTableModel().refreshPropertyKeys();
         setChanged(false);
@@ -146,7 +146,8 @@ public class PropertiesTable extends JTable {
             String stringKey = entry.getKey();
             String value = entry.getValue();
             PropertyKey<?> key = this.defaultKeys.get(stringKey);
-            if (key == null || !key.parser().isDefault(value)) {
+            if (key == null || !key.parser()
+                .isDefault(value)) {
                 result.put(stringKey, value);
             }
         }
@@ -167,7 +168,8 @@ public class PropertiesTable extends JTable {
      */
     void check(PropertyKey<?> key) {
         String value = this.properties.get(key.getName());
-        this.errorMap.put(key, this.checkerMap.get(key).check(value));
+        this.errorMap.put(key, this.checkerMap.get(key)
+            .check(value));
     }
 
     private final Map<PropertyKey<?>,FormatErrorSet> errorMap;
@@ -333,7 +335,8 @@ public class PropertiesTable extends JTable {
             } else {
                 if (showContinueDialog(editedValue)) {
                     getComponent().setSelectionStart(0);
-                    getComponent().setSelectionEnd(getComponent().getText().length());
+                    getComponent().setSelectionEnd(getComponent().getText()
+                        .length());
                     result = false;
                 } else {
                     super.cancelCellEditing();
@@ -358,7 +361,8 @@ public class PropertiesTable extends JTable {
                     && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
                 PropertyKey<?> key = getKey(this.editingValueForKey);
-                return key == null ? true : key.parser().accepts(value);
+                return key == null ? true : key.parser()
+                    .accepts(value);
             }
         }
 
@@ -368,8 +372,10 @@ public class PropertiesTable extends JTable {
          */
         private boolean showContinueDialog(String value) {
             int response =
-                JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
-                    null, JOptionPane.YES_NO_OPTION);
+                JOptionPane.showConfirmDialog(PropertiesTable.this,
+                    getContinueQuestion(value),
+                    null,
+                    JOptionPane.YES_NO_OPTION);
             return response == JOptionPane.YES_OPTION;
         }
 
@@ -387,12 +393,14 @@ public class PropertiesTable extends JTable {
             } else {
                 // editing a value
                 PropertyKey<?> key = getKey(this.editingValueForKey);
-                String description = StringHandler.toLower(key.parser().getDescription());
-                result.append(String.format("Key '%s' expects ", this.editingValueForKey)).append(
-                    description);
+                String description = StringHandler.toLower(key.parser()
+                    .getDescription());
+                result.append(String.format("Key '%s' expects ", this.editingValueForKey))
+                    .append(description);
             }
             result = result.append("<br>Continue?");
-            return HTMLConverter.HTML_TAG.on(result).toString();
+            return HTMLConverter.HTML_TAG.on(result)
+                .toString();
         }
 
         /** Sets the editor to editing a property key. */
@@ -444,6 +452,7 @@ public class PropertiesTable extends JTable {
                     FormatErrorSet errors = PropertiesTable.this.errorMap.get(key);
                     error = errors != null && !errors.isEmpty();
                     if (error) {
+                        assert errors != null; // guaranteed by error
                         for (FormatError err : errors) {
                             tip += HTMLConverter.HTML_LINEBREAK;
                             tip += this.errorTag.on(err.toString());

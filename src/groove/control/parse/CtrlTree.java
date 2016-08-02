@@ -1,16 +1,5 @@
 package groove.control.parse;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
-
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -27,6 +16,17 @@ import groove.grammar.QualName;
 import groove.util.antlr.ParseTree;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
 
 /**
  * Dedicated tree node for GCL parsing.
@@ -388,8 +388,6 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      */
     public boolean maybeFinal() {
         boolean result = false;
-        CtrlTree arg0 = getChildCount() > 0 ? getChild(0) : null;
-        CtrlTree arg1 = getChildCount() > 1 ? getChild(1) : null;
         switch (getType()) {
         case CtrlParser.TRUE:
         case CtrlParser.VAR:
@@ -411,14 +409,14 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         case CtrlParser.ATOM:
         case CtrlParser.SEMI:
         case CtrlParser.UNTIL:
-            result = arg0.maybeFinal();
+            result = getChild(0).maybeFinal();
             break;
         case CtrlParser.WHILE:
-            result = arg0.maybeFinal() && arg1.maybeFinal();
+            result = getChild(0).maybeFinal() && getChild(1).maybeFinal();
             break;
         case CtrlParser.TRY:
         case CtrlParser.IF:
-            result = arg0.maybeFinal() || (arg1 != null && arg1.maybeFinal());
+            result = getChild(0).maybeFinal() || (getChild(1) != null && getChild(1).maybeFinal());
             break;
         case CtrlParser.CHOICE:
             result = false;

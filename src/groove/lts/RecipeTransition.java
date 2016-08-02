@@ -63,7 +63,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
         assert source == initial.source();
         this.initial = initial;
         Step initialStep = initial.getStep();
-        this.recipeSwitch = initialStep.getSwitchStack().getBottom();
+        this.recipeSwitch = initialStep.getSwitchStack()
+            .getBottom();
     }
 
     @Override
@@ -121,7 +122,9 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
 
     @Override
     public boolean isPartial() {
-        return source().getActualFrame().isTransient() || target().getActualFrame().isTransient();
+        return source().getActualFrame()
+            .isTransient() || target().getActualFrame()
+            .isTransient();
     }
 
     /** Returns the initial rule transition of the recipe transition. */
@@ -149,7 +152,7 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
 
     private Set<RuleTransition> computeSteps() {
         // mapping from states to sets of incoming transitions
-        Map<GraphState,Set<RuleTransition>> inMap = new HashMap<GraphState,Set<RuleTransition>>();
+        Map<GraphState,Set<RuleTransition>> inMap = new HashMap<>();
         // build the incoming transition map
         Stack<GraphState> pool = new Stack<GraphState>();
         pool.add(getInitial().target());
@@ -161,8 +164,9 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                     Set<RuleTransition> inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {
-                        inMap.put(target, inSet = new HashSet<RuleTransition>());
+                        inMap.put(target, inSet = new HashSet<>());
                     }
+                    assert inSet != null; // just set in case it was not set
                     inSet.add(trans);
                     if (fresh && target != target()) {
                         pool.add(target);
@@ -170,7 +174,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                 }
             }
         }
-        assert getInitial().target().equals(target()) || inMap.containsKey(target());
+        assert getInitial().target()
+            .equals(target()) || inMap.containsKey(target());
         // backward reachability to build up the result set
         Set<RuleTransition> result = new HashSet<RuleTransition>();
         result.add(getInitial());
@@ -198,7 +203,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
         while (result == null) {
             List<List<RuleTransition>> newPaths = new ArrayList<List<RuleTransition>>();
             for (List<RuleTransition> path : paths) {
-                GraphState target = path.get(path.size() - 1).target();
+                GraphState target = path.get(path.size() - 1)
+                    .target();
                 // check if any of the paths reaches the target
                 if (target == target()) {
                     result = path;
@@ -238,11 +244,14 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
             } else {
                 assert arg instanceof Var;
                 if (arg.isInOnly()) {
-                    int varIndex = getSwitch().getSource().getVars().indexOf(arg);
+                    int varIndex = getSwitch().getSource()
+                        .getVars()
+                        .indexOf(arg);
                     node = Valuator.get(source().getPrimeValues(), varIndex);
                 } else {
                     assert arg.isOutOnly();
-                    Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish().getVarIxMap();
+                    Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish()
+                        .getVarIxMap();
                     int varIndex = varIxMap.get(((Var) arg).getVar());
                     Object[] values = target().getActualValues();
                     node = Valuator.get(values, varIndex);
@@ -284,7 +293,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
         HostGraphMorphism result = null;
         HostGraph host = source().getGraph();
         for (RuleTransition step : getPath()) {
-            RuleApplication appl = step.getEvent().newApplication(host);
+            RuleApplication appl = step.getEvent()
+                .newApplication(host);
             result = result == null ? appl.getMorphism() : result.then(appl.getMorphism());
             host = appl.getTarget();
         }
@@ -318,7 +328,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
             throw new IllegalArgumentException(String.format("Can't compare %s and %s",
-                this.getClass(), obj.getClass()));
+                this.getClass(),
+                obj.getClass()));
         }
         if (obj instanceof RuleTransitionLabel) {
             return -obj.compareTo(this);
@@ -332,7 +343,9 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
         if (result != 0) {
             return result;
         }
-        return getInitial().label().compareTo(other.getInitial().label());
+        return getInitial().label()
+            .compareTo(other.getInitial()
+                .label());
     }
 
     @Override

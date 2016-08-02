@@ -1,16 +1,5 @@
 package groove.gui.action;
 
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.JDialog;
-import javax.swing.JPopupMenu;
-
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
 import groove.control.template.Program;
@@ -24,6 +13,17 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.parse.FormatException;
+
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JDialog;
+import javax.swing.JPopupMenu;
 
 /**
  * Creates a dialog showing the control automaton.
@@ -122,7 +122,7 @@ public class PreviewControlAction extends SimulatorAction {
                 result = controlModel.toResource();
             }
         }
-        assert result.isFixed();
+        assert result == null || result.isFixed();
         return result;
     }
 }
