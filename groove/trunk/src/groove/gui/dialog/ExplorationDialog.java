@@ -119,8 +119,10 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
         // Override DismissDelay of the ToolTipManager.
         // Old value will be reset when the dialog is closed.
-        this.oldDismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
-        ToolTipManager.sharedInstance().setDismissDelay(1000000000);
+        this.oldDismissDelay = ToolTipManager.sharedInstance()
+            .getDismissDelay();
+        ToolTipManager.sharedInstance()
+            .setDismissDelay(1000000000);
 
         // Remember the simulator.
         this.simulator = simulator;
@@ -149,14 +151,16 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         StrategyEnumerator strategyEnumerator =
             StrategyEnumerator.instance(StrategyValue.DIALOG_STRATEGIES);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
-        Serialized defaultStrategy = getSimulatorModel().getExploreType().getStrategy();
+        Serialized defaultStrategy = getSimulatorModel().getExploreType()
+            .getStrategy();
 
         // Create the acceptor editor.
         EnumSet<AcceptorValue> acceptorMask = EnumSet.allOf(AcceptorValue.class);
         acceptorMask.remove(AcceptorValue.CYCLE);
         AcceptorEnumerator acceptorEnumerator = AcceptorEnumerator.instance(acceptorMask);
         this.acceptorEditor = acceptorEnumerator.createEditor(getGrammar());
-        Serialized defaultAcceptor = getSimulatorModel().getExploreType().getAcceptor();
+        Serialized defaultAcceptor = getSimulatorModel().getExploreType()
+            .getAcceptor();
 
         // Initialize the editors with the stored default.
         this.strategyEditor.setCurrentValue(defaultStrategy);
@@ -192,7 +196,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      */
     private void closeDialog() {
         this.dispose();
-        ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
+        ToolTipManager.sharedInstance()
+            .setDismissDelay(this.oldDismissDelay);
     }
 
     /**
@@ -213,7 +218,9 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         try {
             getSimulatorModel().setExploreType(createExploreType());
             closeDialog();
-            this.simulator.getActions().getExploreAction().execute();
+            this.simulator.getActions()
+                .getExploreAction()
+                .execute();
         } catch (FormatException exc) {
             showError(exc);
         }
@@ -288,8 +295,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      * Creates the result panel.
      */
     private ResultPanel createResultPanel() {
-        this.resultPanel =
-            new ResultPanel(RESULT_TOOLTIP, getSimulatorModel().getExploreType().getBound());
+        this.resultPanel = new ResultPanel(RESULT_TOOLTIP, getSimulatorModel().getExploreType()
+            .getBound());
         return this.resultPanel;
     }
 
@@ -462,6 +469,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             boolean enabled = exploreType != null && grammar != null && !grammar.hasErrors();
             StringBuilder toolTip = new StringBuilder(toolTipText);
             if (enabled) {
+                assert exploreType != null && grammar != null;
                 try {
                     exploreType.test(grammar.toGrammar());
                 } catch (FormatException exc) {
@@ -472,7 +480,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 }
             }
             setEnabled(enabled);
-            setToolTipText(HTMLConverter.HTML_TAG.on(toolTip).toString());
+            setToolTipText(HTMLConverter.HTML_TAG.on(toolTip)
+                .toString());
         }
     }
 

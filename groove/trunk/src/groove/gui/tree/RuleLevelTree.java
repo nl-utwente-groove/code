@@ -130,9 +130,10 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         getTopNode().removeAllChildren();
         Set<LevelNode> newNodes = new HashSet<LevelNode>();
         Map<Index,Set<AspectElement>> levelTree =
-                this.rule == null ? null : this.rule.getLevelTree();
+            this.rule == null ? null : this.rule.getLevelTree();
         boolean enabled = levelTree != null && levelTree.size() > 1;
         if (enabled) {
+            assert levelTree != null; // guaranteed by enabled
             for (Map.Entry<Index,Set<AspectElement>> levelEntry : levelTree.entrySet()) {
                 Index index = levelEntry.getKey();
                 if (!index.isTopLevel() && index.getLevelNode() == null) {
@@ -168,7 +169,8 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
-                    for (AspectEdge edge : this.rule.getSource().edgeSet(ruleLevelNode)) {
+                    for (AspectEdge edge : this.rule.getSource()
+                        .edgeSet(ruleLevelNode)) {
                         jCell = jModel.getJCell(edge);
                         if (jCell != null) {
                             levelCells.add(jCell);
@@ -213,7 +215,8 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
             jCell.setStale(VisualKey.VISIBLE);
             Iterator<? extends AspectJCell> iter = jCell.getContext();
             while (iter.hasNext()) {
-                iter.next().setStale(VisualKey.VISIBLE);
+                iter.next()
+                    .setStale(VisualKey.VISIBLE);
             }
         }
         return result;
@@ -268,10 +271,12 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
 
         public String getName() {
             if (this.name == null) {
-                StringBuilder result = new StringBuilder(this.index.getOperator().getSymbol());
+                StringBuilder result = new StringBuilder(this.index.getOperator()
+                    .getSymbol());
                 String levelName = null;
                 if (this.index.getLevelNode() != null) {
-                    levelName = this.index.getLevelNode().getLevelName();
+                    levelName = this.index.getLevelNode()
+                        .getLevelName();
                 }
                 if (levelName == null) {
                     for (int level : this.index.getIntArray()) {

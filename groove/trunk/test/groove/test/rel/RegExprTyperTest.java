@@ -18,17 +18,6 @@ package groove.test.rel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import groove.algebra.Sort;
 import groove.automaton.RegExpr;
 import groove.automaton.RegExprTyper;
@@ -46,9 +35,20 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
+import groove.util.Exceptions;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** Tests the class {@link RegExpr}. */
 public class RegExprTyperTest {
@@ -80,8 +80,10 @@ public class RegExprTyperTest {
                 .toResource();
         } catch (FormatException e) {
             fail(e.getMessage());
+            throw Exceptions.UNREACHABLE;
         } catch (IOException e) {
             fail(e.getMessage());
+            throw Exceptions.UNREACHABLE;
         }
         implicitType = new ImplicitTypeGraph();
         for (HostEdge testEdge : startGraph.edgeSet()) {
@@ -147,16 +149,16 @@ public class RegExprTyperTest {
     @Test
     public void testAtom() {
         this.implicit = false;
-        TypeNode[][] n1 = {{A, A}, {A1, A1}, {A2, A2}};
+        TypeNode[][] n1 = { {A, A}, {A1, A1}, {A2, A2}};
         equals("type:A", n1);
-        TypeNode[][] e1 = {{A1, C}, {A2, D}};
+        TypeNode[][] e1 = { {A1, C}, {A2, D}};
         equals("aTo", e1);
         TypeNode[][] f1 = {{A2, A2}};
         equals("flag:a2", f1);
         this.implicit = true;
         TypeNode[][] n2 = {{Top, Top}};
         equals("type:A", n2);
-        TypeNode[][] e2 = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
+        TypeNode[][] e2 = { {Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
         equals("aTo", e2);
         TypeNode[][] f2 = {{Top, Top}};
         equals("flag:a2", f2);
@@ -166,13 +168,14 @@ public class RegExprTyperTest {
     @Test
     public void testEmpty() {
         this.implicit = false;
-        TypeNode[][] n1 = {{A, A}, {A, A1}, {A, A2}, {A1, A}, {A1, A1}, {A1, A2}, {A2, A}, {A2, A1},
-            {A2, A2}, {B, B}, {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt},
-            {XReal, XReal}, {XString, XString}, {XBool, XBool}};
+        TypeNode[][] n1 =
+            { {A, A}, {A, A1}, {A, A2}, {A1, A}, {A1, A1}, {A1, A2}, {A2, A}, {A2, A1}, {A2, A2},
+                {B, B}, {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt}, {XReal, XReal},
+                {XString, XString}, {XBool, XBool}};
         equals("=", n1);
         this.implicit = true;
         TypeNode[][] n2 =
-            {{Top, Top}, {IInt, IInt}, {IReal, IReal}, {IString, IString}, {IBool, IBool}};
+            { {Top, Top}, {IInt, IInt}, {IReal, IReal}, {IString, IString}, {IBool, IBool}};
         equals("=", n2);
     }
 
@@ -180,7 +183,7 @@ public class RegExprTyperTest {
     @Test
     public void testSharp() {
         this.implicit = false;
-        TypeNode[][] n1 = {{A, A}, {A1, A1}, {A2, A2}};
+        TypeNode[][] n1 = { {A, A}, {A1, A1}, {A2, A2}};
         equals("type:#A", n1);
         this.implicit = true;
         TypeNode[][] n2 = {{Top, Top}};
@@ -193,13 +196,13 @@ public class RegExprTyperTest {
         this.implicit = false;
         TypeNode[][] n1 = {{A2, A2}};
         equals("type:?xType", n1);
-        TypeNode[][] e1 = {{A, B}, {A, B1}, {A1, B}, {A1, B1}, {A2, B}, {A2, B1}};
+        TypeNode[][] e1 = { {A, B}, {A, B1}, {A1, B}, {A1, B1}, {A2, B}, {A2, B1}};
         equals("?xBin", e1);
         TypeNode[][] f1 = {{A2, A2}};
         equals("flag:?xFlag", f1);
-        TypeNode[][] nx1 = {{A, A}, {A1, A1}, {A2, A2}, {B1, B1}};
+        TypeNode[][] nx1 = { {A, A}, {A1, A1}, {A2, A2}, {B1, B1}};
         equals("type:?[A,B1]", nx1);
-        TypeNode[][] ex1 = {{A1, C}, {A2, D}, {B1, A2}};
+        TypeNode[][] ex1 = { {A1, C}, {A2, D}, {B1, A2}};
         equals("?[aTo,b1ToA2]", ex1);
         TypeNode[][] fx1 = {{A2, A2}};
         equals("flag:?[a2]", fx1);
@@ -210,7 +213,7 @@ public class RegExprTyperTest {
         equals("type:?", n2);
         TypeNode[][] f2 = {};
         equals("flag:?[^a,a1,a2]", f2);
-        TypeNode[][] e2 = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
+        TypeNode[][] e2 = { {Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
         equals("?", e2);
     }
 
@@ -218,7 +221,7 @@ public class RegExprTyperTest {
     @Test
     public void testInv() {
         this.implicit = false;
-        TypeNode[][] x = {{C, A1}, {D, A2}};
+        TypeNode[][] x = { {C, A1}, {D, A2}};
         equals("-aTo", x);
     }
 
@@ -226,7 +229,7 @@ public class RegExprTyperTest {
     @Test
     public void testChoice() {
         this.implicit = false;
-        TypeNode[][] x = {{C, A}, {C, A1}, {C, A2}, {B1, A2}, {D, D}, {A1, A1}};
+        TypeNode[][] x = { {C, A}, {C, A1}, {C, A2}, {B1, A2}, {D, D}, {A1, A1}};
         equals("cToA | b1ToA2 | type:D | flag:a1", x);
     }
 
@@ -236,7 +239,7 @@ public class RegExprTyperTest {
         this.implicit = false;
         TypeNode[][] x1 = {};
         equals("cToA.b1ToA2", x1);
-        TypeNode[][] x2 = {{C, B}, {C, B1}};
+        TypeNode[][] x2 = { {C, B}, {C, B1}};
         equals("cToA.a1ToB", x2);
     }
 
@@ -246,7 +249,7 @@ public class RegExprTyperTest {
         this.implicit = false;
         TypeNode[][] x1 = {};
         equals("(cToA.b1ToA2)*", x1);
-        TypeNode[][] x2 = {{A, A2}, {A1, A2}, {A2, A2}};
+        TypeNode[][] x2 = { {A, A2}, {A1, A2}, {A2, A2}};
         equals("(aToB.b1ToA2)*", x2);
     }
 
@@ -256,7 +259,7 @@ public class RegExprTyperTest {
         this.implicit = false;
         TypeNode[][] x1 = {};
         equals("(cToA.b1ToA2)+", x1);
-        TypeNode[][] x2 = {{A, A2}, {A1, A2}, {A2, A2}};
+        TypeNode[][] x2 = { {A, A2}, {A1, A2}, {A2, A2}};
         equals("(aToB.b1ToA2)+", x2);
     }
 

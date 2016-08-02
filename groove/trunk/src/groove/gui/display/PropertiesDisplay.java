@@ -84,6 +84,7 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
         GrammarModel grammar = source.getGrammar();
         boolean enabled = grammar != null;
         if (enabled) {
+            assert grammar != null; // implied by enabled
             GrammarProperties properties = grammar.getProperties();
             getList().setProperties(properties);
             getList().setCheckerMap(properties.getCheckers(grammar));
@@ -98,7 +99,8 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                getActions().getEditSystemPropertiesAction().execute();
+                getActions().getEditSystemPropertiesAction()
+                    .execute();
             }
         }
     }

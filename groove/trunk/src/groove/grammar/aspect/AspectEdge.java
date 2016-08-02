@@ -31,10 +31,6 @@ import static groove.grammar.aspect.AspectKind.REMARK;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.grammar.aspect.AspectKind.TEST;
 import static groove.graph.GraphRole.RULE;
-
-import java.util.EnumSet;
-import java.util.Set;
-
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.algebra.syntax.Assignment;
@@ -60,13 +56,16 @@ import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
  * {@link PlainLabel}s.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectElement, Fixable {
+public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectElement, Fixable {
     /**
      * Constructs a new edge.
      * @param source the source node for this edge
@@ -219,9 +218,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
     private void checkRegExprs() throws FormatException {
         // this is called after the rule label has been computed
         RuleLabel ruleLabel = this.ruleLabel;
-        boolean simple = ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
-            || ruleLabel.isWildcard() && ruleLabel.getWildcardGuard().isNamed();
+        boolean simple =
+            ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
+                || ruleLabel.isWildcard() && ruleLabel.getWildcardGuard()
+                    .isNamed();
         if (!simple) {
+            assert ruleLabel != null; // implied by !simple
             AspectKind kind = getKind();
             assert kind.isRole();
             String message = null;
@@ -234,8 +236,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
                 } else if (!ruleLabel.isEmpty()) {
                     message = "Regular expression label %s not allowed on creators";
                 }
-            } else if (kind.isEraser() && !source().getKind().isEraser()
-                && !target().getKind().isEraser() && !ruleLabel.isWildcard()) {
+            } else if (kind.isEraser() && !source().getKind()
+                .isEraser() && !target().getKind()
+                .isEraser() && !ruleLabel.isWildcard()) {
                 message = "Regular expression label %s not allowed on erasers";
             }
             if (message != null) {
@@ -252,8 +255,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
     @Override
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
-            throw new IllegalStateException(
-                String.format("Aspect edge %s should %sbe fixed", this, fixed ? "" : "not "));
+            throw new IllegalStateException(String.format("Aspect edge %s should %sbe fixed",
+                this,
+                fixed ? "" : "not "));
         }
     }
 
@@ -262,7 +266,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
      * @throws FormatException if the aspects are inconsistent
      */
     private void setAspects(AspectLabel label) throws FormatException {
-        assert!label.isNodeOnly();
+        assert !label.isNodeOnly();
         for (Aspect aspect : label.getAspects()) {
             declareAspect(aspect);
         }
@@ -279,7 +283,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
             setAspect(REMARK.getAspect());
         } else if (sourceKind.isQuantifier() || targetKind.isQuantifier()) {
             if (getKind() != NESTED && getKind() != REMARK && getAttrKind() != TEST) {
-                setAspect(NESTED.getAspect().newInstance(getInnerText(), getGraphRole()));
+                setAspect(NESTED.getAspect()
+                    .newInstance(getInnerText(), getGraphRole()));
             }
         } else if (getKind() != REMARK && getKind() != SUBTYPE && getKind() != CONNECT
             && getKind() != LET) {
@@ -306,8 +311,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
                 throw new FormatException("Conflicting aspects %s and %s", source().getAspect(),
                     target().getAspect());
             }
-            if (inferredAspect != null && inferredAspect.getKind().isRole()
-                && inferredAspect.getKind() != READER
+            if (inferredAspect != null && inferredAspect.getKind()
+                .isRole() && inferredAspect.getKind() != READER
                 && !(inferredAspect.getKind() == ERASER && getKind() == EMBARGO)) {
                 setAspect(inferredAspect);
             }
@@ -417,12 +422,13 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
         // prefix
         switch (getKind()) {
         case CONNECT:
-            assert!onNode;
+            assert !onNode;
             text = "+";
             break;
         case LET:
             assert onNode;
-            String symbol = getGraphRole() == RULE && !source().getKind().isCreator() ? ":=" : "=";
+            String symbol = getGraphRole() == RULE && !source().getKind()
+                .isCreator() ? ":=" : "=";
             result = getAssign().toLine(symbol);
             if (getGraphRole() == RULE) {
                 color = ColorType.CREATOR;
@@ -507,13 +513,15 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
                 case HOST:
                 case RULE:
                     // this is an attribute edge displayed as a node label
-                    String suffix = ASSIGN_TEXT + target().getAttrAspect().getContentString();
+                    String suffix = ASSIGN_TEXT + target().getAttrAspect()
+                        .getContentString();
                     result = result.append(suffix);
                     break;
                 case TYPE:
                     // this is a primitive type field declaration modelled through an
                     // edge to the target type
-                    type = target().getAttrKind().getSignature();
+                    type = target().getAttrKind()
+                        .getSignature();
                 }
             } else if (getAttrKind().hasSignature()) {
                 // this is a primitive type field declaration
@@ -522,11 +530,13 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
             }
             if (type != null) {
                 result = result.append(TYPE_TEXT);
-                result = result.append(Line.atom(type.getName()).style(Style.BOLD));
+                result = result.append(Line.atom(type.getName())
+                    .style(Style.BOLD));
             }
         }
         if (contextKind != getKind() && rolePrefix != null) {
-            result = Line.atom(rolePrefix).append(result);
+            result = Line.atom(rolePrefix)
+                .append(result);
         }
         for (Style s : styles) {
             result = result.style(s);
@@ -552,7 +562,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
         if (name != null && name.length() != 0 && !name.equals(source().getLevelName())
             && !name.equals(target().getLevelName())) {
             result = Line.atom(LEVEL_NAME_SEPARATOR)
-                .append(Line.atom(name).style(Style.ITALIC))
+                .append(Line.atom(name)
+                    .style(Style.ITALIC))
                 .color(Values.NESTED_COLOR);
         }
         return result;
@@ -600,8 +611,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
      */
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
-        if (getKind() == REMARK || isAssign() || isPredicate()
-            || getGraphRole() == GraphRole.TYPE && getAttrKind().hasSignature()) {
+        if (getKind() == REMARK || isAssign() || isPredicate() || getGraphRole() == GraphRole.TYPE
+            && getAttrKind().hasSignature()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
@@ -634,15 +645,14 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
     /** Setter for the aspect type. */
     private void setAspect(Aspect aspect) throws FormatException {
         AspectKind kind = aspect.getKind();
-        assert!kind.isAttrKind() && kind != AspectKind.PATH && kind != AspectKind.LITERAL;
+        assert !kind.isAttrKind() && kind != AspectKind.PATH && kind != AspectKind.LITERAL;
         // process the content, if any
         if (kind.isQuantifier()) {
             // backward compatibility to take care of edges such as
             // exists=q:del:a rather than del=q:a or
             // exists=q:a rather than use=q:a
             if (!aspect.hasContent()) {
-                throw new FormatException("Unnamed quantifier %s not allowed on edge", aspect,
-                    this);
+                throw new FormatException("Unnamed quantifier %s not allowed on edge", aspect, this);
             } else if (this.levelName != null) {
                 throw new FormatException("Duplicate quantifier levels %s and %s", this.levelName,
                     aspect.getContent(), this);

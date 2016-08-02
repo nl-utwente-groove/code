@@ -1,28 +1,5 @@
 package groove.io.conceptual.lang.ecore;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EEnumLiteral;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-
 import groove.grammar.QualName;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
@@ -49,6 +26,29 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EEnumLiteral;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 public class EcoreToType extends TypeImporter {
     // Resource containing Ecore type model
@@ -97,7 +97,7 @@ public class EcoreToType extends TypeImporter {
         if (!it.hasNext() || !(topObject = it.next()).eClass().getName().equals("EPackage")) {
             throw new ImportException("Ecore type model has no root package");
         }
-        
+
         m_typeName = ((EPackage) topObject).getName();
         */
 
@@ -257,7 +257,10 @@ public class EcoreToType extends TypeImporter {
             // Cannot handle other types as attribute
             addMessage(new Message("Invalid type as attribute " + eAttribute, MessageType.ERROR));
         }
-
+        if (attribType == null) {
+            // error message already generated
+            return;
+        }
         // Handle container type
         if (eAttribute.getUpperBound() > 1 || eAttribute.getUpperBound() == -1) {
             Kind type = eAttribute.isUnique() ? (eAttribute.isOrdered() ? Kind.ORD : Kind.SET) : // Unique
@@ -274,9 +277,8 @@ public class EcoreToType extends TypeImporter {
                 try {
                     Value defaultVal = objectToDataType(mm, attribType, value);
                     if (!attribType.acceptValue(defaultVal)) {
-                        addMessage(
-                            new Message("Incorrect value type of default value " + defaultVal,
-                                MessageType.ERROR));
+                        addMessage(new Message("Incorrect value type of default value "
+                            + defaultVal, MessageType.ERROR));
                     } else {
                         mm.addProperty(new DefaultValueProperty(cmClass, attrName, defaultVal));
                     }
@@ -311,8 +313,9 @@ public class EcoreToType extends TypeImporter {
                 keyNames.add(Name.getName(attr.getName()));
             }
 
-            KeysetProperty p = new KeysetProperty(cmClass, refName, (Class) fieldType,
-                keyNames.toArray(new Name[keyNames.size()]));
+            KeysetProperty p =
+                new KeysetProperty(cmClass, refName, (Class) fieldType,
+                    keyNames.toArray(new Name[keyNames.size()]));
             mm.addProperty(p);
         }
 
@@ -345,8 +348,8 @@ public class EcoreToType extends TypeImporter {
         }
 
         // Add the reference to the class
-        cmClass.addField(
-            new Field(refName, fieldType, eReference.getLowerBound(), eReference.getUpperBound()));
+        cmClass.addField(new Field(refName, fieldType, eReference.getLowerBound(),
+            eReference.getUpperBound()));
     }
 
     // Inserts the package in the resourceset, so it can be used to load instance models

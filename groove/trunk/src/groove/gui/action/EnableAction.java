@@ -1,8 +1,5 @@
 package groove.gui.action;
 
-import java.io.IOException;
-import java.util.Set;
-
 import groove.grammar.QualName;
 import groove.grammar.model.NamedResourceModel;
 import groove.grammar.model.ResourceKind;
@@ -10,6 +7,9 @@ import groove.grammar.model.RuleModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
+
+import java.io.IOException;
+import java.util.Set;
 
 /** Action to enable or disable resources. */
 public class EnableAction extends SimulatorAction {
@@ -37,9 +37,7 @@ public class EnableAction extends SimulatorAction {
             try {
                 getSimulatorModel().doEnable(resource, names);
             } catch (IOException exc) {
-                showErrorDialog(exc,
-                    "Error during %s enabling",
-                    getResourceKind().getDescription());
+                showErrorDialog(exc, "Error during %s enabling", getResourceKind().getDescription());
             }
         }
     }
@@ -53,6 +51,7 @@ public class EnableAction extends SimulatorAction {
         boolean enabled =
             resourceKind.isEnableable() && name != null && getGrammarStore().isModifiable();
         if (enabled && getResourceKind() == ResourceKind.RULE) {
+            assert resource != null; // implied by name != null, which is implied by enabled
             enabled = !((RuleModel) resource).hasRecipes();
         }
         String description = Options.getEnableName(resourceKind, isEnabling);

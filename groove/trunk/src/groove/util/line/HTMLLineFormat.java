@@ -22,6 +22,7 @@ import static groove.io.HTMLConverter.createSpanTag;
 import groove.gui.Options;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
+import groove.util.Exceptions;
 import groove.util.line.Line.ColorType;
 import groove.util.line.Line.Style;
 
@@ -65,8 +66,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
             tag = HTMLConverter.SUPER_TAG;
             break;
         default:
-            assert false;
-            tag = null;
+            throw Exceptions.UNREACHABLE;
         }
         tag.on(subline.getResult());
         return subline;
@@ -109,7 +109,8 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
             if (color != null && !color.equals(Color.BLACK)) {
                 createColorTag(color).on(text);
             }
-            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(getFontTag().on(text))).toString();
+            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(getFontTag().on(text)))
+                .toString();
         } else {
             return "";
         }

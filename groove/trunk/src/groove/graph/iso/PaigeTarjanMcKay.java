@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.graph.iso;
@@ -111,9 +111,11 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         // first iteration
         split(splitters);
         if (TRACE) {
-            System.err.printf(
-                "First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
-                this.partition.size(), this.nodeCertCount, this.iterateCount, this.graphCertificate);
+            System.err.printf("First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
+                this.partition.size(),
+                this.nodeCertCount,
+                this.iterateCount,
+                this.graphCertificate);
         }
         // check if duplicate
         if ((this.strong || BREAK_DUPLICATES) && this.partition.size() < this.nodeCertCount) {
@@ -131,9 +133,11 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 checkpointCertificates();
                 // successively break the symmetry at each of the nodes in the
                 // nontrivial block
-                for (MyNodeCert duplicate : nontrivialBlock.getNodes().toArray()) {
+                for (MyNodeCert duplicate : nontrivialBlock.getNodes()
+                    .toArray()) {
                     duplicate.breakSymmetry();
-                    split(new LinkedList<Block>(duplicate.getBlock().split()));
+                    split(new LinkedList<Block>(duplicate.getBlock()
+                        .split()));
                     rollBackCertificates();
                     this.partition = new NodePartition(this.nodeCerts);
                 }
@@ -143,9 +147,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 // node partition count
                 this.partition = new NodePartition(this.nodeCerts);
                 if (TRACE) {
-                    System.err.printf(
-                        "Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
-                        this.partition.size(), this.nodeCertCount, this.iterateCount,
+                    System.err.printf("Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
+                        this.partition.size(),
+                        this.nodeCertCount,
+                        this.iterateCount,
                         this.graphCertificate);
                 }
             } while (true);
@@ -159,7 +164,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         // && !splitterList.isEmpty()) {
         while (!splitterList.isEmpty()) {
             // find the first non-empty splitter in the queue
-            if (splitterList.peek().size() > 0) {
+            if (splitterList.peek()
+                .size() > 0) {
                 splitNext(splitterList);
                 this.iterateCount++;
             } else {
@@ -231,10 +237,12 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     private void markNodes(Block splitter, NodePartition splitBlocks) {
         // first we copy the splitter's nodes into an array, to prevent
         // concurrent modifications due to the marking of nodes
-        for (MyNodeCert splitterNode : splitter.getNodes().toArray()) {
+        for (MyNodeCert splitterNode : splitter.getNodes()
+            .toArray()) {
             for (MyEdge2Cert outEdge : splitterNode.getOutEdges()) {
                 outEdge.updateTarget();
-                Block splitBlock = outEdge.getTarget().mark();
+                Block splitBlock = outEdge.getTarget()
+                    .mark();
                 if (splitBlock != null) {
                     // add the new split block to the set
                     boolean isNew = splitBlocks.add(splitBlock);
@@ -243,7 +251,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             }
             for (MyEdge2Cert inEdge : splitterNode.getInEdges()) {
                 inEdge.updateSource();
-                Block splitBlock = inEdge.getSource().mark();
+                Block splitBlock = inEdge.getSource()
+                    .mark();
                 if (splitBlock != null) {
                     // add the new split block to the set
                     boolean isNew = splitBlocks.add(splitBlock);
@@ -393,7 +402,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         public MyNodeCert(Node node) {
             this.element = node;
             if (node instanceof HostNode) {
-                this.label = ((HostNode) node).getType().label();
+                this.label = ((HostNode) node).getType()
+                    .label();
                 this.value = this.label.hashCode();
             } else {
                 this.label = null;
@@ -755,8 +765,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (!super.equals(obj)) {
                 return false;
             }
-            return obj instanceof PaigeTarjanMcKay.MyEdge2Cert
-                && ((MyEdge2Cert) obj).getTarget().equals(getTarget());
+            return obj instanceof PaigeTarjanMcKay.MyEdge2Cert && ((MyEdge2Cert) obj).getTarget()
+                .equals(getTarget());
         }
 
         @Override
@@ -1010,6 +1020,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 // to the split blocks,
                 // remove the largest block and set it to non-splitter
                 if (!isSplitter() && this.size < largestSize) {
+                    assert largestBlock != null; // implied by largestSize > 0
                     largestBlock.setSplitter(false);
                     blockMap.remove(largestValue);
                     if (this.size > 0) {
@@ -1126,7 +1137,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 // clone the marked nodes
                 result.markedNodes = new NodeCertificateList(result);
                 for (MyNodeCert markedNode : this.markedNodes) {
-                    markedNode.clone().insertAfter(result.markedNodes);
+                    markedNode.clone()
+                        .insertAfter(result.markedNodes);
                 }
                 result.markedSize = this.markedSize;
                 return result;

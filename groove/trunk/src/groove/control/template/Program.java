@@ -16,18 +16,6 @@
  */
 package groove.control.template;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import groove.control.Call;
 import groove.control.Procedure;
 import groove.control.term.CallTerm;
@@ -43,6 +31,18 @@ import groove.util.Duo;
 import groove.util.Fixable;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Control program, consisting of a main term
@@ -76,14 +76,14 @@ public class Program implements Fixable {
      */
     public void setMain(QualName name, Term main) {
         assert main != null && this.main == null;
-        assert!isFixed();
+        assert !isFixed();
         this.main = main;
         this.mainName = name;
     }
 
     /** Sets the property actions to be checked at each non-transient state. */
     public void setProperties(Collection<Action> properties) {
-        assert!isFixed();
+        assert !isFixed();
         assert this.properties.isEmpty();
         this.properties.addAll(properties);
     }
@@ -213,7 +213,7 @@ public class Program implements Fixable {
      * or the defined procedures overlap
      */
     public void add(Program other) throws FormatException {
-        assert!isFixed();
+        assert !isFixed();
         FormatErrorSet errors = new FormatErrorSet();
         if (hasMain()) {
             if (other.hasMain()) {
@@ -315,6 +315,7 @@ public class Program implements Fixable {
         case EPSILON:
             break;
         case IF:
+            assert arg0 != null; // if has at least one argument
             result.addAll(getInitCalls(arg0));
             Finality condFinal = getFinality(arg0, getFinalityMap());
             if (condFinal.may()) {
@@ -432,6 +433,7 @@ public class Program implements Fixable {
         Term arg3 = arity >= 4 ? term.getArgs()[3] : null;
         switch (term.getOp()) {
         case ALAP:
+            assert arg0 != null; // alap has 1 argument
             may = !arg0.isFinal();
             will = arg0.isDead();
             break;
@@ -453,6 +455,7 @@ public class Program implements Fixable {
             may = will = true;
             break;
         case IF:
+            assert arg0 != null; // if has at least one argument
             Finality condFinal = getFinality(arg0, finalityMap);
             Finality thenFinal = getFinality(arg1, finalityMap);
             Finality alsoFinal = getFinality(arg2, finalityMap);
@@ -494,6 +497,7 @@ public class Program implements Fixable {
             result = getFinality(arg0, finalityMap);
             break;
         case WHILE:
+            assert arg0 != null; // while has one argument
             final0 = getFinality(arg0, finalityMap);
             will = arg0.isDead();
             may = !final0.will();
