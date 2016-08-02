@@ -16,14 +16,14 @@
  */
 package groove.grammar;
 
+import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
+
 import groove.gui.look.Values;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.util.collect.Comparator;
-
-import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Supertype of the actions in a rule system.
@@ -113,7 +113,8 @@ public interface Action extends Callable, Comparable<Action> {
             if (result != 0) {
                 return result;
             }
-            result = o1.getFullName().compareTo(o2.getFullName());
+            result = o1.getQualName()
+                .compareTo(o2.getQualName());
             return result;
         }
 
@@ -148,7 +149,7 @@ public interface Action extends Callable, Comparable<Action> {
         /** Action that captures an invariant graph property. */
         INVARIANT("invariant", Values.INVARIANT_COLOR),
         /** Action that captures a general graph condition. */
-        CONDITION("condition", null), ;
+        CONDITION("condition", null),;
 
         private Role(String text, Color color) {
             this.text = text;

@@ -16,12 +16,12 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlPar;
-import groove.control.Procedure;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import groove.control.CtrlPar;
+import groove.control.Procedure;
 
 /**
  * Class wrapping a transaction.
@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe. */
-    public Recipe(String fullName, int priority, List<CtrlPar.Var> signature, String controlName,
-        int startLine, GrammarProperties grammarProperties) {
+    public Recipe(QualName fullName, int priority, List<CtrlPar.Var> signature,
+        QualName controlName, int startLine, GrammarProperties grammarProperties) {
         super(fullName, Kind.RECIPE, signature, controlName, startLine, grammarProperties);
         this.priority = priority;
     }
@@ -88,7 +88,7 @@ public class Recipe extends Procedure implements Action {
 
     @Override
     public String getTransitionLabel() {
-        return getFullName();
+        return getQualName().toString();
     }
 
     @Override
@@ -101,6 +101,6 @@ public class Recipe extends Procedure implements Action {
      */
     @Override
     public int compareTo(Action other) {
-        return getFullName().compareTo(other.getFullName());
+        return getQualName().compareTo(other.getQualName());
     }
 }

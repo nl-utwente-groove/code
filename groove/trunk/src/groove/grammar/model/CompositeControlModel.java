@@ -17,15 +17,6 @@
 package groove.grammar.model;
 
 import static groove.grammar.model.ResourceKind.CONTROL;
-import groove.control.CtrlLoader;
-import groove.control.instance.Automaton;
-import groove.control.parse.CtrlTree;
-import groove.control.template.Program;
-import groove.grammar.Recipe;
-import groove.grammar.Rule;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +26,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import groove.control.CtrlLoader;
+import groove.control.instance.Automaton;
+import groove.control.parse.CtrlTree;
+import groove.control.template.Program;
+import groove.grammar.QualName;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
+
 /**
  * Model combining all enabled control programs.
  * @author Arend Rensink
@@ -43,7 +45,7 @@ import java.util.Set;
 public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Constructs an instance for a given grammar model. */
     CompositeControlModel(GrammarModel grammar) {
-        super(grammar, ResourceKind.CONTROL, "control");
+        super(grammar, CONTROL);
     }
 
     @Override
@@ -52,16 +54,11 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
     Automaton compute() throws FormatException {
-        Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
+        Collection<QualName> controlNames = getGrammar().getActiveNames(CONTROL);
         // first build the trees, then check to avoid errors due to unresolved dependencies
-        Map<ControlModel,CtrlTree> treeMap = new LinkedHashMap<ControlModel,CtrlTree>();
-        for (String controlName : controlNames) {
+        Map<ControlModel,CtrlTree> treeMap = new LinkedHashMap<>();
+        for (QualName controlName : controlNames) {
             ControlModel controlModel = getGrammar().getControlModel(controlName);
             if (controlModel == null) {
                 addPartError(controlName, new FormatError("Control program cannot be found"));
@@ -115,29 +112,29 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     /**
      * Returns the (non-{@code null}) set of recipe names calling a given rule.
      */
-    public Set<String> getRecipes(String rule) {
+    public Set<QualName> getRecipes(QualName rule) {
         synchronise();
-        Set<String> result = getRuleRecipeMap().get(rule);
+        Set<QualName> result = getRuleRecipeMap().get(rule);
         if (result == null) {
             result = Collections.emptySet();
         }
         return result;
     }
 
-    private Map<String,Set<String>> getRuleRecipeMap() {
-        Map<String,Set<String>> result = this.ruleRecipeMap;
+    private Map<QualName,Set<QualName>> getRuleRecipeMap() {
+        Map<QualName,Set<QualName>> result = this.ruleRecipeMap;
         if (result == null) {
-            result = this.ruleRecipeMap = new HashMap<String,Set<String>>();
+            result = this.ruleRecipeMap = new HashMap<>();
             for (Recipe recipe : getRecipes()) {
                 Set<Rule> subrules = recipe.getRules();
                 if (subrules != null) {
                     for (Rule subrule : subrules) {
-                        String subruleName = subrule.getFullName();
-                        Set<String> recipes = this.ruleRecipeMap.get(subruleName);
+                        QualName subruleName = subrule.getQualName();
+                        Set<QualName> recipes = this.ruleRecipeMap.get(subruleName);
                         if (recipes == null) {
-                            this.ruleRecipeMap.put(subruleName, recipes = new HashSet<String>());
+                            this.ruleRecipeMap.put(subruleName, recipes = new HashSet<>());
                         }
-                        recipes.add(recipe.getFullName());
+                        recipes.add(recipe.getQualName());
                     }
                 }
             }
@@ -145,7 +142,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         return result;
     }
 
-    private Map<String,Set<String>> ruleRecipeMap;
+    private Map<QualName,Set<QualName>> ruleRecipeMap;
 
     @Override
     void notifyWillRebuild() {
@@ -158,24 +155,26 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {
-        String key = error.getResourceKind() == CONTROL ? error.getResourceName() : null;
+        QualName key = error.getResourceKind() == CONTROL ? error.getResourceName() : null;
         getPartErrors(key).add(error);
     }
 
     /** Adds an error for a particular control program. */
-    private void addPartError(String controlName, FormatError error) {
+    private void addPartError(QualName controlName, FormatError error) {
         getPartErrors(controlName).add(error);
     }
 
     /** Collects and returns all errors found in the partial control models. */
     private FormatErrorSet getAllPartErrors() {
         FormatErrorSet result = createErrors();
-        for (Map.Entry<String,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
+        for (Map.Entry<QualName,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
             for (FormatError error : entry.getValue()) {
                 if (entry.getKey() == null) {
                     result.add("Error in implicit control: %s", error);
                 } else {
-                    result.add("Error in control program '%s': %s", entry.getKey(), error,
+                    result.add("Error in control program '%s': %s",
+                        entry.getKey(),
+                        error,
                         FormatError.control(entry.getKey()));
                 }
             }
@@ -184,14 +183,14 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     /** Returns the errors found in a given partial control model. */
-    FormatErrorSet getPartErrors(String controlName) {
+    FormatErrorSet getPartErrors(QualName controlName) {
         return getPartErrorsMap().get(controlName);
     }
 
-    private Map<String,FormatErrorSet> getPartErrorsMap() {
+    private Map<QualName,FormatErrorSet> getPartErrorsMap() {
         if (this.partErrorsMap == null) {
-            this.partErrorsMap = new HashMap<String,FormatErrorSet>();
-            for (String name : getGrammar().getActiveNames(CONTROL)) {
+            this.partErrorsMap = new HashMap<>();
+            for (QualName name : getGrammar().getActiveNames(CONTROL)) {
                 this.partErrorsMap.put(name, createErrors());
             }
             this.partErrorsMap.put(null, createErrors());
@@ -199,5 +198,5 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         return this.partErrorsMap;
     }
 
-    private Map<String,FormatErrorSet> partErrorsMap;
+    private Map<QualName,FormatErrorSet> partErrorsMap;
 }

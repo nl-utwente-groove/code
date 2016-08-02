@@ -20,11 +20,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import groove.automaton.RegAut;
 import groove.automaton.RegAut.Result;
 import groove.automaton.RegAutCalculator;
 import groove.automaton.RegExpr;
 import groove.automaton.SimpleNFA;
+import groove.grammar.QualName;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
@@ -44,20 +58,7 @@ import groove.io.graph.GxlIO;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import junit.framework.Assert;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Tests the available {@link RegAut} interface.
@@ -71,7 +72,7 @@ abstract public class AbstractAutomatonTest {
     /** Directory with test grammar (relative to the project) */
     static public final String GRAMMAR = "junit/samples/regexpr";
     /** Name of the type graph used in this test. */
-    static public final String TYPE_NAME = "construction";
+    static public final QualName TYPE_NAME = QualName.name("construction");
 
     RegAutCalculator calculator = new RegAutCalculator();
 
@@ -99,9 +100,8 @@ abstract public class AbstractAutomatonTest {
     @BeforeClass
     public static void initStatics() {
         try {
-            testGraph =
-                new DefaultHostGraph(GxlIO.instance().loadGraph(
-                    new File(GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
+            testGraph = new DefaultHostGraph(GxlIO.instance()
+                .loadGraph(new File(GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
         } catch (IOException e) {
             Assert.fail(e.toString());
         }
@@ -115,7 +115,8 @@ abstract public class AbstractAutomatonTest {
         implicitTypeGraph.addLabel("D");
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            loadedTypeGraph = view.getTypeModel(TYPE_NAME).toResource();
+            loadedTypeGraph = view.getTypeModel(TYPE_NAME)
+                .toResource();
         } catch (FormatException e) {
             fail(e.getMessage());
         } catch (IOException e) {
@@ -629,7 +630,8 @@ abstract public class AbstractAutomatonTest {
 
     private Valuation createValuation(String... ids) {
         Valuation result = new Valuation();
-        TypeFactory typeFactory = testGraph.getFactory().getTypeFactory();
+        TypeFactory typeFactory = testGraph.getFactory()
+            .getTypeFactory();
         TypeNode top = typeFactory.getTopNode();
         for (int i = 0; i < ids.length; i += 2) {
             String var = ids[i];
@@ -651,7 +653,9 @@ abstract public class AbstractAutomatonTest {
     protected static HostNode getNode(String selfLabel) {
         Collection<? extends HostEdge> edgeSet =
             testGraph.edgeSet(TypeLabel.createBinaryLabel(selfLabel));
-        return edgeSet.iterator().next().source();
+        return edgeSet.iterator()
+            .next()
+            .source();
     }
 
     private static void addRelated(Set<Result> results, HostNode one, HostNode two) {

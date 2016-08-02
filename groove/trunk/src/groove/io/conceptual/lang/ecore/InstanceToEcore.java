@@ -16,6 +16,20 @@
  */
 package groove.io.conceptual.lang.ecore;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
+
 import groove.io.conceptual.Field;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.Timer;
@@ -38,21 +52,7 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.resource.Resource;
-
-public class InstanceToEcore extends InstanceExporter<java.lang.Object> implements Visitor {
+public class InstanceToEcore extends InstanceExporter<java.lang.Object>implements Visitor {
     private TypeToEcore m_typeToEcore;
 
     private EcoreResource m_ecoreResource;
@@ -89,7 +89,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
         timer = Timer.cont("Ecore save");
 
         Resource typeResource =
-            this.m_ecoreResource.getInstanceResource(instanceModel.getName() + "bababa");
+            this.m_ecoreResource.getInstanceResource(instanceModel.getQualName());
         EList<EObject> contents = typeResource.getContents();
 
         //contents.add(rootObject);
@@ -107,11 +107,14 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
         Class cmClass = (Class) object.getType();
         EClass eClass = this.m_typeToEcore.getEClass(cmClass);
 
-        EObject eObject = eClass.getEPackage().getEFactoryInstance().create(eClass);
+        EObject eObject = eClass.getEPackage()
+            .getEFactoryInstance()
+            .create(eClass);
         setElement(object, eObject);
         this.m_eObjects.add(eObject);
 
-        for (Entry<Field,Value> fieldValue : object.getValue().entrySet()) {
+        for (Entry<Field,Value> fieldValue : object.getValue()
+            .entrySet()) {
             EStructuralFeature eFeature =
                 this.m_typeToEcore.getEStructuralFeature(fieldValue.getKey());
             // if unset value, dont set it in the Ecore model either
@@ -126,7 +129,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
                 EList<Object> objectList = (EList<Object>) eObject.eGet(eFeature);
                 for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
-                    assert (eSubValue != null);
+                    assert(eSubValue != null);
                     // It is very well possible that this evaluated to true, due to recursion and opposite edges
                     if (!objectList.contains(eSubValue)) {
                         objectList.add(eSubValue);
@@ -137,7 +140,8 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
                 Object eValue = null;
                 // ContainerValue possible for 0..1 attribs
                 if (fieldValue.getValue() instanceof ContainerValue) {
-                    eValue = getElement(((ContainerValue) fieldValue.getValue()).getValue().get(0));
+                    eValue = getElement(((ContainerValue) fieldValue.getValue()).getValue()
+                        .get(0));
                 } else {
                     eValue = getElement(fieldValue.getValue());
                 }
@@ -155,10 +159,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
 
         EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) realval.getType());
 
-        Object eDoubleVal =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, realval.toString());
+        Object eDoubleVal = eDataType.getEPackage()
+            .getEFactoryInstance()
+            .createFromString(eDataType, realval.toString());
         setElement(realval, eDoubleVal);
     }
 
@@ -170,10 +173,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
 
         EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) stringval.getType());
 
-        Object eStringVal =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, stringval.toString());
+        Object eStringVal = eDataType.getEPackage()
+            .getEFactoryInstance()
+            .createFromString(eDataType, stringval.toString());
         setElement(stringval, eStringVal);
     }
 
@@ -185,10 +187,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
 
         EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) intval.getType());
 
-        Object eIntVal =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, intval.toString());
+        Object eIntVal = eDataType.getEPackage()
+            .getEFactoryInstance()
+            .createFromString(eDataType, intval.toString());
         setElement(intval, eIntVal);
     }
 
@@ -200,10 +201,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
 
         EDataType eDataType = this.m_typeToEcore.getEDataType((DataType) boolval.getType());
 
-        Object eBoolVal =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, boolval.toString());
+        Object eBoolVal = eDataType.getEPackage()
+            .getEFactoryInstance()
+            .createFromString(eDataType, boolval.toString());
         setElement(boolval, eBoolVal);
     }
 
@@ -215,10 +215,10 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
 
         EEnum eEnum = (EEnum) this.m_typeToEcore.getEDataType((Enum) enumval.getType());
 
-        Object eEnumVal =
-            eEnum.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eEnum, enumval.getValue().toString());
+        Object eEnumVal = eEnum.getEPackage()
+            .getEFactoryInstance()
+            .createFromString(eEnum, enumval.getValue()
+                .toString());
         setElement(enumval, eEnumVal);
 
         return;
@@ -229,8 +229,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
         Container container = (Container) containerval.getType();
         EClass containerClass = this.m_typeToEcore.getContainerClass(container);
 
-        EObject containerObject =
-            containerClass.getEPackage().getEFactoryInstance().create(containerClass);
+        EObject containerObject = containerClass.getEPackage()
+            .getEFactoryInstance()
+            .create(containerClass);
         setElement(containerval, containerObject);
         this.m_eObjects.add(containerObject);
 
@@ -252,11 +253,14 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
         Tuple tuple = (Tuple) tupleval.getType();
         EClass tupleClass = this.m_typeToEcore.getTupleClass(tuple);
 
-        EObject tupleObject = tupleClass.getEPackage().getEFactoryInstance().create(tupleClass);
+        EObject tupleObject = tupleClass.getEPackage()
+            .getEFactoryInstance()
+            .create(tupleClass);
         setElement(tupleval, tupleObject);
         this.m_eObjects.add(tupleObject);
 
-        for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
+        for (Entry<Integer,Value> entry : tupleval.getValue()
+            .entrySet()) {
             String indexName = this.m_typeToEcore.getTupleElementName(tuple, entry.getKey());
             EStructuralFeature eFeature = tupleClass.getEStructuralFeature(indexName);
             Value tupValue = entry.getValue();
@@ -286,10 +290,9 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object> implemen
         CustomDataType dataType = (CustomDataType) dataval.getType();
         EDataType eDataType = this.m_typeToEcore.getEDataType(dataType);
 
-        Object eDataValue =
-            eDataType.getEPackage()
-                .getEFactoryInstance()
-                .createFromString(eDataType, dataval.getValue());
+        Object eDataValue = eDataType.getEPackage()
+            .getEFactoryInstance()
+            .createFromString(eDataType, dataval.getValue());
         setElement(dataval, eDataValue);
     }
 }

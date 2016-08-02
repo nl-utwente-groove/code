@@ -26,9 +26,8 @@ public class InteractionVariable extends Variable {
      * @param node The node on which the label is based.
      * @return The variable label.
      */
-    public static String createInteractionVariableLabel(Rule rule,
-            VariableNode node) {
-        return rule.getFullName() + "_" + node.getNumber();
+    public static String createInteractionVariableLabel(Rule rule, VariableNode node) {
+        return rule.getQualName() + "_" + node.getNumber();
     }
 
     /**

@@ -73,11 +73,14 @@ public class GrammarModel implements Observer {
     public GrammarModel(SystemStore store) {
         this.store = store;
         this.changeCount = new ChangeCount();
-        String grammarVersion = store.getProperties().getGrammarVersion();
-        boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
+        String grammarVersion = store.getProperties()
+            .getGrammarVersion();
+        boolean noActiveStartGraphs = store.getProperties()
+            .getActiveNames(HOST)
+            .isEmpty();
         if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
             && noActiveStartGraphs) {
-            setLocalActiveNames(HOST, Groove.DEFAULT_START_GRAPH_NAME);
+            setLocalActiveNames(HOST, QualName.name(Groove.DEFAULT_START_GRAPH_NAME));
         }
         for (ResourceKind resource : ResourceKind.all(false)) {
             syncResource(resource);
@@ -95,7 +98,8 @@ public class GrammarModel implements Observer {
      */
     public String getId() {
         return Grammar.buildId(getName(),
-            getStartGraphModel() == null ? null : getStartGraphModel().getFullName());
+            getStartGraphModel() == null ? null : getStartGraphModel().getQualName()
+                .toString());
     }
 
     /** Returns the backing system store. */
@@ -132,45 +136,48 @@ public class GrammarModel implements Observer {
     }
 
     /** Returns all names of grammar resources of a given kind. */
-    public Set<String> getNames(ResourceKind kind) {
+    public Set<QualName> getNames(ResourceKind kind) {
         if (kind == ResourceKind.PROPERTIES) {
             return null;
         } else if (kind.isTextBased()) {
-            return getStore().getTexts(kind).keySet();
+            return getStore().getTexts(kind)
+                .keySet();
         } else {
-            return getStore().getGraphs(kind).keySet();
+            return getStore().getGraphs(kind)
+                .keySet();
         }
     }
 
     /** Returns the map from resource names to resource models of a given kind. */
-    public Map<String,? extends ResourceModel<?>> getResourceMap(ResourceKind kind) {
+    public Map<QualName,? extends NamedResourceModel<?>> getResourceMap(ResourceKind kind) {
         return this.resourceMap.get(kind);
     }
 
     /** Returns the collection of resource models of a given kind. */
-    public Collection<ResourceModel<?>> getResourceSet(ResourceKind kind) {
-        return this.resourceMap.get(kind).values();
+    public Collection<NamedResourceModel<?>> getResourceSet(ResourceKind kind) {
+        return this.resourceMap.get(kind)
+            .values();
     }
 
     /** Returns a named graph-based resource model of a given kind. */
-    public GraphBasedModel<?> getGraphResource(ResourceKind kind, String name) {
+    public GraphBasedModel<?> getGraphResource(ResourceKind kind, QualName name) {
         assert kind.isGraphBased() : String.format("Resource kind %s is not graph-based", kind);
         return (GraphBasedModel<?>) getResourceMap(kind).get(name);
     }
 
     /** Returns a named text-based resource model of a given kind. */
-    public TextBasedModel<?> getTextResource(ResourceKind kind, String name) {
+    public TextBasedModel<?> getTextResource(ResourceKind kind, QualName name) {
         assert kind.isTextBased() : String.format("Resource kind %s is not text-based", kind);
         return (TextBasedModel<?>) getResourceMap(kind).get(name);
     }
 
     /** Indicates if this grammar model has a named resource model of a given kind. */
-    public boolean hasResource(ResourceKind kind, String name) {
+    public boolean hasResource(ResourceKind kind, QualName name) {
         return getResource(kind, name) != null;
     }
 
     /** Returns a named resource model of a given kind. */
-    public ResourceModel<?> getResource(ResourceKind kind, String name) {
+    public NamedResourceModel<?> getResource(ResourceKind kind, QualName name) {
         assert name != null;
         return getResourceMap(kind).get(name);
     }
@@ -181,9 +188,9 @@ public class GrammarModel implements Observer {
      * the grammar model.
      * @see #setLocalActiveNames(ResourceKind, Collection)
      */
-    public Set<String> getActiveNames(ResourceKind kind) {
+    public Set<QualName> getActiveNames(ResourceKind kind) {
         // first check for locally stored names
-        Set<String> result = this.localActiveNamesMap.get(kind);
+        Set<QualName> result = this.localActiveNamesMap.get(kind);
         if (result == null) {
             // if there are none, check for active names in the store
             result = this.storedActiveNamesMap.get(kind);
@@ -196,9 +203,9 @@ public class GrammarModel implements Observer {
      * Returns the set of resource names of the local active resources of a given kind.
      * @see #setLocalActiveNames(ResourceKind, Collection)
      */
-    public Set<String> getLocalActiveNames(ResourceKind kind) {
+    public Set<QualName> getLocalActiveNames(ResourceKind kind) {
         // first check for locally stored names
-        Set<String> result = this.localActiveNamesMap.get(kind);
+        Set<QualName> result = this.localActiveNamesMap.get(kind);
         if (result == null) {
             return null;
         }
@@ -208,7 +215,7 @@ public class GrammarModel implements Observer {
     /**
      * Convenience method for calling {@link #setLocalActiveNames(ResourceKind, Collection)}.
      */
-    public void setLocalActiveNames(ResourceKind kind, String... names) {
+    public void setLocalActiveNames(ResourceKind kind, QualName... names) {
         setLocalActiveNames(kind, Arrays.asList(names));
     }
 
@@ -219,10 +226,11 @@ public class GrammarModel implements Observer {
      * @param names non-{@code null} set of active names
      * @see #getActiveNames(ResourceKind)
      */
-    public void setLocalActiveNames(ResourceKind kind, Collection<String> names) {
+    public void setLocalActiveNames(ResourceKind kind, Collection<QualName> names) {
         assert names != null;// && !names.isEmpty();
-        this.localActiveNamesMap.put(kind, new TreeSet<String>(names));
-        this.resourceChangeCounts.get(kind).increase();
+        this.localActiveNamesMap.put(kind, new TreeSet<>(names));
+        this.resourceChangeCounts.get(kind)
+            .increase();
         invalidate();
     }
 
@@ -236,7 +244,7 @@ public class GrammarModel implements Observer {
      * @return the graph model for graph <code>name</code>, or <code>null</code>
      *         if there is no such graph.
      */
-    public HostModel getHostModel(String name) {
+    public HostModel getHostModel(QualName name) {
         return (HostModel) getResourceMap(HOST).get(name);
     }
 
@@ -246,7 +254,7 @@ public class GrammarModel implements Observer {
      * @return the corresponding control program model, or <code>null</code> if
      *         no program by that name exists
      */
-    public ControlModel getControlModel(String name) {
+    public ControlModel getControlModel(QualName name) {
         return (ControlModel) getResource(CONTROL, name);
     }
 
@@ -256,7 +264,7 @@ public class GrammarModel implements Observer {
      * @return the corresponding prolog model, or <code>null</code> if
      *         no program by that name exists
      */
-    public PrologModel getPrologModel(String name) {
+    public PrologModel getPrologModel(QualName name) {
         return (PrologModel) getResourceMap(PROLOG).get(name);
     }
 
@@ -265,7 +273,7 @@ public class GrammarModel implements Observer {
      * @return the rule model for rule <code>name</code>, or <code>null</code> if
      *         there is no such rule.
      */
-    public RuleModel getRuleModel(String name) {
+    public RuleModel getRuleModel(QualName name) {
         return (RuleModel) getResourceMap(RULE).get(name);
     }
 
@@ -274,7 +282,7 @@ public class GrammarModel implements Observer {
      * @return the type graph model for type <code>name</code>, or
      *         <code>null</code> if there is no such graph.
      */
-    public TypeModel getTypeModel(String name) {
+    public TypeModel getTypeModel(QualName name) {
         return (TypeModel) getResourceMap(TYPE).get(name);
     }
 
@@ -314,9 +322,10 @@ public class GrammarModel implements Observer {
 
     public HostModel getStartGraphModel() {
         if (this.startGraphModel == null) {
-            TreeMap<String,AspectGraph> graphMap = new TreeMap<String,AspectGraph>();
-            for (String name : getActiveNames(HOST)) {
-                graphMap.put(name, getStore().getGraphs(HOST).get(name));
+            TreeMap<QualName,AspectGraph> graphMap = new TreeMap<>();
+            for (QualName name : getActiveNames(HOST)) {
+                graphMap.put(name, getStore().getGraphs(HOST)
+                    .get(name));
             }
             AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
             if (startGraph != null) {
@@ -341,7 +350,8 @@ public class GrammarModel implements Observer {
         }
         this.startGraphModel = new HostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
-        this.resourceChangeCounts.get(HOST).increase();
+        this.resourceChangeCounts.get(HOST)
+            .increase();
         invalidate();
     }
 
@@ -369,7 +379,8 @@ public class GrammarModel implements Observer {
      * Returns a fresh change tracker for a given resource kind.
      */
     public Tracker createChangeTracker(ResourceKind kind) {
-        return this.resourceChangeCounts.get(kind).createTracker();
+        return this.resourceChangeCounts.get(kind)
+            .createTracker();
     }
 
     /**
@@ -409,21 +420,19 @@ public class GrammarModel implements Observer {
             this.errors.addAll(exc.getErrors());
         }
         getPrologEnvironment();
-        for (ResourceModel<?> prologModel : getResourceSet(PROLOG)) {
+        for (NamedResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
                 this.errors.add("Error in prolog program '%s': %s",
-                    prologModel.getFullName(),
+                    prologModel.getQualName(),
                     error,
                     prologModel);
             }
         }
         // check if all resource names are valid identifiers
         for (ResourceKind kind : ResourceKind.all(false)) {
-            for (ResourceModel<?> model : getResourceSet(kind)) {
-                if (!QualName.isValid(model.getFullName(), null, null)) {
-                    this.errors.add(new FormatError(kind.getName() + " name '" + model.getFullName()
-                        + "' " + "is an illegal identifier", model));
-                }
+            for (NamedResourceModel<?> model : getResourceSet(kind)) {
+                this.errors.addAll(model.getQualName()
+                    .getErrors());
             }
         }
     }
@@ -444,7 +453,7 @@ public class GrammarModel implements Observer {
         result.setTypeGraph(getTypeGraph());
         errors.addAll(getTypeModel().getErrors());
         // set rules
-        for (ResourceModel<?> ruleModel : getResourceSet(RULE)) {
+        for (NamedResourceModel<?> ruleModel : getResourceSet(RULE)) {
             try {
                 // only add the enabled rules
                 if (ruleModel.isEnabled()) {
@@ -453,7 +462,7 @@ public class GrammarModel implements Observer {
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
                     errors.add("Error in rule '%s': %s",
-                        ruleModel.getFullName(),
+                        ruleModel.getQualName(),
                         error,
                         ruleModel.getSource());
                 }
@@ -477,11 +486,11 @@ public class GrammarModel implements Observer {
         }
         // set start graph
         if (getStartGraphModel() == null) {
-            Set<String> startGraphNames = getActiveNames(HOST);
+            Set<QualName> startGraphNames = getActiveNames(HOST);
             if (startGraphNames.isEmpty()) {
                 errors.add("No start graph set");
             } else {
-                errors.add("Start graph '%s' cannot be loaded", startGraphNames);
+                errors.add("Start graphs '%s' cannot be loaded", startGraphNames);
             }
         } else {
             Collection<FormatError> startGraphErrors;
@@ -511,7 +520,7 @@ public class GrammarModel implements Observer {
     public GrooveEnvironment getPrologEnvironment() {
         if (this.prologEnvironment == null) {
             this.prologEnvironment = new GrooveEnvironment(null, null);
-            for (ResourceModel<?> model : getResourceSet(PROLOG)) {
+            for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
                 PrologModel prologModel = (PrologModel) model;
                 if (model.isEnabled()) {
                     try {
@@ -559,7 +568,8 @@ public class GrammarModel implements Observer {
     private void syncResource(ResourceKind kind) {
         // register a change in this resource, regardless of what actually happens.
         // This might possibly be refined
-        this.resourceChangeCounts.get(kind).increase();
+        this.resourceChangeCounts.get(kind)
+            .increase();
         switch (kind) {
         case PROLOG:
             this.prologEnvironment = null;
@@ -568,25 +578,26 @@ public class GrammarModel implements Observer {
             return;
         }
         // update the set of resource models
-        Map<String,ResourceModel<?>> modelMap = this.resourceMap.get(kind);
-        Map<String,? extends Object> sourceMap;
+        Map<QualName,NamedResourceModel<?>> modelMap = this.resourceMap.get(kind);
+        Map<QualName,? extends Object> sourceMap;
         if (kind.isGraphBased()) {
             sourceMap = getStore().getGraphs(kind);
         } else {
             sourceMap = getStore().getTexts(kind);
         }
         // restrict the resources to those whose names are in the store
-        modelMap.keySet().retainAll(sourceMap.keySet());
+        modelMap.keySet()
+            .retainAll(sourceMap.keySet());
         // collect the new active names
-        SortedSet<String> newActiveNames = new TreeSet<String>();
+        SortedSet<QualName> newActiveNames = new TreeSet<>();
         if (kind != RULE && kind != ResourceKind.GROOVY && kind != ResourceKind.CONFIG) {
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
-        for (Map.Entry<String,? extends Object> sourceEntry : sourceMap.entrySet()) {
-            String name = sourceEntry.getKey();
+        for (Map.Entry<QualName,? extends Object> sourceEntry : sourceMap.entrySet()) {
+            QualName name = sourceEntry.getKey();
             Object source = sourceEntry.getValue();
-            ResourceModel<?> model = modelMap.get(name);
+            NamedResourceModel<?> model = modelMap.get(name);
             if (model == null || model.getSource() != source) {
                 modelMap.put(name, model = createModel(kind, name));
                 // collect the active rules
@@ -596,7 +607,7 @@ public class GrammarModel implements Observer {
             }
         }
         // update the active names set
-        Set<String> oldActiveNames = this.storedActiveNamesMap.get(kind);
+        Set<QualName> oldActiveNames = this.storedActiveNamesMap.get(kind);
         if (!oldActiveNames.equals(newActiveNames)) {
             oldActiveNames.clear();
             oldActiveNames.addAll(newActiveNames);
@@ -605,16 +616,18 @@ public class GrammarModel implements Observer {
     }
 
     /** Callback method to create a model for a named resource. */
-    private ResourceModel<?> createModel(ResourceKind kind, String name) {
-        ResourceModel<?> result = null;
+    private NamedResourceModel<?> createModel(ResourceKind kind, QualName name) {
+        NamedResourceModel<?> result = null;
         if (kind.isGraphBased()) {
-            AspectGraph graph = getStore().getGraphs(kind).get(name);
+            AspectGraph graph = getStore().getGraphs(kind)
+                .get(name);
             if (graph != null) {
                 result = createGraphModel(graph);
             }
         } else {
             assert kind.isTextBased();
-            String text = getStore().getTexts(kind).get(name);
+            String text = getStore().getTexts(kind)
+                .get(name);
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
@@ -667,22 +680,22 @@ public class GrammarModel implements Observer {
     }
 
     /** Mapping from resource kinds and names to resource models. */
-    private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
-        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(ResourceKind.class);
+    private final Map<ResourceKind,SortedMap<QualName,NamedResourceModel<?>>> resourceMap =
+        new EnumMap<>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
      * for all other resources, it is stored in the grammar properties.
      * @see #localActiveNamesMap
      */
-    private final Map<ResourceKind,SortedSet<String>> storedActiveNamesMap =
-        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+    private final Map<ResourceKind,SortedSet<QualName>> storedActiveNamesMap =
+        new EnumMap<>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * Where non-{@code null}, the values in this map override the {@link #storedActiveNamesMap}.
      */
-    private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
-        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+    private final Map<ResourceKind,SortedSet<QualName>> localActiveNamesMap =
+        new EnumMap<>(ResourceKind.class);
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
@@ -708,8 +721,8 @@ public class GrammarModel implements Observer {
 
     {
         for (ResourceKind kind : ResourceKind.values()) {
-            this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
-            this.storedActiveNamesMap.put(kind, new TreeSet<String>());
+            this.resourceMap.put(kind, new TreeMap<>());
+            this.storedActiveNamesMap.put(kind, new TreeSet<>());
             this.resourceChangeCounts.put(kind, new ChangeCount());
         }
     }

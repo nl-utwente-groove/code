@@ -16,11 +16,6 @@
  */
 package groove.gui.display;
 
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.gui.SimulatorModel;
-import groove.gui.action.ActionStore;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -31,6 +26,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
+
+import groove.grammar.QualName;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
+import groove.gui.action.ActionStore;
 
 /**
  * Component that can appear on a display tab in the {@link SimulatorModel}.
@@ -72,7 +73,8 @@ abstract public class Display extends JPanel {
         if (this.listPanel == null) {
             this.listPanel = createListPanel();
             if (this.listPanel != null) {
-                ToolTipManager.sharedInstance().registerComponent(this.listPanel);
+                ToolTipManager.sharedInstance()
+                    .registerComponent(this.listPanel);
             }
         }
         return this.listPanel;
@@ -144,7 +146,7 @@ abstract public class Display extends JPanel {
      * panel; or {@code null} if there is nothing showing, or there is
      * nothing to select.
      */
-    public String getTitle() {
+    public QualName getTitle() {
         if (getResourceKind() == null) {
             return null;
         } else {
@@ -256,7 +258,8 @@ abstract public class Display extends JPanel {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            this.scrollPane.getViewport().setBackground(this.list.getBackground());
+            this.scrollPane.getViewport()
+                .setBackground(this.list.getBackground());
         }
 
         /** Returns the list component wrapped in this panel. */

@@ -1,29 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.io.store;
 
 import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.io.FileType.GRAMMAR;
-import groove.grammar.GrammarProperties;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.type.TypeLabel;
-import groove.io.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +31,14 @@ import java.util.TreeMap;
 
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
+
+import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
+import groove.io.Util;
 
 /**
  * Instance of the generic system store where both the graph and the rule
@@ -80,7 +82,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * Immutable view on the name-to-aspect graph map of a given graph-based resource kind.
      * @param kind the kind of resource for which the map is requested
      */
-    abstract public Map<String,AspectGraph> getGraphs(ResourceKind kind);
+    abstract public Map<QualName,AspectGraph> getGraphs(ResourceKind kind);
 
     /**
      * Adds or replaces a set of graph-based resources in the store.
@@ -92,7 +94,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @throws IOException if an error occurred while storing the rule
      */
     abstract public Collection<AspectGraph> putGraphs(ResourceKind kind,
-            Collection<AspectGraph> graphs, boolean layout) throws IOException;
+        Collection<AspectGraph> graphs, boolean layout) throws IOException;
 
     /**
      * Deletes a set of graph-based resources from the store.
@@ -102,13 +104,13 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @throws IOException if the store is immutable
      */
     abstract public Collection<AspectGraph> deleteGraphs(ResourceKind kind,
-            Collection<String> names) throws IOException;
+        Collection<QualName> names) throws IOException;
 
-    /** 
-     * Immutable view on the name-to-text map of a given text-based resource kind. 
+    /**
+     * Immutable view on the name-to-text map of a given text-based resource kind.
      * @param kind the kind of resource for which the map is requested
      */
-    abstract public Map<String,String> getTexts(ResourceKind kind);
+    abstract public Map<QualName,String> getTexts(ResourceKind kind);
 
     /**
      * Adds or replaces a set of text-based resources in the store.
@@ -117,8 +119,8 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    abstract public Map<String,String> putTexts(ResourceKind kind,
-            Map<String,String> texts) throws IOException;
+    abstract public Map<QualName,String> putTexts(ResourceKind kind, Map<QualName,String> texts)
+        throws IOException;
 
     /**
      * Deletes a set of text-based resources from the store.
@@ -127,8 +129,8 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    abstract public Map<String,String> deleteTexts(ResourceKind kind,
-            Collection<String> names) throws IOException;
+    abstract public Map<QualName,String> deleteTexts(ResourceKind kind, Collection<QualName> names)
+        throws IOException;
 
     /**
      * Renames a text-based resource in the store.
@@ -139,8 +141,8 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @param newName the intended new name of the rule (non-null)
      * @throws IOException if an error occurred while storing the renamed rule
      */
-    abstract public void rename(ResourceKind kind, String oldName,
-            String newName) throws IOException;
+    abstract public void rename(ResourceKind kind, QualName oldName, QualName newName)
+        throws IOException;
 
     /** The system properties object in the store (non-null). */
     abstract public GrammarProperties getProperties();
@@ -150,15 +152,13 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @param properties the new system properties object
      * @throws IOException if an error occurred while storing the properties
      */
-    abstract public void putProperties(GrammarProperties properties)
-        throws IOException;
+    abstract public void putProperties(GrammarProperties properties) throws IOException;
 
     /**
      * Changes a label into another in all relevant elements of the store.
      * @throws IOException if an error occurred while storing the properties
      */
-    abstract public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
-        throws IOException;
+    abstract public void relabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException;
 
     /**
      * Reloads all data from the persistent storage into this store. Should be
@@ -173,8 +173,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      *         already exists, or if something goes wrong during saving. If an
      *         exception is thrown, any partial results are deleted.
      */
-    abstract public SystemStore save(File file, boolean clearDir)
-        throws IOException;
+    abstract public SystemStore save(File file, boolean clearDir) throws IOException;
 
     /** Returns a grammar model backed up by this store. */
     public GrammarModel toGrammarModel() {
@@ -185,7 +184,7 @@ abstract public class SystemStore extends UndoableEditSupport {
         return this.model;
     }
 
-    /** 
+    /**
      * Adds an observer to the model.
      * The observer is notified of all {@link Edit} occurrences.
      */
@@ -212,19 +211,19 @@ abstract public class SystemStore extends UndoableEditSupport {
     }
 
     /** Returns the resource map for a given graph-based resource kind. */
-    protected final Map<String,AspectGraph> getGraphMap(ResourceKind kind) {
-        Map<String,AspectGraph> result = this.graphMap.get(kind);
+    protected final Map<QualName,AspectGraph> getGraphMap(ResourceKind kind) {
+        Map<QualName,AspectGraph> result = this.graphMap.get(kind);
         if (result == null) {
-            this.graphMap.put(kind, result = new TreeMap<String,AspectGraph>());
+            this.graphMap.put(kind, result = new TreeMap<>());
         }
         return result;
     }
 
     /** Returns the resource map for a given text-based resource kind. */
-    protected final Map<String,String> getTextMap(ResourceKind kind) {
-        Map<String,String> result = this.textMap.get(kind);
+    protected final Map<QualName,String> getTextMap(ResourceKind kind) {
+        Map<QualName,String> result = this.textMap.get(kind);
         if (result == null) {
-            this.textMap.put(kind, result = new TreeMap<String,String>());
+            this.textMap.put(kind, result = new TreeMap<>());
         }
         return result;
     }
@@ -238,11 +237,11 @@ abstract public class SystemStore extends UndoableEditSupport {
     }
 
     /** The name-to-graph maps of the store. */
-    private final Map<ResourceKind,Map<String,AspectGraph>> graphMap =
-        new EnumMap<ResourceKind,Map<String,AspectGraph>>(ResourceKind.class);
+    private final Map<ResourceKind,Map<QualName,AspectGraph>> graphMap =
+        new EnumMap<>(ResourceKind.class);
     /** The name-to-text maps of the store. */
-    private final Map<ResourceKind,Map<String,String>> textMap =
-        new EnumMap<ResourceKind,Map<String,String>>(ResourceKind.class);
+    private final Map<ResourceKind,Map<QualName,String>> textMap =
+        new EnumMap<>(ResourceKind.class);
 
     /** The grammar view associated with this store. */
     private GrammarModel model;
@@ -259,11 +258,11 @@ abstract public class SystemStore extends UndoableEditSupport {
     };
 
     /** Saves the content of a given system store to file. */
-    static public SystemStore save(File file, SystemStore store,
-            boolean clearDir) throws IOException {
+    static public SystemStore save(File file, SystemStore store, boolean clearDir)
+        throws IOException {
         if (!GRAMMAR.hasExtension(file)) {
-            throw new IOException(String.format(
-                "File '%s' does not refer to a production system", file));
+            throw new IOException(
+                String.format("File '%s' does not refer to a production system", file));
         }
         // if the file already exists, rename it
         // in order to be able to restore if saving fails
@@ -271,22 +270,19 @@ abstract public class SystemStore extends UndoableEditSupport {
         if (file.exists()) {
             newFile = file;
             do {
-                newFile =
-                    new File(newFile.getParent(), "Copy of "
-                        + newFile.getName());
+                newFile = new File(newFile.getParent(), "Copy of " + newFile.getName());
             } while (newFile.exists());
             if (clearDir) {
                 if (!file.renameTo(newFile)) {
-                    throw new IOException(String.format(
-                        "Can't save grammar to existing file '%s'", file));
+                    throw new IOException(
+                        String.format("Can't save grammar to existing file '%s'", file));
                 }
             } else {
                 Util.copyDirectory(file, newFile, true);
             }
         }
         try {
-            DefaultFileSystemStore result =
-                new DefaultFileSystemStore(file, true);
+            DefaultFileSystemStore result = new DefaultFileSystemStore(file, true);
             result.reload();
             // save properties
             for (ResourceKind kind : ResourceKind.values()) {
@@ -295,8 +291,8 @@ abstract public class SystemStore extends UndoableEditSupport {
                 } else if (kind.isTextBased()) {
                     result.putTexts(kind, store.getTexts(kind));
                 } else {
-                    result.putGraphs(kind, store.getGraphs(kind).values(),
-                        false);
+                    result.putGraphs(kind, store.getGraphs(kind)
+                        .values(), false);
                 }
             }
             if (newFile != null) {

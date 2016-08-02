@@ -20,13 +20,16 @@
  */
 package groove.grammar;
 
-import groove.util.Groove;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
-
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.File;
 import java.util.List;
+
+import groove.util.line.Line;
+import groove.util.parse.Fallible;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
+import groove.util.parse.IdValidator;
+import groove.util.parse.Parser;
 
 /**
  * Representation of a qualified name. A qualified name is a
@@ -38,79 +41,62 @@ import java.util.List;
  * @author Angela Lozano and Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:37 $
  */
-public class QualName implements Comparable<QualName> {
+public class QualName extends ModuleName implements Comparable<QualName>, Fallible {
     /**
      * Creates a new qualified name, on the basis of a given non-empty list of tokens.
+     * The name is not tested for validity.
      * @param tokens the list of tokens for the qualified name
      */
-    public QualName(List<String> tokens) throws FormatException {
-        if (tokens.isEmpty()) {
-            throw new FormatException("Name is empty");
-        }
-        this.tokens = new ArrayList<String>(tokens);
-        this.text = Groove.toString(tokens.toArray(), "", "", SEPARATOR, SEPARATOR);
-        List<String> parentTokens = new ArrayList<String>(tokens);
-        parentTokens.remove(tokens.size() - 1);
-        this.parent = Groove.toString(parentTokens.toArray(), "", "", SEPARATOR, SEPARATOR);
+    public QualName(List<String> tokens) {
+        this.tokens.addAll(tokens);
     }
 
-    /**
-     * Creates a new qualified name, on the basis of a given string.
-     * {@link #SEPARATOR} characters appearing in the proposed
-     * name will be interpreted as token separators.
-     * @param name the text of the new qualified name (without enclosing
-     *        characters)
-     * @require <tt>name != null</tt>
-     */
-    public QualName(String name) throws FormatException {
-        this(Arrays.asList(StringHandler.splitExpr(name, SEPARATOR)));
+    /** Constructor for internal consumption, to construct qualified names more efficiently. */
+    QualName() {
+        // empty
     }
 
     /**
      * Tests whether this name is valid, i.e., contains only allowed
      * characters, and throws an appropriate exception otherwise.
+     * @return this object, if it valid
+     * @throws FormatException if the qualified name contains errors
      */
-    public void testValid() throws FormatException {
-        for (String token : this.tokens) {
-            StringBuilder error = new StringBuilder();
-            if (!isValid(token, null, error)) {
-                throw new FormatException(
-                    "Fragment %s of qualified name %s is not well-formed: %s", token, this.text,
-                    error.toString());
+    public QualName testValid() throws FormatException {
+        getErrors().throwException();
+        return this;
+    }
+
+    @Override
+    public FormatErrorSet getErrors() {
+        if (this.errors == null) {
+            this.errors = new FormatErrorSet();
+            if (this.tokens.isEmpty()) {
+                this.errors.add("Qualified name is empty");
+            }
+            for (String token : this.tokens) {
+                if (token.equals(WILDCARD)) {
+                    continue;
+                }
+                try {
+                    tokenValidator.testValid(token);
+                } catch (FormatException exc) {
+                    for (FormatError err : exc.getErrors()) {
+                        this.errors.add("Error in qualified name %s: %s", this, err);
+                    }
+                }
             }
         }
+        return this.errors;
     }
 
-    @Override
-    public int hashCode() {
-        return tokens().hashCode();
-    }
+    /** Non-{@code null} exception in case this name has been found to be invalid. */
+    private FormatErrorSet errors;
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        QualName other = (QualName) obj;
-        if (this.tokens.equals(other.tokens)) {
-            return true;
-        }
-        return false;
+    /** Returns the line consisting of the flattened qualified name. */
+    public Line toLine() {
+        return Line.atom(toString());
     }
-
-    @Override
-    public String toString() {
-        return this.text;
-    }
-
-    /** The text returned by {@link #toString()}. */
-    private final String text;
 
     @Override
     public int compareTo(QualName o) {
@@ -123,17 +109,6 @@ public class QualName implements Comparable<QualName> {
             result = size() - o.size();
         }
         return result;
-    }
-
-    /**
-     * Returns the token in this name at a specific instance
-     * @param i the index at which the token is requested
-     * @return the token at index <tt>i</tt>
-     * @require <tt>0 <= i && i < size()</tt>
-     * @ensure </tt>return == tokens[i]</tt>
-     */
-    public String get(int i) {
-        return tokens().get(i);
     }
 
     /**
@@ -151,359 +126,189 @@ public class QualName implements Comparable<QualName> {
      * name iff the qualified name consists of a single token only.
      * @return the parent qualified name
      */
-    public String parent() {
+    public ModuleName parent() {
+        if (this.parent == null) {
+            ModuleName parent;
+            if (size() == 1) {
+                parent = ModuleName.TOP;
+            } else {
+                parent = new QualName();
+                for (int i = 0; i < size() - 1; i++) {
+                    parent.tokens.add(get(i));
+                }
+            }
+            this.parent = parent;
+        }
         return this.parent;
     }
 
     /** The parent qualified name (may be {@code null}). */
-    private final String parent;
-
-    /**
-     * Returns the number of tokens in the qualified name.
-     * @return number of tokens in this qualified name
-     */
-    public int size() {
-        return tokens().size();
-    }
+    private ModuleName parent;
 
     /**
      * Returns the last token of this qualified name.
      * @return the last token of the qualified name
      */
-    public String child() {
+    public String last() {
         return get(size() - 1);
     }
 
-    /**
-     * Returns the tokens in this qualified name as an array of strings.
+    /** Returns the longest common parent containing both this name and
+     * a given other module name. This name has to be properly contained,
+     * i.e., the result will always be shorter than this name.
      */
-    public List<String> tokens() {
-        return this.tokens;
-    }
-
-    /** The tokens of which this qualified name consists. */
-    private final List<String> tokens;
-
-    /** Extends a given qualified name with a child. */
-    public QualName extend(String child) throws FormatException {
-        List<String> newTokens = new ArrayList<String>(tokens());
-        newTokens.add(child);
-        return new QualName(newTokens);
-    }
-
-    /** Indicates if the qualified name contains a wildcard text as last token. */
-    public boolean hasWildCard() {
-        return tokens().contains(WILDCARD);
-    }
-
-    /** Indicates if this qualified name matches another, taking
-     * wildcards into account.
-     */
-    public boolean matches(QualName other) {
-        boolean result = true;
-        int min = Math.min(size(), other.size());
-        for (int i = 0; result && i < min; i++) {
-            if (tokens().get(i).equals(WILDCARD)) {
-                break;
+    public ModuleName getCommonParent(ModuleName other) {
+        ModuleName result = new ModuleName();
+        int maxSize = Math.max(size() - 1, other.size());
+        boolean equal = true;
+        for (int i = 0; equal && i < maxSize; i++) {
+            if (tokens().get(i)
+                .equals(other.tokens()
+                    .get(i))) {
+                result.tokens.add(this.tokens()
+                    .get(i));
+            } else {
+                equal = false;
             }
-            if (other.tokens().get(i).equals(WILDCARD)) {
-                break;
-            }
-            result = tokens().get(i).equals(other.tokens().get(i));
         }
         return result;
     }
 
+    /** Removes part of the ancestry of this qualified name.
+     * @param parent ancestry of this name, from the top down
+     * @return this name with parent removed from the ancestry;
+     * or this name (unchanged) if parent is not actually part of the ancestry
+     */
+    public QualName removeParent(ModuleName parent) {
+        QualName result;
+        if (parent.contains(this) && parent.size() < size()) {
+            result = new QualName();
+            for (int i = parent.size(); i < size(); i++) {
+                result.tokens.add(this.tokens.get(i));
+            }
+        } else {
+            result = this;
+        }
+        return result;
+    }
+
+    /** Returns a valid qualified constructed from this one,
+     * by replacing all illegal characters (including wildcards).
+     */
+    public QualName toValidName() {
+        QualName result = new QualName();
+        for (String token : tokens()) {
+            result.tokens.add(nameValidator.repair(token));
+        }
+        return result;
+    }
+
+    /** Turns this qualified name into a {@link File} object with a given extension. */
+    public File toFile(String extension) {
+        return new File(parent().toFile(), last() + extension);
+    }
+
     /**
-     * Turns a string into a qualified name.
-     * Returns {@code null} if the name is not well-formed.
+     * Turns a string into a single-token qualified name.
+     * The name is not tested for validity.
      */
     public static QualName name(String text) {
-        try {
-            return new QualName(text);
-        } catch (FormatException exc) {
-            return null;
-        }
-    }
-
-    /** Returns the last part of a well-formed qualified name. */
-    public static String lastName(String fullName) {
-        try {
-            return new QualName(fullName).child();
-        } catch (FormatException e) {
-            assert false;
-            return null;
-        }
+        QualName result = new QualName();
+        result.tokens.add(text);
+        return result;
     }
 
     /**
-     * Returns the namespace of a well-formed qualified name.
-     * The namespace is the qualified name minus its last component.
-     * If the name does not have components, the namespace is
-     * the empty string.
+     * Parses a string into a qualified name.
      */
-    public static String parent(String fullName) {
-        try {
-            return new QualName(fullName).parent();
-        } catch (FormatException e) {
-            assert false;
-            return null;
-        }
-    }
-
-    /** Extends a given parent name with a child name.
-     * If the parent is empty, the result is identical to the child;
-     * otherwise, it consists of the concatenation of the two
-     * separated by {@link #SEPARATOR}.
-     * @param parent the parent name; may be {@code null} or empty
-     * @param child the child name, to be embedded in the parent
-     * @return the concatenation of parent and child
-     */
-    public static String extend(String parent, String child) {
-        if (parent == null || parent.isEmpty()) {
-            return child;
-        } else {
-            return parent + SEPARATOR + child;
-        }
-    }
-
-    /** Extends a given parent name with a child name.
-     * If the parent is {@code null}, the result is identical to the child.
-     * @param parent the parent name; may be {@code null}
-     * @param child the child name, to be embedded in the parent
-     * @return the concatenation of parent and child
-     */
-    public static QualName extend(QualName parent, String child) throws FormatException {
-        if (parent == null) {
-            return new QualName(child);
-        } else {
-            return parent.extend(child);
-        }
+    public static QualName parse(String text) {
+        return parse(text, SEPARATOR_CHAR);
     }
 
     /**
-     * Character to separate constituent tokens (as String).
+     * Parses a file name into a qualified name.
      */
-    static public final String SEPARATOR = ".";
-    /**
-     * Character to separate constituent tokens.
-     */
-    static public final char SEPARATOR_CHAR = '.';
-
-    /** Wildcard character. */
-    static public final char WILDCARD_CHAR = '*';
-    /** Wildcard string. */
-    static public final String WILDCARD = "" + WILDCARD_CHAR;
-
-    /**
-     * Helper method. Checks if the argument is allowed as the first character
-     * of a valid token name, which is the case if it is a letter or an
-     * underscore.
-     * The method also appends a legalized version of the character to the
-     * 'legal' string builder, and produces a parse error message in the
-     * 'error' string builder if necessary.
-     */
-    private static boolean isValidStarter(char character, boolean hasLegal, StringBuilder legal,
-        boolean hasError, StringBuilder error) {
-        if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')
-            || (character == '_')) {
-            if (hasLegal) {
-                legal.append(character);
-            }
-            return true;
-        } else {
-            if (hasLegal) {
-                legalize(character, legal);
-            }
-            if (hasError && error.length() == 0) {
-                error.append(PARSE_ERROR_START);
-            }
-            return false;
-        }
+    public static QualName parse(File filename) {
+        return parse(filename.getPath(), File.separatorChar);
     }
 
     /**
-     * Helper method. Checks if the argument is allowed as an inner character
-     * of a valid token name, which is the case if it conforms to:
-     *    ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')
-     * The method also appends a legalized version of the character to the
-     * 'legal' string builder, and produces a parse error message in the
-     * 'error' string builder if necessary.
+     * Parses a string into a qualified name, using a given token separator.
      */
-    private static boolean isValidCharacter(char character, boolean hasLegal, StringBuilder legal,
-        boolean hasError, StringBuilder error) {
-        if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')
-            || (character >= '0' && character <= '9') || (character == '_') || (character == '-')) {
-            if (hasLegal) {
-                legal.append(character);
-            }
-            return true;
-        } else {
-            if (hasLegal) {
-                legalize(character, legal);
-            }
-            if (hasError && error.length() == 0) {
-                error.append(PARSE_ERROR_ILLEGAL(character));
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Helper method. Produces a legal string for each illegal character.
-     */
-    private static void legalize(char character, StringBuilder result) {
-        switch (character) {
-        case '!':
-            result.append("_PLING_");
-            break;
-        case '@':
-            result.append("_AT_");
-            break;
-        case '#':
-            result.append("_HASH_");
-            break;
-        case '$':
-            result.append("_DOLL_");
-            break;
-        case '%':
-            result.append("_PERC_");
-            break;
-        case '^':
-            result.append("_HAT_");
-            break;
-        case '&':
-            result.append("_AMP_");
-            break;
-        case '*':
-            result.append("_STAR_");
-            break;
-        case '(':
-            result.append("_LPAR_");
-            break;
-        case ')':
-            result.append("_RPAR");
-            break;
-        case ' ':
-            result.append("_SPACE_");
-            break;
-        case '+':
-            result.append("_PLUS_");
-            break;
-        case '=':
-            result.append("_EQ_");
-            break;
-        case '<':
-            result.append("_LT_");
-            break;
-        case '>':
-            result.append("_GT_");
-            break;
-        case ',':
-            result.append("_COMMA_");
-            break;
-        case '?':
-            result.append("_QUERY_");
-            break;
-        case '-':
-            result.append("_-");
-            break;
-        default:
-            if (character >= '0' && character <= '9') {
-                result.append("_");
-                result.append(character);
+    public static QualName parse(String text, char separator) {
+        QualName result = new QualName();
+        StringBuilder currentFragment = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == separator) {
+                result.tokens.add(currentFragment.toString());
+                currentFragment = new StringBuilder();
             } else {
-                result.append("_UNKN_");
+                currentFragment.append(c);
             }
         }
-    }
-
-    /** Tests if a given string is a well-formed qualified name,
-     * i.e., has a non-trivial parent namespace. */
-    public static boolean isQualified(String fullName) {
-        QualName qualName = QualName.name(fullName);
-        return qualName != null && qualName.tokens().size() > 1;
-    }
-
-    /** Tests if a given string is a well-formed qualified name. */
-    public static boolean isValid(String fullName) {
-        return isValid(fullName, null, null);
+        result.tokens.add(currentFragment.toString());
+        return result;
     }
 
     /**
-     * Verification method to determine if an identifier is a valid (rule) name,
-     * which is the case if it conforms to the following grammar:
-     *    token:  ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
-     *    ID:     token('.' token)*
-     * The method also appends a legalized version of the character to the
-     * 'legal' string builder, and produces a parse error message in the
-     * 'error' string builder if necessary.
+     * Validator for qualified name tokens.
+     * The rules for qualified name tokens are those of Java identifiers,
+     * except that, in addition, hyphens may be used as internal characters.
      */
-    public static boolean isValid(String id, StringBuilder legal, StringBuilder error) {
-        boolean first = true;
-        boolean valid = true;
-        boolean hasLegal = legal != null;
-        boolean hasError = error != null;
-        for (int i = 0; i < id.length(); i++) {
-            if (id.charAt(i) == SEPARATOR_CHAR) {
-                valid = valid && !first;
-                if (first && hasError && error.length() == 0) {
-                    if (i == 0) {
-                        error.append(PARSE_ERROR_SEPARATOR_BEGIN);
-                    } else {
-                        error.append(PARSE_ERROR_SEPARATOR_CONSECUTIVE);
-                    }
-                }
-                first = true;
-                if (hasLegal) {
-                    legal.append(SEPARATOR_CHAR);
-                }
-            } else {
-                if (first) {
-                    valid = isValidStarter(id.charAt(i), hasLegal, legal, hasError, error) && valid;
-                } else {
-                    valid =
-                        isValidCharacter(id.charAt(i), hasLegal, legal, hasError, error) && valid;
-                }
-                first = false;
-            }
+    public static final IdValidator tokenValidator = new IdValidator() {
+        @Override
+        public boolean isIdentifierPart(char c) {
+            return c == '-' || super.isIdentifierPart(c);
         }
-        if (first && valid) {
-            if (hasError && error.length() == 0) {
-                if (id.length() == 0) {
-                    error.append(PARSE_ERROR_EMPTY);
-                } else {
-                    error.append(PARSE_ERROR_SEPARATOR_END);
-                }
-            }
-            return false;
-        } else {
-            return valid;
+    };
+
+    /**
+     * Validator for qualified names.
+     * The rules for qualified name tokens are those of Java identifiers,
+     * except that, in addition, hyphens may be used as internal characters.
+     */
+    public static final IdValidator nameValidator = new IdValidator() {
+        @Override
+        public boolean isIdentifierPart(char c) {
+            return c == '-' || super.isIdentifierPart(c);
         }
+
+        @Override
+        public boolean isSeparator(char c) {
+            return c == SEPARATOR_CHAR;
+        }
+    };
+
+    /** Returns a parser for space-separated lists of qualified names. */
+    public static final Parser<List<QualName>> listParser() {
+        if (LIST_PARSER == null) {
+            Parser<QualName> parser = new Parser<QualName>() {
+                @Override
+                public String getDescription() {
+                    return "Qualified name";
+                }
+
+                @Override
+                public QualName parse(String input) {
+                    return QualName.parse(input);
+                }
+
+                @Override
+                public String toParsableString(Object value) {
+                    return ((QualName) value).toString();
+                }
+
+                @Override
+                public Class<? extends QualName> getValueType() {
+                    return QualName.class;
+                }
+            };
+            LIST_PARSER = new Parser.SplitParser<>(parser);
+        }
+        return LIST_PARSER;
     }
 
-    /** Constant for a parse error on the first character of an identifier. */
-    private static String PARSE_ERROR_START = "identifiers must begin with a letter or '_'";
-
-    /** Method for a parse error on an illegal character. */
-    private static String PARSE_ERROR_ILLEGAL(char illegal) {
-        return "'" + illegal + "' " + PARSE_ERROR_ILLEGAL_TAIL;
-    }
-
-    /** Constant for the tail of a parse error on an illegal character. */
-    private static String PARSE_ERROR_ILLEGAL_TAIL = "is not allowed in identifiers";
-
-    /** Constant for a parse error for empty strings. */
-    public static String PARSE_ERROR_EMPTY = "empty identifiers are not allowed";
-
-    /** Constant for a parse error for strings that begin with a separator. */
-    public static String PARSE_ERROR_SEPARATOR_BEGIN = "identifiers may not begin with a separator";
-
-    /** Constant for a parse error for strings that end with a separator. */
-    public static String PARSE_ERROR_SEPARATOR_END = "identifiers may not end with a separator";
-
-    /** Constant for a parse error for strings with consecutive separators. */
-    public static String PARSE_ERROR_SEPARATOR_CONSECUTIVE =
-        "identifiers may not have consecutive separators";
-
+    /** The singleton parser for space-separated lists of qualified names. */
+    private static Parser<List<QualName>> LIST_PARSER;
 }

@@ -1,13 +1,5 @@
 package groove.gui.display;
 
-import groove.control.parse.CtrlTokenMaker;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.TextBasedModel;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.prolog.util.PrologTokenMaker;
-import groove.util.parse.FormatError;
-
 import java.awt.BorderLayout;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +23,15 @@ import org.fife.ui.rsyntaxtextarea.TokenMaker;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
+import groove.control.parse.CtrlTokenMaker;
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.TextBasedModel;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.prolog.util.PrologTokenMaker;
+import groove.util.parse.FormatError;
+
 /**
  * Display tab showing a text-based resource.
  * The tab also offers the functionality to edit the resource.
@@ -52,12 +53,12 @@ final public class TextTab extends ResourceTab {
      * is not an editor but a fresh empty area
      * @param program the program to be edited
      */
-    public TextTab(final ResourceDisplay display, String name, String program) {
+    public TextTab(final ResourceDisplay display, QualName name, String program) {
         super(display);
         this.textArea = new TextArea();
         this.editing = name != null;
         this.textArea.setEditable(this.editing);
-        setName(name);
+        setQualName(name);
         setBorder(null);
         setLayout(new BorderLayout());
         this.textArea.setProgram(program);
@@ -77,9 +78,12 @@ final public class TextTab extends ResourceTab {
             public void update(Observable observable, Object arg) {
                 if (arg != null) {
                     FormatError error = (FormatError) arg;
-                    if (error.getNumbers().size() > 1) {
-                        int line = error.getNumbers().get(0);
-                        int column = error.getNumbers().get(1);
+                    if (error.getNumbers()
+                        .size() > 1) {
+                        int line = error.getNumbers()
+                            .get(0);
+                        int column = error.getNumbers()
+                            .get(1);
                         select(line, column);
                     }
                 }
@@ -125,13 +129,15 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    public boolean setResource(String name) {
+    public boolean setResource(QualName name) {
         String program = null;
         if (name != null) {
-            program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+            program = getSimulatorModel().getStore()
+                .getTexts(getResourceKind())
+                .get(name);
         }
         if (program != null) {
-            setName(name);
+            setQualName(name);
             this.textArea.setProgram(program);
             updateErrors();
         }
@@ -139,7 +145,7 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    public boolean removeResource(String name) {
+    public boolean removeResource(QualName name) {
         boolean result = name.equals(getName());
         if (result) {
             setName(null);
@@ -153,9 +159,8 @@ final public class TextTab extends ResourceTab {
     public void updateGrammar(GrammarModel grammar) {
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
-        TextBasedModel<?> textModel =
-                getName() == null ? null : (TextBasedModel<?>) grammar.getResource(getResourceKind(),
-                getName());
+        TextBasedModel<?> textModel = getQualName() == null ? null
+            : (TextBasedModel<?>) grammar.getResource(getResourceKind(), getQualName());
         if (textModel == null) {
             dispose();
         } else if (!isDirty()) {
@@ -184,11 +189,12 @@ final public class TextTab extends ResourceTab {
 
     @Override
     protected Collection<FormatError> getErrors() {
-        String name = getName();
+        QualName name = getQualName();
         if (name == null) {
             return Collections.emptySet();
         } else {
-            return getDisplay().getResource(name).getErrors();
+            return getDisplay().getResource(name)
+                .getErrors();
         }
     }
 
@@ -208,7 +214,7 @@ final public class TextTab extends ResourceTab {
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSaveText(getName(), getProgram());
+        getSaveAction().doSaveText(getQualName(), getProgram());
     }
 
     /** Creates a token maker for the text area of this tab. */
@@ -217,13 +223,13 @@ final public class TextTab extends ResourceTab {
         case PROLOG:
             return new PrologTokenMaker();
         case GROOVY:
-            return TokenMakerFactory.getDefaultInstance().getTokenMaker(
-                SyntaxConstants.SYNTAX_STYLE_GROOVY);
+            return TokenMakerFactory.getDefaultInstance()
+                .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_GROOVY);
         case CONTROL:
             return new CtrlTokenMaker();
         default:
-            return TokenMakerFactory.getDefaultInstance().getTokenMaker(
-                SyntaxConstants.SYNTAX_STYLE_NONE);
+            return TokenMakerFactory.getDefaultInstance()
+                .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_NONE);
         }
     }
 

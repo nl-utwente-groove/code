@@ -1,21 +1,38 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.conceptual.lang.graphviz;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.alexmerz.graphviz.ParseException;
+import com.alexmerz.graphviz.Parser;
+import com.alexmerz.graphviz.objects.Edge;
+import com.alexmerz.graphviz.objects.Graph;
+import com.alexmerz.graphviz.objects.Node;
+
+import groove.grammar.QualName;
 import groove.io.FileType;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
@@ -35,22 +52,6 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.StringValue;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.alexmerz.graphviz.ParseException;
-import com.alexmerz.graphviz.Parser;
-import com.alexmerz.graphviz.objects.Edge;
-import com.alexmerz.graphviz.objects.Graph;
-import com.alexmerz.graphviz.objects.Node;
 
 public class GraphvizToInstance extends InstanceImporter {
     private Map<Node,Object> m_nodeMap = new HashMap<Node,Object>();
@@ -79,9 +80,9 @@ public class GraphvizToInstance extends InstanceImporter {
         }
 
         //Import all graphs in the same instance model.
-        TypeModel typeModel = new TypeModel("DOTType");
+        TypeModel typeModel = new TypeModel(QualName.name("DOTType"));
         InstanceModel instanceModel =
-            new InstanceModel(typeModel, FileType.getPureName(file));
+            new InstanceModel(typeModel, QualName.name(FileType.getPureName(file)));
         int timer = Timer.start("DOT to IM");
         visitGraphs(instanceModel, graphs, Id.ROOT);
         Timer.stop(timer);
@@ -90,9 +91,11 @@ public class GraphvizToInstance extends InstanceImporter {
 
     private void visitGraphs(InstanceModel model, List<Graph> graphs, Id graphId) {
         for (Graph graph : graphs) {
-            String graphName = graph.getId().getLabel();
+            String graphName = graph.getId()
+                .getLabel();
             if (graphName.equals("")) {
-                graphName = graph.getId().getId();
+                graphName = graph.getId()
+                    .getId();
             }
             if (graphName.equals("")) {
                 graphName = graph.getAttribute("label");
@@ -124,13 +127,15 @@ public class GraphvizToInstance extends InstanceImporter {
             return this.m_nodeMap.get(node);
         }
         if (graphId == null) {
-            addMessage(new Message("Attempting to add edge for unvisited node"
-                + node.toString(), MessageType.ERROR));
+            addMessage(new Message("Attempting to add edge for unvisited node" + node.toString(),
+                MessageType.ERROR));
         }
 
-        String nodeName = node.getId().getLabel();
+        String nodeName = node.getId()
+            .getLabel();
         if (nodeName.equals("")) {
-            nodeName = node.getId().getId();
+            nodeName = node.getId()
+                .getId();
         }
         if (nodeName.equals("")) {
             nodeName = node.getAttribute("label");
@@ -139,23 +144,23 @@ public class GraphvizToInstance extends InstanceImporter {
             nodeName = "node";
         }
 
-        Class c =
-            model.getTypeModel().getClass(
-                Id.getId(graphId, Name.getName(nodeName)), true);
+        Class c = model.getTypeModel()
+            .getClass(Id.getId(graphId, Name.getName(nodeName)), true);
         Object object = new Object(c, Name.getName(nodeName));
         this.m_nodeMap.put(node, object);
 
         //ContainerValue attrContainer = new ContainerValue((Container) GraphvizUtil.g_AttrField.getType());
         //object.setFieldValue(GraphvizUtil.g_AttrField, attrContainer);
-        for (Entry<String,String> entry : node.getAttributes().entrySet()) {
-            if (entry.getKey().equals("label")) {
+        for (Entry<String,String> entry : node.getAttributes()
+            .entrySet()) {
+            if (entry.getKey()
+                .equals("label")) {
                 continue;
             }
 
             // Add field of type container, as attributes are optional
-            Field f =
-                new Field(Name.getName(entry.getKey()), new Container(Kind.SET,
-                    StringType.instance()), 0, 1);
+            Field f = new Field(Name.getName(entry.getKey()),
+                new Container(Kind.SET, StringType.instance()), 0, 1);
             c.addField(f);
 
             ContainerValue v = new ContainerValue((Container) f.getType());
@@ -169,8 +174,10 @@ public class GraphvizToInstance extends InstanceImporter {
     }
 
     private void visitEdge(InstanceModel model, Edge edge) {
-        Node source = edge.getSource().getNode();
-        Node target = edge.getTarget().getNode();
+        Node source = edge.getSource()
+            .getNode();
+        Node target = edge.getTarget()
+            .getNode();
 
         if (source.isSubgraph() || target.isSubgraph()) {
             // Edge to graph not supported
@@ -190,9 +197,8 @@ public class GraphvizToInstance extends InstanceImporter {
         Type targetType = targetObj.getType();
         int index = 0;
         do {
-            f =
-                ((Class) sourceObj.getType()).getField(Name.getName(index == 0
-                        ? label : label + index));
+            f = ((Class) sourceObj.getType())
+                .getField(Name.getName(index == 0 ? label : label + index));
             if (f != null) {
                 index++;
                 fType = ((Container) f.getType()).getType();
@@ -204,14 +210,13 @@ public class GraphvizToInstance extends InstanceImporter {
         if (f == null) {
             // Always unique and unordered
             Container ctype = new Container(Kind.SET, targetObj.getType());
-            f =
-                new Field(Name.getName(index == 0 ? label : label + index),
-                    ctype, 0, -1);
+            f = new Field(Name.getName(index == 0 ? label : label + index), ctype, 0, -1);
             ((Class) sourceObj.getType()).addField(f);
             sourceObj.setFieldValue(f, new ContainerValue(ctype));
         }
 
-        ContainerValue cv = (ContainerValue) sourceObj.getValue().get(f);
+        ContainerValue cv = (ContainerValue) sourceObj.getValue()
+            .get(f);
         cv.addValue(targetObj);
     }
 }

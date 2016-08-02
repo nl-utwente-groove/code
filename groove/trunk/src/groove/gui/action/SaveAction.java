@@ -1,5 +1,10 @@
 package groove.gui.action;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.TextBasedModel;
@@ -12,33 +17,27 @@ import groove.gui.display.TextTab;
 import groove.io.FileType;
 import groove.io.graph.GxlIO;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 /**
  * Action to save the resource in an editor panel.
  * @author Arend Rensink
  * @version $Revision $
  */
 public final class SaveAction extends SimulatorAction {
-    /** 
+    /**
      * Creates an instance of the action for a given simulator.
      * @param simulator the editor whose content should be saved
      * @param saveAs flag indicating that the action attempts to save to
      * a file outside the grammar.
      */
     public SaveAction(Simulator simulator, ResourceKind resource, boolean saveAs) {
-        super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
-                : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
-                : Icons.SAVE_ICON, null, resource);
+        super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME : Options.SAVE_ACTION_NAME,
+            saveAs ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON, null, resource);
         if (!saveAs) {
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
         this.saveAs = saveAs;
         this.saveStateAction =
-            saveAs ? getActions().getSaveStateAsAction()
-                    : getActions().getSaveStateAction();
+            saveAs ? getActions().getSaveStateAsAction() : getActions().getSaveStateAction();
     }
 
     @Override
@@ -48,32 +47,30 @@ public final class SaveAction extends SimulatorAction {
         } else {
             boolean saved = false;
             ResourceKind resourceKind = getResourceKind();
-            String name = getSimulatorModel().getSelected(resourceKind);
+            QualName name = getSimulatorModel().getSelected(resourceKind);
             ResourceTab editor = getDisplay().getEditor(name);
             if (resourceKind.isGraphBased()) {
                 AspectGraph graph;
                 boolean minor;
                 if (editor == null) {
-                    graph = getGrammarStore().getGraphs(resourceKind).get(name);
+                    graph = getGrammarStore().getGraphs(resourceKind)
+                        .get(name);
                     minor = true;
                 } else {
                     graph = ((GraphEditorTab) editor).getGraph();
                     minor = ((GraphEditorTab) editor).isDirtMinor();
                 }
-                saved =
-                    this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph,
-                        minor);
+                saved = this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph, minor);
             } else {
                 assert resourceKind.isTextBased();
                 String text;
                 if (editor == null) {
-                    text = getGrammarStore().getTexts(resourceKind).get(name);
+                    text = getGrammarStore().getTexts(resourceKind)
+                        .get(name);
                 } else {
                     text = ((TextTab) editor).getProgram();
                 }
-                saved =
-                    this.saveAs ? doSaveTextAs(name, text) : doSaveText(name,
-                        text);
+                saved = this.saveAs ? doSaveTextAs(name, text) : doSaveText(name, text);
             }
             if (editor != null && saved) {
                 editor.setClean();
@@ -94,36 +91,41 @@ public final class SaveAction extends SimulatorAction {
             getSimulatorModel().doAddGraph(resource, graph, minor);
             result = true;
         } catch (IOException exc) {
-            showErrorDialog(exc, "Error while saving %s '%s'",
-                getResourceKind().getDescription(), graph.getName());
+            showErrorDialog(exc,
+                "Error while saving %s '%s'",
+                getResourceKind().getDescription(),
+                graph.getName());
         }
         return result;
     }
 
-    /** Attempts to write the graph to an external file. 
+    /** Attempts to write the graph to an external file.
      * @return {@code true} if the graph was saved within the grammar
      */
     public boolean doSaveGraphAs(AspectGraph graph) {
         boolean result = false;
-        File selectedFile = askSaveResource(graph.getName());
+        File selectedFile = askSaveResource(graph.getQualName());
         // now save, if so required
         if (selectedFile != null) {
             try {
-                String nameInGrammar = getNameInGrammar(selectedFile);
+                QualName nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
                     FileType fileType = getResourceKind().getFileType();
                     // save in external file
-                    String newName =
-                        fileType.stripExtension(selectedFile.getName());
-                    GxlIO.instance().saveGraph(
-                        graph.rename(newName).toPlainGraph(), selectedFile);
+                    QualName newName =
+                        QualName.name(fileType.stripExtension(selectedFile.getName()));
+                    GxlIO.instance()
+                        .saveGraph(graph.rename(newName)
+                            .toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar
                     result = doSaveGraph(graph.rename(nameInGrammar), false);
                 }
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error while writing %s to '%s'",
-                    getResourceKind().getDescription(), selectedFile);
+                showErrorDialog(exc,
+                    "Error while writing %s to '%s'",
+                    getResourceKind().getDescription(),
+                    selectedFile);
             }
         }
         return result;
@@ -133,7 +135,7 @@ public final class SaveAction extends SimulatorAction {
      * Saves the text under a given name in the grammar.
      * @return {@code true} if the action succeeded
      */
-    public boolean doSaveText(String name, String text) {
+    public boolean doSaveText(QualName name, String text) {
         boolean result = false;
         if (isForPrologProgram() && endsInGarbage(text)) {
             showErrorDialog(null,
@@ -143,8 +145,10 @@ public final class SaveAction extends SimulatorAction {
                 getSimulatorModel().doAddText(getResourceKind(), name, text);
                 result = true;
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error saving %s '%s'",
-                    getResourceKind().getDescription(), name);
+                showErrorDialog(exc,
+                    "Error saving %s '%s'",
+                    getResourceKind().getDescription(),
+                    name);
             }
         }
         return result;
@@ -154,24 +158,25 @@ public final class SaveAction extends SimulatorAction {
      * Saves the text under a given name as a file outside the grammar.
      * @return {@code true} if the text was saved within the grammar
      */
-    public boolean doSaveTextAs(String name, String text) {
+    public boolean doSaveTextAs(QualName name, String text) {
         boolean result = false;
         File selectedFile = askSaveResource(name);
         // now save, if so required
         if (selectedFile != null) {
             try {
-                String nameInGrammar = getNameInGrammar(selectedFile);
+                QualName nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
                     // store as external file
-                    TextBasedModel.store(text, new FileOutputStream(
-                        selectedFile));
+                    TextBasedModel.store(text, new FileOutputStream(selectedFile));
                 } else {
                     // store in grammar
                     result = doSaveText(nameInGrammar, text);
                 }
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error while writing %s to '%s'",
-                    getResourceKind().getDescription(), selectedFile);
+                showErrorDialog(exc,
+                    "Error while writing %s to '%s'",
+                    getResourceKind().getDescription(),
+                    selectedFile);
             }
         }
         return result;
@@ -184,16 +189,15 @@ public final class SaveAction extends SimulatorAction {
         if (isForState()) {
             enabled = getSimulatorModel().hasState();
         } else {
-            String name = getSimulatorModel().getSelected(resource);
+            QualName name = getSimulatorModel().getSelected(resource);
             if (name != null) {
                 ResourceTab editor = getDisplay().getEditor(name);
                 enabled = this.saveAs || editor != null && editor.isDirty();
             }
         }
         setEnabled(enabled);
-        String name =
-            isForState() ? Options.getSaveStateActionName(this.saveAs)
-                    : Options.getSaveActionName(resource, this.saveAs);
+        String name = isForState() ? Options.getSaveStateActionName(this.saveAs)
+            : Options.getSaveActionName(resource, this.saveAs);
         putValue(NAME, name);
         putValue(SHORT_DESCRIPTION, name);
     }

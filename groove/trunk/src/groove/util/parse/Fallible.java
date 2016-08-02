@@ -16,26 +16,27 @@
  */
 package groove.util.parse;
 
-import java.util.Set;
-
 /**
  * General interface for objects that may contain stored errors.
  * @author Arend Rensink
  * @version $Id$
  */
 public interface Fallible {
+    /** Adds an error to the errors contained in this name space. */
+    public default void addError(String message, Object... args) {
+        getErrors().add(message, args);
+    }
+
+    /** Adds an error to the errors contained in this name space. */
+    public default void addError(FormatError error) {
+        getErrors().add(error);
+    }
+
     /** Indicates if this expression has any errors. */
-    public boolean hasErrors();
+    public default boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
 
     /** Returns the errors in this object. */
     public FormatErrorSet getErrors();
-
-    /** Adds an error to this object. */
-    public void addError(FormatError error);
-
-    /** Adds multiple errors to this object. */
-    public void addErrors(Set<FormatError> errors);
-
-    /** Adds the errors from a format exception to this object. */
-    public void addErrors(FormatException errors);
 }

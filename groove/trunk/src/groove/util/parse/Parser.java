@@ -17,7 +17,6 @@
 package groove.util.parse;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -45,7 +44,14 @@ abstract public interface Parser<T> {
      * The {@code null} and empty string can only be accepted if the parser
      * has a default value.
      */
-    public boolean accepts(String text);
+    public default boolean accepts(String text) {
+        try {
+            parse(text);
+        } catch (FormatException exc) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Converts a given (possibly {@code null}) textual value to an instance of the
@@ -74,17 +80,37 @@ abstract public interface Parser<T> {
      * Tests if a given value of the type of this parser can be
      * represented as a string that can be parsed back.
      */
-    public boolean isValue(Object value);
+    public default boolean isValue(Object value) {
+        // By default, tests if the value is an instance of the value type
+        return getValueType().isInstance(value);
+    }
 
     /**
      * Indicates if this parser has a default value.
      * If there is a default value, then this is the value that both
      * {@code null} and the empty string parse to.
      */
-    public boolean hasDefault();
+    public default boolean hasDefault() {
+        // the parser has a default value if getDefaultValue does not throw an exception
+        try {
+            getDefaultValue();
+        } catch (UnsupportedOperationException exc) {
+            return false;
+        }
+        return true;
+    }
 
     /** Tests whether a given value is the default value. */
-    public boolean isDefault(Object value);
+    public default boolean isDefault(Object value) {
+        // By default, compare with the default value
+        if (!hasDefault()) {
+            return false;
+        }
+        if (getDefaultValue() == null) {
+            return value == null;
+        }
+        return getDefaultValue().equals(value);
+    }
 
     /**
      * Returns the default value of this parser, if any.
@@ -95,7 +121,9 @@ abstract public interface Parser<T> {
      * @throws UnsupportedOperationException if the parser has no default value
      * @see #hasDefault()
      */
-    public T getDefaultValue() throws UnsupportedOperationException;
+    public default T getDefaultValue() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Returns a human-readable string representation of the default value.
@@ -108,14 +136,20 @@ abstract public interface Parser<T> {
      * @see #getDefaultValue()
      * @throws UnsupportedOperationException if the parser has no default value
      */
-    public String getDefaultString() throws UnsupportedOperationException;
+    public default String getDefaultString() throws UnsupportedOperationException {
+        if (hasDefault()) {
+            return "";
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     /** Integer number parser. */
     public static IntParser integer = new IntParser(true);
     /** Natural number parser. */
     public static IntParser natural = new IntParser(false);
     /** Splitting parser based on whitespace. */
-    public static SplitParser splitter = new SplitParser();
+    public static SplitParser<String> splitter = new SplitParser<>(StringParser.IDENTITY);
     /** Boolean parser with default value {@code false}. */
     public static BooleanParser boolTrue = new BooleanParser(true);
     /** Boolean parser with default value {@code true}. */
@@ -128,19 +162,9 @@ abstract public interface Parser<T> {
          * @param trim if {@code true}, spaces are stripped of the values.
          */
         protected AbstractStringParser(Class<S> valueType, boolean trim) {
-            this(valueType, "", trim);
-        }
-
-        /**
-         * Constructor for subclassing.
-         * @param defaultString the default string value
-         * @param trim if {@code true}, spaces are stripped of the values.
-         */
-        protected AbstractStringParser(Class<S> valueType, String defaultString, boolean trim) {
             this.trim = trim;
             this.valueType = valueType;
-            this.defaultValue = createContent(defaultString);
-            this.defaultString = defaultString;
+            this.defaultValue = createContent(getDefaultString());
         }
 
         private final boolean trim;
@@ -175,28 +199,11 @@ abstract public interface Parser<T> {
         private final Class<S> valueType;
 
         @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
         public S getDefaultValue() {
             return this.defaultValue;
         }
 
         private final S defaultValue;
-
-        @Override
-        public String getDefaultString() {
-            return this.defaultString;
-        }
-
-        private final String defaultString;
-
-        @Override
-        public boolean isDefault(Object value) {
-            return getDefaultValue().equals(value);
-        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -274,11 +281,6 @@ abstract public interface Parser<T> {
         private final Class<I> valueType;
 
         @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
         public I getDefaultValue() {
             return this.defaultValue;
         }
@@ -291,11 +293,6 @@ abstract public interface Parser<T> {
         }
 
         private final String defaultString;
-
-        @Override
-        public boolean isDefault(Object value) {
-            return value != null && value.equals(getDefaultValue());
-        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -319,11 +316,6 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public boolean isDefault(Object value) {
-            return value instanceof Integer && ((Integer) value).intValue() == 0;
-        }
-
-        @Override
         protected Integer createContent(int value) {
             return new Integer(value);
         }
@@ -335,32 +327,35 @@ abstract public interface Parser<T> {
     }
 
     /** Parser that concatenates and splits lines at whitespaces. */
-    static public class SplitParser implements Parser<List<String>> {
+    static public class SplitParser<T> implements Parser<List<T>> {
         /** Constructs a parser. */
         @SuppressWarnings("unchecked")
-        public SplitParser() {
-            this.valueType = (Class<List<String>>) new ArrayList<String>().getClass();
+        public SplitParser(Parser<T> inner) {
+            this.valueType = (Class<List<T>>) new ArrayList<T>().getClass();
+            this.inner = inner;
         }
 
-        @Override
-        public boolean accepts(String text) {
-            return true;
-        }
+        /** The inner parser. */
+        private final Parser<T> inner;
 
         @Override
-        public List<String> parse(String input) {
-            try {
-                return input == null || input.length() == 0 ? getDefaultValue()
-                    : Arrays.asList(handler.split(input, " "));
-            } catch (FormatException exc) {
-                assert false; // we recognise no quotes or brackets, so exceptions can't occur
-                return null;
+        public List<T> parse(String input) throws FormatException {
+            List<T> result;
+            if (input == null || input.length() == 0) {
+                result = getDefaultValue();
+            } else {
+                result = new ArrayList<>();
+                for (String line : handler.split(input, " ")) {
+                    result.add(this.inner.parse(line));
+                }
             }
+            return result;
         }
 
         @Override
         public String getDescription() {
-            return "A space-separated list of names";
+            return "A space-separated list of " + this.inner.getValueType()
+                .getSimpleName() + " values";
         }
 
         @Override
@@ -369,18 +364,19 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Class<List<String>> getValueType() {
+        public Class<List<T>> getValueType() {
             return this.valueType;
         }
 
-        private final Class<List<String>> valueType;
+        private final Class<List<T>> valueType;
 
         @Override
         public boolean isValue(Object value) {
             boolean result = value instanceof Collection;
             if (result) {
                 for (Object part : (Collection<?>) value) {
-                    if (!(part instanceof String) || ((String) part).indexOf(' ') >= 0) {
+                    if (!this.inner.isValue(part) || this.inner.toParsableString(value)
+                        .indexOf(' ') >= 0) {
                         result = false;
                         break;
                     }
@@ -390,23 +386,8 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
-        public List<String> getDefaultValue() {
-            return Collections.<String>emptyList();
-        }
-
-        @Override
-        public String getDefaultString() {
-            return "";
-        }
-
-        @Override
-        public boolean isDefault(Object value) {
-            return value instanceof List && ((List<?>) value).size() == 0;
+        public List<T> getDefaultValue() {
+            return Collections.<T>emptyList();
         }
 
         /** String parser recognising no quotes or brackets. */
@@ -430,11 +411,12 @@ abstract public interface Parser<T> {
         @Override
         public String getDescription() {
             StringBuffer result = new StringBuffer("Either ");
-            result.append(TRUE_LINE);
+            result.append(HTMLConverter.ITALIC_TAG.on(TRUE));
             if (this.defaultValue) {
                 result.append(" (default)");
             }
-            result.append(" or ").append(FALSE_LINE);
+            result.append(" or ")
+                .append(HTMLConverter.ITALIC_TAG.on(FALSE));
             if (!this.defaultValue) {
                 result.append(" (default)");
             }
@@ -474,16 +456,6 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public boolean isValue(Object value) {
-            return value instanceof Boolean;
-        }
-
-        @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
         public Boolean getDefaultValue() {
             return this.defaultValue;
         }
@@ -493,21 +465,13 @@ abstract public interface Parser<T> {
             return "" + this.defaultValue;
         }
 
-        @Override
-        public boolean isDefault(Object value) {
-            return value instanceof Boolean
-                && ((Boolean) value).booleanValue() == this.defaultValue;
-        }
-
         /** Value that the empty string converts to. */
         private final boolean defaultValue;
 
         /** Representation of <code>true</code>. */
         static private final String TRUE = Boolean.toString(true);
-        static private final String TRUE_LINE = HTMLConverter.ITALIC_TAG.on(TRUE);
         /** Representation of <code>false</code>. */
         static private final String FALSE = Boolean.toString(false);
-        static private final String FALSE_LINE = HTMLConverter.ITALIC_TAG.on(FALSE);
     }
 
     /**
@@ -552,11 +516,6 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
         public T getDefaultValue() {
             return this.defaultValue;
         }
@@ -565,11 +524,6 @@ abstract public interface Parser<T> {
         public String getDefaultString() {
             String result = this.toStringMap.get(this.defaultValue);
             return result == null ? "" : result;
-        }
-
-        @Override
-        public boolean isDefault(Object value) {
-            return value == this.defaultValue;
         }
 
         /** Flag indicating if the empty string is approved. */
@@ -595,13 +549,12 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public boolean accepts(String text) {
-            return this.toValueMap.containsKey(text);
-        }
-
-        @Override
-        public T parse(String input) {
-            return this.toValueMap.get(input);
+        public T parse(String input) throws FormatException {
+            T result = this.toValueMap.get(input);
+            if (result == null) {
+                throw new FormatException("Unknown value '%s'", input);
+            }
+            return result;
         }
 
         @Override
@@ -615,11 +568,6 @@ abstract public interface Parser<T> {
         }
 
         private final Class<T> valueType;
-
-        @Override
-        public boolean isValue(Object value) {
-            return this.toStringMap.containsKey(value);
-        }
 
         private final Map<T,String> toStringMap;
         private final Map<String,T> toValueMap;

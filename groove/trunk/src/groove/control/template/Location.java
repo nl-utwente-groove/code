@@ -234,7 +234,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         } else if (isRemoved()) {
             result.append("removed");
         } else {
-            result.append(getTemplate().hasOwner() ? getTemplate().getName() : "main");
+            result.append(getTemplate().hasOwner() ? getTemplate().getQualName() : "main");
             result.append(".");
             result.append(getNumber());
         }

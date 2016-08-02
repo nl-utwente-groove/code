@@ -16,6 +16,9 @@
  */
 package groove.gui.tree;
 
+import javax.swing.Icon;
+
+import groove.grammar.QualName;
 import groove.gui.Icons;
 import groove.gui.SimulatorModel;
 import groove.io.HTMLConverter;
@@ -23,8 +26,6 @@ import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionLabel;
-
-import javax.swing.Icon;
 
 /**
  * Tree node wrapping a graph transition.
@@ -45,7 +46,8 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public boolean isInternal() {
-        return getMatch().getStep().isInternal();
+        return getMatch().getStep()
+            .isInternal();
     }
 
     /**
@@ -75,12 +77,14 @@ class MatchTreeNode extends DisplayTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        String actionName = getMatch().getAction().getFullName();
+        QualName actionName = getMatch().getAction()
+            .getQualName();
         if (isProperty()) {
             result.append(String.format("Property '%s' is satisfied", actionName));
         } else if (isEnabled()) {
             result.append(String.format("Explored transition of '%s'", actionName));
-            GraphState target = getMatch().getTransition().target();
+            GraphState target = getMatch().getTransition()
+                .target();
             if (target.isAbsent()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(String.format("Target state %s is not real", target));
@@ -90,7 +94,8 @@ class MatchTreeNode extends DisplayTreeNode {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Doubleclick to apply");
         }
-        return HTMLConverter.HTML_TAG.on(result).toString();
+        return HTMLConverter.HTML_TAG.on(result)
+            .toString();
     }
 
     @Override
@@ -105,19 +110,24 @@ class MatchTreeNode extends DisplayTreeNode {
         StringBuilder result = new StringBuilder();
         result.append(this.nr);
         result.append(": ");
-        boolean showArrow =
-            !getMatch().getAction().isProperty() || getMatch().getStep().isModifying();
+        boolean showArrow = !getMatch().getAction()
+            .isProperty()
+            || getMatch().getStep()
+                .isModifying();
         if (isEnabled()) {
             RuleTransition trans = getMatch().getTransition();
             result.append(trans.text(this.anchored));
             if (showArrow) {
                 result.append(RIGHTARROW);
-                result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
+                result.append(HTMLConverter.ITALIC_TAG.on(trans.target()
+                    .toString()));
             }
-            if (this.model.getTrace().contains(trans)) {
+            if (this.model.getTrace()
+                .contains(trans)) {
                 result.append(TRACE_SUFFIX);
             }
-            if (trans.target().isAbsent()) {
+            if (trans.target()
+                .isAbsent()) {
                 HTMLConverter.STRIKETHROUGH_TAG.on(result);
             }
         } else {
@@ -137,7 +147,8 @@ class MatchTreeNode extends DisplayTreeNode {
 
     /** Indicates if this is a match of a property. */
     private boolean isProperty() {
-        return getMatch().getAction().isProperty();
+        return getMatch().getAction()
+            .isProperty();
     }
 
     private final SimulatorModel model;

@@ -1,5 +1,21 @@
 package groove.gui.action;
 
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import groove.grammar.QualName;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -30,22 +46,6 @@ import groove.util.Duo;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 /**
  * Abstract action class for simulator actions.
  * The class contains a host of convenience methods for confirmation
@@ -53,13 +53,12 @@ import javax.swing.SwingUtilities;
  * The actual action to be taken on {@link #actionPerformed(ActionEvent)}
  * is delegated to an abstract method {@link #execute()}.
  */
-public abstract class SimulatorAction extends AbstractAction implements
-        Refreshable {
+public abstract class SimulatorAction extends AbstractAction implements Refreshable {
     /**
      * Internal constructor to set all fields.
      */
-    protected SimulatorAction(Simulator simulator, String name, Icon icon,
-            EditType edit, ResourceKind resource) {
+    protected SimulatorAction(Simulator simulator, String name, Icon icon, EditType edit,
+        ResourceKind resource) {
         super(name, icon);
         this.simulator = simulator;
         this.resource = resource;
@@ -67,7 +66,8 @@ public abstract class SimulatorAction extends AbstractAction implements
         putValue(SHORT_DESCRIPTION, name);
         setEnabled(false);
         if (simulator != null) {
-            simulator.getActions().addRefreshable(this);
+            simulator.getActions()
+                .addRefreshable(this);
         }
     }
 
@@ -85,8 +85,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      * The edit type and edited resource automatically generate the name and icon.
      * The action adds itself to the refreshables of the simulator.
      */
-    protected SimulatorAction(Simulator simulator, EditType edit,
-            ResourceKind resource) {
+    protected SimulatorAction(Simulator simulator, EditType edit, ResourceKind resource) {
         this(simulator, Options.getEditActionName(edit, resource, false),
             Icons.getEditIcon(edit, resource), edit, resource);
     }
@@ -96,8 +95,7 @@ public abstract class SimulatorAction extends AbstractAction implements
         if (getEditType() == null) {
             return null;
         } else {
-            return Options.getEditActionName(getEditType(), getResourceKind(),
-                false);
+            return Options.getEditActionName(getEditType(), getResourceKind(), false);
         }
     }
 
@@ -136,7 +134,7 @@ public abstract class SimulatorAction extends AbstractAction implements
         return getSimulator().getDisplaysPanel();
     }
 
-    /** 
+    /**
      * Returns the simulator display for the resource kind of this action.
      * @throws IllegalStateException if there is no resource kind
      */
@@ -181,8 +179,7 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Returns the control panel that owns the action. */
     final protected ControlDisplay getControlDisplay() {
-        return (ControlDisplay) getDisplaysPanel().getDisplay(
-            (DisplayKind.CONTROL));
+        return (ControlDisplay) getDisplaysPanel().getDisplay((DisplayKind.CONTROL));
     }
 
     /** Returns the prolog panel that owns the action. */
@@ -246,18 +243,18 @@ public abstract class SimulatorAction extends AbstractAction implements
      * @return a type graph not occurring in the current grammar, or
      *         <code>null</code>
      */
-    final protected String askNewName(String name, boolean mustBeFresh) {
+    final protected QualName askNewName(String name, boolean mustBeFresh) {
         ResourceKind kind = getResourceKind();
         String title =
-            String.format("Select %s%s name", mustBeFresh ? "new " : "",
-                kind.getDescription());
-        Set<String> existingNames =
-            getSimulatorModel().getGrammar().getNames(kind);
-        FreshNameDialog<String> nameDialog =
-            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
+            String.format("Select %s%s name", mustBeFresh ? "new " : "", kind.getDescription());
+        Set<QualName> existingNames = getSimulatorModel().getGrammar()
+            .getNames(kind);
+        FreshNameDialog<QualName> nameDialog =
+            new FreshNameDialog<QualName>(existingNames, name, mustBeFresh) {
                 @Override
-                protected String createName(String name) {
-                    return name;
+                protected QualName createName(String name) throws FormatException {
+                    return QualName.parse(name)
+                        .testValid();
                 }
             };
         nameDialog.showDialog(getFrame(), title);
@@ -268,10 +265,14 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Invokes a file chooser of the right type to save a given aspect graph,
      * and returns the chosen (possibly {@code null}) file.
      */
-    final protected File askSaveResource(String name) {
+    final protected File askSaveResource(QualName name) {
         FileType filter = getResourceKind().getFileType();
         GrooveFileChooser chooser = GrooveFileChooser.getInstance(filter);
-        chooser.setSelectedFile(new File(name));
+        File file = null;
+        for (String token : name.tokens()) {
+            file = file == null ? new File(token) : new File(file, token);
+        }
+        chooser.setSelectedFile(file);
         return SaveDialog.show(chooser, getFrame(), null);
     }
 
@@ -283,9 +284,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      *         <code>null</code> if the dialog was cancelled.
      */
     final protected Duo<TypeLabel> askFindSearch(TypeLabel oldLabel) {
-        FindReplaceDialog dialog =
-            new FindReplaceDialog(
-                getSimulatorModel().getGrammar().getTypeGraph(), oldLabel);
+        FindReplaceDialog dialog = new FindReplaceDialog(getSimulatorModel().getGrammar()
+            .getTypeGraph(), oldLabel);
         int dialogResult = dialog.showDialog(getFrame(), null);
         Duo<TypeLabel> result;
         switch (dialogResult) {
@@ -293,8 +293,7 @@ public abstract class SimulatorAction extends AbstractAction implements
             result = new Duo<TypeLabel>(dialog.getOldLabel(), null);
             break;
         case FindReplaceDialog.REPLACE:
-            result =
-                new Duo<TypeLabel>(dialog.getOldLabel(), dialog.getNewLabel());
+            result = new Duo<TypeLabel>(dialog.getOldLabel(), dialog.getNewLabel());
             break;
         case FindReplaceDialog.CANCEL:
         default:
@@ -307,10 +306,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Creates and shows an {@link ErrorDialog} for a given message and
      * exception.
      */
-    final protected void showErrorDialog(Throwable exc, String message,
-            Object... args) {
-        final ErrorDialog dialog =
-            new ErrorDialog(getFrame(), String.format(message, args), exc);
+    final protected void showErrorDialog(Throwable exc, String message, Object... args) {
+        final ErrorDialog dialog = new ErrorDialog(getFrame(), String.format(message, args), exc);
         if (SwingUtilities.isEventDispatchThread()) {
             dialog.setVisible(true);
         } else {
@@ -341,8 +338,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      * explicitly.
      */
     final protected boolean confirmBehaviour(String option, String question) {
-        BehaviourOption menu =
-            (BehaviourOption) getSimulator().getOptions().getItem(option);
+        BehaviourOption menu = (BehaviourOption) getSimulator().getOptions()
+            .getItem(option);
         return menu.confirm(getFrame(), question);
     }
 
@@ -359,12 +356,10 @@ public abstract class SimulatorAction extends AbstractAction implements
      * should be replaced by a newly loaded one.
      */
     final protected boolean confirmOverwrite(ResourceKind resource, String name) {
-        int response =
-            JOptionPane.showConfirmDialog(
-                getFrame(),
-                String.format("Replace existing %s '%s'?",
-                    resource.getDescription(), name), null,
-                JOptionPane.OK_CANCEL_OPTION);
+        int response = JOptionPane.showConfirmDialog(getFrame(),
+            String.format("Replace existing %s '%s'?", resource.getDescription(), name),
+            null,
+            JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
 
@@ -374,10 +369,10 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected boolean confirmOverwriteGrammar(File grammarFile) {
         if (grammarFile.exists()) {
-            int response =
-                JOptionPane.showConfirmDialog(getFrame(),
-                    "Overwrite existing grammar?", null,
-                    JOptionPane.OK_CANCEL_OPTION);
+            int response = JOptionPane.showConfirmDialog(getFrame(),
+                "Overwrite existing grammar?",
+                null,
+                JOptionPane.OK_CANCEL_OPTION);
             return response == JOptionPane.OK_OPTION;
         } else {
             return true;
@@ -444,41 +439,39 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /**
-     * Constructs a grammar element name from a file, if it is within the grammar location.
+     * Constructs a qualified name from a file, if it is within the grammar location.
      * The element name is relative to the grammar location.
      * @param selectedFile file for the grammar element, possibly with extension
      * @throws IOException if the name is not well-formed
      */
-    final protected String getNameInGrammar(File selectedFile)
-        throws IOException {
+    final protected QualName getNameInGrammar(File selectedFile) throws IOException {
         FileType filter = getResourceKind().getFileType();
         // find out if this is within the grammar directory
-        String selectedPath =
-            filter.stripExtension(selectedFile.getCanonicalPath());
-        String name = null;
-        Object location = getSimulatorModel().getStore().getLocation();
+        String selectedPath = filter.stripExtension(selectedFile.getCanonicalPath());
+        QualName result = null;
+        Object location = getSimulatorModel().getStore()
+            .getLocation();
         if (location instanceof File) {
             String grammarPath = ((File) location).getCanonicalPath();
             if (selectedPath.startsWith(grammarPath)) {
                 String diff = selectedPath.substring(grammarPath.length());
                 File pathDiff = new File(diff);
-                List<String> pathFragments = new LinkedList<String>();
-                while (pathDiff.getName().length() > 0) {
+                List<String> pathFragments = new LinkedList<>();
+                while (!pathDiff.getName()
+                    .isEmpty()) {
                     pathFragments.add(0, pathDiff.getName());
                     pathDiff = pathDiff.getParentFile();
                 }
                 try {
-                    QualName qualName = new QualName(pathFragments);
-                    qualName.testValid();
-                    name = qualName.toString();
+                    result = new QualName(pathFragments).testValid();
                 } catch (FormatException e) {
-                    throw new IOException(String.format(
-                        "Malformed %s name: %s",
-                        getResourceKind().getDescription(), e.getMessage()));
+                    throw new IOException(String.format("Malformed %s name: %s",
+                        getResourceKind().getDescription(),
+                        e.getMessage()));
                 }
             }
         }
-        return name;
+        return result;
     }
 
     /** The simulator on which this action works. */

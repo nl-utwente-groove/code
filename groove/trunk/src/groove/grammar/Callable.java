@@ -16,10 +16,10 @@
  */
 package groove.grammar;
 
+import java.util.List;
+
 import groove.control.CtrlPar.Var;
 import groove.control.Procedure;
-
-import java.util.List;
 
 /**
  * Unit of functionality that can be called from a control program.
@@ -32,14 +32,17 @@ public interface Callable {
      */
     Kind getKind();
 
-    /** Returns the full (qualified) name of this unit. */
-    String getLastName();
-
     /**
-     * Returns the last part of the full name this unit.
-     * @see #getLastName()
+     * Returns the full (qualified) name of this unit.
      */
-    String getFullName();
+    QualName getQualName();
+
+    /** Returns the last part of the full name of this unit.
+     * @see #getQualName()
+     */
+    default String getLastName() {
+        return getQualName().last();
+    }
 
     /** Returns the signature of the unit. */
     public List<Var> getSignature();
@@ -51,7 +54,7 @@ public interface Callable {
         /** Function. */
         FUNCTION("function"),
         /** Recipe. */
-        RECIPE("recipe"), ;
+        RECIPE("recipe"),;
 
         private Kind(String name) {
             this.name = name;

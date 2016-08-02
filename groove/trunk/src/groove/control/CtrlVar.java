@@ -16,6 +16,8 @@
  */
 package groove.control;
 
+import groove.grammar.QualName;
+
 /**
  * Control variables, consisting of a name and a type.
  * @author Arend Rensink
@@ -29,7 +31,7 @@ public class CtrlVar implements Comparable<CtrlVar> {
      * @param name variable name
      * @param type type of the variable
      */
-    private CtrlVar(String scope, String name, CtrlType type, int nr) {
+    private CtrlVar(QualName scope, String name, CtrlType type, int nr) {
         assert name != null && type != null;
         this.scope = scope;
         this.name = name;
@@ -42,7 +44,7 @@ public class CtrlVar implements Comparable<CtrlVar> {
      * @param name variable name
      * @param type type of the variable
      */
-    public CtrlVar(String scope, String name, CtrlType type) {
+    public CtrlVar(QualName scope, String name, CtrlType type) {
         this(scope, name, type, 0);
     }
 
@@ -104,12 +106,12 @@ public class CtrlVar implements Comparable<CtrlVar> {
     }
 
     /** Returns the scope name of this control variable. */
-    public String getScope() {
+    public QualName getScope() {
         return this.scope;
     }
 
     /** The scope of this control variable. */
-    private final String scope;
+    private final QualName scope;
 
     /** Returns the name of this control variable. */
     public String getName() {

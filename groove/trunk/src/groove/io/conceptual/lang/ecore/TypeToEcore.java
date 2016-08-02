@@ -82,7 +82,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         Timer.stop(timer);
 
         timer = Timer.start("Ecore save");
-        Resource typeResource = this.m_ecoreResource.getTypeResource(typeModel.getName());
+        Resource typeResource = this.m_ecoreResource.getTypeResource(typeModel.getQualName());
         EList<EObject> contents = typeResource.getContents();
 
         for (EPackage pkg : this.m_rootPackages) {

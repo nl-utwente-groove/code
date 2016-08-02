@@ -1,35 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.display;
-
-import groove.grammar.QualName;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.SimulatorModel;
-import groove.gui.action.CancelEditAction;
-import groove.gui.action.SaveAction;
-import groove.gui.action.SimulatorAction;
-import groove.gui.list.ErrorListPanel;
-import groove.gui.list.ListPanel;
-import groove.util.parse.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
@@ -51,6 +36,21 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
+import groove.gui.action.CancelEditAction;
+import groove.gui.action.SaveAction;
+import groove.gui.action.SimulatorAction;
+import groove.gui.list.ErrorListPanel;
+import groove.gui.list.ListPanel;
+import groove.util.parse.FormatError;
+
 /**
  * Superclass for grammar component editors.
  * @author Arend Rensink
@@ -69,7 +69,17 @@ abstract public class ResourceTab extends JPanel {
         addAccelerator(getCancelAction());
     }
 
-    /** 
+    /** Sets the qualified name of this tab. */
+    public void setQualName(QualName qualName) {
+        setName(qualName == null ? null : qualName.toString());
+    }
+
+    /** Returns the qualified resource name of this tab. */
+    public QualName getQualName() {
+        return getName() == null ? null : QualName.parse(getName());
+    }
+
+    /**
      * Starts the editor.
      * This method should be called directly after the constructor.
      */
@@ -106,9 +116,8 @@ abstract public class ResourceTab extends JPanel {
     /** Lazily creates and returns the error panel. */
     final protected ListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            this.errorPanel =
-                new ErrorListPanel(
-                    String.format("Errors in %s", getResourceKind().getDescription()));
+            this.errorPanel = new ErrorListPanel(
+                String.format("Errors in %s", getResourceKind().getDescription()));
             this.errorPanel.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;
@@ -138,20 +147,21 @@ abstract public class ResourceTab extends JPanel {
         }
     }
 
-    /** 
+    /**
      * Returns the icon for this tab.
      */
     public Icon getIcon() {
-        return Icons.getEditorTabIcon(getDisplay().getKind().getResource());
+        return Icons.getEditorTabIcon(getDisplay().getKind()
+            .getResource());
     }
 
-    /** 
+    /**
      * Returns the title of this tab.
      * This consists of the resource name plus an optional indication of the
      * dirty status of the tab.
      */
     public String getTitle() {
-        StringBuilder result = new StringBuilder(QualName.lastName(getName()));
+        StringBuilder result = new StringBuilder(getQualName().last());
         return decorateText(result).toString();
     }
 
@@ -178,8 +188,8 @@ abstract public class ResourceTab extends JPanel {
         };
     }
 
-    /** 
-     * Callback method to notify the tab of a change in grammar. 
+    /**
+     * Callback method to notify the tab of a change in grammar.
      */
     abstract public void updateGrammar(GrammarModel grammar);
 
@@ -196,7 +206,7 @@ abstract public class ResourceTab extends JPanel {
         return this.resourceKind;
     }
 
-    /** 
+    /**
      * Changes this tab so as to display a given, named resource, if it exists.
      * Should only be used if this is not an editor tab.
      * @param name the name of the resource; if {@code null}, the display
@@ -205,9 +215,9 @@ abstract public class ResourceTab extends JPanel {
      * exists (and so the main tab was not changed)
      * @throws UnsupportedOperationException if this is an editor tab
      */
-    abstract public boolean setResource(String name);
+    abstract public boolean setResource(QualName name);
 
-    /** 
+    /**
      * Removes a resource that is currently being edited from the
      * main tab and its internal data structures.
      * Should only be used if this is not an editor tab.
@@ -215,9 +225,9 @@ abstract public class ResourceTab extends JPanel {
      * @return {@code true} if this was the currently displayed resource
      * @throws UnsupportedOperationException if this is an editor tab
      */
-    abstract public boolean removeResource(String name);
+    abstract public boolean removeResource(QualName name);
 
-    /** 
+    /**
      * Indicates if this tab is an editor tab.
      * @return {@code true} if this is an editor tab, {@code false} if
      * it is a main tab.
@@ -244,9 +254,9 @@ abstract public class ResourceTab extends JPanel {
     /** Sets the status of the editor to clean. */
     abstract public void setClean();
 
-    /** 
+    /**
      * Saves and optionally disposes the editor, after an optional confirmation dialog.
-     * @param confirm if {@code true}, the user is asked for confirmation if the editor is dirty 
+     * @param confirm if {@code true}, the user is asked for confirmation if the editor is dirty
      * @param dispose if {@code true}, the editor is disposed (unless the action is cancelled)
      * @return {@code true} if the user did not cancel the action
      */
@@ -269,10 +279,12 @@ abstract public class ResourceTab extends JPanel {
     public boolean confirmCancel() {
         boolean result = true;
         if (isDirty()) {
-            int answer =
-                JOptionPane.showConfirmDialog(getDisplay(), String.format(
-                    "%s '%s' has been modified. Save changes?", getResourceKind().getName(),
-                    getName()), null, JOptionPane.YES_NO_CANCEL_OPTION);
+            int answer = JOptionPane.showConfirmDialog(getDisplay(),
+                String.format("%s '%s' has been modified. Save changes?",
+                    getResourceKind().getName(),
+                    getName()),
+                null,
+                JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 saveResource();
             }
@@ -301,7 +313,7 @@ abstract public class ResourceTab extends JPanel {
      * Callback method to notify the editor of a change in dirty status.
      */
     protected void updateDirty() {
-        getTabLabel().setTitle(this.display.getLabelText(getName()));
+        getTabLabel().setTitle(this.display.getLabelText(getQualName()));
         getSaveAction().refresh();
         Display.ListPanel listPanel = this.display.getListPanel();
         if (listPanel != null) {
@@ -309,16 +321,17 @@ abstract public class ResourceTab extends JPanel {
         }
     }
 
-    /** 
+    /**
      * Returns the resource model displayed on this tab,
-     * or {@code null} if nothing is displayed. 
+     * or {@code null} if nothing is displayed.
      */
     protected ResourceModel<?> getResource() {
-        String name = getName();
+        QualName name = getQualName();
         if (name == null) {
             return null;
         } else {
-            return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
+            return getSimulatorModel().getGrammar()
+                .getResource(getResourceKind(), name);
         }
     }
 
@@ -327,7 +340,8 @@ abstract public class ResourceTab extends JPanel {
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
     public void dispose() {
-        getDisplay().getTabPane().remove(this);
+        getDisplay().getTabPane()
+            .remove(this);
     }
 
     /**
@@ -364,12 +378,14 @@ abstract public class ResourceTab extends JPanel {
 
     /** Creates and returns the cancel action. */
     protected final CancelEditAction getCancelAction() {
-        return getSimulator().getActions().getCancelEditAction(getResourceKind());
+        return getSimulator().getActions()
+            .getCancelEditAction(getResourceKind());
     }
 
     /** Returns the save action of this editor. */
     protected final SaveAction getSaveAction() {
-        return getSimulator().getActions().getSaveAction(getResourceKind());
+        return getSimulator().getActions()
+            .getSaveAction(getResourceKind());
     }
 
     /** Convenience method to retrieve the simulator. */
@@ -400,7 +416,8 @@ abstract public class ResourceTab extends JPanel {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                getDisplay().getEditAction().execute();
+                getDisplay().getEditAction()
+                    .execute();
             }
         }
     }

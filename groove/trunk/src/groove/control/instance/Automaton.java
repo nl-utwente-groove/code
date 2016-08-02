@@ -16,19 +16,20 @@
  */
 package groove.control.instance;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+
 import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
 import groove.control.template.Program;
 import groove.control.template.SwitchStack;
 import groove.control.template.Template;
+import groove.grammar.QualName;
 import groove.grammar.host.HostFactory;
 import groove.util.ThreadPool;
 import groove.util.collect.Pool;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
 
 /**
  * Instantiated control automaton.
@@ -49,11 +50,11 @@ public class Automaton {
         this.start = addFrame(start);
     }
 
-    /** Returns the name of the automaton.
+    /** Returns the (qualified) name of the automaton.
      * This equals the automaton template's name.
      */
-    public String getName() {
-        return getTemplate().getName();
+    public QualName getQualName() {
+        return getTemplate().getQualName();
     }
 
     /** Returns the program from which this control automaton has been created. */
@@ -110,13 +111,16 @@ public class Automaton {
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
     public void initialise(final HostFactory factory) {
-        getProgram().getTemplate().initialise(factory);
+        getProgram().getTemplate()
+            .initialise(factory);
         ThreadPool threads = ThreadPool.instance();
-        for (final Procedure proc : getProgram().getProcs().values()) {
+        for (final Procedure proc : getProgram().getProcs()
+            .values()) {
             threads.start(new Runnable() {
                 @Override
                 public void run() {
-                    proc.getTemplate().initialise(factory);
+                    proc.getTemplate()
+                        .initialise(factory);
                 }
             });
         }
@@ -141,11 +145,13 @@ public class Automaton {
                     fresh.add(onFinish);
                 }
             }
-            Frame onFailure = next.getAttempt().onFailure();
+            Frame onFailure = next.getAttempt()
+                .onFailure();
             if (nodes.add(onFailure)) {
                 fresh.add(onFailure);
             }
-            Frame onSuccess = next.getAttempt().onSuccess();
+            Frame onSuccess = next.getAttempt()
+                .onSuccess();
             if (nodes.add(onSuccess)) {
                 fresh.add(onSuccess);
             }
@@ -158,6 +164,6 @@ public class Automaton {
      * to the same node).
      */
     public ControlGraph toGraph(boolean full) {
-        return ControlGraph.newGraph(this.template.getName(), this.getStart(), full);
+        return ControlGraph.newGraph(this.template.getQualName(), this.getStart(), full);
     }
 }

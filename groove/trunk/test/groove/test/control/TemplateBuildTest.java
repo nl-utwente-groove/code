@@ -20,6 +20,15 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -31,16 +40,8 @@ import groove.control.template.Switch;
 import groove.control.template.SwitchAttempt;
 import groove.control.template.SwitchStack;
 import groove.control.template.Template;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import groove.grammar.QualName;
 import junit.framework.Assert;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Arend Rensink
@@ -205,12 +206,14 @@ public class TemplateBuildTest extends CtrlTester {
         //
         build("bInt(_);");
         loc = getInit(bIntWildCall);
-        assertTrue(loc.getVars().isEmpty());
+        assertTrue(loc.getVars()
+            .isEmpty());
         assertTrue(loc.isFinal());
         //
         build("int x; bInt(_); a;");
         loc = getInit(bIntWildCall);
-        assertTrue(loc.getVars().isEmpty());
+        assertTrue(loc.getVars()
+            .isEmpty());
         assertFalse(loc.isFinal());
         //
         build("int x; bInt(out x); bInt(x);");
@@ -238,54 +241,70 @@ public class TemplateBuildTest extends CtrlTester {
         assertTrue(getNext(loc, this.bCall).isFinal());
         //
         build("function f() { (a|g); c; } function g() { (b|c); } (d|f);");
-        SwitchAttempt s = this.template.getStart().getAttempt();
+        SwitchAttempt s = this.template.getStart()
+            .getAttempt();
         assertEquals(4, s.size());
         assertTrue(s.sameVerdict());
         SwitchStack s0 = s.get(0);
         assertEquals(this.dCall, s0.getBottomCall());
         //
         SwitchStack s1 = s.get(1);
-        Procedure f = (Procedure) s1.getBottomCall().getUnit();
-        assertEquals("f", f.getFullName());
+        Procedure f = (Procedure) s1.getBottomCall()
+            .getUnit();
+        assertEquals("f", f.getQualName()
+            .toString());
         Switch s1N = s1.get(1);
         assertEquals(this.aCall, s1N.getCall());
-        assertEquals(getNext(f.getTemplate().getStart(), this.aCall), s1N.onFinish());
+        assertEquals(getNext(f.getTemplate()
+            .getStart(), this.aCall), s1N.onFinish());
         //
         SwitchStack s2 = s.get(2);
-        assertEquals(f, s2.getBottomCall().getUnit());
+        assertEquals(f, s2.getBottomCall()
+            .getUnit());
         Switch s2N = s2.get(1);
-        Procedure g = (Procedure) s2N.getCall().getUnit();
-        assertEquals("g", g.getFullName());
+        Procedure g = (Procedure) s2N.getCall()
+            .getUnit();
+        assertEquals("g", g.getQualName()
+            .toString());
         Switch s2NN = s2.get(2);
         assertEquals(this.bCall, s2NN.getCall());
-        assertEquals(getNext(g.getTemplate().getStart(), this.bCall), s2NN.onFinish());
+        assertEquals(getNext(g.getTemplate()
+            .getStart(), this.bCall), s2NN.onFinish());
         //
         SwitchStack s3 = s.get(3);
-        assertEquals(f, s3.getBottomCall().getUnit());
+        assertEquals(f, s3.getBottomCall()
+            .getUnit());
         Switch s3N = s3.get(1);
-        assertEquals(g, s3N.getCall().getUnit());
+        assertEquals(g, s3N.getCall()
+            .getUnit());
         Switch s3NN = s3.get(2);
         assertEquals(this.cCall, s3NN.getCall());
         //
         build("function f() { a*; } f;b;");
-        s = this.template.getStart().getAttempt();
+        s = this.template.getStart()
+            .getAttempt();
         assertEquals(1, s.size());
         assertTrue(s.sameVerdict());
         s0 = s.get(0);
-        f = (Procedure) s0.getBottomCall().getUnit();
-        assertEquals("f", f.getFullName());
+        f = (Procedure) s0.getBottomCall()
+            .getUnit();
+        assertEquals("f", f.getQualName()
+            .toString());
         Switch s0N = s0.get(1);
         assertEquals(this.aCall, s0N.getCall());
-        assertEquals(f.getTemplate().getStart(), s0N.onFinish());
+        assertEquals(f.getTemplate()
+            .getStart(), s0N.onFinish());
     }
 
     private void assertSize(int locCount) {
-        Assert.assertEquals(locCount, this.template.getLocations().size());
+        Assert.assertEquals(locCount, this.template.getLocations()
+            .size());
     }
 
     private void buildFunction(String program, String procName) {
-        Program prog = buildProgram(program);
-        this.template = prog.getProc(procName).getTemplate();
+        Program prog = buildProgram(program + procName + ";");
+        this.template = prog.getProc(QualName.parse(procName))
+            .getTemplate();
     }
 
     private void build(String program) {
@@ -303,7 +322,8 @@ public class TemplateBuildTest extends CtrlTester {
     private Set<Location> getNexts(Location loc, Call call) {
         Set<Location> result = new HashSet<Location>();
         for (SwitchStack swit : loc.getAttempt()) {
-            if (swit.getBottomCall().equals(call)) {
+            if (swit.getBottomCall()
+                .equals(call)) {
                 result.add(swit.onFinish());
             }
         }
@@ -314,7 +334,8 @@ public class TemplateBuildTest extends CtrlTester {
     private Location getNext(Location loc, Call call) {
         Set<Location> result = getNexts(loc, call);
         assertEquals(1, result.size());
-        return result.iterator().next();
+        return result.iterator()
+            .next();
     }
 
     private boolean hasNext(Location loc, Call call) {
@@ -324,12 +345,14 @@ public class TemplateBuildTest extends CtrlTester {
 
     private Location onSuccess(Location loc) {
         assertTrue(loc.isTrial());
-        return loc.getAttempt().onSuccess();
+        return loc.getAttempt()
+            .onSuccess();
     }
 
     private Location onFailure(Location loc) {
         assertTrue(loc.isTrial());
-        return loc.getAttempt().onFailure();
+        return loc.getAttempt()
+            .onFailure();
     }
 
     private Template template;

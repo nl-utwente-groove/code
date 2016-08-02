@@ -81,9 +81,11 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
                     printSingleLineOption(pw, getOptions().get(ix), rb, true);
                 }
                 pw.print(" [");
-                pw.print(getOptions().get(optionCount - 1).getNameAndMeta(rb));
+                pw.print(getOptions().get(optionCount - 1)
+                    .getNameAndMeta(rb));
                 pw.print(" | ");
-                pw.print(getArguments().get(0).getNameAndMeta(rb));
+                pw.print(getArguments().get(0)
+                    .getNameAndMeta(rb));
                 pw.print(']');
                 pw.flush();
             }
@@ -130,7 +132,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
         for (Formula property : this.ctlProps) {
-            maxWidth = Math.max(maxWidth, property.getParseString().length());
+            maxWidth = Math.max(maxWidth, property.getParseString()
+                .length());
             CTLMarker marker = new CTLMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
@@ -223,7 +226,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         @Override
         protected Formula parse(String argument) throws CmdLineException {
             try {
-                return Formula.parse(Logic.CTL, argument).toCtlFormula();
+                return Formula.parse(Logic.CTL, argument)
+                    .toCtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }
@@ -232,20 +236,21 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     /** Option handler for LTL formulas. */
     public static class LTLFormulaHandler
-        extends OneArgumentOptionHandler<gov.nasa.ltl.trans.Formula<String>> {
+        extends OneArgumentOptionHandler<gov.nasa.ltl.trans.Formula<Proposition>> {
         /**
          * Required constructor.
          */
         public LTLFormulaHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super gov.nasa.ltl.trans.Formula<String>> setter) {
+            Setter<? super gov.nasa.ltl.trans.Formula<Proposition>> setter) {
             super(parser, option, setter);
         }
 
         @Override
-        protected gov.nasa.ltl.trans.Formula<String> parse(String argument)
+        protected gov.nasa.ltl.trans.Formula<Proposition> parse(String argument)
             throws CmdLineException {
             try {
-                return Formula.parse(Logic.LTL, argument).toLtlFormula();
+                return Formula.parse(Logic.LTL, argument)
+                    .toLtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }
@@ -364,7 +369,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
         @Override
         public int nodeCount() {
-            return this.nodeSet().size();
+            return this.nodeSet()
+                .size();
         }
 
         @Override
@@ -434,7 +440,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             for (Node node : nodeSet()) {
                 Set<? extends Edge> outEdges = outEdgeSet(node);
                 for (Edge outEdge : outEdges) {
-                    Flag flag = getFlag(outEdge.label().text());
+                    Flag flag = getFlag(outEdge.label()
+                        .text());
                     if (flag == null) {
                         continue;
                     }

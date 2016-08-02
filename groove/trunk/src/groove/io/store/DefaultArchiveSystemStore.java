@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.io.store;
@@ -23,6 +23,30 @@ import static groove.io.FileType.JAR;
 import static groove.io.FileType.LAYOUT;
 import static groove.io.FileType.RULE;
 import static groove.io.FileType.ZIP;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Properties;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import javax.swing.undo.AbstractUndoableEdit;
+
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
@@ -35,27 +59,6 @@ import groove.io.graph.GxlIO;
 import groove.io.graph.LayoutIO;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Properties;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import javax.swing.undo.AbstractUndoableEdit;
 
 /**
  * Implementation based on {@link AspectGraph} representations of the rules and
@@ -75,8 +78,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      */
     public DefaultArchiveSystemStore(File file) throws IllegalArgumentException {
         if (!file.exists()) {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' does not exist", file));
+            throw new IllegalArgumentException(String.format("File '%s' does not exist", file));
         }
         String extendedName;
         if (!file.isDirectory() && JAR.hasExtension(file)) {
@@ -84,8 +86,8 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         } else if (!file.isDirectory() && ZIP.hasExtension(file)) {
             extendedName = ZIP.stripExtension(file.getName());
         } else {
-            throw new IllegalArgumentException(String.format("File '%s' "
-                + NO_JAR_OR_ZIP_SUFFIX, file));
+            throw new IllegalArgumentException(
+                String.format("File '%s' " + NO_JAR_OR_ZIP_SUFFIX, file));
         }
         this.location = file.toString();
         this.file = file;
@@ -105,22 +107,20 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      *         specify the correct protocol
      * @throws IOException if the URL has the JAR protocol, but cannot be opened
      */
-    public DefaultArchiveSystemStore(URL url) throws IllegalArgumentException,
-        IOException {
+    public DefaultArchiveSystemStore(URL url) throws IllegalArgumentException, IOException {
         // first strip query and anchor part
         try {
             url = new URL(url.getProtocol(), url.getAuthority(), url.getPath());
         } catch (MalformedURLException exc) {
-            assert false : String.format(
-                "Stripping URL '%s' throws exception: %s", url, exc);
+            assert false : String.format("Stripping URL '%s' throws exception: %s", url, exc);
         }
         this.location = url.toString();
         // artificially append the jar protocol, if it is not yet there
-        if (!url.getProtocol().equals(JAR_PROTOCOL)) {
-            if (!JAR.hasExtension(url.getPath())
-                && !ZIP.hasExtension(url.getPath())) {
-                throw new IllegalArgumentException(String.format(
-                    "URL '%s' is not a JAR or ZIP file", url));
+        if (!url.getProtocol()
+            .equals(JAR_PROTOCOL)) {
+            if (!JAR.hasExtension(url.getPath()) && !ZIP.hasExtension(url.getPath())) {
+                throw new IllegalArgumentException(
+                    String.format("URL '%s' is not a JAR or ZIP file", url));
             }
             url = new URL(JAR_PROTOCOL, null, url.toString() + "!/");
         }
@@ -147,9 +147,8 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         JarURLConnection connection = (JarURLConnection) url.openConnection();
         result = connection.getEntryName();
         if (result == null) {
-            result =
-                FileType.getPureName(new File(
-                    connection.getJarFileURL().getPath()));
+            result = FileType.getPureName(new File(connection.getJarFileURL()
+                .getPath()));
         }
         return result;
     }
@@ -160,44 +159,43 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
+    public Map<QualName,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getGraphMap(kind));
     }
 
     @Override
-    public Collection<AspectGraph> putGraphs(ResourceKind kind,
-            Collection<AspectGraph> graphs, boolean layout) throws IOException {
+    public Collection<AspectGraph> putGraphs(ResourceKind kind, Collection<AspectGraph> graphs,
+        boolean layout) throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Collection<AspectGraph> deleteGraphs(ResourceKind kind,
-            Collection<String> names) throws IOException {
+    public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<QualName> names)
+        throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Map<String,String> getTexts(ResourceKind kind) {
+    public Map<QualName,String> getTexts(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getTextMap(kind));
     }
 
     @Override
-    public Map<String,String> putTexts(ResourceKind kind,
-            Map<String,String> texts) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public Map<String,String> deleteTexts(ResourceKind kind,
-            Collection<String> names) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public void rename(ResourceKind kind, String oldName, String newName)
+    public Map<QualName,String> putTexts(ResourceKind kind, Map<QualName,String> texts)
         throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public Map<QualName,String> deleteTexts(ResourceKind kind, Collection<QualName> names)
+        throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public void rename(ResourceKind kind, QualName oldName, QualName newName) throws IOException {
         throw createImmutable();
     }
 
@@ -213,25 +211,21 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
-        throws IOException {
+    public void relabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
         throw createImmutable();
     }
 
     /** Creates an exception stating that the archive is immutable. */
     private IOException createImmutable() {
-        return new IOException(
-            String.format(
-                "Archived grammar '%s' is immutable.%nSave locally to allow changes.",
-                getName()));
+        return new IOException(String.format(
+            "Archived grammar '%s' is immutable.%nSave locally to allow changes.", getName()));
     }
 
     @Override
     public void reload() throws IOException {
         ZipFile zipFile;
         if (this.file == null) {
-            zipFile =
-                ((JarURLConnection) this.url.openConnection()).getJarFile();
+            zipFile = ((JarURLConnection) this.url.openConnection()).getJarFile();
         } else {
             zipFile = new ZipFile(this.file);
         }
@@ -242,30 +236,30 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             zipEntryMap.put(kind, new HashMap<String,ZipEntry>());
         }
         ZipEntry properties = null;
-        for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
+        for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries
+            .hasMoreElements();) {
             ZipEntry entry = entries.nextElement();
             String entryName = entry.getName();
             int entryPrefixLength = this.entryName.length() + 1;
-            if (entryName.startsWith(this.entryName)
-                && entryName.length() > entryPrefixLength) {
+            if (entryName.startsWith(this.entryName) && entryName.length() > entryPrefixLength) {
                 // strip off prefix + 1 to take case of file separator
                 String restName = entryName.substring(entryPrefixLength);
                 // find out the resource kind by testing the extension
                 ResourceKind kind = null;
                 for (ResourceKind tryKind : ResourceKind.values()) {
-                    if (restName.endsWith(tryKind.getFileType().getExtension())) {
+                    if (restName.endsWith(tryKind.getFileType()
+                        .getExtension())) {
                         kind = tryKind;
                         break;
                     }
                 }
                 if (kind == PROPERTIES) {
-                    String propertiesName =
-                        PROPERTIES.getFileType().stripExtension(restName);
+                    String propertiesName = PROPERTIES.getFileType()
+                        .stripExtension(restName);
                     if (propertiesName.equals(Groove.PROPERTY_NAME)) {
                         // preferably take the one with the default name
                         properties = entry;
-                    } else if (properties == null
-                        && propertiesName.equals(this.grammarName)) {
+                    } else if (properties == null && propertiesName.equals(this.grammarName)) {
                         // otherwise, take the one with the grammar name
                         properties = entry;
                     }
@@ -276,10 +270,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                         this.layoutEntryMap.put(objectName, entry);
                     }
                 } else {
-                    Object oldEntry =
-                        zipEntryMap.get(kind).put(restName, entry);
-                    assert oldEntry == null : String.format(
-                        "Duplicate %s name '%s'", kind.getName(), restName);
+                    Object oldEntry = zipEntryMap.get(kind)
+                        .put(restName, entry);
+                    assert oldEntry == null : String.format("Duplicate %s name '%s'",
+                        kind.getName(),
+                        restName);
                 }
             }
         }
@@ -326,8 +321,8 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof DefaultArchiveSystemStore)
-            && ((DefaultArchiveSystemStore) obj).getLocation().equals(
-                getLocation());
+            && ((DefaultArchiveSystemStore) obj).getLocation()
+                .equals(getLocation());
     }
 
     /**
@@ -354,12 +349,12 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * Loads the named control programs from a zip file, using the prepared map
      * from program names to zip entries.
      */
-    private void loadTexts(ResourceKind kind, ZipFile file,
-            Map<String,ZipEntry> texts) throws IOException {
+    private void loadTexts(ResourceKind kind, ZipFile file, Map<String,ZipEntry> texts)
+        throws IOException {
         getTextMap(kind).clear();
         for (Map.Entry<String,ZipEntry> textEntry : texts.entrySet()) {
-            String controlName =
-                kind.getFileType().stripExtension(textEntry.getKey());
+            QualName controlName = createQualName(kind.getFileType()
+                .stripExtension(textEntry.getKey()));
             InputStream in = file.getInputStream(textEntry.getValue());
             String program = groove.io.Util.readInputStreamToString(in);
             getTextMap(kind).put(controlName, program);
@@ -370,21 +365,17 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * Loads the named graphs from a zip file, using the prepared map from graph
      * names to zip entries.
      */
-    private void loadGraphs(ResourceKind kind, ZipFile file,
-            Map<String,ZipEntry> graphs) throws IOException {
-        Map<String,AspectGraph> graphMap = getGraphMap(kind);
+    private void loadGraphs(ResourceKind kind, ZipFile file, Map<String,ZipEntry> graphs)
+        throws IOException {
+        Map<QualName,AspectGraph> graphMap = getGraphMap(kind);
         graphMap.clear();
-        for (Map.Entry<String,AspectGraph> entry : loadObjects(kind, file,
-            graphs).entrySet()) {
-            String name = createQualName(entry.getKey()).toString();
-            graphMap.put(name, entry.getValue());
-        }
+        graphMap.putAll(loadObjects(kind, file, graphs));
         // set the type graphs themselves to active, if for those graphs whose name
         // is in the active type list of the grammar properties
         if (kind == TYPE && this.properties != null) {
             // enable the active types listed in the system properties
-            Set<String> enabledTypes = this.properties.getActiveNames(kind);
-            for (String enabledType : enabledTypes) {
+            Set<QualName> enabledTypes = this.properties.getActiveNames(kind);
+            for (QualName enabledType : enabledTypes) {
                 GraphInfo.setEnabled(graphMap.get(enabledType), true);
             }
         }
@@ -394,8 +385,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * Loads the properties file from file (if any), and assigns the properties
      * to {@link #properties}.
      */
-    private void loadProperties(ZipFile file, ZipEntry entry)
-        throws IOException {
+    private void loadProperties(ZipFile file, ZipEntry entry) throws IOException {
         this.properties = new GrammarProperties();
         if (entry != null) {
             Properties grammarProperties = new Properties();
@@ -415,33 +405,35 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * @param file the file to read from
      * @param graphs the mapping from object names to zip entries
      */
-    private Map<String,AspectGraph> loadObjects(ResourceKind kind,
-            ZipFile file, Map<String,ZipEntry> graphs) throws IOException {
+    private Map<QualName,AspectGraph> loadObjects(ResourceKind kind, ZipFile file,
+        Map<String,ZipEntry> graphs) throws IOException {
         FileType filter = kind.getFileType();
-        Map<String,AspectGraph> result = new HashMap<String,AspectGraph>();
+        Map<QualName,AspectGraph> result = new HashMap<>();
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                AttrGraph xmlGraph = GxlIO.instance().loadGraph(in);
+                AttrGraph xmlGraph = GxlIO.instance()
+                    .loadGraph(in);
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.
                  */
                 xmlGraph.setRole(kind.getGraphRole());
-                xmlGraph.setName(createQualName(graphName).toString());
+                QualName qualGraphName = createQualName(graphName);
+                xmlGraph.setName(qualGraphName.toString());
                 addLayout(file, graphEntry.getKey(), xmlGraph);
                 AspectGraph graph = xmlGraph.toAspectGraph();
                 /* Store the graph */
-                result.put(graphName, graph);
+                result.put(qualGraphName, graph);
             } catch (FormatException exc) {
-                throw new IOException(String.format(
-                    "Format error while loading '%s':\n%s", graphName,
+                throw new IOException(String.format("Format error while loading '%s':\n%s",
+                    graphName,
                     exc.getMessage()), exc);
             } catch (IOException exc) {
-                throw new IOException(String.format(
-                    "Error while loading '%s':\n%s", graphName,
-                    exc.getMessage()), exc);
+                throw new IOException(
+                    String.format("Error while loading '%s':\n%s", graphName, exc.getMessage()),
+                    exc);
             }
         }
         return result;
@@ -451,12 +443,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * Adds layout information to a graph, based on the layout info found in a
      * given zip file.
      */
-    private void addLayout(ZipFile file, String entryName, AttrGraph xmlGraph)
-        throws IOException {
+    private void addLayout(ZipFile file, String entryName, AttrGraph xmlGraph) throws IOException {
         ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
-            LayoutIO.getInstance().loadLayout(xmlGraph,
-                file.getInputStream(layoutEntry));
+            LayoutIO.getInstance()
+                .loadLayout(xmlGraph, file.getInputStream(layoutEntry));
         }
     }
 
@@ -467,16 +458,15 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * @return The resulting rule name; non-null
      */
     private QualName createQualName(String restName) throws IOException {
-        StringBuilder result = new StringBuilder();
+        List<String> result = new ArrayList<>();
         File nameAsFile = new File(RULE.stripExtension(restName));
-        result.append(nameAsFile.getName());
+        result.add(nameAsFile.getName());
         while (nameAsFile.getParent() != null) {
             nameAsFile = nameAsFile.getParentFile();
-            result.insert(0, QualName.SEPARATOR);
-            result.insert(0, nameAsFile.getName());
+            result.add(0, nameAsFile.getName());
         }
         try {
-            return new QualName(result.toString());
+            return new QualName(result).testValid();
         } catch (FormatException e) {
             throw new IOException(e.getMessage());
         }
@@ -490,8 +480,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     private void testInit() throws IllegalStateException {
         if (!this.initialised) {
-            throw new IllegalStateException(
-                "Operation should only be called after initialisation");
+            throw new IllegalStateException("Operation should only be called after initialisation");
         }
     }
 
@@ -502,8 +491,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     private GrammarProperties properties;
     /** Map from entry name to layout entry. */
-    private final Map<String,ZipEntry> layoutEntryMap =
-        new HashMap<String,ZipEntry>();
+    private final Map<String,ZipEntry> layoutEntryMap = new HashMap<String,ZipEntry>();
     /**
      * The location from which the source is loaded. If <code>null</code>, the
      * location was specified by file rather than url.
@@ -531,8 +519,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     static private final String JAR_PROTOCOL = FileType.JAR.getExtensionName();
     /** Suffix of 'no JAR or no ZIP' error message. Allows error to be
      * recognized from the outside. */
-    public static final String NO_JAR_OR_ZIP_SUFFIX =
-        "is not a JAR or ZIP file";
+    public static final String NO_JAR_OR_ZIP_SUFFIX = "is not a JAR or ZIP file";
 
     private static class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(Set<ResourceKind> change) {

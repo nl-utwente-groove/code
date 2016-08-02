@@ -17,32 +17,6 @@
 package groove.gui.tree;
 
 import static groove.grammar.model.ResourceKind.RULE;
-import groove.grammar.Action;
-import groove.grammar.Recipe;
-import groove.grammar.Rule;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.model.RuleModel;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.SimulatorListener;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
-import groove.gui.display.DisplayKind;
-import groove.gui.display.ResourceDisplay;
-import groove.gui.jgraph.JAttr;
-import groove.io.HTMLConverter;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.lts.GraphTransition.Claz;
-import groove.lts.GraphTransitionKey;
-import groove.lts.MatchResult;
-import groove.lts.RecipeEvent;
-import groove.lts.RecipeTransition;
-import groove.lts.StartGraphState;
-import groove.transform.RuleEvent;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -76,6 +50,34 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import groove.grammar.Action;
+import groove.grammar.QualName;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.RuleModel;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.action.ActionStore;
+import groove.gui.display.DisplayKind;
+import groove.gui.display.ResourceDisplay;
+import groove.gui.jgraph.JAttr;
+import groove.io.HTMLConverter;
+import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.GraphTransition.Claz;
+import groove.lts.GraphTransitionKey;
+import groove.lts.MatchResult;
+import groove.lts.RecipeEvent;
+import groove.lts.RecipeTransition;
+import groove.lts.StartGraphState;
+import groove.transform.RuleEvent;
+
 /**
  * List of states in the LTS.
  * @author Arend Rensink
@@ -97,7 +99,8 @@ public class StateTree extends JTree implements SimulatorListener {
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         this.setCellRenderer(new DisplayTreeCellRenderer(this));
         installListeners();
-        ToolTipManager.sharedInstance().registerComponent(this);
+        ToolTipManager.sharedInstance()
+            .registerComponent(this);
     }
 
     @Override
@@ -127,7 +130,8 @@ public class StateTree extends JTree implements SimulatorListener {
         addTreeWillExpandListener(new TreeWillExpandListener() {
             @Override
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-                Object lastComponent = event.getPath().getLastPathComponent();
+                Object lastComponent = event.getPath()
+                    .getLastPathComponent();
                 if (!this.busy && lastComponent instanceof RangeTreeNode) {
                     this.busy = true;
                     fill((RangeTreeNode) lastComponent);
@@ -159,9 +163,12 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
             }
         };
-        getOptions().getItem(Options.SHOW_ANCHORS_OPTION).addItemListener(refreshListener);
-        getOptions().getItem(Options.SHOW_RECIPE_STEPS_OPTION).addItemListener(refreshListener);
-        getOptions().getItem(Options.SHOW_ABSENT_STATES_OPTION).addItemListener(refreshListener);
+        getOptions().getItem(Options.SHOW_ANCHORS_OPTION)
+            .addItemListener(refreshListener);
+        getOptions().getItem(Options.SHOW_RECIPE_STEPS_OPTION)
+            .addItemListener(refreshListener);
+        getOptions().getItem(Options.SHOW_ABSENT_STATES_OPTION)
+            .addItemListener(refreshListener);
         activateListening();
     }
 
@@ -388,8 +395,8 @@ public class StateTree extends JTree implements SimulatorListener {
             Action action = match.getAction();
             Set<GraphTransitionKey> ruleMatches = matchMap.get(action);
             if (ruleMatches == null) {
-                matchMap.put(action, ruleMatches =
-                    new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR));
+                matchMap.put(action,
+                    ruleMatches = new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR));
             }
             ruleMatches.add(match);
         }
@@ -398,7 +405,7 @@ public class StateTree extends JTree implements SimulatorListener {
             Action action = matchEntry.getKey();
             DisplayTreeNode ruleNode;
             if (action instanceof Rule) {
-                ruleNode = new RuleTreeNode(getRuleDisplay(), action.getFullName());
+                ruleNode = new RuleTreeNode(getRuleDisplay(), action.getQualName());
             } else {
                 ruleNode = new RecipeTreeNode((Recipe) action);
             }
@@ -408,13 +415,11 @@ public class StateTree extends JTree implements SimulatorListener {
                 count++;
                 DisplayTreeNode transNode;
                 if (trans instanceof MatchResult) {
-                    transNode =
-                        new MatchTreeNode(getSimulatorModel(), state, (MatchResult) trans, count,
-                            anchored);
+                    transNode = new MatchTreeNode(getSimulatorModel(), state, (MatchResult) trans,
+                        count, anchored);
                 } else {
-                    transNode =
-                        new RecipeTransitionTreeNode(getSimulatorModel(), state,
-                            (RecipeEvent) trans, count);
+                    transNode = new RecipeTransitionTreeNode(getSimulatorModel(), state,
+                        (RecipeEvent) trans, count);
                 }
                 ruleNode.add(transNode);
             }
@@ -438,24 +443,30 @@ public class StateTree extends JTree implements SimulatorListener {
                     TreeNode child = stateNode.getChildAt(i);
                     if (match != null && child instanceof RuleTreeNode) {
                         RuleTreeNode ruleNode = (RuleTreeNode) child;
-                        if (ruleNode.getRule().equals(ruleModel)) {
+                        if (ruleNode.getRule()
+                            .equals(ruleModel)) {
                             RuleEvent event = match.getEvent();
                             for (int m = 0; m < ruleNode.getChildCount(); m++) {
                                 MatchTreeNode matchNode = (MatchTreeNode) ruleNode.getChildAt(m);
-                                if (matchNode.getMatch().getEvent().equals(event)) {
+                                if (matchNode.getMatch()
+                                    .getEvent()
+                                    .equals(event)) {
                                     selectPath = createPath(matchNode);
                                     break;
                                 }
                             }
                             break;
                         }
-                    } else if (trans instanceof RecipeTransition && child instanceof RecipeTreeNode) {
+                    } else
+                        if (trans instanceof RecipeTransition && child instanceof RecipeTreeNode) {
                         RecipeTreeNode recipeNode = (RecipeTreeNode) child;
-                        if (recipeNode.getRecipe().equals(trans.getAction())) {
+                        if (recipeNode.getRecipe()
+                            .equals(trans.getAction())) {
                             for (int m = 0; m < recipeNode.getChildCount(); m++) {
                                 RecipeTransitionTreeNode matchNode =
                                     (RecipeTransitionTreeNode) recipeNode.getChildAt(m);
-                                if (matchNode.getTransition().equals(trans)) {
+                                if (matchNode.getTransition()
+                                    .equals(trans)) {
                                     selectPath = createPath(matchNode);
                                     break;
                                 }
@@ -540,7 +551,8 @@ public class StateTree extends JTree implements SimulatorListener {
     }
 
     private final ResourceDisplay getRuleDisplay() {
-        return (ResourceDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.RULE);
+        return (ResourceDisplay) this.simulator.getDisplaysPanel()
+            .getDisplay(DisplayKind.RULE);
     }
 
     private final Options getOptions() {
@@ -684,8 +696,8 @@ public class StateTree extends JTree implements SimulatorListener {
         }
 
         private boolean isResult(GraphState state) {
-            return getSimulatorModel().hasExploreResult()
-                && getSimulatorModel().getExploreResult().containsState(state);
+            return getSimulatorModel().hasExploreResult() && getSimulatorModel().getExploreResult()
+                .containsState(state);
         }
 
         private final boolean expanded;
@@ -735,7 +747,8 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
                 break;
             case 2:
-                getActions().getApplyMatchAction().execute();
+                getActions().getApplyMatchAction()
+                    .execute();
             }
         }
 
@@ -798,15 +811,16 @@ public class StateTree extends JTree implements SimulatorListener {
         }
 
         /** Returns the list of currently selected full rule names. */
-        private Set<String> getSelectedRules() {
-            Set<String> result = new HashSet<String>();
+        private Set<QualName> getSelectedRules() {
+            Set<QualName> result = new HashSet<>();
             int[] selectedRows = getSelectionRows();
             if (selectedRows != null) {
                 for (int selectedRow : selectedRows) {
                     Object[] nodes = getPathForRow(selectedRow).getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
-                            result.add(((RuleTreeNode) nodes[i]).getRule().getFullName());
+                            result.add(((RuleTreeNode) nodes[i]).getRule()
+                                .getQualName());
                         }
                     }
                 }

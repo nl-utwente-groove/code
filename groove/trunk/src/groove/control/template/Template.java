@@ -16,15 +16,6 @@
  */
 package groove.control.template;
 
-import groove.control.Call;
-import groove.control.CtrlVar;
-import groove.control.Function;
-import groove.control.Procedure;
-import groove.control.graph.ControlGraph;
-import groove.grammar.Action;
-import groove.grammar.Callable;
-import groove.grammar.host.HostFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +27,16 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+
+import groove.control.Call;
+import groove.control.CtrlVar;
+import groove.control.Function;
+import groove.control.Procedure;
+import groove.control.graph.ControlGraph;
+import groove.grammar.Action;
+import groove.grammar.Callable;
+import groove.grammar.QualName;
+import groove.grammar.host.HostFactory;
 
 /**
  * Control automaton template.
@@ -54,7 +55,7 @@ public class Template {
     /**
      * Constructs a automaton for a given procedure and name.
      */
-    private Template(String name, Procedure proc) {
+    private Template(QualName name, Procedure proc) {
         this.name = name;
         this.maxNodeNr = -1;
         this.owner = proc;
@@ -65,7 +66,7 @@ public class Template {
     /**
      * Constructs a named automaton.
      */
-    protected Template(String name) {
+    protected Template(QualName name) {
         this(name, null);
     }
 
@@ -73,15 +74,15 @@ public class Template {
      * Constructs a automaton for a given procedure.
      */
     protected Template(Procedure proc) {
-        this(proc.getFullName(), proc);
+        this(proc.getQualName(), proc);
     }
 
     /** Returns the template name. */
-    public String getName() {
+    public QualName getQualName() {
         return this.name;
     }
 
-    private final String name;
+    private final QualName name;
 
     /**
      * Indicates if this automaton is the body of a procedure.
@@ -146,7 +147,8 @@ public class Template {
                     continue;
                 }
                 for (SwitchStack swit : loc.getAttempt()) {
-                    Callable unit = swit.getBottomCall().getUnit();
+                    Callable unit = swit.getBottomCall()
+                        .getUnit();
                     if (unit instanceof Action) {
                         result.add((Action) unit);
                     } else {
@@ -173,13 +175,17 @@ public class Template {
         // compute the map of incoming transitions
         for (Location loc : getLocations()) {
             if (loc.isFinal() && hasOwner()) {
-                loc.addVars(getOwner().getOutPars().keySet());
+                loc.addVars(getOwner().getOutPars()
+                    .keySet());
             } else if (loc.isTrial()) {
                 for (SwitchStack s : loc.getAttempt()) {
                     Switch bottom = s.get(0);
                     Call bottomCall = bottom.getCall();
-                    loc.addVars(bottomCall.getInVars().keySet());
-                    bottom.onFinish().addVars(bottomCall.getOutVars().keySet());
+                    loc.addVars(bottomCall.getInVars()
+                        .keySet());
+                    bottom.onFinish()
+                        .addVars(bottomCall.getOutVars()
+                            .keySet());
                 }
             }
             Set<CtrlVar> varSet = loc.getVarSet();
@@ -189,7 +195,8 @@ public class Template {
         }
         // propagate all variables backward to the location where they are initialised
         while (!changeMap.isEmpty()) {
-            Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet().iterator();
+            Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet()
+                .iterator();
             Map.Entry<Location,Set<CtrlVar>> e = iter.next();
             iter.remove();
             Location loc = e.getKey();
@@ -227,7 +234,8 @@ public class Template {
     /** Propagate a change, consisting of a set of new variables added to a given
      * location, backward to all predecessors.
      */
-    private void propagate(Map<Location,Set<CtrlVar>> changeMap, Location loc, Set<CtrlVar> newVars) {
+    private void propagate(Map<Location,Set<CtrlVar>> changeMap, Location loc,
+        Set<CtrlVar> newVars) {
         Map<Location,Set<CtrlVar>> predRecord = getBackMap().get(loc);
         if (predRecord == null) {
             return;
@@ -266,8 +274,9 @@ public class Template {
                 result.addBackLink(loc, attempt.onSuccess(), EMPTY_VAR_SET);
                 result.addBackLink(loc, attempt.onFailure(), EMPTY_VAR_SET);
                 for (SwitchStack swit : attempt) {
-                    result.addBackLink(loc, swit.onFinish(),
-                        swit.getBottomCall().getOutVars().keySet());
+                    result.addBackLink(loc, swit.onFinish(), swit.getBottomCall()
+                        .getOutVars()
+                        .keySet());
                 }
             }
         }
@@ -278,7 +287,7 @@ public class Template {
      * main program name as this one.
      */
     public Template newInstance() {
-        return hasOwner() ? new Template(getOwner()) : new Template(getName());
+        return hasOwner() ? new Template(getOwner()) : new Template(getQualName());
     }
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
@@ -328,7 +337,7 @@ public class Template {
 
     @Override
     public String toString() {
-        return getName() + ": " + getLocations();
+        return getQualName() + ": " + getLocations();
     }
 
     /** Returns a control graph consisting of this automaton's locations and switches.

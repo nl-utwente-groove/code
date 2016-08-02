@@ -1,14 +1,16 @@
 package groove.gui.action;
 
 import static groove.grammar.model.ResourceKind.GROOVY;
+
+import javax.swing.Action;
+
+import groove.grammar.QualName;
 import groove.grammar.groovy.Util;
 import groove.grammar.model.GroovyModel;
 import groove.gui.Icons;
 import groove.gui.Simulator;
 import groove.gui.display.GroovyDisplay;
 import groove.io.HTMLConverter;
-
-import javax.swing.Action;
 
 /** Action to execute the currently selected Groovy script. */
 public class ExecGroovyAction extends SimulatorAction {
@@ -29,9 +31,8 @@ public class ExecGroovyAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        for (String name : getSimulatorModel().getSelectSet(getResourceKind())) {
-            GroovyModel model =
-                (GroovyModel) getGrammarModel().getResource(GROOVY, name);
+        for (QualName name : getSimulatorModel().getSelectSet(getResourceKind())) {
+            GroovyModel model = (GroovyModel) getGrammarModel().getResource(GROOVY, name);
             if (model.isEnabled()) {
                 ((GroovyDisplay) getDisplay()).executeGroovy(name);
             }
@@ -42,8 +43,8 @@ public class ExecGroovyAction extends SimulatorAction {
     public void refresh() {
         boolean enabled = this.enabled;
         if (enabled) {
-            enabled =
-                !getSimulatorModel().getSelectSet(getResourceKind()).isEmpty();
+            enabled = !getSimulatorModel().getSelectSet(getResourceKind())
+                .isEmpty();
         }
         setEnabled(enabled);
     }

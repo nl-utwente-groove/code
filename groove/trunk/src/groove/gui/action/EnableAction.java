@@ -1,14 +1,15 @@
 package groove.gui.action;
 
+import java.io.IOException;
+import java.util.Set;
+
+import groove.grammar.QualName;
+import groove.grammar.model.NamedResourceModel;
 import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
 import groove.grammar.model.RuleModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
-
-import java.io.IOException;
-import java.util.Set;
 
 /** Action to enable or disable resources. */
 public class EnableAction extends SimulatorAction {
@@ -24,9 +25,9 @@ public class EnableAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        Set<String> names = getSimulatorModel().getSelectSet(resource);
+        Set<QualName> names = getSimulatorModel().getSelectSet(resource);
         boolean proceed = true;
-        for (String name : names) {
+        for (QualName name : names) {
             if (!getDisplay().saveEditor(name, true, false)) {
                 proceed = false;
                 break;
@@ -36,7 +37,8 @@ public class EnableAction extends SimulatorAction {
             try {
                 getSimulatorModel().doEnable(resource, names);
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error during %s enabling",
+                showErrorDialog(exc,
+                    "Error during %s enabling",
                     getResourceKind().getDescription());
             }
         }
@@ -45,13 +47,11 @@ public class EnableAction extends SimulatorAction {
     @Override
     public void refresh() {
         ResourceKind resourceKind = getResourceKind();
-        String name = getSimulatorModel().getSelected(resourceKind);
-        ResourceModel<?> resource =
-            getSimulatorModel().getResource(resourceKind);
+        QualName name = getSimulatorModel().getSelected(resourceKind);
+        NamedResourceModel<?> resource = getSimulatorModel().getResource(resourceKind);
         boolean isEnabling = resource == null || !resource.isEnabled();
         boolean enabled =
-            resourceKind.isEnableable() && name != null
-                && getGrammarStore().isModifiable();
+            resourceKind.isEnableable() && name != null && getGrammarStore().isModifiable();
         if (enabled && getResourceKind() == ResourceKind.RULE) {
             enabled = !((RuleModel) resource).hasRecipes();
         }

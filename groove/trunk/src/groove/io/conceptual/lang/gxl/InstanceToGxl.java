@@ -16,6 +16,19 @@
  */
 package groove.io.conceptual.lang.gxl;
 
+import java.math.BigInteger;
+import java.util.Map.Entry;
+
+import javax.xml.bind.JAXBElement;
+
+import de.gupro.gxl.gxl_1_0.BagType;
+import de.gupro.gxl.gxl_1_0.CompositeValueType;
+import de.gupro.gxl.gxl_1_0.EdgeType;
+import de.gupro.gxl.gxl_1_0.GraphType;
+import de.gupro.gxl.gxl_1_0.NodeType;
+import de.gupro.gxl.gxl_1_0.SeqType;
+import de.gupro.gxl.gxl_1_0.SetType;
+import de.gupro.gxl.gxl_1_0.TupType;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -38,20 +51,6 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 
-import java.math.BigInteger;
-import java.util.Map.Entry;
-
-import javax.xml.bind.JAXBElement;
-
-import de.gupro.gxl.gxl_1_0.BagType;
-import de.gupro.gxl.gxl_1_0.CompositeValueType;
-import de.gupro.gxl.gxl_1_0.EdgeType;
-import de.gupro.gxl.gxl_1_0.GraphType;
-import de.gupro.gxl.gxl_1_0.NodeType;
-import de.gupro.gxl.gxl_1_0.SeqType;
-import de.gupro.gxl.gxl_1_0.SetType;
-import de.gupro.gxl.gxl_1_0.TupType;
-
 public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     private TypeToGxl m_typeToGxl;
 
@@ -73,8 +72,10 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     @Override
     public void addInstanceModel(InstanceModel instanceModel) throws PortException {
         this.m_instanceGraph =
-            this.m_gxlResource.getInstanceGraph("graph_" + instanceModel.getTypeModel().getName(),
-                instanceModel.getName());
+            this.m_gxlResource.getInstanceGraph(instanceModel.getQualName()
+                .toString(),
+                "graph_" + instanceModel.getTypeModel()
+                    .getQualName());
 
         int timer = Timer.start("IM to GXL");
         visitInstanceModel(instanceModel);
@@ -95,10 +96,12 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         if (id == null) {
             id = getNodeId();
         }
-        NodeType objectNode = createNode(id, "#" + classNodeId, cmClass.getId().getNamespace());
+        NodeType objectNode = createNode(id, "#" + classNodeId, cmClass.getId()
+            .getNamespace());
         setElement(object, objectNode);
 
-        for (Entry<Field,Value> fieldEntry : object.getValue().entrySet()) {
+        for (Entry<Field,Value> fieldEntry : object.getValue()
+            .entrySet()) {
             Value fieldValue = fieldEntry.getValue();
             // if unset value, dont set it in the Ecore model either
             if (fieldValue == null || fieldValue == groove.io.conceptual.value.Object.NIL) {
@@ -107,18 +110,16 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
 
             if (this.m_typeToGxl.isAttribute(fieldEntry.getKey())) {
                 JAXBElement<?> attrObject = (JAXBElement<?>) getElement(fieldValue);
-                GxlUtil.setAttribute(objectNode,
-                    fieldEntry.getKey().getName().toString(),
-                    attrObject.getValue(),
-                    AttrTypeEnum.AUTO);
+                GxlUtil.setAttribute(objectNode, fieldEntry.getKey()
+                    .getName()
+                    .toString(), attrObject.getValue(), AttrTypeEnum.AUTO);
             } else {
                 // Create edge or edges
                 String fieldEdgeId = "#" + this.m_typeToGxl.getId(fieldEntry.getKey());
                 if (fieldValue instanceof ContainerValue) {
                     ContainerValue cv = (ContainerValue) fieldValue;
-                    boolean isordered =
-                        ((Container) cv.getType()).getContainerType() == Kind.ORD
-                            || ((Container) cv.getType()).getContainerType() == Kind.SEQ;
+                    boolean isordered = ((Container) cv.getType()).getContainerType() == Kind.ORD
+                        || ((Container) cv.getType()).getContainerType() == Kind.SEQ;
                     int index = 0;
                     for (Value subValue : cv.getValue()) {
                         NodeType valueNode = (NodeType) getElement(subValue);
@@ -183,8 +184,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<String> enumElem =
-            GxlUtil.g_objectFactory.createEnum(enumval.getValue().toString());
+        JAXBElement<String> enumElem = GxlUtil.g_objectFactory.createEnum(enumval.getValue()
+            .toString());
         setElement(enumval, enumElem);
     }
 
@@ -217,7 +218,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
 
         for (Value subVal : containerval.getValue()) {
             JAXBElement<?> cntValue = (JAXBElement<?>) getElement(subVal);
-            cntType.getBagOrSetOrSeq().add(cntValue);
+            cntType.getBagOrSetOrSeq()
+                .add(cntValue);
         }
     }
 
@@ -232,9 +234,11 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             JAXBElement<TupType> tupElem = GxlUtil.g_objectFactory.createTup(tupType);
             setElement(tupleval, tupElem);
 
-            for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
+            for (Entry<Integer,Value> entry : tupleval.getValue()
+                .entrySet()) {
                 JAXBElement<?> tupValue = (JAXBElement<?>) getElement(entry.getValue());
-                tupType.getBagOrSetOrSeq().add(tupValue);
+                tupType.getBagOrSetOrSeq()
+                    .add(tupValue);
             }
         } else {
             // Tuple represented by class
@@ -242,7 +246,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             groove.io.conceptual.value.Object o =
                 new groove.io.conceptual.value.Object(cmClass, null);
 
-            for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
+            for (Entry<Integer,Value> entry : tupleval.getValue()
+                .entrySet()) {
                 o.setFieldValue(cmClass.getField(Name.getName("_" + entry.getKey())),
                     entry.getValue());
             }
@@ -271,7 +276,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
 
         //getPackageGraph(packageId).getNodeOrEdgeOrRel().add(newNode);
         // Use the main graph, no subgraphs
-        this.m_instanceGraph.getNodeOrEdgeOrRel().add(newNode);
+        this.m_instanceGraph.getNodeOrEdgeOrRel()
+            .add(newNode);
 
         return newNode;
     }
@@ -288,13 +294,13 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             subGraph.setEdgemode(EdgemodeType.DEFAULTDIRECTED);
             GxlUtil.setElemType(subGraph, "#" + m_typeToGxl.getId(packageId));
             m_packageGraphs.put(packageId, subGraph);
-
+    
             if (packageId != Id.ROOT) {// && packageId.getNamespace() != Id.ROOT) {
                 // Create intermediate node
                 NodeType intermediateNode = new NodeType();
                 intermediateNode.setId(packageId.toString());
                 GxlUtil.setElemType(intermediateNode, "#" + (packageId.getNamespace() == Id.ROOT ? "ROOT" : packageId.getNamespace().toString()));
-
+    
                 // Insert node into parent graph, and subgraph into node
                 GraphType parentGraph = getPackageGraph(packageId.getNamespace());
                 parentGraph.getNodeOrEdgeOrRel().add(intermediateNode);
@@ -302,7 +308,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             } else {
                 //m_instanceGraph.getNodeOrEdgeOrRel().add(subGraph);
             }
-
+    
             return subGraph;
         }
     }
@@ -319,7 +325,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
 
         //TODO: if subgraphs are used, do it here as well
-        this.m_instanceGraph.getNodeOrEdgeOrRel().add(newEdge);
+        this.m_instanceGraph.getNodeOrEdgeOrRel()
+            .add(newEdge);
 
         return newEdge;
     }

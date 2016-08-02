@@ -1,22 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.conceptual.configuration;
-
-import groove.gui.Simulator;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -37,6 +35,9 @@ import com.jaxfront.swing.ui.editor.EditorPanel;
 import com.jaxfront.swing.ui.editor.TypeWorkspace;
 import com.jaxfront.swing.ui.wrapper.JAXJSplitPane;
 
+import groove.grammar.QualName;
+import groove.gui.Simulator;
+
 /** Dialog for constructing and saving configurations. */
 public class JaxFrontDialog extends ConfigDialog {
     private JPanel m_panel;
@@ -44,6 +45,7 @@ public class JaxFrontDialog extends ConfigDialog {
     private Component m_panelComponent;
     // Store the default Swing tooltip class, so the broken JaxFront version wont interfere after dialog is closed
     private static Object s_tooltipObj;
+
     static {
         s_tooltipObj = javax.swing.UIManager.get("ToolTipUI");
     }
@@ -54,8 +56,8 @@ public class JaxFrontDialog extends ConfigDialog {
     }
 
     @Override
-    public String getConfig() {
-        String result = super.getConfig();
+    public QualName getConfig() {
+        QualName result = super.getConfig();
         // After closing the dialog, restore the tooltip class
         javax.swing.UIManager.put("ToolTipUI", s_tooltipObj);
         return result;
@@ -80,9 +82,12 @@ public class JaxFrontDialog extends ConfigDialog {
         try {
             JAXJSplitPane pane = (JAXJSplitPane) this.m_editor.getComponent(0);
             TypeWorkspace space = (TypeWorkspace) pane.getRightComponent();
-            space.getButtonBar().setVisible(false);
-            space.getHeaderPanel().setVisible(false);
-            space.getMessageTablePanel().setVisible(false);
+            space.getButtonBar()
+                .setVisible(false);
+            space.getHeaderPanel()
+                .setVisible(false);
+            space.getMessageTablePanel()
+                .setVisible(false);
 
             this.m_panelComponent = pane.getRightComponent();
             this.m_panel.add(this.m_panelComponent);
@@ -100,9 +105,8 @@ public class JaxFrontDialog extends ConfigDialog {
     @Override
     protected void newModel() {
         try {
-            com.jaxfront.core.dom.Document dom =
-                DOMBuilder.getInstance().build(null, this.m_schemaURL,
-                    "configuration");
+            com.jaxfront.core.dom.Document dom = DOMBuilder.getInstance()
+                .build(null, this.m_schemaURL, "configuration");
             setDocument(dom);
         } catch (SchemaCreationException e) {
             // Silently catch error
@@ -115,9 +119,8 @@ public class JaxFrontDialog extends ConfigDialog {
     protected void loadModel(String xmlString) throws ConfigurationException {
         try {
             Document xmlDoc = DOMHelper.createDocument(xmlString);
-            com.jaxfront.core.dom.Document doc =
-                DOMBuilder.getInstance().build(null, this.m_schemaURL, xmlDoc,
-                    null, "configuration");
+            com.jaxfront.core.dom.Document doc = DOMBuilder.getInstance()
+                .build(null, this.m_schemaURL, xmlDoc, null, "configuration");
             setDocument(doc);
         } catch (SAXException e) {
             throw new ConfigurationException(e);
@@ -133,7 +136,8 @@ public class JaxFrontDialog extends ConfigDialog {
     @Override
     protected Document getDocument() throws ConfigurationException {
         try {
-            return this.m_editor.getDOM().serializeToW3CDocument();
+            return this.m_editor.getDOM()
+                .serializeToW3CDocument();
         } catch (XMLParseException e) {
             throw new ConfigurationException(e);
         } catch (SAXException e) {

@@ -1,5 +1,19 @@
 package groove.gui.action;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
+
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
@@ -19,25 +33,11 @@ import groove.gui.tree.LabelTree;
 import groove.gui.tree.LabelTree.EntryNode;
 import groove.util.parse.FormatException;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
-
 /**
  * Action for selecting a colour for a type node.
  */
-public class SelectColorAction extends SimulatorAction implements
-        GraphSelectionListener, TreeSelectionListener {
+public class SelectColorAction extends SimulatorAction
+    implements GraphSelectionListener, TreeSelectionListener {
     /** Constructs an instance of the action. */
     public SelectColorAction(Simulator simulator) {
         super(simulator, Options.SELECT_COLOR_ACTION_NAME, null);
@@ -49,11 +49,12 @@ public class SelectColorAction extends SimulatorAction implements
         this.chooser = new JColorChooser();
     }
 
-    /** Adds this action as a listener to the JGraph and label tree of a 
+    /** Adds this action as a listener to the JGraph and label tree of a
      * given JGraphPanel.
      */
     private void addAsListener(ResourceDisplay display) {
-        assert display.getResourceKind().isGraphBased();
+        assert display.getResourceKind()
+            .isGraphBased();
         JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
         jGraph.addGraphSelectionListener(this);
         if (this.label == null) {
@@ -91,8 +92,8 @@ public class SelectColorAction extends SimulatorAction implements
             for (TreePath path : selection) {
                 Object treeNode = path.getLastPathComponent();
                 if (treeNode instanceof EntryNode) {
-                    Label selectedLabel =
-                        ((EntryNode) treeNode).getEntry().getLabel();
+                    Label selectedLabel = ((EntryNode) treeNode).getEntry()
+                        .getLabel();
                     if (selectedLabel instanceof TypeLabel
                         && selectedLabel.getRole() == EdgeRole.NODE_TYPE) {
                         this.label = (TypeLabel) selectedLabel;
@@ -106,49 +107,50 @@ public class SelectColorAction extends SimulatorAction implements
 
     @Override
     public void execute() {
-        Color initColour =
-            getGrammarModel().getTypeGraph().getNode(this.label).getColor();
+        Color initColour = getGrammarModel().getTypeGraph()
+            .getNode(this.label)
+            .getColor();
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }
-        JDialog dialog =
-            JColorChooser.createDialog(getFrame(), "Choose colour for type",
-                false, this.chooser, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        setColour(SelectColorAction.this.chooser.getColor());
-                    }
-                }, null);
+        JDialog dialog = JColorChooser.createDialog(getFrame(),
+            "Choose colour for type",
+            false,
+            this.chooser,
+            new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setColour(SelectColorAction.this.chooser.getColor());
+                }
+            },
+            null);
         dialog.setVisible(true);
     }
 
     private void setColour(Color newColour) {
         Aspect colourAspect = null;
         if (!newColour.equals(Color.black)) {
-            String colourString =
-                String.format("%s,%s,%s", newColour.getRed(),
-                    newColour.getGreen(), newColour.getBlue());
+            String colourString = String.format("%s,%s,%s",
+                newColour.getRed(),
+                newColour.getGreen(),
+                newColour.getBlue());
             try {
-                colourAspect =
-                    AspectKind.COLOR.getAspect().newInstance(colourString,
-                        GraphRole.TYPE);
+                colourAspect = AspectKind.COLOR.getAspect()
+                    .newInstance(colourString, GraphRole.TYPE);
             } catch (FormatException e) {
                 // this can't happen, as the colour string is constructed correctly
                 assert false;
             }
         }
-        for (AspectGraph typeGraph : getGrammarStore().getGraphs(
-            ResourceKind.TYPE).values()) {
-            AspectGraph newTypeGraph =
-                typeGraph.colour(this.label, colourAspect);
+        for (AspectGraph typeGraph : getGrammarStore().getGraphs(ResourceKind.TYPE)
+            .values()) {
+            AspectGraph newTypeGraph = typeGraph.colour(this.label, colourAspect);
             if (newTypeGraph != typeGraph) {
                 try {
-                    getSimulatorModel().doAddGraph(ResourceKind.TYPE,
-                        newTypeGraph, false);
+                    getSimulatorModel().doAddGraph(ResourceKind.TYPE, newTypeGraph, false);
                 } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while saving type graph '%s'",
-                        typeGraph.getName()));
+                    showErrorDialog(exc,
+                        String.format("Error while saving type graph '%s'", typeGraph.getName()));
                 }
             }
         }
@@ -167,8 +169,7 @@ public class SelectColorAction extends SimulatorAction implements
 
     @Override
     public void refresh() {
-        super.setEnabled(this.label != null
-            && getGrammarModel().getTypeModel().isEnabled());
+        super.setEnabled(this.label != null);
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

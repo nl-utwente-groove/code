@@ -18,15 +18,6 @@ package groove.gui.tree;
 
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.gui.SimulatorListener;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
-import groove.gui.display.DismissDelayer;
-import groove.gui.display.ResourceDisplay;
 
 import java.awt.Color;
 import java.awt.event.FocusEvent;
@@ -44,13 +35,25 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.action.ActionStore;
+import groove.gui.display.DismissDelayer;
+import groove.gui.display.ResourceDisplay;
+
 /** Abstract superclass for all display trees. */
 public abstract class AbstractResourceTree extends JTree implements SimulatorListener {
     /** Constructs a resource tree for a given parent display. */
     protected AbstractResourceTree(ResourceDisplay parentDisplay) {
         this.parentDisplay = parentDisplay;
         this.resourceKind = parentDisplay.getResourceKind();
-        ToolTipManager.sharedInstance().registerComponent(this);
+        ToolTipManager.sharedInstance()
+            .registerComponent(this);
         addMouseListener(new DismissDelayer(this));
     }
 
@@ -237,10 +240,10 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         }
 
         void setSelection(Collection<TreeNode> selectedNodes) {
-            List<String> selectedNames = new ArrayList<String>();
+            List<QualName> selectedNames = new ArrayList<>();
             for (TreeNode node : selectedNodes) {
                 if (node instanceof ResourceTreeNode) {
-                    selectedNames.add(((ResourceTreeNode) node).getName());
+                    selectedNames.add(((ResourceTreeNode) node).getQualName());
                 }
             }
             getSimulatorModel().doSelectSet(getResourceKind(), selectedNames);

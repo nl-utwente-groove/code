@@ -33,36 +33,6 @@ import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR;
-import groove.grammar.GrammarKey;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.graph.Element;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.action.AboutAction;
-import groove.gui.action.ActionStore;
-import groove.gui.dialog.ErrorDialog;
-import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.dialog.PropertiesTable;
-import groove.gui.display.Display;
-import groove.gui.display.Display.ListPanel;
-import groove.gui.display.DisplayKind;
-import groove.gui.display.DisplaysPanel;
-import groove.gui.display.GraphEditorTab;
-import groove.gui.display.GraphTab;
-import groove.gui.display.JGraphPanel;
-import groove.gui.display.ResourceDisplay;
-import groove.gui.display.ResourceTab;
-import groove.gui.display.TextTab;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.JGraph;
-import groove.gui.list.ListPanel.SelectableListEntry;
-import groove.gui.list.ListTabbedPane;
-import groove.gui.list.SearchResult;
-import groove.gui.menu.ModelCheckingMenu;
-import groove.gui.menu.MyJMenu;
-import groove.util.Groove;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -92,6 +62,37 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
+import groove.grammar.GrammarKey;
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.graph.Element;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.action.AboutAction;
+import groove.gui.action.ActionStore;
+import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.PropertiesTable;
+import groove.gui.display.Display;
+import groove.gui.display.Display.ListPanel;
+import groove.gui.display.DisplayKind;
+import groove.gui.display.DisplaysPanel;
+import groove.gui.display.GraphEditorTab;
+import groove.gui.display.GraphTab;
+import groove.gui.display.JGraphPanel;
+import groove.gui.display.ResourceDisplay;
+import groove.gui.display.ResourceTab;
+import groove.gui.display.TextTab;
+import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.JGraph;
+import groove.gui.list.ListPanel.SelectableListEntry;
+import groove.gui.list.ListTabbedPane;
+import groove.gui.list.SearchResult;
+import groove.gui.menu.ModelCheckingMenu;
+import groove.gui.menu.MyJMenu;
+import groove.util.Groove;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
 
 /**
  * Program that applies a production system to an initial graph.
@@ -127,7 +128,8 @@ public class Simulator implements SimulatorListener {
                 @Override
                 public void run() {
                     try {
-                        Simulator.this.actions.getLoadGrammarAction().load(location);
+                        Simulator.this.actions.getLoadGrammarAction()
+                            .load(location);
                     } catch (IOException exc) {
                         new ErrorDialog(getFrame(), exc.getMessage(), exc).setVisible(true);
                     }
@@ -165,7 +167,8 @@ public class Simulator implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             setTitle();
-            FormatErrorSet grammarErrors = getModel().getGrammar().getErrors();
+            FormatErrorSet grammarErrors = getModel().getGrammar()
+                .getErrors();
             setErrors(grammarErrors);
         }
         if (changes.contains(Change.DISPLAY)) {
@@ -178,7 +181,8 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(FormatErrorSet grammarErrors) {
-        getResultsPanel().getErrorListPanel().setEntries(grammarErrors);
+        getResultsPanel().getErrorListPanel()
+            .setEntries(grammarErrors);
         adjustResultsPanel();
     }
 
@@ -186,7 +190,8 @@ public class Simulator implements SimulatorListener {
      * Displays a list of search results.
      */
     public void setSearchResults(List<SearchResult> searchResults) {
-        getResultsPanel().getSearchResultListPanel().setEntries(searchResults);
+        getResultsPanel().getSearchResultListPanel()
+            .setEntries(searchResults);
         adjustResultsPanel();
     }
 
@@ -195,7 +200,9 @@ public class Simulator implements SimulatorListener {
      * Needed for Command-Q shortcut on MacOS only (see {@link #getFrame}).
      */
     public void tryQuit() {
-        this.getActions().getQuitAction().execute();
+        this.getActions()
+            .getQuitAction()
+            .execute();
     }
 
     /**
@@ -215,7 +222,8 @@ public class Simulator implements SimulatorListener {
             // register doQuit() for the Command-Q shortcut on MacOS
             if (Groove.IS_PLATFORM_MAC) {
                 try {
-                    OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
+                    OSXAdapter.setQuitHandler(this, this.getClass()
+                        .getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
                     // should not happen (thrown when 'tryQuit' does not exist)
                     // ignore
@@ -225,13 +233,15 @@ public class Simulator implements SimulatorListener {
             this.frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    Simulator.this.actions.getQuitAction().execute();
+                    Simulator.this.actions.getQuitAction()
+                        .execute();
                 }
             });
             this.frame.setJMenuBar(createMenuBar());
             this.frame.setContentPane(getContentPanel());
             // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(getContentPanel());
+            ToolTipManager.sharedInstance()
+                .registerComponent(getContentPanel());
         }
         return this.frame;
     }
@@ -267,8 +277,8 @@ public class Simulator implements SimulatorListener {
      */
     JSplitPane getGrammarPanel() {
         if (this.grammarPanel == null) {
-            this.grammarPanel =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(), getDisplaysInfoPanel());
+            this.grammarPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(),
+                getDisplaysInfoPanel());
             this.grammarPanel.setBorder(null);
         }
         return this.grammarPanel;
@@ -279,9 +289,8 @@ public class Simulator implements SimulatorListener {
      */
     JSplitPane getListsPanel() {
         if (this.listsPanel == null) {
-            this.listsPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getDisplaysPanel().getUpperListsPanel(),
-                    getDisplaysPanel().getLowerListsPanel());
+            this.listsPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                getDisplaysPanel().getUpperListsPanel(), getDisplaysPanel().getLowerListsPanel());
             this.listsPanel.setBorder(null);
         }
         return this.listsPanel;
@@ -302,7 +311,8 @@ public class Simulator implements SimulatorListener {
             result.setDividerLocation(0.8);
             result.setContinuousLayout(true);
             result.setBorder(null);
-            ToolTipManager.sharedInstance().registerComponent(result);
+            ToolTipManager.sharedInstance()
+                .registerComponent(result);
         }
         return result;
     }
@@ -319,8 +329,10 @@ public class Simulator implements SimulatorListener {
     private ListTabbedPane getResultsPanel() {
         if (this.resultsPanel == null) {
             this.resultsPanel = new ListTabbedPane();
-            this.resultsPanel.getErrorListPanel().addSelectionListener(createListListener());
-            this.resultsPanel.getSearchResultListPanel().addSelectionListener(createListListener());
+            this.resultsPanel.getErrorListPanel()
+                .addSelectionListener(createListListener());
+            this.resultsPanel.getSearchResultListPanel()
+                .addSelectionListener(createListListener());
             this.model.addListener(this.resultsPanel.getSearchResultListPanel(), Change.GRAMMAR);
         }
         return this.resultsPanel;
@@ -359,12 +371,13 @@ public class Simulator implements SimulatorListener {
      */
     private void selectDisplayPart(SelectableListEntry entry) {
         ResourceKind resource = entry.getResourceKind();
-        String name = entry.getResourceName();
+        QualName name = entry.getResourceName();
         if (resource == ResourceKind.PROPERTIES) {
             Display display = getDisplaysPanel().getDisplayFor(resource);
             ListPanel panel = display.getListPanel();
-            getDisplaysPanel().getUpperListsPanel().setSelectedComponent(panel);
-            ((PropertiesTable) panel.getList()).setSelected(GrammarKey.getKey(name));
+            getDisplaysPanel().getUpperListsPanel()
+                .setSelectedComponent(panel);
+            ((PropertiesTable) panel.getList()).setSelected(GrammarKey.getKey(name.toString()));
         } else if (resource != null) {
             getModel().doSelect(resource, name);
             ResourceDisplay display = (ResourceDisplay) getDisplaysPanel().getDisplayFor(resource);
@@ -384,9 +397,12 @@ public class Simulator implements SimulatorListener {
                 }
             } else if (entry instanceof FormatError) {
                 FormatError error = (FormatError) entry;
-                if (error.getNumbers().size() > 1) {
-                    int line = error.getNumbers().get(0);
-                    int column = error.getNumbers().get(1);
+                if (error.getNumbers()
+                    .size() > 1) {
+                    int line = error.getNumbers()
+                        .get(0);
+                    int column = error.getNumbers()
+                        .get(1);
                     ((TextTab) resourceTab).select(line, column);
                 }
             }
@@ -590,7 +606,8 @@ public class Simulator implements SimulatorListener {
             String showTabOption = Options.getShowTabOption(kind);
             result.add(getOptions().getItem(showTabOption));
         }
-        switch (getDisplaysPanel().getSelectedDisplay().getKind()) {
+        switch (getDisplaysPanel().getSelectedDisplay()
+            .getKind()) {
         case HOST:
         case RULE:
         case STATE:
@@ -877,7 +894,8 @@ public class Simulator implements SimulatorListener {
     public void addExternalAction(Action action) {
         JMenu externalMenu = getExternalActionsMenu();
         // remove the dummy action if it is still there
-        if (externalMenu.getItem(0).getAction() == this.dummyExternalAction) {
+        if (externalMenu.getItem(0)
+            .getAction() == this.dummyExternalAction) {
             externalMenu.remove(0);
         }
         getExternalActionsMenu().add(action);
@@ -901,7 +919,8 @@ public class Simulator implements SimulatorListener {
         GrammarModel grammar = getModel().getGrammar();
         if (grammar != null && grammar.getName() != null) {
             title.append(grammar.getId());
-            if (!grammar.getStore().isModifiable()) {
+            if (!grammar.getStore()
+                .isModifiable()) {
                 title.append(" (read-only)");
             }
             title.append(" - ");
@@ -918,7 +937,8 @@ public class Simulator implements SimulatorListener {
         // lazily creates the options
         if (this.options == null) {
             this.options = new Options();
-            this.options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
+            this.options.getItem(SHOW_STATE_IDS_OPTION)
+                .setSelected(true);
         }
         return this.options;
     }

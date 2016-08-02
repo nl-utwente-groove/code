@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -18,7 +18,19 @@ package groove.test.rule;
 
 import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.RULE;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Test;
+
 import groove.algebra.AlgebraFamily;
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
@@ -30,18 +42,7 @@ import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import junit.framework.Assert;
-
-import org.junit.Test;
 
 /** Set of tests for rule application. */
 public class RuleApplicationTest {
@@ -119,7 +120,7 @@ public class RuleApplicationTest {
     private void test(String grammarName) {
         try {
             GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (String ruleName : view.getNames(RULE)) {
+            for (QualName ruleName : view.getNames(RULE)) {
                 test(view, ruleName);
             }
         } catch (IOException e) {
@@ -127,20 +128,22 @@ public class RuleApplicationTest {
         }
     }
 
-    /** 
+    /**
      * Tests a named rule from a given grammar view.
      * The test applies the rule to all start graphs named
-     * {@code ruleName-<i>i</i>} (for <i>i</i> ranging from zero), 
-     * and compares the resulting 
+     * {@code ruleName-<i>i</i>} (for <i>i</i> ranging from zero),
+     * and compares the resulting
      * graphs with all graphs named {@code ruleName-<i>i</i>-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel view, String ruleName) {
+    private void test(GrammarModel view, QualName ruleName) {
         boolean cont = true;
         int i;
         for (i = 0; cont; i++) {
-            String startName = ruleName + "-" + i;
-            cont = view.getNames(HOST).contains(startName);
+            QualName startName = ruleName.parent()
+                .extend(ruleName.last() + "-" + i);
+            cont = view.getNames(HOST)
+                .contains(startName);
             if (cont) {
                 test(view, ruleName, startName);
             }
@@ -150,32 +153,40 @@ public class RuleApplicationTest {
         }
     }
 
-    /** 
+    /**
      * Tests a named rule from a given grammar view by applying
      * it to a named host graph.
      * The test applies the rule to the start graph,
-     * and compares the resulting 
+     * and compares the resulting
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel grammarModel, String ruleName, String startName) {
+    private void test(GrammarModel grammarModel, QualName ruleName, QualName startName) {
         try {
             grammarModel.setLocalActiveNames(HOST, startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
-            AlgebraFamily family = grammarModel.getProperties().getAlgebraFamily();
+            AlgebraFamily family = grammarModel.getProperties()
+                .getAlgebraFamily();
             boolean cont = true;
             for (int j = 0; cont; j++) {
-                String resultName = startName + "-" + j;
-                cont = grammarModel.getNames(HOST).contains(resultName);
+                QualName resultName = startName.parent()
+                    .extend(startName.last() + "-" + j);
+                cont = grammarModel.getNames(HOST)
+                    .contains(resultName);
                 if (cont) {
-                    results.add(grammarModel.getHostModel(resultName).toResource().clone(family));
+                    results.add(grammarModel.getHostModel(resultName)
+                        .toResource()
+                        .clone(family));
                 }
             }
-            Rule rule = grammarModel.toGrammar().getRule(ruleName);
+            Rule rule = grammarModel.toGrammar()
+                .getRule(ruleName);
             if (rule == null) {
                 Assert.fail(String.format("Rule '%s' is currently disabled", ruleName));
             }
-            test(grammarModel.getStartGraphModel().toHost().clone(family), rule, results);
+            test(grammarModel.getStartGraphModel()
+                .toHost()
+                .clone(family), rule, results);
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
@@ -204,24 +215,30 @@ public class RuleApplicationTest {
             if (target != null) {
                 if (SAVE) {
                     try {
-                        File tmpFile =
-                            File.createTempFile("error", FileType.STATE.getExtension(), new File(
-                                INPUT_DIR));
+                        File tmpFile = File.createTempFile("error",
+                            FileType.STATE.getExtension(),
+                            new File(INPUT_DIR));
                         Groove.saveGraph(GraphConverter.toAspect(target), tmpFile);
                         System.out.printf("Graph saved in %s", tmpFile);
                     } catch (IOException e) {
                         Assert.fail(e.toString());
                     }
                 }
-                Assert.fail(String.format(
-                    "Rule %s, start graph %s: Found: %s; unexpected target graph %s",
-                    rule.getFullName(), start.getName(), found, target));
+                Assert.fail(
+                    String.format("Rule %s, start graph %s: Found: %s; unexpected target graph %s",
+                        rule.getQualName(),
+                        start.getName(),
+                        found,
+                        target));
             }
         }
         int leftOver = found.nextClearBit(0);
         if (leftOver < results.size()) {
             Assert.fail(String.format("Rule %s, start graph %s: Expected target missing: %s",
-                rule.getFullName(), start.getName(), results.get(leftOver).getName()));
+                rule.getQualName(),
+                start.getName(),
+                results.get(leftOver)
+                    .getName()));
         }
     }
 }

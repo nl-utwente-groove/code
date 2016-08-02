@@ -1,27 +1,27 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2014 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.transform.criticalpair;
 
-import groove.grammar.Grammar;
-import groove.grammar.Rule;
-
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
 
 /**
  * Utility class which allows checking whether a graph transformation system (grammar without hostgraph)
@@ -42,10 +42,8 @@ public class ConfluenceResult {
      * Needs to know when pairs are tested
      */
     private LazyCriticalPairSet untestedPairs;
-    private Set<CriticalPair> undecidedPairs =
-        new LinkedHashSet<CriticalPair>();
-    private Set<CriticalPair> nonConfluentPairs =
-        new LinkedHashSet<CriticalPair>();
+    private Set<CriticalPair> undecidedPairs = new LinkedHashSet<CriticalPair>();
+    private Set<CriticalPair> nonConfluentPairs = new LinkedHashSet<CriticalPair>();
 
     /**
      * @return the number of pairs for which confluence has not yet been analysed
@@ -72,10 +70,9 @@ public class ConfluenceResult {
         Set<Rule> rules = grammar.getAllRules();
         for (Rule rule : rules) {
             if (!CriticalPair.canComputePairs(rule)) {
-                throw new IllegalArgumentException(
-                    "Cannot compute critical pairs for rule '"
-                        + rule.getFullName()
-                        + "', because the algorithm can not compute Critical pairs for this type of rule");
+                throw new IllegalArgumentException("Cannot compute critical pairs for rule '"
+                    + rule.getQualName()
+                    + "', because the algorithm can not compute Critical pairs for this type of rule");
             }
         }
         this.untestedPairs = new LazyCriticalPairSet(rules);
@@ -98,7 +95,7 @@ public class ConfluenceResult {
 
     /**
      * Returns the critical pairs for which confluence could not be decided.
-     * 
+     *
      * Untested pairs are not included
      */
     public Set<CriticalPair> getUndecidedPairs() {
@@ -107,7 +104,7 @@ public class ConfluenceResult {
 
     /**
      * Returns the critical pairs which are not strictly locally confluent.
-     * 
+     *
      * Untested pairs are not included
      */
     public Set<CriticalPair> getNonConfluentPairs() {
@@ -130,9 +127,10 @@ public class ConfluenceResult {
      * (when a pushout does not exist for some intermediate tranformation)
      */
     public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
-            boolean alternateMethod) {
+        boolean alternateMethod) {
         return checkStrictlyConfluent(grammar,
-            ConfluenceStatus.NOT_STICTLY_CONFLUENT, alternateMethod);
+            ConfluenceStatus.NOT_STICTLY_CONFLUENT,
+            alternateMethod);
     }
 
     /**
@@ -145,10 +143,9 @@ public class ConfluenceResult {
      * If (target == UNTESTED) then no analysis is started.
      * Otherwise analysis is started until the first pair with the ConfluenceStatus target has been found
      */
-    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
-            ConfluenceStatus target, boolean alternateMethod) {
-        ConfluenceResult result =
-            new ConfluenceResult(grammar, alternateMethod);
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar, ConfluenceStatus target,
+        boolean alternateMethod) {
+        ConfluenceResult result = new ConfluenceResult(grammar, alternateMethod);
         result.analyzeUntil(target);
         return result;
     }
@@ -163,8 +160,8 @@ public class ConfluenceResult {
             analyzeAll();
         } else if (target == ConfluenceStatus.UNTESTED) {
             //nothing needs to be done
-        } else if (target == this.status
-            || (target == ConfluenceStatus.UNDECIDED && this.status == ConfluenceStatus.NOT_STICTLY_CONFLUENT)) {
+        } else if (target == this.status || (target == ConfluenceStatus.UNDECIDED
+            && this.status == ConfluenceStatus.NOT_STICTLY_CONFLUENT)) {
             //nothing needs to be done
         } else {
             Iterator<CriticalPair> it = this.untestedPairs.iterator();
@@ -175,8 +172,7 @@ public class ConfluenceResult {
                 //remove the pair from the untested set
                 it.remove();
             }
-            if (this.status == ConfluenceStatus.UNTESTED
-                && this.undecidedPairs.isEmpty()) {
+            if (this.status == ConfluenceStatus.UNTESTED && this.undecidedPairs.isEmpty()) {
                 //everything has been analyzed but all pairs are confluent
                 this.status = ConfluenceStatus.STRICTLY_CONFLUENT;
             }
@@ -258,12 +254,10 @@ public class ConfluenceResult {
             }
             break;
         case UNTESTED:
-            throw new RuntimeException("Test for confluence failed: "
-                + pairStatus);
+            throw new RuntimeException("Test for confluence failed: " + pairStatus);
         default:
             //can not happen unless the pairStatus enum is modified
-            throw new RuntimeException("Unknown ConfluenceStatus: "
-                + pairStatus);
+            throw new RuntimeException("Unknown ConfluenceStatus: " + pairStatus);
         }
         return result;
     }

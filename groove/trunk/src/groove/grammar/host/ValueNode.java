@@ -17,6 +17,7 @@
 package groove.grammar.host;
 
 import groove.algebra.Algebra;
+import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.algebra.syntax.Expression;
 import groove.grammar.AnchorKind;
@@ -70,6 +71,15 @@ public class ValueNode extends ANode implements HostNode {
      */
     public Object toJavaValue() {
         return getAlgebra().toJavaValue(getValue());
+    }
+
+    /** Converts the value in this node to an {@link Expression}.
+     * Typically this is {@link Constant}, but if the underlying algebra is a
+     * term algebra, it is the term corresponding to the value itself.
+     * @see Algebra#toTerm(Object)
+     * */
+    public Expression toTerm() {
+        return getAlgebra().toTerm(getValue());
     }
 
     /**

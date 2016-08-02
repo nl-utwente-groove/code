@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -22,11 +22,21 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import groove.automaton.DFA;
 import groove.automaton.DFAState;
 import groove.automaton.RegAutCalculator;
 import groove.automaton.RegExpr;
 import groove.automaton.SimpleNFA;
+import groove.grammar.QualName;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.Valuation;
@@ -38,14 +48,6 @@ import groove.graph.EdgeRole;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-
 /**
  * Test class for the construction of NormalAutomata
  * @author Arend Rensink
@@ -55,10 +57,9 @@ public class DFATest {
     /** Directory with test files (relative to the project) */
     static public final String GRAMMAR = "junit/samples/regexpr";
     /** Name of the type graph used in this test. */
-    static public final String TYPE_NAME = "construction";
+    static public final QualName TYPE_NAME = QualName.name("construction");
 
-    private final RegAutCalculator nfaCalculator = new RegAutCalculator(
-        SimpleNFA.PROTOTYPE);
+    private final RegAutCalculator nfaCalculator = new RegAutCalculator(SimpleNFA.PROTOTYPE);
 
     private TypeGraph type;
     private boolean useType;
@@ -71,12 +72,13 @@ public class DFATest {
     public void setUp() {
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            this.type = view.getTypeModel(TYPE_NAME).toResource();
+            this.type = view.getTypeModel(TYPE_NAME)
+                .toResource();
             this.xVar = new LabelVar("x", EdgeRole.BINARY);
             TypeFactory factory = this.type.getFactory();
-            Set<? extends TypeEdge> bEdges =
-                this.type.edgeSet(factory.createLabel("b"));
-            this.bEdge = bEdges.iterator().next();
+            Set<? extends TypeEdge> bEdges = this.type.edgeSet(factory.createLabel("b"));
+            this.bEdge = bEdges.iterator()
+                .next();
             this.aLabel = TypeLabel.createLabel("a");
         } catch (FormatException e) {
             fail(e.getMessage());
@@ -167,22 +169,28 @@ public class DFATest {
         DFAState state = forward.getStartState();
         assertTrue(state.isInitial());
         assertFalse(state.isFinal());
-        Map<TypeLabel,DFAState> succMap = state.getLabelMap().get(OUTGOING);
-        Map<TypeLabel,DFAState> predMap = state.getLabelMap().get(INCOMING);
+        Map<TypeLabel,DFAState> succMap = state.getLabelMap()
+            .get(OUTGOING);
+        Map<TypeLabel,DFAState> predMap = state.getLabelMap()
+            .get(INCOMING);
         assertEquals(Collections.singleton(this.aLabel), succMap.keySet());
         assertTrue(predMap.isEmpty());
         state = succMap.get(this.aLabel);
         assertFalse(state.isInitial());
         assertFalse(state.isFinal());
-        succMap = state.getLabelMap().get(OUTGOING);
-        predMap = state.getLabelMap().get(INCOMING);
+        succMap = state.getLabelMap()
+            .get(OUTGOING);
+        predMap = state.getLabelMap()
+            .get(INCOMING);
         assertTrue(succMap.isEmpty());
         assertEquals(Collections.singleton(this.aLabel), predMap.keySet());
         state = predMap.get(this.aLabel);
         assertFalse(state.isInitial());
         assertTrue(state.isFinal());
-        succMap = state.getLabelMap().get(OUTGOING);
-        predMap = state.getLabelMap().get(INCOMING);
+        succMap = state.getLabelMap()
+            .get(OUTGOING);
+        predMap = state.getLabelMap()
+            .get(INCOMING);
         assertTrue(succMap.isEmpty());
         assertTrue(predMap.isEmpty());
         DFA backward = a.getDFA(INCOMING, null);
@@ -202,7 +210,8 @@ public class DFATest {
      */
     private void assertEmpty(String e, Valuation val, boolean empty) {
         SimpleNFA a = createNFA(e);
-        assertEquals(empty, a.getDFA(OUTGOING, val).isEmpty());
+        assertEquals(empty, a.getDFA(OUTGOING, val)
+            .isEmpty());
     }
 
     /**
@@ -217,12 +226,11 @@ public class DFATest {
      * Tests if two regular expressions (given as strings) under a given valuation
      * give rise to equivalent DFA's, i.e., with the same language.
      */
-    private void assertEquivalent(String e1, String e2, Valuation val,
-            boolean equiv) {
+    private void assertEquivalent(String e1, String e2, Valuation val, boolean equiv) {
         SimpleNFA a1 = createNFA(e1);
         SimpleNFA a2 = createNFA(e2);
-        assertEquals(equiv,
-            a1.getDFA(OUTGOING, val).isEquivalent(a2.getDFA(OUTGOING, val)));
+        assertEquals(equiv, a1.getDFA(OUTGOING, val)
+            .isEquivalent(a2.getDFA(OUTGOING, val)));
     }
 
     /** Creates an NFA for a given regular expression. */
@@ -238,7 +246,7 @@ public class DFATest {
 
     /** Creates an NFA for a given regular expression. */
     private SimpleNFA createNFA(RegExpr expr) {
-        return (SimpleNFA) (this.useType ? this.nfaCalculator.compute(expr,
-            this.type) : this.nfaCalculator.compute(expr));
+        return (SimpleNFA) (this.useType ? this.nfaCalculator.compute(expr, this.type)
+            : this.nfaCalculator.compute(expr));
     }
 }

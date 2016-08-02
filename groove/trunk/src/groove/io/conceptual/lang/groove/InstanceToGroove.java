@@ -1,5 +1,12 @@
 package groove.io.conceptual.lang.groove;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import groove.graph.GraphRole;
 import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
@@ -32,13 +39,7 @@ import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import groove.util.parse.IdValidator;
 
 //separate different graphs for various elements where applicable.
 //TODO: add translate messages here as well?
@@ -62,16 +63,17 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     @Override
     public void addInstanceModel(InstanceModel instanceModel) throws PortException {
         int timer = Timer.start("IM to GROOVE");
-        this.m_properties = instanceModel.getTypeModel().getProperties();
+        this.m_properties = instanceModel.getTypeModel()
+            .getProperties();
         this.m_currentGraph =
-            this.m_grooveResource.getGraph(instanceModel.getName(), GraphRole.HOST);
+            this.m_grooveResource.getGraph(instanceModel.getQualName(), GraphRole.HOST);
 
         this.m_currentTypeModel = instanceModel.getTypeModel();
         visitInstanceModel(instanceModel, this.m_cfg);
 
         // Prefetch? Uncomment for more accurate timings
-        this.m_currentGraph.getGraph().toAspectGraph(this.m_currentGraph.getGraphName(),
-            this.m_currentGraph.getGraphRole());
+        this.m_currentGraph.getGraph()
+            .toAspectGraph();
 
         Timer.stop(timer);
     }
@@ -119,8 +121,11 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         }
 
         if (object == Object.NIL) {
-            if (this.m_cfg.getConfig().getGlobal().getNullable() != NullableType.NONE) {
-                String name = this.m_cfg.getStrings().getNilName();
+            if (this.m_cfg.getConfig()
+                .getGlobal()
+                .getNullable() != NullableType.NONE) {
+                String name = this.m_cfg.getStrings()
+                    .getNilName();
                 AbsNode nilNode = new AbsNode("type:" + name);
                 setElement(object, nilNode);
             } else {
@@ -130,26 +135,29 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         }
 
         AbsNode objectNode = new AbsNode(this.m_cfg.getName(object.getType()));
-        if (this.m_cfg.getConfig().getInstanceModel().getObjects().isUseIdentifier()
-            && object.getName() != null) {
-            String name = object.getName();
-            name = name.replaceAll("[^A-Za-z0-9_]", "_");
-            if (name.matches("[0-9].*")) {
-                name = "_" + name;
-            }
-            objectNode.addName("id:" + GrooveUtil.getSafeId(name));
+        if (this.m_cfg.getConfig()
+            .getInstanceModel()
+            .getObjects()
+            .isUseIdentifier() && object.getName() != null) {
+            objectNode.addName("id:" + IdValidator.JAVA_ID.repair(object.getName()));
         }
         setElement(object, objectNode);
 
         // Set default values for those fields not set in the object
         Set<Field> defaultFields = new HashSet<Field>();
-        if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
+        if (this.m_cfg.getConfig()
+            .getTypeModel()
+            .getFields()
+            .getDefaults()
+            .isSetValue()) {
             for (Property p : this.m_currentTypeModel.getProperties()) {
                 if (p instanceof DefaultValueProperty) {
                     DefaultValueProperty dp = (DefaultValueProperty) p;
-                    if (((Class) object.getType()).getAllSuperClasses().contains(dp.getField()
-                        .getDefiningClass())) {
-                        if (!object.getValue().containsKey(dp.getField())) {
+                    if (((Class) object.getType()).getAllSuperClasses()
+                        .contains(dp.getField()
+                            .getDefiningClass())) {
+                        if (!object.getValue()
+                            .containsKey(dp.getField())) {
                             object.setFieldValue(dp.getField(), dp.getDefaultValue());
                             defaultFields.add(dp.getField());
                         }
@@ -158,13 +166,15 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             }
         }
 
-        for (Entry<Field,Value> fieldEntry : object.getValue().entrySet()) {
+        for (Entry<Field,Value> fieldEntry : object.getValue()
+            .entrySet()) {
             Field f = fieldEntry.getKey();
             Value v = fieldEntry.getValue();
-            assert (v != null);
+            assert(v != null);
 
-            if (v == Object.NIL
-                && this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+            if (v == Object.NIL && this.m_cfg.getConfig()
+                .getGlobal()
+                .getNullable() == NullableType.NONE) {
                 continue;
             }
 
@@ -173,17 +183,21 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                 ContainerValue cv = (ContainerValue) v;
                 int i = 0;
                 for (AbsNode valNode : valNodes) {
-                    /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName().toString());
-                    if (cv.getValue().get(i) instanceof Object) {
-                        this.m_objectNodes.put(new Triple<Object,Field,Object>(object, f,
-                            (Object) cv.getValue().get(i)), valNode);
+                    /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName()
+                        .toString());
+                    if (cv.getValue()
+                        .get(i) instanceof Object) {
+                        this.m_objectNodes
+                            .put(new Triple<Object,Field,Object>(object, f, (Object) cv.getValue()
+                                .get(i)), valNode);
                     }
                     i++;
                 }
             } else {
                 AbsNode valNode = getNode(v);
                 if (this.m_cfg.useIntermediate(f)) {
-                    String valName = this.m_cfg.getStrings().getValueEdge();
+                    String valName = this.m_cfg.getStrings()
+                        .getValueEdge();
                     AbsNode interNode = new AbsNode(this.m_cfg.getName(f));
                     /*AbsEdge valEdge = */new AbsEdge(interNode, valNode, valName);
                     valNode = interNode;
@@ -194,13 +208,19 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                         valNode);
                 }
 
-                /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName().toString());
+                /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName()
+                    .toString());
             }
         }
         // Clear previously set default values so model is not changed by import
-        if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
+        if (this.m_cfg.getConfig()
+            .getTypeModel()
+            .getFields()
+            .getDefaults()
+            .isSetValue()) {
             for (Field f : defaultFields) {
-                object.getValue().remove(f);
+                object.getValue()
+                    .remove(f);
             }
         }
 
@@ -209,13 +229,18 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
 
     // Generates opposite edges
     private void addOpposites() {
-        if (!this.m_cfg.getConfig().getTypeModel().getFields().isOpposites()) {
+        if (!this.m_cfg.getConfig()
+            .getTypeModel()
+            .getFields()
+            .isOpposites()) {
             return;
         }
 
-        String oppositeName = this.m_cfg.getStrings().getOppositeEdge();
+        String oppositeName = this.m_cfg.getStrings()
+            .getOppositeEdge();
 
-        for (Entry<Triple<Object,Field,Object>,AbsNode> tripleEntry : this.m_objectNodes.entrySet()) {
+        for (Entry<Triple<Object,Field,Object>,AbsNode> tripleEntry : this.m_objectNodes
+            .entrySet()) {
             Triple<Object,Field,Object> triple = tripleEntry.getKey();
             Field f = triple.getMiddle();
             for (Property p : this.m_properties) {
@@ -223,9 +248,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                     OppositeProperty op = (OppositeProperty) p;
                     if (op.getField1() == f) {
 
-                        Triple<Object,Field,Object> opTriple =
-                            new Triple<Object,Field,Object>(triple.getRight(), op.getField2(),
-                                triple.getLeft());
+                        Triple<Object,Field,Object> opTriple = new Triple<Object,Field,Object>(
+                            triple.getRight(), op.getField2(), triple.getLeft());
                         if (!this.m_objectNodes.containsKey(opTriple)) {
                             continue;
                         }
@@ -292,16 +316,20 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-            String sep = this.m_cfg.getConfig().getGlobal().getIdSeparator();
-            String litName =
-                "type:" + this.m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep
-                    + enumval.getValue();
+        if (this.m_cfg.getConfig()
+            .getTypeModel()
+            .getEnumMode() == EnumModeType.NODE) {
+            String sep = this.m_cfg.getConfig()
+                .getGlobal()
+                .getIdSeparator();
+            String litName = "type:" + this.m_cfg.idToName(((Enum) enumval.getType()).getId()) + sep
+                + enumval.getValue();
             AbsNode enumNode = new AbsNode(litName);
             setElement(enumval, enumNode);
         } else {
             AbsNode enumNode = new AbsNode(this.m_cfg.getName(enumval.getType()));
-            enumNode.addName("flag:" + enumval.getValue().toString());
+            enumNode.addName("flag:" + enumval.getValue()
+                .toString());
             setElement(enumval, enumNode);
         }
 
@@ -314,10 +342,10 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        String valueName = this.m_cfg.getStrings().getDataValue();
-        AbsNode dataNode =
-            new AbsNode(this.m_cfg.getName(dataval.getType()), "let:" + valueName + "=string:\""
-                + dataval.getValue() + "\"");
+        String valueName = this.m_cfg.getStrings()
+            .getDataValue();
+        AbsNode dataNode = new AbsNode(this.m_cfg.getName(dataval.getType()),
+            "let:" + valueName + "=string:\"" + dataval.getValue() + "\"");
         setElement(dataval, dataNode);
 
     }
@@ -328,7 +356,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        if (param == null || !(param instanceof String)) {
+        if (param == null) {
             throw new IllegalArgumentException("Container value visitor requires String argument");
         }
         String containerId = param;
@@ -339,26 +367,28 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         boolean subContainer = containerType.getType() instanceof Container;
 
         boolean useIndex = this.m_cfg.useIndex(containerType);
-        boolean useEdge =
-            this.m_cfg.getConfig()
-                .getTypeModel()
-                .getFields()
-                .getContainers()
-                .getOrdering()
-                .getType() == OrderType.EDGE;
+        boolean useEdge = this.m_cfg.getConfig()
+            .getTypeModel()
+            .getFields()
+            .getContainers()
+            .getOrdering()
+            .getType() == OrderType.EDGE;
 
-        AbsNode[] containerNodes = new AbsNode[containerVal.getValue().size()]; //actual nodes to represent this container
+        AbsNode[] containerNodes = new AbsNode[containerVal.getValue()
+            .size()]; //actual nodes to represent this container
         int i = 0;
         int index = 1;
         AbsNode prevValNode = null;
         for (Value subValue : containerVal.getValue()) {
             // No not include Nil if not used (shouldn't have to happen anyway, Nil in container is bad
-            if (subValue == Object.NIL
-                && this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+            if (subValue == Object.NIL && this.m_cfg.getConfig()
+                .getGlobal()
+                .getNullable() == NullableType.NONE) {
                 continue;
             }
             AbsNode valueNode = null;
-            String valName = this.m_cfg.getStrings().getValueEdge();
+            String valName = this.m_cfg.getStrings()
+                .getValueEdge();
             if (!useIntermediate) {
                 // subContainer ought to be false too
                 AbsNode subNode = getNode(subValue);
@@ -368,9 +398,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                     new AbsNode(containerId + this.m_cfg.getContainerPostfix(containerType));
                 if (subContainer) {
                     ContainerValue cVal = (ContainerValue) subValue;
-                    AbsNode subNodes[] =
-                        getNodes(cVal,
-                            this.m_cfg.getContainerName(containerId, (Container) cVal.getType()));
+                    AbsNode subNodes[] = getNodes(cVal,
+                        this.m_cfg.getContainerName(containerId, (Container) cVal.getType()));
                     for (AbsNode subNode : subNodes) {
                         /*AbsEdge intermediateEdge = */new AbsEdge(intermediateNode, subNode,
                             valName);
@@ -385,7 +414,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             if (useIndex) {
                 if (useEdge) {
                     if (prevValNode != null) {
-                        String nextName = this.m_cfg.getStrings().getNextEdge();
+                        String nextName = this.m_cfg.getStrings()
+                            .getNextEdge();
                         /*AbsEdge nextEdge = */new AbsEdge(prevValNode, valueNode, nextName);
                         if (this.m_cfg.getConfig()
                             .getTypeModel()
@@ -393,13 +423,15 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                             .getContainers()
                             .getOrdering()
                             .isUsePrevEdge()) {
-                            String prevName = this.m_cfg.getStrings().getPrevEdge();
+                            String prevName = this.m_cfg.getStrings()
+                                .getPrevEdge();
                             new AbsEdge(valueNode, prevValNode, prevName);
                         }
                     }
                     prevValNode = valueNode;
                 } else {
-                    String indexName = this.m_cfg.getStrings().getIndexEdge();
+                    String indexName = this.m_cfg.getStrings()
+                        .getIndexEdge();
                     valueNode.addName("let:" + indexName + "=" + index);
                     index++;
                 }
@@ -425,8 +457,10 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         AbsNode tupleNode = new AbsNode(this.m_cfg.getName(tup));
         setElement(tupleval, tupleNode);
 
-        for (Integer i : tupleval.getValue().keySet()) {
-            Value v = tupleval.getValue().get(i);
+        for (Integer i : tupleval.getValue()
+            .keySet()) {
+            Value v = tupleval.getValue()
+                .get(i);
             AbsNode valNode = getNode(v);
             if (valNode == null) {
                 // Happens if Nil value and not using nullable classes

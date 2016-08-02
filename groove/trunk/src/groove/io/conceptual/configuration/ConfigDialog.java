@@ -1,10 +1,5 @@
 package groove.io.conceptual.configuration;
 
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.gui.dialog.ErrorDialog;
-import groove.util.parse.FormatException;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -41,16 +36,22 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
+import groove.grammar.QualName;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.gui.dialog.ErrorDialog;
+import groove.util.parse.FormatException;
+
 //ActionListener: change selection
 //TODO: add area for exception messages, many errors are silently dropped
 public abstract class ConfigDialog extends JDialog implements ActionListener {
     protected final Simulator m_simulator;
 
     protected URL m_schemaURL;
-    protected String m_activeModel;
-    protected String m_selectedModel;
+    protected QualName m_activeModel;
+    protected QualName m_selectedModel;
 
-    private JComboBox m_configsList;
+    private JComboBox<String> m_configsList;
     // True if combobox events should be ignored
     private boolean m_ignoreCombobox = false;
 
@@ -74,8 +75,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             }
         };
         KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        this.getRootPane().registerKeyboardAction(actionListener, stroke,
-            JComponent.WHEN_IN_FOCUSED_WINDOW);
+        this.getRootPane()
+            .registerKeyboardAction(actionListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         this.m_simulator = simulator;
 
@@ -84,7 +85,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         setSize(800, 600);
     }
 
-    public String getConfig() {
+    /** Invokes the dialog, and returns the name of the selected configuration model. */
+    public QualName getConfig() {
         this.setLocationRelativeTo(this.m_simulator.getFrame());
         this.m_selectedModel = null;
         setVisible(true);
@@ -100,10 +102,12 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     }
 
     private void buildGUI() {
-        this.m_schemaURL = this.getClass().getClassLoader().getResource(Config.CONFIG_SCHEMA);
+        this.m_schemaURL = this.getClass()
+            .getClassLoader()
+            .getResource(Config.CONFIG_SCHEMA);
         if (this.m_schemaURL == null) {
-            throw new RuntimeException("Unable to load the XML schema resource "
-                + Config.CONFIG_SCHEMA);
+            throw new RuntimeException(
+                "Unable to load the XML schema resource " + Config.CONFIG_SCHEMA);
         }
 
         JToolBar toolBar = new JToolBar();
@@ -112,7 +116,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         toolBar.add(getAction(ConfigAction.Type.NEW));
         toolBar.addSeparator();
 
-        this.m_configsList = new JComboBox();
+        this.m_configsList = new JComboBox<>();
         this.m_configsList.setEditable(false);
         this.m_configsList.addActionListener(this);
         toolBar.add(this.m_configsList);
@@ -123,10 +127,13 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         toolBar.add(getAction(ConfigAction.Type.DELETE));
         toolBar.add(getAction(ConfigAction.Type.RENAME));
 
-        this.getContentPane().setLayout(new BorderLayout());
-        this.getContentPane().add(toolBar, BorderLayout.NORTH);
+        this.getContentPane()
+            .setLayout(new BorderLayout());
+        this.getContentPane()
+            .add(toolBar, BorderLayout.NORTH);
 
-        this.getContentPane().add(getXMLPanel(), BorderLayout.CENTER);
+        this.getContentPane()
+            .add(getXMLPanel(), BorderLayout.CENTER);
 
         JButton okBtn = new JButton("OK");
         okBtn.addActionListener(new ActionListener() {
@@ -137,7 +144,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 ConfigDialog.this.dispose();
             }
         });
-        this.getRootPane().setDefaultButton(okBtn);
+        this.getRootPane()
+            .setDefaultButton(okBtn);
 
         JButton cancelBtn = new JButton("Cancel");
         cancelBtn.addActionListener(new ActionListener() {
@@ -154,11 +162,15 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         buttonPane.add(okBtn);
         buttonPane.add(Box.createRigidArea(new Dimension(5, 0)));
         buttonPane.add(cancelBtn);
-        this.getContentPane().add(buttonPane, BorderLayout.SOUTH);
+        this.getContentPane()
+            .add(buttonPane, BorderLayout.SOUTH);
 
         if (hasModels()) {
-            this.m_activeModel =
-                this.m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG).iterator().next();
+            this.m_activeModel = this.m_simulator.getModel()
+                .getGrammar()
+                .getNames(ResourceKind.CONFIG)
+                .iterator()
+                .next();
         }
 
         refreshGUI();
@@ -175,7 +187,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         if (ae.getSource() == this.m_configsList) {
             Object current = this.m_configsList.getSelectedItem();
             if (!current.equals(this.m_activeModel)) {
-                this.m_activeModel = (String) current;
+                this.m_activeModel = QualName.parse((String) current);
                 loadModel();
             }
         }
@@ -205,7 +217,9 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         this.m_ignoreCombobox = true;
         this.m_configsList.removeAllItems();
 
-        Set<String> names = this.m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG);
+        Set<QualName> names = this.m_simulator.getModel()
+            .getGrammar()
+            .getNames(ResourceKind.CONFIG);
 
         if (!hasModels()) {
             final String newStr = new String("<New>");
@@ -216,10 +230,10 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             return;
         }
 
-        Object[] nameArray = names.toArray();
+        QualName[] nameArray = names.toArray(new QualName[0]);
         Arrays.sort(nameArray);
-        for (Object name : nameArray) {
-            this.m_configsList.addItem(name);
+        for (QualName name : nameArray) {
+            this.m_configsList.addItem(name.toString());
             if (name.equals(this.m_activeModel)) {
                 this.m_configsList.setSelectedItem(name);
             }
@@ -229,7 +243,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     }
 
     /** Carries out the consequences of a given action. */
-    public void executeAction(ConfigAction.Type type, String modelName) {
+    public void executeAction(ConfigAction.Type type, QualName modelName) {
         try {
             switch (type) {
             case NEW:
@@ -254,17 +268,23 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 }
 
                 try {
-                    this.m_simulator.getModel().getStore().deleteTexts(ResourceKind.CONFIG,
-                        Collections.singletonList(this.m_activeModel));
+                    this.m_simulator.getModel()
+                        .getStore()
+                        .deleteTexts(ResourceKind.CONFIG,
+                            Collections.singletonList(this.m_activeModel));
 
                     if (!hasModels()) {
                         this.m_activeModel = null;
                     } else {
-                        this.m_activeModel =
-                            this.m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG).iterator().next();
+                        this.m_activeModel = this.m_simulator.getModel()
+                            .getGrammar()
+                            .getNames(ResourceKind.CONFIG)
+                            .iterator()
+                            .next();
                     }
                 } catch (IOException e) {
-                    new ErrorDialog(this.m_simulator.getFrame(), "Error deleting configuration", e).setVisible(true);
+                    new ErrorDialog(this.m_simulator.getFrame(), "Error deleting configuration", e)
+                        .setVisible(true);
                 }
                 refreshGUI();
                 loadModel();
@@ -274,11 +294,13 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                     return;
                 }
                 try {
-                    this.m_simulator.getModel().getStore().rename(ResourceKind.CONFIG,
-                        this.m_activeModel, modelName);
+                    this.m_simulator.getModel()
+                        .getStore()
+                        .rename(ResourceKind.CONFIG, this.m_activeModel, modelName);
                     this.m_activeModel = modelName;
                 } catch (IOException e) {
-                    new ErrorDialog(this.m_simulator.getFrame(), "Error renaming configuration", e).setVisible(true);
+                    new ErrorDialog(this.m_simulator.getFrame(), "Error renaming configuration", e)
+                        .setVisible(true);
                 }
                 refreshGUI();
                 loadModel();
@@ -289,17 +311,21 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 }
                 String xmlString;
                 try {
-                    xmlString =
-                        (String) this.m_simulator.getModel().getGrammar().getResource(
-                            ResourceKind.CONFIG, this.m_activeModel).toResource();
-                    this.m_simulator.getModel().getStore().putTexts(ResourceKind.CONFIG,
-                        Collections.singletonMap(modelName, xmlString));
+                    xmlString = (String) this.m_simulator.getModel()
+                        .getGrammar()
+                        .getResource(ResourceKind.CONFIG, this.m_activeModel)
+                        .toResource();
+                    this.m_simulator.getModel()
+                        .getStore()
+                        .putTexts(ResourceKind.CONFIG,
+                            Collections.singletonMap(modelName, xmlString));
                     this.m_activeModel = modelName;
                 } catch (FormatException e) {
                     // FormatException not applicable to CONFIG resources
                     return;
                 } catch (IOException e) {
-                    new ErrorDialog(this.m_simulator.getFrame(), "Error copying configuration", e).setVisible(true);
+                    new ErrorDialog(this.m_simulator.getFrame(), "Error copying configuration", e)
+                        .setVisible(true);
                 }
                 refreshGUI();
                 loadModel();
@@ -321,9 +347,10 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
 
         String xmlString = null;
         try {
-            xmlString =
-                (String) this.m_simulator.getModel().getGrammar().getResource(ResourceKind.CONFIG,
-                    this.m_activeModel).toResource();
+            xmlString = (String) this.m_simulator.getModel()
+                .getGrammar()
+                .getResource(ResourceKind.CONFIG, this.m_activeModel)
+                .toResource();
         } catch (FormatException e) {
             // FormatException not applicable to CONFIG resources
             return;
@@ -345,7 +372,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         Transformer transformer = null;
         Exception exc = null;
         try {
-            transformer = TransformerFactory.newInstance().newTransformer();
+            transformer = TransformerFactory.newInstance()
+                .newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // Allow indenting
             // The following line is specific to apache xalan. Since indenting is not really required anyway, commented out
             // See also http://stackoverflow.com/questions/1264849
@@ -355,10 +383,13 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             DOMSource source = new DOMSource(doc);
             StreamResult result = new StreamResult(new StringWriter());
             transformer.transform(source, result);
-            String xmlString = result.getWriter().toString();
+            String xmlString = result.getWriter()
+                .toString();
 
-            this.m_simulator.getModel().getStore().putTexts(ResourceKind.CONFIG,
-                Collections.singletonMap(this.m_activeModel, xmlString));
+            this.m_simulator.getModel()
+                .getStore()
+                .putTexts(ResourceKind.CONFIG,
+                    Collections.singletonMap(this.m_activeModel, xmlString));
         } catch (TransformerConfigurationException e) {
             exc = e;
         } catch (IOException e) {
@@ -367,15 +398,17 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             exc = e;
         }
         if (exc != null) {
-            new ErrorDialog(this.m_simulator.getFrame(), "Error saving configuration resource "
-                + this.m_activeModel, exc).setVisible(true);
+            new ErrorDialog(this.m_simulator.getFrame(),
+                "Error saving configuration resource " + this.m_activeModel, exc).setVisible(true);
         }
     }
 
     protected abstract Document getDocument() throws ConfigurationException;
 
     public boolean hasModels() {
-        Set<String> names = this.m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG);
-        return names.size() > 0;
+        return !this.m_simulator.getModel()
+            .getGrammar()
+            .getNames(ResourceKind.CONFIG)
+            .isEmpty();
     }
 }

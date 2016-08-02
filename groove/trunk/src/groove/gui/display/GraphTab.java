@@ -1,20 +1,5 @@
 package groove.gui.display;
 
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.graph.GraphProperties;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.dialog.PropertiesTable;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JModel;
-import groove.gui.tree.RuleLevelTree;
-import groove.gui.tree.TypeTree;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +16,22 @@ import javax.swing.event.UndoableEditListener;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
+
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.graph.GraphProperties;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.PropertiesTable;
+import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JModel;
+import groove.gui.tree.RuleLevelTree;
+import groove.gui.tree.TypeTree;
 
 /** Display tab component showing a graph-based resource. */
 final public class GraphTab extends ResourceTab implements UndoableEditListener {
@@ -58,7 +59,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    JCell<?> errorCell = getJModel().getErrorMap().get(arg);
+                    JCell<?> errorCell = getJModel().getErrorMap()
+                        .get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -117,7 +119,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 JComponent propertiesPanel = getPropertiesPanel();
                 JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
                 scrollPanel.setName(propertiesPanel.getName());
-                scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
+                scrollPanel.getViewport()
+                    .setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
                 result.addChangeListener(createInfoListener(true));
             }
@@ -135,10 +138,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         TitledPanel result = this.labelPanel;
         if (result == null) {
             TypeTree labelTree = getLabelTree();
-            this.labelPanel =
-                result =
-                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(),
-                        true);
+            this.labelPanel = result = new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                labelTree.createToolBar(), true);
             result.setTitled(false);
         }
         return result;
@@ -196,11 +197,12 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private TypeTree labelTree;
 
     @Override
-    public boolean setResource(String name) {
+    public boolean setResource(QualName name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
-            AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
+            AspectGraph graph = getSimulatorModel().getStore()
+                .getGraphs(getResourceKind())
+                .get(name);
             if (graph != null) {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
@@ -221,8 +223,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             jModel.addUndoableEditListener(this);
             getPropertiesPanel().setProperties(jModel.getProperties());
         }
-        setName(name);
-        getTabLabel().setTitle(name);
+        setName(name.toString());
+        getTabLabel().setTitle(name.toString());
         updateErrors();
         return jModel != null;
     }
@@ -235,7 +237,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     @Override
-    public boolean removeResource(String name) {
+    public boolean removeResource(QualName name) {
         boolean result = name.equals(getName());
         this.jModelMap.remove(name);
         if (result) {
@@ -252,7 +254,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     @Override
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
-        setResource(getName());
+        setResource(getQualName());
     }
 
     @Override
@@ -292,7 +294,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     /** Mapping from resource names to aspect models. */
-    private final Map<String,AspectJModel> jModelMap = new HashMap<String,AspectJModel>();
+    private final Map<QualName,AspectJModel> jModelMap = new HashMap<>();
 
     private final static boolean DEBUG = false;
 }

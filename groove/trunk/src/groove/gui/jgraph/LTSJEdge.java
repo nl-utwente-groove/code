@@ -16,7 +16,7 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> implements LTSJCell {
+public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implements LTSJCell {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.
@@ -59,7 +59,10 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
         if (isInternal() != trans.isInternalStep()) {
             return false;
         }
-        if (isAbsent() != (trans.source().isAbsent() || trans.target().isAbsent())) {
+        if (isAbsent() != (trans.source()
+            .isAbsent()
+            || trans.target()
+                .isAbsent())) {
             return false;
         }
         return true;
@@ -95,9 +98,13 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
             RuleTransition trans = (RuleTransition) part;
             String description;
             if (getJGraph().isShowAnchors()) {
-                description = trans.getEvent().toString();
+                description = trans.getEvent()
+                    .toString();
             } else {
-                description = trans.getEvent().getRule().getFullName();
+                description = trans.getEvent()
+                    .getRule()
+                    .getQualName()
+                    .toString();
             }
             displayedLabels[labelIndex] = HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
@@ -117,7 +124,10 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
 
     /** Indicates that the node or target of this edge is absent. */
     final boolean isAbsent() {
-        return getEdge().source().isAbsent() || getEdge().target().isAbsent();
+        return getEdge().source()
+            .isAbsent()
+            || getEdge().target()
+                .isAbsent();
     }
 
     /** Indicates that this edge is part of a recipe. */

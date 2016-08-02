@@ -58,52 +58,47 @@ public class SettingParser implements Parser<Setting<?,?>> {
         } else {
             result.append("One or more values ");
         }
-        result.append("of the form <i>kind</i> <i>args</i> (without the space), where <i>kind</i> is one of");
-        for (SettingKey key : getKey().getKindType().getEnumConstants()) {
+        result.append(
+            "of the form <i>kind</i> <i>args</i> (without the space), where <i>kind</i> is one of");
+        for (SettingKey key : getKey().getKindType()
+            .getEnumConstants()) {
             result.append("<li> - ");
             result.append(HTMLConverter.ITALIC_TAG.on(key.getName()));
             result.append(": ");
             result.append(key.getExplanation());
             result.append(", with <i>arg</i> ");
-            result.append(StringHandler.toLower(key.parser().getDescription()));
+            result.append(StringHandler.toLower(key.parser()
+                .getDescription()));
         }
         return result.toString();
     }
 
     @Override
-    public boolean accepts(String text) {
-        boolean result = false;
-        if (text == null || text.length() == 0) {
-            return true;
+    public Setting<?,?> parse(String input) throws FormatException {
+        if (input == null || input.length() == 0) {
+            return getDefaultValue();
         } else if (getKey().isSingular()) {
-            result = acceptsSingle(text);
+            return parseSingle(input);
         } else {
-            result = true;
-            try {
-                String[] parts = exprParser.split(text, " ");
-                for (int i = 0; i < parts.length; i++) {
-                    if (!acceptsSingle(parts[i])) {
-                        result = false;
-                        break;
-                    }
-                }
-            } catch (FormatException exc) {
-                // the string contains unbalanced quotes or brackets
-                result = false;
-            }
+            throw new UnsupportedOperationException("Non-singular keys not yet implemented");
         }
-        return result;
     }
 
-    /** Tests if a given string represents a single setting value. */
-    public boolean acceptsSingle(String text) {
-        if (text == null || text.length() == 0) {
-            return true;
-        } else {
-            Duo<String> splitText = split(text);
-            SettingKey kind = getKind(splitText.one());
-            return kind == null ? false : kind.parser().accepts(splitText.two());
+    /** Parses a string holding a single setting value. */
+    public Setting<?,?> parseSingle(String text) throws FormatException {
+        Duo<String> splitText = split(text);
+        String name = splitText.one();
+        SettingKey kind = getKind(name);
+        if (kind == null) {
+            if (name.isEmpty()) {
+                throw new FormatException("Value '%s' should start with setting kind", text);
+            } else {
+                throw new FormatException("Unknown setting kind '%s' in '%s'", name, text);
+            }
         }
+        Object content = kind.parser()
+            .parse(splitText.two());
+        return kind.createSetting(content);
     }
 
     /**
@@ -129,39 +124,16 @@ public class SettingParser implements Parser<Setting<?,?>> {
     }
 
     @Override
-    public Setting<?,?> parse(String input) throws FormatException {
-        if (input == null || input.length() == 0) {
-            return getDefaultValue();
-        } else {
-            return parseSingle(input);
-        }
-    }
-
-    /** Parses a string holding a single setting value. */
-    public Setting<?,?> parseSingle(String text) throws FormatException {
-        Duo<String> splitText = split(text);
-        String name = splitText.one();
-        SettingKey kind = getKind(name);
-        if (kind == null) {
-            if (name.isEmpty()) {
-                throw new FormatException("Value '%s' should start with setting kind", text);
-            } else {
-                throw new FormatException("Unknown setting kind '%s' in '%s'", name, text);
-            }
-        }
-        Object content = kind.parser().parse(splitText.two());
-        return kind.createSetting(content);
-    }
-
-    @Override
     public String toParsableString(Object value) {
         String result = "";
         Setting<?,?> setting = (Setting<?,?>) value;
         if (!isDefault(value)) {
             StringBuilder builder = new StringBuilder();
             SettingKey kind = setting.getKind();
-            String kindName = kind.getName().toLowerCase();
-            String contentString = kind.parser().toParsableString(setting.getContent());
+            String kindName = kind.getName()
+                .toLowerCase();
+            String contentString = kind.parser()
+                .toParsableString(setting.getContent());
             if (contentString.isEmpty()) {
                 builder.append(kindName);
             } else if (getKind("") == kind) {
@@ -187,14 +159,10 @@ public class SettingParser implements Parser<Setting<?,?>> {
         boolean result = value instanceof Setting;
         if (result) {
             Setting<?,?> setting = (Setting<?,?>) value;
-            result = setting.getKind().isValue(setting.getContent());
+            result = setting.getKind()
+                .isValue(setting.getContent());
         }
         return result;
-    }
-
-    @Override
-    public boolean hasDefault() {
-        return true;
     }
 
     @Override
@@ -218,12 +186,6 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     private String defaultString;
 
-    @Override
-    public boolean isDefault(Object value) {
-        return getDefaultValue().equals(value);
-    }
-
-    private static final StringHandler exprParser = new StringHandler("\"", "()");
     /** Separator between kind name and (optional) setting content. */
     private static final char CONTENT_SEPARATOR = ':';
 }

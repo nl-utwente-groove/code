@@ -16,13 +16,6 @@
  */
 package groove.gui;
 
-import groove.grammar.model.ResourceKind;
-import groove.io.Util;
-import groove.io.store.EditType;
-import groove.util.Groove;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
-
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.event.InputEvent;
@@ -66,6 +59,14 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.jgraph.graph.GraphConstants;
 
 import com.jgoodies.looks.plastic.theme.DesertBlue;
+
+import groove.grammar.QualName;
+import groove.grammar.model.ResourceKind;
+import groove.io.Util;
+import groove.io.store.EditType;
+import groove.util.Groove;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
 
 /**
  * @author Arend Rensink
@@ -172,7 +173,8 @@ public class Options implements Cloneable {
      * @return the value of the checkbox item with the given name
      */
     public boolean isSelected(String name) {
-        return this.itemMap.get(name).isSelected();
+        return this.itemMap.get(name)
+            .isSelected();
     }
 
     /**
@@ -181,7 +183,8 @@ public class Options implements Cloneable {
      * @param selected the new selection value of the menu item
      */
     public void setSelected(String name, boolean selected) {
-        this.itemMap.get(name).setSelected(selected);
+        this.itemMap.get(name)
+            .setSelected(selected);
     }
 
     /**
@@ -220,7 +223,8 @@ public class Options implements Cloneable {
     public String toString() {
         Map<String,Boolean> result = new HashMap<String,Boolean>();
         for (Map.Entry<String,JMenuItem> entry : this.itemMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().isSelected());
+            result.put(entry.getKey(), entry.getValue()
+                .isSelected());
         }
         return result.toString();
     }
@@ -288,7 +292,8 @@ public class Options implements Cloneable {
         result.setFloatable(false);
         result.setAlignmentX(JLabel.LEFT_ALIGNMENT);
         // make sure tool tips get displayed
-        ToolTipManager.sharedInstance().registerComponent(result);
+        ToolTipManager.sharedInstance()
+            .registerComponent(result);
         return result;
     }
 
@@ -325,15 +330,16 @@ public class Options implements Cloneable {
         return result.toString();
     }
 
-    /** Returns the initially suggested name for a new resource of
+    /** Returns the initially suggested (simple) name for a new resource of
      * a given type.
      */
     public static String getNewResourceName(ResourceKind resource) {
-        String result = resource.getDefaultName();
+        QualName result = resource.getDefaultName();
         if (result == null) {
-            result = "new" + resource.getName();
+            return "new" + resource.getName();
+        } else {
+            return result.toString();
         }
-        return result;
     }
 
     // Menus
@@ -674,13 +680,13 @@ public class Options implements Cloneable {
     public static final String SELECT_MODE_NAME = "Selection mode";
 
     /** Add point keystroke. */
-    public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT,
-        InputEvent.ALT_MASK);
+    public static final KeyStroke ADD_POINT_KEY =
+        KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
     /**
      * Apply keystroke
      */
-    static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-        InputEvent.CTRL_MASK);
+    static public final KeyStroke APPLY_KEY =
+        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
     /** Back keystroke */
     public static final KeyStroke BACK_KEY = KeyStroke.getKeyStroke("alt LEFT");
     /** Cancel keystroke */
@@ -770,8 +776,8 @@ public class Options implements Cloneable {
      */
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
-    public static final KeyStroke REMOVE_POINT_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,
-        InputEvent.ALT_MASK);
+    public static final KeyStroke REMOVE_POINT_KEY =
+        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
     /** Save keystroke */
@@ -815,6 +821,9 @@ public class Options implements Cloneable {
 
     /** Returns the tab show option text for a given resource kind. */
     public static String getShowTabOption(ResourceKind kind) {
+        if (showTabOptionMap == null) {
+            showTabOptionMap = new EnumMap<>(ResourceKind.class);
+        }
         String result = showTabOptionMap.get(kind);
         if (result == null) {
             showTabOptionMap.put(kind, result = String.format("Show %ss", kind.getDescription()));
@@ -822,8 +831,7 @@ public class Options implements Cloneable {
         return result;
     }
 
-    private static final Map<ResourceKind,String> showTabOptionMap =
-        new EnumMap<ResourceKind,String>(ResourceKind.class);
+    private static Map<ResourceKind,String> showTabOptionMap;
 
     /** Returns the resource kinds for which the display tab is optional. */
     public static final Set<ResourceKind> getOptionalTabs() {
@@ -832,7 +840,9 @@ public class Options implements Cloneable {
 
     /** Set of resource kinds for which the display tab is optional. */
     private static final Set<ResourceKind> optionalTabs = EnumSet.of(ResourceKind.CONTROL,
-        ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
+        ResourceKind.PROLOG,
+        ResourceKind.TYPE,
+        ResourceKind.GROOVY);
 
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
@@ -899,17 +909,19 @@ public class Options implements Cloneable {
             result = StringHandler.splitExpr(storedValue, ",");
         } catch (FormatException e) {
             assert false : String.format("Format error in user preference string %s: %s",
-                storedValue, e.getMessage());
+                storedValue,
+                e.getMessage());
         }
         for (int i = 0; i < result.length; i++) {
             try {
                 String newValue = StringHandler.toUnquoted(result[i], '"');
-                assert result[i] != null : String.format(
-                    "User preference string %s is not correctly quoted", result[i]);
+                assert result[i] != null : String
+                    .format("User preference string %s is not correctly quoted", result[i]);
                 result[i] = newValue;
             } catch (FormatException e) {
                 assert false : String.format("Format error in user preference string %s: %s",
-                    result[i], e.getMessage());
+                    result[i],
+                    e.getMessage());
             }
         }
         return result;
@@ -974,7 +986,8 @@ public class Options implements Cloneable {
     public static Font getDefaultFont() {
         if (DEFAULT_FONT == null) {
             initLookAndFeel();
-            DEFAULT_FONT = MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+            DEFAULT_FONT = MetalLookAndFeel.getCurrentTheme()
+                .getUserTextFont();
         }
         return DEFAULT_FONT;
     }
@@ -988,7 +1001,8 @@ public class Options implements Cloneable {
             initLookAndFeel();
             LABEL_FONT = GraphConstants.DEFAULTFONT;
             if (LABEL_FONT == null) {
-                LABEL_FONT = UIManager.getDefaults().getFont("SansSerif");
+                LABEL_FONT = UIManager.getDefaults()
+                    .getFont("SansSerif");
             }
             // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
         }
@@ -1004,7 +1018,8 @@ public class Options implements Cloneable {
             initLookAndFeel();
             Font result = getLabelFont();
             if (!result.canDisplay(Util.DT)) {
-                result = UIManager.getDefaults().getFont("SansSerif");
+                result = UIManager.getDefaults()
+                    .getFont("SansSerif");
             }
             if (result == null || !result.canDisplay(Util.DT)) {
                 result = loadFont("stixgeneralregular.ttf").deriveFont(getLabelFont().getSize2D());
@@ -1021,7 +1036,8 @@ public class Options implements Cloneable {
     private static Font loadFont(String name) {
         Font result = null;
         try {
-            result = Font.createFont(Font.TRUETYPE_FONT, Groove.getResource(name).openStream());
+            result = Font.createFont(Font.TRUETYPE_FONT, Groove.getResource(name)
+                .openStream());
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {
             // do nothing

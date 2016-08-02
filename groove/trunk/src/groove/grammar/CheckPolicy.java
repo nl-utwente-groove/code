@@ -16,13 +16,13 @@
  */
 package groove.grammar;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import groove.grammar.Action.Role;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Policy for dealing with run-time checks,
@@ -36,7 +36,7 @@ public enum CheckPolicy {
     /** Violation is a state error. */
     ERROR("error", "Constraint violation is a state error"),
     /** Violation removes the state. */
-    REMOVE("remove", "Constraint violation causes a state to be removed"), ;
+    REMOVE("remove", "Constraint violation causes a state to be removed"),;
 
     private CheckPolicy(String name, String explanation) {
         this.name = name;
@@ -75,15 +75,15 @@ public enum CheckPolicy {
     private final String explanation;
 
     /** Parser that returns a policy. */
-    public static final Parser<CheckPolicy> singleParser = new Parser.EnumParser<CheckPolicy>(
-        CheckPolicy.class, ERROR);
+    public static final Parser<CheckPolicy> singleParser =
+        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, ERROR);
     /** Parser that returns a policy map. */
     public static final Parser<PolicyMap> multiParser = new PolicyMapParser();
 
     private final static char ASSIGN_CHAR = ':';
 
     /** Mapping from action names to policies. */
-    public static class PolicyMap extends TreeMap<String,CheckPolicy> {
+    public static class PolicyMap extends TreeMap<QualName,CheckPolicy> {
         /**
          * Returns the policy for a given action.
          * If there is no explicit policy for the action,
@@ -92,7 +92,8 @@ public enum CheckPolicy {
          */
         public CheckPolicy get(Action key) {
             CheckPolicy result = super.get(key);
-            if (result == null && key.getRole().isConstraint()) {
+            if (result == null && key.getRole()
+                .isConstraint()) {
                 result = ERROR;
             }
             return result;
@@ -103,8 +104,8 @@ public enum CheckPolicy {
         @Override
         public String getDescription() {
             StringBuilder result = new StringBuilder();
-            result.append("A space-separated list of <i>name:value</i> pairs,<br>"
-                + "with <i>value</i> ");
+            result.append(
+                "A space-separated list of <i>name:value</i> pairs,<br>" + "with <i>value</i> ");
             result.append(StringHandler.toLower(singleParser.getDescription()));
             return result.toString();
         }
@@ -122,7 +123,8 @@ public enum CheckPolicy {
         public PolicyMap parse(String input) throws FormatException {
             PolicyMap result = new PolicyMap();
             if (input != null) {
-                String[] split = input.trim().split("\\s");
+                String[] split = input.trim()
+                    .split("\\s");
                 for (String pair : split) {
                     if (pair.length() == 0) {
                         continue;
@@ -132,13 +134,10 @@ public enum CheckPolicy {
                         result = null;
                         break;
                     }
-                    String name = pair.substring(0, pos);
+                    QualName name = QualName.parse(pair.substring(0, pos))
+                        .testValid();
                     String value = pair.substring(pos + 1, pair.length());
                     CheckPolicy policy = singleParser.parse(value);
-                    if (!StringHandler.isIdentifier(name) || policy == null) {
-                        result = null;
-                        break;
-                    }
                     result.put(name, policy);
                 }
             }
@@ -149,7 +148,7 @@ public enum CheckPolicy {
         public String toParsableString(Object value) {
             StringBuffer result = new StringBuffer();
             if (value instanceof PolicyMap) {
-                for (Map.Entry<String,CheckPolicy> e : ((PolicyMap) value).entrySet()) {
+                for (Map.Entry<QualName,CheckPolicy> e : ((PolicyMap) value).entrySet()) {
                     if (e.getValue() != ERROR) {
                         result.append(e.getKey());
                         result.append(ASSIGN_CHAR);
@@ -167,28 +166,8 @@ public enum CheckPolicy {
         }
 
         @Override
-        public boolean isValue(Object value) {
-            return value instanceof PolicyMap;
-        }
-
-        @Override
-        public boolean hasDefault() {
-            return true;
-        }
-
-        @Override
         public PolicyMap getDefaultValue() {
             return EMPTY;
-        }
-
-        @Override
-        public String getDefaultString() {
-            return "";
-        }
-
-        @Override
-        public boolean isDefault(Object value) {
-            return value instanceof PolicyMap && ((PolicyMap) value).isEmpty();
         }
 
         private final static PolicyMap EMPTY = new PolicyMap();

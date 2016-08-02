@@ -1,5 +1,9 @@
 package groove.io.conceptual.lang.groove;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import groove.grammar.QualName;
 import groove.graph.GraphRole;
 import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
@@ -18,9 +22,6 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.external.PortException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 // Generates meta schema for type graph
 public class MetaToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
@@ -36,10 +37,14 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     @Override
     public void addTypeModel(TypeModel typeModel) throws PortException {
         // Only create meta graph if config requires it
-        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
-            this.m_currentGraph =
-                this.m_grooveResource.getGraph(GrooveUtil.getSafeId(typeModel.getName()) + "_meta",
-                    GraphRole.TYPE);
+        if (this.m_cfg.getConfig()
+            .getTypeModel()
+            .isMetaSchema()) {
+            QualName typeName = typeModel.getQualName()
+                .toValidName();
+            QualName name = typeName.parent()
+                .extend(typeName.last() + "_meta");
+            this.m_currentGraph = this.m_grooveResource.getGraph(name, GraphRole.TYPE);
             setupMetaModel();
             visitTypeModel(typeModel, this.m_cfg);
         }
@@ -79,37 +84,48 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
         String name = "";
         switch (type) {
         case Type:
-            name = this.m_cfg.getStrings().getMetaType();
+            name = this.m_cfg.getStrings()
+                .getMetaType();
             break;
         case Class:
-            name = this.m_cfg.getStrings().getMetaClass();
+            name = this.m_cfg.getStrings()
+                .getMetaClass();
             break;
         case ClassNullable:
-            name = this.m_cfg.getStrings().getMetaClassNullable();
+            name = this.m_cfg.getStrings()
+                .getMetaClassNullable();
             break;
         case Enum:
-            name = this.m_cfg.getStrings().getMetaEnum();
+            name = this.m_cfg.getStrings()
+                .getMetaEnum();
             break;
         case DataType:
-            name = this.m_cfg.getStrings().getMetaDataType();
+            name = this.m_cfg.getStrings()
+                .getMetaDataType();
             break;
         case Tuple:
-            name = this.m_cfg.getStrings().getMetaTuple();
+            name = this.m_cfg.getStrings()
+                .getMetaTuple();
             break;
         case ContainerSet:
-            name = this.m_cfg.getStrings().getMetaContainerSet();
+            name = this.m_cfg.getStrings()
+                .getMetaContainerSet();
             break;
         case ContainerBag:
-            name = this.m_cfg.getStrings().getMetaContainerBag();
+            name = this.m_cfg.getStrings()
+                .getMetaContainerBag();
             break;
         case ContainerSeq:
-            name = this.m_cfg.getStrings().getMetaContainerSeq();
+            name = this.m_cfg.getStrings()
+                .getMetaContainerSeq();
             break;
         case ContainerOrd:
-            name = this.m_cfg.getStrings().getMetaContainerOrd();
+            name = this.m_cfg.getStrings()
+                .getMetaContainerOrd();
             break;
         case Intermediate:
-            name = this.m_cfg.getStrings().getMetaIntermediate();
+            name = this.m_cfg.getStrings()
+                .getMetaIntermediate();
             break;
         default:
             throw new RuntimeException();
@@ -152,7 +168,9 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
         }
 
         // If not using the nullable/proper class system, don't instantiate nullable classes
-        if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
+        if (this.m_cfg.getConfig()
+            .getGlobal()
+            .getNullable() == NullableType.NONE) {
             if (!c.isProper()) {
                 // Simply revert to the proper instance
                 AbsNode classNode = getElement(c.getProperClass());
@@ -174,7 +192,9 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
         }
 
         if (c.isProper()) {
-            if (this.m_cfg.getConfig().getGlobal().getNullable() == NullableType.ALL) {
+            if (this.m_cfg.getConfig()
+                .getGlobal()
+                .getNullable() == NullableType.ALL) {
                 getElement(c.getNullableClass());
             }
         } else {
@@ -192,7 +212,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
             AbsNode fieldTypeNode = getElement(field.getType(), this.m_cfg.getName(field));
             // Can happen if type is container and not using intermediate
             if (fieldTypeNode == null) {
-                assert (field.getType() instanceof Container);
+                assert(field.getType() instanceof Container);
                 return;
             }
 

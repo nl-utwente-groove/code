@@ -16,12 +16,6 @@
  */
 package groove.transform;
 
-import groove.grammar.Rule;
-import groove.grammar.host.AnchorValue;
-import groove.grammar.rule.RuleToHostMap;
-import groove.match.TreeMatch;
-import groove.util.cache.CacheReference;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +24,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import groove.grammar.Rule;
+import groove.grammar.host.AnchorValue;
+import groove.grammar.rule.RuleToHostMap;
+import groove.match.TreeMatch;
+import groove.util.cache.CacheReference;
 
 /**
  * Rule event consisting of a set of events.
@@ -49,7 +49,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
      */
     public CompositeEvent(Record record, Rule rule, Collection<BasicEvent> eventSet, Reuse reuse) {
         super(reference, rule);
-        assert !eventSet.isEmpty();
+        assert!eventSet.isEmpty();
         this.record = record;
         this.reuse = reuse;
         this.eventArray = new BasicEvent[eventSet.size()];
@@ -85,7 +85,8 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     public String getAnchorImageString() {
         List<String> eventLabels = new ArrayList<String>();
         for (BasicEvent event : this.eventArray) {
-            eventLabels.add(event.getRule().getFullName() + event.getAnchorImageString());
+            eventLabels.add(event.getRule()
+                .getQualName() + event.getAnchorImageString());
         }
         return Arrays.toString(eventLabels.toArray());
     }
@@ -217,8 +218,8 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     static private final CacheReference<CompositeEventCache> reference =
         CacheReference.<CompositeEventCache>newInstance(false);
 
-    class CompositeEventCache extends
-            AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
+    class CompositeEventCache
+        extends AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
         /**
          * Reconstructs a set of events from the array stored in the composite
          * event.

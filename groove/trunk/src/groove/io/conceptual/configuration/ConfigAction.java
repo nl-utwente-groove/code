@@ -1,28 +1,29 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io.conceptual.configuration;
 
+import javax.swing.Icon;
+
+import groove.grammar.QualName;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.action.SimulatorAction;
-
-import javax.swing.Icon;
 
 /** Actions to manipulate configurations. */
 public class ConfigAction extends SimulatorAction {
@@ -31,8 +32,7 @@ public class ConfigAction extends SimulatorAction {
 
     /** Constructs a new configuration manipulation action. */
     protected ConfigAction(Simulator simulator, Type type, ConfigDialog dlg) {
-        super(simulator, type.getText(), type.getIcon(), null,
-            ResourceKind.CONFIG);
+        super(simulator, type.getText(), type.getIcon(), null, ResourceKind.CONFIG);
 
         this.m_type = type;
         this.m_dlg = dlg;
@@ -41,10 +41,10 @@ public class ConfigAction extends SimulatorAction {
     @Override
     public void execute() {
 
-        String modelName = null;
+        QualName modelName = null;
         switch (this.m_type) {
         case NEW:
-            final String newName =
+            final QualName newName =
                 askNewName(Options.getNewResourceName(getResourceKind()), true);
             if (newName == null) {
                 return;
@@ -54,9 +54,8 @@ public class ConfigAction extends SimulatorAction {
         case SAVE:
             if (!this.m_dlg.hasModels()) {
                 // Go into save as mode and ask for name
-                final String saveName =
-                    askNewName(Options.getNewResourceName(getResourceKind()),
-                        true);
+                final QualName saveName =
+                    askNewName(Options.getNewResourceName(getResourceKind()), true);
                 if (saveName == null) {
                     return;
                 }
@@ -68,14 +67,14 @@ public class ConfigAction extends SimulatorAction {
         case RENAME:
             //TODO: find old name
             String oldName = "configuration";
-            final String renameName = askNewName(oldName, false);
+            final QualName renameName = askNewName(oldName, false);
             if (renameName == null) {
                 return;
             }
             modelName = renameName;
             break;
         case COPY:
-            final String copyName =
+            final QualName copyName =
                 askNewName(Options.getNewResourceName(getResourceKind()), true);
             if (copyName == null) {
                 return;

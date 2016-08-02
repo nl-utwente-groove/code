@@ -18,6 +18,7 @@
 package groove.test.verify;
 
 import static groove.algebra.Constant.instance;
+import static groove.grammar.QualName.name;
 import static groove.verify.Formula.always;
 import static groove.verify.Formula.and;
 import static groove.verify.Formula.atom;
@@ -45,7 +46,6 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import groove.util.parse.FormatException;
-import groove.util.parse.Id;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.Proposition;
@@ -60,21 +60,20 @@ public class FormulaTest {
     /** Tests {@link FormulaParser#parse(String)}. */
     @Test
     public void testParse() {
-        Formula aId = atom(new Id("a"));
+        Formula aId = atom(name("a"));
         Formula aString = atom("a");
-        Formula bId = atom(new Id("b"));
-        Formula cId = atom(new Id("c"));
-        Formula dcId = atom(new Id("dc"));
-        Formula dId = atom(new Id("d"));
-        Formula eId = atom(new Id("e"));
+        Formula bId = atom(name("b"));
+        Formula cId = atom(name("c"));
+        Formula dcId = atom(name("dc"));
+        Formula dId = atom(name("d"));
+        Formula eId = atom(name("e"));
         testParse("a", aId);
         testParse("'a'", aString);
         testParse("\"a\"", aString);
         testParse("'a(1)'", atom("a(1)"));
-        testParse("a(1,id,'value')", call(new Id("a"), instance(1), "id", instance("value")));
-        testParse("a( 1 , id,  \"value\" )",
-            call(new Id("a"), instance(1), "id", instance("value")));
-        testParse("a(a,_)", call(new Id("a"), "a", Proposition.Arg.WILD_TEXT));
+        testParse("a(1,id,'value')", call(name("a"), instance(1), "id", instance("value")));
+        testParse("a( 1 , id,  \"value\" )", call(name("a"), instance(1), "id", instance("value")));
+        testParse("a(a,_)", call(name("a"), "a", Proposition.Arg.WILD_TEXT));
         testParse("true", tt());
         testParse("false", ff());
         // and/or/not
@@ -94,7 +93,7 @@ public class FormulaTest {
             sRelease(until(aId, bId), release(cId, sRelease(dId, eId))));
         //
         testParse("AFG X true", forall(eventually(always(next(tt())))));
-        testParse("AG(get|put)", forall(always(or(atom(id("get")), atom(id("put"))))));
+        testParse("AG(get|put)", forall(always(or(atom(name("get")), atom(name("put"))))));
         // errors
         testParseError("EXEX add_score(n0, __)");
         testParseError("a=");
@@ -106,10 +105,6 @@ public class FormulaTest {
         testParseError("'a");
         testParseError("U true");
         testParseError("F!(final U)");
-    }
-
-    private Id id(String name) {
-        return new Id(name);
     }
 
     private void testParse(String text, Formula expected) {
@@ -206,9 +201,9 @@ public class FormulaTest {
 
     @Test
     public void testToCtlFormula() {
-        Formula a = atom(new Id("a"));
-        Formula b = atom(new Id("b"));
-        Formula c = atom(new Id("c"));
+        Formula a = atom(name("a"));
+        Formula b = atom(name("b"));
+        Formula c = atom(name("c"));
         testToCtlFormula("a->b", implies(a, b));
         testToCtlFormula("AX a", forall(next(a)));
         testToCtlFormula("E(true U a)", exists(eventually(a)));

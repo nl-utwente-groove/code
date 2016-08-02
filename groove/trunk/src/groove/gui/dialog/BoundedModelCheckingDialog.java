@@ -45,6 +45,7 @@ import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
 import groove.grammar.Action;
 import groove.grammar.Grammar;
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.gui.layout.SpringUtilities;
 
@@ -79,13 +80,13 @@ public class BoundedModelCheckingDialog {
         this.addButton.addActionListener(this.selectionListener);
         this.addButton.setEnabled(false);
 
-        this.ruleList = new JList<String>();
+        this.ruleList = new JList<>();
         this.ruleList.setListData(this.ruleNames.toArray(new String[this.ruleNames.size()]));
         this.ruleList.setEnabled(false);
         this.ruleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.ruleList.addListSelectionListener(this.selectionListener);
         String[] singleton = {"empty"};
-        this.selectedRuleList = new JList<String>();
+        this.selectedRuleList = new JList<>();
         this.selectedRuleList.setListData(singleton);
         this.selectedRuleList.setEnabled(false);
         this.selectedRuleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -178,9 +179,9 @@ public class BoundedModelCheckingDialog {
      */
     public void setGrammar(Grammar grammar) {
         this.grammar = grammar;
-        this.ruleNames = new ArrayList<String>();
+        this.ruleNames = new ArrayList<>();
         for (Action rule : grammar.getActions()) {
-            this.ruleNames.add(rule.getFullName());
+            this.ruleNames.add(rule.getQualName());
         }
     }
 
@@ -191,11 +192,11 @@ public class BoundedModelCheckingDialog {
     /**
      * The set of rules from which to select the boundary.
      */
-    private List<String> ruleNames;
+    private List<QualName> ruleNames;
     /**
      * The set of rules selected for the boundary.
      */
-    protected final Set<String> selectedRuleNames = new HashSet<String>();
+    protected final Set<QualName> selectedRuleNames = new HashSet<>();
     private Boundary boundary;
 
     private static final String DIALOG_TITLE = "Set the boundary";
@@ -241,7 +242,8 @@ public class BoundedModelCheckingDialog {
                 if (e.getSource() == getOkButton()) {
                     setBoundary();
                 }
-                BoundedModelCheckingDialog.this.dialog.getContentPane().setVisible(false);
+                BoundedModelCheckingDialog.this.dialog.getContentPane()
+                    .setVisible(false);
                 BoundedModelCheckingDialog.this.dialog.dispose();
             } catch (NumberFormatException e1) {
                 // invalid entries in the dialog, do not do anything
@@ -256,9 +258,9 @@ public class BoundedModelCheckingDialog {
                 aDialog.boundary = new GraphNodeSizeBoundary(graphBound, delta);
             } else if (aDialog.ruleSetBoundButton.isSelected()) {
                 Set<Rule> selectedRules = new HashSet<Rule>();
-                Iterator<String> selectedRuleNamesIter = aDialog.selectedRuleNames.iterator();
+                Iterator<QualName> selectedRuleNamesIter = aDialog.selectedRuleNames.iterator();
                 while (selectedRuleNamesIter.hasNext()) {
-                    String ruleName = selectedRuleNamesIter.next();
+                    QualName ruleName = selectedRuleNamesIter.next();
                     selectedRules.add(aDialog.grammar.getRule(ruleName));
                 }
                 aDialog.boundary = new RuleSetBoundary(selectedRules);
@@ -285,8 +287,8 @@ public class BoundedModelCheckingDialog {
                 aDialog.boundField.setEditable(false);
                 aDialog.deltaField.setEditable(false);
             } else if (e.getSource() == aDialog.addButton) {
-                for (Object object : aDialog.ruleList.getSelectedValuesList()) {
-                    aDialog.selectedRuleNames.add(object.toString());
+                for (String name : aDialog.ruleList.getSelectedValuesList()) {
+                    aDialog.selectedRuleNames.add(QualName.parse(name));
                 }
                 aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames
                     .toArray(new String[aDialog.selectedRuleNames.size()]));
@@ -303,13 +305,15 @@ public class BoundedModelCheckingDialog {
         public void valueChanged(ListSelectionEvent e) {
             BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (e.getSource() == aDialog.ruleList) {
-                if (aDialog.ruleList.getSelectedValuesList().size() > 0) {
+                if (aDialog.ruleList.getSelectedValuesList()
+                    .size() > 0) {
                     aDialog.addButton.setEnabled(true);
                 } else {
                     aDialog.addButton.setEnabled(false);
                 }
             } else if (e.getSource() == aDialog.selectedRuleList) {
-                if (aDialog.selectedRuleList.getSelectedValuesList().size() > 0) {
+                if (aDialog.selectedRuleList.getSelectedValuesList()
+                    .size() > 0) {
                     aDialog.deleteButton.setEnabled(true);
                 } else {
                     aDialog.deleteButton.setEnabled(false);

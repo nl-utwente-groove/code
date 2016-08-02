@@ -1,18 +1,19 @@
 package groove.grammar.type;
 
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+
 import groove.algebra.Sort;
+import groove.grammar.QualName;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.util.Pair;
 
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-
-/** 
+/**
  * Factory creating type nodes and edges.
  * The type nodes are numbered consecutively from 0 onwards.
  */
@@ -20,7 +21,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     /**
      * Constructs a factory for a given type graph.
      * Should only be called from the constructor of {@link TypeGraph}.
-     * @param typeGraph type graph for the created type nodes and edges; 
+     * @param typeGraph type graph for the created type nodes and edges;
      * either {@code null} or initially empty
      */
     TypeFactory(TypeGraph typeGraph) {
@@ -36,9 +37,9 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
      * Returns the unique top node type, used for implicitly graphs.
-     * This is only valid if the type graph is implicit. 
+     * This is only valid if the type graph is implicit.
      */
     public TypeNode getTopNode() {
         if (this.topNode == null) {
@@ -47,7 +48,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
         return this.topNode;
     }
 
-    /** 
+    /**
      * Looks up or creates a node with a given (non-{@code null}) type label.
      * If the node is created, it is also added to the type graph.
      */
@@ -55,8 +56,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
         assert label.getRole() == EdgeRole.NODE_TYPE;
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
-            result =
-                new TypeNode(getNodeNrDispenser().getNext(), label, getGraph());
+            result = new TypeNode(getNodeNrDispenser().getNext(), label, getGraph());
             this.typeNodeMap.put(label, result);
             getGraph().addNode(result);
             registerNode(result);
@@ -82,12 +82,11 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
         return createEdge(source, (TypeLabel) label, target, true);
     }
 
-    /** 
+    /**
      * Retrieves a suitable type edge from the type graph,
      * creating it (and adding it to the graph) if necessary.
      */
-    public TypeEdge createEdge(TypeNode source, TypeLabel label,
-            TypeNode target, boolean precise) {
+    public TypeEdge createEdge(TypeNode source, TypeLabel label, TypeNode target, boolean precise) {
         TypeEdge result = null;
         result = getGraph().getTypeEdge(source, label, target, precise);
         if (result == null) {
@@ -119,8 +118,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     }
 
     /** Mapping from signatures to corresponding type nodes. */
-    private final Map<Sort,TypeNode> dataTypeMap =
-        new EnumMap<Sort,TypeNode>(Sort.class);
+    private final Map<Sort,TypeNode> dataTypeMap = new EnumMap<Sort,TypeNode>(Sort.class);
 
     /**
      * Returns a label with the given text, reusing previously created
@@ -144,8 +142,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     private TypeNode topNode;
 
     /** Auxiliary map from type labels to type nodes */
-    private Map<TypeLabel,TypeNode> typeNodeMap =
-        new HashMap<TypeLabel,TypeNode>();
+    private Map<TypeLabel,TypeNode> typeNodeMap = new HashMap<TypeLabel,TypeNode>();
 
     /**
      * The internal translation table from strings to type labels,
@@ -153,19 +150,20 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
      */
     private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps =
         new EnumMap<EdgeRole,Map<String,TypeLabel>>(EdgeRole.class);
+
     {
         for (EdgeRole kind : EdgeRole.values()) {
             this.labelMaps.put(kind, new HashMap<String,TypeLabel>());
         }
     }
 
-    /** 
-     * Type graph for this factory. 
+    /**
+     * Type graph for this factory.
      */
     private final TypeGraph typeGraph;
 
     /** Returns a fresh factory, backed up by an (also fresh) implicit type graph. */
     public static TypeFactory newInstance() {
-        return new TypeGraph("implicit", true).getFactory();
+        return new TypeGraph(QualName.name("implicit"), true).getFactory();
     }
 }

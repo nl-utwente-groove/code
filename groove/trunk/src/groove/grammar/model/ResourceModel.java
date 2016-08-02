@@ -17,7 +17,12 @@
 package groove.grammar.model;
 
 import static groove.grammar.model.ResourceKind.RULE;
-import groove.grammar.QualName;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
+
 import groove.grammar.Rule;
 import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphInfo;
@@ -26,11 +31,6 @@ import groove.util.ChangeCount.Tracker;
 import groove.util.Status;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
 
 /**
  * General interface for classes that provide part of a graph grammar.
@@ -45,13 +45,10 @@ abstract public class ResourceModel<R> {
      * @param grammar the grammar to which this resource belongs; may be {@code null}
      * if the resource is being considered outside the context of a grammar
      * @param kind the kind of resource
-     * @param name the name of the resource; must be unique for the resource kind, and
-     * must be a well-formed qualified name
      */
-    public ResourceModel(GrammarModel grammar, ResourceKind kind, String name) {
+    public ResourceModel(GrammarModel grammar, ResourceKind kind) {
         this.grammar = grammar;
         this.kind = kind;
-        this.name = name;
         this.grammarTracker = grammar == null ? null : grammar.createChangeTracker();
         this.resourceTrackers = new EnumMap<ResourceKind,ChangeCount.Tracker>(ResourceKind.class);
         for (ResourceKind rk : ResourceKind.values()) {
@@ -77,25 +74,10 @@ abstract public class ResourceModel<R> {
     public final boolean isStale(ResourceKind... kinds) {
         boolean result = false;
         for (ResourceKind kind : kinds) {
-            result |= this.resourceTrackers.get(kind).isStale();
+            result |= this.resourceTrackers.get(kind)
+                .isStale();
         }
         return result;
-    }
-
-    /**
-     * Returns the (non-<code>null</code>) full name of the underlying model.
-     */
-    public final String getFullName() {
-        return this.name;
-    }
-
-    /**
-     * Returns the (non-<code>null</code>) last part of the name of the underlying model.
-     * This equals the full name if that is not hierarchical.
-     * @see #getFullName()
-     */
-    public String getLastName() {
-        return QualName.lastName(getFullName());
     }
 
     /**
@@ -104,16 +86,6 @@ abstract public class ResourceModel<R> {
      * from which this model is derived.
      */
     abstract public Object getSource();
-
-    /**
-     * Indicates if this resource is currently enabled for use in the grammar.
-     * For non-composite resource models, this is the case if and only if
-     * the name is active in the grammar.
-     */
-    public boolean isEnabled() {
-        return getGrammar() == null
-            || getGrammar().getActiveNames(getKind()).contains(getFullName());
-    }
 
     /**
      * Constructs the resource from the model. This can only be successful if there are no
@@ -219,7 +191,7 @@ abstract public class ResourceModel<R> {
 
     /** Returns the set of error-free, enabled rules. */
     Collection<Rule> getRules() {
-        Collection<ResourceModel<?>> ruleModels = getGrammar().getResourceSet(RULE);
+        Collection<NamedResourceModel<?>> ruleModels = getGrammar().getResourceSet(RULE);
         Collection<Rule> result = new ArrayList<Rule>(ruleModels.size());
         // set rules
         for (ResourceModel<?> model : ruleModels) {
@@ -239,8 +211,6 @@ abstract public class ResourceModel<R> {
     private final GrammarModel grammar;
     /** The kind of this resource. */
     private final ResourceKind kind;
-    /** The name of this resource. */
-    private final String name;
     /** Status of the construction of the resource. */
     private Status status = Status.START;
     /** The constructed resource, if {@link #status} equals {@link Status#DONE}. */

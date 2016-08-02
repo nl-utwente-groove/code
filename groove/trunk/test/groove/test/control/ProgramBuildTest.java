@@ -19,26 +19,26 @@ package groove.test.control;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import groove.control.Call;
 import groove.control.CtrlLoader;
 import groove.control.CtrlPar;
 import groove.control.Procedure;
-import groove.control.parse.CtrlTree;
 import groove.control.template.Location;
 import groove.control.template.Program;
 import groove.control.template.Template;
 import groove.control.term.Term;
 import groove.grammar.Callable;
 import groove.grammar.Grammar;
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
-
-import java.util.Arrays;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Arend Rensink
@@ -58,7 +58,8 @@ public class ProgramBuildTest {
     public void testNoProcedures() {
         Program p = build("ab", "a; b;");
         assertEquals(call("a").seq(call("b")), p.getMain());
-        assertEquals(0, p.getProcs().size());
+        assertEquals(0, p.getProcs()
+            .size());
     }
 
     @Test
@@ -133,11 +134,11 @@ public class ProgramBuildTest {
     @Test
     public void testRecursion() {
         Program p = build("recurse", "function f() { a; r; } function r() { if (b) f; }");
-        assertEquals(prot.delta(), p.getMain());
-        assertEquals(2, p.getProcs().size());
-        Procedure fProc = p.getProc("f");
+        assertEquals(2, p.getProcs()
+            .size());
+        Procedure fProc = proc("f");
         Term fTerm = fProc.getTerm();
-        Procedure rProc = p.getProc("r");
+        Procedure rProc = proc("r");
         Term rTerm = rProc.getTerm();
         assertEquals(call("a").seq(call(rProc)), fTerm);
         assertEquals(call("b").ifOnly(call(fProc)), rTerm);
@@ -147,25 +148,23 @@ public class ProgramBuildTest {
         buildWrong("unguarded", "function f() { try a; } function g() { f; g; }");
         build("guarded", "function f() { try a; else b; } function g() { f; g; }");
         //
-        p = build("forward call", "f; function f() { a;f; }");
-        fProc = p.getProc("f");
+        p = build("forward-call", "f; function f() { a;f; }");
+        fProc = proc("f");
         assertEquals(call(fProc), p.getMain());
         assertEquals(call("a").seq(call("f")), fProc.getTerm());
     }
 
     @Test
     public void testParameters() {
-        Program p =
-            build("pars",
-                "function f(int x, out node n) { iInt(x); node n2; oNode(out n2); bNode-oNode(n2, out n); }");
-        Procedure fProc = p.getProc("f");
-        CtrlPar xIn = CtrlPar.inVar("f", "x", "int");
-        CtrlPar nOut = CtrlPar.outVar("f", "n", "node");
-        CtrlPar n2In = CtrlPar.inVar("f", "n2", "node");
-        CtrlPar n2Out = CtrlPar.outVar("f", "n2", "node");
-        assertEquals(
-            call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out)).seq(
-                call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
+        build("pars",
+            "function f(int x, out node n) { iInt(x); node n2; oNode(out n2); bNode-oNode(n2, out n); }");
+        Procedure fProc = proc("f");
+        CtrlPar xIn = CtrlPar.inVar(QualName.parse("f"), "x", "int");
+        CtrlPar nOut = CtrlPar.outVar(QualName.parse("f"), "n", "node");
+        CtrlPar n2In = CtrlPar.inVar(QualName.parse("f"), "n2", "node");
+        CtrlPar n2Out = CtrlPar.outVar(QualName.parse("f"), "n2", "node");
+        assertEquals(call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out))
+            .seq(call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
         //
         build("r",
             "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
@@ -182,33 +181,41 @@ public class ProgramBuildTest {
         add("sub.defF", "package sub; import bInt; function f(out int x) { bInt(out x); g(x); }");
         add("sub.getG", "package sub; import bInt; function g(int y) { bInt(y); }");
         Program p = build();
-        Procedure fProc = p.getProc("sub.f");
-        Procedure gProc = p.getProc("sub.g");
+        Procedure fProc = proc("sub.f");
+        Procedure gProc = proc("sub.g");
         assertEquals(call(fProc, CtrlPar.outVar(null, "n", "int")), p.getMain());
-        CtrlPar xIn = CtrlPar.inVar("sub.f", "x", "int");
-        CtrlPar xOut = CtrlPar.outVar("sub.f", "x", "int");
+        CtrlPar xIn = CtrlPar.inVar(QualName.parse("sub.f"), "x", "int");
+        CtrlPar xOut = CtrlPar.outVar(QualName.parse("sub.f"), "x", "int");
         assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());
-        CtrlPar yIn = CtrlPar.inVar("sub.g", "y", "int");
+        CtrlPar yIn = CtrlPar.inVar(QualName.parse("sub.g"), "y", "int");
         assertEquals(call(rule("bInt"), yIn), gProc.getTerm());
     }
 
     @Test
     public void testRecipes() {
         build("atomic", "function f() { a; b; } recipe r() { a; b; }");
-        Template f = this.prog.getProc("f").getTemplate();
+        Template f = proc("f").getTemplate();
         Location start = f.getStart();
         assertEquals(0, start.getTransience());
-        Location next = start.getAttempt().get(0).onFinish();
+        Location next = start.getAttempt()
+            .get(0)
+            .onFinish();
         assertEquals(0, next.getTransience());
-        Location finish = next.getAttempt().get(0).onFinish();
+        Location finish = next.getAttempt()
+            .get(0)
+            .onFinish();
         assertEquals(0, finish.getTransience());
         assertTrue(finish.isFinal());
-        Template r = this.prog.getProc("r").getTemplate();
+        Template r = proc("r").getTemplate();
         start = r.getStart();
         assertEquals(0, start.getTransience());
-        next = start.getAttempt().get(0).onFinish();
+        next = start.getAttempt()
+            .get(0)
+            .onFinish();
         assertEquals(1, next.getTransience());
-        finish = next.getAttempt().get(0).onFinish();
+        finish = next.getAttempt()
+            .get(0)
+            .onFinish();
         assertEquals(0, finish.getTransience());
         assertTrue(finish.isFinal());
     }
@@ -234,7 +241,8 @@ public class ProgramBuildTest {
     protected Grammar loadGrammar(String name) {
         Grammar result = null;
         try {
-            result = Groove.loadGrammar(CONTROL_DIR + name).toGrammar();
+            result = Groove.loadGrammar(CONTROL_DIR + name)
+                .toGrammar();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.toString());
@@ -244,7 +252,7 @@ public class ProgramBuildTest {
 
     /** Returns the rule with a given name. */
     protected Rule rule(String name) {
-        return this.testGrammar.getRule(name);
+        return this.testGrammar.getRule(QualName.parse(name));
     }
 
     /** Builds a program object from a control expression.
@@ -254,8 +262,11 @@ public class ProgramBuildTest {
     protected Program build(String controlName, String program) {
         Program result = null;
         try {
-            result = createLoader().parse(controlName, program).check().toProgram();
-            result.setFixed();
+            QualName qualControlName = QualName.parse(controlName);
+            CtrlLoader loader = createLoader();
+            loader.setDefaultMain("{}");
+            loader.parse(qualControlName, program);
+            result = loader.buildProgram();
         } catch (FormatException e) {
             fail(e.toString());
         }
@@ -270,7 +281,11 @@ public class ProgramBuildTest {
      */
     protected void buildWrong(String controlName, String program) {
         try {
-            createLoader().parse(controlName, program).check().toProgram().setFixed();
+            QualName qualControlName = QualName.parse(controlName);
+            CtrlLoader loader = createLoader();
+            loader.setDefaultMain("{}");
+            loader.parse(qualControlName, program);
+            loader.buildProgram();
             fail(String.format("Expected %s to be erronous, but it isn't", program));
         } catch (FormatException e) {
             // this is the expected outcome
@@ -288,19 +303,18 @@ public class ProgramBuildTest {
             this.loader = createLoader();
         }
         try {
-            this.loader.parse(controlName, program);
+            QualName qualControlName = QualName.parse(controlName);
+            this.loader.parse(qualControlName, program);
         } catch (FormatException e) {
             fail(e.toString());
         }
     }
 
-    /** Returns the program build in successive calls to {@link #add(String, String)}. */
+    /** Returns the program built in successive calls to {@link #add(String, String)}. */
     protected Program build() {
-        Program result = new Program();
+        Program result = null;
         try {
-            for (Map.Entry<String,CtrlTree> entry : this.loader.check().entrySet()) {
-                result.add(entry.getValue().toProgram());
-            }
+            result = this.loader.buildProgram();
             this.loader = null;
             result.setFixed();
         } catch (FormatException e) {
@@ -315,7 +329,7 @@ public class ProgramBuildTest {
     protected Term call(String name) {
         Callable unit = rule(name);
         if (unit == null) {
-            unit = this.prog.getProc(name);
+            unit = proc(name);
         }
         return call(unit);
     }
@@ -328,8 +342,13 @@ public class ProgramBuildTest {
     protected CtrlLoader createLoader() {
         CtrlLoader result =
             new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
-        prot = result.getNamespace().getPrototype();
+        prot = result.getNamespace()
+            .getPrototype();
         return result;
+    }
+
+    private Procedure proc(String name) {
+        return this.prog.getProc(QualName.parse(name));
     }
 
     /** Most recently built program. */

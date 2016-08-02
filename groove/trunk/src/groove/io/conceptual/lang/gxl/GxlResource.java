@@ -82,12 +82,12 @@ public class GxlResource extends ExportableResource {
         }
     }
 
-    public GraphType getTypeGraph(String graphId) {
-        if (this.m_graphs.containsKey(graphId)) {
-            return this.m_graphs.get(graphId);
+    public GraphType getTypeGraph(String graphName) {
+        if (this.m_graphs.containsKey(graphName)) {
+            return this.m_graphs.get(graphName);
         }
         GraphType graph = new GraphType();
-        graph.setId(graphId);
+        graph.setId(graphName);
         graph.setEdgeids(true);
         GxlUtil.setElemType(graph, GxlUtil.g_gxlTypeGraphURI + "#gxl-1.0");
 
@@ -97,17 +97,17 @@ public class GxlResource extends ExportableResource {
             this.m_gxlTypeTemp.getGraph().add(graph);
         }
 
-        this.m_graphs.put(graphId, graph);
+        this.m_graphs.put(graphName, graph);
 
         return graph;
     }
 
-    public GraphType getInstanceGraph(String typeId, String name) {
-        if (this.m_graphs.containsKey(name)) {
-            return this.m_graphs.get(name);
+    public GraphType getInstanceGraph(String graphName, String typeId) {
+        if (this.m_graphs.containsKey(graphName)) {
+            return this.m_graphs.get(graphName);
         }
         GraphType graph = new GraphType();
-        graph.setId(name);
+        graph.setId(graphName);
         GxlUtil.setElemType(graph, getTypePath() + "#" + typeId);
         // No edge IDs in instance graphs
         graph.setEdgeids(false);
@@ -115,7 +115,7 @@ public class GxlResource extends ExportableResource {
 
         this.m_gxlTypeInstance.getGraph().add(graph);
 
-        this.m_graphs.put(name, graph);
+        this.m_graphs.put(graphName, graph);
 
         return graph;
     }

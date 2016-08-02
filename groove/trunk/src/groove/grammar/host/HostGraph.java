@@ -43,7 +43,10 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
     HostFactory getFactory();
 
     /** Returns the type graph for this host graph, if any. */
-    public TypeGraph getTypeGraph();
+    default public TypeGraph getTypeGraph() {
+        return getFactory().getTypeFactory()
+            .getGraph();
+    }
 
     /** Indicates if this is a simple or multi-graph. */
     default public boolean isSimple() {

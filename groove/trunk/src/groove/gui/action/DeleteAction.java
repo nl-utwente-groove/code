@@ -1,12 +1,13 @@
 package groove.gui.action;
 
+import java.io.IOException;
+import java.util.Set;
+
+import groove.grammar.QualName;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
-
-import java.io.IOException;
-import java.util.Set;
 
 /**
  * Action to delete the currently displayed control program.
@@ -20,29 +21,29 @@ public class DeleteAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        Set<String> names = getSimulatorModel().getSelectSet(resource);
+        Set<QualName> names = getSimulatorModel().getSelectSet(resource);
         boolean enabled = false;
-        for (String name : names) {
-            enabled |=
-                getGrammarModel().getResource(resource, name).isEnabled();
+        for (QualName name : names) {
+            enabled |= getGrammarModel().getResource(resource, name)
+                .isEnabled();
             if (enabled) {
                 break;
             }
         }
         String question;
         if (names.size() == 1) {
-            String description =
-                resource == ResourceKind.HOST && enabled ? "start graph"
-                        : resource.getDescription();
-            String name = names.iterator().next();
+            String description = resource == ResourceKind.HOST && enabled ? "start graph"
+                : resource.getDescription();
+            QualName name = names.iterator()
+                .next();
             question = String.format("Delete %s '%s'?", description, name);
         } else {
             String addendum =
-                enabled && resource == ResourceKind.HOST
-                        ? " (including start graph)" : "";
-            question =
-                String.format("Delete these %d %ss%s?", names.size(),
-                    resource.getDescription(), addendum);
+                enabled && resource == ResourceKind.HOST ? " (including start graph)" : "";
+            question = String.format("Delete these %d %ss%s?",
+                names.size(),
+                resource.getDescription(),
+                addendum);
         }
         if (confirmBehaviour(Options.DELETE_RESOURCE_OPTION, question)) {
             // we do not ask for editor cancellation,
@@ -50,10 +51,10 @@ public class DeleteAction extends SimulatorAction {
             try {
                 getSimulatorModel().doDelete(resource, names);
             } catch (IOException exc) {
-                showErrorDialog(
-                    exc,
+                showErrorDialog(exc,
                     String.format("Error while deleting %s%s",
-                        resource.getDescription(), names.size() == 1 ? "" : "s"));
+                        resource.getDescription(),
+                        names.size() == 1 ? "" : "s"));
             }
         }
     }
@@ -61,6 +62,7 @@ public class DeleteAction extends SimulatorAction {
     @Override
     public void refresh() {
         setEnabled(getSimulatorModel().getSelected(getResourceKind()) != null
-            && getSimulatorModel().getStore().isModifiable());
+            && getSimulatorModel().getStore()
+                .isModifiable());
     }
 }

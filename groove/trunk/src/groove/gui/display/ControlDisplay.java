@@ -16,12 +16,6 @@
  */
 package groove.gui.display;
 
-import groove.control.parse.CtrlDoc;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -35,6 +29,13 @@ import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
+
+import groove.control.parse.CtrlDoc;
+import groove.grammar.QualName;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
 
 /**
  * The Simulator panel that shows the control program, with a button that shows
@@ -76,7 +77,8 @@ final public class ControlDisplay extends ResourceDisplay {
 
     private JTree createDocPane() {
         final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        for (Map.Entry<?,? extends List<?>> docEntry : getDoc().getItemTree().entrySet()) {
+        for (Map.Entry<?,? extends List<?>> docEntry : getDoc().getItemTree()
+            .entrySet()) {
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(docEntry.getKey());
             root.add(node);
             for (Object rule : docEntry.getValue()) {
@@ -105,10 +107,12 @@ final public class ControlDisplay extends ResourceDisplay {
         renderer.setClosedIcon(null);
         renderer.setOpenIcon(null);
         result.setCellRenderer(renderer);
-        ToolTipManager.sharedInstance().registerComponent(result);
+        ToolTipManager.sharedInstance()
+            .registerComponent(result);
         result.addMouseListener(new DismissDelayer(result));
         for (int i = 0; i < root.getChildCount(); i++) {
-            result.expandPath(new TreePath(((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
+            result
+                .expandPath(new TreePath(((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
         }
         result.setBackground(null);
         return result;
@@ -145,7 +149,7 @@ final public class ControlDisplay extends ResourceDisplay {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         super.update(source, oldModel, changes);
         if (suspendListening()) {
-            String selection = source.getSelected(ResourceKind.CONTROL);
+            QualName selection = source.getSelected(ResourceKind.CONTROL);
             getDocPane().setBackground(selection == null ? null : Color.WHITE);
             activateListening();
         }

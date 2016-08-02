@@ -41,6 +41,7 @@ import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
 import groove.algebra.syntax.Parameter;
 import groove.automaton.RegExpr;
+import groove.grammar.QualName;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
 import groove.graph.Edge;
@@ -76,17 +77,39 @@ import groove.util.parse.FormatException;
  */
 public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     /**
-     * Creates an empty graph, with a given name and graph role.
+     * Creates an empty graph, with a given qualified name and graph role.
      */
     public AspectGraph(String name, GraphRole graphRole) {
-        super(name);
+        super(name.toString());
+        this.qualName = QualName.parse(name);
         assert graphRole.inGrammar() : String.format("Cannot create aspect graph for %s",
             graphRole.toString());
         this.role = graphRole;
         this.normal = true;
         // make sure the properties object is initialised
-        getInfo();
+        GraphInfo.addErrors(this, this.qualName.getErrors());
     }
+
+    /* Also sets the qualified name. */
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        this.qualName = QualName.parse(name);
+        GraphInfo.addErrors(this, this.qualName.getErrors());
+    }
+
+    /** Returns the qualified name of this aspect graph. */
+    public QualName getQualName() {
+        return this.qualName;
+    }
+
+    /** Changes the qualified name of this aspect graph. */
+    private void setQualName(QualName qualName) {
+        this.qualName = qualName;
+        super.setName(qualName.toString());
+    }
+
+    private QualName qualName;
 
     /** Adds a given list of errors to the errors already stored in this graph. */
     private void addErrors(Collection<FormatError> errors) {
@@ -99,8 +122,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     public void getSearchResults(TypeLabel label, List<SearchResult> results) {
         String msg = getRole().getDescription() + " '%s' - Element '%s'";
         for (AspectEdge edge : edgeSet()) {
-            if ((edge.getRuleLabel() != null && label.equals(edge.getRuleLabel().getTypeLabel()))
-                || label.equals(edge.getTypeLabel())) {
+            if ((edge.getRuleLabel() != null && label.equals(edge.getRuleLabel()
+                .getTypeLabel())) || label.equals(edge.getTypeLabel())) {
                 results.add(new SearchResult(msg, this.getName(), edge, this));
             }
         }
@@ -137,8 +160,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     @Deprecated
     private AspectGraph fromPlainGraph(Graph graph, GraphToAspectMap elementMap) {
         GraphRole role = graph.getRole();
-        AspectGraph result = new AspectGraph(graph.getName(), role);
         FormatErrorSet errors = new FormatErrorSet();
+        AspectGraph result = new AspectGraph(graph.getName(), role);
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
         for (Node node : graph.nodeSet()) {
@@ -150,7 +173,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // and put all correct aspect vales in a map
         Map<Edge,AspectLabel> edgeDataMap = new HashMap<Edge,AspectLabel>();
         for (Edge edge : graph.edgeSet()) {
-            AspectLabel label = parser.parse(edge.label().text(), role);
+            AspectLabel label = parser.parse(edge.label()
+                .text(), role);
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
                 sourceImage.setAspects(label);
@@ -166,11 +190,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 label,
                 elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
-            if (!edge.source().equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
-                errors.add("%s %s must be a node label",
-                    label.getRole().getDescription(true),
-                    label,
-                    edgeImage);
+            if (!edge.source()
+                .equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
+                errors.add("%s %s must be a node label", label.getRole()
+                    .getDescription(true), label, edgeImage);
             }
         }
         GraphInfo.transfer(graph, result, elementMap);
@@ -266,7 +289,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         for (AspectEdge edge : predEdges) {
             try {
                 AspectNode source = edge.source();
-                boolean nac = edge.getKind().inNAC() && !source.getKind().inNAC();
+                boolean nac = edge.getKind()
+                    .inNAC()
+                    && !source.getKind()
+                        .inNAC();
                 Expression predicate = edge.getPredicate();
                 AspectNode outcome = addExpression(source, predicate);
                 // specify whether the outcome should be true or false
@@ -297,7 +323,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
         AspectEdge result = addEdge(source, assignLabel, target);
-        if (getRole() == RULE && !source.getKind().isCreator()) {
+        if (getRole() == RULE && !source.getKind()
+            .isCreator()) {
             // add an eraser edge for the old value
             AspectNode oldTarget = findTarget(source, assign.getLhs(), target.getAttrKind());
             if (oldTarget == null) {
@@ -375,8 +402,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 throw new FormatException("Unknown node identifier '%s'", ownerName, source);
             }
         }
-        if (owner.getKind().isQuantifier()
-            && !field.getField().equals(AspectKind.NestedValue.COUNT.toString())) {
+        if (owner.getKind()
+            .isQuantifier()
+            && !field.getField()
+                .equals(AspectKind.NestedValue.COUNT.toString())) {
             throw new FormatException("Quantifier node does not have '%s'-edge", field.getField(),
                 owner, source);
         }
@@ -389,7 +418,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         } else {
             if (result.getAttrKind() != sigKind) {
                 throw new FormatException("Declared type %s differs from actual field type %s",
-                    sigKind.getName(), result.getAttrKind().getName(), source);
+                    sigKind.getName(), result.getAttrKind()
+                        .getName(),
+                    source);
             }
         }
         assert sigKind != null;
@@ -402,11 +433,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     private AspectNode findTarget(AspectNode owner, String fieldName, AspectKind fieldKind) {
         AspectNode result = null;
         for (AspectEdge edge : outEdgeSet(owner)) {
-            if (edge.getInnerText().equals(fieldName)) {
+            if (edge.getInnerText()
+                .equals(fieldName)) {
                 AspectNode target = edge.target();
                 // make sure we have an LHS edge or a count edge
-                if (target.getAttrKind() == fieldKind && (getRole() != RULE
-                    || edge.getKind().inLHS() || owner.getKind().isQuantifier())) {
+                if (target.getAttrKind() == fieldKind && (getRole() != RULE || edge.getKind()
+                    .inLHS()
+                    || owner.getKind()
+                        .isQuantifier())) {
                     result = edge.target();
                     break;
                 }
@@ -470,8 +504,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         if (source.getKind() == AspectKind.EMBARGO) {
             result.setAspect(source.getAspect());
         }
-        AspectNode nesting =
-            source.getKind().isQuantifier() ? source.getNestingParent() : source.getNestingLevel();
+        AspectNode nesting = source.getKind()
+            .isQuantifier() ? source.getNestingParent() : source.getNestingLevel();
         if (nesting != null) {
             addEdge(result, AspectKind.NestedValue.AT.toString(), nesting);
         }
@@ -492,7 +526,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // renumber the nodes in their original order
         SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(NodeComparator.instance());
         nodes.addAll(nodeSet());
-        if (!nodes.isEmpty() && nodes.last().getNumber() != nodeCount() - 1) {
+        if (!nodes.isEmpty() && nodes.last()
+            .getNumber() != nodeCount() - 1) {
             result = newGraph(getName());
             AspectGraphMorphism elementMap = new AspectGraphMorphism(getRole());
             int nodeNr = 0;
@@ -531,14 +566,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         for (AspectNode node : nodeSet()) {
             PlainNode image = result.addNode(node.getNumber());
             elementMap.putNode(node, image);
-            for (PlainLabel nodeLabel : node.relabel(oldLabel, newLabel).getPlainLabels()) {
+            for (PlainLabel nodeLabel : node.relabel(oldLabel, newLabel)
+                .getPlainLabels()) {
                 result.addEdge(image, nodeLabel, image);
             }
         }
         for (AspectEdge edge : edgeSet()) {
             String replacement = null;
             if (edge.getRuleLabel() != null) {
-                RegExpr oldLabelExpr = edge.getRuleLabel().getMatchExpr();
+                RegExpr oldLabelExpr = edge.getRuleLabel()
+                    .getMatchExpr();
                 if (oldLabelExpr != null) {
                     RegExpr newLabelExpr = oldLabelExpr.relabel(oldLabel, newLabel);
                     if (newLabelExpr != oldLabelExpr) {
@@ -600,7 +637,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             elementMap.putNode(node, image);
             for (AspectLabel nodeLabel : node.getNodeLabels()) {
                 List<Aspect> nodeAspects = nodeLabel.getAspects();
-                if (nodeAspects.isEmpty() || nodeAspects.get(0).getKind() != AspectKind.COLOR) {
+                if (nodeAspects.isEmpty() || nodeAspects.get(0)
+                    .getKind() != AspectKind.COLOR) {
                     result.addEdge(image, nodeLabel.toString(), image);
                 }
             }
@@ -617,7 +655,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 TypeLabel nodeType = edge.getTypeLabel();
                 boolean labelChanged = nodeType.equals(label);
                 graphChanged |= labelChanged;
-                Aspect newColour = labelChanged ? colour : edge.source().getColor();
+                Aspect newColour = labelChanged ? colour : edge.source()
+                    .getColor();
                 if (newColour != null) {
                     result.addEdge(sourceImage, newColour.toString(), targetImage);
                 }
@@ -728,9 +767,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * will be fixed as well.
      * @param name the new graph name; non-{@code null}
      */
-    public AspectGraph rename(String name) {
+    public AspectGraph rename(QualName name) {
         AspectGraph result = clone();
-        result.setName(name);
+        result.setQualName(name);
         result.setFixed();
         return result;
     }
@@ -778,7 +817,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // and put all correct aspect vales in a map
         Map<Edge,AspectLabel> edgeDataMap = new HashMap<Edge,AspectLabel>();
         for (Edge edge : graph.edgeSet()) {
-            AspectLabel label = parser.parse(edge.label().text(), role);
+            AspectLabel label = parser.parse(edge.label()
+                .text(), role);
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
                 sourceImage.setAspects(label);
@@ -794,11 +834,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 label,
                 elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
-            if (!edge.source().equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
-                errors.add("%s %s must be a node label",
-                    label.getRole().getDescription(true),
-                    label,
-                    edgeImage);
+            if (!edge.source()
+                .equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
+                errors.add("%s %s must be a node label", label.getRole()
+                    .getDescription(true), label, edgeImage);
             }
         }
         GraphInfo.transfer(graph, result, elementMap);
@@ -847,7 +886,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             LayoutMap layoutMap = GraphInfo.getLayoutMap(graph);
             if (layoutMap != null) {
                 for (AspectNode node : graph.nodeSet()) {
-                    JVertexLayout layout = layoutMap.nodeMap().get(node);
+                    JVertexLayout layout = layoutMap.nodeMap()
+                        .get(node);
                     if (layout != null) {
                         Rectangle2D b = layout.getBounds();
                         maxX = Math.max(maxX, b.getX() + b.getWidth());
@@ -879,7 +919,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             for (AspectNode node : graph.nodeSet()) {
                 AspectNode fresh = null;
                 if (node.getId() != null) {
-                    String id = node.getId().getContentString();
+                    String id = node.getId()
+                        .getContentString();
                     if (sharedNodes.containsKey(id)) {
                         nodeMap.put(node, sharedNodes.get(id));
                     } else {
@@ -908,9 +949,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
             // Move the offsets
             if (globalMaxX > globalMaxY) {
-                offsetY = offsetY + dimensions.get(index).getY() + 50;
+                offsetY = offsetY + dimensions.get(index)
+                    .getY() + 50;
             } else {
-                offsetX = offsetX + dimensions.get(index).getX() + 50;
+                offsetX = offsetX + dimensions.get(index)
+                    .getX() + 50;
             }
             index++;
         }
@@ -939,7 +982,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
         @Override
         public AspectLabel createLabel(String text) {
-            return AspectParser.getInstance().parse(text, this.graphRole);
+            return AspectParser.getInstance()
+                .parse(text, this.graphRole);
         }
 
         @Override

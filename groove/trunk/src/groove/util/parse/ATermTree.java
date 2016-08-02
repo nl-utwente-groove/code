@@ -19,7 +19,6 @@ package groove.util.parse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 import groove.util.DefaultFixable;
@@ -82,28 +81,8 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     private final List<T> args;
 
     @Override
-    public boolean hasErrors() {
-        return !getErrors().isEmpty();
-    }
-
-    @Override
     public FormatErrorSet getErrors() {
         return this.errors;
-    }
-
-    @Override
-    public void addError(FormatError error) {
-        this.errors.add(error);
-    }
-
-    @Override
-    public void addErrors(Set<FormatError> errors) {
-        this.errors.addAll(errors);
-    }
-
-    @Override
-    public void addErrors(FormatException exc) {
-        addErrors(exc.getErrors());
     }
 
     private final FormatErrorSet errors;
@@ -113,12 +92,15 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         boolean result = !isFixed();
         if (result) {
             if (!hasErrors() && getOp().getArity() >= 0 && getOp().getArity() != getArgs().size()) {
-                addError(new FormatError("Operator '%s' expects %s but has %s operands in %s",
-                    getOp().getSymbol(), getOp().getArity(), getArgs().size(), getParseString()));
+                getErrors().add("Operator '%s' expects %s but has %s operands in %s",
+                    getOp().getSymbol(),
+                    getOp().getArity(),
+                    getArgs().size(),
+                    getParseString());
             }
             for (T arg : getArgs()) {
                 arg.setFixed();
-                addErrors(arg.getErrors());
+                getErrors().addAll(arg.getErrors());
             }
             super.setFixed();
         }

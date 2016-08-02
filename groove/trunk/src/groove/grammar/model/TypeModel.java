@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.model;
@@ -20,6 +20,13 @@ import static groove.grammar.aspect.AspectKind.ABSTRACT;
 import static groove.grammar.aspect.AspectKind.DEFAULT;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.graph.EdgeRole.NODE_TYPE;
+
+import java.awt.Color;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import groove.algebra.Sort;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
@@ -33,12 +40,6 @@ import groove.grammar.type.TypeNode;
 import groove.graph.GraphInfo;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.awt.Color;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  *  translating an aspect graph (with type role) to a type graph.
@@ -84,30 +85,28 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         return this.typeMap;
     }
 
-    /** 
+    /**
      * Returns the set of labels used in this graph.
-     * @return the set of labels, or {@code null} if the model could not be computed 
+     * @return the set of labels, or {@code null} if the model could not be computed
      */
     @Override
     public Set<TypeLabel> getLabels() {
         TypeGraph typeGraph = getResource();
-        return typeGraph == null ? Collections.<TypeLabel>emptySet()
-                : typeGraph.getLabels();
+        return typeGraph == null ? Collections.<TypeLabel>emptySet() : typeGraph.getLabels();
     }
 
     @Override
     TypeGraph compute() throws FormatException {
         GraphInfo.throwException(getSource());
         FormatErrorSet errors = createErrors();
-        TypeGraph result = new TypeGraph(getFullName());
+        TypeGraph result = new TypeGraph(getQualName());
         TypeFactory factory = result.getFactory();
         this.modelMap = new TypeModelMap(factory);
         // collect primitive type nodes
         for (AspectNode modelNode : getSource().nodeSet()) {
             AspectKind attrKind = modelNode.getAttrKind();
             if (attrKind != DEFAULT) {
-                TypeLabel typeLabel =
-                    TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
+                TypeLabel typeLabel = TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
                 try {
                     addNodeType(modelNode, typeLabel, factory);
                 } catch (FormatException e) {
@@ -129,13 +128,14 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         }
         errors.throwException();
         // check if there are untyped, non-virtual nodes
-        Set<AspectNode> untypedNodes =
-            new HashSet<AspectNode>(getSource().nodeSet());
-        untypedNodes.removeAll(this.modelMap.nodeMap().keySet());
+        Set<AspectNode> untypedNodes = new HashSet<AspectNode>(getSource().nodeSet());
+        untypedNodes.removeAll(this.modelMap.nodeMap()
+            .keySet());
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode modelNode = untypedNodeIter.next();
-            if (modelNode.getKind().isMeta()) {
+            if (modelNode.getKind()
+                .isMeta()) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
@@ -151,8 +151,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             // do not process the node type edges again
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            if (!modelEdge.getKind().isMeta()
-                && (typeLabel == null || typeLabel.getRole() != NODE_TYPE)) {
+            if (!modelEdge.getKind()
+                .isMeta() && (typeLabel == null || typeLabel.getRole() != NODE_TYPE)) {
                 try {
                     processModelEdge(result, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
@@ -179,15 +179,18 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      * @param modelNode the node in the aspect graph that stands for a node type
      * @param typeLabel the node type label
      */
-    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel,
-            TypeFactory factory) throws FormatException {
+    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel, TypeFactory factory)
+        throws FormatException {
         TypeNode oldTypeNode = this.modelMap.getNode(modelNode);
         if (oldTypeNode != null) {
-            throw new FormatException("Duplicate types '%s' and '%s'",
-                typeLabel.text(), oldTypeNode.label().text(), modelNode);
+            throw new FormatException("Duplicate types '%s' and '%s'", typeLabel.text(),
+                oldTypeNode.label()
+                    .text(),
+                modelNode);
         }
         TypeNode typeNode;
-        Sort signature = modelNode.getAttrKind().getSignature();
+        Sort signature = modelNode.getAttrKind()
+            .getSignature();
         if (signature == null) {
             typeNode = factory.createNode(typeLabel);
         } else {
@@ -195,25 +198,25 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         }
         if (modelNode.getKind() == ABSTRACT) {
             if (signature != null) {
-                throw new FormatException("Data type '%s' cannot be abstract",
-                    typeLabel.text(), modelNode);
+                throw new FormatException("Data type '%s' cannot be abstract", typeLabel.text(),
+                    modelNode);
             }
             typeNode.setAbstract(true);
         }
         if (modelNode.hasImport()) {
             if (signature != null) {
-                throw new FormatException("Data type '%s' cannot be imported",
-                    typeLabel.text(), modelNode);
+                throw new FormatException("Data type '%s' cannot be imported", typeLabel.text(),
+                    modelNode);
             }
             typeNode.setImported(true);
         }
         if (modelNode.hasColor()) {
-            typeNode.setColor((Color) modelNode.getColor().getContent());
+            typeNode.setColor((Color) modelNode.getColor()
+                .getContent());
         }
         if (modelNode.isEdge()) {
             if (signature != null) {
-                throw new FormatException(
-                    "Data type '%s' cannot be a nodified edge",
+                throw new FormatException("Data type '%s' cannot be a nodified edge",
                     typeLabel.text(), modelNode);
             }
             typeNode.setLabelPattern(modelNode.getEdgePattern());
@@ -225,27 +228,27 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      * Processes the information in a model edge by updating the model, element
      * map and subtypes.
      */
-    private void processModelEdge(TypeGraph model, TypeModelMap elementMap,
-            AspectEdge modelEdge) throws FormatException {
+    private void processModelEdge(TypeGraph model, TypeModelMap elementMap, AspectEdge modelEdge)
+        throws FormatException {
         TypeNode typeSource = elementMap.getNode(modelEdge.source());
-        assert typeSource != null : String.format(
-            "Source of model edge '%s' not in element map %s",
-            modelEdge.source(), elementMap);
+        assert typeSource != null : String.format("Source of model edge '%s' not in element map %s",
+            modelEdge.source(),
+            elementMap);
         if (typeSource.isImported()) {
-            throw new FormatException("Can't change imported type '%s'",
-                typeSource.label(), modelEdge);
+            throw new FormatException("Can't change imported type '%s'", typeSource.label(),
+                modelEdge);
         }
         TypeNode typeTarget = elementMap.getNode(modelEdge.target());
-        assert typeTarget != null : String.format(
-            "Target of model edge '%s' not in element map %s",
-            modelEdge.source(), elementMap);
+        assert typeTarget != null : String.format("Target of model edge '%s' not in element map %s",
+            modelEdge.source(),
+            elementMap);
         TypeEdge typeEdge = null;
-        if (modelEdge.getAttrKind().hasSignature()) {
-            TypeNode typeNode =
-                model.getFactory().getDataType(modelEdge.getSignature());
-            typeEdge =
-                model.addEdge(typeSource,
-                    modelEdge.getAttrAspect().getContentString(), typeNode);
+        if (modelEdge.getAttrKind()
+            .hasSignature()) {
+            TypeNode typeNode = model.getFactory()
+                .getDataType(modelEdge.getSignature());
+            typeEdge = model.addEdge(typeSource, modelEdge.getAttrAspect()
+                .getContentString(), typeNode);
         } else if (modelEdge.getKind() == SUBTYPE) {
             model.addInheritance(typeSource, typeTarget);
         } else {

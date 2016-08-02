@@ -34,10 +34,11 @@ import java.util.Map;
 
 import groove.algebra.Sort;
 import groove.annotation.Help;
+import groove.grammar.QualName;
 import groove.util.parse.ATermTreeParser;
 import groove.util.parse.FormatException;
-import groove.util.parse.Id;
 import groove.util.parse.OpKind;
+import groove.verify.Proposition.Arg;
 
 /**
  * Parser for temporal formulas, following the {@code groove.util.parse} architecture.
@@ -62,7 +63,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         // see if the name is a sequence of one-character prefix operators
         List<LogicOp> prefixOps = findPrefixOps(firstToken.substring());
         if (prefixOps == null) {
-            Id id = parseId();
+            QualName id = parseId();
             if (consume(LPAR) == null) {
                 // it's an (unquoted) string constant: create an atomic proposition
                 result = Formula.atom(id);
@@ -99,13 +100,11 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         Token atomToken = next();
         if (atomToken.has(TokenClaz.CONST)) {
             consume(CONST);
-            result = new Proposition.Arg(atomToken.createConstant());
+            result = Arg.arg(atomToken.createConstant());
         } else if (atomToken.has(NAME)) {
-            Id id = parseId();
-            if (id.size() > 1) {
-                throw invalidArg(id.getName(), atomToken);
-            }
-            result = new Proposition.Arg(id);
+            consume(NAME);
+            String name = atomToken.substring();
+            result = Arg.arg(name);
         } else if (atomToken.has(UNDER)) {
             consume(UNDER);
             result = Proposition.Arg.WILD_ARG;
@@ -113,10 +112,6 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
             throw unexpectedToken(atomToken);
         }
         return result;
-    }
-
-    private FormatException invalidArg(String arg, Token token) {
-        return new FormatException("Invalid call argument '%s' at index '%s'", arg, token.start());
     }
 
     /* Converts string constants into label propositions. */

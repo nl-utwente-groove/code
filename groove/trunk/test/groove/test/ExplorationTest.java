@@ -19,12 +19,19 @@ package groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.Test;
+
 import groove.explore.Exploration;
 import groove.explore.ExploreType;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
+import groove.grammar.QualName;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -32,13 +39,7 @@ import groove.lts.Filter;
 import groove.lts.GTS;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-
 import junit.framework.Assert;
-
-import org.junit.Test;
 
 /**
  * System test class, which explores a number of graph production systems and
@@ -200,8 +201,12 @@ public class ExplorationTest {
     @Test
     public void testSierpinsky() {
         GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
-        assertEquals(1, lts.getFinalStates().size());
-        HostGraph finalGraph = lts.getFinalStates().iterator().next().getGraph();
+        assertEquals(1, lts.getFinalStates()
+            .size());
+        HostGraph finalGraph = lts.getFinalStates()
+            .iterator()
+            .next()
+            .getGraph();
         assertEquals(3290, finalGraph.nodeCount());
         assertEquals(6577, finalGraph.edgeCount());
     }
@@ -307,7 +312,8 @@ public class ExplorationTest {
             if (strategyDescr == null) {
                 exploreType = ExploreType.DEFAULT;
             } else {
-                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
+                Serialized strategy = StrategyEnumerator.instance()
+                    .parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploreType = new ExploreType(strategy, acceptor, 0);
             }
@@ -382,7 +388,12 @@ public class ExplorationTest {
      */
     protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr,
         int nodeCount, int edgeCount) {
-        return testExploration(grammarName, startGraphName, strategyDescr, nodeCount, edgeCount, -1);
+        return testExploration(grammarName,
+            startGraphName,
+            strategyDescr,
+            nodeCount,
+            edgeCount,
+            -1);
     }
 
     /**
@@ -415,7 +426,7 @@ public class ExplorationTest {
         try {
             GrammarModel result = GrammarModel.newInstance(new File(INPUT_DIR, grammarName), false);
             if (startGraphName != null) {
-                result.setLocalActiveNames(ResourceKind.HOST, startGraphName);
+                result.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
             }
             return result;
         } catch (IOException exc) {

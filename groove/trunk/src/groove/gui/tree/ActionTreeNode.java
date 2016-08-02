@@ -18,6 +18,8 @@ package groove.gui.tree;
 
 import javax.swing.tree.TreeNode;
 
+import groove.grammar.QualName;
+
 /**
  * Tree node wrapping an action.
  * @author rensink
@@ -25,7 +27,7 @@ import javax.swing.tree.TreeNode;
  */
 interface ActionTreeNode extends TreeNode {
     /** Returns the action name. */
-    public String getName();
+    public QualName getQualName();
 
     /** Indicates if the wrapped action is a property. */
     public boolean isProperty();

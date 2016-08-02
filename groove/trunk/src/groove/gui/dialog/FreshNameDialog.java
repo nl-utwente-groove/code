@@ -1,28 +1,26 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.dialog;
 
-import groove.grammar.QualName;
-
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -32,6 +30,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import groove.util.parse.FormatException;
 
 /**
  * Dialog class that lets the user choose a fresh name.
@@ -48,27 +48,26 @@ abstract public class FreshNameDialog<Name> {
      *        be among the existing names
      */
     public FreshNameDialog(Set<Name> existingNames, String suggestion, boolean mustBeFresh) {
-        this.existingNames = new HashSet<Name>(existingNames);
-        this.existingLowerCaseNames = new HashSet<String>();
-        for (Name name : existingNames) {
-            this.existingLowerCaseNames.add(name.toString().toLowerCase());
-        }
-        this.suggestion =
-            mustBeFresh ? generateNewName(suggestion, existingNames) : createName(suggestion);
+        this.existingNames = existingNames.stream()
+            .map(n -> n.toString())
+            .collect(Collectors.toSet());
+        this.existingLowerCaseNames = this.existingNames.stream()
+            .map(n -> n.toLowerCase())
+            .collect(Collectors.toSet());
+        this.suggestion = mustBeFresh ? generateNewName(suggestion) : suggestion;
     }
 
     /**
      * Generates a fresh name by extending a given name so that it does not
      * occur in a set of existing names.
      * @param basis the name to be extended (non-null)
-     * @param existingNames the set of names that are forbidden (non-null)
      * @return An extension of <code>basis</code> that is not in
      *         <code>existingNames</code>
      */
-    private Name generateNewName(String basis, Set<Name> existingNames) {
-        Name result = createName(basis);
-        for (int i = 1; existingNames.contains(result); i++) {
-            result = createName(basis + i);
+    private String generateNewName(String basis) {
+        String result = basis;
+        for (int i = 1; this.existingNames.contains(result); i++) {
+            result = basis + i;
         }
         return result;
     }
@@ -77,7 +76,7 @@ abstract public class FreshNameDialog<Name> {
      * Callback method to create an object of the generic name type from a
      * string.
      */
-    abstract protected Name createName(String name);
+    abstract protected Name createName(String name) throws FormatException;
 
     /**
      * Creates a dialog and makes it visible, so that the user can choose a file
@@ -93,13 +92,13 @@ abstract public class FreshNameDialog<Name> {
         JTextField nameField = getNameField();
         nameField.setText(this.suggestion.toString());
         nameField.setSelectionStart(0);
-        nameField.setSelectionEnd(nameField.getText().length());
+        nameField.setSelectionEnd(nameField.getText()
+            .length());
         setOkEnabled();
         JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
         boolean result = response == getOkButton() || response == getNameField();
-        setName(result ? getChosenName() : null);
         return result;
     }
 
@@ -110,19 +109,25 @@ abstract public class FreshNameDialog<Name> {
     private void setOkEnabled() {
         boolean enabled = true;
         String errorText = " ";
-        Name label = getChosenName();
-        StringBuilder error = new StringBuilder();
-        if (!QualName.isValid(label.toString(), null, error)) {
-            errorText = error.toString();
-            enabled = false;
-        } else if (this.existingNames.contains(label)) {
-            if (!this.suggestion.equals(label)) {
+        String name = getChosenName();
+        if (this.existingNames.contains(name)) {
+            if (!this.suggestion.equals(name)) {
                 errorText = "Name already exists";
                 enabled = false;
             }
-        } else if (this.existingLowerCaseNames.contains(label.toString().toLowerCase())) {
+        } else if (this.existingLowerCaseNames.contains(name.toLowerCase())) {
             errorText = "Name already exists (with different case)";
             enabled = false;
+        } else {
+            try {
+                setName(createName(name));
+            } catch (FormatException exc) {
+                errorText = exc.getMessage();
+                enabled = false;
+            }
+        }
+        if (!enabled) {
+            setName(null);
         }
         getErrorLabel().setText(errorText);
         getOkButton().setEnabled(enabled);
@@ -136,17 +141,16 @@ abstract public class FreshNameDialog<Name> {
     private JOptionPane getOptionPane() {
         if (this.optionPane == null) {
             JTextField nameField = getNameField();
-            this.optionPane =
-                new JOptionPane(new Object[] {nameField, getErrorLabel()},
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
-                        getOkButton(), getCancelButton()});
+            this.optionPane = new JOptionPane(new Object[] {nameField, getErrorLabel()},
+                JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null,
+                new Object[] {getOkButton(), getCancelButton()});
         }
         return this.optionPane;
     }
 
     /** Returns the rule name currently filled in in the name field. */
-    private Name getChosenName() {
-        return createName(getNameField().getText());
+    private String getChosenName() {
+        return getNameField().getText();
     }
 
     /** The option pane that is the core of the dialog. */
@@ -184,7 +188,8 @@ abstract public class FreshNameDialog<Name> {
     private JTextField getNameField() {
         if (this.nameField == null) {
             this.nameField = new JTextField(30);
-            this.nameField.getDocument().addDocumentListener(new OverlapListener());
+            this.nameField.getDocument()
+                .addDocumentListener(new OverlapListener());
             this.nameField.addActionListener(getNameFieldListener());
         }
         return this.nameField;
@@ -217,12 +222,11 @@ abstract public class FreshNameDialog<Name> {
     private JLabel errorLabel;
 
     /** Set of existing names. */
-    private final Set<Name> existingNames;
-
+    private final Set<String> existingNames;
     /** Set of existing names, in lower case. */
     private final Set<String> existingLowerCaseNames;
     /** Suggested name. */
-    private final Name suggestion;
+    private final String suggestion;
 
     /**
      * Returns the name chosen by the user in the course of the dialog. The

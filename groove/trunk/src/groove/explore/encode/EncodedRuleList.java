@@ -16,13 +16,14 @@
  */
 package groove.explore.encode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import groove.grammar.Grammar;
+import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.model.GrammarModel;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An EncodedEdgeList describes an encoding of Rules by means of a List. The syntax
@@ -41,13 +42,14 @@ public class EncodedRuleList implements EncodedType<List<Rule>,String> {
     public List<Rule> parse(Grammar rules, String source) throws FormatException {
         ArrayList<Rule> result;
         if (source == null || source.length() == 0) {
-            result = new ArrayList<Rule>(0); //return a disabled rule list as a zero-length list 
+            result = new ArrayList<>(0); //return a disabled rule list as a zero-length list
         } else {
-            result = new ArrayList<Rule>();
+            result = new ArrayList<>();
             //trim spaces and split on ;
-            String rulelabels[] = source.replaceAll("\\ ", "").split(";");
+            String rulelabels[] = source.replaceAll("\\ ", "")
+                .split(";");
             for (String s : rulelabels) {
-                parseRuleLabel(rules, s, result);
+                parseRuleLabel(rules, QualName.parse(s), result);
             }
         }
         return result;
@@ -60,8 +62,8 @@ public class EncodedRuleList implements EncodedType<List<Rule>,String> {
      * @param labellist the list to add the label  to
      * @throws FormatException when the grammar does not contain a rule with a label equal to {@code label}
      */
-    private void parseRuleLabel(Grammar rules, String label, List<Rule> labellist)
-            throws FormatException {
+    private void parseRuleLabel(Grammar rules, QualName label, List<Rule> labellist)
+        throws FormatException {
         Rule result = rules.getRule(label);
         if (result == null) {
             throw new FormatException("Rule name does not exist: " + label);

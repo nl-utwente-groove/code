@@ -2,6 +2,11 @@
 package groove.transform;
 
 import static groove.transform.RuleEvent.Reuse.EVENT;
+
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Set;
+
 import groove.algebra.AlgebraFamily;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -11,10 +16,6 @@ import groove.grammar.rule.RuleToHostMap;
 import groove.lts.RuleTransitionLabel;
 import groove.transform.RuleEvent.Reuse;
 import groove.util.collect.Pool;
-
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.Set;
 
 /**
  * Usage instance of a given graph grammar. Stores information gathered during
@@ -49,8 +50,10 @@ public class Record {
         this.grammar = grammar;
         this.hostFactory = hostFactory;
         grammar.testFixed(true);
-        this.checkIso = grammar.getProperties().isCheckIsomorphism();
-        this.family = grammar.getProperties().getAlgebraFamily();
+        this.checkIso = grammar.getProperties()
+            .isCheckIsomorphism();
+        this.family = grammar.getProperties()
+            .getAlgebraFamily();
     }
 
     /** Returns the stored rule system on which the derivations are based. */
@@ -127,7 +130,7 @@ public class Record {
         return (BasicEvent) normaliseEvent(new BasicEvent(rule, elementMap, getReuse()));
     }
 
-    /** 
+    /**
      * Normalises a given transition label.
      */
     public RuleTransitionLabel normaliseLabel(RuleTransitionLabel prototype) {
@@ -153,7 +156,7 @@ public class Record {
     public Set<Rule> getDisabledRules(Rule disabler) {
         Set<Rule> result = getDependencies().getDisableds(disabler);
         assert result != null : String.format("Null rule dependencies for %s",
-            disabler.getFullName());
+            disabler.getQualName());
         return result;
     }
 
@@ -304,7 +307,7 @@ public class Record {
     }
 
     /**
-     * Indicates that the GTS may be accessed randomly, as in the 
+     * Indicates that the GTS may be accessed randomly, as in the
      * Simulator. This implies that graphs should be copied, not shared.
      * @return <code>true</code> if the data structures should allow for
      * random access; <code>false</code> if access is determined entirely

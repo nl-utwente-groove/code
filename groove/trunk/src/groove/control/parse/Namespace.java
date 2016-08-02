@@ -16,17 +16,6 @@
  */
 package groove.control.parse;
 
-import groove.control.Procedure;
-import groove.control.term.Term;
-import groove.grammar.Action;
-import groove.grammar.Callable;
-import groove.grammar.GrammarProperties;
-import groove.grammar.QualName;
-import groove.grammar.Rule;
-import groove.util.antlr.ParseInfo;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,13 +24,26 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import groove.control.Procedure;
+import groove.control.term.Term;
+import groove.grammar.Action;
+import groove.grammar.Callable;
+import groove.grammar.GrammarProperties;
+import groove.grammar.ModuleName;
+import groove.grammar.QualName;
+import groove.grammar.Rule;
+import groove.util.antlr.ParseInfo;
+import groove.util.parse.Fallible;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+
 /**
  * Namespace for building a control automaton.
  * The namespace holds the function, transaction and rule names.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Namespace implements ParseInfo {
+public class Namespace implements ParseInfo, Fallible {
     /** Constructs a new name space, on the basis of a given algebra family.
      */
     public Namespace(GrammarProperties grammarProperties) {
@@ -60,28 +62,28 @@ public class Namespace implements ParseInfo {
      * @return {@code true} if the name is new.
      */
     public boolean addProcedure(Procedure proc) {
-        String fullName = proc.getFullName();
+        QualName fullName = proc.getQualName();
         boolean result = !hasCallable(fullName);
         if (result) {
             this.callableMap.put(fullName, proc);
-            this.controlNameMap.put(fullName, getControlName());
+            this.declaringNameMap.put(fullName, getControlName());
         }
         return result;
     }
 
     /** Returns the control program name in which a procedure with a given name has been declared. */
-    public String getControlName(String procName) {
-        return this.controlNameMap.get(procName);
+    public QualName getDeclaringName(QualName procName) {
+        return this.declaringNameMap.get(procName);
     }
 
     /** Mapping from declared procedures to the declaring control program. */
-    private final Map<String,String> controlNameMap = new HashMap<String,String>();
+    private final Map<QualName,QualName> declaringNameMap = new HashMap<>();
 
     /**
      * Adds a rule to the name space.
      */
     public boolean addRule(Rule rule) {
-        String ruleName = rule.getFullName();
+        QualName ruleName = rule.getQualName();
         boolean result = !hasCallable(ruleName);
         if (result) {
             this.callableMap.put(ruleName, rule);
@@ -90,12 +92,12 @@ public class Namespace implements ParseInfo {
     }
 
     /** Checks if a callable unit with a given name has been declared. */
-    public boolean hasCallable(String name) {
+    public boolean hasCallable(QualName name) {
         return this.callableMap.containsKey(name);
     }
 
     /** Returns the callable unit with a given name. */
-    public Callable getCallable(String name) {
+    public Callable getCallable(QualName name) {
         return this.callableMap.get(name);
     }
 
@@ -106,16 +108,16 @@ public class Namespace implements ParseInfo {
 
     /** Tries to add a dependency from a caller to a callee.
      */
-    public void addCall(String caller, String callee) {
+    public void addCall(QualName caller, QualName callee) {
         if (caller != null) {
-            Set<String> parentCallers = getFromMap(this.callerMap, caller);
-            Set<String> callees = getFromMap(this.calleeMap, caller);
+            Set<QualName> parentCallers = getFromMap(this.callerMap, caller);
+            Set<QualName> callees = getFromMap(this.calleeMap, caller);
             if (callees.add(callee)) {
-                Set<String> childCallees = getFromMap(this.calleeMap, callee);
-                for (String parentCaller : parentCallers) {
+                Set<QualName> childCallees = getFromMap(this.calleeMap, callee);
+                for (QualName parentCaller : parentCallers) {
                     getFromMap(this.calleeMap, parentCaller).addAll(childCallees);
                 }
-                for (String childCallee : childCallees) {
+                for (QualName childCallee : childCallees) {
                     getFromMap(this.callerMap, childCallee).addAll(parentCallers);
                 }
             }
@@ -123,67 +125,72 @@ public class Namespace implements ParseInfo {
         this.usedNames.add(callee);
     }
 
-    private Set<String> getFromMap(Map<String,Set<String>> map, String key) {
-        Set<String> result = map.get(key);
+    private Set<QualName> getFromMap(Map<QualName,Set<QualName>> map, QualName key) {
+        Set<QualName> result = map.get(key);
         if (result == null) {
-            map.put(key, result = new HashSet<String>());
+            map.put(key, result = new HashSet<>());
             result.add(key);
         }
         return result;
     }
 
     /** Mapping from declared callable unit names to the units. */
-    private final Map<String,Callable> callableMap = new TreeMap<String,Callable>();
+    private final Map<QualName,Callable> callableMap = new TreeMap<>();
 
     /** Mapping from function names to other functions being invoked from it. */
-    private final Map<String,Set<String>> calleeMap = new HashMap<String,Set<String>>();
+    private final Map<QualName,Set<QualName>> calleeMap = new HashMap<>();
     /** Mapping from function names to other functions invoking it. */
-    private final Map<String,Set<String>> callerMap = new HashMap<String,Set<String>>();
+    private final Map<QualName,Set<QualName>> callerMap = new HashMap<>();
 
     /** Sets the full name of the control program currently being explored. */
-    public void setControlName(String controlName) {
+    public void setControlName(QualName controlName) {
+        assert!controlName.hasErrors() : String.format("Errors in control: %s",
+            controlName.getErrors());
         this.controlName = controlName;
-        this.parentName = QualName.parent(controlName);
-        if (!this.importedMap.containsKey(controlName)) {
-            this.importedMap.put(controlName, new HashSet<String>());
-            this.importMap.put(controlName, new HashMap<String,String>());
+        if (!this.importedMap.containsKey(this.controlName)) {
+            this.importedMap.put(this.controlName, new HashSet<>());
+            this.importMap.put(this.controlName, new HashMap<>());
         }
     }
 
     /** Returns the full name of the control program being parsed. */
-    public String getControlName() {
+    public QualName getControlName() {
         return this.controlName;
     }
 
-    /** Returns the parent name space of the control program being parsed. */
-    public String getParentName() {
-        return this.parentName;
+    /** Returns the module name of this name space,
+     * being the parent of the control name.
+     */
+    public ModuleName getModuleName() {
+        return getControlName().parent();
     }
 
     /** Full name of the program file being parsed. */
-    private String controlName;
-    /** Parent name of {@link #controlName}. */
-    private String parentName;
+    private QualName controlName;
 
     /** Adds an import to the map of the current control program. */
-    public void addImport(String fullName) {
-        this.importedMap.get(this.controlName).add(fullName);
-        this.importMap.get(this.controlName).put(QualName.lastName(fullName), fullName);
+    public void addImport(QualName fullName) {
+        this.importedMap.get(this.controlName)
+            .add(fullName);
+        this.importMap.get(this.controlName)
+            .put(fullName.last(), fullName);
     }
 
     /** Tests if a given qualified name is imported. */
-    public boolean hasImport(String fullName) {
-        return this.importedMap.get(this.controlName).contains(fullName);
+    public boolean hasImport(QualName fullName) {
+        return this.importedMap.get(this.controlName)
+            .contains(fullName);
     }
 
     /** Returns a mapping from last names to full names for all imported names. */
-    public Map<String,String> getImportMap() {
+    public Map<String,QualName> getImportMap() {
         return this.importMap.get(this.controlName);
     }
 
-    private final Map<String,Set<String>> importedMap = new HashMap<String,Set<String>>();
-    private final Map<String,Map<String,String>> importMap =
-        new HashMap<String,Map<String,String>>();
+    /** Map from control names to sets of imported action names. */
+    private final Map<QualName,Set<QualName>> importedMap = new HashMap<>();
+    /** Map from control names to maps from imported last names to full names. */
+    private final Map<QualName,Map<String,QualName>> importMap = new HashMap<>();
 
     /**
      * Returns the set of all top-level actions (rules and recipes).
@@ -193,13 +200,14 @@ public class Namespace implements ParseInfo {
     public Set<Action> getActions() {
         Set<Action> result = this.actions;
         if (result == null) {
-            Set<String> calledNames = new HashSet<String>();
+            Set<QualName> calledNames = new HashSet<>();
             for (Callable callable : this.callableMap.values()) {
                 if (callable instanceof Action) {
-                    if (callable.getKind().isProcedure()) {
-                        String name = callable.getFullName();
-                        Set<String> newCalledNames = new HashSet<String>();
-                        Set<String> calleeMapValue = this.calleeMap.get(name);
+                    if (callable.getKind()
+                        .isProcedure()) {
+                        QualName name = callable.getQualName();
+                        Set<QualName> newCalledNames = new HashSet<>();
+                        Set<QualName> calleeMapValue = this.calleeMap.get(name);
                         if (calleeMapValue != null) {
                             newCalledNames.addAll(calleeMapValue);
                         }
@@ -214,7 +222,7 @@ public class Namespace implements ParseInfo {
                     continue;
                 }
                 Action action = (Action) unit;
-                if (action.isProperty() || !calledNames.contains(action.getFullName())) {
+                if (action.isProperty() || !calledNames.contains(action.getQualName())) {
                     result.add(action);
                 }
             }
@@ -262,40 +270,39 @@ public class Namespace implements ParseInfo {
     private Set<Action> transformers;
 
     /** Returns the set of all used names,
-     * i.e., all rules for which {@link #addCall(String, String)}
+     * i.e., all rules for which {@link #addCall(QualName, QualName)}
      * has been invoked.
      */
-    public Set<String> getUsedNames() {
+    public Set<QualName> getUsedNames() {
         return this.usedNames;
     }
 
     /** Set of callable names appearing explicitly in the control program. */
-    private final Set<String> usedNames = new HashSet<String>();
+    private final Set<QualName> usedNames = new HashSet<>();
 
     @Override
     public String toString() {
-        return String.format("Namespace for %s, defining %s", getControlName(),
+        return String.format("Namespace for %s, defining %s",
+            getControlName(),
             this.callableMap.keySet());
     }
 
     /** Adds an error to the errors contained in this name space. */
+    @Override
     public void addError(String message, Object... args) {
         this.errors.add(message, args);
     }
 
     /** Adds an error to the errors contained in this name space. */
+    @Override
     public void addError(FormatError error) {
         this.errors.add(error);
     }
 
     /** Returns the errors collected in this name space. */
+    @Override
     public FormatErrorSet getErrors() {
         return this.errors;
-    }
-
-    /** Indicates if any errors were collected. */
-    public boolean hasError() {
-        return !getErrors().isEmpty();
     }
 
     private final FormatErrorSet errors = new FormatErrorSet();

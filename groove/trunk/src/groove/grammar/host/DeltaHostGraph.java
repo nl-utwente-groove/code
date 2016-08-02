@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import groove.algebra.AlgebraFamily;
-import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AGraph;
 import groove.graph.Edge;
@@ -236,7 +235,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
             HostNode key = nodeEdgeEntry.getKey();
             HostEdgeSet inEdges = createEdgeSet(null);
             for (HostEdge edge : nodeEdgeEntry.getValue()) {
-                if (edge.target().equals(key)) {
+                if (edge.target()
+                    .equals(key)) {
                     inEdges.add(edge);
                 }
             }
@@ -272,7 +272,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
             HostNode key = nodeEdgeEntry.getKey();
             HostEdgeSet inEdges = createEdgeSet(null);
             for (HostEdge edge : nodeEdgeEntry.getValue()) {
-                if (edge.source().equals(key)) {
+                if (edge.source()
+                    .equals(key)) {
                     inEdges.add(edge);
                 }
             }
@@ -425,7 +426,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
     public CertificateStrategy getCertifier(boolean strong) {
         CertificateStrategy result = this.certifier == null ? null : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
-            result = AGraph.getCertificateFactory().newInstance(this, strong);
+            result = AGraph.getCertificateFactory()
+                .newInstance(this, strong);
             this.certifier = new WeakReference<CertificateStrategy>(result);
         }
         return result;
@@ -448,11 +450,6 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
 
     /** The element factory of this host graph. */
     private HostFactory factory;
-
-    @Override
-    public TypeGraph getTypeGraph() {
-        return getFactory().getTypeFactory().getGraph();
-    }
 
     /** The fixed (possibly <code>null</code> basis of this graph. */
     DeltaHostGraph basis;

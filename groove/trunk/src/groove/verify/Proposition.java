@@ -23,17 +23,17 @@ import static groove.verify.Proposition.Kind.LABEL;
 import java.util.ArrayList;
 import java.util.List;
 
-import groove.algebra.Constant;
+import groove.algebra.syntax.Expression;
+import groove.grammar.QualName;
 import groove.util.Exceptions;
 import groove.util.line.Line;
-import groove.util.parse.Id;
 
 /** Proposition, wrapped inside a formula of type {@link LogicOp#PROP}. */
 public class Proposition {
     /** Creates an identifier proposition.
      * @see Kind#ID
      */
-    Proposition(Id id) {
+    Proposition(QualName id) {
         assert id != null;
         this.kind = ID;
         this.id = id;
@@ -44,7 +44,7 @@ public class Proposition {
     /** Creates call proposition.
      * @see Kind#ID
      */
-    Proposition(Id id, List<Arg> args) {
+    Proposition(QualName id, List<Arg> args) {
         assert id != null;
         assert args != null;
         this.kind = CALL;
@@ -67,14 +67,14 @@ public class Proposition {
     /** Returns the identifier in this proposition if the proposition is an {@link #ID} or {@link #CALL}
      * @throws UnsupportedOperationException if this proposition is not an {@link #ID} or {@link #CALL}
      */
-    public Id getId() {
+    public QualName getId() {
         if (getKind() == LABEL) {
             throw new UnsupportedOperationException();
         }
         return this.id;
     }
 
-    private final Id id;
+    private final QualName id;
 
     /** Returns the kind of this proposition. */
     public Kind getKind() {
@@ -115,7 +115,7 @@ public class Proposition {
     /**
      * Tests if this proposition matches another.
      * This is the case of the two are equal, or if this is a parameterless {@link #ID}
-     * and the other a call of that {@link Id}, or this is a call with wildcards and the other
+     * and the other a call of that action, or this is a call with wildcards and the other
      * a call that only differs in providing values for the wildcards.
      */
     public boolean matches(Proposition other) {
@@ -212,7 +212,7 @@ public class Proposition {
     public String toString() {
         switch (getKind()) {
         case CALL:
-            StringBuilder result = new StringBuilder(this.id.getName());
+            StringBuilder result = new StringBuilder(this.id.toString());
             result.append('(');
             boolean first = true;
             for (Arg arg : getArgs()) {
@@ -226,7 +226,7 @@ public class Proposition {
             result.append(')');
             return result.toString();
         case ID:
-            return this.id.getName();
+            return this.id.toString();
         case LABEL:
             return this.label;
         default:
@@ -266,46 +266,51 @@ public class Proposition {
         return result;
     }
 
+    /** Returns a proposition consisting of a given identifier and list of arguments. */
+    public static Proposition prop(QualName id, List<Arg> args) {
+        return new Proposition(id, args);
+    }
+
     /**
      * Call argument.
      * Types of call arguments are given by {@link Arg#kind}.
      */
     public static class Arg {
-        /** Constructs a new {@link Kind#ID} argument. */
-        public Arg(Id id) {
-            assert id != null;
-            this.id = id;
-            this.constant = null;
-            this.kind = Kind.ID;
+        /** Constructs a new {@link Kind#NAME} argument. */
+        private Arg(String name) {
+            assert name != null;
+            this.name = name;
+            this.expr = null;
+            this.kind = Kind.NAME;
         }
 
         /** Constructs a new {@link Kind#CONST} argument. */
-        public Arg(Constant constant) {
-            assert constant != null;
-            this.id = null;
-            this.constant = constant;
+        private Arg(Expression expr) {
+            assert expr != null;
+            this.name = null;
+            this.expr = expr;
             this.kind = Kind.CONST;
         }
 
         /** Constructs a new {@link Kind#WILD} argument. */
         private Arg() {
-            this.id = null;
-            this.constant = null;
+            this.name = null;
+            this.expr = null;
             this.kind = Kind.WILD;
         }
 
-        /** Returns the identifier in this argument if the argument is a {@link Kind#ID},
+        /** Returns the identifier in this argument if the argument is a {@link Kind#NAME},
          * or {@code null} otherwise.
          */
-        public Id getId() {
-            return this.id;
+        public String getName() {
+            return this.name;
         }
 
         /** Returns the constant in this argument if the argument is a {@link Kind#CONST},
          * or {@code null} otherwise.
          */
-        public Constant getConstant() {
-            return this.constant;
+        public Expression getExpr() {
+            return this.expr;
         }
 
         /** Returns the kind of this argument. */
@@ -314,14 +319,14 @@ public class Proposition {
         }
 
         private final Kind kind;
-        private final Id id;
-        private final Constant constant;
+        private final String name;
+        private final Expression expr;
 
         /** Tests if this argument matches another. */
         public boolean matches(Arg other) {
             switch (getKind()) {
             case CONST:
-            case ID:
+            case NAME:
                 return equals(other);
             case WILD:
                 return true;
@@ -335,8 +340,8 @@ public class Proposition {
             final int prime = 31;
             int result = 1;
             result = prime * result + this.kind.hashCode();
-            result = prime * result + ((this.constant == null) ? 0 : this.constant.hashCode());
-            result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+            result = prime * result + ((this.expr == null) ? 0 : this.expr.hashCode());
+            result = prime * result + ((this.name == null) ? 0 : this.name.hashCode());
             return result;
         }
 
@@ -354,9 +359,9 @@ public class Proposition {
             }
             switch (this.kind) {
             case CONST:
-                return this.constant.equals(other.constant);
-            case ID:
-                return this.id.equals(other.id);
+                return this.expr.equals(other.expr);
+            case NAME:
+                return this.name.equals(other.name);
             case WILD:
                 return true;
             default:
@@ -367,10 +372,10 @@ public class Proposition {
         @Override
         public String toString() {
             switch (this.kind) {
-            case ID:
-                return this.id.getName();
+            case NAME:
+                return this.name;
             case CONST:
-                return this.constant.toString();
+                return this.expr.toString();
             case WILD:
                 return WILD_TEXT;
             default:
@@ -381,14 +386,24 @@ public class Proposition {
         Line toLine() {
             switch (getKind()) {
             case CONST:
-                return getConstant().toLine();
-            case ID:
-                return getId().toLine();
+                return getExpr().toLine();
+            case NAME:
+                return Line.atom(getName());
             case WILD:
                 return Line.atom("_");
             default:
                 throw Exceptions.UNREACHABLE;
             }
+        }
+
+        /** Constructs and returns a {@link Kind#NAME}-argument. */
+        public static Arg arg(String name) {
+            return new Arg(name);
+        }
+
+        /** Constructs and returns a {@link Kind#CONST}-argument. */
+        public static Arg arg(Expression expr) {
+            return new Arg(expr);
         }
 
         /** Textual representation of a wildcard argument. */
@@ -400,7 +415,7 @@ public class Proposition {
         /** Call argument kind. */
         public static enum Kind {
             /** Identifier argument. */
-            ID,
+            NAME,
             /** Constant argument. */
             CONST,
             /** Wildcard argument. */

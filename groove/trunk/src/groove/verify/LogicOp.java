@@ -31,7 +31,9 @@ public enum LogicOp implements Op {
     @Syntax("rule [LPAR arg_list RPAR] | string_constant")
     @ToolTipHeader("Atomic or rule call proposition")
     @ToolTipBody({"Holds if %s is enabled in the current state.",
-        "Note that this does <i>not</i> mean that %1$s has just been executed."})
+        "Note that this does <i>not</i> mean that %1$s has just been executed.",
+        "Without arguments, only the rule name is checked.",
+        "Arguments may include the wildcard '_', which matches everything."})
     PROP("", OpKind.ATOM),
 
     /** True. */

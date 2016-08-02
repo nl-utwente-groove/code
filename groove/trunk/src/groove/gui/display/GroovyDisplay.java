@@ -1,28 +1,20 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.display;
-
-import groove.grammar.groovy.GraphManager;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Simulator;
-import groove.io.FileType;
-import groovy.lang.Binding;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovyShell;
 
 import java.awt.BorderLayout;
 import java.io.IOException;
@@ -38,10 +30,19 @@ import javax.swing.text.Document;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 
+import groove.grammar.QualName;
+import groove.grammar.groovy.GraphManager;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Simulator;
+import groove.io.FileType;
+import groovy.lang.Binding;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.GroovyShell;
+
 /**
  * The Simulator panel that shows the groovy program, with a button that shows
  * the corresponding control automaton.
- * 
+ *
  * @author Harold
  * @version $x$
  */
@@ -59,9 +60,8 @@ final public class GroovyDisplay extends ResourceDisplay {
         this.setLayout(new BorderLayout());
         this.setFocusable(false);
 
-        JSplitPane splitPane =
-            new JSplitPane(JSplitPane.VERTICAL_SPLIT, getTabPane(),
-                new JScrollPane(getEditorPane()));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getTabPane(),
+            new JScrollPane(getEditorPane()));
 
         getEditorPane().setEditable(false);
 
@@ -74,11 +74,13 @@ final public class GroovyDisplay extends ResourceDisplay {
 
     /**
      * Executes the Groovy script
-     * 
+     *
      * @param name Name of script resource to execute
      */
-    public void executeGroovy(String name) {
-        String program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+    public void executeGroovy(QualName name) {
+        String program = getSimulatorModel().getStore()
+            .getTexts(getResourceKind())
+            .get(name);
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 
@@ -109,21 +111,23 @@ final public class GroovyDisplay extends ResourceDisplay {
             newstream.println("Error during execution of Groovy script");
             String loc = "";
             for (StackTraceElement elem : e.getStackTrace()) {
-                if (elem.getFileName().endsWith(FileType.GROOVY.getExtension())) {
+                if (elem.getFileName()
+                    .endsWith(FileType.GROOVY.getExtension())) {
                     loc = elem.getFileName() + ":" + elem.getLineNumber() + " : ";
                     break;
                 }
             }
             newstream.println(loc + e.getMessage());
         } catch (Exception e) {
-            newstream.println(e.getClass().getSimpleName() + " during execution of Groovy script");
+            newstream.println(e.getClass()
+                .getSimpleName() + " during execution of Groovy script");
             newstream.println(e.getMessage());
             for (StackTraceElement elem : e.getStackTrace()) {
                 newstream.println(elem.toString());
             }
         } catch (Error e) {
-            newstream.println("!" + e.getClass().getSimpleName()
-                + " during execution of Groovy script!");
+            newstream.println("!" + e.getClass()
+                .getSimpleName() + " during execution of Groovy script!");
             newstream.println(e.getMessage());
         }
 

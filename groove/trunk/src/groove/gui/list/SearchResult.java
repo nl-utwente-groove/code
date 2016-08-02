@@ -1,28 +1,29 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.list;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Element;
 import groove.gui.list.ListPanel.SelectableListEntry;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class encoding a single message reporting a search result in a graph view.
@@ -47,13 +48,13 @@ public class SearchResult implements SelectableListEntry {
     }
 
     /**
-     * Attempts to set a context value ({@link #graph}, 
+     * Attempts to set a context value ({@link #graph},
      * {@link #elements}) from a given object.
      */
     private void addContext(Object par) {
         if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
-            this.resourceName = this.graph.getName();
+            this.resourceName = this.graph.getQualName();
             this.resourceKind = ResourceKind.toResource(this.graph.getRole());
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
@@ -103,9 +104,9 @@ public class SearchResult implements SelectableListEntry {
         return this.resourceKind;
     }
 
-    /** Returns the resource kind for which this error occurs. */
+    /** Returns the resource name for which this error occurs. */
     @Override
-    public final String getResourceName() {
+    public final QualName getResourceName() {
         return this.resourceName;
     }
 
@@ -114,7 +115,7 @@ public class SearchResult implements SelectableListEntry {
     /** The resource kind for which the result occurs. May be {@code null}. */
     private ResourceKind resourceKind;
     /** The name of the resource on which the result occurs. May be {@code null}. */
-    private String resourceName;
+    private QualName resourceName;
     /** List of result elements. */
     private final List<Element> elements = new ArrayList<Element>();
     /** The result message. */

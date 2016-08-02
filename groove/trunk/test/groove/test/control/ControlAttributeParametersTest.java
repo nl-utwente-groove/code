@@ -16,15 +16,6 @@
  */
 package groove.test.control;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import groove.explore.Exploration;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.lts.GTS;
-import groove.util.Groove;
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 /**
@@ -33,29 +24,14 @@ import org.junit.Test;
  * @version $Revision $
  */
 @SuppressWarnings("all")
-public class ControlAttributeParametersTest {
-    static private final String DIRECTORY = "junit/samples/attributes.gps";
+public class ControlAttributeParametersTest extends AControlTest {
+    @Override
+    protected String getDirectory() {
+        return "junit/samples/attributes.gps";
+    }
 
     @Test
     public void testAttributes() {
         explore("control", 9, 8, 36, 46);
-    }
-
-    private void explore(String control, int controlStates, int controlTransitions,
-        int expectedNodes, int expectedEdges) {
-        try {
-            GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
-            sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
-            GTS gts = new GTS(sgv.toGrammar());
-
-            Exploration exploration = Exploration.explore(gts);
-
-            assertFalse(exploration.isInterrupted());
-            assertEquals(expectedNodes, gts.nodeCount());
-            assertEquals(expectedEdges, gts.edgeCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.toString());
-        }
     }
 }

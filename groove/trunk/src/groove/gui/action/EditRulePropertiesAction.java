@@ -17,6 +17,8 @@
 package groove.gui.action;
 
 import static groove.grammar.model.ResourceKind.RULE;
+
+import groove.grammar.QualName;
 import groove.gui.Options;
 import groove.gui.Simulator;
 
@@ -32,14 +34,15 @@ public class EditRulePropertiesAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getStore() != null
-                && getSimulatorModel().getStore().isModifiable()
-                && getSimulatorModel().getSelectSet(RULE).size() == 1);
+        setEnabled(getSimulatorModel().getStore() != null && getSimulatorModel().getStore()
+            .isModifiable()
+            && getSimulatorModel().getSelectSet(RULE)
+                .size() == 1);
     }
 
     @Override
     public void execute() {
-        String ruleName = getSimulatorModel().getSelected(RULE);
+        QualName ruleName = getSimulatorModel().getSelected(RULE);
         getRuleDisplay().setInfoTabIndex(true, 1);
         getRuleDisplay().startEditResource(ruleName);
     }

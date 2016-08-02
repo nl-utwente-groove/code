@@ -75,7 +75,7 @@ public class CtrlLoader {
      * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public CtrlTree parse(String controlName, String program) throws FormatException {
+    public CtrlTree parse(QualName controlName, String program) throws FormatException {
         if (this.treeMap.containsKey(controlName)) {
             throw new FormatException("Duplicate program name %s", controlName);
         }
@@ -86,23 +86,19 @@ public class CtrlLoader {
         return tree;
     }
 
-    /** Checks all control trees parsed by this loader. */
-    public Map<String,CtrlTree> check() throws FormatException {
-        Map<String,CtrlTree> result = new HashMap<String,CtrlTree>();
-        for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
-            entry.setValue(entry.getValue().check());
-            result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
+    /** Returns a control program constructed from the collection of previously parsed program names. */
+    public Program buildProgram() throws FormatException {
+        return buildProgram(this.treeMap.keySet());
     }
 
     /** Returns a control program constructed from a set of previously parsed program names. */
-    public Program buildProgram(Collection<String> progNames) throws FormatException {
+    public Program buildProgram(Collection<QualName> progNames) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         Program result = new Program();
-        for (String name : progNames) {
+        for (QualName name : progNames) {
             try {
-                CtrlTree tree = this.treeMap.get(name).check();
+                CtrlTree tree = this.treeMap.get(name)
+                    .check();
                 result.add(tree.toProgram());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
@@ -113,7 +109,8 @@ public class CtrlLoader {
         errors.throwException();
         if (!result.hasMain()) {
             // try to parse "any" for static semantic checks
-            Program main = parse("main", "# *.any;").check().toProgram();
+            Program main = parse(QualName.name(DEFAULT_MAIN_NAME), getDefaultMain()).check()
+                .toProgram();
             result.add(main);
         }
         result.setProperties(this.namespace.getProperties());
@@ -139,15 +136,16 @@ public class CtrlLoader {
      * Returns renamed versions of the stored control programs.
      * @return a mapping from program names to changed programs
      */
-    public Map<String,String> rename(String oldCallName, String newCallName) {
-        Map<String,String> result = new HashMap<String,String>();
-        for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
-            String name = entry.getKey();
+    public Map<QualName,String> rename(QualName oldCallName, QualName newCallName) {
+        Map<QualName,String> result = new HashMap<>();
+        for (Map.Entry<QualName,CtrlTree> entry : this.treeMap.entrySet()) {
+            QualName name = entry.getKey();
             CtrlTree tree = entry.getValue();
             TokenRewriteStream rewriter = getRewriter(tree);
             boolean changed = false;
             for (CtrlTree t : tree.getRuleIdTokens(oldCallName)) {
-                rewriter.replace(t.getToken(), t.getChild(0).getToken(), newCallName);
+                rewriter.replace(t.getToken(), t.getChild(0)
+                    .getToken(), newCallName);
                 changed = true;
             }
             if (changed) {
@@ -164,18 +162,19 @@ public class CtrlLoader {
      * the new priority values
      * @return mapping of control program names and new control programs
      */
-    public Map<String,String> changePriority(Map<String,Integer> prioMap) {
-        Map<String,String> result = new HashMap<String,String>();
-        for (Map.Entry<String,Integer> entry : prioMap.entrySet()) {
-            String recipeName = entry.getKey();
+    public Map<QualName,String> changePriority(Map<QualName,Integer> prioMap) {
+        Map<QualName,String> result = new HashMap<>();
+        for (Map.Entry<QualName,Integer> entry : prioMap.entrySet()) {
+            QualName recipeName = entry.getKey();
             int newPriority = entry.getValue();
-            String controlName = getNamespace().getControlName(recipeName);
+            QualName controlName = getNamespace().getDeclaringName(recipeName);
             if (controlName == null) {
                 continue;
             }
             CtrlTree tree = this.treeMap.get(controlName);
             assert tree != null : String.format("Parse tree of %s not found", controlName);
-            CtrlTree recipeTree = tree.getProcs(Kind.RECIPE).get(recipeName);
+            CtrlTree recipeTree = tree.getProcs(Kind.RECIPE)
+                .get(recipeName);
             assert recipeTree != null : String.format("Recipe declaration of %s not found",
                 recipeName);
             TokenRewriteStream rewriter = getRewriter(tree);
@@ -183,8 +182,8 @@ public class CtrlLoader {
             if (recipeTree.getChildCount() == 3) {
                 // no explicit priority
                 if (newPriority != 0) {
-                    rewriter.insertAfter(recipeTree.getChild(1).getToken(),
-                        "priority " + newPriority);
+                    rewriter.insertAfter(recipeTree.getChild(1)
+                        .getToken(), "priority " + newPriority);
                     changed = true;
                 }
             } else {
@@ -218,13 +217,32 @@ public class CtrlLoader {
     /** Namespace of this loader. */
     private Namespace namespace;
     /** Mapping from program names to corresponding syntax trees. */
-    private final Map<String,CtrlTree> treeMap = new TreeMap<String,CtrlTree>();
+    private final Map<QualName,CtrlTree> treeMap = new TreeMap<>();
+
+    /** Returns the default main program text. */
+    private String getDefaultMain() {
+        return this.defaultMain == null ? DEFAULT_MAIN : this.defaultMain;
+    }
+
+    /** Sets the default main program text. */
+    public void setDefaultMain(String defaultMain) {
+        this.defaultMain = defaultMain;
+    }
+
+    private String defaultMain;
+
+    /** The default main program name, used if a (combined) program does not declare a main. */
+    public static final String DEFAULT_MAIN_NAME = "main";
+
+    /** The default main program text, used if a (combined) program does not declare a main. */
+    public static final String DEFAULT_MAIN = "# *.any;";
 
     /** Call with [grammarfile] [controlfile]* */
     public static void main(String[] args) {
         try {
             String grammarName = args[0];
-            Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
+            Grammar grammar = Groove.loadGrammar(grammarName)
+                .toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String programName = CONTROL.stripExtension(args[1]);
                 System.out.printf("Control automaton for %s:%n%s",
@@ -240,8 +258,10 @@ public class CtrlLoader {
     public static Program run(Grammar grammar, String programName, String program)
         throws FormatException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
-        instance.parse(programName, program);
-        Program result = instance.buildProgram(Collections.singleton(programName));
+        QualName qualName = QualName.parse(programName)
+            .testValid();
+        instance.parse(qualName, program);
+        Program result = instance.buildProgram(Collections.singleton(qualName));
         result.setFixed();
         return result;
     }
@@ -250,7 +270,8 @@ public class CtrlLoader {
     public static Program run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
-        QualName qualName = new QualName(programName);
+        QualName qualName = QualName.parse(programName)
+            .testValid();
         File control = base;
         for (String part : qualName.tokens()) {
             control = new File(control, part);
@@ -258,9 +279,9 @@ public class CtrlLoader {
         File inputFile = CONTROL.addExtension(control);
         Scanner scanner = new Scanner(inputFile);
         scanner.useDelimiter("\\A");
-        instance.parse(programName, scanner.next());
+        instance.parse(qualName, scanner.next());
         scanner.close();
-        Program result = instance.buildProgram(Collections.singleton(programName));
+        Program result = instance.buildProgram(Collections.singleton(qualName));
         result.setFixed();
         return result;
     }

@@ -50,7 +50,8 @@ public class CallTerm extends Term {
         if (nested && getCall().getUnit() instanceof Procedure) {
             Term inner = ((Procedure) getCall().getUnit()).getTerm();
             assert inner != null : String.format("Procedure %s has not been declared",
-                getCall().getUnit().getFullName());
+                getCall().getUnit()
+                    .getQualName());
             result = body(inner, deriv).getAttempt(nested);
         } else {
             result = createAttempt();
@@ -92,6 +93,8 @@ public class CallTerm extends Term {
 
     @Override
     protected boolean isAtomic() {
-        return this.call.getUnit().getKind().isAction();
+        return this.call.getUnit()
+            .getKind()
+            .isAction();
     }
 }

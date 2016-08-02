@@ -1,26 +1,27 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.grammar.type;
 
-import groove.graph.EdgeRole;
-
 import java.util.Set;
 
-/** 
+import groove.grammar.QualName;
+import groove.graph.EdgeRole;
+
+/**
  * Type graph with only a single (top) node type and all data types.
  * For all type labels there are edges from the top node type to all node types.
  * Implicit type graphs have no (nontrivial) inheritance.
@@ -30,7 +31,7 @@ import java.util.Set;
 public class ImplicitTypeGraph extends TypeGraph {
     /** Constructs a fresh implicit type graph. */
     public ImplicitTypeGraph() {
-        super("implicit type graph", true);
+        super(QualName.name("implicit-type-graph"), true);
         // instantiate the top node
         getFactory().getTopNode();
     }

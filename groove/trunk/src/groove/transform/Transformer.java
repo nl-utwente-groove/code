@@ -16,6 +16,12 @@
  */
 package groove.transform;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
@@ -26,6 +32,7 @@ import groove.explore.encode.Serialized;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
@@ -38,12 +45,6 @@ import groove.lts.GraphState;
 import groove.util.Groove;
 import groove.util.collect.TransformCollection;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Encapsulates a grammar and offers functionality to transform
@@ -90,10 +91,12 @@ public class Transformer {
      * grammar
      */
     public void setProperty(GrammarKey key, String value) throws FormatException {
-        assert !key.isSystem();
-        assert value != null && key.parser().accepts(value);
+        assert!key.isSystem();
+        assert value != null && key.parser()
+            .accepts(value);
         if (this.properties == null) {
-            this.properties = getGrammarModel().getProperties().clone();
+            this.properties = getGrammarModel().getProperties()
+                .clone();
         }
         this.properties.put(key.getName(), value);
         getGrammarModel().setProperties(this.properties);
@@ -185,15 +188,16 @@ public class Transformer {
         AspectGraph result = null;
         if (startGraphName != null) {
             // first see if the name refers to a local host graph
-            GraphBasedModel<?> hostModel =
-                getGrammarModel().getGraphResource(ResourceKind.HOST, startGraphName);
+            GraphBasedModel<?> hostModel = getGrammarModel().getGraphResource(ResourceKind.HOST,
+                QualName.name(startGraphName));
             if (hostModel == null) {
                 // try to load the graph as a standalone file
                 startGraphName = FileType.STATE.addExtension(startGraphName);
                 File startGraphFile = new File(startGraphName);
                 if (!startGraphFile.exists()) {
                     // look for the name within the grammar location
-                    Object grammarLocation = getGrammarModel().getStore().getLocation();
+                    Object grammarLocation = getGrammarModel().getStore()
+                        .getLocation();
                     if (grammarLocation instanceof File) {
                         startGraphFile = new File((File) grammarLocation, startGraphName);
                     }
@@ -234,7 +238,9 @@ public class Transformer {
         setResultCount(1);
         ExploreResult exploreResult = explore();
         if (!exploreResult.isEmpty()) {
-            result = createModel(exploreResult.iterator().next().getGraph());
+            result = createModel(exploreResult.iterator()
+                .next()
+                .getGraph());
         }
         setResultCount(oldResultCount);
         return result;

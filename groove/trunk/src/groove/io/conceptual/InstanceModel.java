@@ -1,11 +1,12 @@
 package groove.io.conceptual;
 
-import groove.io.conceptual.value.Object;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import groove.grammar.QualName;
+import groove.io.conceptual.value.Object;
 
 /**
  * represents instance models in the abstraction.
@@ -15,7 +16,7 @@ import java.util.Set;
  */
 public class InstanceModel implements Serializable {
     private TypeModel m_tm;
-    private String m_name;
+    private QualName m_name;
 
     private Set<Object> m_objects = new HashSet<Object>();
 
@@ -24,7 +25,7 @@ public class InstanceModel implements Serializable {
      * @param tm TypeModel this InstanceModel is based on
      * @param name Name of this InstanceModel
      */
-    public InstanceModel(TypeModel tm, String name) {
+    public InstanceModel(TypeModel tm, QualName name) {
         this.m_tm = tm;
         this.m_name = name;
     }
@@ -41,7 +42,7 @@ public class InstanceModel implements Serializable {
      * Returns the name of the instance model.
      * @return The name
      */
-    public String getName() {
+    public QualName getQualName() {
         return this.m_name;
     }
 

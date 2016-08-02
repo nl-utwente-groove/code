@@ -20,7 +20,6 @@ import static groove.graph.GraphRole.HOST;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.type.TypeGraph;
 import groove.graph.AElementMap;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -108,7 +107,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
         for (Edge edge : graph.edgeSet()) {
             HostNode sourceImage = map.getNode(edge.source());
             HostNode targetImage = map.getNode(edge.target());
-            HostEdge edgeImage = addEdge(sourceImage, edge.label().text(), targetImage);
+            HostEdge edgeImage = addEdge(sourceImage, edge.label()
+                .text(), targetImage);
             map.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(graph, this, map);
@@ -161,11 +161,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
 
     /** The element factory of this host graph. */
     private final HostFactory factory;
-
-    @Override
-    public TypeGraph getTypeGraph() {
-        return getFactory().getTypeFactory().getGraph();
-    }
 
     @Override
     public FormatErrorSet checkTypeConstraints() {
