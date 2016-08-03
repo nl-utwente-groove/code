@@ -17,6 +17,22 @@
 package groove.control;
 
 import static groove.io.FileType.CONTROL;
+import groove.control.parse.CtrlLexer;
+import groove.control.parse.CtrlTree;
+import groove.control.parse.Namespace;
+import groove.control.template.Fragment;
+import groove.control.template.Program;
+import groove.grammar.Callable;
+import groove.grammar.Callable.Kind;
+import groove.grammar.Grammar;
+import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.util.Groove;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,22 +47,6 @@ import java.util.TreeMap;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.TokenRewriteStream;
 
-import groove.control.parse.CtrlLexer;
-import groove.control.parse.CtrlTree;
-import groove.control.parse.Namespace;
-import groove.control.template.Program;
-import groove.grammar.Callable;
-import groove.grammar.Callable.Kind;
-import groove.grammar.Grammar;
-import groove.grammar.GrammarProperties;
-import groove.grammar.QualName;
-import groove.grammar.Recipe;
-import groove.grammar.Rule;
-import groove.util.Groove;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
-
 /**
  * Wrapper for the ANTLR control parser and builder.
  */
@@ -55,40 +55,37 @@ public class CtrlLoader {
      * Constructs a control loader for a given set of rules and grammar properties.
      * @param grammarProperties name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
-     * @param checkDependencies flag to determine whether the name space
-     * should check for circular dependencies and forward references.
      */
-    public CtrlLoader(GrammarProperties grammarProperties, Collection<Rule> rules,
-        boolean checkDependencies) {
+    public CtrlLoader(GrammarProperties grammarProperties, Collection<Rule> rules) {
         this.namespace = new Namespace(grammarProperties);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
         }
-        this.treeMap.clear();
+        this.controlTreeMap = new TreeMap<>();
     }
 
     /**
-     * Parses a given, named control program.
+     * Parses a given, named control program and returns the corresponding control tree.
      * The parse result is stored internally; a later call to {@link #buildProgram(Collection)}
-     * will collect all parse trees and build a control automaton.
+     * will collect all parse trees and build a control program object.
      * The tree is not yet checked.
      * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public CtrlTree parse(QualName controlName, String program) throws FormatException {
-        if (this.treeMap.containsKey(controlName)) {
+    public CtrlTree addControl(QualName controlName, String program) throws FormatException {
+        if (this.controlTreeMap.containsKey(controlName)) {
             throw new FormatException("Duplicate program name %s", controlName);
         }
         this.namespace.setControlName(controlName);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
-        Object oldRecord = this.treeMap.put(controlName, tree);
+        Object oldRecord = this.controlTreeMap.put(controlName, tree);
         assert oldRecord == null;
         return tree;
     }
 
     /** Returns a control program constructed from the collection of previously parsed program names. */
     public Program buildProgram() throws FormatException {
-        return buildProgram(this.treeMap.keySet());
+        return buildProgram(this.controlTreeMap.keySet());
     }
 
     /** Returns a control program constructed from a set of previously parsed program names. */
@@ -97,9 +94,9 @@ public class CtrlLoader {
         Program result = new Program();
         for (QualName name : progNames) {
             try {
-                CtrlTree tree = this.treeMap.get(name)
+                CtrlTree tree = this.controlTreeMap.get(name)
                     .check();
-                result.add(tree.toProgram());
+                result.add(tree.toFragment());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
                     errors.add(error, FormatError.control(name));
@@ -109,8 +106,8 @@ public class CtrlLoader {
         errors.throwException();
         if (!result.hasMain()) {
             // try to parse "any" for static semantic checks
-            Program main = parse(QualName.name(DEFAULT_MAIN_NAME), getDefaultMain()).check()
-                .toProgram();
+            Fragment main = addControl(QualName.name(DEFAULT_MAIN_NAME), getDefaultMain()).check()
+                .toFragment();
             result.add(main);
         }
         result.setProperties(this.namespace.getProperties());
@@ -138,7 +135,7 @@ public class CtrlLoader {
      */
     public Map<QualName,String> rename(QualName oldCallName, QualName newCallName) {
         Map<QualName,String> result = new HashMap<>();
-        for (Map.Entry<QualName,CtrlTree> entry : this.treeMap.entrySet()) {
+        for (Map.Entry<QualName,CtrlTree> entry : this.controlTreeMap.entrySet()) {
             QualName name = entry.getKey();
             CtrlTree tree = entry.getValue();
             TokenRewriteStream rewriter = getRewriter(tree);
@@ -171,7 +168,7 @@ public class CtrlLoader {
             if (controlName == null) {
                 continue;
             }
-            CtrlTree tree = this.treeMap.get(controlName);
+            CtrlTree tree = this.controlTreeMap.get(controlName);
             assert tree != null : String.format("Parse tree of %s not found", controlName);
             CtrlTree recipeTree = tree.getProcs(Kind.RECIPE)
                 .get(recipeName);
@@ -215,9 +212,9 @@ public class CtrlLoader {
     }
 
     /** Namespace of this loader. */
-    private Namespace namespace;
-    /** Mapping from program names to corresponding syntax trees. */
-    private final Map<QualName,CtrlTree> treeMap = new TreeMap<>();
+    private final Namespace namespace;
+    /** Mapping from program names to corresponding control trees. */
+    private final Map<QualName,CtrlTree> controlTreeMap;
 
     /** Returns the default main program text. */
     private String getDefaultMain() {
@@ -257,10 +254,10 @@ public class CtrlLoader {
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, String program)
         throws FormatException {
-        CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
+        CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules());
         QualName qualName = QualName.parse(programName)
             .testValid();
-        instance.parse(qualName, program);
+        instance.addControl(qualName, program);
         Program result = instance.buildProgram(Collections.singleton(qualName));
         result.setFixed();
         return result;
@@ -269,7 +266,7 @@ public class CtrlLoader {
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
-        CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules(), false);
+        CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules());
         QualName qualName = QualName.parse(programName)
             .testValid();
         File control = base;
@@ -279,7 +276,7 @@ public class CtrlLoader {
         File inputFile = CONTROL.addExtension(control);
         Scanner scanner = new Scanner(inputFile);
         scanner.useDelimiter("\\A");
-        instance.parse(qualName, scanner.next());
+        instance.addControl(qualName, scanner.next());
         scanner.close();
         Program result = instance.buildProgram(Collections.singleton(qualName));
         result.setFixed();

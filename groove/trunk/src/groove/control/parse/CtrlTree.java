@@ -5,7 +5,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
-import groove.control.template.Program;
+import groove.control.template.Fragment;
 import groove.control.term.Term;
 import groove.grammar.Action;
 import groove.grammar.Callable;
@@ -302,16 +302,15 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     }
 
     /**
-     * Constructs a control program from a top-level control tree.
-     * The program is not yet fixed, as it may contain unresolved procedure calls.
+     * Constructs a control program fragment from a top-level control tree.
      */
-    public Program toProgram() throws FormatException {
+    public Fragment toFragment() throws FormatException {
         assert getType() == CtrlParser.PROGRAM && isChecked();
-        Program result = new Program();
+        Fragment result = new Fragment(getControlName());
         CtrlTree body = getChild(4);
         // set the main if this tree has a body
         if (body.getChildCount() > 0) {
-            result.setMain(getControlName(), body.toTerm());
+            result.setMain(body.toTerm());
         }
         for (CtrlTree funcTree : getProcs(Callable.Kind.FUNCTION).values()) {
             result.addProc(funcTree.toProcedure());

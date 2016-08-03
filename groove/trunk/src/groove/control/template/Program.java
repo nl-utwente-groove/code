@@ -60,55 +60,14 @@ public class Program implements Fixable {
         this.properties = new ArrayList<>();
     }
 
-    /**
-     * Returns the name of this program, which the main name if there is any,
-     * or #NO_MAIN_NAME otherwise.
-     */
-    public QualName getQualName() {
-        return hasMain() ? getMainName() : QualName.name(NO_MAIN_NAME);
-    }
-
-    /**
-     * Sets the main body of this program to a given term.
-     * Should only be invoked if the program is not fixed.
-     * @param name the name of the main body
-     * @param main the main (non-{@code null}) body.
-     */
-    public void setMain(QualName name, Term main) {
-        assert main != null && this.main == null;
-        assert !isFixed();
-        this.main = main;
-        this.mainName = name;
-    }
-
-    /** Sets the property actions to be checked at each non-transient state. */
-    public void setProperties(Collection<Action> properties) {
-        assert !isFixed();
-        assert this.properties.isEmpty();
-        this.properties.addAll(properties);
-    }
-
-    /** Returns the list of property actions to be checked at each non-transient state. */
-    public List<Action> getProperties() {
-        return this.properties;
-    }
-
-    /** The property actions to be checked at each non-transient state. */
-    private final List<Action> properties;
-
-    /**
-     * Indicates if the program has a non-trivial main body.
-     * This is the case if and only if {@link #getMain()} is non-{@code null} and
-     * not deadlocked.
-     */
+    /** Tests if the main term of this program has been set. */
     public boolean hasMain() {
         return getMain() != null;
     }
 
     /**
      * Returns the main block of this program.
-     * This is never {@code null} if the program is fixed; however, it
-     * may be a deadlocked term, in which case it is not counted as a proper main.
+     * This is never {@code null} if the program is fixed.
      */
     public Term getMain() {
         return this.main;
@@ -127,30 +86,6 @@ public class Program implements Fixable {
     private QualName mainName;
     /** The main body of this program, if any. */
     private Term main;
-
-    /** Returns the main template of this program, if any.
-     * Should only be invoked after the program is fixed.
-     * May be {@code null} if this program has no main body.
-     */
-    public Template getTemplate() {
-        assert isFixed();
-        return this.template;
-    }
-
-    private Template template;
-
-    /**
-     * Adds a procedure to this program.
-     * @throws FormatException if a procedure with the same name has already been defined
-     */
-    public void addProc(Procedure proc) throws FormatException {
-        assert proc != null;
-        Procedure oldProc = this.procs.put(proc.getQualName(), proc);
-        if (oldProc != null) {
-            throw new FormatException("Duplicate procedure %s in %s and %s", proc.getQualName(),
-                oldProc.getControlName(), proc.getControlName());
-        }
-    }
 
     /** Returns an unmodifiable view on the map from names to procedures
      * defined in this program.
@@ -171,39 +106,30 @@ public class Program implements Fixable {
 
     private final Map<QualName,Procedure> procs = new LinkedHashMap<>();
 
-    /** Returns the (main and procedural) templates defined in a given control program. */
-    public Collection<Template> getTemplates(QualName controlName) {
-        assert isFixed();
-        return getTemplateMap().get(controlName);
+    /** Sets the property actions to be checked at each non-transient state. */
+    public void setProperties(Collection<Action> properties) {
+        assert this.properties.isEmpty();
+        this.properties.addAll(properties);
     }
 
-    /**
-     * Lazily constructs and returns a mapping from control program names
-     * to templates defined therein.
+    /** Returns the list of property actions to be checked at each non-transient state. */
+    public List<Action> getProperties() {
+        return this.properties;
+    }
+
+    /** The property actions to be checked at each non-transient state. */
+    private final List<Action> properties;
+
+    /** Returns the main template of this program, if any.
+     * Should only be invoked after the program is fixed.
+     * May be {@code null} if this program has no main body.
      */
-    private Map<QualName,Collection<Template>> getTemplateMap() {
+    public Template getTemplate() {
         assert isFixed();
-        if (this.templateMap == null) {
-            this.templateMap = new HashMap<>();
-            if (hasMain()) {
-                getTemplateEntry(getMainName()).add(getTemplate());
-            }
-            for (Procedure proc : getProcs().values()) {
-                getTemplateEntry(proc.getControlName()).add(proc.getTemplate());
-            }
-        }
-        return this.templateMap;
+        return this.template;
     }
 
-    private Collection<Template> getTemplateEntry(QualName controlName) {
-        Collection<Template> result = this.templateMap.get(controlName);
-        if (result == null) {
-            this.templateMap.put(controlName, result = new ArrayList<>());
-        }
-        return result;
-    }
-
-    private Map<QualName,Collection<Template>> templateMap;
+    private Template template;
 
     /**
      * Adds all procedures of another, disjoint program to this one.
@@ -212,18 +138,17 @@ public class Program implements Fixable {
      * @throws FormatException if both {@code this} and {@code other} have a non-trivial main body,
      * or the defined procedures overlap
      */
-    public void add(Program other) throws FormatException {
+    public void add(Fragment other) throws FormatException {
         assert !isFixed();
         FormatErrorSet errors = new FormatErrorSet();
-        if (hasMain()) {
-            if (other.hasMain()) {
-                errors.add("Duplicate main: %s and %s", getMainName(), other.getMainName());
-            }
-        } else {
-            this.mainName = other.mainName;
-            this.main = other.main;
+        if (this.main == null) {
+            this.main = other.getMain();
+            this.mainName = other.getControlName();
+        } else if (other.hasMain()) {
+            errors.add("Duplicate main: %s and %s", getMainName(), other.getControlName());
         }
-        for (Procedure proc : other.procs.values()) {
+        for (Procedure proc : other.getProcs()
+            .values()) {
             try {
                 addProc(proc);
             } catch (FormatException exc) {
@@ -232,6 +157,62 @@ public class Program implements Fixable {
         }
         errors.throwException();
     }
+
+    /**
+     * Adds a procedure to this program.
+     * @throws FormatException if a procedure with the same name has already been defined
+     */
+    private void addProc(Procedure proc) throws FormatException {
+        assert proc != null;
+        Procedure oldProc = this.procs.put(proc.getQualName(), proc);
+        if (oldProc != null) {
+            throw new FormatException("Duplicate procedure %s in %s and %s", proc.getQualName(),
+                oldProc.getControlName(), proc.getControlName());
+        }
+    }
+
+    @Override
+    public boolean setFixed() throws FormatException {
+        boolean result = this.fixed;
+        if (!result) {
+            this.fixed = true;
+            FormatErrorSet errors = new FormatErrorSet();
+            // check that there is a (possibly trivial) main
+            if (this.main == null) {
+                errors.add("Program does not have a main body");
+            }
+            // check that procedure bodies satisfy their requirements
+            for (Procedure proc : this.procs.values()) {
+                QualName name = proc.getQualName();
+                String error = String.format("%s %s", proc.getKind()
+                    .getName(true), name);
+                if (getRecursion().contains(name)) {
+                    errors.add(error + " has unguarded recursion", proc);
+                }
+                Term body = proc.getTerm();
+                if (body.isFinal()) {
+                    errors.add(error + " is empty", proc);
+                }
+                if (proc instanceof Recipe && mayFinalise(proc)) {
+                    errors.add(error + " may immediately terminate", proc);
+                }
+                if (proc instanceof Recipe && !willTerminate(proc)) {
+                    errors.add(error + " may fail to terminate", proc);
+                }
+            }
+            errors.throwException();
+            this.template = TemplateBuilder.instance(getProperties())
+                .build(this);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    private boolean fixed;
 
     /** Returns the set of procedure names with initial recursion. */
     public Set<QualName> getRecursion() {
@@ -687,56 +668,4 @@ public class Program implements Fixable {
             return false;
         }
     }
-
-    @Override
-    public boolean setFixed() throws FormatException {
-        boolean result = this.fixed;
-        if (!result) {
-            this.fixed = true;
-            FormatErrorSet errors = new FormatErrorSet();
-            // check that there is a (possibly trivial) main
-            if (this.main == null) {
-                errors.add("Program does not have a main body");
-            }
-            // check that procedure bodies satisfy their requirements
-            for (Procedure proc : this.procs.values()) {
-                QualName name = proc.getQualName();
-                String error = String.format("%s %s", proc.getKind()
-                    .getName(true), name);
-                if (getRecursion().contains(name)) {
-                    errors.add(error + " has unguarded recursion", proc);
-                }
-                Term body = proc.getTerm();
-                if (body.isFinal()) {
-                    errors.add(error + " is empty", proc);
-                }
-                if (proc instanceof Recipe && mayFinalise(proc)) {
-                    errors.add(error + " may immediately terminate", proc);
-                }
-                if (proc instanceof Recipe && !willTerminate(proc)) {
-                    errors.add(error + " may fail to terminate", proc);
-                }
-            }
-            errors.throwException();
-            this.template = TemplateBuilder.instance(getProperties())
-                .build(this);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean isFixed() {
-        return this.fixed;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != this.fixed) {
-            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
-        }
-    }
-
-    private boolean fixed;
-
-    static private final String NO_MAIN_NAME = "composed-control";
 }

@@ -88,8 +88,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj != null && obj.getClass().equals(getClass())
-            && ((AspectNode) obj).getNumber() == getNumber();
+        return this == obj || obj != null && obj.getClass()
+            .equals(getClass()) && ((AspectNode) obj).getNumber() == getNumber();
     }
 
     @Override
@@ -138,14 +138,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     @Override
     public boolean isFixed() {
         return this.allFixed;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (this.allFixed != fixed) {
-            throw new IllegalStateException(String.format("Aspect node %d should%s be fixed",
-                getNumber(), fixed ? "" : " not"));
-        }
     }
 
     @Override
@@ -263,7 +255,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     private void addAspect(Aspect value) throws FormatException {
         assert value.isForNode(getGraphRole()) : String.format("Inappropriate node aspect %s",
-            value, this);
+            value,
+            this);
         AspectKind kind = value.getKind();
         if (kind.isAttrKind()) {
             if (hasAttrAspect() && !isAttrConsistent(getAttrAspect(), value)) {
@@ -305,14 +298,19 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * or one specifies a data value whereas the other specifies its type.
      */
     private boolean isAttrConsistent(Aspect one, Aspect two) {
-        assert one.getKind().isAttrKind() && two.getKind().isAttrKind();
+        assert one.getKind()
+            .isAttrKind() && two.getKind()
+            .isAttrKind();
         if (one.equals(two)) {
             return true;
         }
-        if (!one.getKind().hasSignature() || !two.getKind().hasSignature()) {
+        if (!one.getKind()
+            .hasSignature() || !two.getKind()
+            .hasSignature()) {
             return false;
         }
-        if (!one.getKind().equals(two.getKind())) {
+        if (!one.getKind()
+            .equals(two.getKind())) {
             return false;
         }
         return one.getContent() == null || two.getContent() == null;
@@ -345,7 +343,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             }
         } else if (edge.isOperator()) {
             Operator operator = edge.getOperator();
-            Aspect operType = Aspect.getAspect(operator.getResultType().getName());
+            Aspect operType = Aspect.getAspect(operator.getResultType()
+                .getName());
             AspectKind operKind = operType.getKind();
             if (!hasAttrAspect()) {
                 throw new FormatException("Target node of %s-edge should be %s-attribute",
@@ -362,7 +361,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     private void setDataType(Sort type) throws FormatException {
         assert !isFixed();
         Aspect newType = Aspect.getAspect(type.getName());
-        assert newType.getKind().hasSignature();
+        assert newType.getKind()
+            .hasSignature();
         setAttrAspect(newType);
     }
 
@@ -429,9 +429,11 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             this.argNodes.set(index, edge.target());
             // infer target type if an operator edge is already present
             if (this.operatorEdge != null) {
-                List<Sort> paramTypes = this.operatorEdge.getOperator().getParamTypes();
+                List<Sort> paramTypes = this.operatorEdge.getOperator()
+                    .getParamTypes();
                 if (index < paramTypes.size()) {
-                    edge.target().setDataType(paramTypes.get(index));
+                    edge.target()
+                        .setDataType(paramTypes.get(index));
                 }
             }
         } else if (edge.isOperator()) {
@@ -443,8 +445,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             }
             if (this.operatorEdge == null) {
                 this.operatorEdge = edge;
-            } else if (!this.operatorEdge.getOperator().getParamTypes().equals(
-                edge.getOperator().getParamTypes())) {
+            } else if (!this.operatorEdge.getOperator()
+                .getParamTypes()
+                .equals(edge.getOperator()
+                    .getParamTypes())) {
                 throw new FormatException("Conflicting operator signatures for %s and %s",
                     this.operatorEdge.label(), edgeLabel, this);
             } else if (!hasErrors() && this.argNodes != null) {
@@ -453,14 +457,15 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 for (int i = 0; i < this.argNodes.size(); i++) {
                     AspectNode argNode = this.argNodes.get(i);
                     if (argNode != null) {
-                        Sort paramType =
-                            this.operatorEdge.getOperator().getParamTypes().get(i);
+                        Sort paramType = this.operatorEdge.getOperator()
+                            .getParamTypes()
+                            .get(i);
                         argNode.setDataType(paramType);
                     }
                 }
             }
-        } else if (edge.getKind() == ABSTRACT
-            && edge.getTypeLabel().getRole() == EdgeRole.NODE_TYPE) {
+        } else if (edge.getKind() == ABSTRACT && edge.getTypeLabel()
+            .getRole() == EdgeRole.NODE_TYPE) {
             setAspect(ABSTRACT.getAspect());
         }
     }
@@ -490,8 +495,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** Sets or specialises the attribute aspect of this node. */
     private void setAttrAspect(Aspect newAttr) throws FormatException {
         AspectKind attrKind = newAttr.getKind();
-        assert attrKind == DEFAULT || attrKind.isAttrKind() : String.format(
-            "Aspect %s is not attribute-related", newAttr);
+        assert attrKind == DEFAULT || attrKind.isAttrKind() : String.format("Aspect %s is not attribute-related",
+            newAttr);
         // it may be the new attribute is inferred from an incoming edge
         // but then we only change the attribute if the new one is "better"
         if (!hasAttrAspect()) {
@@ -537,8 +542,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Changes the (aspect) type of this node. */
     private void setParam(Aspect type) {
-        assert type.getKind() == DEFAULT || type.getKind().isParam() : String.format(
-            "Aspect %s is not a parameter", type);
+        assert type.getKind() == DEFAULT || type.getKind()
+            .isParam() : String.format("Aspect %s is not a parameter", type);
         this.param = type;
     }
 
@@ -554,7 +559,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Sets the identifier aspect from a string representation. */
     private void setId(String id) throws FormatException {
-        Aspect idAspect = AspectKind.ID.getAspect().newInstance(id, GraphRole.RULE);
+        Aspect idAspect = AspectKind.ID.getAspect()
+            .newInstance(id, GraphRole.RULE);
         setId(idAspect);
     }
 
@@ -653,8 +659,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Changes the (aspect) type of this node. */
     void setAspect(Aspect type) throws FormatException {
-        assert !type.getKind().isAttrKind() && !type.getKind().isParam() : String.format(
-            "Aspect %s is not a valid node type", type);
+        assert !type.getKind()
+            .isAttrKind() && !type.getKind()
+            .isParam() : String.format("Aspect %s is not a valid node type", type);
         if (this.aspect == null) {
             this.aspect = type;
         } else if (!this.aspect.equals(type)) {

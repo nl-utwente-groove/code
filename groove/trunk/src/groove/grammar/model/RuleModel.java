@@ -1597,13 +1597,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
 
             @Override
-            public void testFixed(boolean fixed) {
-                if (this.fixed != fixed) {
-                    throw new IllegalStateException();
-                }
-            }
-
-            @Override
             public boolean add(RuleElement e) {
                 testFixed(false);
                 return super.add(e);

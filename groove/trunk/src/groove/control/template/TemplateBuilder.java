@@ -16,20 +16,6 @@
  */
 package groove.control.template;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.CtrlVar;
@@ -48,6 +34,20 @@ import groove.util.Quad;
 import groove.util.ThreadPool;
 import groove.util.Triple;
 import groove.util.collect.NestedIterator;
+
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Class for constructing control automata.
@@ -73,7 +73,7 @@ public class TemplateBuilder {
      * As a side effect, all procedure templates are also constructed.
      */
     public Template build(Program prog) {
-        newBuilder(prog.getQualName(), null, prog.getMain());
+        newBuilder(prog.getMainName(), null, prog.getMain());
         for (Procedure proc : prog.getProcs()
             .values()) {
             Builder builder = newBuilder(null, proc, proc.getTerm());

@@ -159,15 +159,6 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
         return result;
     }
 
-    @Override
-    public void testFixed(boolean fixed) throws IllegalStateException {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException(String.format("Expected graph '%s' to be %s",
-                getName(),
-                fixed ? "fixed" : "unfixed"));
-        }
-    }
-
     /** Calls {@link #toString(Graph)}. */
     @Override
     public String toString() {

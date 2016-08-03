@@ -20,15 +20,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -41,7 +32,17 @@ import groove.control.template.SwitchAttempt;
 import groove.control.template.SwitchStack;
 import groove.control.template.Template;
 import groove.grammar.QualName;
+import groove.util.parse.FormatException;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Arend Rensink
@@ -309,6 +310,17 @@ public class TemplateBuildTest extends CtrlTester {
 
     private void build(String program) {
         this.template = buildProgram(program).getTemplate();
+    }
+
+    private Program buildProgram(String program) {
+        Program result = new Program();
+        try {
+            result.add(buildFragment(program));
+            result.setFixed();
+        } catch (FormatException exc) {
+            Assert.fail(exc.getMessage());
+        }
+        return result;
     }
 
     private Location getStart() {

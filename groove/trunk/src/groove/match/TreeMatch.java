@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class TreeMatch implements Fixable {
     /**
-     * Constructs an match for a given condition. If the condition has a 
+     * Constructs an match for a given condition. If the condition has a
      * pattern, a pattern map is also given. The submatches are initially empty.
      */
     public TreeMatch(Condition condition, RuleToHostMap patternMap) {
@@ -106,8 +106,7 @@ public class TreeMatch implements Fixable {
         // test a HashBag would be more appropriate, but this collapses
         // matches to a canonical representative which upon union gives
         // the wrong result.
-        return op.isConjunctive() ? new ArrayList<TreeMatch>()
-                : new HashSet<TreeMatch>();
+        return op.isConjunctive() ? new ArrayList<TreeMatch>() : new HashSet<TreeMatch>();
     }
 
     /** Adds a sub-match to this tree match. */
@@ -122,7 +121,7 @@ public class TreeMatch implements Fixable {
         return this.subMatches.addAll(subMatches);
     }
 
-    /** 
+    /**
      * Traverses the proofs based on this tree match.
      * Each visited proof consists of the pattern map of this
      * tree match, together with a choice among the submatches of
@@ -189,7 +188,7 @@ public class TreeMatch implements Fixable {
         }
     }
 
-    /** 
+    /**
      * Converts this tree match to a set of rule matches.
      * Each resulting rule match consists of the pattern map of this
      * tree match, together with a choice among the submatches of
@@ -217,7 +216,7 @@ public class TreeMatch implements Fixable {
         }
     }
 
-    /** 
+    /**
      * Constructs the list of proofs from this tree match.
      * if the operator of this tree match is conjunctive.
      */
@@ -258,12 +257,11 @@ public class TreeMatch implements Fixable {
         return result;
     }
 
-    /** 
+    /**
      * Computes and traverses all rule matches
      * consisting of one sub-match from each row of a given matrix.
      */
-    private void traverseMatrix(List<Proof>[] matrix, int[] rowSize,
-            Visitor<Proof,?> visitor) {
+    private void traverseMatrix(List<Proof>[] matrix, int[] rowSize, Visitor<Proof,?> visitor) {
         int rowCount = rowSize.length;
         int index[] = new int[rowCount];
         do {
@@ -288,9 +286,9 @@ public class TreeMatch implements Fixable {
      * Computes the matrix of which the rows are the {@link #toProofSet()}
      * arrays of the submatches.
      * The construction stops prematurely if an empty row is found.
-     * @param matrix the matrix of submatches. Should be initialised to 
+     * @param matrix the matrix of submatches. Should be initialised to
      * an array of the correct length (the number of submatches)
-     * @param rowSize the number of elements per matrix row. Should 
+     * @param rowSize the number of elements per matrix row. Should
      * be initialised to an array of the correct length (the number of submatches)
      * @return the product of the row sizes
      */
@@ -315,7 +313,7 @@ public class TreeMatch implements Fixable {
         return new Proof(getCondition(), getPatternMap());
     }
 
-    /** 
+    /**
      * Increments a given vector of values lexicographically,
      * up to a given maximum value at each index.
      * @param vector the vector to be incremented
@@ -360,12 +358,12 @@ public class TreeMatch implements Fixable {
             int patternHashCode = 1;
             if (getCondition().hasRule()) {
                 // only the anchor images matter to equality of the match
-                Anchor anchor = getCondition().getRule().getAnchor();
+                Anchor anchor = getCondition().getRule()
+                    .getAnchor();
                 for (int i = 0; i < anchor.size(); i++) {
                     AnchorKey key = anchor.get(i);
                     AnchorValue value = getPatternMap().get(key);
-                    patternHashCode =
-                        prime * patternHashCode + value.hashCode();
+                    patternHashCode = prime * patternHashCode + value.hashCode();
                 }
             } else {
                 // the entire pattern map is relevant
@@ -388,13 +386,16 @@ public class TreeMatch implements Fixable {
         }
         TreeMatch other = (TreeMatch) obj;
         assert other.isFixed();
-        if (!other.getOp().equals(getOp())) {
+        if (!other.getOp()
+            .equals(getOp())) {
             return false;
         }
-        if (!other.getCondition().equals(getCondition())) {
+        if (!other.getCondition()
+            .equals(getCondition())) {
             return false;
         }
-        if (getSubMatches().size() != other.getSubMatches().size()) {
+        if (getSubMatches().size() != other.getSubMatches()
+            .size()) {
             return false;
         }
         if (getOp().hasPattern()) {
@@ -402,10 +403,12 @@ public class TreeMatch implements Fixable {
             RuleToHostMap hisMap = other.getPatternMap();
             if (getCondition().hasRule()) {
                 // only the anchor images matter to equality of the match
-                Anchor anchor = getCondition().getRule().getAnchor();
+                Anchor anchor = getCondition().getRule()
+                    .getAnchor();
                 for (int i = 0; i < anchor.size(); i++) {
                     AnchorKey key = anchor.get(i);
-                    if (!myMap.get(key).equals(hisMap.get(key))) {
+                    if (!myMap.get(key)
+                        .equals(hisMap.get(key))) {
                         return false;
                     }
                 }
@@ -428,7 +431,7 @@ public class TreeMatch implements Fixable {
 
     /**
      * Recursively concatenates the pattern map and the
-     * string descriptions of the submatches, indented to a certain level. 
+     * string descriptions of the submatches, indented to a certain level.
      * @param level The level of indentation
      */
     private StringBuilder toString(int level) {
@@ -462,13 +465,6 @@ public class TreeMatch implements Fixable {
         return this.hashCode != 0;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
-    }
-
     private final Condition.Op op;
     private final Condition condition;
     private final RuleToHostMap patternMap;
@@ -481,8 +477,7 @@ public class TreeMatch implements Fixable {
     /** Collector class for rule matches
      * that wraps its visited matches into a rule match of this condition.
      */
-    private class ProofWrapperCollector extends
-            Visitor.Collector<Proof,List<Proof>> {
+    private class ProofWrapperCollector extends Visitor.Collector<Proof,List<Proof>> {
         /** Constructor for a prototype object. */
         public ProofWrapperCollector() {
             super(null);
@@ -492,7 +487,7 @@ public class TreeMatch implements Fixable {
             super(collection);
         }
 
-        /** 
+        /**
          * Wraps the visited match into a rule match of the top level
          * pattern, if the operator is a quantifier.
          */
@@ -500,16 +495,18 @@ public class TreeMatch implements Fixable {
         protected boolean process(Proof visitedProof) {
             Proof newProof = createProof();
             if (visitedProof.isComposite()) {
-                newProof.getSubProofs().addAll(visitedProof.getSubProofs());
+                newProof.getSubProofs()
+                    .addAll(visitedProof.getSubProofs());
             } else {
-                newProof.getSubProofs().add(visitedProof);
+                newProof.getSubProofs()
+                    .add(visitedProof);
             }
             return super.process(newProof);
         }
 
         @Override
-        protected Collector<Proof,List<Proof>> createInstance(
-                List<Proof> collection, Property<Proof> property) {
+        protected Collector<Proof,List<Proof>> createInstance(List<Proof> collection,
+            Property<Proof> property) {
             return new ProofWrapperCollector(collection);
         }
     }
@@ -528,23 +525,25 @@ public class TreeMatch implements Fixable {
             this.visitor = visitor;
         }
 
-        /** 
+        /**
          * Wraps the visited proof into a proof of the top level pattern.
          */
         @Override
         protected boolean process(Proof visitedProof) {
             Proof newProof = createProof();
             if (visitedProof.isComposite()) {
-                newProof.getSubProofs().addAll(visitedProof.getSubProofs());
+                newProof.getSubProofs()
+                    .addAll(visitedProof.getSubProofs());
             } else {
-                newProof.getSubProofs().add(visitedProof);
+                newProof.getSubProofs()
+                    .add(visitedProof);
             }
             return this.visitor.visit(newProof);
         }
 
         /**
-         * Returns a new wrapped visitor, by either reusing this one 
-         * if it has been disposed, or constructing a fresh one. 
+         * Returns a new wrapped visitor, by either reusing this one
+         * if it has been disposed, or constructing a fresh one.
          */
         public <T> ProofWrapperVisitor<R> newInstance(Visitor<Proof,R> visitor) {
             if (isDisposed()) {

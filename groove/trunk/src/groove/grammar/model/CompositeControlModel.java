@@ -65,7 +65,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             } else {
                 try {
                     treeMap.put(controlModel,
-                        getLoader().parse(controlName, controlModel.getProgram()));
+                        getLoader().addControl(controlName, controlModel.getProgram()));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         addPartError(controlName, error);
@@ -102,7 +102,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Returns the control loader used in this composite control model. */
     public CtrlLoader getLoader() {
         if (this.loader == null) {
-            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules(), false);
+            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules());
         }
         return this.loader;
     }

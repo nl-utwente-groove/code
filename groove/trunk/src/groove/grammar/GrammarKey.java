@@ -16,14 +16,6 @@
  */
 package groove.grammar;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import groove.algebra.AlgebraFamily;
 import groove.explore.ExploreType;
 import groove.grammar.model.GrammarModel;
@@ -37,8 +29,16 @@ import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 import groove.util.parse.StringParser;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /** Grammar property keys. */
-public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
+public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     /** Property name for the GROOVE version. */
     GROOVE_VERSION("grooveVersion", true, "The Groove version that created this grammar"),
     /** Property name for the Grammar version. */
@@ -47,13 +47,12 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
     REMARK("remark", "A one-line description of the graph production system"),
 
     /** Property name for the algebra to be used during simulation. */
-    ALGEBRA("algebraFamily",
-        "<body>Algebra used for attributes" + "<li>- <i>default</i>: "
-            + AlgebraFamily.DEFAULT.getExplanation() + "<li>- <i>big</i>: "
-            + AlgebraFamily.BIG.getExplanation() + "<li>- <i>point</i>: "
-            + AlgebraFamily.POINT.getExplanation() + "<li>- <i>term</i>: "
-            + AlgebraFamily.TERM.getExplanation(),
-        new Parser.EnumParser<AlgebraFamily>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
+    ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + "<li>- <i>default</i>: "
+        + AlgebraFamily.DEFAULT.getExplanation() + "<li>- <i>big</i>: "
+        + AlgebraFamily.BIG.getExplanation() + "<li>- <i>point</i>: "
+        + AlgebraFamily.POINT.getExplanation() + "<li>- <i>term</i>: "
+        + AlgebraFamily.TERM.getExplanation(), new Parser.EnumParser<AlgebraFamily>(
+        AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
@@ -61,8 +60,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      */
     INJECTIVE("matchInjective",
         "<body>Flag controlling if all rules should be matched injectively. "
-            + "<p>If true, overrules the local rule injectivity property",
-        Parser.boolFalse),
+            + "<p>If true, overrules the local rule injectivity property", Parser.boolFalse),
 
     /**
      * Dangling edge check. If <code>true</code>, all
@@ -93,8 +91,8 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      * graphs are compared up to isomorphism; otherwise, they are compared up to
      * equality. Default is <code>true</code>.
      */
-    ISOMORPHISM("checkIsomorphism", "Flag controlling whether states are checked up to isomorphism",
-        Parser.boolTrue),
+    ISOMORPHISM("checkIsomorphism",
+        "Flag controlling whether states are checked up to isomorphism", Parser.boolTrue),
 
     /**
      * Space-separated list of active start graph names.
@@ -121,7 +119,8 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
         ResourceChecker.get(ResourceKind.PROLOG)),
 
     /** Policy for rule application. */
-    ACTION_POLICY("actionPolicy",
+    ACTION_POLICY(
+        "actionPolicy",
         "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:"
             + "<li> - <i>off</i>: the action is disabled (overrules the <b>enabled</b> property)"
             + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition"
@@ -130,7 +129,8 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
             + "<p>The last three are only valid for forbidden and invariant properties",
         CheckPolicy.multiParser, ActionPolicyChecker.instance),
     /** Policy for dealing with type violations. */
-    TYPE_POLICY("typePolicy",
+    TYPE_POLICY(
+        "typePolicy",
         "<body>Flag controlling how dynamic type constraints (multiplicities, composites) are dealt with."
             + "<li>- <i>off</i>: dynamic type constraints are not checked"
             + "<li>- <i>error</i> (default): dynamic type violations are flagged as errors"
@@ -139,13 +139,12 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
             "error", "remove")),
 
     /** Policy for dealing with deadlocks. */
-    DEAD_POLICY("deadlockPolicy",
-        "Flag controlling how deadlocked states are dealt with."
-            + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
-            + "<li>- <i>off</i> (default): deadlocks are not checked"
-            + "<li>- <i>error</i>: deadlocks are flagged as errors",
-        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null, "error",
-            null)),
+    DEAD_POLICY("deadlockPolicy", "Flag controlling how deadlocked states are dealt with."
+        + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
+        + "<li>- <i>off</i> (default): deadlocks are not checked"
+        + "<li>- <i>error</i>: deadlocks are flagged as errors",
+        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null,
+            "error", null)),
 
     /**
      * Exploration strategy description.
@@ -182,7 +181,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      * Flag that determines if (binary) loops can be shown as vertex labels.
      */
     LOOPS_AS_LABELS("loopsAsLabels",
-        "Flag controlling if binary self-edges may be shown as vertex labels", Parser.boolTrue),;
+        "Flag controlling if binary self-edges may be shown as vertex labels", Parser.boolTrue), ;
 
     /**
      * Constructor for a key with a plain string value
@@ -207,7 +206,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
      * @param explanation short explanation of the meaning of the key
      * @param parser the parser used to convert key values to string representations and back; if {@code null},
-     * {@link StringParser#IDENTITY} is used
+     * {@link StringParser#identity()} is used
      */
     private GrammarKey(String name, String explanation, Parser<?> parser) {
         this(name, false, null, explanation, parser, null);
@@ -218,7 +217,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
      * @param explanation short explanation of the meaning of the key
      * @param parser the parser used to convert key values to string representations and back; if {@code null},
-     * {@link StringParser#IDENTITY} is used
+     * {@link StringParser#identity()} is used
      * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
      * {@code this} is used
      */
@@ -234,7 +233,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      * the key phrase is constructed from {@code name}
      * @param explanation short explanation of the meaning of the key
      * @param parser the parser used to convert key values to string representations and back; if {@code null},
-     * {@link StringParser#IDENTITY} is used
+     * {@link StringParser#identity()} is used
      * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
      * {@code this} is used
      */
@@ -244,7 +243,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
         this.system = system;
         this.keyPhrase = keyPhrase == null ? StringHandler.unCamel(name, false) : keyPhrase;
         this.explanation = explanation;
-        this.parser = parser == null ? StringParser.IDENTITY : parser;
+        this.parser = parser == null ? StringParser.identity() : parser;
         this.checker = checker;
     }
 

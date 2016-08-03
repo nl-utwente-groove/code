@@ -302,7 +302,8 @@ public class Condition implements Fixable {
             this.fixed = true;
             if (hasPattern()) {
                 getPattern().setFixed();
-                if (!getGrammarProperties().getAlgebraFamily().supportsSymbolic()) {
+                if (!getGrammarProperties().getAlgebraFamily()
+                    .supportsSymbolic()) {
                     checkResolution();
                 }
                 if (getRule() != null) {
@@ -317,27 +318,6 @@ public class Condition implements Fixable {
     @Override
     public boolean isFixed() {
         return this.fixed;
-    }
-
-    /**
-     * Tests if the condition is fixed or not. Throws an exception if the
-     * fixedness does not coincide with the given value.
-     *
-     * @param value the expected fixedness state
-     * @throws IllegalStateException if {@link #isFixed()} does not yield
-     *         <code>value</code>
-     */
-    @Override
-    public void testFixed(boolean value) throws IllegalStateException {
-        if (isFixed() != value) {
-            String message;
-            if (value) {
-                message = "Graph condition should be fixed in this state";
-            } else {
-                message = "Graph condition should not be fixed in this state";
-            }
-            throw new IllegalStateException(message);
-        }
     }
 
     /**
@@ -450,7 +430,8 @@ public class Condition implements Fixable {
                     if (resolver.isEmpty()) {
                         resolved.add(target);
                     } else {
-                        result.get(target).add(resolver);
+                        result.get(target)
+                            .add(resolver);
                     }
                 }
             }
@@ -477,7 +458,8 @@ public class Condition implements Fixable {
         while (!stable) {
             stable = true;
             // iterate over all resolver lists
-            Iterator<List<Set<VariableNode>>> iter = resolverMap.values().iterator();
+            Iterator<List<Set<VariableNode>>> iter = resolverMap.values()
+                .iterator();
             while (iter.hasNext()) {
                 // try each resolver in turn
                 for (Set<VariableNode> resolver : iter.next()) {

@@ -90,11 +90,6 @@ public class Triple<T,U,V> implements Fixable {
         return this.hashCode != 0;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        assert isFixed() == fixed;
-    }
-
     /**
      * Tests for the equality of the {@link #one()}, {@link #two()} and {@link #three()}
      * fields.
@@ -156,7 +151,10 @@ public class Triple<T,U,V> implements Fixable {
 
     @Override
     public String toString() {
-        return String.format("%s<%s,%s,%s>", getClass().getSimpleName(), this.one, this.two,
+        return String.format("%s<%s,%s,%s>",
+            getClass().getSimpleName(),
+            this.one,
+            this.two,
             this.three);
     }
 

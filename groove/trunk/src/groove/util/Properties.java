@@ -73,7 +73,8 @@ public abstract class Properties extends java.util.Properties implements Fixable
                     @Override
                     public FormatErrorSet check(String value) {
                         try {
-                            return checkerKey.check(grammar, key.parser().parse(value));
+                            return checkerKey.check(grammar, key.parser()
+                                .parse(value));
                         } catch (FormatException exc) {
                             return exc.getErrors();
                         }
@@ -114,8 +115,8 @@ public abstract class Properties extends java.util.Properties implements Fixable
 
     /** Stores a property value, converted to a parsable string. */
     public void storeProperty(PropertyKey<?> key, Object value) {
-        assert key.parser().isValue(value) : String.format("%s is not appropriate for %s", value,
-            key);
+        assert key.parser()
+            .isValue(value) : String.format("%s is not appropriate for %s", value, key);
         Parser<?> parser = key.parser();
         if (parser.isDefault(value)) {
             remove(key.getName());
@@ -128,7 +129,8 @@ public abstract class Properties extends java.util.Properties implements Fixable
     public String getProperty(PropertyKey<?> key) {
         String result = getProperty(key.getName());
         if (result == null) {
-            result = key.parser().getDefaultString();
+            result = key.parser()
+                .getDefaultString();
         }
         return result;
     }
@@ -143,7 +145,10 @@ public abstract class Properties extends java.util.Properties implements Fixable
         } else if (key == null) {
             // this is a non-system key
             oldValue = (String) super.setProperty(keyword, value);
-        } else if (!key.parser().accepts(value) || key.parser().getDefaultString().equals(value)) {
+        } else if (!key.parser()
+            .accepts(value) || key.parser()
+            .getDefaultString()
+            .equals(value)) {
             oldValue = (String) remove(keyword);
         } else {
             oldValue = (String) super.setProperty(keyword, value);
@@ -159,11 +164,6 @@ public abstract class Properties extends java.util.Properties implements Fixable
     @Override
     public boolean isFixed() {
         return this.fixable.isFixed();
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        this.fixable.testFixed(fixed);
     }
 
     /** Object to delegate the fixable functionality. */

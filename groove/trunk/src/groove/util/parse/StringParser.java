@@ -41,8 +41,25 @@ public class StringParser extends Parser.AbstractStringParser<String> {
         return value == null || value instanceof String;
     }
 
-    /** Trimmed string parser. */
-    public static StringParser TRIM = new StringParser(true);
+    /** Returns the singleton trimming string parser. */
+    public static StringParser trim() {
+        if (TRIM == null) {
+            TRIM = new StringParser(true);
+        }
+        return TRIM;
+    }
+
+    /** Trimming string parser. */
+    private static StringParser TRIM;
+
+    /** Returns the singleton identity string parser. */
+    public static StringParser identity() {
+        if (IDENTITY == null) {
+            IDENTITY = new StringParser(false);
+        }
+        return IDENTITY;
+    }
+
     /** Identity string parser. */
-    public static StringParser IDENTITY = new StringParser(false);
+    private static StringParser IDENTITY;
 }

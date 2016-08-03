@@ -49,7 +49,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
      */
     Frame(Automaton ctrl, SwitchStack stack, Frame pred, int transience, CheckPolicy policy) {
         this.aut = ctrl;
-        this.nr = ctrl.getFrames().size();
+        this.nr = ctrl.getFrames()
+            .size();
         List<Assignment> pops = new ArrayList<Assignment>();
         this.pred = pred;
         if (pred == null) {
@@ -73,7 +74,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
      */
     Frame(Automaton ctrl, Location loc, SwitchStack stack, Frame pred) {
         this.aut = ctrl;
-        this.nr = ctrl.getFrames().size();
+        this.nr = ctrl.getFrames()
+            .size();
         List<Assignment> pops = new ArrayList<Assignment>();
         // avoid sharing
         this.pred = pred;
@@ -265,7 +267,11 @@ public class Frame implements Position<Frame,Step>, Fixable {
         List<SwitchStack> constraintCalls = new ArrayList<SwitchStack>();
         List<SwitchStack> properCalls = new ArrayList<SwitchStack>();
         for (SwitchStack sw : locAttempt) {
-            if (sw.peek().getCall().getRule().getRole().isConstraint()) {
+            if (sw.peek()
+                .getCall()
+                .getRule()
+                .getRole()
+                .isConstraint()) {
                 constraintCalls.add(sw);
             } else {
                 properCalls.add(sw);
@@ -547,11 +553,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
     @Override
     public boolean isFixed() {
         return this.fixable.isFixed();
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        this.fixable.testFixed(fixed);
     }
 
     private final DefaultFixable fixable = new DefaultFixable();

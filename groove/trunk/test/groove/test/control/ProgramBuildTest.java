@@ -265,7 +265,7 @@ public class ProgramBuildTest {
             QualName qualControlName = QualName.parse(controlName);
             CtrlLoader loader = createLoader();
             loader.setDefaultMain("{}");
-            loader.parse(qualControlName, program);
+            loader.addControl(qualControlName, program);
             result = loader.buildProgram();
         } catch (FormatException e) {
             fail(e.toString());
@@ -284,7 +284,7 @@ public class ProgramBuildTest {
             QualName qualControlName = QualName.parse(controlName);
             CtrlLoader loader = createLoader();
             loader.setDefaultMain("{}");
-            loader.parse(qualControlName, program);
+            loader.addControl(qualControlName, program);
             loader.buildProgram();
             fail(String.format("Expected %s to be erronous, but it isn't", program));
         } catch (FormatException e) {
@@ -304,7 +304,7 @@ public class ProgramBuildTest {
         }
         try {
             QualName qualControlName = QualName.parse(controlName);
-            this.loader.parse(qualControlName, program);
+            this.loader.addControl(qualControlName, program);
         } catch (FormatException e) {
             fail(e.toString());
         }
@@ -341,7 +341,7 @@ public class ProgramBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
+            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
         prot = result.getNamespace()
             .getPrototype();
         return result;

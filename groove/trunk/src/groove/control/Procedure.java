@@ -16,10 +16,6 @@
  */
 package groove.control;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import groove.control.CtrlPar.Var;
 import groove.control.template.Template;
 import groove.control.term.Term;
@@ -29,6 +25,10 @@ import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.util.Fixable;
 import groove.util.Groove;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Control-defined callable unit.
@@ -99,7 +99,7 @@ public abstract class Procedure implements Callable, Fixable {
      */
     public void setTerm(Term body) {
         assert body != null;
-        assert!isFixed();
+        assert !isFixed();
         // make the body atomic if it is a recipe
         this.term = getKind() == Kind.RECIPE ? body.atom() : body;
         setFixed();
@@ -186,14 +186,6 @@ public abstract class Procedure implements Callable, Fixable {
         return this.fixed;
     }
 
-    @Override
-    public void testFixed(boolean fixed) {
-        if (fixed != isFixed()) {
-            throw new IllegalStateException(
-                String.format("The unit is %sfixed", fixed ? "" : "not "));
-        }
-    }
-
     private boolean fixed;
 
     @Override
@@ -242,8 +234,8 @@ public abstract class Procedure implements Callable, Fixable {
             result = new Function(fullName, signature, controlName, startLine, grammarProperties);
             break;
         case RECIPE:
-            result = new Recipe(fullName, priority, signature, controlName, startLine,
-                grammarProperties);
+            result =
+                new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
             break;
         default:
             assert false;

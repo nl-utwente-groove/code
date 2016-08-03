@@ -16,6 +16,9 @@
  */
 package groove.util.parse;
 
+import groove.io.HTMLConverter;
+import groove.util.Groove;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,9 +26,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import groove.io.HTMLConverter;
-import groove.util.Groove;
 
 /**
  * Interface for basic parser functionality.
@@ -149,7 +149,7 @@ abstract public interface Parser<T> {
     /** Natural number parser. */
     public static IntParser natural = new IntParser(false);
     /** Splitting parser based on whitespace. */
-    public static SplitParser<String> splitter = new SplitParser<>(StringParser.IDENTITY);
+    public static SplitParser<String> splitter = new SplitParser<>(StringParser.identity());
     /** Boolean parser with default value {@code false}. */
     public static BooleanParser boolTrue = new BooleanParser(true);
     /** Boolean parser with default value {@code true}. */
@@ -331,6 +331,7 @@ abstract public interface Parser<T> {
         /** Constructs a parser. */
         @SuppressWarnings("unchecked")
         public SplitParser(Parser<T> inner) {
+            assert inner != null;
             this.valueType = (Class<List<T>>) new ArrayList<T>().getClass();
             this.inner = inner;
         }
