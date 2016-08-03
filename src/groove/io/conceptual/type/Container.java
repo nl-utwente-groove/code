@@ -104,12 +104,8 @@ public class Container extends Type {
 
     @Override
     public String toString() {
-        return typeString()
-            + "<"
-            + this.m_ctype
-            + ">("
-            + (this.m_contentType.isComplex() ? this.m_contentType.typeString()
-                    : this.m_contentType.toString()) + ")";
+        return typeString() + "<" + this.m_ctype + ">(" + (this.m_contentType.isComplex()
+            ? this.m_contentType.typeString() : this.m_contentType.toString()) + ")";
     }
 
     /** Returns the kind of this container. */
@@ -139,12 +135,21 @@ public class Container extends Type {
     }
 
     @Override
+    public int hashCode() {
+        int result = 1;
+        int prime = 31;
+        result = getContainerType().hashCode();
+        result = prime * result + getType().hashCode();
+        return result;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Container)) {
             return false;
         }
         Container c = (Container) o;
-        return c.getContainerType() == getContainerType()
-            && c.getType().equals(getType());
+        return c.getContainerType() == getContainerType() && c.getType()
+            .equals(getType());
     }
 }

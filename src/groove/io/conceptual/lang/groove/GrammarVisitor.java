@@ -97,8 +97,7 @@ public class GrammarVisitor {
         }
 
         // When finished, selection should have been made for each graph type
-        if (dlg.getTypeModel() != null && !dlg.getTypeModel()
-            .equals("")) {
+        if (dlg.getTypeModel() != null) {
             filterMap(this.m_typeMap, dlg.getTypeModel());
         } else {
             return false;
@@ -107,8 +106,7 @@ public class GrammarVisitor {
         if (this.m_cfg.getConfig()
             .getTypeModel()
             .isMetaSchema()) {
-            if (dlg.getMetaModel() != null && !dlg.getMetaModel()
-                .equals("")) {
+            if (dlg.getMetaModel() != null) {
                 filterMap(this.m_metaMap, dlg.getTypeModel());
             } else {
                 return false;
@@ -116,12 +114,7 @@ public class GrammarVisitor {
         }
 
         if (dlg.getInstanceModel() != null) {
-            if (!dlg.getInstanceModel()
-                .equals("")) {
-                filterMap(this.m_hostMap, dlg.getInstanceModel());
-            } else {
-                this.m_hostMap.clear();
-            }
+            filterMap(this.m_hostMap, dlg.getInstanceModel());
         } else {
             return false;
         }
@@ -165,7 +158,7 @@ public class GrammarVisitor {
             HostModel keepModel = this.m_hostMap.get(this.m_fixedInstance);
             this.m_hostMap.clear();
             this.m_hostMap.put(this.m_fixedInstance, keepModel);
-        } else if ("".equals(this.m_fixedInstance)) {
+        } else if (this.m_fixedInstance == null) {
             this.m_hostMap.clear();
         }
     }

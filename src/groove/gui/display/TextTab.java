@@ -146,7 +146,7 @@ final public class TextTab extends ResourceTab {
 
     @Override
     public boolean removeResource(QualName name) {
-        boolean result = name.equals(getName());
+        boolean result = name.equals(getQualName());
         if (result) {
             setName(null);
             this.textArea.setProgram(null);

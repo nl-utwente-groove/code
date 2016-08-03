@@ -43,21 +43,30 @@ public class Name implements Serializable {
         return this.m_name;
     }
 
-    /**
-     * Equal if o is a Name with same name string, or o is a String with same contents as toString();
-     */
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.m_name == null) ? 0 : this.m_name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        /*if (o == null || (!(o instanceof String) && !(o instanceof Name))) {
+        if (!(obj instanceof Name)) {
             return false;
-        }*/
-        if (o instanceof String) {
-            return ((String) o).equals(this.m_name);
         }
-        return false;
-        //return ((Name) o).m_name.equals(this.m_name);
+        Name other = (Name) obj;
+        if (this.m_name == null) {
+            if (other.m_name != null) {
+                return false;
+            }
+        } else if (!this.m_name.equals(other.m_name)) {
+            return false;
+        }
+        return true;
     }
 }

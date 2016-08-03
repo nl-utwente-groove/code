@@ -179,7 +179,7 @@ public class GrooveResource extends ExportableResource {
     }
 
     public GrammarGraph getGraph(QualName name, GraphRole graphRole) {
-        if (this.m_graphs.containsKey(name)) {
+        if (hasGraph(name, graphRole)) {
             GrammarGraph resultGraph = this.m_graphs.get(graphRole)
                 .get(name);
             if (resultGraph.getGraphRole() != graphRole) {

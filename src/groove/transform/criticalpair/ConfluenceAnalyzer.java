@@ -1,20 +1,27 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.transform.criticalpair;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -31,13 +38,6 @@ import groove.transform.Proof;
 import groove.transform.Record;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * @author Ruud
@@ -68,7 +68,8 @@ class ConfluenceAnalyzer {
      * confluent such that the transformation morphisms commute.
      * @return ConfluenceStatus.STRICTLY_CONFLUENT only if the pair is confluent
      */
-    static ConfluenceStatus getStrictlyConfluent(CriticalPair pair, Grammar grammar, int searchDepth) {
+    static ConfluenceStatus getStrictlyConfluent(CriticalPair pair, Grammar grammar,
+        int searchDepth) {
         //analyse if the pair is strictly confluent
         getConfluentPair(pair, grammar, searchDepth);
         //the result is saved in the critical pair, return this result
@@ -79,11 +80,11 @@ class ConfluenceAnalyzer {
      * Checks if the given CriticalPair is strictly locally confluent, if this is the case,
      * then the ConfluentPair (evidence for strict local confluence) will be returned.
      * If the pair is not strictly locally confluent (or if it cannot be decided) then the result will be null
-     * 
+     *
      * The result of the confluene analysis is also saved in the critical pair
      */
     private static ConfluentPair getConfluentPair(CriticalPair pair, Grammar grammar,
-            int searchDepth) {
+        int searchDepth) {
         Set<HostGraphWithMorphism> oldStates1 = new HashSet<HostGraphWithMorphism>();
         Set<HostGraphWithMorphism> oldStates2 = new HashSet<HostGraphWithMorphism>();
         Set<HostGraphWithMorphism> newStates1 = new HashSet<HostGraphWithMorphism>();
@@ -173,22 +174,23 @@ class ConfluenceAnalyzer {
     /**
      * For every element of states compute all possible rule applications
      * @param states the states for which the next states will be computed
-     * @param grammar the grammar which contains the rules which can be applied 
+     * @param grammar the grammar which contains the rules which can be applied
      * @return A set of HostGraphWithMorphism states which can be reached in a single step from an element of "states"
      */
     private static Set<HostGraphWithMorphism> computeNewStates(Set<HostGraphWithMorphism> states,
-            Grammar grammar) {
+        Grammar grammar) {
         Set<Rule> rules = grammar.getAllRules();
         Set<HostGraphWithMorphism> result = new HashSet<HostGraphWithMorphism>();
         for (HostGraphWithMorphism state : states) {
-            Record record = new Record(grammar, state.getHostGraph().getFactory());
+            Record record = new Record(grammar, state.getHostGraph()
+                .getFactory());
             for (Rule rule : rules) {
                 Collection<Proof> matches = rule.getAllMatches(state.getHostGraph(), null);
                 for (Proof proof : matches) {
                     RuleEvent event = proof.newEvent(record);
                     RuleApplication app = new RuleApplication(event, state.getHostGraph());
-                    result.add(new HostGraphWithMorphism(app.getTarget(), state.getMorphism().then(
-                        app.getMorphism())));
+                    result.add(new HostGraphWithMorphism(app.getTarget(), state.getMorphism()
+                        .then(app.getMorphism())));
                 }
             }
         }
@@ -201,7 +203,7 @@ class ConfluenceAnalyzer {
      * If no such pair exists then null will be returned
      */
     private static HostGraphWithMorphism getConfluentState(Set<HostGraphWithMorphism> first,
-            Set<HostGraphWithMorphism> second) {
+        Set<HostGraphWithMorphism> second) {
         for (HostGraphWithMorphism hwm1 : first) {
             for (HostGraphWithMorphism hwm2 : second) {
                 if (isConfluent(hwm1, hwm2)) {
@@ -219,8 +221,16 @@ class ConfluenceAnalyzer {
      */
     private static boolean isConfluent(HostGraphWithMorphism hwm1, HostGraphWithMorphism hwm2) {
 
-        if (hwm1.getMorphism().nodeMap().size() != hwm2.getMorphism().nodeMap().size()
-            || hwm1.getMorphism().edgeMap().size() != hwm2.getMorphism().edgeMap().size()) {
+        if (hwm1.getMorphism()
+            .nodeMap()
+            .size() != hwm2.getMorphism()
+                .nodeMap()
+                .size()
+            || hwm1.getMorphism()
+                .edgeMap()
+                .size() != hwm2.getMorphism()
+                    .edgeMap()
+                    .size()) {
             //if the sizes of the node or edge mappings are different, then the morphisms do not commute;
             //we do not need to check for isomorphisms
             return false;
@@ -235,7 +245,8 @@ class ConfluenceAnalyzer {
         while (isoMorphism != null && !result) {
             isoCount++;
             //The transformations are confluent, check strictness
-            HostGraphMorphism transformation1 = hwm1.getMorphism().then(isoMorphism);
+            HostGraphMorphism transformation1 = hwm1.getMorphism()
+                .then(isoMorphism);
             HostGraphMorphism transformation2 = hwm2.getMorphism();
             result = transformation1.equals(transformation2);
             if (!result) {
@@ -248,11 +259,11 @@ class ConfluenceAnalyzer {
                 //however none of these commute, stop searching
 
                 /* TODO Compute partial isomorphism such that the IsomorphismChecker can continue the search
-                 * 
+                 *
                  * Using the two morphisms we can compute a partial isomorphism
                  * (the part from which we require that it is in the isomorphism)
                  * The if the IsomorphismChecker supports expanding an exising morphism
-                 * then the IsomorphismChecker will either find isomorphism(s) such that 
+                 * then the IsomorphismChecker will either find isomorphism(s) such that
                  * transformation1.equals(transformation2), otherwise it will not find an isomoprhism at all
                  */
                 return false;
@@ -285,12 +296,18 @@ class ConfluenceAnalyzer {
             ConfluenceStatus status = ConfluenceStatus.UNTESTED;
 
             confluentPair: for (ConfluentPair confluentPair : confluentPairs) {
-                if (confluentPair.getCriticalpair().getHostGraph().nodeCount() == pair.getHostGraph().nodeCount()) {
+                if (confluentPair.getCriticalpair()
+                    .getHostGraph()
+                    .nodeCount() == pair.getHostGraph()
+                        .nodeCount()) {
                     //since the morphism from the confluent pair must be surjective, it will also be injective (because the sizes are the same)
                     //therefore the morphism will be an isomorphism which means that the critical pairs are the same
                     continue;
                 }
-                assert confluentPair.getCriticalpair().getHostGraph().nodeCount() > pair.getHostGraph().nodeCount();
+                assert confluentPair.getCriticalpair()
+                    .getHostGraph()
+                    .nodeCount() > pair.getHostGraph()
+                        .nodeCount();
 
                 HostGraphMorphism match =
                     getEmbeddingMorphism(confluentPair.getCriticalpair(), pair);
@@ -299,7 +316,8 @@ class ConfluenceAnalyzer {
                     continue;
                 }
 
-                HostGraphMorphism transformation = confluentPair.getConfluentState().getMorphism();
+                HostGraphMorphism transformation = confluentPair.getConfluentState()
+                    .getMorphism();
 
                 //check if the matches for the rules commute
                 if (isDInjective(match, transformation)) {
@@ -309,7 +327,8 @@ class ConfluenceAnalyzer {
 
                     //this assertion may fail in come cases: this is because the one of the transformations
                     //which needs to be applied to show that "pair" is confluent, is actually not a pushout
-                    assert getStrictlyConfluent(pair, grammar) == ConfluenceStatus.STRICTLY_CONFLUENT;
+                    assert getStrictlyConfluent(pair,
+                        grammar) == ConfluenceStatus.STRICTLY_CONFLUENT;
                     break confluentPair;
                 }
             }
@@ -332,11 +351,14 @@ class ConfluenceAnalyzer {
      * CriticalPair confluent. If the result is non-null then (confluent.getMatchX() andThen result) equals target.getMatchX()
      */
     private static HostGraphMorphism getEmbeddingMorphism(CriticalPair confluent,
-            CriticalPair target) {
-        HostGraphMorphism result = new HostGraphMorphism(target.getHostGraph().getFactory());
+        CriticalPair target) {
+        HostGraphMorphism result = new HostGraphMorphism(target.getHostGraph()
+            .getFactory());
 
-        assert confluent.getRule1().equals(target.getRule1());
-        assert confluent.getRule2().equals(target.getRule2());
+        assert confluent.getRule1()
+            .equals(target.getRule1());
+        assert confluent.getRule2()
+            .equals(target.getRule2());
 
         if (buildHostGraphMorphism(result, confluent.getMatch1(), target.getMatch1())
             && buildHostGraphMorphism(result, confluent.getMatch2(), target.getMatch2())) {
@@ -352,39 +374,53 @@ class ConfluenceAnalyzer {
      * Return true if morphism was succesfully expanded
      */
     private static boolean buildHostGraphMorphism(HostGraphMorphism morphism,
-            RuleToHostMap confluentMatch, RuleToHostMap targetMatch) {
+        RuleToHostMap confluentMatch, RuleToHostMap targetMatch) {
 
         //first add node mappings
-        for (RuleNode rn : confluentMatch.nodeMap().keySet()) {
+        for (RuleNode rn : confluentMatch.nodeMap()
+            .keySet()) {
             HostNode cHostNode = confluentMatch.getNode(rn);
             HostNode tHostNode = targetMatch.getNode(rn);
 
-            if (!morphism.nodeMap().containsKey(cHostNode)) {
+            if (!morphism.nodeMap()
+                .containsKey(cHostNode)) {
                 assert cHostNode != null;
                 assert tHostNode != null;
                 morphism.putNode(cHostNode, tHostNode);
             } else {
                 //if the morphism already has a different target for cHostNode
-                if (!morphism.nodeMap().get(cHostNode).equals(tHostNode)) {
+                if (!morphism.nodeMap()
+                    .get(cHostNode)
+                    .equals(tHostNode)) {
                     return false;
                 }
             }
         }
 
-        assert morphism.nodeMap().values().containsAll(targetMatch.nodeMap().values());
-        assert morphism.nodeMap().keySet().containsAll(confluentMatch.nodeMap().values());
+        assert morphism.nodeMap()
+            .values()
+            .containsAll(targetMatch.nodeMap()
+                .values());
+        assert morphism.nodeMap()
+            .keySet()
+            .containsAll(confluentMatch.nodeMap()
+                .values());
 
         //repeat process for edges
-        for (RuleEdge re : confluentMatch.edgeMap().keySet()) {
+        for (RuleEdge re : confluentMatch.edgeMap()
+            .keySet()) {
             HostEdge cHostEdge = confluentMatch.getEdge(re);
             HostEdge tHostEdge = targetMatch.getEdge(re);
-            if (!morphism.nodeMap().containsKey(cHostEdge)) {
+            if (!morphism.nodeMap()
+                .containsKey(cHostEdge)) {
                 assert cHostEdge != null;
                 assert tHostEdge != null;
                 morphism.putEdge(cHostEdge, tHostEdge);
             } else {
                 //if the morphism already has a different target for cHostNode
-                if (!morphism.nodeMap().get(cHostEdge).equals(tHostEdge)) {
+                if (!morphism.edgeMap()
+                    .get(cHostEdge)
+                    .equals(tHostEdge)) {
                     return false;
                 }
             }
@@ -397,15 +433,17 @@ class ConfluenceAnalyzer {
      * @return true if match is injective on all elements which are deleted in transformation
      */
     private static boolean isDInjective(HostGraphMorphism match, HostGraphMorphism transformation) {
-        ArrayList<HostNode> nodeList = new ArrayList<HostNode>(match.nodeMap().keySet());
+        ArrayList<HostNode> nodeList = new ArrayList<HostNode>(match.nodeMap()
+            .keySet());
         for (int i = 0; i < nodeList.size(); i++) {
             for (int j = i + 1; j < nodeList.size(); j++) {
                 HostNode iNode = nodeList.get(i);
                 HostNode jNode = nodeList.get(j);
-                if (match.getNode(iNode).equals(match.getNode(jNode))) {
+                if (match.getNode(iNode)
+                    .equals(match.getNode(jNode))) {
                     //check if iNode and jNode are equal or both in the domain of rule
-                    if (iNode.equals(jNode)
-                        || (transformation.getNode(iNode) != null && transformation.getNode(jNode) != null)) {
+                    if (iNode.equals(jNode) || (transformation.getNode(iNode) != null
+                        && transformation.getNode(jNode) != null)) {
                         //everything is okay
                     } else {
                         return false;
@@ -414,15 +452,17 @@ class ConfluenceAnalyzer {
             }
         }
         //repeat the same for the edges
-        ArrayList<HostEdge> edgeList = new ArrayList<HostEdge>(match.edgeMap().keySet());
+        ArrayList<HostEdge> edgeList = new ArrayList<HostEdge>(match.edgeMap()
+            .keySet());
         for (int i = 0; i < edgeList.size(); i++) {
             for (int j = i + 1; j < edgeList.size(); j++) {
                 HostEdge iEdge = edgeList.get(i);
                 HostEdge jEdge = edgeList.get(j);
-                if (match.getEdge(iEdge).equals(match.getEdge(jEdge))) {
+                if (match.getEdge(iEdge)
+                    .equals(match.getEdge(jEdge))) {
                     //check if iNode and jNode are equal or both in the domain of rule
-                    if (iEdge.equals(jEdge)
-                        || (transformation.getEdge(iEdge) != null && transformation.getEdge(jEdge) != null)) {
+                    if (iEdge.equals(jEdge) || (transformation.getEdge(iEdge) != null
+                        && transformation.getEdge(jEdge) != null)) {
                         //everything is okay
                     } else {
                         return false;
@@ -447,7 +487,10 @@ class ConfluenceAnalyzer {
         Rule rule2 = pair.getRule2();
         while (it.hasNext()) {
             pair = it.next();
-            if (!pair.getRule1().equals(rule1) || !pair.getRule2().equals(rule2)) {
+            if (!pair.getRule1()
+                .equals(rule1)
+                || !pair.getRule2()
+                    .equals(rule2)) {
                 return false;
             }
         }
@@ -459,7 +502,7 @@ class ConfluenceAnalyzer {
 
 /**
  * Tuple of a (strictly locally confluent) critical pair with the HostGraphWithMorphism that made the pair confluent
- * 
+ *
  * @author Ruud Welling
  */
 class ConfluentPair {

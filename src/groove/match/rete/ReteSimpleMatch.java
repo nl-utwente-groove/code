@@ -16,6 +16,8 @@
  */
 package groove.match.rete;
 
+import java.util.Arrays;
+
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
@@ -231,7 +233,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             int thisSize = this.size();
             for (int i = 0; i < thisSize; i++) {
                 if (thisList[i] != mList[i]) {
-                    assert !thisList[i].equals(mList[i]);
+                    assert!thisList[i].equals(mList[i]);
                     result = false;
                     break;
                 }
@@ -306,9 +308,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("[ " + this.getOrigin()
-            .getPattern()
-            .toString() + ": ");
+        sb.append("[ " + Arrays.toString(this.getOrigin()
+            .getPattern()) + ": ");
         for (int i = 0; i < this.units.length; i++) {
             sb.append("[ " + this.units[i].toString() + "] ");
         }
@@ -478,7 +479,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         AbstractReteMatch source) {
         ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
         result.specialPrefix = source.specialPrefix;
-        assert (source.specialPrefix == null)
+        assert(source.specialPrefix == null)
             || (origin.getPattern().length == source.specialPrefix.getOrigin()
                 .getPattern().length);
         result.units = source.getAllUnits();
@@ -507,7 +508,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             super(owner, owner.getOwner()
                 .isInjective());
             Object[] myUnits = getAllUnits();
-            assert (owner instanceof QuantifierCountChecker)
+            assert(owner instanceof QuantifierCountChecker)
                 && (anchors.length + 1 == owner.getPattern().length);
             this.dummy = false;
             for (int i = 0; i < anchors.length; i++) {
@@ -537,10 +538,10 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
             if (!value.getValue()
                 .equals(0)) {
-                throw new IllegalArgumentException(
-                    String.format("The given value for the wildcard match must be zero. It is now %s",
-                        value.getValue()
-                            .toString()));
+                throw new IllegalArgumentException(String.format(
+                    "The given value for the wildcard match must be zero. It is now %s",
+                    value.getValue()
+                        .toString()));
             } else {
                 myUnits[size() - 1] = value;
             }
@@ -587,7 +588,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             return "Count match for "
                 + ((QuantifierCountChecker) getOrigin()).getUniversalQuantifierChecker()
                     .getCondition()
-                    .getName() + ". Value = " + this.getValue()
+                    .getName()
+                + ". Value = " + this.getValue()
                     .toString();
         }
 

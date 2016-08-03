@@ -14,6 +14,9 @@
  */
 package groove.lts;
 
+import java.util.Collections;
+import java.util.List;
+
 import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Rule;
@@ -27,16 +30,13 @@ import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  *
  * @author Arend
  * @version $Revision$
  */
-public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState,
-    RuleTransitionStub {
+public class DefaultGraphNextState extends AbstractGraphState
+    implements GraphNextState, RuleTransitionStub {
     /**
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
@@ -199,13 +199,15 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
         }
         // find the initial rule transition
         RuleTransition initial = this;
-        while (initial.source().isInternalState()) {
+        while (initial.source()
+            .isInternalState()) {
             // recipe states cannot be the initial state, so it's a GraphNextState
             initial = (GraphNextState) initial.source();
         }
         // look for the corresponding outgoing transition
         RecipeTransition result = null;
-        for (GraphTransition trans : initial.source().getTransitions()) {
+        for (GraphTransition trans : initial.source()
+            .getTransitions()) {
             if (!(trans instanceof RecipeTransition)) {
                 continue;
             }
@@ -330,7 +332,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     @Override
     protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
         HostNode[] addedNodes) {
-        if (source == source() && match == getEvent()) {
+        if (source == source() && match.getEvent() == getEvent()) {
             return this;
         } else if (source != source() && match == getSourceKey()) {
             return this;

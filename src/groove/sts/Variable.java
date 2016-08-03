@@ -4,7 +4,7 @@ import groove.algebra.Sort;
 
 /**
  * A variable in an sts.
- * 
+ *
  * @author Vincent de Bruijn
  *
  */
@@ -49,7 +49,7 @@ public class Variable {
         }
     }
 
-    /** 
+    /**
      * Gets the label of this variable.
      * @return The label.
      */
@@ -71,7 +71,8 @@ public class Variable {
             return false;
         }
         Variable other = (Variable) o;
-        return other.getLabel() == getLabel();
+        return other.getLabel()
+            .equals(getLabel());
     }
 
     @Override

@@ -16,15 +16,6 @@
  */
 package groove.graph.iso;
 
-import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
-import groove.grammar.type.TypeLabel;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
-import groove.util.collect.TreeHashSet;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +26,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.TreeMap;
+
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.type.TypeLabel;
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Label;
+import groove.graph.Node;
+import groove.util.collect.TreeHashSet;
 
 /**
  * Implements an algorithm to partition a given graph into sets of symmetric
@@ -111,7 +111,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         // first iteration
         split(splitters);
         if (TRACE) {
-            System.err.printf("First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
+            System.err.printf(
+                "First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
                 this.partition.size(),
                 this.nodeCertCount,
                 this.iterateCount,
@@ -147,7 +148,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 // node partition count
                 this.partition = new NodePartition(this.nodeCerts);
                 if (TRACE) {
-                    System.err.printf("Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
+                    System.err.printf(
+                        "Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
                         this.partition.size(),
                         this.nodeCertCount,
                         this.iterateCount,
@@ -303,7 +305,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             MyNodeCert nodeCert = (MyNodeCert) this.nodeCerts[i];
             if (!nodeCert.isBroken()) {
                 Block block = nodeCert.getBlock();
-                if (block.size() > 1 && (result == null || nodeCert.getValue() < result.getValue())) {
+                if (block.size() > 1
+                    && (result == null || nodeCert.getValue() < result.getValue())) {
                     result = block;
                 }
             }
@@ -327,7 +330,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     }
 
     @Override
-    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
+    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
+        NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -428,7 +432,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof PaigeTarjanMcKay.MyNodeCert)) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
             }
             MyNodeCert other = ((MyNodeCert) obj);
@@ -676,8 +683,11 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            return obj instanceof PaigeTarjanMcKay.MyValueNodeCert
-                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
+            if (!(obj instanceof MyValueNodeCert)) {
+                return false;
+            }
+            MyValueNodeCert other = (MyValueNodeCert) obj;
+            return this.nodeValue.equals(other.nodeValue);
         }
 
         private final Object nodeValue;
@@ -797,10 +807,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             int shift = (this.initValue & 0xf) + 1;
             int targetValue = this.targetCert.getValue();
             int sourceValue = getSource().getValue();
-            int result =
-                ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
-                    + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift)))
-                    + this.initValue;
+            int result = ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
+                + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift))) + this.initValue;
             PaigeTarjanMcKay.this.graphCertificate += result;
             return result;
         }
@@ -1000,8 +1008,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                         }
                     }
                     lastBlock.add(markedNode);
-                    if (lastBlock.size() > largestSize || lastBlock.size() == largestSize
-                        && newValue > largestValue) {
+                    if (lastBlock.size() > largestSize
+                        || lastBlock.size() == largestSize && newValue > largestValue) {
                         largestSize = lastBlock.size();
                         largestValue = newValue;
                         largestBlock = lastBlock;

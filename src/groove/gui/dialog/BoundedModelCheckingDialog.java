@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -293,11 +294,13 @@ public class BoundedModelCheckingDialog {
                 aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames
                     .toArray(new String[aDialog.selectedRuleNames.size()]));
             } else if (e.getSource() == aDialog.deleteButton) {
-                for (Object object : aDialog.selectedRuleList.getSelectedValuesList()) {
-                    aDialog.selectedRuleNames.remove(object.toString());
+                for (String name : aDialog.selectedRuleList.getSelectedValuesList()) {
+                    aDialog.selectedRuleNames.remove(QualName.parse(name));
                 }
-                aDialog.selectedRuleList
-                    .setListData((String[]) aDialog.selectedRuleNames.toArray());
+                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames.stream()
+                    .map(n -> n.toString())
+                    .collect(Collectors.toList())
+                    .toArray(new String[0]));
             }
         }
 

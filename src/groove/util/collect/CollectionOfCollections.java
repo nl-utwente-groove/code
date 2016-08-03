@@ -58,8 +58,8 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
             @Override
             public T next() {
                 forwardCollectionIter();
-                T latest = this.elemIter.next();
-                return latest;
+                this.latest = this.elemIter.next();
+                return this.latest;
             }
 
             @Override
@@ -71,7 +71,8 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
             private boolean forwardCollectionIter() {
                 while (this.elemIter == null || !this.elemIter.hasNext()) {
                     if (this.collectionIter.hasNext()) {
-                        this.elemIter = this.collectionIter.next().iterator();
+                        this.elemIter = this.collectionIter.next()
+                            .iterator();
                     } else {
                         return false;
                     }

@@ -748,7 +748,7 @@ public class GxlToType extends TypeImporter {
                     MessageType.ERROR));
                 return null;
             }
-        } else if (type.equals("BoolVal")) {
+        } else if (nodeType.equals("BoolVal")) {
             String valueString =
                 (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
             if (type instanceof BoolType) {
@@ -844,14 +844,19 @@ public class GxlToType extends TypeImporter {
             }
         } else if (nodeType.equals("TupVal")) {
             if (type instanceof Tuple) {
+                Tuple tupleType = (Tuple) type;
                 List<Value> values = new ArrayList<Value>();
-                for (EdgeWrapper ew : nodeWrapper.getEdges()) {
+                int size = tupleType.getTypes()
+                    .size();
+                assert size == nodeWrapper.getEdges()
+                    .size();
+                for (int i = 0; i < size; i++) {
+                    EdgeWrapper ew = nodeWrapper.getEdges()
+                        .get(i);
                     if (ew.getType()
                         .equals("hasComponentValue")) {
-                        Value v = visitValue(tm,
-                            ew.getTarget(),
-                            ((Container) type).getType(),
-                            graphNamespace);
+                        Value v = visitValue(tm, ew.getTarget(), tupleType.getTypes()
+                            .get(i), graphNamespace);
                         values.add(v);
                     }
                 }

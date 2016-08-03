@@ -76,7 +76,7 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
     public Resource getTypeResource(QualName resourceName) {
         String flatName = this.m_typeFile == null ? resourceName.toFile()
             .toString() : this.m_typeFile.toString();
-        Resource result = this.m_typeResources.get(flatName);
+        Resource result = this.m_typeResources.get(resourceName);
         if (result == null) {
             result = this.m_resourceSet.createResource(URI.createURI(flatName));
             this.m_typeResources.put(resourceName, result);

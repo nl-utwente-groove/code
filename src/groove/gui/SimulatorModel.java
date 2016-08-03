@@ -277,8 +277,7 @@ public class SimulatorModel implements Cloneable {
         Set<AspectGraph> newGraphs = new HashSet<AspectGraph>();
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
             AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE)
-                .get(entry.getKey()
-                    .toString());
+                .get(entry.getKey());
             AspectGraph newGraph = oldGraph.clone();
             GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();
@@ -579,7 +578,7 @@ public class SimulatorModel implements Cloneable {
      * The new result should have the currently set GTS.
      */
     private void changeExploreResult(ExploreResult result) {
-        assert result.getGTS() == this.gts;
+        assert result == null ? this.gts == null : result.getGTS() == this.gts;
         this.exploreResult = result;
         changeGTS();
     }

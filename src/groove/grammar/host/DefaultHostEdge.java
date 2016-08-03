@@ -34,7 +34,6 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel>implements HostEdg
         super(source, type.label(), target, nr);
         this.type = type;
         this.simple = simple;
-        assert type != null;
     }
 
     // ------------------------------------------------------------------------

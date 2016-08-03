@@ -1,22 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.transform.criticalpair;
-
-import groove.grammar.Rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import groove.grammar.Rule;
 
 /**
  * @author Ruud Welling
@@ -145,7 +145,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
             if (this.ruleTuplesToProcess.contains(tuple)) {
                 return computePairs(tuple).contains(pair);
             } else {
-                return this.pairMap.containsKey(tuple) && this.pairMap.get(tuple).contains(pair);
+                return this.pairMap.containsKey(tuple) && this.pairMap.get(tuple)
+                    .contains(pair);
             }
         } else {
             return false;
@@ -185,8 +186,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
         return new Iterator<Set<CriticalPair>>() {
 
             private RuleTuple current = null;
-            private Iterator<RuleTuple> tupleIt =
-                LazyCriticalPairSet.this.pairMap.keySet().iterator();
+            private Iterator<RuleTuple> tupleIt = LazyCriticalPairSet.this.pairMap.keySet()
+                .iterator();
 
             @Override
             public boolean hasNext() {
@@ -222,10 +223,11 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
             //this is needed to implement remove() correctly
             private boolean currentItReplaced = false;
 
-            Iterator<RuleTuple> keyIt = LazyCriticalPairSet.this.pairMap.keySet().iterator();
+            Iterator<RuleTuple> keyIt = LazyCriticalPairSet.this.pairMap.keySet()
+                .iterator();
 
             Iterator<CriticalPair> currentIt =
-            //initialize emptySet iterator
+                //initialize emptySet iterator
                 new HashSet<CriticalPair>().iterator();
 
             @Override
@@ -243,7 +245,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
                 //if the iterator is still empty, then compute more pairs if possible
                 while (!this.currentIt.hasNext()
                     && !LazyCriticalPairSet.this.ruleTuplesToProcess.isEmpty()) {
-                    this.currentIt = LazyCriticalPairSet.this.computeMorePairs().iterator();
+                    this.currentIt = LazyCriticalPairSet.this.computeMorePairs()
+                        .iterator();
                     this.currentItReplaced = true;
                 }
                 return this.currentIt.hasNext();
@@ -285,7 +288,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
                 computePairs(tuple);
             }
             if (this.pairMap.get(tuple) != null) {
-                return this.pairMap.get(tuple).remove(pair);
+                return this.pairMap.get(tuple)
+                    .remove(pair);
             }
         }
         return false;
@@ -325,12 +329,14 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     @Override
     public Object[] toArray() {
-        return this.toSingleSet().toArray();
+        return this.toSingleSet()
+            .toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return this.toSingleSet().toArray(a);
+        return this.toSingleSet()
+            .toArray(a);
     }
 
     Set<CriticalPair> toSingleSet() {
@@ -373,18 +379,19 @@ class RuleTuple {
             return false;
         }
         RuleTuple other = (RuleTuple) obj;
-        if (this.rule1 == null && this.rule2 == null) {
-            return other.rule1 == null && other.rule2 == null;
-        } else if (this.rule1 != null && this.rule2 == null) {
+        if (this.rule1 == null) {
+            if (this.rule2 == null) {
+                return other.rule1 == null && other.rule2 == null;
+            } else {
+                return (this.rule2.equals(other.rule1) && other.rule2 == null)
+                    || (this.rule2.equals(other.rule2) && other.rule1 == null);
+            }
+        }
+        if (this.rule2 == null) {
             return (this.rule1.equals(other.rule1) && other.rule2 == null)
                 || (this.rule1.equals(other.rule2) && other.rule1 == null);
-        } else if (this.rule1 == null && this.rule2 != null) {
-            return (this.rule2.equals(other.rule1) && other.rule2 == null)
-                || (this.rule2.equals(other.rule2) && other.rule1 == null);
-        } else {
-            return (this.rule1.equals(other.rule1) && this.rule2.equals(other.rule2))
-                || (this.rule2.equals(other.rule1) && this.rule1.equals(other.rule2));
         }
+        return (this.rule1.equals(other.rule1) && this.rule2.equals(other.rule2))
+            || (this.rule2.equals(other.rule1) && this.rule1.equals(other.rule2));
     }
-
 }

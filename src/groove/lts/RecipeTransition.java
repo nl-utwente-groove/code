@@ -16,6 +16,15 @@
  */
 package groove.lts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
@@ -36,23 +45,14 @@ import groove.transform.RuleApplication;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 /**
  * Models a transition corresponding to the complete execution of
  * a recipe. This comprises a sequence of ordinary graph transitions.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
-public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTransition,
-    ActionLabel {
+public class RecipeTransition extends ALabelEdge<GraphState>
+    implements GraphTransition, ActionLabel {
     /**
      * Constructs a transition between
      * a given source and target state, on the basis of a (recipe) control step and
@@ -123,8 +123,9 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     @Override
     public boolean isPartial() {
         return source().getActualFrame()
-            .isTransient() || target().getActualFrame()
-            .isTransient();
+            .isTransient()
+            || target().getActualFrame()
+                .isTransient();
     }
 
     /** Returns the initial rule transition of the recipe transition. */
@@ -243,16 +244,17 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
                 node = null;
             } else {
                 assert arg instanceof Var;
+                CtrlVar var = ((Var) arg).getVar();
                 if (arg.isInOnly()) {
                     int varIndex = getSwitch().getSource()
                         .getVars()
-                        .indexOf(arg);
+                        .indexOf(var);
                     node = Valuator.get(source().getPrimeValues(), varIndex);
                 } else {
                     assert arg.isOutOnly();
                     Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish()
                         .getVarIxMap();
-                    int varIndex = varIxMap.get(((Var) arg).getVar());
+                    int varIndex = varIxMap.get(var);
                     Object[] values = target().getActualValues();
                     node = Valuator.get(values, varIndex);
                 }
@@ -327,9 +329,8 @@ public class RecipeTransition extends ALabelEdge<GraphState> implements GraphTra
     @Override
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
-            throw new IllegalArgumentException(String.format("Can't compare %s and %s",
-                this.getClass(),
-                obj.getClass()));
+            throw new IllegalArgumentException(
+                String.format("Can't compare %s and %s", this.getClass(), obj.getClass()));
         }
         if (obj instanceof RuleTransitionLabel) {
             return -obj.compareTo(this);

@@ -16,14 +16,14 @@
  */
 package groove.explore;
 
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+
+import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 
 /**
  * A set of graph states that constitute the result of the execution of some
@@ -50,7 +50,7 @@ public class ExploreResult implements Iterable<GraphState> {
      */
     public void addState(GraphState t) {
         this.elements.add(t);
-        this.lastState = null;
+        this.lastState = t;
     }
 
     /** Tests if this result contains a given graph state. */

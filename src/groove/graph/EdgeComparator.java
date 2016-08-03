@@ -30,7 +30,10 @@ public class EdgeComparator implements Comparator<Edge> {
 
     @Override
     public int compare(Edge o1, Edge o2) {
-        int result = o1.source().getNumber() - o2.source().getNumber();
+        int result = o1.source()
+            .getNumber()
+            - o2.source()
+                .getNumber();
         if (result != 0) {
             return result;
         }
@@ -38,15 +41,19 @@ public class EdgeComparator implements Comparator<Edge> {
         if (result != 0) {
             return result;
         }
-        result = o1.label().compareTo(o2.label());
+        result = o1.label()
+            .compareTo(o2.label());
         if (result != 0) {
             return result;
         }
-        result = o1.target().getNumber() - o2.target().getNumber();
+        result = o1.target()
+            .getNumber()
+            - o2.target()
+                .getNumber();
         if (result != 0) {
             return result;
         }
-        if (o1 instanceof AEdge && o1 instanceof AEdge) {
+        if (o1 instanceof AEdge && o2 instanceof AEdge) {
             AEdge<?,?> e1 = (AEdge<?,?>) o1;
             AEdge<?,?> e2 = (AEdge<?,?>) o2;
             if (!e1.isSimple()) {

@@ -16,8 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.gui.Options;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,6 +27,8 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.HashMap;
 import java.util.Map;
+
+import groove.gui.Options;
 
 /**
  * Class of constant definitions.
@@ -74,8 +74,8 @@ public class JAttr {
     /**
      * The standard size used for nodes.
      */
-    public static final Dimension DEFAULT_NODE_SIZE = new Dimension(DEFAULT_NODE_BOUNDS.width,
-        DEFAULT_NODE_BOUNDS.height);
+    public static final Dimension DEFAULT_NODE_SIZE =
+        new Dimension(DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
 
     /** Space left outside the borders of nodes to enable larger
      * error or emphasis overlays to be painted correctly.
@@ -99,7 +99,7 @@ public class JAttr {
     /** Line width used for emphasised cells. */
     public static final int EMPH_WIDTH = 3;
     /** Difference in line width between emphasised and non-emphasised. */
-    public static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
+    public static final float EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
 
     /**
      * Static flag determining if gradient background paint should be used.
@@ -115,9 +115,8 @@ public class JAttr {
         if (dash == null) {
             result = new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
         } else {
-            result =
-                new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash,
-                    1.0f);
+            result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f,
+                dash, 1.0f);
         }
         return result;
     }
@@ -137,9 +136,8 @@ public class JAttr {
             int rx = b.width - fx;
             int ry = b.height - fy;
             float r = (float) Math.sqrt(rx * rx + ry * ry);
-            Paint newPaint =
-                new RadialGradientPaint(cx, cy, r, fx, fy, new float[] {0f, 1f}, getGradient(c),
-                    CycleMethod.NO_CYCLE);
+            Paint newPaint = new RadialGradientPaint(cx, cy, r, fx, fy, new float[] {0f, 1f},
+                getGradient(c), CycleMethod.NO_CYCLE);
             return newPaint;
         }
     }
@@ -149,12 +147,11 @@ public class JAttr {
         Color[] result = gradientMap.get(c);
         if (result == null) {
             float factor = .9f;
-            Color inC =
-                new Color((int) Math.min(c.getRed() / factor, 255), (int) Math.min(c.getGreen()
-                    / factor, 255), (int) Math.min(c.getBlue() / factor, 255), c.getAlpha());
-            Color outC =
-                new Color((int) (c.getRed() * factor), (int) (c.getGreen() * factor),
-                    (int) (c.getBlue() * factor), c.getAlpha());
+            Color inC = new Color((int) Math.min(c.getRed() / factor, 255),
+                (int) Math.min(c.getGreen() / factor, 255),
+                (int) Math.min(c.getBlue() / factor, 255), c.getAlpha());
+            Color outC = new Color((int) (c.getRed() * factor), (int) (c.getGreen() * factor),
+                (int) (c.getBlue() * factor), c.getAlpha());
             gradientMap.put(c, result = new Color[] {inC, outC});
         }
         return result;
