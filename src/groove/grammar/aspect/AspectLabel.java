@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.aspect;
@@ -57,7 +57,8 @@ public class AspectLabel extends ALabel implements Fixable {
 
     @Override
     public EdgeRole getRole() {
-        return EdgeRole.parseLabel(getInnerText()).one();
+        return EdgeRole.parseLabel(getInnerText())
+            .one();
     }
 
     @Override
@@ -65,10 +66,12 @@ public class AspectLabel extends ALabel implements Fixable {
         int result = getRole().compareTo(obj.getRole());
         if (result == 0 && obj instanceof AspectLabel) {
             // Labels starting with letters precede all other labels
-            String myText = EdgeRole.parseLabel(getInnerText()).two();
+            String myText = EdgeRole.parseLabel(getInnerText())
+                .two();
             boolean myTextIsAlpha =
                 myText.length() > 0 && Character.isJavaIdentifierStart(myText.charAt(0));
-            String hisText = EdgeRole.parseLabel(((AspectLabel) obj).getInnerText()).two();
+            String hisText = EdgeRole.parseLabel(((AspectLabel) obj).getInnerText())
+                .two();
             boolean hisTextIsAlpha =
                 hisText.length() > 0 && Character.isJavaIdentifierStart(hisText.charAt(0));
             if (myTextIsAlpha != hisTextIsAlpha) {
@@ -89,11 +92,6 @@ public class AspectLabel extends ALabel implements Fixable {
     @Override
     public boolean isFixed() {
         return this.fixable.isFixed();
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        this.fixable.testFixed(fixed);
     }
 
     @Override
@@ -154,7 +152,9 @@ public class AspectLabel extends ALabel implements Fixable {
         boolean notForEdge = !value.isForEdge(this.role);
         if (notForNode) {
             if (notForEdge) {
-                addError("Aspect %s not allowed in %s", value, roleDescription.get(this.role),
+                addError("Aspect %s not allowed in %s",
+                    value,
+                    roleDescription.get(this.role),
                     this.role);
             } else {
                 this.edgeOnly = value;
@@ -227,7 +227,7 @@ public class AspectLabel extends ALabel implements Fixable {
     private boolean equalsText(AspectLabel other) {
         boolean result =
             this.innerText == null ? other.innerText == null
-                    : this.innerText.equals(other.innerText);
+                : this.innerText.equals(other.innerText);
         return result;
     }
 
@@ -251,7 +251,7 @@ public class AspectLabel extends ALabel implements Fixable {
         return result;
     }
 
-    /** 
+    /**
      * Indicates whether this label is only suited for edges.
      * This is the case if either it contains an aspect that is not
      * suited for nodes, or the label text is non-empty.
@@ -260,7 +260,7 @@ public class AspectLabel extends ALabel implements Fixable {
         return this.edgeOnly != null || this.innerText != null && this.innerText.length() > 0;
     }
 
-    /** 
+    /**
      * Indicates whether this label is only suited for nodes.
      * This is the case if either it contains an aspect that is not suited
      * for edges, or if the label text is empty and the label is not edge-only.
@@ -289,9 +289,9 @@ public class AspectLabel extends ALabel implements Fixable {
     /** Node-only aspect value in this label, if any. */
     private Aspect nodeOnly;
 
-    /** 
+    /**
      * Sets the label text to a non-{@code null} value.
-     * This fixes the label, so that no aspect values can be added any more. 
+     * This fixes the label, so that no aspect values can be added any more.
      */
     public void setInnerText(String text) {
         testFixed(false);
@@ -345,9 +345,11 @@ public class AspectLabel extends ALabel implements Fixable {
      */
     public AspectLabel unwrap() {
         AspectLabel result = new AspectLabel(this);
-        Iterator<Aspect> aspects = result.getAspects().iterator();
+        Iterator<Aspect> aspects = result.getAspects()
+            .iterator();
         while (aspects.hasNext()) {
-            if (aspects.next().getKind() == AspectKind.LITERAL) {
+            if (aspects.next()
+                .getKind() == AspectKind.LITERAL) {
                 aspects.remove();
             }
         }

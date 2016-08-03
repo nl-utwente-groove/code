@@ -30,7 +30,7 @@ public enum AcceptorKind implements SettingKey {
     FINAL("final", null, "Final states are results", null),
     /** States satisfying a graph condition. */
     CONDITION("condition", "Property name", "Any state satisfying a given property",
-        StringParser.TRIM) {
+        StringParser.identity()) {
         @Override
         public Setting<?,?> createSettting() throws IllegalArgumentException {
             throw new IllegalArgumentException();
@@ -43,7 +43,7 @@ public enum AcceptorKind implements SettingKey {
     },
     /** States satisfying a propositional formula. */
     FORMULA("formula", "Property formula", "Any state satisfying a propositional formula",
-        StringParser.TRIM) {
+        StringParser.identity()) {
         @Override
         public Setting<?,?> createSettting() throws IllegalArgumentException {
             throw new IllegalArgumentException();

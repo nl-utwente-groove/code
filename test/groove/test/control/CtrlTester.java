@@ -21,8 +21,8 @@ import static org.junit.Assert.fail;
 import groove.control.CtrlLoader;
 import groove.control.instance.Automaton;
 import groove.control.parse.CtrlTree;
+import groove.control.template.Fragment;
 import groove.control.template.Program;
-import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
@@ -139,52 +139,13 @@ abstract public class CtrlTester {
     }
 
     /**
-     * Builds a symbolic term from a function or recipe in a control program.
-     * @param program control expression; non-{@code null}
-     * @param procName name of the recipe or function
-     * @param function if {@code true}, a function is retrieved, otherwise a recipe
-     */
-    protected Term buildProcTerm(String program, String procName, boolean function) {
-        try {
-            CtrlTree tree = createLoader().parse(DUMMY, program)
-                .check()
-                .getChild(function ? 2 : 3);
-            CtrlTree body = null;
-            for (int i = 0; i < tree.getChildCount(); i++) {
-                CtrlTree procTree = tree.getChild(i);
-                if (procTree.getChild(0)
-                    .getText()
-                    .equals(procName)) {
-                    body = procTree.getChild(2);
-                }
-            }
-            assert body != null : String.format("Invoked procedure '%s' not declared in '%s'",
-                procName,
-                program);
-            return body.toTerm();
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-            return null;
-        }
-    }
-
-    /**
      * Builds a symbolic term from a control program.
      * @param program control expression; non-{@code null}
      */
-    protected Term buildTerm(String program) {
-        return buildProgram(program).getMain();
-    }
-
-    /**
-     * Builds a symbolic term from a control program.
-     * @param program control expression; non-{@code null}
-     */
-    protected Program buildProgram(String program) {
-        Program result = null;
+    protected Fragment buildFragment(String program) {
+        Fragment result = null;
         try {
-            result = buildTree(program).toProgram();
-            result.setFixed();
+            result = buildTree(program).toFragment();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
@@ -197,7 +158,7 @@ abstract public class CtrlTester {
      */
     protected CtrlTree buildTree(String program) {
         try {
-            return createLoader().parse(DUMMY, program)
+            return createLoader().addControl(DUMMY, program)
                 .check();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
@@ -207,10 +168,10 @@ abstract public class CtrlTester {
 
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
-        return new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(),
-            true);
+        return new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
     }
 
     static private final boolean DEBUG = false;
-    static private final QualName DUMMY = QualName.name("dummy");
+    /** Dummy name for test programs. */
+    static protected final QualName DUMMY = QualName.name("dummy");
 }

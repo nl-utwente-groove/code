@@ -20,15 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import groove.control.Binding;
 import groove.control.Binding.Source;
 import groove.control.Call;
@@ -41,6 +32,7 @@ import groove.control.instance.Automaton;
 import groove.control.instance.Frame;
 import groove.control.instance.Step;
 import groove.control.instance.StepAttempt;
+import groove.control.template.Fragment;
 import groove.control.template.Program;
 import groove.control.template.Switch;
 import groove.control.template.SwitchStack;
@@ -51,6 +43,14 @@ import groove.grammar.Rule;
 import groove.gui.Viewer;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Arend Rensink
@@ -421,13 +421,14 @@ public class AutomatonBuildTest {
      * @param program control expression; non-{@code null}
      */
     protected Automaton build(String controlName, String program) {
-        Program prog = null;
+        Program prog = new Program();
         Automaton result = null;
         try {
             QualName qualControlName = QualName.parse(controlName);
-            prog = createLoader().parse(qualControlName, program)
+            Fragment fragment = createLoader().addControl(qualControlName, program)
                 .check()
-                .toProgram();
+                .toFragment();
+            prog.add(fragment);
             prog.setFixed();
             result = new Automaton(prog);
         } catch (FormatException e) {
@@ -446,8 +447,8 @@ public class AutomatonBuildTest {
         }
         try {
             QualName qualControlName = QualName.parse(controlName);
-            assert!qualControlName.hasErrors();
-            this.loader.parse(qualControlName, program);
+            assert !qualControlName.hasErrors();
+            this.loader.addControl(qualControlName, program);
             this.controlNames.add(qualControlName);
         } catch (FormatException e) {
             fail(e.toString());
@@ -491,7 +492,7 @@ public class AutomatonBuildTest {
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules(), false);
+            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
         return result;
     }
 

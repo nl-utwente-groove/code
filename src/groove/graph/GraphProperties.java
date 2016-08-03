@@ -83,7 +83,7 @@ public class GraphProperties extends Properties {
             "printFormat",
             "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. "
                 + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
-            StringParser.TRIM),
+            StringParser.identity()),
 
         /** Alternative transition label. */
         TRANSITION_LABEL(
@@ -109,7 +109,7 @@ public class GraphProperties extends Properties {
          * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
          * @param explanation short explanation of the meaning of the key
          * @param parser parser for values for this key; if {@code null},
-         * {@link StringParser#IDENTITY} is used
+         * {@link StringParser#identity()} is used
          */
         private Key(String name, String explanation, Parser<?> parser) {
             this(name, null, explanation, parser);
@@ -132,7 +132,7 @@ public class GraphProperties extends Properties {
                 this.keyPhrase = keyPhrase;
             }
             this.explanation = explanation;
-            this.parser = parser == null ? StringParser.IDENTITY : parser;
+            this.parser = parser == null ? StringParser.identity() : parser;
         }
 
         @Override

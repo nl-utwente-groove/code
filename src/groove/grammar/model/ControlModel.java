@@ -52,7 +52,7 @@ public class ControlModel extends TextBasedModel<Program> {
                 result = model.getProgram();
             }
         } else {
-            getLoader().parse(getQualName(), getProgram())
+            getLoader().addControl(getQualName(), getProgram())
                 .check();
             result = getLoader().buildProgram(Collections.singleton(getQualName()));
         }
@@ -62,7 +62,7 @@ public class ControlModel extends TextBasedModel<Program> {
     /** Returns the control loader used in this control model. */
     public CtrlLoader getLoader() {
         if (this.loader == null) {
-            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules(), false);
+            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules());
         }
         return this.loader;
     }
