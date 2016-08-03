@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui.jgraph;
@@ -20,23 +20,6 @@ import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
-import groove.grammar.aspect.AspectEdge;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectNode;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.GraphRole;
-import groove.graph.Node;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.display.DisplayKind;
-import groove.gui.look.VisualKey;
-import groove.gui.look.VisualMap;
-import groove.gui.menu.MyJMenu;
-import groove.gui.tree.RuleLevelTree;
-import groove.util.line.LineStyle;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -64,6 +47,24 @@ import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
+
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.GraphRole;
+import groove.graph.Node;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.display.DisplayKind;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
+import groove.gui.menu.MyJMenu;
+import groove.gui.tree.RuleLevelTree;
+import groove.util.line.LineStyle;
 
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
@@ -167,14 +168,14 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         return this.editing && getMode() != PREVIEW_MODE;
     }
 
-    /** 
+    /**
      * Indicates if the graph being displayed is a graph state.
      */
     public boolean isForState() {
         return this.forState;
     }
 
-    /** 
+    /**
      * Returns the role of the graph being displayed.
      */
     @Override
@@ -253,7 +254,9 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null,
+        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()),
+            null,
+            null,
             null);
     }
 
@@ -292,6 +295,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         stopEditing();
         // translate screen coordinates to real coordinates
         PortView fromPortView = getPortViewAt(screenFrom.getX(), screenFrom.getY());
+        assert fromPortView != null; // should be guaranteed by caller
         Point2D from = fromPortView.getLocation();
         PortView toPortView = getPortViewAt(screenTo.getX(), screenTo.getY());
         Point2D to;
@@ -308,7 +312,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         // define the edge to be inserted
         AspectJEdge newEdge = (AspectJEdge) getModel().createJEdge(null);
         // add a single, empty label so the edge will be displayed
-        newEdge.getUserObject().add("");
+        newEdge.getUserObject()
+            .add("");
         // to make sure there is at least one graph edge wrapped by this JEdge,
         // we add a dummy edge label to the JEdge's user object
         Object[] insert = new Object[] {newEdge};
@@ -403,7 +408,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     /**
      * Abstract class for j-cell edit actions.
      */
-    private abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
+    private abstract class JCellEditAction extends AbstractAction
+        implements GraphSelectionListener {
         /**
          * Constructs an edit action that is enabled for all j-cells.
          * @param name the name of the action
@@ -487,7 +493,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * Returns the positive index in a non-empty list of points of that
          * point which is closest to a given location.
          * @param location the location to which distances are measured.
-         * @param points the list in which the index is sought 
+         * @param points the list in which the index is sought
          * @return the index of the point (from position 1) closest to the location
          */
         protected int getClosestIndex(List<Point2D> points, Point2D location) {
@@ -681,8 +687,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          */
         private List<Point2D> removePointAt(List<Point2D> points, Point2D location) {
             LinkedList<Point2D> result = new LinkedList<Point2D>(points);
-            if (result.size() > 2
-                && (!result.getFirst().equals(result.getLast()) || result.size() > 3)) {
+            if (result.size() > 2 && (!result.getFirst()
+                .equals(result.getLast()) || result.size() > 3)) {
                 int ix = location == null ? 1 : getClosestIndex(points, location);
                 result.remove(ix);
             }
@@ -815,7 +821,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     private GraphModelListener refreshListener;
 
-    /** 
+    /**
      * Repaints the graph on a model change.
      */
     private class RefreshGraphListener implements GraphModelListener {
@@ -825,7 +831,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         }
     }
 
-    /** 
+    /**
      * Special listener for the show bidirectional edges option, for which a
      * refresh is not enough, but a rebuild is required.
      */
@@ -839,8 +845,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
-                && isEnabled()) {
+            if (evt.getPropertyName()
+                .equals(AccessibleState.ENABLED.toDisplayString()) && isEnabled()) {
                 rebuild();
             }
         }

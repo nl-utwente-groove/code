@@ -21,6 +21,7 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.external.PortException;
+import groove.util.Exceptions;
 
 // Generates meta schema for type graph
 public class MetaToGroove extends TypeExporter<AbsNode> {
@@ -294,6 +295,8 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
         case ORD:
             orderedNode = getMetaNode(MetaType.ContainerOrd);
             break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
         new AbsEdge(containerNode, orderedNode, "sub:");
 

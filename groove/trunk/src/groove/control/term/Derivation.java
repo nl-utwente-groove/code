@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -27,7 +27,7 @@ import groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,Derivation> {
+public class Derivation extends Pair<Call,Term>implements Attempt.Stage<Term,Derivation> {
     /**
      * Constructs a derivation out of a call and a target term,
      * with a given caller.
@@ -47,10 +47,11 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     @Override
     public Call getRuleCall() {
-        return getStack().peekLast().getCall();
+        return getStack().peekLast()
+            .getCall();
     }
 
-    /** 
+    /**
      * Returns the original derived call.
      * If this derivation has a nested derivation,
      * then this is a procedure call, otherwise it is a rule call
@@ -115,9 +116,8 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     public Derivation newInstance(Derivation nested) {
         Derivation result;
         if (hasNested()) {
-            result =
-                new Derivation(getCall(), getTransience(), onFinish(), getNested().newInstance(
-                    nested));
+            result = new Derivation(getCall(), getTransience(), onFinish(),
+                getNested().newInstance(nested));
         } else {
             result = new Derivation(getCall(), getTransience(), onFinish(), nested);
         }
@@ -145,7 +145,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         }
         Derivation other = (Derivation) obj;
         if (hasNested()) {
-            if (getNested().equals(other.hasNested())) {
+            if (!getNested().equals(other.getNested())) {
                 return false;
             }
         } else {

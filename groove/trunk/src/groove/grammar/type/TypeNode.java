@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,14 +17,15 @@
 package groove.grammar.type;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
+
+import java.awt.Color;
+import java.util.Set;
+
 import groove.grammar.AnchorKind;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.util.line.Line;
-
-import java.awt.Color;
-import java.util.Set;
 
 /**
  * Node in a type graph.
@@ -34,7 +35,7 @@ import java.util.Set;
  * @version $Revision $
  */
 public class TypeNode implements Node, TypeElement {
-    /** 
+    /**
      * Constructs a new type node, with a given number and label.
      * The label must be a node type.
      * Should only be called from {@link TypeFactory}.
@@ -44,15 +45,15 @@ public class TypeNode implements Node, TypeElement {
      */
     public TypeNode(int nr, TypeLabel type, TypeGraph graph) {
         assert graph != null;
-        assert type.getRole() == NODE_TYPE : String.format(
-            "Can't create type node for non-type label '%s'", type);
+        assert type.getRole() == NODE_TYPE : String
+            .format("Can't create type node for non-type label '%s'", type);
         this.nr = nr;
         this.type = type;
         this.graph = graph;
         this.dataType = type.isDataType();
     }
 
-    /** 
+    /**
      * Type nodes are equal if they have the same number.
      * However, it is an error to compare type nodes with the same number
      * and different types.
@@ -64,10 +65,8 @@ public class TypeNode implements Node, TypeElement {
             || (isImported() && ((TypeNode) obj).isImported());
         boolean result = this == obj;
         // object equality should imply equal numbers and type labels
-        assert !result
-            || !(obj instanceof TypeEdge)
-            || (getNumber() == ((TypeNode) obj).getNumber() && label().equals(
-                ((TypeNode) obj).label()));
+        assert!result || !(obj instanceof TypeNode) || (getNumber() == ((TypeNode) obj).getNumber()
+            && label().equals(((TypeNode) obj).label()));
         return result;
     }
 

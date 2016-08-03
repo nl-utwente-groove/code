@@ -2,7 +2,7 @@ package groove.sts;
 
 /**
  * A switch relation in an sts.
- * 
+ *
  * @author Vincent de Bruijn
  */
 public class SwitchRelation {
@@ -54,8 +54,7 @@ public class SwitchRelation {
      * @param update The update of the Switch Relation.
      * @return A unique identifier object.
      */
-    public static Object getSwitchIdentifier(Gate gate, String guard,
-            String update) {
+    public static Object getSwitchIdentifier(Gate gate, String guard, String update) {
         // TODO: replace with triple
         return gate.getLabel() + guard + update;
     }
@@ -66,8 +65,12 @@ public class SwitchRelation {
             return false;
         }
         SwitchRelation other = (SwitchRelation) o;
-        return other.getGate() == getGate() && other.getGuard() == getGuard()
-            && other.getUpdate() == getUpdate();
+        return other.getGate()
+            .equals(getGate())
+            && other.getGuard()
+                .equals(getGuard())
+            && other.getUpdate()
+                .equals(getUpdate());
     }
 
     @Override
@@ -87,9 +90,9 @@ public class SwitchRelation {
      * @return The JSON string.
      */
     public String toJSON(Location source, Location target) {
-        return "{\"s\":" + source.toJSON() + ",\"l\":\""
-            + this.gate.getStrippedLabel() + "\",\"t\":" + target.toJSON()
-            + ",\"g\":\"" + this.guard + "\",\"u\":\"" + this.update + "\"}";
+        return "{\"s\":" + source.toJSON() + ",\"l\":\"" + this.gate.getStrippedLabel()
+            + "\",\"t\":" + target.toJSON() + ",\"g\":\"" + this.guard + "\",\"u\":\"" + this.update
+            + "\"}";
     }
 
 }

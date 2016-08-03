@@ -66,7 +66,7 @@ public class Location {
         if (!(o instanceof Location)) {
             return false;
         }
-        return this.label == ((Location) o).getLabel();
+        return this.label.equals(((Location) o).getLabel());
     }
 
     @Override

@@ -58,23 +58,28 @@ public class Tuple extends Type {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Tuple)) {
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(this.m_types);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
             return false;
         }
-
-        Tuple t = (Tuple) o;
-        if (t.m_types.length != this.m_types.length) {
+        if (!(obj instanceof Tuple)) {
             return false;
         }
-
-        for (int i = 0; i < this.m_types.length; i++) {
-            boolean eq = this.m_types[i].equals(t.m_types[i]);
-            if (!eq) {
-                return false;
-            }
+        Tuple other = (Tuple) obj;
+        if (!Arrays.equals(this.m_types, other.m_types)) {
+            return false;
         }
-
         return true;
     }
 }

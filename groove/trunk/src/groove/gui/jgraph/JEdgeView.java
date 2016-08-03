@@ -17,13 +17,6 @@
 package groove.gui.jgraph;
 
 import static groove.gui.look.Values.ERROR_COLOR;
-import groove.gui.Options;
-import groove.gui.look.MultiLabel;
-import groove.gui.look.Values;
-import groove.gui.look.VisualKey;
-import groove.gui.look.VisualMap;
-import groove.util.line.HTMLLineFormat;
-import groove.util.line.LineStyle;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -57,6 +50,14 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphContext;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
+
+import groove.gui.Options;
+import groove.gui.look.MultiLabel;
+import groove.gui.look.Values;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
+import groove.util.line.HTMLLineFormat;
+import groove.util.line.LineStyle;
 
 /**
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a
@@ -172,9 +173,9 @@ public class JEdgeView extends EdgeView {
         if (getPointCount() == 2 && !isLoop()) {
             if (!source && this.source instanceof PortView) {
                 VertexView sourceCellView = (VertexView) this.source.getParentView();
-                result =
-                    sourceCellView.getPerimeterPoint(this, null,
-                        getPointLocation(getPointCount() - 1));
+                result = sourceCellView.getPerimeterPoint(this,
+                    null,
+                    getPointLocation(getPointCount() - 1));
             }
         }
         if (result == null) {
@@ -238,7 +239,9 @@ public class JEdgeView extends EdgeView {
         while (iter.hasNext()) {
             JEdge<?> edge = iter.next();
             // determine if this is a parallel edge
-            if (edge.getVisuals().getPoints().size() > 2) {
+            if (edge.getVisuals()
+                .getPoints()
+                .size() > 2) {
                 continue;
             }
             found |= edge == getCell();
@@ -284,8 +287,9 @@ public class JEdgeView extends EdgeView {
             double offDist = center.distance(nextPoint);
             // calculate vertex radius in the specified direction
             Rectangle2D bounds = vertex.getBounds();
-            double offMax =
-                vertexView.getCellVisuals().getNodeShape().getRadius(bounds, offDirX, offDirY);
+            double offMax = vertexView.getCellVisuals()
+                .getNodeShape()
+                .getRadius(bounds, offDirX, offDirY);
             // calculate actual offset
             double offset =
                 Math.signum(parRank) * Math.min(PAR_EDGES_DISTANCE * Math.abs(parRank), offMax);
@@ -305,7 +309,8 @@ public class JEdgeView extends EdgeView {
     public Point2D getLabelVector() {
         Point2D p0 = getPoint(0);
         Point2D p1 = getPoint(1);
-        if (getCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN && p1.getX() != p0.getX()) {
+        if (getCell().getVisuals()
+            .getLineStyle() == LineStyle.MANHATTAN && p1.getX() != p0.getX()) {
             p1 = new Point2D.Double(p1.getX(), p0.getY());
         }
         double dx = p1.getX() - p0.getX();
@@ -405,7 +410,7 @@ public class JEdgeView extends EdgeView {
 
         @Override
         public Component getRendererComponent(org.jgraph.JGraph jGraph, CellView v, boolean sel,
-                boolean focus, boolean preview) {
+            boolean focus, boolean preview) {
 
             assert v instanceof JEdgeView : String.format("This renderer is only meant for %s",
                 JEdgeView.class);
@@ -683,13 +688,17 @@ public class JEdgeView extends EdgeView {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
             // see if we can use the previously stored value
-            MultiLabel lines = view.getCell().getVisuals().getLabel();
+            MultiLabel lines = view.getCell()
+                .getVisuals()
+                .getLabel();
             if (lines.isEmpty()) {
                 result = this.jLabelSize = new Dimension();
             } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
                 StringBuilder text;
-                if (view.getCell().getJGraph().isShowArrowsOnLabels()) {
+                if (view.getCell()
+                    .getJGraph()
+                    .isShowArrowsOnLabels()) {
                     Point2D start = view.getPoint(0);
                     Point2D end = view.getPoint(view.getPointCount() - 1);
                     text = lines.toString(HTMLLineFormat.instance(), start, end);
@@ -697,6 +706,7 @@ public class JEdgeView extends EdgeView {
                     text = lines.toString(HTMLLineFormat.instance());
                 }
                 this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
+                this.jLabelLines = lines;
                 this.jLabelColor = foreground;
                 result = this.jLabelSize = this.jLabel.getPreferredSize();
             }
@@ -729,7 +739,8 @@ public class JEdgeView extends EdgeView {
                 edge.putVisual(VisualKey.TEXT_SIZE, result);
             } else {
                 result = new Dimension();
-                Dimension2D textSize = edge.getVisuals().getTextSize();
+                Dimension2D textSize = edge.getVisuals()
+                    .getTextSize();
                 result = new Dimension((int) textSize.getWidth(), (int) textSize.getHeight());
             }
             return result;

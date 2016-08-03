@@ -35,7 +35,8 @@ public class Gate {
             return false;
         }
         Gate other = (Gate) o;
-        return other.getLabel() == getLabel();
+        return other.getLabel()
+            .equals(getLabel());
     }
 
     @Override
@@ -52,9 +53,7 @@ public class Gate {
         if (this.label.contains("?")) {
             type = "?";
         }
-        String json =
-            "\"" + getStrippedLabel() + "\":{\"type\":\"" + type
-                + "\",\"iVars\":[";
+        String json = "\"" + getStrippedLabel() + "\":{\"type\":\"" + type + "\",\"iVars\":[";
         for (Variable v : this.iVars) {
             json += "\"" + v.getLabel() + "\",";
         }

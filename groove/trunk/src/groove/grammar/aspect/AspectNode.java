@@ -27,6 +27,13 @@ import static groove.grammar.aspect.AspectKind.ID;
 import static groove.grammar.aspect.AspectKind.IMPORT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
 import static groove.grammar.aspect.AspectKind.READER;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.grammar.type.LabelPattern;
@@ -39,12 +46,6 @@ import groove.util.Fixable;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Graph node implementation that supports aspects.
@@ -255,8 +256,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     private void addAspect(Aspect value) throws FormatException {
         assert value.isForNode(getGraphRole()) : String.format("Inappropriate node aspect %s",
-            value,
-            this);
+            value);
         AspectKind kind = value.getKind();
         if (kind.isAttrKind()) {
             if (hasAttrAspect() && !isAttrConsistent(getAttrAspect(), value)) {
@@ -283,7 +283,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             throw new FormatException("Conflicting node aspects %s and %s", getAspect(), value,
                 this);
         } else if (kind.isRole() && value.getContent() != null) {
-            throw new FormatException("Node aspect %s should not have quantifier name", value, this);
+            throw new FormatException("Node aspect %s should not have quantifier name", value,
+                this);
         } else {
             setAspect(value);
             if (kind.isQuantifier() && value.getContent() != null) {
@@ -299,14 +300,16 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     private boolean isAttrConsistent(Aspect one, Aspect two) {
         assert one.getKind()
-            .isAttrKind() && two.getKind()
-            .isAttrKind();
+            .isAttrKind()
+            && two.getKind()
+                .isAttrKind();
         if (one.equals(two)) {
             return true;
         }
         if (!one.getKind()
-            .hasSignature() || !two.getKind()
-            .hasSignature()) {
+            .hasSignature()
+            || !two.getKind()
+                .hasSignature()) {
             return false;
         }
         if (!one.getKind()
@@ -338,8 +341,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 this);
         } else if (edge.isNestedCount()) {
             if (getAttrKind() != AspectKind.INT) {
-                throw new FormatException("Target node of %s-edge should be int-node",
-                    edge.label(), this);
+                throw new FormatException("Target node of %s-edge should be int-node", edge.label(),
+                    this);
             }
         } else if (edge.isOperator()) {
             Operator operator = edge.getOperator();
@@ -359,7 +362,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Attempts to set the aspect type of this node to a given data type. */
     private void setDataType(Sort type) throws FormatException {
-        assert !isFixed();
+        assert!isFixed();
         Aspect newType = Aspect.getAspect(type.getName());
         assert newType.getKind()
             .hasSignature();
@@ -495,8 +498,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** Sets or specialises the attribute aspect of this node. */
     private void setAttrAspect(Aspect newAttr) throws FormatException {
         AspectKind attrKind = newAttr.getKind();
-        assert attrKind == DEFAULT || attrKind.isAttrKind() : String.format("Aspect %s is not attribute-related",
-            newAttr);
+        assert attrKind == DEFAULT || attrKind.isAttrKind() : String
+            .format("Aspect %s is not attribute-related", newAttr);
         // it may be the new attribute is inferred from an incoming edge
         // but then we only change the attribute if the new one is "better"
         if (!hasAttrAspect()) {
@@ -659,9 +662,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Changes the (aspect) type of this node. */
     void setAspect(Aspect type) throws FormatException {
-        assert !type.getKind()
-            .isAttrKind() && !type.getKind()
-            .isParam() : String.format("Aspect %s is not a valid node type", type);
+        assert!type.getKind()
+            .isAttrKind()
+            && !type.getKind()
+                .isParam() : String.format("Aspect %s is not a valid node type", type);
         if (this.aspect == null) {
             this.aspect = type;
         } else if (!this.aspect.equals(type)) {

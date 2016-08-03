@@ -37,7 +37,7 @@ import groove.util.parse.OpKind.Placement;
  * @version $Id$
  */
 abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends DefaultFixable
-    implements Fallible {
+    implements Fallible, Cloneable {
     /**
      * Constructs an initially argument- and content-free expression
      * with a given top-level operator.

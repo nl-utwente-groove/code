@@ -16,18 +16,6 @@
  */
 package groove.io.graph;
 
-import groove.graph.GraphInfo;
-import groove.gui.layout.JEdgeLayout;
-import groove.gui.layout.JVertexLayout;
-import groove.gui.layout.LayoutMap;
-import groove.io.FileType;
-import groove.io.HTMLConverter;
-import groove.util.line.LineStyle;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
-
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -41,6 +29,18 @@ import java.util.List;
 
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
+
+import groove.graph.GraphInfo;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
+import groove.io.FileType;
+import groove.io.HTMLConverter;
+import groove.util.line.LineStyle;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
 
 /**
  * Class wrapping the functionality of reading and writing layout information in
@@ -64,8 +64,7 @@ public class LayoutIO {
      * @throws IOException if an error occurred in reading the layout file
      */
     public void loadLayout(AttrGraph graph, InputStream in) throws IOException {
-        BufferedReader layoutReader =
-            new BufferedReader(new InputStreamReader(in));
+        BufferedReader layoutReader = new BufferedReader(new InputStreamReader(in));
         LayoutMap result = new LayoutMap();
         FormatErrorSet errors = new FormatErrorSet();
         try {
@@ -86,8 +85,7 @@ public class LayoutIO {
                             try {
                                 version = Integer.parseInt(parts[1]);
                             } catch (NumberFormatException exc) {
-                                throw new FormatException(
-                                    "Format error in version number %s",
+                                throw new FormatException("Format error in version number %s",
                                     parts[1]);
                             }
                         }
@@ -110,8 +108,8 @@ public class LayoutIO {
      * Inserts vertex layout information in a given layout map, based on a
      * string array description and node map.
      */
-    private void putVertexLayout(LayoutMap layoutMap, String[] parts,
-            AttrGraph graph) throws FormatException {
+    private void putVertexLayout(LayoutMap layoutMap, String[] parts, AttrGraph graph)
+        throws FormatException {
         AttrNode node = graph.getNode(parts[1]);
         if (node == null) {
             throw new FormatException("Unknown node " + parts[1]);
@@ -119,8 +117,7 @@ public class LayoutIO {
         Rectangle bounds = toBounds(parts, 2);
         // bounds.setSize(JAttr.DEFAULT_NODE_SIZE);
         if (bounds == null) {
-            throw new FormatException("Bounds for " + parts[1]
-                + " cannot be parsed");
+            throw new FormatException("Bounds for " + parts[1] + " cannot be parsed");
         }
         layoutMap.putNode(node, new JVertexLayout(bounds));
     }
@@ -130,8 +127,8 @@ public class LayoutIO {
      * array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    private AttrEdge putEdgeLayout(LayoutMap layoutMap, String[] parts,
-            AttrGraph graph, int version) throws FormatException {
+    private AttrEdge putEdgeLayout(LayoutMap layoutMap, String[] parts, AttrGraph graph,
+        int version) throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
         }
@@ -144,41 +141,31 @@ public class LayoutIO {
             throw new FormatException("Unknown node " + parts[2]);
         }
         String labelTextWithQuotes = parts[3];
-        String labelText =
-            StringHandler.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
+        String labelText = StringHandler.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
         AttrEdge edge = graph.getEdge(source, labelText, target);
         if (edge == null) {
-            throw new FormatException("Unknown edge %s --%s-> %s", source,
-                labelText, target);
+            throw new FormatException("Unknown edge %s --%s-> %s", source, labelText, target);
         }
         try {
             List<Point2D> points;
             int lineStyle;
-            if (parts.length == 5) {
-                points = null;
-                lineStyle = LineStyle.DEFAULT_VALUE.getCode();
-            } else {
-                points = toPoints(parts, 6);
-                // if we have fewer than 2 points, something is wrong
-                if (points.size() <= 1) {
-                    throw new FormatException(
-                        "Edge layout needs at least 2 points");
-                }
-                lineStyle = Integer.parseInt(parts[parts.length - 1]);
-                if (!LineStyle.isStyle(lineStyle)) {
-                    lineStyle = LineStyle.DEFAULT_VALUE.getCode();
-                }
-                correctPoints(points, layoutMap.getLayout(source),
-                    layoutMap.getLayout(target));
+            points = toPoints(parts, 6);
+            // if we have fewer than 2 points, something is wrong
+            if (points.size() <= 1) {
+                throw new FormatException("Edge layout needs at least 2 points");
             }
+            lineStyle = Integer.parseInt(parts[parts.length - 1]);
+            if (!LineStyle.isStyle(lineStyle)) {
+                lineStyle = LineStyle.DEFAULT_VALUE.getCode();
+            }
+            correctPoints(points, layoutMap.getLayout(source), layoutMap.getLayout(target));
             Point2D labelPosition =
-                calculateLabelPosition(toPoint(parts, 4), points, version,
-                    source == target);
-            layoutMap.putEdge(edge, new JEdgeLayout(points, labelPosition,
-                LineStyle.getStyle(lineStyle)));
+                calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
+            layoutMap.putEdge(edge,
+                new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle)));
         } catch (NumberFormatException exc) {
-            throw new FormatException("Number format error "
-                + HTMLConverter.toUppercase(exc.getMessage(), false));
+            throw new FormatException(
+                "Number format error " + HTMLConverter.toUppercase(exc.getMessage(), false));
         }
         return edge;
     }
@@ -187,20 +174,17 @@ public class LayoutIO {
      * and corrects the points if this is not the case.
      * Fix for SF Bug #3562111.
      */
-    public static void correctPoints(List<Point2D> points,
-            JVertexLayout sourceLayout, JVertexLayout targetLayout) {
+    public static void correctPoints(List<Point2D> points, JVertexLayout sourceLayout,
+        JVertexLayout targetLayout) {
         correctPoint(points, 0, sourceLayout);
         correctPoint(points, points.size() - 1, targetLayout);
     }
 
-    private static void correctPoint(List<Point2D> points, int i,
-            JVertexLayout layout) {
+    private static void correctPoint(List<Point2D> points, int i, JVertexLayout layout) {
         if (layout != null) {
             Rectangle2D bounds = layout.getBounds();
             if (!bounds.contains(points.get(i))) {
-                points.set(
-                    i,
-                    new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+                points.set(i, new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
             }
         }
     }
@@ -209,16 +193,14 @@ public class LayoutIO {
      * Calculates the label position according to the version of the layout
      * file.
      */
-    public static Point2D calculateLabelPosition(Point2D label,
-            List<Point2D> points, int version, boolean isLoop) {
+    public static Point2D calculateLabelPosition(Point2D label, List<Point2D> points, int version,
+        boolean isLoop) {
         Point2D result;
         if (version == VERSION1) {
             // the y is now an offset rather than a percentile
             if (points != null && points.size() > 0) {
                 Point2D relativePos = version1RelativePos(label, points);
-                result =
-                    version2LabelPos(relativePos,
-                        version2LabelVector(points, isLoop));
+                result = version2LabelPos(relativePos, version2LabelVector(points, isLoop));
             } else {
                 result = new Point2D.Double(label.getX(), 0);
             }
@@ -235,8 +217,7 @@ public class LayoutIO {
      * @param label the version 1 label position info
      * @param points the list of points comprising the edge
      */
-    private static Point2D version1RelativePos(Point2D label,
-            List<Point2D> points) {
+    private static Point2D version1RelativePos(Point2D label, List<Point2D> points) {
         // we're trying to reconstruct the label position from the JGraph 5.2
         // method,
         // but at this point we don't have the view available which means we
@@ -252,8 +233,7 @@ public class LayoutIO {
         int xdir = 1;
         // take right bound if end point is to the right, or equal and first
         // slope directed left
-        if (p0.getX() > pe.getX()
-            || (p0.getX() == pe.getX() && p1.getX() > p0.getX())) {
+        if (p0.getX() > pe.getX() || (p0.getX() == pe.getX() && p1.getX() > p0.getX())) {
             x0 += tmp.getWidth();
             xdir = -1;
         }
@@ -261,8 +241,7 @@ public class LayoutIO {
         int ydir = 1;
         // take lower bound if end point is below, or equal and first slope
         // directed up
-        if (p0.getY() > pe.getY()
-            || (p0.getY() == pe.getY() && p1.getY() > p0.getY())) {
+        if (p0.getY() > pe.getY() || (p0.getY() == pe.getY() && p1.getY() > p0.getY())) {
             y0 += tmp.getHeight();
             ydir = -1;
         }
@@ -294,13 +273,12 @@ public class LayoutIO {
      * vector from the first to the last point, if they are distinct; otherwise,
      * it is the average of the edge points; if that yields <code>(0,0)</code>,
      * the edge vector is given by {@link #DEFAULT_EDGE_VECTOR}.
-     * 
+     *
      * @param points the list of points; should not be empty
      * @param isLoop flag indicating that the underlying edge is a loop
      * @see EdgeView#getLabelVector()
      */
-    private static Point2D version2LabelVector(List<Point2D> points,
-            boolean isLoop) {
+    private static Point2D version2LabelVector(List<Point2D> points, boolean isLoop) {
         Point2D result = null;
         // first try a vector from the first to the last point
         Point2D begin = points.get(0);
@@ -340,12 +318,10 @@ public class LayoutIO {
         // the square of the length of the edge vector
         double vector2 = edge.getX() * edge.getX() + edge.getY() * edge.getY();
         // the ratio of the label vector to the edge vector
-        double ratio =
-            (edge.getX() * pos.getX() + edge.getY() * pos.getY()) / vector2;
+        double ratio = (edge.getX() * pos.getX() + edge.getY() * pos.getY()) / vector2;
         // the distance from the label position to the edge vector
         double distance =
-            (-pos.getX() * edge.getY() + pos.getY() * edge.getX())
-                / Math.sqrt(vector2);
+            (-pos.getX() * edge.getY() + pos.getY() * edge.getX()) / Math.sqrt(vector2);
         return new Point2D.Double(ratio * GraphConstants.PERMILLE, distance);
     }
 
@@ -356,9 +332,8 @@ public class LayoutIO {
         if (s.length - i < 4) {
             return null;
         } else {
-            return new Rectangle(Integer.parseInt(s[i + 0]),
-                Integer.parseInt(s[i + 1]), Integer.parseInt(s[i + 2]),
-                Integer.parseInt(s[i + 3]));
+            return new Rectangle(Integer.parseInt(s[i + 0]), Integer.parseInt(s[i + 1]),
+                Integer.parseInt(s[i + 2]), Integer.parseInt(s[i + 3]));
         }
     }
 
@@ -369,8 +344,7 @@ public class LayoutIO {
         if (s.length - i < 2) {
             return null;
         } else {
-            return new Point(Integer.parseInt(s[i + 0]),
-                Integer.parseInt(s[i + 1]));
+            return new Point(Integer.parseInt(s[i + 0]), Integer.parseInt(s[i + 1]));
         }
     }
 
@@ -419,8 +393,8 @@ public class LayoutIO {
     /** The current version number. */
     static public final int CURRENT_VERSION_NUMBER = VERSION2;
     /** Error message in case an error is detected in the layout file. */
-    static private final String LAYOUT_FORMAT_ERROR = String.format(
-        "Error in %s file", FileType.LAYOUT.getExtension());
+    static private final String LAYOUT_FORMAT_ERROR =
+        String.format("Error in %s file", FileType.LAYOUT.getExtension());
     /** Double quote character. */
     static private final char DOUBLE_QUOTE = '\"';
     /** Splitting expression for non-empty white space. */
@@ -430,6 +404,5 @@ public class LayoutIO {
      * non-zero vector.
      * @see #version2LabelVector(List,boolean)
      */
-    static private final Point2D DEFAULT_EDGE_VECTOR =
-        new Point2D.Double(50, 0);
+    static private final Point2D DEFAULT_EDGE_VECTOR = new Point2D.Double(50, 0);
 }

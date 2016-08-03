@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.util.collect;
@@ -72,8 +72,7 @@ public class SmallCollection<E> extends AbstractCollection<E> {
 
     @Override
     public boolean isEmpty() {
-        return this.inner == null && this.singleton == null
-            || this.inner.isEmpty();
+        return this.singleton == null && (this.inner == null || this.inner.isEmpty());
     }
 
     @Override
@@ -81,9 +80,11 @@ public class SmallCollection<E> extends AbstractCollection<E> {
         if (this.inner != null) {
             return this.inner.iterator();
         } else if (this.singleton == null) {
-            return Collections.<E>emptyList().iterator();
+            return Collections.<E>emptyList()
+                .iterator();
         } else {
-            return Collections.singleton(this.singleton).iterator();
+            return Collections.singleton(this.singleton)
+                .iterator();
         }
     }
 
@@ -98,7 +99,8 @@ public class SmallCollection<E> extends AbstractCollection<E> {
         } else {
             result = this.inner.remove(obj);
             if (result && this.inner.size() == 1) {
-                this.singleton = this.inner.iterator().next();
+                this.singleton = this.inner.iterator()
+                    .next();
                 this.inner = null;
             }
         }
@@ -116,8 +118,7 @@ public class SmallCollection<E> extends AbstractCollection<E> {
 
     /** Indicates is there is precisely one element in this collection. */
     public boolean isSingleton() {
-        return this.singleton != null
-            || (this.inner != null && this.inner.size() == 1);
+        return this.singleton != null || (this.inner != null && this.inner.size() == 1);
     }
 
     /**
@@ -129,7 +130,8 @@ public class SmallCollection<E> extends AbstractCollection<E> {
     public E getSingleton() {
         E result = this.singleton;
         if (result == null && this.inner != null && this.inner.size() == 1) {
-            result = this.inner.iterator().next();
+            result = this.inner.iterator()
+                .next();
         }
         return result;
     }

@@ -16,6 +16,19 @@
  */
 package groove.graph.iso;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import groove.control.Valuator;
 import groove.graph.AGraph;
 import groove.graph.Edge;
@@ -36,19 +49,6 @@ import groove.util.Reporter;
 import groove.util.collect.Bag;
 import groove.util.collect.HashBag;
 import groove.util.collect.SmallCollection;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Implementation of an isomorphism checking algorithm that first tries to
@@ -389,7 +389,7 @@ public class IsoChecker {
         // test if there are isolated nodes unaccounted for
         if (result != null && result.nodeMap()
             .size() != domCertifier.getGraph()
-            .nodeCount()) {
+                .nodeCount()) {
             // there's sure to be an isomorphism, but we have to add the
             // isolated nodes
             PartitionMap<Node> codPartitionMap = codCertifier.getNodePartitionMap();
@@ -445,7 +445,8 @@ public class IsoChecker {
         }
         // make sure the certificate counts are equal
         if (domCertifier.getNodeCertificates().length != codCertifier.getNodeCertificates().length
-            || domCertifier.getEdgeCertificates().length != codCertifier.getEdgeCertificates().length) {
+            || domCertifier.getEdgeCertificates().length != codCertifier
+                .getEdgeCertificates().length) {
             return null;
         }
         if (hasDiscreteCerts(domCertifier)) {
@@ -527,7 +528,8 @@ public class IsoChecker {
                 // first wipe out the traces of the previous match
                 if (!item.sourcePreMatched && sourceImages[i] != null) {
                     boolean removed = usedNodeImages.remove(sourceImages[i]);
-                    assert removed : String.format("Image %s for source %s not present in used node set %s",
+                    assert removed : String.format(
+                        "Image %s for source %s not present in used node set %s",
                         sourceImages[i],
                         item.key.source(),
                         usedNodeImages);
@@ -535,7 +537,8 @@ public class IsoChecker {
                 }
                 if (!item.targetPreMatched && targetImages[i] != null) {
                     boolean removed = usedNodeImages.remove(targetImages[i]);
-                    assert removed : String.format("Image %s for target %s not present in used node set %s",
+                    assert removed : String.format(
+                        "Image %s for target %s not present in used node set %s",
                         targetImages[i],
                         item.key.target(),
                         usedNodeImages);
@@ -607,8 +610,8 @@ public class IsoChecker {
             if (ISO_PRINT) {
                 System.out.printf("Succeeded%n");
             }
-            assert checkIsomorphism(domCertifier.getGraph(), result) : String.format("Erronous result using plan %s",
-                plan);
+            assert checkIsomorphism(domCertifier.getGraph(), result) : String
+                .format("Erronous result using plan %s", plan);
             // Store the variables in the state.
             if (state != null) {
                 state.plan = plan;
@@ -755,8 +758,9 @@ public class IsoChecker {
      */
     private boolean hasDiscreteNodeCerts(CertificateStrategy certifier) {
         return certifier.getNodePartitionMap()
-            .isOneToOne() && certifier.getEdgePartitionMap()
-            .isOneToOne();
+            .isOneToOne()
+            && certifier.getEdgePartitionMap()
+                .isOneToOne();
     }
 
     /**
@@ -814,23 +818,21 @@ public class IsoChecker {
                 System.out.printf("Edge %s mapped to %s, but source mapped to %s%n",
                     key,
                     value,
-                    keySource,
                     map.getNode(keySource));
                 return false;
             }
             if (!map.getNode(keyTarget)
                 .equals(value.target())) {
-                System.out.printf("Edge %s mapped to %s, but end %s mapped to %s%n",
+                System.out.printf("Edge %s mapped to %s, but target mapped to %s%n",
                     key,
                     value,
-                    key.target(),
                     map.getNode(keyTarget));
                 return false;
             }
         }
         if (map.nodeMap()
             .size() != new HashSet<Node>(map.nodeMap()
-            .values()).size()) {
+                .values()).size()) {
             for (Map.Entry<Node,Node> first : map.nodeMap()
                 .entrySet()) {
                 for (Map.Entry<Node,Node> second : map.nodeMap()
@@ -863,20 +865,20 @@ public class IsoChecker {
                 new HashBag<EdgeCertificate>(Arrays.asList(codBis.getEdgeCertificates()));
             Bag<NodeCertificate> domMinCodNodes = new HashBag<NodeCertificate>(domNodes);
             domMinCodNodes.removeAll(codNodes);
-            assert domMinCodNodes.isEmpty() : String.format("Node certificates %s in dom but not cod",
-                domMinCodNodes);
+            assert domMinCodNodes.isEmpty() : String
+                .format("Node certificates %s in dom but not cod", domMinCodNodes);
             Bag<NodeCertificate> codMinDomNodes = new HashBag<NodeCertificate>(codNodes);
             codMinDomNodes.removeAll(domNodes);
-            assert codMinDomNodes.isEmpty() : String.format("Node certificates %s in cod but not cod",
-                codMinDomNodes);
+            assert codMinDomNodes.isEmpty() : String
+                .format("Node certificates %s in cod but not cod", codMinDomNodes);
             Bag<EdgeCertificate> domMinCodEdges = new HashBag<EdgeCertificate>(domEdges);
             domMinCodEdges.removeAll(codEdges);
-            assert domMinCodEdges.isEmpty() : String.format("Edge certificates %s in dom but not cod",
-                domMinCodEdges);
+            assert domMinCodEdges.isEmpty() : String
+                .format("Edge certificates %s in dom but not cod", domMinCodEdges);
             Bag<EdgeCertificate> codMinDomEdges = new HashBag<EdgeCertificate>(codEdges);
             codMinDomEdges.removeAll(domEdges);
-            assert codMinDomEdges.isEmpty() : String.format("Edge certificates %s in cod but not cod",
-                codMinDomEdges);
+            assert codMinDomEdges.isEmpty() : String
+                .format("Edge certificates %s in cod but not cod", codMinDomEdges);
         }
         return true;
     }

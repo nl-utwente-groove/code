@@ -1,21 +1,5 @@
 package groove.gui.display;
 
-import groove.grammar.QualName;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.graph.GraphProperties;
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.dialog.PropertiesTable;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JModel;
-import groove.gui.tree.RuleLevelTree;
-import groove.gui.tree.TypeTree;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +17,22 @@ import javax.swing.event.UndoableEditListener;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
+
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.graph.GraphProperties;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.PropertiesTable;
+import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JModel;
+import groove.gui.tree.RuleLevelTree;
+import groove.gui.tree.TypeTree;
 
 /** Display tab component showing a graph-based resource. */
 final public class GraphTab extends ResourceTab implements UndoableEditListener {
@@ -139,10 +139,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         TitledPanel result = this.labelPanel;
         if (result == null) {
             TypeTree labelTree = getLabelTree();
-            this.labelPanel =
-                result =
-                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(),
-                        true);
+            this.labelPanel = result = new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                labelTree.createToolBar(), true);
             result.setTitled(false);
         }
         return result;
@@ -242,7 +240,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     @Override
     public boolean removeResource(QualName name) {
-        boolean result = name.equals(getName());
+        boolean result = name.equals(getQualName());
         this.jModelMap.remove(name);
         if (result) {
             setResource(null);

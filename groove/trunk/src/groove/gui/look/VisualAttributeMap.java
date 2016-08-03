@@ -1,24 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.look;
-
-import groove.gui.Options;
-import groove.gui.look.VisualKey.Nature;
-import groove.util.line.LineStyle;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -40,7 +36,11 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.Edge.Routing;
 import org.jgraph.graph.GraphConstants;
 
-/** 
+import groove.gui.Options;
+import groove.gui.look.VisualKey.Nature;
+import groove.util.line.LineStyle;
+
+/**
  * Attribute map associated with a {@link VisualMap}.
  * Changes in this map are propagated back to the VisualMap,
  * if they correspond to controlled {@link VisualKey}s.
@@ -55,11 +55,12 @@ public class VisualAttributeMap extends AttributeMap {
         super.put(GraphConstants.ROUTING, edgeRouting);
         this.visuals = visuals;
         this.changedKeys = EnumSet.noneOf(VisualKey.class);
-        setStale(visuals.getMap().keySet());
+        setStale(visuals.getMap()
+            .keySet());
     }
 
     /**
-     * Notifies the attribute map that a visual key change has occurred, 
+     * Notifies the attribute map that a visual key change has occurred,
      * which may require refreshing the attribute map;
      * @param key the key whose value has changed in the visual map
      */
@@ -72,7 +73,7 @@ public class VisualAttributeMap extends AttributeMap {
     }
 
     /**
-     * Notifies the attribute map that a set of key change have occurred, 
+     * Notifies the attribute map that a set of key change have occurred,
      * which may require refreshing the attribute map;
      * @param keys the keys whose values have changed in the visual map
      */
@@ -183,7 +184,7 @@ public class VisualAttributeMap extends AttributeMap {
             case EDGE_SOURCE_LABEL:
                 assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array",
+                assert vValues.length == 2 : String.format("Incorrect value array %s",
                     Arrays.toString(vValues));
                 vValue = vValues[0];
                 this.visuals.put(VisualKey.EDGE_TARGET_LABEL, vValues[1], false);
@@ -191,7 +192,7 @@ public class VisualAttributeMap extends AttributeMap {
             case EDGE_SOURCE_POS:
                 assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array",
+                assert vValues.length == 2 : String.format("Incorrect value array %s",
                     Arrays.toString(vValues));
                 vValue = vValues[0];
                 this.visuals.put(VisualKey.EDGE_TARGET_POS, vValues[1], false);
@@ -199,7 +200,7 @@ public class VisualAttributeMap extends AttributeMap {
             case EDGE_TARGET_LABEL:
                 assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array",
+                assert vValues.length == 2 : String.format("Incorrect value array %s",
                     Arrays.toString(vValues));
                 vValue = vValues[1];
                 this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, vValues[0], false);
@@ -207,7 +208,7 @@ public class VisualAttributeMap extends AttributeMap {
             case EDGE_TARGET_POS:
                 assert value instanceof Object[] : String.format("Incorrect value %s", value);
                 vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array",
+                assert vValues.length == 2 : String.format("Incorrect value array %s",
                     Arrays.toString(vValues));
                 vValue = vValues[1];
                 this.visuals.put(VisualKey.EDGE_SOURCE_POS, vValues[0], false);
@@ -281,7 +282,7 @@ public class VisualAttributeMap extends AttributeMap {
 
     /**
      * Transfers the value for a given visual key into this attribute map,
-     * without recursively triggering updates in the map. 
+     * without recursively triggering updates in the map.
      */
     @SuppressWarnings("unchecked")
     private void putVisual(VisualKey key, Object value) {
@@ -327,7 +328,8 @@ public class VisualAttributeMap extends AttributeMap {
             super.put(GraphConstants.ENDFILL, targetShape.isFilled());
             break;
         case FONT:
-            value = Options.getLabelFont().deriveFont((Integer) value);
+            value = Options.getLabelFont()
+                .deriveFont((Integer) value);
             break;
         case COLOR:
         case FOREGROUND:
@@ -350,9 +352,8 @@ public class VisualAttributeMap extends AttributeMap {
                 size = new Dimension((int) b.getWidth(), (int) b.getHeight());
             }
             Point2D pos = (Point2D) value;
-            pos =
-                new Point2D.Double(pos.getX() - size.getWidth() / 2, pos.getY() - size.getHeight()
-                    / 2);
+            pos = new Point2D.Double(pos.getX() - size.getWidth() / 2,
+                pos.getY() - size.getHeight() / 2);
             b = new Rectangle();
             b.setFrame(pos, size);
             value = b;
@@ -394,11 +395,12 @@ public class VisualAttributeMap extends AttributeMap {
     private static final double OUT_MULT_DIST = GraphConstants.PERMILLE * 10 / 100;
     /** x-position of multiplicity labels. */
     private static final double MULT_X = -11;
-    private static final Point2D[] EXTRA_LABEL_POSITIONS = {
-        new Point2D.Double(IN_MULT_DIST, MULT_X), new Point2D.Double(OUT_MULT_DIST, MULT_X)};
+    private static final Point2D[] EXTRA_LABEL_POSITIONS =
+        {new Point2D.Double(IN_MULT_DIST, MULT_X), new Point2D.Double(OUT_MULT_DIST, MULT_X)};
 
     private final static Map<Object,VisualKey> attrToVisualKeyMap;
     private final static Map<VisualKey,String> visualToAttrKeyMap;
+
     static {
         Map<Object,VisualKey> a2v = new HashMap<Object,VisualKey>();
         Map<VisualKey,String> v2a = new EnumMap<VisualKey,String>(VisualKey.class);

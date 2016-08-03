@@ -384,8 +384,8 @@ public class GrammarProperties extends Properties {
         String oldText = oldLabel.text();
         // change the control labels
         List<String> controlLabels = getControlLabels();
-        List<String> newControlLabels = new ArrayList<String>(controlLabels);
         if (controlLabels != null && controlLabels.contains(oldText)) {
+            List<String> newControlLabels = new ArrayList<String>(controlLabels);
             int index = controlLabels.indexOf(oldText);
             newControlLabels.set(index, newLabel.text());
             result.setControlLabels(newControlLabels);
@@ -393,8 +393,8 @@ public class GrammarProperties extends Properties {
         }
         // change the common labels
         List<String> commonLabels = getControlLabels();
-        List<String> newCommonLabels = new ArrayList<String>(commonLabels);
         if (commonLabels != null && commonLabels.contains(oldText)) {
+            List<String> newCommonLabels = new ArrayList<String>(commonLabels);
             int index = commonLabels.indexOf(oldText);
             newCommonLabels.set(index, newLabel.text());
             result.setCommonLabels(newCommonLabels);
