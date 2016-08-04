@@ -19,17 +19,17 @@ package groove.algebra;
 import groove.algebra.syntax.Expression;
 
 /** Abstract superclass of all real-number algebras.
- * @param <Real> The representation type of the real algebra
- * @param <Bool> The representation type of the boolean algebra
- * @param <String> The representation type of the string algebra
+ * @param <INT> The representation type of the integer algebra
+ * @param <REAL> The representation type of the real algebra
+ * @param <BOOL> The representation type of the boolean algebra
+ * @param <STRING> The representation type of the string algebra
  */
-@SuppressWarnings("hiding")
-public abstract class RealAlgebra<Int,Real,Bool,String> extends RealSignature<Int,Real,Bool,String>
-    implements Algebra<Real> {
+public abstract class RealAlgebra<INT,REAL,BOOL,STRING> extends RealSignature<INT,REAL,BOOL,STRING>
+    implements Algebra<REAL> {
     @Override
     @SuppressWarnings("unchecked")
-    public Real toValue(Expression term) {
-        return (Real) getFamily().toValue(term);
+    public REAL toValue(Expression term) {
+        return (REAL) getFamily().toValue(term);
     }
 
     /*
@@ -37,12 +37,11 @@ public abstract class RealAlgebra<Int,Real,Bool,String> extends RealSignature<In
      * @throws IllegalArgumentException if the parameter is not of type {@link Double}
      */
     @Override
-    final public Real toValueFromJava(Object value) {
+    public final REAL toValueFromJava(Object value) {
         if (!(value instanceof Double)) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("Native double type is %s, not %s",
-                    Double.class.getSimpleName(),
-                    value.getClass().getSimpleName()));
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native double type is %s, not %s", Double.class.getSimpleName(), value.getClass()
+                    .getSimpleName()));
         }
         return toValueFromJavaDouble((Double) value);
     }
@@ -51,7 +50,7 @@ public abstract class RealAlgebra<Int,Real,Bool,String> extends RealSignature<In
      * Callback method to convert from the native ({@link Double})
      * representation to the algebra representation.
      */
-    protected abstract Real toValueFromJavaDouble(Double value);
+    protected abstract REAL toValueFromJavaDouble(Double value);
 
     /* Specialises the return type. */
     @Override

@@ -51,7 +51,7 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
     private ExprTreeParser(boolean assign, boolean test) {
         super(new ExprTree(getAtom()), getOpList());
         super.setQualIds(true);
-        assert!assign || !test;
+        assert !assign || !test;
         this.assign = assign;
         this.test = test;
     }
@@ -124,7 +124,7 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
      * The assignment is encoded as equality ("==")
      */
     private ExprTree parseAssign() throws FormatException {
-        ExprTree result = null;
+        ExprTree result;
         Token nameToken = consume(NAME);
         if (nameToken == null) {
             throw expectedToken(NAME, next());
@@ -194,17 +194,17 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
     }
 
     /** Returns the collection of operators to be recognised by the parser. */
-    static public List<ExprOp> getOpList() {
+    public static List<ExprOp> getOpList() {
         if (opList == null) {
             opList = createOpList();
         }
         return opList;
     }
 
-    static private List<ExprOp> opList;
+    private static List<ExprOp> opList;
 
     /** Returns the mapping from operator symbols to arity-indexed lists of operators. */
-    static private List<ExprOp> createOpList() {
+    private static List<ExprOp> createOpList() {
         List<ExprOp> result = new ArrayList<>();
         // register all operators
         Map<String,Map<OpKind,ExprOp>> opMapMap = new TreeMap<>();
@@ -213,28 +213,25 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
             registerOp(opMapMap, result, sortOp, OpKind.CALL, sortOp.getName());
             // register the operator by symbol, if it is not only usable as call operator
             OpKind opKind = sortOp.getKind();
-            if (opKind == OpKind.CALL) {
-                continue;
+            if (opKind != OpKind.CALL && sortOp.hasSymbol()) {
+                registerOp(opMapMap, result, sortOp, opKind, sortOp.getSymbol());
             }
-            String opSymbol = sortOp.getSymbol();
-            if (opSymbol == null) {
-                continue;
-            }
-            registerOp(opMapMap, result, sortOp, opKind, opSymbol);
         }
         result.add(ExprOp.atom());
         return result;
     }
 
-    static private void registerOp(Map<String,Map<OpKind,ExprOp>> mapMap, List<ExprOp> opList,
+    private static void registerOp(Map<String,Map<OpKind,ExprOp>> mapMap, List<ExprOp> opList,
         Operator sortOp, OpKind opKind, String symbol) {
         Map<OpKind,ExprOp> opMap = mapMap.get(symbol);
         if (opMap == null) {
-            mapMap.put(symbol, opMap = new EnumMap<>(OpKind.class));
+            opMap = new EnumMap<>(OpKind.class);
+            mapMap.put(symbol, opMap);
         }
         ExprOp result = opMap.get(opKind);
         if (result == null) {
-            opMap.put(opKind, result = new ExprOp(opKind, symbol, sortOp.getArity()));
+            result = new ExprOp(opKind, symbol, sortOp.getArity());
+            opMap.put(opKind, result);
             opList.add(result);
         }
         result.add(sortOp);
@@ -243,21 +240,21 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
     /** Parses a given input as assignment.
      * @throws FormatException if there is a parse error.
      */
-    static public ExprTree parseAssign(String input) throws FormatException {
+    public static ExprTree parseAssign(String input) throws FormatException {
         return parse(ASSIGN_PARSER, input);
     }
 
     /** Parses a given input as an expression, with or without legacy test syntax.
      * @throws FormatException if there is a parse error.
      */
-    static public ExprTree parseExpr(String input, boolean test) throws FormatException {
+    public static ExprTree parseExpr(String input, boolean test) throws FormatException {
         return parse(test ? TEST_PARSER : EXPR_PARSER, input);
     }
 
     /** Parses a given input with a given parser.
      * @throws FormatException if there is a parse error.
      */
-    static private ExprTree parse(ExprTreeParser parser, String input) throws FormatException {
+    private static ExprTree parse(ExprTreeParser parser, String input) throws FormatException {
         ExprTree result = parser.parse(input);
         FormatErrorSet errors = new FormatErrorSet();
         for (FormatError error : result.getErrors()) {
@@ -268,11 +265,11 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
     }
 
     /** Expression parser. */
-    static public final ExprTreeParser EXPR_PARSER = new ExprTreeParser(false, false);
+    public static final ExprTreeParser EXPR_PARSER = new ExprTreeParser(false, false);
     /** Assignment statement parser. */
-    static public final ExprTreeParser ASSIGN_PARSER = new ExprTreeParser(true, false);
+    public static final ExprTreeParser ASSIGN_PARSER = new ExprTreeParser(true, false);
     /** Expression parser allowing legacy test syntax (top-level "="). */
-    static public final ExprTreeParser TEST_PARSER = new ExprTreeParser(false, true);
+    public static final ExprTreeParser TEST_PARSER = new ExprTreeParser(false, true);
 
     /** Retrieves the atom operator from the list of predefined operators. */
     private static ExprOp getAtom() {

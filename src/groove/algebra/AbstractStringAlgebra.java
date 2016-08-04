@@ -25,7 +25,7 @@ import groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractStringAlgebra<Int> extends StringAlgebra<String,Boolean,Int> {
+public abstract class AbstractStringAlgebra<INT> extends StringAlgebra<String,Boolean,INT> {
     /** Empty constructor for the singleton instance. */
     AbstractStringAlgebra() {
         // empty

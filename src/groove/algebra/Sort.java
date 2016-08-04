@@ -1,25 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.algebra;
-
-import groove.algebra.Signature.OpValue;
-import groove.util.Keywords;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -31,8 +26,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import groove.algebra.Signature.OpValue;
+import groove.util.Keywords;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
+
 /**
- * Enumeration of the currently supported signatures sorts. 
+ * Enumeration of the currently supported signatures sorts.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -47,9 +47,9 @@ public enum Sort {
         @Override
         public Constant createConstant(String symbol) throws FormatException {
             Constant result;
-            if (symbol.equals("" + true)) {
+            if (symbol.equals(Boolean.toString(true))) {
                 result = BoolSignature.TRUE;
-            } else if (symbol.equals("" + false)) {
+            } else if (symbol.equals(Boolean.toString(false))) {
                 result = BoolSignature.FALSE;
             } else {
                 throw new FormatException("'%s' is not a valid Boolean constant", symbol);
@@ -60,7 +60,7 @@ public enum Sort {
 
         @Override
         public boolean denotesConstant(String symbol) {
-            return symbol.equals("" + true) || symbol.equals("" + false);
+            return symbol.equals(Boolean.toString(true)) || symbol.equals(Boolean.toString(false));
         }
     },
     /** Integer sort. */
@@ -84,7 +84,8 @@ public enum Sort {
         @Override
         public boolean denotesConstant(String symbol) {
             try {
-                new BigInteger(symbol);
+                // Test that the symbol is a correct integer
+                Integer.parseInt(symbol);
                 return true;
             } catch (NumberFormatException exc) {
                 return false;
@@ -112,7 +113,8 @@ public enum Sort {
         @Override
         public boolean denotesConstant(String symbol) {
             try {
-                new BigDecimal(symbol);
+                // Test whether the symbol correctly represents a double
+                Double.parseDouble(symbol);
                 return true;
             } catch (NumberFormatException exc) {
                 return false;
@@ -149,7 +151,8 @@ public enum Sort {
     };
 
     /** Constructs a sort with a given name. */
-    private Sort(String name, Class<? extends Signature> sigClass, Set<? extends OpValue> opValues) {
+    private Sort(String name, Class<? extends Signature> sigClass,
+        Set<? extends OpValue> opValues) {
         assert name != null;
         this.name = name;
         this.sigClass = sigClass;
@@ -157,14 +160,14 @@ public enum Sort {
     }
 
     /** Returns the name of this sort. */
-    final public String getName() {
+    public final String getName() {
         return this.name;
     }
 
     private final String name;
 
     /** Returns a symbolic representation of the default value for this sort. */
-    abstract public Constant getDefaultValue();
+    public abstract Constant getDefaultValue();
 
     @Override
     public String toString() {
@@ -207,7 +210,7 @@ public enum Sort {
 
     /**
      * Creates a constant of this sort
-     * from a given symbolic string representation. 
+     * from a given symbolic string representation.
      * @param symbol the symbolic representation; non-{@code null}
      * @throws FormatException if {@code symbol} is not a valid representation
      * of a constant of this sort
@@ -216,7 +219,7 @@ public enum Sort {
     public abstract Constant createConstant(String symbol) throws FormatException;
 
     /**
-     * Indicates if a given string is a valid symbolic representation of 
+     * Indicates if a given string is a valid symbolic representation of
      * a constant of this sort.
      */
     public abstract boolean denotesConstant(String symbol);
@@ -232,15 +235,14 @@ public enum Sort {
     }
 
     /** Returns the set of all known signature names. */
-    static public Set<String> getNames() {
+    public static Set<String> getNames() {
         return Collections.unmodifiableSet(sigNameMap.keySet());
     }
 
     /** Inverse mapping from signature names to sorts. */
     private static Map<String,Sort> sigNameMap = new HashMap<>();
     /** Inverse mapping from signature classes to sorts. */
-    private static Map<Class<? extends Signature>,Sort> sigClassMap =
-        new HashMap<>();
+    private static Map<Class<? extends Signature>,Sort> sigClassMap = new HashMap<>();
 
     static {
         for (Sort kind : Sort.values()) {
